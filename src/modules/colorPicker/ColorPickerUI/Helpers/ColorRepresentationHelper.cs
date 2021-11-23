@@ -111,7 +111,7 @@ namespace ColorPicker.Helpers
             var (red, green, blue) = ColorHelper.ConvertToDouble(color);
             var precision = 2;
 
-            return $"({Math.Round(red, precision):0.##}f, {Math.Round(green, precision):0.##}f, {Math.Round(blue, precision):0.##}f, 1f)";
+            return $"({Math.Round(red, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, {Math.Round(green, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, {Math.Round(blue, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, 1f)";
         }
 
         /// <summary>
