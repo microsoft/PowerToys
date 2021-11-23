@@ -52,7 +52,7 @@
                           HorizontalAlignment="Center"
                           FontSize="20"
                           Margin="2,0,18,0"
-                          MaxWidth="26"
+                          MaxWidth="20"
                           AutomationProperties.AccessibilityView="Raw"
                           FontFamily="{ThemeResource SymbolThemeFontFamily}"
                           Foreground="{ThemeResource CardPrimaryForegroundBrush}"
