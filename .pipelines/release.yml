@@ -47,14 +47,16 @@ jobs:
     displayName: Use NuGet 5.10
     inputs:
       versionSpec: 5.10
+  - task: NuGetAuthenticate@0
+    inputs:
+      nuGetServiceConnections: PowerToysCDPxFeed
   - task: NuGetCommand@2
-    displayName: NuGet custom
+    displayName: NuGet restore all solutions
     inputs:
       command: restore
       restoreSolution: '**/*.sln'
       selectOrConfig: config
-      feedsToUse: 'https://github-private.pkgs.visualstudio.com/microsoft/_packaging/PowerToysCDPX_Feed/nuget/v3/index.json'
-      nugetConfigPath: NuGet.Config
+      nugetConfigPath: .pipelines/release-nuget.config
 #  - task: TouchdownBuildTask@1
 #    displayName: Download Localization Files
 #    inputs:
