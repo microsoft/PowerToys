@@ -1752,11 +1752,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Spotlight initial zoom</value>
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Description" xml:space="preserve">
-    <value>Spotlight zoom factor at animation start</value>
-  </data>
-  <data name="MouseUtils_FindMyMouse_WarningZoomPhotoSensitive.Title" xml:space="preserve">
-    <value>Low values for "Spotlight initial zoom" are recommended for photo sensitive users</value>
-    <comment>"Spotlight initial zoom" is the name of the setting right above this warning.</comment>
+    <value>Spotlight zoom factor at animation start. A smaller size is recommended for photo sensitive users</value>
   </data>
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Header" xml:space="preserve">
     <value>Animation duration</value>
