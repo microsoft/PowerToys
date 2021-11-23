@@ -53,6 +53,7 @@ jobs:
       command: restore
       restoreSolution: '**/*.sln'
       selectOrConfig: config
+      feedsToUse: 'https://github-private.pkgs.visualstudio.com/microsoft/_packaging/PowerToysCDPX_Feed/nuget/v3/index.json'
       nugetConfigPath: NuGet.Config
 #  - task: TouchdownBuildTask@1
 #    displayName: Download Localization Files
