@@ -1734,19 +1734,19 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_BackgroundColor.Header" xml:space="preserve">
-    <value>Background Color</value>
+    <value>Background color</value>
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightColor.Header" xml:space="preserve">
-    <value>Spotlight Color</value>
+    <value>Spotlight color</value>
   </data>
   <data name="MouseUtils_FindMyMouse_OverlayOpacity.Header" xml:space="preserve">
-    <value>Overlay Opacity</value>
+    <value>Overlay opacity</value>
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightRadius.Header" xml:space="preserve">
-    <value>Spotlight Radius</value>
+    <value>Spotlight radius</value>
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Header" xml:space="preserve">
-    <value>Spotlight Initial Zoom</value>
+    <value>Spotlight initial zoom</value>
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Description" xml:space="preserve">
     <value>How many times bigger the spotlight is when the animation starts</value>
