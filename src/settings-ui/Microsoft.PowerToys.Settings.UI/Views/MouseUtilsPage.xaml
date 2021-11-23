@@ -72,6 +72,11 @@
                                             HorizontalAlignment="Right"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
+                                <muxc:InfoBar x:Uid="MouseUtils_FindMyMouse_WarningZoomPhotoSensitive"
+                                          Severity="Warning"
+                                          IsTabStop="{Binding RelativeSource={RelativeSource Self}, Mode=OneWay, Path=IsOpen}"
+                                          IsClosable="True"
+                                          IsOpen="True"/>
                                 <controls:Setting x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <muxc:NumberBox Minimum="0"
