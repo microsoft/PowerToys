@@ -9,7 +9,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class FindMyMouseSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "Find My Mouse";
+        public const string ModuleName = "FindMyMouse";
 
         [JsonPropertyName("properties")]
         public FindMyMouseProperties Properties { get; set; }
