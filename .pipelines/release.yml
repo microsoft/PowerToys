@@ -1,0 +1,173 @@
+# This build should never run as CI or against a pull request.
+trigger: none
+pr: none
+
+pool: 
+  name: WinDevPool-L
+  demands: ImageOverride -equals WinDevVS16-latest
+
+parameters:
+  - name: buildConfigurations
+    type: object
+    default:
+      - Release
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: main
+jobs:
+- job: Build
+  strategy:
+    matrix:
+      ${{ each config in parameters.buildConfigurations }}:
+        ${{ each platform in parameters.buildPlatforms }}:
+          ${{ config }}_${{ platform }}:
+            BuildConfiguration: ${{ config }}
+            BuildPlatform: ${{ platform }}
+  displayName: Build
+  cancelTimeoutInMinutes: 1
+  steps:
+  - checkout: self
+    clean: true
+    submodules: true
+    persistCredentials: True
+    
+  - task: PkgESSetupBuild@12
+    displayName: Package ES - Setup Build
+    inputs:
+      disableOutputRedirect: true
+  - task: NuGetToolInstaller@1
+    displayName: Use NuGet 5.10
+    inputs:
+      versionSpec: 5.10
+  - task: NuGetCommand@2
+    displayName: NuGet custom
+    inputs:
+      command: restore
+      restoreSolution: '**/*.sln'
+      selectOrConfig: config
+      nugetConfigPath: NuGet.Config
+#  - task: TouchdownBuildTask@1
+#    displayName: Download Localization Files
+#    inputs:
+#      teamId: 7105
+#      authId: $(TouchdownAppId)
+#      authKey: $(TouchdownAppKey)
+#      resourceFilePath: >-
+#        src\cascadia\TerminalApp\Resources\en-US\Resources.resw
+#
+#        src\cascadia\TerminalControl\Resources\en-US\Resources.resw
+#
+#        src\cascadia\TerminalConnection\Resources\en-US\Resources.resw
+#
+#        src\cascadia\TerminalSettingsModel\Resources\en-US\Resources.resw
+#
+#        src\cascadia\TerminalSettingsEditor\Resources\en-US\Resources.resw
+#
+#        src\cascadia\WindowsTerminalUniversal\Resources\en-US\Resources.resw
+#
+#        src\cascadia\CascadiaPackage\Resources\en-US\Resources.resw
+#      appendRelativeDir: true
+#      localizationTarget: false
+#      pseudoSetting: Included
+#  - task: PowerShell@2
+#    displayName: Move Loc files one level up
+#    inputs:
+#      targetType: inline
+#      script: >-
+#        $Files = Get-ChildItem . -R -Filter 'Resources.resw' | ? FullName -Like '*en-US\*\Resources.resw'
+#
+#        $Files | % { Move-Item -Verbose $_.Directory $_.Directory.Parent.Parent -EA:Ignore }
+#      pwsh: true
+  - task: VSBuild@1
+    displayName: Build solution **\PowerToys.sln
+    inputs:
+      solution: '**\PowerToys.sln'
+      vsVersion: 16.0
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: binlog'
+    condition: failed()
+    continueOnError: True
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)\msbuild.binlog
+      ArtifactName: binlog-$(BuildPlatform)
+  - task: ComponentGovernanceComponentDetection@0
+    displayName: Component Detection
+  - task: CopyFiles@2
+    displayName: Copy *.appx/*.msix to Artifacts
+    inputs: # general format for how to publish artifacts -- move to below your build/sign rules
+      Contents: >-
+        **/*.appx
+
+        **/*.msix
+
+        **/*.appxsym
+
+        !**/Microsoft.VCLibs*.appx
+      TargetFolder: $(Build.ArtifactStagingDirectory)/appx
+      OverWrite: true
+      flattenFolders: true
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Artifact (appx)
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)/appx
+      ArtifactName: appx-$(BuildPlatform)-$(BuildConfiguration)
+  - task: PublishSymbols@2
+    displayName: Publish symbols path
+    continueOnError: True
+    inputs:
+      SearchPattern: '**/*.pdb'
+      IndexSources: false
+      SymbolServerType: TeamServices
+  - task: EsrpCodeSigning@1
+    displayName: Submit *.msixbundle to ESRP for code signing
+    inputs:
+      ConnectedServiceName: 9d6d2960-0793-4d59-943e-78dcb434840a
+      FolderPath: $(System.ArtifactsDirectory)
+      Pattern: Microsoft.WindowsTerminal*.msixbundle
+      UseMinimatch: true
+      signConfigType: inlineSignParams
+      inlineOperation: >-
+        [
+            {
+                "KeyCode": "Dynamic",
+                "CertTemplateName": "WINMSAPP1ST",
+                "CertSubjectName": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+                "OperationCode": "SigntoolSign",
+                "Parameters": {
+                    "OpusName": "Microsoft",
+                    "OpusInfo": "http://www.microsoft.com",
+                    "FileDigest": "/fd \"SHA256\"",
+                    "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                },
+                "ToolName": "sign",
+                "ToolVersion": "1.0"
+            },
+            {
+                "KeyCode": "Dynamic",
+                "CertTemplateName": "WINMSAPP1ST",
+                "CertSubjectName": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+                "OperationCode": "SigntoolVerify",
+                "Parameters": {},
+                "ToolName": "sign",
+                "ToolVersion": "1.0"
+            }
+        ]
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: appxbundle-signed'
+    inputs:
+      PathtoPublish: $(System.ArtifactsDirectory)
+      ArtifactName: appxbundle-signed
+...
