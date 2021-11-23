@@ -33,6 +33,15 @@
                                           IsChecked="{x:Bind ViewModel.FindMyMouseDoNotActivateOnGameMode, Mode=TwoWay}"
                                           Margin="{StaticResource ExpanderSettingMargin}"
                                           IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" />
+                                <controls:Setting x:Uid="MouseUtils_FindMyMouse_OverlayOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <Slider Minimum="1"
+                                            Maximum="100"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseOverlayOpacity}"
+                                            HorizontalAlignment="Right"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
                                 <controls:Setting x:Uid="MouseUtils_FindMyMouse_BackgroundColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
@@ -41,15 +50,6 @@
                                 <controls:Setting x:Uid="MouseUtils_FindMyMouse_SpotlightColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
-                                    </controls:Setting.ActionContent>
-                                </controls:Setting>
-                                <controls:Setting x:Uid="MouseUtils_FindMyMouse_OverlayOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
-                                    <controls:Setting.ActionContent>
-                                        <Slider Minimum="1"
-                                            Maximum="100"
-                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseOverlayOpacity}"
-                                            HorizontalAlignment="Right"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                                 <controls:Setting x:Uid="MouseUtils_FindMyMouse_SpotlightRadius" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
