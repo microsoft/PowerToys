@@ -39,10 +39,10 @@ jobs:
     submodules: true
     persistCredentials: True
     
-  - task: PkgESSetupBuild@12
-    displayName: Package ES - Setup Build
-    inputs:
-      disableOutputRedirect: true
+#  - task: PkgESSetupBuild@12
+#    displayName: Package ES - Setup Build
+#    inputs:
+#      disableOutputRedirect: true
   - task: NuGetToolInstaller@1
     displayName: Use NuGet 5.10
     inputs:
