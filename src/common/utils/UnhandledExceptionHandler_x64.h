@@ -9,10 +9,7 @@
 #include "winapi_error.h"
 #include "../logger/logger.h"
 
-static IMAGEHLP_SYMBOL64* pSymbol = (IMAGEHLP_SYMBOL64*)malloc(sizeof(IMAGEHLP_SYMBOL64) + MAX_PATH * sizeof(TCHAR));
-static IMAGEHLP_LINE64 line;
 static BOOLEAN processingException = FALSE;
-static CHAR modulePath[MAX_PATH];
 
 static inline const char* exceptionDescription(const DWORD& code)
 {
@@ -64,15 +61,15 @@ static inline const char* exceptionDescription(const DWORD& code)
 }
 
 /* Returns the index of the last backslash in the file path */
-inline int GetFilenameStart(CHAR* path)
+inline int GetFilenameStart(wchar_t* path)
 {
     int pos = 0;
     int found = 0;
     if (path != NULL)
     {
-        while (path[pos] != '\0' && pos < MAX_PATH)
+        while (path[pos] != L'\0' && pos < MAX_PATH)
         {
-            if (path[pos] == '\\')
+            if (path[pos] == L'\\')
             {
                 found = pos + 1;
             }
@@ -83,22 +80,73 @@ inline int GetFilenameStart(CHAR* path)
     return found;
 }
 
-inline void LogStackTrace()
+inline std::wstring GetModuleName(HANDLE process, const STACKFRAME64& stack)
 {
-    BOOL result;
-    HANDLE thread;
-    HANDLE process;
-    CONTEXT context;
-    STACKFRAME64 stack;
-    ULONG frame;
-    DWORD64 dw64Displacement;
-    DWORD dwDisplacement;
+    static wchar_t modulePath[MAX_PATH]{};
+    const size_t size = sizeof(modulePath);
+    memset(&modulePath[0], '\0', size);
 
-    memset(&stack, 0, sizeof(STACKFRAME64));
+    DWORD64 moduleBase = SymGetModuleBase64(process, stack.AddrPC.Offset);
+    if (!moduleBase)
+    {
+        Logger::error(L"Failed to get a module. {}", get_last_error_or_default(GetLastError()));
+        return std::wstring();
+    }
+
+    if (!GetModuleFileNameW((HINSTANCE)moduleBase, modulePath, MAX_PATH))
+    {
+        Logger::error(L"Failed to get a module path. {}", get_last_error_or_default(GetLastError()));
+        return std::wstring();
+    }
+
+    const int start = GetFilenameStart(modulePath);
+    return std::wstring(modulePath, start);
+}
+
+inline std::wstring GetName(HANDLE process, const STACKFRAME64& stack)
+{
+    static IMAGEHLP_SYMBOL64* pSymbol = (IMAGEHLP_SYMBOL64*)malloc(sizeof(IMAGEHLP_SYMBOL64) + MAX_PATH * sizeof(TCHAR));
+    if (!pSymbol)
+    {
+        return std::wstring();
+    }
+
     memset(pSymbol, '\0', sizeof(*pSymbol) + MAX_PATH);
-    memset(&modulePath[0], '\0', sizeof(modulePath));
+    pSymbol->MaxNameLength = MAX_PATH;
+    pSymbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
+
+    DWORD64 dw64Displacement = 0;
+    if (!SymGetSymFromAddr64(process, stack.AddrPC.Offset, &dw64Displacement, pSymbol))
+    {
+        Logger::error(L"Failed to get a symbol. {}", get_last_error_or_default(GetLastError()));
+        return std::wstring();
+    }
+
+    std::string str = pSymbol->Name;
+    return std::wstring(str.begin(), str.end());
+}
+
+inline std::wstring GetLine(HANDLE process, const STACKFRAME64& stack)
+{
+    static IMAGEHLP_LINE64 line{};
+
+    memset(&line, '\0', sizeof(IMAGEHLP_LINE64));
+    line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
     line.LineNumber = 0;
 
+    DWORD dwDisplacement = 0;
+    if (!SymGetLineFromAddr64(process, stack.AddrPC.Offset, &dwDisplacement, &line))
+    {
+        return std::wstring();
+    }
+
+    std::string fileName(line.FileName);
+    return L"(" + std::wstring(fileName.begin(), fileName.end()) + L":" + std::to_wstring(line.LineNumber) + L")";
+}
+
+inline void LogStackTrace()
+{
+    CONTEXT context;
     try
     {
         RtlCaptureContext(&context);
@@ -109,9 +157,11 @@ inline void LogStackTrace()
         return;
     }
     
-    process = GetCurrentProcess();
-    thread = GetCurrentThread();
-    dw64Displacement = 0;
+    STACKFRAME64 stack;
+    memset(&stack, 0, sizeof(STACKFRAME64));
+
+    HANDLE process = GetCurrentProcess();
+    HANDLE thread = GetCurrentThread();
     stack.AddrPC.Offset = context.Rip;
     stack.AddrPC.Mode = AddrModeFlat;
     stack.AddrStack.Offset = context.Rsp;
@@ -119,8 +169,9 @@ inline void LogStackTrace()
     stack.AddrFrame.Offset = context.Rbp;
     stack.AddrFrame.Mode = AddrModeFlat;
 
-    std::stringstream ss;
-    for (frame = 0;; frame++)
+    BOOL result = false;
+    std::wstringstream ss;
+    for (;;)
     {
         result = StackWalk64(
             IMAGE_FILE_MACHINE_AMD64,
@@ -138,34 +189,10 @@ inline void LogStackTrace()
             break;
         }
 
-        pSymbol->MaxNameLength = MAX_PATH;
-        pSymbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
-
-        if (!SymGetSymFromAddr64(process, stack.AddrPC.Offset, &dw64Displacement, pSymbol))
-        {
-            Logger::error(L"Failed to get a symbol. {}", get_last_error_or_default(GetLastError()));
-        }
-
-        line.LineNumber = 0;
-        SymGetLineFromAddr64(process, stack.AddrPC.Offset, &dwDisplacement, &line);
-
-        DWORD64 moduleBase = SymGetModuleBase64(process, stack.AddrPC.Offset);
-        if (moduleBase)
-        {
-            if (!GetModuleFileNameA((HINSTANCE)moduleBase, modulePath, MAX_PATH))
-            {
-                Logger::error(L"Failed to get a module path. {}", get_last_error_or_default(GetLastError()));
-            }
-        }
-        else
-        {
-            Logger::error(L"Failed to get a module. {}", get_last_error_or_default(GetLastError()));
-        }
-        
-        ss << std::string(modulePath).substr(GetFilenameStart(modulePath)) << "!" << pSymbol->Name << "(" << line.FileName << ":" << line.LineNumber << std::endl;
+        ss << GetModuleName(process, stack) << "!" << GetName(process, stack) << GetLine(process, stack) << std::endl;
     }
 
-    Logger::error("STACK TRACE\r\n{}", ss.str());
+    Logger::error(L"STACK TRACE\r\n{}", ss.str());
     Logger::flush();
 }
 
@@ -218,7 +245,6 @@ inline void InitSymbols()
 {
     // Preload symbols so they will be available in case of out-of-memory exception
     SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
-    line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
     HANDLE process = GetCurrentProcess();
     if (!SymInitialize(process, NULL, TRUE))
     {
