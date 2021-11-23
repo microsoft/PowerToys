@@ -119,9 +119,6 @@ public:
             parse_settings(values);
 
             FindMyMouseApplySettings(m_findMyMouseSettings);
-
-            // TODO: delete this line after #14584 goes in.
-            values.save_to_settings_file();
         }
         catch (std::exception&)
         {
