@@ -24,7 +24,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow(ColorRepresentationType.RGB, "rgb(0, 0, 0)")]
         [DataRow(ColorRepresentationType.CIELAB, "CIELab(0, 0, 0)")]
         [DataRow(ColorRepresentationType.CIEXYZ, "xyz(0, 0, 0)")]
-        [DataRow(ColorRepresentationType.RgbFloat, "(0f, 0f, 0f, 1f)")]
+        [DataRow(ColorRepresentationType.VEC4, "(0f, 0f, 0f, 1f)")]
         [DataRow(ColorRepresentationType.Decimal, "0")]
 
         public void GetStringRepresentationTest(ColorRepresentationType type, string expected)
