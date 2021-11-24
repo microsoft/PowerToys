@@ -255,6 +255,7 @@ static_analysis_options:
         exclude:
           - 'WiX.*/**/*.dll'
           - 'Wix.*/**/*.exe'
+          - 'Microsoft.Windows.CppWinRT.*/**/*.exe'
   moderncop_options:
     files_to_scan:
       - from: 'src'
