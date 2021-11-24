@@ -9,6 +9,7 @@
 | Architecture | Main | Installer (Stable) | Installer (Main) |
 |--------------|------|--------|-----------|
 | x64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status for Installer](https://github-private.visualstudio.com/microsoft/_apis/build/status/CDPX/powertoys/powertoys-Windows-Official-master-Test?branchName=main)](https://github-private.visualstudio.com/microsoft/_build/latest?definitionId=61&branchName=main) |
+| ARM64 | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) | | |
 
 ## About
 
@@ -50,14 +51,6 @@ winget install Microsoft.PowerToys -s winget
 ### Other install methods
 
 There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop.  If these are your preferred install solutions, this will have the install instructions.
-
-### Processor support
-
-We currently support the matrix below.
-
-| x64 | ARM64 |
-|:---:|:---:|
-| [Supported][github-release-link] | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
 
 ## Contributing
 
