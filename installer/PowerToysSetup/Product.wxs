@@ -1130,7 +1130,6 @@
         <?foreach File in app.dark.png;app.light.png;app_error.dark.png;app_error.light.png;RunAsset.ico?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Images\$(var.File)" />
         <?endforeach?>
-        <File Source="$(var.BinX64Dir)modules\launcher\Images\New Message.png" />
       </Component>
 
       <!-- Calculator Plugin -->
