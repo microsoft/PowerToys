@@ -120,7 +120,7 @@
             </ListView>
         </Grid>
 
-        <Grid Grid.Column="0" Grid.Row="1" MaxWidth="360" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid Grid.Column="0" Grid.Row="1" MaxWidth="357" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="48" />
