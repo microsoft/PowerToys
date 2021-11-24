@@ -104,13 +104,13 @@ Last, we've been working on our engineering systems this month and into next. Th
 - Find My Mouse: Fixed display on all virtual desktops as opposed to only the virtual desktop where it was created.
 - Find My Mouse: New settings options to enable a lot more customization based on your feedback.
 - Minor UI tweaks for fluent icons, appearance, "Ctrl" usage, and utility descriptions. Thanks [@niels9001](https://github.com/niels9001)!
-- New Mouse Highlighter PowerToy! When enabled, activate mouse highlighting with <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> by default to begin displaying visual cues on your display when either the left or right mouse buttons are clicked.  There is a much more powerful tool called [SysInternal Zoomit](https://docs.microsoft.com/en-us/sysinternals/downloads/zoomit)
+- New Mouse Highlighter PowerToy! When enabled, activate mouse highlighting with <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> by default to begin displaying visual cues on your display when either the left or right mouse buttons are clicked.  There is a much more powerful tool called [SysInternal ZoomIt](https://docs.microsoft.com/en-us/sysinternals/downloads/zoomit) that is very helpful as well.
 
 ![highlighter turned on while dragging mouse](https://user-images.githubusercontent.com/9866362/142475413-77b00bae-bd28-42ae-a6c8-0dc4356e8525.gif)
 
 **PowerRename**
 - Improved rename performance!
-- Added keyboard excelerators with <kbd>Enter</kbd> and <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to execute rename. Thanks [@niels9001](https://github.com/niels9001)!
+- Added keyboard accelerators with <kbd>Enter</kbd> and <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to execute rename. Thanks [@niels9001](https://github.com/niels9001)!
 - UI tweaks to now add number of items selected, grid-lines for improved readability, reduced font sizes & margins, and improved window resizing.
 - Fixed UI focus issues. Thanks [@niels9001](https://github.com/niels9001)!
 - Added default window width and height. Thanks [@niels9001](https://github.com/niels9001)!
