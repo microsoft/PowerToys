@@ -59,6 +59,7 @@ jobs:
       selectOrConfig: config
       nugetConfigPath: .pipelines/release-nuget.config
   - task: CmdLine@2
+    displayName: Moving telem files over
     inputs:
       script: 'move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "..\src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
 move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "..\src\common\Telemetry\TelemetryBase.cs" || exit /b 1' 
@@ -129,7 +130,7 @@ move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "..
       OverWrite: true
       flattenFolders: true
   - task: PublishBuildArtifacts@1
-    displayName: Publish Artifact (appx)
+    displayName: TERMINAL LEGACY - Publish Artifact (appx)
     inputs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)/appx
       ArtifactName: appx-$(BuildPlatform)-$(BuildConfiguration)
@@ -141,7 +142,7 @@ move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "..
       IndexSources: false
       SymbolServerType: TeamServices
   - task: EsrpCodeSigning@1
-    displayName: Submit *.msixbundle to ESRP for code signing
+    displayName: USE AS BASE BUT TERMINAL CODE - Submit *.msixbundle to ESRP for code signing
     inputs:
       ConnectedServiceName: 9d6d2960-0793-4d59-943e-78dcb434840a
       FolderPath: $(System.ArtifactsDirectory)
@@ -175,7 +176,7 @@ move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "..
             }
         ]
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: appxbundle-signed'
+    displayName: 'TERMINAL LEGACY - Publish Artifact: appxbundle-signed'
     inputs:
       PathtoPublish: $(System.ArtifactsDirectory)
       ArtifactName: appxbundle-signed
