@@ -16,6 +16,19 @@
  - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
  - [ ] https://github.com/microsoft/PowerToys/issues/1524
 
+## Localization
+ Change the Winodws language to a language different than English. Then verify if the following screens change their language:
+ - [ ] System tray menu items
+ - [ ] Settings
+ - [ ] OOBE (What's new)
+ - [ ] Keyboard Manager Editor
+ - [ ] Color Picker (check the tooltips)
+ - [ ] FancyZones Editor
+ - [ ] Power Rename (new WinUI 3 may not be localized)
+ - [ ] Image Resizer
+ - [ ] Shortcut Guide (Windows controls are localized)
+ - [ ] File Explorer menu entries for Image Resizer and Power Rename
+
 ## General Settings
 
 **Admin mode:**
@@ -274,6 +287,29 @@ Find My Mouse:
     - [ ] Verify the overlay no longer appears when you press Left Ctrl twice.
   * Disable the "Do not activate on game mode" option. Start playing the same game.
     - [ ] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
+  * Test the different settings and verify they apply:
+    - [ ] Overlay opacity
+    - [ ] Background color
+    - [ ] Spotlight color
+    - [ ] Spotlight radius
+    - [ ] Spotlight initial zoom (1x vs 9x will show the difference)
+    - [ ] Animation duration
+
+Mouse Highlighter:
+  * Enable Mouse Highlighter. Then:
+    - [ ] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
+    - [ ] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [ ] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [ ] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
+    - [ ] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
+  * Test the different settings and verify they apply:
+    - [ ] Change activation shortcut and test it
+    - [ ] Left button highlight color
+    - [ ] Right button highlight color
+    - [ ] Opacity
+    - [ ] Radius
+    - [ ] Fade delay
+    - [ ] Fade duration
 
 ## VCM
  - [ ] Check "Hide toolbar when both camera and micrphone are unmuted" and verify that it works
