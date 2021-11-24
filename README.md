@@ -156,7 +156,7 @@ Last, we've been working on our engineering systems this month and into next. Th
 
 We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software. 
 
-[@AnonymousWP](https://github.com/AnonymousWP), [@Aaron-Junker](https://github.com/Aaron-Junker)l, [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@davidegiacometti](https://github.com/davidegiacometti), [@FLOAT4](https://github.com/FLOAT4), [@franky920920](https://github.com/franky920920), [@htcfreek](https://github.com/htcfreek), [@JacobDeuchert](https://github.com/JacobDeuchert), [@JeffersonQin](https://github.com/JeffersonQin), [@niels9001](https://github.com/niels9001), and [@rdeveen](https://github.com/rdeveen). 
+[@AnonymousWP](https://github.com/AnonymousWP), [@Aaron-Junker](https://github.com/Aaron-Junker), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@davidegiacometti](https://github.com/davidegiacometti), [@FLOAT4](https://github.com/FLOAT4), [@franky920920](https://github.com/franky920920), [@htcfreek](https://github.com/htcfreek), [@JacobDeuchert](https://github.com/JacobDeuchert), [@Jay-o-Way](https://github.com/jay-o-way) [@JeffersonQin](https://github.com/JeffersonQin), [@niels9001](https://github.com/niels9001), and [@rdeveen](https://github.com/rdeveen). 
 
 TODO FULL LIST
 
