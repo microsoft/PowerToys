@@ -60,18 +60,11 @@ jobs:
       selectOrConfig: config
       nugetConfigPath: .pipelines/release-nuget.config
       
-# call nuget.exe restore -PackagesDirectory . packages.config 
-  - task: NuGetCommand@2
-    displayName: NuGet restore telemetry package
-    inputs:
-      command: restore
-      selectOrConfig: config
-      nugetConfigPath: .pipelines/packages.config
-      
   - task: CmdLine@2
     displayName: Moving telem files over
     inputs:
       script: |
+        call nuget.exe restore -PackagesDirectory . packages.config || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "..\src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "..\src\common\Telemetry\TelemetryBase.cs" || exit /b 1
     
