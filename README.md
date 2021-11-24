@@ -42,7 +42,7 @@ This is our preferred method.
 Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which will be available for both Windows 11 and Windows 10.
 
 ### Via WinGet (Preview)
-Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). To install PowerToys, run the following command from the command line / PowerShell:
+Download PowerToys from [WinGet][winget-link]. To install PowerToys, run the following command from the command line / PowerShell:
 
 ```powershell
 winget install Microsoft.PowerToys -s winget
@@ -70,21 +70,11 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.51 - November 2021 Update
 
-```
-TODO WRITE INTRO
+The [v0.51 release cycle][github-current-release-work] introduces some new things regarding our mouse utilities.  First is we've added in a presentation mode helper to highlight your mouse when you click.  We've also added additional settings toward Find my mouse to enable more customization.
 
-The [v0.49 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F25) introduces exciting new updates primarily centered around modernizing PowerRename's UI, adding a brand new mouse utility, and merging Video Conference Mute into the stable releases!
+Next we've been focusing work on "Always on Top" system to help make any window you want to be the top most. A lot of thought is currently going into interaction models to make sure it 'feels' right for toggling as well as visualizing.
 
-PowerRename's new UI brings a refreshed experience that reflects the modern UI theming of Windows 11, along with helpful regular expression guidance and file formatting tips. 
-
-With the new mouse utility, PowerToys introduces functionality to quickly find your mouse position by double pressing the left <kbd>ctrl</kbd> key. This is ideal for large, high-resolution displays and low-vision users, with additional features and enhancements planned for future releases. Special thanks to [Raymond Chen](https://github.com/oldnewthing) for providing the base code PowerToys used to develop this feature. To learn more, check out our [Mouse Utilities documentation](https://aka.ms/PowerToysOverview_MouseUtilities) on Microsoft Docs!
-
-As Video Conference Mute becomes available in the stable releases, there are still known quirks that we are actively working to address. These bugs are [tracked on our GitHub](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+label%3A%22Product-Video+Conference+Mute%22), and we welcome any and all feedback as we work to isolate and resolve the cause.
-
-Color Picker's HEX format will no longer have the `#` character. This addresses issues with various color inputs that only accept six characters cutting off the last value. We apologize for any inconvenience this causes as we understand it impacts users who may prefer having `#` included. However, we believe this is the best solution while the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development. 
-
-Additional work in this release include stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
-```
+Last, we've been working on our engineering systems this month and into next. This work will improve our localization integration and our 'build farm' match our CI system far more.  Behind the scene work but very important work for working faster. 
 
 #### Highlights from v0.51
 
@@ -120,7 +110,7 @@ Additional work in this release include stability updates and optimizations, ins
 
 **PowerRename**
 - Improved rename performance!
-- Added keyboard excelerators with <kbd>Enter</kbd> and <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to execute renamings. Thanks [@niels9001](https://github.com/niels9001)!
+- Added keyboard excelerators with <kbd>Enter</kbd> and <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to execute rename. Thanks [@niels9001](https://github.com/niels9001)!
 - UI tweaks to now add number of items selected, grid-lines for improved readability, reduced font sizes & margins, and improved window resizing.
 - Fixed UI focus issues. Thanks [@niels9001](https://github.com/niels9001)!
 - Added default window width and height. Thanks [@niels9001](https://github.com/niels9001)!
@@ -149,7 +139,7 @@ Additional work in this release include stability updates and optimizations, ins
 - Investigated how to fully shift to HKCU vs HKLM.
 
 **Random helping out**
-- Spellcheck fix - Thanks [@franky920920](https://github.com/franky920920)!
+- Spell check fix - Thanks [@franky920920](https://github.com/franky920920)!
 - Fix a URL - Thanks [@JeffersonQin](https://github.com/JeffersonQin)!
 
 **Development relevant**
@@ -172,7 +162,7 @@ TODO FULL LIST
 
 #### What is being planned for v0.53
 
-For [v0.53][github-next-release-work], due to holidays, we'll be in a maintance sprint but here are some of the larger items:
+For [v0.53][github-next-release-work], due to holidays, we'll be in a maintenance sprint but here are some of the larger items:
 
 - Hope to add Always on Top into PowerToys.  We currently have a proof of concept ready.
 - We are working to heavily reduce / remove the UAC prompt over the next few releases on install. This is a big shift so it is spanning multiple releases so we can isolate issues if they do occur. Work is tracked in [#10126](https://github.com/microsoft/PowerToys/issues/10126)
@@ -196,6 +186,7 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [community-link]: COMMUNITY.md
 [github-release-link]: https://aka.ms/installPowerToys
 [microsoft-store-link]: https://aka.ms/getPowertoys
+[winget-link]: https://github.com/microsoft/winget-cli#installing-the-client
 [roadmap]: https://github.com/microsoft/PowerToys/wiki/Roadmap
 [privacy-link]: http://go.microsoft.com/fwlink/?LinkId=521839
 [vidConfOverview]: https://aka.ms/PowerToysOverview_VideoConference
@@ -204,3 +195,4 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F27
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F26
