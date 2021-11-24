@@ -6,7 +6,7 @@
 
 ## Build status
 
-| Architecture | Main | Stable | Installer |
+| Architecture | Main | Installer (Stable) | Installer (Main) |
 |--------------|------|--------|-----------|
 | x64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status for Installer](https://github-private.visualstudio.com/microsoft/_apis/build/status/CDPX/powertoys/powertoys-Windows-Official-master-Test?branchName=main)](https://github-private.visualstudio.com/microsoft/_build/latest?definitionId=61&branchName=main) |
 
@@ -55,9 +55,9 @@ There are [community driven install methods](./doc/unofficialInstallMethods.md) 
 
 We currently support the matrix below.
 
-| x64 | x86 | ARM64 |
-|:---:|:---:|:---:|
-| [Supported][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602) | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
+| x64 | ARM64 |
+|:---:|:---:|
+| [Supported][github-release-link] | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
 
 ## Contributing
 
@@ -95,13 +95,8 @@ Additional work in this release include stability updates and optimizations, ins
 
 #### Highlights from v0.51
 
-**General** 
-
-- Improvements to environment variable usage. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Update .NET to 3.1.20.
-- Fixed default settings window size to prevent it from opening offscreen. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Centralized process list in the BugReportTool.
-- Registry handling improvement for MSI and File Explorer add-ons.
+**Things to note**
+- We shifted our localization internal service and are working on adding automated integrations back in. 
 
 **PowerToys Awake**
 - Settings menu and sys-tray options are now in sync.
@@ -114,7 +109,7 @@ Additional work in this release include stability updates and optimizations, ins
 - New window switching functionality! Now users can assign multiple windows to a zone and cycle between them using the <kbd>Win</kbd> + <kbd>PgDn/PgUp</kbd> commands by default. Thanks [@FLOAT4](https://github.com/FLOAT4)!
 - Added functionality for zones to adopt system accent color and theme. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Added visual preview of zone appearance in settings menu. Thanks [@niels9001](https://github.com/niels9001)!
-- Fixed exception handler to resolve bug where FancyZones crashes on launch.
+- Fixed bug where FancyZones crashes on launch.
 
 **Image Resizer**
 - Fixed issue where resizing images creates empty folders.
@@ -122,11 +117,12 @@ Additional work in this release include stability updates and optimizations, ins
 - Fixed bug caused by Image Resizer receiving an unexpected property type or value. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
 
 **Mouse utilities**
-- New Mouse Highlighter functionality! When enabled, activate mouse highlighting with <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> by default to begin displaying visual cues on your display when either the left or right mouse buttons are clicked. 
+- Find My Mouse: Improved functionality to activate when user double click time configuration is set above 100ms.
+- Find My Mouse: Fixed display on all virtual desktops as opposed to only the virtual desktop where it was created.
+- Find My Mouse: New settings options to enable a lot more customization based on your feedback.
+- New Mouse Highlighter PowerToy! When enabled, activate mouse highlighting with <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> by default to begin displaying visual cues on your display when either the left or right mouse buttons are clicked.  There is a much more powerful tool called [SysInternal Zoomit](https://docs.microsoft.com/en-us/sysinternals/downloads/zoomit)
 
-![dragmouse](https://user-images.githubusercontent.com/9866362/142475413-77b00bae-bd28-42ae-a6c8-0dc4356e8525.gif)
-- Improved Find My Mouse functionality to activate when user double click time configuration is set above 100ms.
-- Fixed Find My Mouse to display on all virtual desktops as opposed to only the virtual desktop where it was created.
+![highlighter turned on while dragging mouse](https://user-images.githubusercontent.com/9866362/142475413-77b00bae-bd28-42ae-a6c8-0dc4356e8525.gif)
 - Minor UI tweaks for fluent icons, appearance, "Ctrl" usage, and utility descriptions. Thanks [@niels9001](https://github.com/niels9001)!
 
 **PowerRename**
@@ -146,6 +142,9 @@ Additional work in this release include stability updates and optimizations, ins
 **Shortcut Guide**
 - Added rounded corners to keys and tooltips, and system accent colors for desktop backdrop. Thanks [@niels9001](https://github.com/niels9001)!
 
+**Settings**
+- Fixed default settings window size to prevent it from opening offscreen. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
 **Video Conference Mute**
 - Minor UI tweaks for icon, clear button, and overlay image selection [#14248](https://github.com/microsoft/PowerToys/issues/14248). Thanks [@niels9001](https://github.com/niels9001)!
 
@@ -153,8 +152,8 @@ Additional work in this release include stability updates and optimizations, ins
 - Always on top prototype of being actively worked on.  Right now you hit a key-combo and it enables it.  We are investigating ways to highlight the window in some form as well.
 
 **Installer**
-- Investigated how to fully shift to WIX bootstrapper and remove custom
-- Investigated how to fully hsift to HKCU vs HKLM.
+- Investigated how to fully shift to WIX bootstrapper and remove custom boot strapper
+- Investigated how to fully shift to HKCU vs HKLM.
 
 **Random helping out**
 
@@ -162,8 +161,14 @@ Additional work in this release include stability updates and optimizations, ins
 - Fix a URL - Thanks [@JeffersonQin](https://github.com/JeffersonQin)!
 
 **Development relevant**
+
 - Our primary dev branch is now named `Main`.
 - Adjusting plugin folder structure for PT Run [#10796](10796)
+- Working on shifting our release pipeline onto same system that Windows Terminal uses.
+- Improvements to environment variable usage. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Update .NET to 3.1.20.
+- Centralized process list in the BugReportTool.
+- Registry handling improvement for MSI and File Explorer add-ons.
 
 **Community contributions**
 
@@ -177,10 +182,10 @@ TODO FULL LIST
 
 For [v0.53][github-next-release-work], due to holidays, we'll be in a maintance sprint but here are some of the larger items:
 
-- Hope to add Always on top into PowerToys
+- Hope to add Always on Top into PowerToys.  We currently have a proof of concept ready.
 - We are working to heavily reduce / remove the UAC prompt over the next few releases on install. This is a big shift so it is spanning multiple releases so we can isolate issues if they do occur. Work is tracked in [#10126](https://github.com/microsoft/PowerToys/issues/10126)
 - Update the PowerToys Build Pipeline to allow .NET 6 integration
-- Stability and bug fixes
+- Engineering Systems/Stability/Bug fixes
 
 ## PowerToys Community
 
