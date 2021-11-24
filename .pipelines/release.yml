@@ -50,6 +50,7 @@ jobs:
   - task: NuGetAuthenticate@0
     inputs:
       nuGetServiceConnections: PowerToysCDPxFeed
+# we may need to do this one by one based on the cmd files for restoring.
   - task: NuGetCommand@2
     displayName: NuGet restore all solutions
     inputs:
@@ -57,6 +58,11 @@ jobs:
       restoreSolution: '**/*.sln'
       selectOrConfig: config
       nugetConfigPath: .pipelines/release-nuget.config
+  - task: CmdLine@2
+    inputs:
+      script: 'move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "..\src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
+move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "..\src\common\Telemetry\TelemetryBase.cs" || exit /b 1' 
+    
 #  - task: TouchdownBuildTask@1
 #    displayName: Download Localization Files
 #    inputs:
