@@ -8,6 +8,7 @@
 #include <vector>
 #include <optional>
 #include <cassert>
+#include <sstream>
 
 #include "../logger/logger.h"
 #include "../utils/winapi_error.h"
