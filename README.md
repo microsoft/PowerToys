@@ -77,9 +77,10 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.51 - November 2021 Update
 
+```
 TODO WRITE INTRO
 
-```The [v0.49 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F25) introduces exciting new updates primarily centered around modernizing PowerRename's UI, adding a brand new mouse utility, and merging Video Conference Mute into the stable releases!
+The [v0.49 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F25) introduces exciting new updates primarily centered around modernizing PowerRename's UI, adding a brand new mouse utility, and merging Video Conference Mute into the stable releases!
 
 PowerRename's new UI brings a refreshed experience that reflects the modern UI theming of Windows 11, along with helpful regular expression guidance and file formatting tips. 
 
@@ -89,28 +90,67 @@ As Video Conference Mute becomes available in the stable releases, there are sti
 
 Color Picker's HEX format will no longer have the `#` character. This addresses issues with various color inputs that only accept six characters cutting off the last value. We apologize for any inconvenience this causes as we understand it impacts users who may prefer having `#` included. However, we believe this is the best solution while the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development. 
 
-Additional work in this release include stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.```
+Additional work in this release include stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
+```
 
-#### Highlights from v0.49
+#### Highlights from v0.51
 
-TODO 
-- UPDATE LINKS
-- ADD PROPER URLS FOR PEOPLE
+**General** 
+
+- Improvements to environment variable usage. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Update .NET to 3.1.20.
+- Fixed default settings window size to prevent it from opening offscreen. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Centralized process list in the BugReportTool.
+- Registry handling improvement for MSI and File Explorer add-ons.
+
+**PowerToys Awake**
+- Settings menu and sys-tray options are now in sync.
+
+**Color Picker**
+- New formats added to copy colors as a float or decimal value.
+- Adjust color window now accepts lower-case HEX codes.
+
+**FancyZones**
+- New window switching functionality! Now users can assign multiple windows to a zone and cycle between them using the <kbd>Win</kbd> + <kbd>PgDn/PgUp</kbd> commands by default. Thanks [@FLOAT4](https://github.com/FLOAT4)!
+- Added functionality for zones to adopt system accent color and theme. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Added visual preview of zone appearance in settings menu. Thanks [@niels9001](https://github.com/niels9001)!
+- Fixed exception handler to resolve bug where FancyZones crashes on launch.
+
+**Image Resizer**
+- Fixed issue where resizing images creates empty folders.
+- Added option to remove non-essential metadata. Helps significantly reduce the size of files. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
+- Fixed bug caused by Image Resizer receiving an unexpected property type or value. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
+
+**Mouse utilities**
+- New Mouse Highlighter functionality! When enabled, activate mouse highlighting with <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> by default to begin displaying visual cues on your display when either the left or right mouse buttons are clicked. 
+
+![dragmouse](https://user-images.githubusercontent.com/9866362/142475413-77b00bae-bd28-42ae-a6c8-0dc4356e8525.gif)
+- Improved Find My Mouse functionality to activate when user double click time configuration is set above 100ms.
+- Fixed Find My Mouse to display on all virtual desktops as opposed to only the virtual desktop where it was created.
+- Minor UI tweaks for fluent icons, appearance, "Ctrl" usage, and utility descriptions. Thanks [@niels9001](https://github.com/niels9001)!
+
+**PowerRename**
+- Improved rename performance!
+- Added keyboard excelerators with <kbd>Enter</kbd> and <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to execute renamings. Thanks [@niels9001](https://github.com/niels9001)!
+- UI tweaks to now add number of items selected, grid-lines for improved readability, reduced font sizes & margins, and improved window resizing.
+- Fixed UI focus issues. Thanks [@niels9001](https://github.com/niels9001)!
+- Added default window width and height. Thanks [@niels9001](https://github.com/niels9001)!
+- Added PowerRename event logging for BugReportTool
+
+**PowerToys Run**
+- New entries added for settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)! 
+- Added support for application URI handling like `mailto:` and  `ms-settings:`. Thanks [@franky920920](https://github.com/franky920920)!
+- Added DevContainer workspaces to search results of the VSCode Workspaces Plugin. Thanks [@JacobDeuchert](https://github.com/JacobDeuchert)!
+- Fix for crashing issue related to query destination array not being long enough.
+
+**Shortcut Guide**
+- Added rounded corners to keys and tooltips, and system accent colors for desktop backdrop. Thanks [@niels9001](https://github.com/niels9001)!
+
+**Video Conference Mute**
+- Minor UI tweaks for icon, clear button, and overlay image selection [#14248](https://github.com/microsoft/PowerToys/issues/14248). Thanks [@niels9001](https://github.com/niels9001)!
 
 **Prototype work**
 - Always on top prototype of being actively worked on.  Right now you hit a key-combo and it enables it.  We are investigating ways to highlight the window in some form as well.
-
-**FancyZones**
-- Overcome SetForegroundWindow restriction fix - Thanks [@FLOAT4]() 
-
-**Mouse utilities**
-- Presentation mouse highlighter mode introduced! <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd> to toggle.<br />![dragmouse](https://user-images.githubusercontent.com/9866362/142475413-77b00bae-bd28-42ae-a6c8-0dc4356e8525.gif)
-- Mouse modes play nicely with virtual desktops
-
-**Settings**
-- Settings UI tweaks [#14248](https://github.com/microsoft/PowerToys/issues/14248) - Thanks [@niels9001]()
-- Resizing regression (Multiple) - Thanks [@davidegiacometti]()
-- Live visual preview for FancyZones inside Settings []() - Thanks  Thanks [@niels9001]()
 
 **Installer**
 - Investigated how to fully shift to WIX bootstrapper and remove custom
@@ -118,8 +158,8 @@ TODO
 
 **Random helping out**
 
-- Spellcheck fix - Thanks [@franky920920]()
-- Fix a URL - Thanks [@JeffersonQin]()
+- Spellcheck fix - Thanks [@franky920920](https://github.com/franky920920)!
+- Fix a URL - Thanks [@JeffersonQin](https://github.com/JeffersonQin)!
 
 **Development relevant**
 - Our primary dev branch is now named `Main`.
@@ -127,7 +167,9 @@ TODO
 
 **Community contributions**
 
-We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
+We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software. 
+
+[@AnonymousWP](https://github.com/AnonymousWP), [@Aaron-Junker](https://github.com/Aaron-Junker)l, [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@davidegiacometti](https://github.com/davidegiacometti), [@FLOAT4](https://github.com/FLOAT4), [@franky920920](https://github.com/franky920920), [@htcfreek](https://github.com/htcfreek), [@JacobDeuchert](https://github.com/JacobDeuchert), [@JeffersonQin](https://github.com/JeffersonQin), [@niels9001](https://github.com/niels9001), and [@rdeveen](https://github.com/rdeveen). 
 
 TODO FULL LIST
 
