@@ -9,7 +9,7 @@
 | Architecture | Main | Installer (Stable) | Installer (Main) |
 |--------------|------|--------|-----------|
 | x64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status for Installer](https://github-private.visualstudio.com/microsoft/_apis/build/status/CDPX/powertoys/powertoys-Windows-Official-master-Test?branchName=main)](https://github-private.visualstudio.com/microsoft/_build/latest?definitionId=61&branchName=main) |
-| ARM64 | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) | | |
+| ARM64 | Not Supported | Currently investigating | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
 
 ## About
 
@@ -92,7 +92,7 @@ Additional work in this release include stability updates and optimizations, ins
 - We shifted our localization internal service and are working on adding automated integrations back in. 
 
 **PowerToys Awake**
-- Settings menu and sys-tray options are now in sync.
+- System tray and settings use same language for turning things on.
 
 **Color Picker**
 - New formats added to copy colors as a float or decimal value.
@@ -105,7 +105,7 @@ Additional work in this release include stability updates and optimizations, ins
 - Fixed bug where FancyZones crashes on launch.
 
 **Image Resizer**
-- Fixed issue where resizing images creates empty folders.
+- Fixed bug where resizing images creates empty folders.
 - Added option to remove non-essential metadata. Helps significantly reduce the size of files. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
 - Fixed bug caused by Image Resizer receiving an unexpected property type or value. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
 
@@ -113,10 +113,10 @@ Additional work in this release include stability updates and optimizations, ins
 - Find My Mouse: Improved functionality to activate when user double click time configuration is set above 100ms.
 - Find My Mouse: Fixed display on all virtual desktops as opposed to only the virtual desktop where it was created.
 - Find My Mouse: New settings options to enable a lot more customization based on your feedback.
+- Minor UI tweaks for fluent icons, appearance, "Ctrl" usage, and utility descriptions. Thanks [@niels9001](https://github.com/niels9001)!
 - New Mouse Highlighter PowerToy! When enabled, activate mouse highlighting with <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> by default to begin displaying visual cues on your display when either the left or right mouse buttons are clicked.  There is a much more powerful tool called [SysInternal Zoomit](https://docs.microsoft.com/en-us/sysinternals/downloads/zoomit)
 
 ![highlighter turned on while dragging mouse](https://user-images.githubusercontent.com/9866362/142475413-77b00bae-bd28-42ae-a6c8-0dc4356e8525.gif)
-- Minor UI tweaks for fluent icons, appearance, "Ctrl" usage, and utility descriptions. Thanks [@niels9001](https://github.com/niels9001)!
 
 **PowerRename**
 - Improved rename performance!
@@ -130,7 +130,7 @@ Additional work in this release include stability updates and optimizations, ins
 - New entries added for settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)! 
 - Added support for application URI handling like `mailto:` and  `ms-settings:`. Thanks [@franky920920](https://github.com/franky920920)!
 - Added DevContainer workspaces to search results of the VSCode Workspaces Plugin. Thanks [@JacobDeuchert](https://github.com/JacobDeuchert)!
-- Fix for crashing issue related to query destination array not being long enough.
+- Fixes for crashing issues.
 
 **Shortcut Guide**
 - Added rounded corners to keys and tooltips, and system accent colors for desktop backdrop. Thanks [@niels9001](https://github.com/niels9001)!
@@ -149,7 +149,6 @@ Additional work in this release include stability updates and optimizations, ins
 - Investigated how to fully shift to HKCU vs HKLM.
 
 **Random helping out**
-
 - Spellcheck fix - Thanks [@franky920920](https://github.com/franky920920)!
 - Fix a URL - Thanks [@JeffersonQin](https://github.com/JeffersonQin)!
 
