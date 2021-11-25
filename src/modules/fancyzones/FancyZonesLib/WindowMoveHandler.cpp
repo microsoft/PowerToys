@@ -101,12 +101,12 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
         {
             for (auto [keyMonitor, workArea] : workAreaMap)
             {
-                // Skip calling ShowZoneWindow for iter->second (m_draggedWindowWorkArea) since it
+                // Skip calling ShowZonesOverlay for iter->second (m_draggedWindowWorkArea) since it
                 // was already called in MoveSizeEnter
                 const bool moveSizeEnterCalled = workArea == m_draggedWindowWorkArea;
                 if (workArea && !moveSizeEnterCalled)
                 {
-                    workArea->ShowZoneWindow();
+                    workArea->ShowZonesOverlay();
                 }
             }
         }
@@ -119,7 +119,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
         {
             if (workArea)
             {
-                workArea->HideZoneWindow();
+                workArea->HideZonesOverlay();
             }
         }
     }
@@ -159,7 +159,7 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
             {
                 if (workArea)
                 {
-                    workArea->HideZoneWindow();
+                    workArea->HideZonesOverlay();
                 }
             }
         }
@@ -174,7 +174,7 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
                     m_draggedWindowWorkArea->ClearSelectedZones();
                     if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                     {
-                        m_draggedWindowWorkArea->HideZoneWindow();
+                        m_draggedWindowWorkArea->HideZonesOverlay();
                     }
 
                     m_draggedWindowWorkArea = iter->second;
@@ -279,7 +279,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
     {
         if (workArea)
         {
-            workArea->HideZoneWindow();
+            workArea->HideZonesOverlay();
         }
     }
 }

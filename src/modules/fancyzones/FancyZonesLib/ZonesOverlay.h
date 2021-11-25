@@ -13,7 +13,7 @@
 #include "FancyZones.h"
 #include "ZoneColors.h"
 
-class ZoneWindowDrawing
+class ZonesOverlay
 {
     struct DrawableRect
     {
@@ -60,8 +60,8 @@ class ZoneWindowDrawing
 
 public:
 
-    ~ZoneWindowDrawing();
-    ZoneWindowDrawing(HWND window);
+    ~ZonesOverlay();
+    ZonesOverlay(HWND window);
     void Hide();
     void Show();
     void Flash();
