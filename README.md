@@ -158,8 +158,6 @@ We'd like to directly mention certain contributors (in alphabetical order) for t
 
 [@AnonymousWP](https://github.com/AnonymousWP), [@Aaron-Junker](https://github.com/Aaron-Junker), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@davidegiacometti](https://github.com/davidegiacometti), [@FLOAT4](https://github.com/FLOAT4), [@franky920920](https://github.com/franky920920), [@htcfreek](https://github.com/htcfreek), [@JacobDeuchert](https://github.com/JacobDeuchert), [@Jay-o-Way](https://github.com/jay-o-way) [@JeffersonQin](https://github.com/JeffersonQin), [@niels9001](https://github.com/niels9001), and [@rdeveen](https://github.com/rdeveen). 
 
-TODO FULL LIST
-
 #### What is being planned for v0.53
 
 For [v0.53][github-next-release-work], due to holidays, we'll be in a maintenance sprint but here are some of the larger items:
