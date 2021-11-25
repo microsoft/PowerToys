@@ -16,12 +16,12 @@ namespace MonacoPreviewHandler
 
         private MonacoPreviewHandlerControl _monacoPreviewHandlerControl;
         private bool disposedValue;
-
+        
         public MonacoPreviewHandler()
         {
             Initialize();
         }
-        
+        [STAThread]
         public override void DoPreview()
         {
 
@@ -34,7 +34,7 @@ namespace MonacoPreviewHandler
 
             return _monacoPreviewHandlerControl;
         }
-        
+        [STAThread]
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -49,7 +49,7 @@ namespace MonacoPreviewHandler
                 disposedValue = true;
             }
         }
-        
+        [STAThread]
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method

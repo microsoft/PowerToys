@@ -33,14 +33,16 @@ namespace MonacoPreviewHandler
 
         // Filehandler class from FileHandler.cs
         private readonly FileHandler fileHandler = new FileHandler();
-
+        
         public MonacoPreviewHandlerControl()
         {
-
+            Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
         }
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
+            
+            Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
             if (!(dataSource is string filePath))
             {
                 throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandler)} must be a string but was a '{typeof(T)}'");
@@ -68,7 +70,7 @@ namespace MonacoPreviewHandler
             }
             base.DoPreview(dataSource);
         }
-
+        [STAThread]
         public string[] GetFile(string args)
         {
             // This function gets a file
@@ -80,9 +82,10 @@ namespace MonacoPreviewHandler
             returnValue[2] = args;
             return returnValue;
         }
-
+        [STAThread]
         private void WebView2Init(Object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
+            Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
             // This function sets the diiferent settings for the webview 
 
             // Checks if already navigated
@@ -106,7 +109,7 @@ namespace MonacoPreviewHandler
                 settings.IsStatusBarEnabled = false;
             }
         }
-
+        [STAThread]
         private void NavigationStarted(Object sender, CoreWebView2NavigationStartingEventArgs e)
         {
             // Prevents navigation if already one done to index.html
@@ -121,7 +124,7 @@ namespace MonacoPreviewHandler
                 WasNavigated = true;
             }
         }
-
+        
         public static string AssemblyDirectory
         {
             // Source: https://stackoverflow.com/a/283917/14774889
@@ -139,6 +142,7 @@ namespace MonacoPreviewHandler
         [STAThread]
         public async Task<WebView2> InitializeAsync(string fileName)
         {
+            Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
             // This function initializes the webview settings
             // Partely copied from https://weblog.west-wind.com/posts/2021/Jan/14/Taking-the-new-Chromium-WebView2-Control-for-a-Spin-in-NET-Part-1
 
