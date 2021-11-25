@@ -147,7 +147,7 @@ Last, we've been working on our engineering systems this month and into next. Th
 - Our primary dev branch is now named `Main`.
 - Adjusting plugin folder structure for PT Run [#10796](10796)
 - Working on shifting our release pipeline onto same system that Windows Terminal uses.
-- Improvements to environment variable usage. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Improvements to environment variable usage/update process in PT Run. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Update .NET to 3.1.20.
 - Centralized process list in the BugReportTool.
 - Registry handling improvement for MSI and File Explorer add-ons.
