@@ -145,7 +145,7 @@ Last, we've been working on our engineering systems this month and into next. Th
 **Development relevant**
 - Focusing on cleaning up backlog of issues and developing a method to aid in prioritizing. [@Dend](https://github.com/dend) and [@crutkas](https://github.com/crutkas) are partnering to see if we can develop one signal to see what we are calling 'centers of gravity'. Will be a useful tool.
 - Our primary dev branch is now named `Main`.
-- Adjusting plugin folder structure for PT Run [#10796](10796)
+- Adjusting plugin folder structure for PT Run [#10796](https://github.com/microsoft/PowerToys/issues/10796)
 - Working on shifting our release pipeline onto same system that Windows Terminal uses.
 - Improvements to environment variable usage/update process in PT Run. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Update .NET to 3.1.20.
