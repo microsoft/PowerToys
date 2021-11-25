@@ -2,6 +2,7 @@
 All:
 - Install
 - Functional
+- Localization
 - General
 - Color Picker
 - Awake
@@ -15,12 +16,14 @@ All:
 - Shortcut Guide
 - OOBE
 - Mouse Utils
+- VCM
 ```
 
 ```
 Group 1:
 - Install
 - Functional
+- Localization
 - General
 - Color Picker
 - FZ Editor
@@ -53,6 +56,7 @@ Group 3:
 ```
 Group 4:
 - Functional
+- Localization
 - Color Picker
 - Image Resizer
 - PowerRename
