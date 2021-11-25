@@ -42,7 +42,7 @@ namespace MonacoPreviewHandler
         public override void DoPreview<T>(T dataSource)
         {
             
-            Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
+            
             if (!(dataSource is string filePath))
             {
                 throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandler)} must be a string but was a '{typeof(T)}'");

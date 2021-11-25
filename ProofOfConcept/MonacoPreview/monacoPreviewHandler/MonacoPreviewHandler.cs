@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Common;
 using PreviewHandlerCommon;
 
@@ -24,7 +25,7 @@ namespace MonacoPreviewHandler
         [STAThread]
         public override void DoPreview()
         {
-
+            Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
                 _monacoPreviewHandlerControl.DoPreview(FilePath);
         }
         
