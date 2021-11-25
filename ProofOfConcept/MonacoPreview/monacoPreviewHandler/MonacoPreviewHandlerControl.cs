@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Threading;
+using Windows.UI.Core;
 using Common;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -23,10 +25,6 @@ namespace MonacoPreviewHandler
         private static readonly IPath Path = FileSystem.Path;
         private static readonly IFile File = FileSystem.File;
 
-        private CoreWebView2Environment webView2Environment;
-
-        private Microsoft.Web.WebView2.WinForms.WebView2 webView;
-
         // This variable prevents users from navigating
         private bool WasNavigated = false;
 
@@ -40,7 +38,7 @@ namespace MonacoPreviewHandler
         {
 
         }
-
+        [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
             if (!(dataSource is string filePath))
@@ -51,10 +49,11 @@ namespace MonacoPreviewHandler
             string[] file = GetFile(filePath);
             try
             {
-                this.InvokeOnControlThread(async () =>
-                {
-                    this.InitializeAsync(filePath).Wait();
-                });
+                // WebView2 in separate thread:
+                Task<WebView2> t = InitializeAsync(filePath);
+                t.Wait();
+                Controls.Add(t.Result);
+
             }
             catch(Exception e)
             {
@@ -89,7 +88,7 @@ namespace MonacoPreviewHandler
             // Checks if already navigated
             if (!WasNavigated)
             {
-                CoreWebView2Settings settings = webView.CoreWebView2.Settings;
+                CoreWebView2Settings settings = (sender as WebView2).CoreWebView2.Settings;
 
                 // Disable contextmenu
                 //settings.AreDefaultContextMenusEnabled = false;
@@ -137,7 +136,8 @@ namespace MonacoPreviewHandler
 
         const string VirtualHostName = "PowerToysLocalMonaco";
 
-        public async Task InitializeAsync(string fileName)
+        [STAThread]
+        public async Task<WebView2> InitializeAsync(string fileName)
         {
             // This function initializes the webview settings
             // Partely copied from https://weblog.west-wind.com/posts/2021/Jan/14/Taking-the-new-Chromium-WebView2-Control-for-a-Spin-in-NET-Part-1
@@ -154,21 +154,17 @@ namespace MonacoPreviewHandler
             html = html.Replace("[[PT_THEME]]", settings.GetTheme(ThemeListener.AppMode));
             html = html.Replace("[[PT_CODE]]", base64FileCode);
             html = html.Replace("[[PT_URL]]", VirtualHostName);
-
-            webView = new Microsoft.Web.WebView2.WinForms.WebView2();
+        
+            Microsoft.Web.WebView2.WinForms.WebView2 webView = new Microsoft.Web.WebView2.WinForms.WebView2();
             // Initialize WebView
-            webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(), "MonacoPreview"));
+            CoreWebView2Environment webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(), "MonacoPreview"));
 
             await webView.EnsureCoreWebView2Async(webView2Environment).ConfigureAwait(false);
             webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
             webView.NavigateToString(html);
             webView.NavigationCompleted += WebView2Init;
-            webView.CoreWebView2InitializationCompleted += addWebView2Control;
+            return webView;
         }
         
-        public void addWebView2Control(Object sender, CoreWebView2InitializationCompletedEventArgs e)
-        {
-            Controls.Add(webView);
-        }
     }
 }
