@@ -100,38 +100,38 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 ## PowerToys Run
 
  * Enable PT Run in settings and ensure that the hotkey brings up PT Run
-   - [ ] when PowerToys is running unelevated on start-up
-   - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+   - [x] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running as admin on start-up
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [ ] Program - launch a Win32 application
-   - [ ] Program - launch a Win32 application as admin
-   - [ ] Program - launch a packaged application
-   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] Windows Search - open a file on the disk.
-   - [ ] Windows Search - find a file and copy file path.
-   - [ ] Windows Search - find a file and open containing folder.
-   - [ ] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
-   - [ ] Folder - Search and open a sub-folder on entering the path.
-   - [ ] Uri - launch a web page on entering the uri.
-   - [ ] Window walker - Switch focus to a running window.
-   - [ ] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
-   - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] Registry - navigate through the registry tree and copy key path.
-   - [ ] System - test `lock`.
-   - [ ] System - test `empty recycle bin`.
-   - [ ] System - test `shutdown`.
+   - [x] Program - launch a Win32 application
+   - [x] Program - launch a Win32 application as admin
+   - [x] Program - launch a packaged application
+   - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] Windows Search - open a file on the disk.
+   - [x] Windows Search - find a file and copy file path.
+   - [x] Windows Search - find a file and open containing folder.
+   - [x] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
+   - [x] Folder - Search and open a sub-folder on entering the path.
+   - [x] Uri - launch a web page on entering the uri.
+   - [x] Window walker - Switch focus to a running window.
+   - [x] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
+   - [x] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] Registry - navigate through the registry tree and copy key path.
+   - [x] System - test `lock`.
+   - [x] System - test `empty recycle bin`.
+   - [x] System - test `shutdown`.
 
- - [ ] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
+ - [x] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
 
- - [ ] Test tab navigation.
+ - [x] Test tab navigation.
 
  * Test Plugin Manager
-   - [ ] Enable/disable plugins and verify changes are picked up by PT Run
-   - [ ] Change `Direct activation phrase` and verify changes are picked up by PT Run
-   - [ ] Change `Include in global result` and verify changes picked up by PT Run
-   - [ ] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
-   - [ ] Disable all plugins and verify the warning message is shown.
+   - [x] Enable/disable plugins and verify changes are picked up by PT Run
+   - [x] Change `Direct activation phrase` and verify changes are picked up by PT Run
+   - [x] Change `Include in global result` and verify changes picked up by PT Run
+   - [x] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
+   - [x] Disable all plugins and verify the warning message is shown.
 
 ## OOBE
  * Quit PowerToys
@@ -149,40 +149,40 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 
 Find My Mouse:
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press any other key and verify the overlay disappears.
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press a mouse button and verify the overlay disappears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press any other key and verify the overlay disappears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press a mouse button and verify the overlay disappears.
   * Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice.
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
   * Enable the "Do not activate on game mode" option. Start playing a game that uses CG native full screen.
-    - [ ] Verify the overlay no longer appears when you press Left Ctrl twice.
+    - [x] Verify the overlay no longer appears when you press Left Ctrl twice.
   * Disable the "Do not activate on game mode" option. Start playing the same game.
-    - [ ] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
+    - [x] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
   * Test the different settings and verify they apply:
-    - [ ] Overlay opacity
-    - [ ] Background color
-    - [ ] Spotlight color
-    - [ ] Spotlight radius
-    - [ ] Spotlight initial zoom (1x vs 9x will show the difference)
-    - [ ] Animation duration
+    - [x] Overlay opacity
+    - [x] Background color
+    - [x] Spotlight color
+    - [x] Spotlight radius
+    - [x] Spotlight initial zoom (1x vs 9x will show the difference)
+    - [x] Animation duration
 
 Mouse Highlighter:
   * Enable Mouse Highlighter. Then:
-    - [ ] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
-    - [ ] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [ ] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [ ] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
-    - [ ] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
+    - [x] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
+    - [x] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [x] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [x] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
+    - [x] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
   * Test the different settings and verify they apply:
-    - [ ] Change activation shortcut and test it
-    - [ ] Left button highlight color
-    - [ ] Right button highlight color
-    - [ ] Opacity
-    - [ ] Radius
-    - [ ] Fade delay
-    - [ ] Fade duration
+    - [x] Change activation shortcut and test it
+    - [x] Left button highlight color
+    - [x] Right button highlight color
+    - [x] Opacity
+    - [x] Radius
+    - [x] Fade delay
+    - [x] Fade duration
 
 ## Awake
  - [ ] Try out the features and see if they work, no list at this time.
