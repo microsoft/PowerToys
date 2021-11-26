@@ -14,7 +14,6 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
-                    <TextBlock x:Uid="MouseUtils_FindMyMouse_Description" Margin="0,0,0,8" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <controls:Setting x:Uid="MouseUtils_Enable_FindMyMouse">
                         <controls:Setting.Icon>
                             <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFindMyMouse.png" ShowAsMonochrome="False" />
@@ -89,7 +88,6 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
-                    <TextBlock x:Uid="MouseUtils_MouseHighlighter_Description" Margin="0,0,0,8" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <controls:Setting x:Uid="MouseUtils_Enable_MouseHighlighter">
                         <controls:Setting.Icon>
                             <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseHighlighter.png" ShowAsMonochrome="False" />

@@ -1721,13 +1721,13 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Find My Mouse</value>
     <comment>Refers to the utility name</comment>
   </data>
+	<data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
+    <value>Find My Mouse highlights the position of the cursor when pressing the left Ctrl key twice.</value>
+    <comment>Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
+  </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
     <value>Enable Find My Mouse</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
-  </data>
-	<data name="MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when pressing the left Ctrl key twice.</value>
-    <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
@@ -1761,13 +1761,13 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Mouse Highlighter</value>
     <comment>Refers to the utility name</comment>
   </data>
+	<data name="MouseUtils_MouseHighlighter.Description" xml:space="preserve">
+    <value>Mouse Highlighter mode will highlight mouse clicks.</value>
+    <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
+  </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Header" xml:space="preserve">
     <value>Enable Mouse Highlighter</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
-  </data>
-  <data name="MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
-    <value>Mouse Highlighter mode will highlight mouse clicks.</value>
-    <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
 	<data name="MouseUtils_MouseHighlighter_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
