@@ -1002,6 +1002,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FileExplorerPreview_AffectsAllUsers.Title" xml:space="preserve">
     <value>The settings on this page affect all users on the system</value>
   </data>
+  <data name="FileExplorerPreview_TogglePreviewPane.Text" xml:space="preserve">
+    <value>Please ensure that Preview Pane is open by toggling the view with Alt + P in File Explorer</value>
+  </data>
   <data name="FileExplorerPreview_RebootRequired.Title" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
   </data>
