@@ -35,6 +35,7 @@
                                    />
 
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane_GroupSettings">
+                <TextBlock x:Uid="FileExplorerPreview_TogglePreviewPane" Margin="0,0,0,8" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}"
