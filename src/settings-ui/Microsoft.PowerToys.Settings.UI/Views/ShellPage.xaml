@@ -128,7 +128,8 @@
                 </muxc:NavigationViewItem>
 
                 <muxc:NavigationViewItem x:Uid="Shell_VideoConference"
-                                         helpers:NavHelper.NavigateTo="views:VideoConferencePage">
+                                         helpers:NavHelper.NavigateTo="views:VideoConferencePage"
+                                         IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png"
                                     ShowAsMonochrome="False" />
