@@ -86,7 +86,7 @@
                                             <TextBlock x:Uid="EditTooltip"/>
                                         </ToolTipService.ToolTip>
                                         <Button.Flyout>
-                                            <Flyout>
+                                            <Flyout x:Uid="EditButton">
                                                 <StackPanel Spacing="16" Margin="0,12,0,0">
                                                     <TextBox
                                                         x:Uid="ImageResizer_Name"
