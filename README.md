@@ -70,7 +70,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.51 - November 2021 Update
 
-The [v0.51 release cycle][github-current-release-work] introduces some new things regarding our mouse utilities.  First is we've added in a presentation mode helper to highlight your mouse when you click.  We've also added additional settings toward Find my mouse to enable more customization.
+The [v0.51 release cycle][github-current-release-work] introduces some new things regarding our mouse utilities. First is we've added in a presentation mode helper to highlight your mouse when you click. We've also added additional settings toward Find my mouse to enable more customization.
 
 Next we've been focusing work on "Always on Top" system to help make any window you want to be the top most. A lot of thought is currently going into interaction models to make sure it 'feels' right for toggling as well as visualizing.
 
