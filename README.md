@@ -74,7 +74,7 @@ The [v0.51 release cycle][github-current-release-work] introduces some new thing
 
 Next we've been focusing work on "Always on Top" system to help make any window you want to be the top most. A lot of thought is currently going into interaction models to make sure it 'feels' right for toggling as well as visualizing.
 
-Last, we've been working on our engineering systems this month and into next. This work will improve our localization integration and our 'build farm' match our CI system far more.  Behind the scene work but very important work for working faster. 
+Last, we've been working on our engineering systems this month and into next. This work will improve our localization integration and our 'build farm' match our CI system far more. Behind the scene work but very important work for working faster. 
 
 #### Highlights from v0.51
 
