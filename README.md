@@ -9,7 +9,7 @@
 | Architecture | Main | Installer (Stable) | Installer (Main) |
 |--------------|------|--------|-----------|
 | x64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status for Installer](https://github-private.visualstudio.com/microsoft/_apis/build/status/CDPX/powertoys/powertoys-Windows-Official-master-Test?branchName=main)](https://github-private.visualstudio.com/microsoft/_build/latest?definitionId=61&branchName=main) |
-| ARM64 | Not Supported | Currently investigating | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
+| ARM64 | Currently investigating | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |  |
 
 ## About
 
@@ -30,8 +30,6 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 - [.NET Core 3.1.20 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.20-windows-x64-installer) or a newer 3.1.x runtime. The installer will handle this if not present.
 
 ### Via GitHub with EXE [Recommended]
-
-#### Stable version
 
  [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.51.0-x64.exe` to download the PowerToys installer.
 
@@ -109,7 +107,7 @@ Last, we've been working on our engineering systems this month and into next. Th
 ![highlighter turned on while dragging mouse](https://user-images.githubusercontent.com/9866362/142475413-77b00bae-bd28-42ae-a6c8-0dc4356e8525.gif)
 
 **PowerRename**
-- Improved rename performance!
+- Improved rename performance! This is now at parity (or better) with the prior version based on multiple tests.
 - Added keyboard accelerators with <kbd>Enter</kbd> and <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to execute rename. Thanks [@niels9001](https://github.com/niels9001)!
 - UI tweaks to now add number of items selected, grid-lines for improved readability, reduced font sizes & margins, and improved window resizing.
 - Fixed UI focus issues. Thanks [@niels9001](https://github.com/niels9001)!
@@ -143,7 +141,7 @@ Last, we've been working on our engineering systems this month and into next. Th
 - Fix a URL - Thanks [@JeffersonQin](https://github.com/JeffersonQin)!
 
 **Development relevant**
-- Focusing on cleaning up backlog of issues and developing a method to aid in prioritizing. [@Dend](https://github.com/dend) and [@crutkas](https://github.com/crutkas) are partnering to see if we can develop one signal to see what we are calling 'centers of gravity'. Will be a useful tool.
+- Focusing on cleaning up backlog of issues and developing a method to aid in prioritizing. [@Dend](https://github.com/dend) and [@crutkas](https://github.com/crutkas) are partnering to see if we can develop one signal to see what we are calling ['centers of gravity'](https://gravity-issues.netlify.app/).
 - Our primary dev branch is now named `Main`.
 - Adjusting plugin folder structure for PT Run [#10796](https://github.com/microsoft/PowerToys/issues/10796)
 - Working on shifting our release pipeline onto same system that Windows Terminal uses.
