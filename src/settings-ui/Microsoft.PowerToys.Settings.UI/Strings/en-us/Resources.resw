@@ -1728,7 +1728,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Enable Find My Mouse</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
-	<data name="MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
+  <data name="MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
     <value>Find My Mouse highlights the position of the cursor when pressing the left Ctrl key twice.</value>
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
@@ -1772,14 +1772,14 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Mouse Highlighter mode will highlight mouse clicks.</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
-	<data name="MouseUtils_MouseHighlighter_ActivationShortcut.Header" xml:space="preserve">
+  <data name="MouseUtils_MouseHighlighter_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-	<data name="MouseUtils_MouseHighlighter_ActivationShortcut.Description" xml:space="preserve">
+  <data name="MouseUtils_MouseHighlighter_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to turn on or off this mode</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
-	<data name="MouseUtils_MouseHighlighter_LeftButtonClickColor.Header" xml:space="preserve">
+  <data name="MouseUtils_MouseHighlighter_LeftButtonClickColor.Header" xml:space="preserve">
     <value>Left button highlight color</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_RightButtonClickColor.Header" xml:space="preserve">
@@ -1817,5 +1817,8 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
+  </data>
+  <data name="VideoConference_RunAsAdminRequired.Title" xml:space="preserve">
+    <value>You need to run as administrator to modify these settings.</value>
   </data>
 </root>
