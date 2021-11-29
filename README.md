@@ -162,7 +162,7 @@ We'd like to directly mention certain contributors (in alphabetical order) for t
 
 For [v0.53][github-next-release-work], due to holidays, we'll be in a maintenance sprint but here are some of the larger items:
 
-- Hope to add Always on Top into PowerToys.  We currently have a proof of concept ready.
+- Hope to add Always on Top into PowerToys. We currently have a proof of concept ready.
 - We are working to heavily reduce / remove the UAC prompt over the next few releases on install. This is a big shift so it is spanning multiple releases so we can isolate issues if they do occur. Work is tracked in [#10126](https://github.com/microsoft/PowerToys/issues/10126)
 - Update the PowerToys Build Pipeline to allow .NET 6 integration
 - Engineering Systems/Stability/Bug fixes
