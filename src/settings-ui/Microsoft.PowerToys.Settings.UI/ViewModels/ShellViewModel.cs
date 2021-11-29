@@ -38,7 +38,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set { Set(ref isBackEnabled, value); }
         }
 
+#pragma warning disable CA1822 // Mark members as static
         public bool IsVideoConferenceBuild
+#pragma warning restore CA1822 // Mark members as static
         {
             get
             {
@@ -49,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NativeMethods.FreeLibrary(mfHandle);
                 }
 
-                return this != null && File.Exists("modules/VideoConference/VideoConferenceModule.dll") && mfAvailable;
+                return true; // this != null && File.Exists("modules/VideoConference/VideoConferenceModule.dll") && mfAvailable;
             }
         }
 
