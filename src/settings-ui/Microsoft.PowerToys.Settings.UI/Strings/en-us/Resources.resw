@@ -1481,10 +1481,10 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Awake is a Windows tool designed to keep your PC awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that your PC does not go to sleep or turn off its screens.</value>
   </data>
   <data name="Oobe_Awake_HowToUse.Text" xml:space="preserve">
-    <value>Open {PowerToys Settings} and enable Awake</value>
+    <value>Open **PowerToys Settings** and enable Awake</value>
   </data>
   <data name="Oobe_Awake_TipsAndTricks.Text" xml:space="preserve">
-    <value>You can always change modes quickly by {right-clicking the Awake icon} in the system tray.</value>
+    <value>You can always change modes quickly by **right-clicking the Awake icon** in the system tray.</value>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Title" xml:space="preserve">
     <value>An error occurred trying to install this update:</value>

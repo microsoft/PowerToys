@@ -18,7 +18,6 @@
                            Style="{ThemeResource OobeSubtitleStyle}" />
 
                 <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_ShortcutGuide_HowToLaunch" />
-
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                     <Button x:Uid="Launch_ShortcutGuide" Style="{StaticResource AccentButtonStyle}" Click="Start_ShortcutGuide_Click"/>
                     <Button x:Uid="OOBE_Settings"

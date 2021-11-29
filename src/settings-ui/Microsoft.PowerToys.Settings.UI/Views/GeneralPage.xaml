@@ -188,6 +188,7 @@
                                 <controls:Setting x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{Binding Mode=OneWay, Path=IsElevated}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.Description>
                                         <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp"
+                                                         Visibility="{Binding Mode=OneWay, Path=IsElevated}"
                                                          x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
                                     </controls:Setting.Description>
                                     <controls:Setting.ActionContent>
@@ -198,7 +199,12 @@
                                           Severity="Warning"
                                           IsTabStop="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource NegationConverter}}"
                                           IsClosable="False"
-                                          IsOpen="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource NegationConverter}}"/>
+                                          IsOpen="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource NegationConverter}}">
+                                    <muxc:InfoBar.ActionButton>
+                                        <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp"
+                                                         x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
+                                    </muxc:InfoBar.ActionButton>
+                                </muxc:InfoBar>
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
