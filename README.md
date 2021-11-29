@@ -102,7 +102,7 @@ Last, we've been working on our engineering systems this month and into next. Th
 **Mouse utilities**
 - Find My Mouse: Improved functionality to activate when user double click time configuration is set above 100ms.
 - Find My Mouse: Fixed display on all virtual desktops as opposed to only the virtual desktop where it was created.
-- Find My Mouse: New settings options to enable a lot more customization based on your feedback.
+- Find My Mouse: New settings to enable a lot more customization based on your feedback.
 - Minor UI tweaks for fluent icons, appearance, <kbd>Ctrl</kbd> usage, and utility descriptions. Thanks [@niels9001](https://github.com/niels9001)!
 - New Mouse Highlighter PowerToy! When enabled, activate mouse highlighting with <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> by default to begin displaying visual cues on your display when either the left or right mouse buttons are clicked.  There is a much more powerful tool called [SysInternal ZoomIt](https://docs.microsoft.com/en-us/sysinternals/downloads/zoomit) that is very helpful as well.
 
