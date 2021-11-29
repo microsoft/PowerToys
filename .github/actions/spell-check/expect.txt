@@ -1414,6 +1414,7 @@ NESW
 netcore
 netcoreapp
 netcpl
+netlify
 netframework
 NETFX
 netsetup
