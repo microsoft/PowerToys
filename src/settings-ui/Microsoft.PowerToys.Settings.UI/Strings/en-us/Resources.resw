@@ -1544,6 +1544,9 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="EditButton.AutomationProperties.Name" xml:space="preserve">
     <value>Edit</value>
   </data>
+	<data name="ImageResizer_EditSize.AutomationProperties.Name" xml:space="preserve">
+    <value>Edit size</value>
+  </data>
   <data name="No" xml:space="preserve">
     <value>No</value>
     <comment>Label of a cancel button</comment>

@@ -222,12 +222,12 @@
                                                     </controls:Setting.ActionContent>
                                                 </controls:Setting>
                                                 <muxc:InfoBar Severity="Error" x:Uid="Run_NotAccessibleWarning"
-                                                              IsTabStop="True"
+                                                              IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                               IsOpen="{x:Bind ShowNotAccessibleWarning}"
                                                               IsClosable="False" />
                                                 <muxc:InfoBar Severity="Error"
                                                               x:Uid="Run_NotAllowedActionKeyword"
-                                                              IsTabStop="True"
+                                                              IsTabStop="{x:Bind ShowNotAllowedKeywordWarning}"
                                                               IsOpen="{x:Bind ShowNotAllowedKeywordWarning}"
                                                               IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />

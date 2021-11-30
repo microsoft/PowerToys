@@ -24,6 +24,7 @@
                 <Setter Property="Margin" Value="0,0,0,2" />
                 <Setter Property="Padding" Value="0,0,0,0" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="IsTabStop" Value="False"/>
             </Style>
 
             <Style TargetType="controls:CheckBoxWithDescriptionControl" BasedOn="{StaticResource DefaultCheckBoxStyle}" />

@@ -71,5 +71,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty SecondaryLinksHeaderProperty = DependencyProperty.Register("SecondaryLinksHeader", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty SecondaryLinksProperty = DependencyProperty.Register("SecondaryLinks", typeof(ObservableCollection<PageLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<PageLink>()));
         public static readonly DependencyProperty ModuleContentProperty = DependencyProperty.Register("ModuleContent", typeof(object), typeof(SettingsPageControl), new PropertyMetadata(new Grid()));
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            PrimaryLinksControl.Focus(FocusState.Programmatic);
+        }
     }
 }

@@ -39,7 +39,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Border Opacity="0.8" Grid.ColumnSpan="2" Grid.RowSpan="3" CornerRadius="2" >
-            <Image Source="{x:Bind WallpaperPath, Mode=OneWay}" Stretch="UniformToFill"/>
+            <Image Source="{x:Bind WallpaperPath, Mode=OneWay}" Stretch="UniformToFill" AutomationProperties.AccessibilityView="Raw"/>
         </Border>
      
         <Grid Background="{ThemeResource SystemControlAcrylicElementBrush}" Grid.Row="2"  Grid.ColumnSpan="2"/>

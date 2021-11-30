@@ -86,8 +86,8 @@
                                             <TextBlock x:Uid="EditTooltip"/>
                                         </ToolTipService.ToolTip>
                                         <Button.Flyout>
-                                            <Flyout>
-                                                <StackPanel Spacing="16" Margin="0,12,0,0">
+                                                <Flyout x:Uid="ImageResizer_EditSize">
+                                                    <StackPanel Spacing="16" Margin="0,12,0,0">
                                                     <TextBox
                                                         x:Uid="ImageResizer_Name"
                                                         Text="{x:Bind Path=Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 

@@ -162,9 +162,11 @@
 
                     <controls:Setting x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates"
                                       Margin="0,-6,0,0"
+                                      IsEnabled="{Binding AutoUpdatesEnabled}" 
                                       Visibility="{Binding Mode=OneWay, Path=IsAdmin, Converter={StaticResource VisibleIfTrueConverter}}">
-                        <ToggleSwitch  IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}"
-                                       IsEnabled="{Binding AutoUpdatesEnabled}" />
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch  IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
+                        </controls:Setting.ActionContent>
                     </controls:Setting>
                     </controls:SettingsGroup>
 
