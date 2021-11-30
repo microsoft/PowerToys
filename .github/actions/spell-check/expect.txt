@@ -450,6 +450,7 @@ desktopshorcutinstalled
 desktopwindowxamlsource
 dest
 DEU
+Deuchert
 devblogs
 devdocs
 devenum
@@ -1413,6 +1414,7 @@ NESW
 netcore
 netcoreapp
 netcpl
+netlify
 netframework
 NETFX
 netsetup
@@ -1711,6 +1713,7 @@ PWSTR
 pwsz
 pwtd
 qianlifeng
+Qin
 qit
 QITAB
 QITABENT
