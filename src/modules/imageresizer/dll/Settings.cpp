@@ -47,10 +47,11 @@ CSettings::CSettings()
 {
     std::wstring oldSavePath = PTSettingsHelper::get_module_save_folder_location(ImageResizerConstants::ModuleOldSaveFolderKey);
     std::wstring savePath = PTSettingsHelper::get_module_save_folder_location(ImageResizerConstants::ModuleSaveFolderKey);
-    if (std::filesystem::exists(oldSavePath))
+    std::error_code ec;
+    if (std::filesystem::exists(oldSavePath, ec))
     {
-        std::filesystem::copy(oldSavePath, savePath, std::filesystem::copy_options::recursive);
-        std::filesystem::remove_all(oldSavePath);
+        std::filesystem::copy(oldSavePath, savePath, std::filesystem::copy_options::recursive, ec);
+        std::filesystem::remove_all(oldSavePath, ec);
     }
 
     jsonFilePath = savePath + std::wstring(c_imageResizerDataFilePath);
