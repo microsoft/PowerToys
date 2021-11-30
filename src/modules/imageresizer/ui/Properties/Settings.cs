@@ -425,7 +425,7 @@ namespace ImageResizer.Properties
             string oldSettingsDir = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "ImageResizer");
             string settingsDir = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer");
 
-            if (_fileSystem.Directory.Exists(oldSettingsDir))
+            if (_fileSystem.Directory.Exists(oldSettingsDir) && !_fileSystem.Directory.Exists(settingsDir))
             {
                 _fileSystem.Directory.Move(oldSettingsDir, settingsDir);
             }
