@@ -25,7 +25,7 @@ PowerPreviewModule::PowerPreviewModule() :
     Logger::init(LogSettings::fileExplorerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
     Logger::info("Initializing PowerPreviewModule");
-    const bool installPerUser = false;
+    const bool installPerUser = true;
     m_fileExplorerModules.push_back({ .settingName = L"svg-previewer-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
                                       .registryChanges = getSvgPreviewHandlerChangeSet(installationDir, installPerUser) });
@@ -49,7 +49,7 @@ PowerPreviewModule::PowerPreviewModule() :
     m_fileExplorerModules.push_back({ .settingName = L"pdf-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PDF_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                                       .registryChanges = getPdfThumbnailHandlerChangeSet(installationDir, installPerUser) });
-    
+
     m_fileExplorerModules.push_back({ .settingName = L"gcode-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_GCODE_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                                       .registryChanges = getGcodeThumbnailHandlerChangeSet(installationDir, installPerUser) });
@@ -144,20 +144,12 @@ void PowerPreviewModule::enable()
 // Disable active preview handlers.
 void PowerPreviewModule::disable()
 {
-    // Check if the process is elevated in order to have permissions to modify HKLM registry
-    if (is_process_elevated(false))
+    for (auto& fileExplorerModule : m_fileExplorerModules)
     {
-        for (auto& fileExplorerModule : m_fileExplorerModules)
+        if (!fileExplorerModule.registryChanges.unApply())
         {
-            if (!fileExplorerModule.registryChanges.unApply())
-            {
-                Logger::error(L"Couldn't disable file explorer module {} during module disable() call", fileExplorerModule.settingName);
-            }
+            Logger::error(L"Couldn't disable file explorer module {} during module disable() call", fileExplorerModule.settingName);
         }
-    }
-    else
-    {
-        show_update_warning_message();
     }
 
     if (m_enabled)
@@ -197,9 +189,7 @@ void PowerPreviewModule::show_update_warning_message()
 
 void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues& settings)
 {
-    const bool isElevated = is_process_elevated(false);
     bool notifyShell = false;
-    bool updatesNeeded = false;
 
     for (auto& fileExplorerModule : m_fileExplorerModules)
     {
@@ -209,11 +199,6 @@ void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues&
         if (!toggle.has_value() || *toggle == fileExplorerModule.registryChanges.isApplied())
         {
             continue;
-        }
-        else
-        {
-            // Mark that updates were to the registry were needed
-            updatesNeeded = true;
         }
 
         // (Un)Apply registry changes depending on the new setting value
@@ -229,10 +214,6 @@ void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues&
             Logger::error(L"Couldn't {} file explorer module {} during apply_settings", *toggle ? L"enable " : L"disable", fileExplorerModule.settingName);
             Trace::PowerPreviewSettingsUpdateFailed(fileExplorerModule.settingName.c_str(), !*toggle, *toggle, true);
         }
-    }
-    if (!isElevated && updatesNeeded)
-    {
-        show_update_warning_message();
     }
     if (notifyShell)
     {

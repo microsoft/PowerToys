@@ -179,6 +179,7 @@ buf
 BUFSIZE
 bugreport
 Buid
+BUILDARCH
 buildcommand
 buildtools
 buildtransitive
@@ -219,6 +220,7 @@ cielab
 ciexyz
 CImage
 cinttypes
+CFDB
 cla
 clangformat
 CLASSDC
@@ -496,6 +498,7 @@ editorconfig
 EDITSHORTCUTS
 editshortcutswindow
 efgh
+EFBD
 EFile
 egistry
 ekus

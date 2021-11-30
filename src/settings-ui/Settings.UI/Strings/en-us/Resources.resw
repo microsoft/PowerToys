@@ -1006,9 +1006,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FileExplorerPreview_RunAsAdminRequired.Title" xml:space="preserve">
     <value>You need to run as administrator to modify these settings.</value>
   </data>
-  <data name="FileExplorerPreview_AffectsAllUsers.Title" xml:space="preserve">
-    <value>The settings on this page affect all users on the system</value>
-  </data>
   <data name="FileExplorerPreview_RebootRequired.Title" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
   </data>

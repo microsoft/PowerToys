@@ -106,13 +106,14 @@ inline registry::ChangeSet getGcodeThumbnailHandlerChangeSet(const std::wstring 
                                   L".gcode");
 }
 
-inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstring installationDir, const bool perUser)
+inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstring installationDir)
 {
-    return { getSvgPreviewHandlerChangeSet(installationDir, perUser),
-             getMdPreviewHandlerChangeSet(installationDir, perUser),
-             getPdfPreviewHandlerChangeSet(installationDir, perUser),
-             getGcodePreviewHandlerChangeSet(installationDir, perUser),
-             getSvgThumbnailHandlerChangeSet(installationDir, perUser),
-             getPdfThumbnailHandlerChangeSet(installationDir, perUser),
-             getGcodeThumbnailHandlerChangeSet(installationDir, perUser) };
+    constexpr bool PER_USER = true;
+    return { getSvgPreviewHandlerChangeSet(installationDir, PER_USER),
+             getMdPreviewHandlerChangeSet(installationDir, PER_USER),
+             getPdfPreviewHandlerChangeSet(installationDir, PER_USER),
+             getGcodePreviewHandlerChangeSet(installationDir, PER_USER),
+             getSvgThumbnailHandlerChangeSet(installationDir, PER_USER),
+             getPdfThumbnailHandlerChangeSet(installationDir, PER_USER),
+             getGcodeThumbnailHandlerChangeSet(installationDir, PER_USER) };
 }

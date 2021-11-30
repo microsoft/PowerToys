@@ -33,9 +33,6 @@ restore:
       name: 'Restore Installer'
       command: '.pipelines\restore-installer.cmd'
     - !!defaultcommand
-      name: 'Restore Installer BootStrapper'
-      command: '.pipelines\restore-bootstrapper.cmd'
-    - !!defaultcommand
       name: 'Restore Localization packages'
       command: '.pipelines\restore-localization.cmd'
     - !!defaultcommand
@@ -214,23 +211,20 @@ build:
           signing_options:
             sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
-      name: 'Build Power Toys Installer'
-      command: '.pipelines\build-installer.cmd'
+      name: 'Build Power Toys Installer MSI' # Need to do separately to sign dll before building installer
+      command: '.pipelines\build-installer-MSI.cmd'
       artifacts:
         - from: 'installer\PowerToysSetup\x64\Release'
-          to: 'Build_Installer_Output'
+          to: 'Build_Output'
           include:
             - 'PowerToysSetup-*.msi'
           signing_options:
             sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
-      name: 'Build Power Toys Bootstrapper'
-      command: '.pipelines\build-bootstrapper.cmd'
+      name: 'Build Power Toys Installer'
+      command: '.pipelines\build-installer.cmd'
       artifacts:
-        - to: 'Symbols'
-          include:
-            - 'installer\PowerToysBootstrapper\x64\Release\PowerToysSetup-*.pdb'
-        - from: 'installer\PowerToysBootstrapper\x64\Release'
+        - from: 'installer\PowerToysSetup\x64\Release'
           to: 'Build_Installer_Output'
           include:
             - 'PowerToysSetup-*.exe'
