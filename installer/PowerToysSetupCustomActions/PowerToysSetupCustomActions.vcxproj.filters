@@ -13,7 +13,7 @@
       <Filter>Telemetry</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="..\PowerToysBootstrapper\bootstrapper\RcResource.h" />
+    <ClInclude Include="RcResource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CustomAction.def" />

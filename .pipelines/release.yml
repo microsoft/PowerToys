@@ -211,7 +211,7 @@ jobs:
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
       vsVersion: 16.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: /p:CIBuild=true /target:PowerToysInstaller /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -231,7 +231,7 @@ jobs:
   - task: VSBuild@1
     displayName: Build Bootstrapper
     inputs:
-      solution: '**/installer/PowerToysBootstrapper/PowerToysBootstrapper.sln'
+      solution: '**/installer/PowerToysSetup.sln'
       vsVersion: 16.0
       msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
@@ -243,7 +243,7 @@ jobs:
     displayName: Sign Boostrapper
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
-      FolderPath: 'installer/PowerToysBootstrapper/$(BuildPlatform)\$(BuildConfiguration)'
+      FolderPath: 'installer/PowerToysSetup/$(BuildPlatform)\$(BuildConfiguration)'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'

@@ -114,7 +114,17 @@
       </Custom>-->
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
 
+      <Custom Action="LaunchPowerToys" After="InstallFinalize">NOT Installed</Custom>
+
     </InstallExecuteSequence>
+
+    <CustomAction
+      Id="LaunchPowerToys"                  
+      Execute="immediate" 
+      Impersonate="yes"
+      Return="asyncNoWait"
+      FileKey="PowerToys.exe"
+      ExeCommand="" />
 
     <CustomAction
       Id="TerminateProcesses"
@@ -125,7 +135,7 @@
 
     <CustomAction Id="SetRegisterPowerToysSchTaskParam"
                   Property="RegisterPowerToysSchTask"
-                  Value="[#PowerToys.exe]" />
+                  Value="[INSTALLFOLDER]PowerToys.exe" />
 
     <CustomAction Id="SetApplyModulesRegistryChangeSetsParam"
                     Property="ApplyModulesRegistryChangeSets"
@@ -231,7 +241,7 @@
 
     <CustomAction Id="ApplyModulesRegistryChangeSets"
                   Return="check"
-                  Impersonate="no"
+                  Impersonate="yes"
                   Execute="deferred"
                   BinaryKey="PTCustomActions"
                   DllEntry="ApplyModulesRegistryChangeSetsCA"
@@ -239,7 +249,7 @@
 
     <CustomAction Id="UnApplyModulesRegistryChangeSets"
                   Return="check"
-                  Impersonate="no"
+                  Impersonate="yes"
                   Execute="deferred"
                   BinaryKey="PTCustomActions"
                   DllEntry="UnApplyModulesRegistryChangeSetsCA"
@@ -681,12 +691,8 @@
      <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
      <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
       <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
-      <File SelfRegCost="1" Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x64.dll" KeyPath="yes">
-        <Class Id="{31AD75E9-8C3A-49C8-B9ED-5880D6B4A764}" Context="InprocServer32" ThreadingModel="apartment" Description="PowerToys VideoConference Mute" />
-      </File>
-      <File SelfRegCost="1" Source="$(var.BinX32Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x86.dll">
-        <Class Id="{31AD75E9-8C3A-49C8-B9ED-5880D6B4A732}" Context="InprocServer32" ThreadingModel="apartment" Description="PowerToys VideoConference Mute" />
-      </File>
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x64.dll" />
+      <File Source="$(var.BinX32Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x86.dll" />
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceModule.dll" />
      </Component>
     </DirectoryRef>
