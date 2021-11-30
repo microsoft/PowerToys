@@ -45,6 +45,7 @@ public:
     virtual void disable() override;
     virtual bool is_enabled() override;
     virtual void destroy() override;
+    virtual bool is_enabled_by_default() const override;
 
     virtual const wchar_t * get_key() override;
 

@@ -177,7 +177,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             }
         }
         // Start initial powertoys
-        start_initial_powertoys();
+        start_enabled_powertoys();
 
         Trace::EventLaunch(get_product_version(), isProcessElevated);
 
