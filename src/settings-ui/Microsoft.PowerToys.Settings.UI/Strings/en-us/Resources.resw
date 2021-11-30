@@ -190,6 +190,9 @@
   <data name="VideoConference_Camera.Header" xml:space="preserve">
     <value>Camera</value>
   </data>
+  <data name="VideoConference_Camera.Description" xml:space="preserve">
+    <value>To use this feature, make sure to select PowerToys VideoConference Mute as your camera source in your apps.</value>
+  </data>
   <data name="VideoConference_Microphone.Header" xml:space="preserve">
     <value>Microphone</value>
   </data>
@@ -993,17 +996,18 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Header" xml:space="preserve">
     <value>Icon Preview</value>
   </data>
-  <data name="FileExplorerPreview_PreviewPane_GroupSettings.Header" xml:space="preserve">
+  <data name="FileExplorerPreview_PreviewPane.Header" xml:space="preserve">
     <value>Preview Pane</value>
+  </data>
+  <data name="FileExplorerPreview_PreviewPane.Description" xml:space="preserve">
+    <value>Ensure that Preview Pane is open by toggling the view with Alt + P in File Explorer.</value>
+    <comment>Preview Pane and File Explorer are app/feature names in Windows. 'Alt + P' is a shortcut</comment>
   </data>
   <data name="FileExplorerPreview_RunAsAdminRequired.Title" xml:space="preserve">
     <value>You need to run as administrator to modify these settings.</value>
   </data>
   <data name="FileExplorerPreview_AffectsAllUsers.Title" xml:space="preserve">
     <value>The settings on this page affect all users on the system</value>
-  </data>
-  <data name="FileExplorerPreview_TogglePreviewPane.Text" xml:space="preserve">
-    <value>Please ensure that Preview Pane is open by toggling the view with Alt + P in File Explorer</value>
   </data>
   <data name="FileExplorerPreview_RebootRequired.Title" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
@@ -1724,13 +1728,13 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Find My Mouse</value>
     <comment>Refers to the utility name</comment>
   </data>
+  <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
+    <value>Find My Mouse highlights the position of the cursor when pressing the left Ctrl key twice.</value>
+    <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
+  </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
     <value>Enable Find My Mouse</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
-  </data>
-	<data name="MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when pressing the left Ctrl key twice.</value>
-    <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
@@ -1764,22 +1768,22 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Mouse Highlighter</value>
     <comment>Refers to the utility name</comment>
   </data>
+  <data name="MouseUtils_MouseHighlighter.Description" xml:space="preserve">
+    <value>Mouse Highlighter mode will highlight mouse clicks.</value>
+    <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
+  </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Header" xml:space="preserve">
     <value>Enable Mouse Highlighter</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
-    <value>Mouse Highlighter mode will highlight mouse clicks.</value>
-    <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
-  </data>
-	<data name="MouseUtils_MouseHighlighter_ActivationShortcut.Header" xml:space="preserve">
+  <data name="MouseUtils_MouseHighlighter_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-	<data name="MouseUtils_MouseHighlighter_ActivationShortcut.Description" xml:space="preserve">
+  <data name="MouseUtils_MouseHighlighter_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to turn on or off this mode</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
-	<data name="MouseUtils_MouseHighlighter_LeftButtonClickColor.Header" xml:space="preserve">
+  <data name="MouseUtils_MouseHighlighter_LeftButtonClickColor.Header" xml:space="preserve">
     <value>Left button highlight color</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_RightButtonClickColor.Header" xml:space="preserve">
