@@ -63,6 +63,42 @@ HRESULT getInstallFolder(MSIHANDLE hInstall, std::wstring& installationDir)
 LExit:
     return hr;
 }
+
+UINT __stdcall CleanupTargetFolderCA(MSIHANDLE hInstall)
+{
+    initSystemLogger();
+    HRESULT hr = S_OK;
+    std::wstring installationFolder;
+    std::error_code ec;
+    fs::path installPath;
+
+    hr = WcaInitialize(hInstall, "CleanupTargetFolder");
+    ExitOnFailure(hr, "Failed to initialize");
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+    installPath = installationFolder;
+    try
+    {
+        if (fs::exists(installPath, ec) && fs::is_directory(installPath, ec) && !fs::is_empty(installPath, ec))
+        {
+            for (auto entry : fs::directory_iterator{ installPath, ec })
+            {
+                fs::remove_all(entry.path(), ec);
+                if (ec)
+                {
+                    Logger::warn("CleanupTargetFolderCA error: {}", ec.message());
+                }
+            }
+        }
+    }
+    catch (std::exception& ex)
+    {
+        Logger::warn("CleanupTargetFolderCA error: {}", ex.what());
+    }
+LExit:
+    return hr;
+}
+
 UINT __stdcall ApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
 {
     initSystemLogger();

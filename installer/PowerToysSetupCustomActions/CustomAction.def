@@ -2,6 +2,7 @@ LIBRARY "PowerToysSetupCustomActions"
 
 EXPORTS
 	ApplyModulesRegistryChangeSetsCA
+	CleanupTargetFolderCA
 	CreateScheduledTaskCA
 	DetectPrevInstallPathCA
 	RemoveScheduledTasksCA

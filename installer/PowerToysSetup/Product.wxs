@@ -85,6 +85,12 @@
       <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
+
+      <Custom Action="SetCleanupTargetFolderParam" Before="CleanupTargetFolder" />
+      <Custom Action="CleanupTargetFolder" Before="InstallFiles" >
+          NOT Installed
+      </Custom>
+        
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
         NOT Installed and CREATESCHEDULEDTASK = 1
       </Custom>
@@ -134,6 +140,10 @@
                     Property="UnApplyModulesRegistryChangeSets"
                     Value="[INSTALLFOLDER]" />
 
+    <CustomAction Id="SetCleanupTargetFolderParam"
+                    Property="CleanupTargetFolder"
+                    Value="[INSTALLFOLDER]" />
+
         <!-- Needs to Impersonate="no" and Execute="deferred" in order to run elevated. -->
     <CustomAction Id="RegisterPowerToysSchTask"
                   Return="ignore"
@@ -165,12 +175,12 @@
                   DllEntry="UninstallEmbeddedMSIXCA"
                    />
 
-        <CustomAction Id="TelemetryLogInstallSuccess"
-                  Return="ignore"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="TelemetryLogInstallSuccessCA"
-                   />
+    <CustomAction Id="TelemetryLogInstallSuccess"
+                Return="ignore"
+                Impersonate="yes"
+                BinaryKey="PTCustomActions"
+                DllEntry="TelemetryLogInstallSuccessCA"
+                />
 
     <CustomAction Id="TelemetryLogInstallCancel"
                   Return="ignore"
@@ -242,6 +252,14 @@
                   Execute="deferred"
                   BinaryKey="PTCustomActions"
                   DllEntry="UnApplyModulesRegistryChangeSetsCA"
+                  />
+        
+    <CustomAction Id="CleanupTargetFolder"
+                    Return="check"
+                    Impersonate="no"
+                    Execute="deferred"
+                    BinaryKey="PTCustomActions"
+                    DllEntry="CleanupTargetFolderCA"
                   />
 
 
