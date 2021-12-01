@@ -92,6 +92,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
+                            <CheckBox Visibility="{x:Bind Highlight, Mode=OneWay}"></CheckBox>
 
                             <StackPanel Orientation="Horizontal" Grid.Column="0">
                                 <StackPanel MinWidth="{x:Bind Indentation}"/>
