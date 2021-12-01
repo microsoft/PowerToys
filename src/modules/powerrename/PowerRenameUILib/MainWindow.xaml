@@ -92,6 +92,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
+
                             <Grid HorizontalAlignment="Stretch" Grid.ColumnSpan="2" VerticalAlignment="Stretch" Background="Red" Visibility="{x:Bind Highlight, Mode=OneWay}" />
 
                             <Grid Grid.Column="0" HorizontalAlignment="Left" Margin="10,4,0,4">
@@ -129,7 +130,6 @@
                                 </Grid>
                                 <TextBlock Text="{x:Bind Renamed, Mode=OneWay}" Grid.Column="1" FontWeight="Bold" VerticalAlignment="Center" FontSize="12" />
                             </Grid>
-                    
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>

@@ -13,6 +13,7 @@ namespace winrt::PowerRenameUILib::implementation
         m_id{ id }, m_idStr{ std::to_wstring(id) }, m_original{ original }, m_renamed{ renamed }, m_type{ type }, m_depth{ depth }, m_checked{ checked }
     {
         m_imagePath = (m_type == static_cast<UINT>(ExplorerItemType::Folder)) ? folderImagePath : fileImagePath;
+        m_highlight = m_checked && !m_renamed.empty() ? Windows::UI::Xaml::Visibility::Visible : Windows::UI::Xaml::Visibility::Collapsed;
     }
 
     int32_t ExplorerItem::Id()
