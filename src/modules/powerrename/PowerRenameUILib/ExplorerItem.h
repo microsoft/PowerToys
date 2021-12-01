@@ -26,6 +26,7 @@ namespace winrt::PowerRenameUILib::implementation
         void Type(int32_t value);
         bool Checked();
         void Checked(bool value);
+        bool Highlight();
         Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::ExplorerItem> Children();
         void Children(Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::ExplorerItem> const& value);
         winrt::event_token PropertyChanged(Windows::UI::Xaml::Data::PropertyChangedEventHandler const& handler);

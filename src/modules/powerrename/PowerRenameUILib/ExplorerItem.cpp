@@ -50,6 +50,7 @@ namespace winrt::PowerRenameUILib::implementation
         {
             m_renamed = value;
             m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Renamed" });
+            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Highlight" });
         }
     }
 
@@ -87,7 +88,13 @@ namespace winrt::PowerRenameUILib::implementation
         {
             m_checked = value;
             m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Checked" });
+            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Highlight" });
         }
+    }
+
+    bool ExplorerItem::Highlight()
+    {
+        return m_checked && !m_renamed.empty();
     }
 
     winrt::event_token ExplorerItem::PropertyChanged(winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
