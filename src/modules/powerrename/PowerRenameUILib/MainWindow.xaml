@@ -87,13 +87,13 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:Name="ExplorerItemTemplate" x:DataType="local:ExplorerItem">
-                        <Grid Height="28">
+                        <Grid Height="28" Padding="0,0,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <Grid HorizontalAlignment="Stretch" Grid.ColumnSpan="2" VerticalAlignment="Stretch" Background="Red" Visibility="{x:Bind Highlight, Mode=OneWay}" />
+                            <Border HorizontalAlignment="Stretch" Grid.ColumnSpan="2" BorderThickness="0,0,0,1" Margin="0,0,0,-1" BorderBrush="{ThemeResource SystemAccentColor}" VerticalAlignment="Stretch" Background="{ThemeResource SystemAccentColorLight1}" Opacity="0.1" Visibility="{x:Bind Highlight, Mode=OneWay}" />
 
                             <Grid Grid.Column="0" HorizontalAlignment="Left" Margin="10,4,0,4">
                                     <Grid.ColumnDefinitions>
@@ -106,6 +106,8 @@
                              
                                     <CheckBox TabIndex="0"
                                           MinWidth="0"
+                                              Width="28"
+                                              Height="28"
                                           Grid.Column="1"
                                           XYFocusKeyboardNavigation="Enabled"
                                           Checked="Checked_ids"
@@ -128,8 +130,8 @@
                                            VerticalAlignment="Center"
                                            FontSize="12" />
                                 </Grid>
-                                <TextBlock Text="{x:Bind Renamed, Mode=OneWay}" Grid.Column="1" FontWeight="Bold" VerticalAlignment="Center" FontSize="12" />
-                            </Grid>
+                            <TextBlock Text="{x:Bind Renamed, Mode=OneWay}" Grid.Column="1" FontWeight="Bold" Foreground="{ThemeResource SystemAccentColor}" VerticalAlignment="Center" FontSize="12" />
+                        </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
