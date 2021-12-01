@@ -166,16 +166,6 @@ Definition of the interface used by the [`runner`](/src/runner) to manage the Po
 
 The common lib, as the name suggests, contains code shared by multiple PowerToys components and modules, e.g. [json parsing](/src/common/json.h) and [IPC primitives](/src/common/two_way_pipe_message_ipc.h).
 
-#### Options
+### [`Settings`](settingsv2/)
 
-This module has a setting to serve as an example for each of the currently implemented settings property:
-
-- BoolToggle property
-- IntSpinner property
-- String property
-- ColorPicker property
-- CustomAction property
-
-![Image of the Options](/doc/images/settings/example_settings.png)
-
-[installerArgWiki]: https://github.com/microsoft/PowerToys/wiki/Installer-arguments-for-exe
+Settings v2 is our current settings implementation.  Please head over to the dev docs that goes into the current settings system.
