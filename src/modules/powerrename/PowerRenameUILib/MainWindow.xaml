@@ -130,7 +130,12 @@
                                            VerticalAlignment="Center"
                                            FontSize="12" />
                                 </Grid>
-                            <TextBlock Text="{x:Bind Renamed, Mode=OneWay}" Grid.Column="1" FontWeight="Bold" Foreground="{ThemeResource SystemAccentColor}" VerticalAlignment="Center" FontSize="12" />
+                            <TextBlock Text="{x:Bind Renamed, Mode=OneWay}"
+                                       Grid.Column="1"
+                                       FontWeight="Bold"
+                                       Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                       VerticalAlignment="Center"
+                                       FontSize="12" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
