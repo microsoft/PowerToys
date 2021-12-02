@@ -145,6 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AlwaysOnTop.cpp" />
+    <ClCompile Include="FrameDrawer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -152,10 +153,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="WindowTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlwaysOnTop.h" />
+    <ClInclude Include="FrameDrawer.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="WindowTracker.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "AlwaysOnTop.h"
+
 #include <mmsystem.h> // sound
 #include <shellapi.h> // game mode
 
@@ -20,8 +21,10 @@ inline bool detect_game_mode()
 }
 
 AlwaysOnTop::AlwaysOnTop()
+    : m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase))
 {
     s_instance = this;
+
     Init();
     StartTrackingTopmostWindows();
 }
@@ -33,27 +36,27 @@ AlwaysOnTop::~AlwaysOnTop()
 
 void AlwaysOnTop::Init()
 {
-    HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-
     WNDCLASSEXW wcex{};
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.lpfnWndProc = WndProc_Helper;
-    wcex.hInstance = hinstance;
+    wcex.hInstance = m_hinstance;
     wcex.lpszClassName = TOOL_WINDOW_CLASS_NAME;
     RegisterClassExW(&wcex);
 
-    m_window = CreateWindowExW(WS_EX_TOOLWINDOW, TOOL_WINDOW_CLASS_NAME, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hinstance, this);
-    if (!m_window) {
+    m_window = CreateWindowExW(WS_EX_TOOLWINDOW, TOOL_WINDOW_CLASS_NAME, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
+    if (!m_window) 
+    {
         return;
     }
 
     RegisterHotKey(m_window, 1, MOD_CONTROL | MOD_NOREPEAT, 0x54 /* T */);
 
     // subscribe to windows events
-    std::array<DWORD, 3> events_to_subscribe = {
+    std::array<DWORD, 4> events_to_subscribe = {
+        EVENT_OBJECT_LOCATIONCHANGE,
         EVENT_SYSTEM_MOVESIZEEND,
         EVENT_SYSTEM_SWITCHEND,
-        EVENT_OBJECT_FOCUS
+        EVENT_OBJECT_DESTROY
     };
     for (const auto event : events_to_subscribe)
     {
@@ -94,7 +97,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         if (ResetTopmostWindow(window))
         {
-            auto iter = std::find(m_topmostWindows.begin(), m_topmostWindows.end(), window);
+            auto iter = m_topmostWindows.find(window);
             if (iter != m_topmostWindows.end())
             {
                 m_topmostWindows.erase(iter);
@@ -105,7 +108,15 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         if (SetTopmostWindow(window))
         {
-            m_topmostWindows.insert(m_topmostWindows.begin(), window);
+            auto tracker = std::make_unique<WindowTracker>(window);
+            if (!tracker->Init(m_hinstance))
+            {
+                // Failed to init tracker, reset topmost
+                ResetTopmostWindow(window);
+                return;
+            }
+
+            m_topmostWindows[window] = std::move(tracker);
         }
     }
 
@@ -143,14 +154,22 @@ void AlwaysOnTop::StartTrackingTopmostWindows()
     {
         if (IsTopmost(window)) 
         {
-            m_topmostWindows.push_back(window);
+            auto tracker = std::make_unique<WindowTracker>(window);
+            if (!tracker->Init(m_hinstance))
+            {
+                // Failed to init tracker, reset topmost
+                ResetTopmostWindow(window);
+                return;
+            }
+
+            m_topmostWindows[window] = std::move(tracker);
         }
     }
 }
 
 void AlwaysOnTop::ResetAll()
 {
-    for (HWND topWindow : m_topmostWindows)
+    for (const auto& [topWindow, tracker]: m_topmostWindows)
     {
         if (!ResetTopmostWindow(topWindow))
         {
@@ -191,27 +210,32 @@ bool AlwaysOnTop::ResetTopmostWindow(HWND window) const noexcept
 
 bool AlwaysOnTop::IsTracked(HWND window) const noexcept
 {
-    for (HWND topmostWindow : m_topmostWindows)
-    {
-        if (window == topmostWindow)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    auto iter = m_topmostWindows.find(window);
+    return (iter != m_topmostWindows.end());
 }
 
-// TODO: remove
 void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
+    auto iter = m_topmostWindows.find(data->hwnd);
+    if (iter == m_topmostWindows.end())
+    {
+        return;
+    }
+
     switch (data->event)
     {
-    case EVENT_SYSTEM_MOVESIZEEND: // moved or resized
-    case EVENT_SYSTEM_SWITCHEND: // alt-tab
-    case EVENT_OBJECT_FOCUS: // focused
+    case EVENT_OBJECT_LOCATIONCHANGE:
+    case EVENT_SYSTEM_MOVESIZEEND:
     {
-        
+        const auto& tracker = iter->second;
+        tracker->DrawFrame();
+    }
+    break;
+    case EVENT_OBJECT_DESTROY:
+    case EVENT_SYSTEM_SWITCHEND:
+    {
+        const auto& tracker = iter->second;
+        tracker->Hide();
     }
     break;
     default:
