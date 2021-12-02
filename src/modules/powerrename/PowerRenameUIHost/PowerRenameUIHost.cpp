@@ -116,8 +116,27 @@ void AppWindow::CreateAndShowWindow()
     LoadStringW(m_instance, IDS_APP_TITLE, title, ARRAYSIZE(title));
 
     // hardcoded width and height (1200 x 600) - with WinUI 3, it should auto-scale to the content
-    m_window = CreateWindowW(c_WindowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 1200, 600, nullptr, nullptr, m_instance, this);
+    int windowWidth = 1200;
+    int windowHeight = 600;
+    m_window = CreateWindowW(c_WindowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, windowWidth, windowHeight, nullptr, nullptr, m_instance, this);
     THROW_LAST_ERROR_IF(!m_window);
+
+    POINT cursorPosition{};
+    if (GetCursorPos(&cursorPosition))
+    {
+        HMONITOR hMonitor = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
+        MONITORINFOEX monitorInfo;
+        monitorInfo.cbSize = sizeof(MONITORINFOEX);
+        GetMonitorInfo(hMonitor, &monitorInfo);
+
+        SetWindowPos(m_window,
+                     HWND_TOP,
+                     monitorInfo.rcWork.left + (monitorInfo.rcWork.right - monitorInfo.rcWork.left - windowWidth) / 2,
+                     monitorInfo.rcWork.top + (monitorInfo.rcWork.bottom - monitorInfo.rcWork.top - windowHeight) / 2,
+                     0,
+                     0,
+                     SWP_NOSIZE);
+    }
 
     ShowWindow(m_window, SW_SHOWNORMAL);
     UpdateWindow(m_window);
