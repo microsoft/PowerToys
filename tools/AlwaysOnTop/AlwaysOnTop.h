@@ -1,5 +1,7 @@
 #pragma once
 
+#include "WindowTracker.h"
+
 // common
 struct WinHookEvent
 {
@@ -40,7 +42,8 @@ private:
     std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
 
     HWND m_window{ nullptr };
-    std::vector<HWND> m_topmostWindows;
+    HINSTANCE m_hinstance;
+    std::map<HWND, std::unique_ptr<WindowTracker>> m_topmostWindows;
 
     bool m_activateInGameMode = false;
 
