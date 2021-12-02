@@ -404,6 +404,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         result = -1;
     }
 
+    // Save settings on closing
+    auto general_settings = load_general_settings();
+    apply_general_settings(general_settings);
+
     // We need to release the mutexes to be able to restart the application
     if (msi_mutex)
     {
