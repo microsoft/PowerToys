@@ -14,6 +14,7 @@ using Common;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using monacoPreview;
+using Nito.AsyncEx.Synchronous;
 using PreviewHandlerCommon;
 using WK.Libraries.WTL;
 
@@ -33,16 +34,16 @@ namespace MonacoPreviewHandler
 
         // Filehandler class from FileHandler.cs
         private readonly FileHandler fileHandler = new FileHandler();
+
+        public Microsoft.Web.WebView2.WinForms.WebView2 webView;
         
         public MonacoPreviewHandlerControl()
         {
-            Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
         }
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
-            
-            
+            webView = new Microsoft.Web.WebView2.WinForms.WebView2();
             if (!(dataSource is string filePath))
             {
                 throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandler)} must be a string but was a '{typeof(T)}'");
@@ -52,9 +53,8 @@ namespace MonacoPreviewHandler
             try
             {
                 // WebView2 in separate thread:
-                Task<WebView2> t = InitializeAsync(filePath);
-                t.Wait();
-                Controls.Add(t.Result);
+                InitializeAsync(filePath).RunSynchronously();
+                Controls.Add(webView);
 
             }
             catch(Exception e)
@@ -85,7 +85,6 @@ namespace MonacoPreviewHandler
         [STAThread]
         private void WebView2Init(Object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
-            Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
             // This function sets the diiferent settings for the webview 
 
             // Checks if already navigated
@@ -96,7 +95,11 @@ namespace MonacoPreviewHandler
                 // Disable contextmenu
                 //settings.AreDefaultContextMenusEnabled = false;
                 // Disable developer menu
+#if DEBUG
+                settings.AreDevToolsEnabled = true;
+#else
                 settings.AreDevToolsEnabled = false;
+#endif
                 // Disable script dialogs (like alert())
                 settings.AreDefaultScriptDialogsEnabled = false;
                 // Enables JavaScript
@@ -140,9 +143,8 @@ namespace MonacoPreviewHandler
         const string VirtualHostName = "PowerToysLocalMonaco";
 
         [STAThread]
-        public async Task<WebView2> InitializeAsync(string fileName)
+        public async Task InitializeAsync(string fileName)
         {
-            Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
             // This function initializes the webview settings
             // Partely copied from https://weblog.west-wind.com/posts/2021/Jan/14/Taking-the-new-Chromium-WebView2-Control-for-a-Spin-in-NET-Part-1
 
@@ -159,15 +161,20 @@ namespace MonacoPreviewHandler
             html = html.Replace("[[PT_CODE]]", base64FileCode);
             html = html.Replace("[[PT_URL]]", VirtualHostName);
         
-            Microsoft.Web.WebView2.WinForms.WebView2 webView = new Microsoft.Web.WebView2.WinForms.WebView2();
+            
             // Initialize WebView
-            CoreWebView2Environment webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(), "MonacoPreview"));
+            Task<CoreWebView2Environment> t1 = new Task<CoreWebView2Environment> ( () =>
+            {
+                return CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(), "MonacoPreview")).Result;
+            });
+            t1.RunSynchronously();
 
-            await webView.EnsureCoreWebView2Async(webView2Environment).ConfigureAwait(false);
+            CoreWebView2Environment webView2Environment = t1.Result;
+
+            webView.EnsureCoreWebView2Async(webView2Environment).RunSynchronously();
             webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
             webView.NavigateToString(html);
             webView.NavigationCompleted += WebView2Init;
-            return webView;
         }
         
     }
