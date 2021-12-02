@@ -24,7 +24,7 @@ namespace ImageResizer.Properties
 
         // Used to synchronize access to the settings.json file
         private static Mutex _jsonMutex = new Mutex();
-        private static string _settingsPath = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "ImageResizer", "settings.json");
+        private static string _settingsPath = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer", "settings.json");
         private string _fileNameFormat;
         private bool _shrinkOnly;
         private int _selectedSizeIndex;
@@ -422,6 +422,14 @@ namespace ImageResizer.Properties
 
         public void Reload()
         {
+            string oldSettingsDir = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "ImageResizer");
+            string settingsDir = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer");
+
+            if (_fileSystem.Directory.Exists(oldSettingsDir) && !_fileSystem.Directory.Exists(settingsDir))
+            {
+                _fileSystem.Directory.Move(oldSettingsDir, settingsDir);
+            }
+
             _jsonMutex.WaitOne();
             if (!_fileSystem.File.Exists(SettingsPath))
             {

@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ImageResizerSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "ImageResizer";
+        public const string ModuleName = "Image Resizer";
 
         [JsonPropertyName("properties")]
         public ImageResizerProperties Properties { get; set; }
