@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
     <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
-    <AssemblyTitle>ColorPickerUI</AssemblyTitle>
+    <AssemblyTitle>PowerToys ColorPicker</AssemblyTitle>
+    <Company>Microsoft Corporation</Company>
     <AssemblyDescription>PowerToys ColorPicker</AssemblyDescription>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
