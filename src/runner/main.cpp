@@ -146,7 +146,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/Launcher/Microsoft.Launcher.dll",
             L"modules/PowerRename/PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.dll",
-            L"modules/ColorPicker/ColorPicker.dll",
+            L"modules/ColorPicker/PowerToys.ColorPicker.dll",
             L"modules/Awake/PowerToys.AwakeModuleInterface.dll",
             L"modules/MouseUtils/FindMyMouse.dll" ,
             L"modules/MouseUtils/MouseHighlighter.dll"

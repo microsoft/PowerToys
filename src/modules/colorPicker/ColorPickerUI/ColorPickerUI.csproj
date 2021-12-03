@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
     <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
-    <AssemblyTitle>PowerToys ColorPicker</AssemblyTitle>
+    <AssemblyTitle>PowerToys.ColorPickerUI</AssemblyTitle>
     <Company>Microsoft Corporation</Company>
     <AssemblyDescription>PowerToys ColorPicker</AssemblyDescription>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
@@ -20,7 +20,7 @@
     <ProjectGuid>{BA58206B-1493-4C75-BFEA-A85768A1E156}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>ColorPicker</RootNamespace>
-    <AssemblyName>ColorPickerUI</AssemblyName>
+    <AssemblyName>PowerToys.ColorPickerUI</AssemblyName>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
