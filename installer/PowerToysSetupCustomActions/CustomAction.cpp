@@ -944,7 +944,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.Awake.exe",
         L"PowerToys.FancyZones.exe",
         L"Microsoft.PowerToys.Settings.UI.exe",
-        L"FancyZonesEditor.exe",
+        L"PowerToys.FancyZonesEditor.exe",
         L"PowerToys.ColorPickerUI.exe",
         L"PowerToys.exe"
     };

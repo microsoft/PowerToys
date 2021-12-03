@@ -481,11 +481,11 @@
     <!-- FancyZone -->
     <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesModuleInterface.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.deps.json" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesModuleInterface.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesEditor.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesEditor.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesEditor.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesEditor.exe" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZones.exe" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ControlzEx.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Xaml.Behaviors.dll" />
@@ -1041,7 +1041,7 @@
                     <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerLauncher.resources.dll" />
                 </Component>
                 <Component Id="FancyZonesEditor_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FancyZonesInstallFolder">
-                    <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\FancyZonesEditor.resources.dll" />
+                    <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\PowerToys.FancyZonesEditor.resources.dll" />
                 </Component>
                 <Component Id="ImageResizer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ImageResizerInstallFolder">
                     <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\ImageResizer.resources.dll" />

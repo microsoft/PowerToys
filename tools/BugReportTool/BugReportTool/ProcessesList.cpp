@@ -7,7 +7,7 @@ std::vector<std::wstring> processes =
     L"PowerToys.Settings.exe",
     L"PowerToys.ColorPickerUI.exe",
     L"PowerToys.Awake.exe",
-    L"FancyZonesEditor.exe",
+    L"PowerToys.FancyZonesEditor.exe",
     L"PowerToys.FancyZones.exe",
     L"PowerToys.KeyboardManagerEngine.exe",
     L"PowerToys.KeyboardManagerEditor.exe",

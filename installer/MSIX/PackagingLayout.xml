@@ -9,7 +9,7 @@
         <File DestinationPath="PowerToys.exe" SourcePath="..\..\x64\Release\PowerToys.exe"/>
         <File DestinationPath="PowerToysSettings.exe" SourcePath="..\..\x64\Release\PowerToysSettings.exe"/>
 
-        <File DestinationPath="modules\FancyZonesEditor.exe" SourcePath="..\..\x64\Release\modules\FancyZonesEditor.exe"/>
+        <File DestinationPath="modules\PowerToys.FancyZonesEditor.exe" SourcePath="..\..\x64\Release\modules\PowerToys.FancyZonesEditor.exe"/>
         <File DestinationPath="modules\ControlzEx.dll" SourcePath="..\..\x64\Release\modules\ControlzEx.dll"/>
         <File DestinationPath="modules\fancyzones.dll" SourcePath="..\..\x64\Release\modules\fancyzones.dll"/>
         <File DestinationPath="modules\MahApps.Metro.dll" SourcePath="..\..\x64\Release\modules\MahApps.Metro.dll"/>
@@ -42,7 +42,7 @@
         <File DestinationPath="modules\HtmlAgilityPack.dll" SourcePath="..\..\x64\Release\modules\HtmlAgilityPack.dll"/>
         <File DestinationPath="registry.dat" SourcePath="registry.dat"/>
 
-        <File DestinationPath="modules\FancyZonesEditor.exe.config" SourcePath="..\..\x64\Release\modules\FancyZonesEditor.exe.config"/>
+        <File DestinationPath="modules\PowerToys.FancyZonesEditor.exe.config" SourcePath="..\..\x64\Release\modules\PowerToys.FancyZonesEditor.exe.config"/>
 
         <File DestinationPath="Notifications.dll" SourcePath="..\..\x64\Release\Notifications.dll"/>
 
