@@ -7,7 +7,7 @@ class VirtualDesktop
 {
 public:
     VirtualDesktop(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback);
-    ~VirtualDesktop() = default;
+    ~VirtualDesktop();
 
     inline bool IsVirtualDesktopIdSavedInRegistry(GUID id) const
     {
