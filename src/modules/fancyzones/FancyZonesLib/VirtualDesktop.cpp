@@ -12,31 +12,6 @@ namespace NonLocalizable
     const wchar_t RegKeyVirtualDesktopsFromSession[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\%d\\VirtualDesktops";
 }
 
-const CLSID CLSID_ImmersiveShell = { 0xC2F03A33, 0x21F5, 0x47FA, 0xB4, 0xBB, 0x15, 0x63, 0x62, 0xA2, 0xF2, 0x39 };
-
-IServiceProvider* GetServiceProvider()
-{
-    IServiceProvider* provider{ nullptr };
-    if (FAILED(CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_LOCAL_SERVER, __uuidof(provider), (PVOID*)&provider)))
-    {
-        Logger::error("Failed to get ServiceProvider for VirtualDesktopManager");
-        return nullptr;
-    }
-    return provider;
-}
-
-IVirtualDesktopManager* GetVirtualDesktopManager()
-{
-    IVirtualDesktopManager* manager{ nullptr };
-    IServiceProvider* serviceProvider = GetServiceProvider();
-    if (serviceProvider == nullptr || FAILED(serviceProvider->QueryService(__uuidof(manager), &manager)))
-    {
-        Logger::error("Failed to get VirtualDesktopManager");
-        return nullptr;
-    }
-    return manager;
-}
-
 std::optional<GUID> NewGetCurrentDesktopId()
 {
     wil::unique_hkey key{};
@@ -99,9 +74,21 @@ HKEY GetVirtualDesktopsRegKey()
 
 VirtualDesktop::VirtualDesktop(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback) :
     m_vdInitCallback(vdInitCallback),
-    m_vdUpdatedCallback(vdUpdatedCallback),
-    m_vdManager(GetVirtualDesktopManager())
+    m_vdUpdatedCallback(vdUpdatedCallback)
 {
+    auto res = CoCreateInstance(CLSID_VirtualDesktopManager, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&m_vdManager));
+    if (FAILED(res))
+    {
+        Logger::error("Failed to create VirtualDesktopManager instance");
+    }
+}
+
+VirtualDesktop::~VirtualDesktop()
+{
+    if (m_vdManager)
+    {
+        m_vdManager->Release();
+    }
 }
 
 void VirtualDesktop::Init()
