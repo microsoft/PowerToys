@@ -73,7 +73,7 @@ build:
           include:
             - 'PowerToys.ActionRunner.exe'
             - 'PowerToys.Update.exe'
-            - 'BackgroundActivatorDLL.dll'
+            - 'PowerToys.BackgroundActivatorDLL.dll'
             - 'Notifications.dll'
             - 'os-detection.dll'
             - 'PowerToys.exe'

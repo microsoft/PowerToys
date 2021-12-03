@@ -417,7 +417,7 @@
         </RegistryKey>
       </Component>
       <Component Id="BackgroundActivator_dll" Guid="23B25EE4-BCA2-45DF-BBCD-82FBDF01C5AB" Win64="yes">
-        <File Id="BackgroundActivatorDLL.dll" KeyPath="yes" Checksum="yes" />
+        <File Id="PowerToys.BackgroundActivatorDLL.dll" KeyPath="yes" Checksum="yes" />
       </Component>
       <Component Id="PowerToys_ActionRunner_exe" Guid="626ABB17-16F0-4007-9A58-6998724A5E14" Win64="yes">
         <File Id="PowerToys.ActionRunner.exe" KeyPath="yes" Checksum="yes" />
