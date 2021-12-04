@@ -1544,7 +1544,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="EditButton.AutomationProperties.Name" xml:space="preserve">
     <value>Edit</value>
   </data>
-	<data name="ImageResizer_EditSize.AutomationProperties.Name" xml:space="preserve">
+  <data name="ImageResizer_EditSize.AutomationProperties.Name" xml:space="preserve">
     <value>Edit size</value>
   </data>
   <data name="No" xml:space="preserve">
@@ -1824,5 +1824,9 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail.Header" xml:space="preserve">
+    <value>Enable Gcode (.gcode) thumbnails</value>
+    <comment>Do you want this feature on / off</comment>
   </data>
 </root>

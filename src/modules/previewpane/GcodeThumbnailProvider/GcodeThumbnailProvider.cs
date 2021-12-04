@@ -16,7 +16,7 @@ using Common.Utilities;
 namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
 {
     /// <summary>
-    /// GCode Thumbnail Provider.
+    /// Gcode Thumbnail Provider.
     /// </summary>
     [Guid("BFEE99B4-B74D-4348-BCA5-E757029647FF")]
     [ClassInterface(ClassInterfaceType.None)]

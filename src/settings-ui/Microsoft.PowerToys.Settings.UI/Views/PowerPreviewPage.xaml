@@ -77,6 +77,13 @@
                                           IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail" Icon="&#xE81E;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODEThumbnailIsEnabled}"
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                 </controls:SettingsGroup>
                 
             </StackPanel>
