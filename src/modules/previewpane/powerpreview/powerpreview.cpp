@@ -45,6 +45,10 @@ PowerPreviewModule::PowerPreviewModule() :
     m_fileExplorerModules.push_back({ .settingName = L"pdf-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PDF_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                                       .registryChanges = getPdfThumbnailHandlerChangeSet(installationDir, installPerUser) });
+    
+    m_fileExplorerModules.push_back({ .settingName = L"gcode-thumbnail-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_GCODE_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
+                                      .registryChanges = getGcodeThumbnailHandlerChangeSet(installationDir, installPerUser) });
 
     try
     {

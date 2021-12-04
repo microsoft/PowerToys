@@ -177,4 +177,7 @@
   <data name="Pdf_Thumbnail_Provider_Settings_Description" xml:space="preserve">
     <value>Pdf Thumbnail Provider</value>
   </data>
+  <data name="Gcode_Thumbnail_Provider_Settings_Description" xml:space="preserve">
+    <value>Gcode Thumbnail Provider</value>
+  </data>
 </root>
