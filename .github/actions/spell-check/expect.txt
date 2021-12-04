@@ -696,6 +696,7 @@ Gamebar
 GBs
 GCLP
 gcnew
+gcode
 gdi
 gdiplus
 GDISCALED

@@ -12,6 +12,7 @@ ignore$
 \.bmp$
 \.dat$
 \.dll$
+\.gcode$
 \.gif$
 \.gitignore$
 \.ico$
