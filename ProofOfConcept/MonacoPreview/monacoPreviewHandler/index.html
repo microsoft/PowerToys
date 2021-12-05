@@ -15,9 +15,6 @@
 
 		var base64code = "[[PT_CODE]]";
 		var code = [atob(base64code)].join('\n');
-
-		//URL for accessibility help
-		accessibilityHelpUrl = "";
 	</script>
 	<!-- Set browser to Edge-->
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -59,7 +56,6 @@
 			value: code, // Sets content of the editor
 			language: lang, // Sets language fof the code
 			readOnly: true, // Sets to readonly
-			accessibilityHelpUrl: accessibilityHelpUrl, // Sets the url for accessibility help
 			contextmenu: false, // Disable context menu
 			theme: theme, // Sets editor theme
 			minimap: {enabled: false}, // Disables minimap

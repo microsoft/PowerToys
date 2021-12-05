@@ -20,7 +20,7 @@ namespace MonacoPreviewHandler
         public readonly long maxFileSize = 10000; 
         
         // String which is displayed if the file is too big
-        public readonly string maxFileSizeErr = "This file is too big to display.<br />Max file size: 10KB";
+        public readonly string maxFileSizeErr = "This file is too big to display.\nMax file size: 10KB";
         
         // Returns the theme that should be used
         public String GetTheme(ThemeListener.ThemeModes t)
