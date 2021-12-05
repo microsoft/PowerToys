@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO.Abstractions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -11,6 +12,7 @@ using System.Windows.Forms;
 using System.Windows.Threading;
 using Windows.UI.Core;
 using Common;
+using Common.ComInterlop;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using monacoPreview;
@@ -36,6 +38,9 @@ namespace MonacoPreviewHandler
         private readonly FileHandler fileHandler = new FileHandler();
 
         public Microsoft.Web.WebView2.WinForms.WebView2 webView;
+        private CoreWebView2Environment webView2Environment;
+
+        private Label _loading;
         
         public MonacoPreviewHandlerControl()
         {
@@ -43,34 +48,87 @@ namespace MonacoPreviewHandler
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
+            InitializeLoadingScreen();
             webView = new Microsoft.Web.WebView2.WinForms.WebView2();
             if (!(dataSource is string filePath))
             {
                 throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandler)} must be a string but was a '{typeof(T)}'");
             }
+            
 
+            
             string[] file = GetFile(filePath);
             try
             {
                 // WebView2 in separate thread:
-                InitializeAsync(filePath).RunSynchronously();
-                Controls.Add(webView);
+                InvokeOnControlThread( () =>
+                {
+                    ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter webView2EnvironmentAwaiter = CoreWebView2Environment.CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") + "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MonacoPreview-Temp").ConfigureAwait(true).GetAwaiter();
+                    webView2EnvironmentAwaiter.OnCompleted(() =>
+                    {
+                        InvokeOnControlThread(async () =>
+                        {
+                            webView2Environment = webView2EnvironmentAwaiter.GetResult();
+                            var vsCodeLangSet = fileHandler.GetLanguage(Path.GetExtension(filePath).TrimStart('.'));
+                            var fileContent = File.ReadAllText(filePath);
+                            var base64FileCode =
+                                Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
+
+                            // prepping index html to load in
+                            var html = File.ReadAllText(AssemblyDirectory + "\\index.html").Replace("\t", "");
+
+                            html = html.Replace("[[PT_LANG]]", vsCodeLangSet);
+                            html = html.Replace("[[PT_WRAP]]", settings.wrap ? "1" : "0");
+                            html = html.Replace("[[PT_THEME]]", settings.GetTheme(ThemeListener.AppMode));
+                            html = html.Replace("[[PT_CODE]]", base64FileCode);
+                            html = html.Replace("[[PT_URL]]", VirtualHostName);
+
+                            // Initialize WebView
+
+                            await webView.EnsureCoreWebView2Async(webView2Environment);
+
+                            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
+                            webView.NavigateToString(html);
+                            webView.NavigationCompleted += WebView2Init;
+                            webView.Height = this.Height;
+                            webView.Width = this.Width;
+                            Controls.Add(webView);
+                            
+                            base.DoPreview(dataSource);
+                        });
+                    });
+                    
+                });
+                
+                
 
             }
             catch(Exception e)
             {
-                Label text = new Label();
-                text.Text = "Exception occured:\n";
-                text.Text += e.Message;
-                text.Text += "\n" + e.Source;
-                text.Text += "\n" + e.StackTrace;
-                text.Width = 500;
-                text.Height = 10000;
-                Controls.Add(text);
+                InvokeOnControlThread(() => {
+                    Label text = new Label();
+                    text.Text = "Exception occured:\n";
+                    text.Text += e.Message;
+                    text.Text += "\n" + e.Source;
+                    text.Text += "\n" + e.StackTrace;
+                    text.Width = 500;
+                    text.Height = 10000;
+                    Controls.Add(text);
+                });
             }
-            base.DoPreview(dataSource);
+
+            this.Resize += FormResize;
+
         }
-        [STAThread]
+        
+        public void FormResize(Object sender, EventArgs e)
+        {
+            // This function gets called when the form gets resized
+            // It's fitting the webview in the size of the window
+            webView.Height = this.Height;
+            webView.Width = this.Width;
+        }
+        
         public string[] GetFile(string args)
         {
             // This function gets a file
@@ -110,6 +168,7 @@ namespace MonacoPreviewHandler
                 settings.IsBuiltInErrorPageEnabled = false;
                 // Disable status bar
                 settings.IsStatusBarEnabled = false;
+                Controls.Remove(_loading);
             }
         }
         [STAThread]
@@ -142,40 +201,18 @@ namespace MonacoPreviewHandler
 
         const string VirtualHostName = "PowerToysLocalMonaco";
 
-        [STAThread]
-        public async Task InitializeAsync(string fileName)
+        private void InitializeLoadingScreen()
         {
-            // This function initializes the webview settings
-            // Partely copied from https://weblog.west-wind.com/posts/2021/Jan/14/Taking-the-new-Chromium-WebView2-Control-for-a-Spin-in-NET-Part-1
-
-            var vsCodeLangSet = fileHandler.GetLanguage(Path.GetExtension(fileName).TrimStart('.'));
-            var fileContent = File.ReadAllText(fileName);
-            var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
-
-            // prepping index html to load in
-            var html = File.ReadAllText(AssemblyDirectory+"\\index.html").Replace("\t", "");
-
-            html = html.Replace("[[PT_LANG]]", vsCodeLangSet);
-            html = html.Replace("[[PT_WRAP]]", settings.wrap ? "1" : "0");
-            html = html.Replace("[[PT_THEME]]", settings.GetTheme(ThemeListener.AppMode));
-            html = html.Replace("[[PT_CODE]]", base64FileCode);
-            html = html.Replace("[[PT_URL]]", VirtualHostName);
-        
-            
-            // Initialize WebView
-            Task<CoreWebView2Environment> t1 = new Task<CoreWebView2Environment> ( () =>
+            InvokeOnControlThread(() =>
             {
-                return CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(), "MonacoPreview")).Result;
+                _loading = new Label();
+                _loading.Text = "Loading...";
+                _loading.Width = 500;
+                _loading.Height = 60;
+                _loading.Font = new Font("MS Sans Serif",16,FontStyle.Bold);
+                _loading.BackColor = Color.White;
+                Controls.Add(_loading);
             });
-            t1.RunSynchronously();
-
-            CoreWebView2Environment webView2Environment = t1.Result;
-
-            webView.EnsureCoreWebView2Async(webView2Environment).RunSynchronously();
-            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
-            webView.NavigateToString(html);
-            webView.NavigationCompleted += WebView2Init;
         }
-        
     }
 }
