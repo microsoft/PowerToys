@@ -7,44 +7,44 @@ namespace monacoPreview
     class FileHandler
     {
         // This class has all functions in it, which are used to handle files
-        public string GetLanguage(string FileExtension)
+        public string GetLanguage(string fileExtension)
         {
             // This function returns the name of a file by taking a file extension
-            String Language;
-            switch (FileExtension.ToLower())
+            String language;
+            switch (fileExtension.ToLower())
             {
                 case "abap":
-                    Language = "abap";
+                    language = "abap";
                     break;
                 case "aes":
-                    Language = "aes";
+                    language = "aes";
                     break;
                 case "cls":
-                    Language = "apex";
+                    language = "apex";
                     break;
                 // TO-DO: AZCLI 
                 case "bat":
                 case "cmd":
                 case "btm":
-                    Language = "bat";
+                    language = "bat";
                     break;
                 case "c":
                 case "h":
-                    Language = "c";
+                    language = "c";
                     break;
                 case "ligo":
                     // TO-DO: differentiate the different ligo languages
-                    Language = "cameligo";
+                    language = "cameligo";
                     break;
                 case "clj":
                 case "cljs":
                 case "cljc":
                 case "edn":
-                    Language = "clojure";
+                    language = "clojure";
                     break;
                 case "coffee":
                 case "litcoffee":
-                    Language = "coffeescript";
+                    language = "coffeescript";
                     break;
                 case "cc":
                 case "cpp":
@@ -54,75 +54,75 @@ namespace monacoPreview
                 case "hpp":
                 case "hxx":
                 case "h++":
-                    Language = "cpp";
+                    language = "cpp";
                     break;
                 case "cs":
                 case "csx":
-                    Language = "csharp";
+                    language = "csharp";
                     break;
                 // TO-DO: Add Communicating sequential processes file extension
                 case "css":
-                    Language = "css";
+                    language = "css";
                     break;
                 case "dart":
-                    Language = "dart";
+                    language = "dart";
                     break;
                 case "dockerfile":
-                    Language = "dockerfile";
+                    language = "dockerfile";
                     break;
                 // TO-DO: add ecl
                 case "fs":
                 case "fsi":
                 case "fsx":
                 case "fsscript":
-                    Language = "fsharp";
+                    language = "fsharp";
                     break;
                 case "go":
-                    Language = "go";
+                    language = "go";
                     break;
                 case "graphql":
-                    Language = "graphql";
+                    language = "graphql";
                     break;
                 // TO-DO: Add handlebars
                 // TO-DO: Add hashicorp configuration language
                 case "html":
                 case "htm":
-                    Language = "html";
+                    language = "html";
                     break;
                 case "ini":
-                    Language = "ini";
+                    language = "ini";
                     break;
                 case "java":
                 case "class":
                 case "jar":
-                    Language = "java";
+                    language = "java";
                     break;
                 case "js":
                 case "cjs":
                 case "mjs":
-                    Language = "javascript";
+                    language = "javascript";
                     break;
                 case "json":
-                    Language = "json";
+                    language = "json";
                     break;
                 case "jl":
-                    Language = "julia";
+                    language = "julia";
                     break;
                 case "kt":
                 case "kts":
                 case "ktm":
-                    Language = "kotlin";
+                    language = "kotlin";
                     break;
                 case "less":
-                    Language = "less";
+                    language = "less";
                     break;
                 // TO-DO: Add lexon
                 case "lua":
-                    Language = "lua";
+                    language = "lua";
                     break;
                 case "i3":
                 case "m3":
-                    Language = "m3";
+                    language = "m3";
                     break;
                 // Markdown already implemented. Don't uncomment
                 /*
@@ -132,20 +132,20 @@ namespace monacoPreview
                     break;
                 */
                 case "s":
-                    Language = "mips";
+                    language = "mips";
                     break;
                 // TO-DO: Add msdax
                 case "sql":
                     // TO-DO: differentiate the different sql languages
-                    Language = "sql";
+                    language = "sql";
                     break;
                 case "m":
                 case "mm":
-                    Language = "objective-c";
+                    language = "objective-c";
                     break;
                 case "pp":
                 case "pas":
-                    Language = "pascal";
+                    language = "pascal";
                     break;
                 // TO-DO: Pascaligo
                 case "pl":
@@ -154,7 +154,7 @@ namespace monacoPreview
                 case "xs":
                 case "t":
                 case "pod":
-                    Language = "perl";
+                    language = "perl";
                     break;
                 case "php":
                 case "phtml":
@@ -166,11 +166,11 @@ namespace monacoPreview
                 case "php-s":
                 case "pht":
                 case "phar":
-                    Language = "php";
+                    language = "php";
                     break;
                 // TO-DO: Postiats
                 case "pq":
-                    Language = "powerquery";
+                    language = "powerquery";
                     break;
                 case "ps1":
                 case "ps1xml":
@@ -180,7 +180,7 @@ namespace monacoPreview
                 case "pssc":
                 case "psrc":
                 case "cdxml":
-                    Language = "powershell";
+                    language = "powershell";
                     break;
                 // TO-DO: Pug
                 case "py":
@@ -190,90 +190,90 @@ namespace monacoPreview
                 case "pyo":
                 case "pyw":
                 case "pyz":
-                    Language = "python";
+                    language = "python";
                     break;
                 case "r":
                 case "rdata":
                 case "rds":
                 case "rda":
-                    Language = "r";
+                    language = "r";
                     break;
                 case "razor":
                 case "cshtml":
                 case "vbhtml":
-                    Language = "razor";
+                    language = "razor";
                     break;
                 // TO-DO: redis
                 // TO-DO: amazon redshift
                 case "rst":
-                    Language = "restructuredtext";
+                    language = "restructuredtext";
                     break;
                 case "rb":
-                    Language = "ruby";
+                    language = "ruby";
                     break;
                 case "rs":
-                    Language = "rust";
+                    language = "rust";
                     break;
                 case "sb":
                 case "smallbasic":
-                    Language = "sb";
+                    language = "sb";
                     break;
                 case "sc":
                 case "scala":
-                    Language = "scala";
+                    language = "scala";
                     break;
                 case "scm":
                 case "ss":
-                    Language = "scheme";
+                    language = "scheme";
                     break;
                 case "sass":
                 case "scss":
-                    Language = "scss";
+                    language = "scss";
                     break;
                 case "sh":
-                    Language = "shell";
+                    language = "shell";
                     break;
                 // TO-DO: sol
                 case "st":
                 case "stx":
-                    Language = "st";
+                    language = "st";
                     break;
                 case "swift":
-                    Language = "swift";
+                    language = "swift";
                     break;
                 case "sv":
                 case "svh":
-                    Language = "systemverilog";
+                    language = "systemverilog";
                     break;
                 case "tcl":
                 case "tbc":
-                    Language = "tcl";
+                    language = "tcl";
                     break;
                 // TO-DO: twig
                 case "ts":
                 case "tsx":
-                    Language = "typescript";
+                    language = "typescript";
                     break;
                 case "vb":
-                    Language = "vb";
+                    language = "vb";
                     break;
                 case "v":
                 case "vh":
-                    Language = "verilog";
+                    language = "verilog";
                     break;
                 case "xml":
                     // TO-DO: Take every file that starts with "<?xml" or just add more xml formats
-                    Language = "xml";
+                    language = "xml";
                     break;
                 case "yaml":
                 case "yml":
-                    Language = "yaml";
+                    language = "yaml";
                     break;
                 default:
-                    Language = "plaintext";
+                    language = "plaintext";
                     break;
             }
-            return Language;
+            return language;
         }
     }
 }

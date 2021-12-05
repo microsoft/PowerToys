@@ -16,17 +16,6 @@
 		var base64code = "[[PT_CODE]]";
 		var code = [atob(base64code)].join('\n');
 
-
-		//         const urlParams = new URLSearchParams(window.location.search);
-		//         // Code for the editor
-		//         code = [atob(urlParams.get("code"))].join('\n');
-		//         // Theme of the editor
-		//         theme = urlParams.get("theme") == "dark" ? "vs-dark" : "vs";
-		//         // Code language
-		//         lang = urlParams.get("lang");
-		//         // Word wraping
-		//wrap = urlParams.get("wrap") == 1 ? true : false;
-
 		//URL for accessibility help
 		accessibilityHelpUrl = "";
 	</script>
@@ -39,12 +28,20 @@
 	<style>
 		/* Fits content to window size */
 		html, body{
-			padding:0; width:97%; height:97%;
+			padding:0;
 		}
 		#container,.monaco-editor {
-			position:fixed; height:100%; left:0; right:15px; top:0; bottom:20px;
+			position:fixed;
+			height:100%;
+			left:0;
+			top:0;
+			right:0;
+			bottom:0;
 		}
-		.overflowingContentWidgets{display:none!important} /*Hides alert box */
+		.overflowingContentWidgets{
+			/*Hides alert box */
+			display:none!important
+		} 
 	</style>
 </head>
 <!-- This oncontextmenu disables the browser context menu -->
@@ -75,9 +72,6 @@
 				vertical: 'auto',
 				horizontal: 'auto',
 
-				// Size of the scrollbar
-				verticalScrollbarSize: 17,
-				horizontalScrollbarSize: 50
 			},
 			wordWrap: (wrap?"on":"off") // Word wraps
 		});

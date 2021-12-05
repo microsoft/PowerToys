@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.IO;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -29,18 +30,23 @@ namespace MonacoPreviewHandler
         private static readonly IFile File = FileSystem.File;
 
         // This variable prevents users from navigating
-        private bool WasNavigated = false;
+        private bool _hasNavigated;
 
         // Settings from Settings.cs
-        private readonly Settings settings = new Settings();
+        private readonly Settings _settings = new Settings();
 
         // Filehandler class from FileHandler.cs
-        private readonly FileHandler fileHandler = new FileHandler();
+        private readonly FileHandler _fileHandler = new FileHandler();
 
-        public Microsoft.Web.WebView2.WinForms.WebView2 webView;
-        private CoreWebView2Environment webView2Environment;
-
+        // WebView variables
+        private Microsoft.Web.WebView2.WinForms.WebView2 _webView;
+        private CoreWebView2Environment _webView2Environment;
+        
+        // Loading label
         private Label _loading;
+        
+        // Virtual hostname
+        const string VirtualHostName = "PowerToysLocalMonaco";
         
         public MonacoPreviewHandlerControl()
         {
@@ -48,76 +54,98 @@ namespace MonacoPreviewHandler
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
+            // Starts loading screen
             InitializeLoadingScreen();
-            webView = new Microsoft.Web.WebView2.WinForms.WebView2();
+            // New webview2 element
+            _webView = new Microsoft.Web.WebView2.WinForms.WebView2();
+            
+            // Checks if dataSource is a string
             if (!(dataSource is string filePath))
             {
                 throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandler)} must be a string but was a '{typeof(T)}'");
             }
             
+            // Check if the file is too big.
+            long fileSize = new FileInfo(filePath).Length;
+
+            if (fileSize < _settings.maxFileSize)
+            {
+                string[] file = GetFile(filePath);
+                try
+                {
+                    InvokeOnControlThread(() =>
+                    {
+                        ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
+                            webView2EnvironmentAwaiter = CoreWebView2Environment
+                                .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                                             "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MonacoPreview-Temp")
+                                .ConfigureAwait(true).GetAwaiter();
+                        webView2EnvironmentAwaiter.OnCompleted(() =>
+                        {
+                            InvokeOnControlThread(async () =>
+                            {
+                                _webView2Environment = webView2EnvironmentAwaiter.GetResult();
+                                var vsCodeLangSet =
+                                    _fileHandler.GetLanguage(Path.GetExtension(filePath).TrimStart('.'));
+                                var fileContent = File.ReadAllText(filePath);
+                                var base64FileCode =
+                                    Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
+
+                                // prepping index html to load in
+                                var html = File.ReadAllText(AssemblyDirectory + "\\index.html").Replace("\t", "");
+
+                                html = html.Replace("[[PT_LANG]]", vsCodeLangSet);
+                                html = html.Replace("[[PT_WRAP]]", _settings.wrap ? "1" : "0");
+                                html = html.Replace("[[PT_THEME]]", _settings.GetTheme(ThemeListener.AppMode));
+                                html = html.Replace("[[PT_CODE]]", base64FileCode);
+                                html = html.Replace("[[PT_URL]]", VirtualHostName);
+
+                                // Initialize WebView
+
+                                await _webView.EnsureCoreWebView2Async(_webView2Environment);
+
+                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName,
+                                    AssemblyDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
+                                _webView.NavigateToString(html);
+                                _webView.NavigationCompleted += WebView2Init;
+                                _webView.Height = this.Height;
+                                _webView.Width = this.Width;
+                                Controls.Add(_webView);
+
+                                base.DoPreview(dataSource);
+                            });
+                        });
+
+                    });
+
+
+
+                }
+                catch (Exception e)
+                {
+                    InvokeOnControlThread(() =>
+                    {
+                        Label text = new Label();
+                        text.Text = "Exception occured:\n";
+                        text.Text += e.Message;
+                        text.Text += "\n" + e.Source;
+                        text.Text += "\n" + e.StackTrace;
+                        text.Width = 500;
+                        text.Height = 10000;
+                        Controls.Add(text);
+                    });
+                }
+                this.Resize += FormResize;
+            }
+            else
+            {
+                Label errorMessage = new Label();
+                errorMessage.Text = _settings.maxFileSizeErr;
+                errorMessage.Width = 500;
+                errorMessage.Height = 50;
+            }
 
             
-            string[] file = GetFile(filePath);
-            try
-            {
-                // WebView2 in separate thread:
-                InvokeOnControlThread( () =>
-                {
-                    ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter webView2EnvironmentAwaiter = CoreWebView2Environment.CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") + "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MonacoPreview-Temp").ConfigureAwait(true).GetAwaiter();
-                    webView2EnvironmentAwaiter.OnCompleted(() =>
-                    {
-                        InvokeOnControlThread(async () =>
-                        {
-                            webView2Environment = webView2EnvironmentAwaiter.GetResult();
-                            var vsCodeLangSet = fileHandler.GetLanguage(Path.GetExtension(filePath).TrimStart('.'));
-                            var fileContent = File.ReadAllText(filePath);
-                            var base64FileCode =
-                                Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
-
-                            // prepping index html to load in
-                            var html = File.ReadAllText(AssemblyDirectory + "\\index.html").Replace("\t", "");
-
-                            html = html.Replace("[[PT_LANG]]", vsCodeLangSet);
-                            html = html.Replace("[[PT_WRAP]]", settings.wrap ? "1" : "0");
-                            html = html.Replace("[[PT_THEME]]", settings.GetTheme(ThemeListener.AppMode));
-                            html = html.Replace("[[PT_CODE]]", base64FileCode);
-                            html = html.Replace("[[PT_URL]]", VirtualHostName);
-
-                            // Initialize WebView
-
-                            await webView.EnsureCoreWebView2Async(webView2Environment);
-
-                            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
-                            webView.NavigateToString(html);
-                            webView.NavigationCompleted += WebView2Init;
-                            webView.Height = this.Height;
-                            webView.Width = this.Width;
-                            Controls.Add(webView);
-                            
-                            base.DoPreview(dataSource);
-                        });
-                    });
-                    
-                });
-                
-                
-
-            }
-            catch(Exception e)
-            {
-                InvokeOnControlThread(() => {
-                    Label text = new Label();
-                    text.Text = "Exception occured:\n";
-                    text.Text += e.Message;
-                    text.Text += "\n" + e.Source;
-                    text.Text += "\n" + e.StackTrace;
-                    text.Width = 500;
-                    text.Height = 10000;
-                    Controls.Add(text);
-                });
-            }
-
-            this.Resize += FormResize;
 
         }
         
@@ -125,8 +153,8 @@ namespace MonacoPreviewHandler
         {
             // This function gets called when the form gets resized
             // It's fitting the webview in the size of the window
-            webView.Height = this.Height;
-            webView.Width = this.Width;
+            _webView.Height = this.Height;
+            _webView.Width = this.Width;
         }
         
         public string[] GetFile(string args)
@@ -146,16 +174,18 @@ namespace MonacoPreviewHandler
             // This function sets the diiferent settings for the webview 
 
             // Checks if already navigated
-            if (!WasNavigated)
+            if (!_hasNavigated)
             {
                 CoreWebView2Settings settings = (sender as WebView2).CoreWebView2.Settings;
-
-                // Disable contextmenu
-                //settings.AreDefaultContextMenusEnabled = false;
-                // Disable developer menu
+                
 #if DEBUG
+                // Enable developer tools and contextmenu for debugging
+                settings.AreDefaultContextMenusEnabled = true;
                 settings.AreDevToolsEnabled = true;
 #else
+                // Disable contextmenu
+                settings.AreDefaultContextMenusEnabled = false;
+                // Disable developer tools
                 settings.AreDevToolsEnabled = false;
 #endif
                 // Disable script dialogs (like alert())
@@ -172,23 +202,24 @@ namespace MonacoPreviewHandler
             }
         }
         [STAThread]
-        private void NavigationStarted(Object sender, CoreWebView2NavigationStartingEventArgs e)
+        private void NavigationStarted(object sender, CoreWebView2NavigationStartingEventArgs e)
         {
             // Prevents navigation if already one done to index.html
-            if (WasNavigated)
+            if (_hasNavigated)
             {
                 e.Cancel = false;
             }
 
             // If it has navigated to index.html it stops further navigations
-            if(e.Uri.StartsWith(settings.baseURL))
+            if(e.Uri.StartsWith(_settings.BaseUrl))
             {
-                WasNavigated = true;
+                _hasNavigated = true;
             }
         }
         
         public static string AssemblyDirectory
         {
+            // This function gets the path of the assembly
             // Source: https://stackoverflow.com/a/283917/14774889
             get
             {
@@ -198,8 +229,6 @@ namespace MonacoPreviewHandler
                 return Path.GetDirectoryName(path);
             }
         }
-
-        const string VirtualHostName = "PowerToysLocalMonaco";
 
         private void InitializeLoadingScreen()
         {

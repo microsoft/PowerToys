@@ -16,7 +16,7 @@ namespace MonacoPreviewHandler
     {
 
         private MonacoPreviewHandlerControl _monacoPreviewHandlerControl;
-        private bool disposedValue;
+        private bool _disposedValue;
         
         public MonacoPreviewHandler()
         {
@@ -37,7 +37,7 @@ namespace MonacoPreviewHandler
         [STAThread]
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -46,7 +46,7 @@ namespace MonacoPreviewHandler
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
         [STAThread]
