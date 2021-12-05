@@ -88,7 +88,7 @@ inline registry::ChangeSet getGcodeThumbnailHandlerChangeSet(const std::wstring 
                                   (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\GcodeThumbnailProvider.comhost.dll)d").wstring(),
                                   registry::DOTNET_COMPONENT_CATEGORY_CLSID,
                                   L"Microsoft.PowerToys.ThumbnailHandler.Gcode.GcodeThumbnailProvider",
-                                  L"Gcode Thumbnail Provider",
+                                  L"G-code Thumbnail Provider",
                                   L".gcode");
 }
 

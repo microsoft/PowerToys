@@ -16,7 +16,7 @@ using Common.Utilities;
 namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
 {
     /// <summary>
-    /// Gcode Thumbnail Provider.
+    /// G-code Thumbnail Provider.
     /// </summary>
     [Guid("BFEE99B4-B74D-4348-BCA5-E757029647FF")]
     [ClassInterface(ClassInterfaceType.None)]
@@ -34,11 +34,11 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
         private const uint MaxThumbnailSize = 10000;
 
         /// <summary>
-        /// Reads the gcode searching for thumbnails and returns the largest.
+        /// Reads the G-code content searching for thumbnails and returns the largest.
         /// </summary>
-        /// <param name="reader">The TextReader instance for the gcode content.</param>
+        /// <param name="reader">The TextReader instance for the G-code content.</param>
         /// <param name="cx">The maximum thumbnail size, in pixels.</param>
-        /// <returns>A thumbnail extracted from the gcode content.</returns>
+        /// <returns>A thumbnail extracted from the G-code content.</returns>
         public static Bitmap GetThumbnail(TextReader reader, uint cx)
         {
             if (cx > MaxThumbnailSize || reader == null)
@@ -76,10 +76,10 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
         }
 
         /// <summary>
-        /// Gets all thumbnails in base64 format found on the gcode data.
+        /// Gets all thumbnails in base64 format found on the G-code data.
         /// </summary>
-        /// <param name="reader">The TextReader instance for the gcode content.</param>
-        /// <returns>An enumeration of thumbnails in base64 format found on the gcode.</returns>
+        /// <param name="reader">The TextReader instance for the G-code content.</param>
+        /// <returns>An enumeration of thumbnails in base64 format found on the G-code.</returns>
         private static IEnumerable<string> GetBase64Thumbnails(TextReader reader)
         {
             string line;

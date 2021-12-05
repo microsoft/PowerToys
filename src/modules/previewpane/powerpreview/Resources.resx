@@ -178,6 +178,6 @@
     <value>Pdf Thumbnail Provider</value>
   </data>
   <data name="Gcode_Thumbnail_Provider_Settings_Description" xml:space="preserve">
-    <value>Gcode Thumbnail Provider</value>
+    <value>G-code Thumbnail Provider</value>
   </data>
 </root>

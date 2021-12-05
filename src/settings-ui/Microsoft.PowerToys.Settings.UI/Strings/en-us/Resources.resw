@@ -1826,7 +1826,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Zone appearance</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail.Header" xml:space="preserve">
-    <value>Enable Gcode (.gcode) thumbnails</value>
+    <value>Enable G-code (.gcode) thumbnails</value>
     <comment>Do you want this feature on / off</comment>
   </data>
 </root>

@@ -813,7 +813,7 @@
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.comhost.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.runtimeconfig.json" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.deps.json" />
-        <!-- File to include dll for Gcode Thumbnail Provider -->
+        <!-- File to include dll for G-code Thumbnail Provider -->
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\GcodeThumbnailProvider.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\GcodeThumbnailProvider.comhost.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\GcodeThumbnailProvider.runtimeconfig.json" />
