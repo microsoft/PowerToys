@@ -25,8 +25,7 @@ namespace MonacoPreviewHandler
         [STAThread]
         public override void DoPreview()
         {
-            Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
-                _monacoPreviewHandlerControl.DoPreview(FilePath);
+            _monacoPreviewHandlerControl.DoPreview(FilePath);
         }
         
         protected override IPreviewHandlerControl CreatePreviewHandlerControl()
