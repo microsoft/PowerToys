@@ -1830,7 +1830,6 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail.Description" xml:space="preserve">
-    <value>Only .gcode files with thumbnails embedded are supported</value>
-    <comment>Do you want this feature on / off</comment>
+    <value>Only .gcode files with embedded thumbnails are supported</value>
   </data>
 </root>
