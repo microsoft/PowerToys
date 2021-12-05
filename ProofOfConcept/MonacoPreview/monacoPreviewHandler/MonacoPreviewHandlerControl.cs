@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Markup;
 using System.Windows.Threading;
 using Windows.UI.Core;
 using Common;
@@ -54,6 +55,7 @@ namespace MonacoPreviewHandler
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
+            base.DoPreview(dataSource);
             // Starts loading screen
             InitializeLoadingScreen();
             // New webview2 element
@@ -111,8 +113,9 @@ namespace MonacoPreviewHandler
                                 _webView.Height = this.Height;
                                 _webView.Width = this.Width;
                                 Controls.Add(_webView);
-
-                                base.DoPreview(dataSource);
+#if DEBUG
+                                _webView.CoreWebView2.OpenDevToolsWindow();
+#endif
                             });
                         });
 
@@ -139,14 +142,16 @@ namespace MonacoPreviewHandler
             }
             else
             {
-                Label errorMessage = new Label();
-                errorMessage.Text = _settings.maxFileSizeErr;
-                errorMessage.Width = 500;
-                errorMessage.Height = 50;
+                InvokeOnControlThread(() =>
+                {
+                    Label errorMessage = new Label();
+                    errorMessage.Text = _settings.maxFileSizeErr;
+                    errorMessage.Width = 500;
+                    errorMessage.Height = 50;
+                    Controls.Add(errorMessage);
+                });
+
             }
-
-            
-
         }
         
         public void FormResize(Object sender, EventArgs e)
@@ -236,12 +241,43 @@ namespace MonacoPreviewHandler
             {
                 _loading = new Label();
                 _loading.Text = "Loading...";
-                _loading.Width = 500;
-                _loading.Height = 60;
-                _loading.Font = new Font("MS Sans Serif",16,FontStyle.Bold);
-                _loading.BackColor = Color.White;
+                _loading.Width = this.Width;
+                _loading.Height = this.Height;
+                _loading.Font = new Font("MS Sans Serif", 16, FontStyle.Bold);
+                _loading.ForeColor = TextColor;
+                _loading.BackColor = BackgroundColor;
                 Controls.Add(_loading);
             });
+        }
+
+        public Color BackgroundColor
+        {
+            get
+            {
+                if (_settings.GetTheme(ThemeListener.AppMode) == "dark")
+                {
+                    return Color.DimGray;
+                }
+                else
+                {
+                   return Color.White;
+                }
+            }
+        }
+        
+        public Color TextColor
+        {
+            get
+            {
+                if (_settings.GetTheme(ThemeListener.AppMode) == "dark")
+                {
+                    return Color.White;
+                }
+                else
+                {
+                    return Color.DimGray;
+                }
+            }
         }
     }
 }
