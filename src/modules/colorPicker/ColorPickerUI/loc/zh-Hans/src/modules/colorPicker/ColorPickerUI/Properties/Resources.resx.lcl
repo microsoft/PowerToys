@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color picker control]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[颜色选取器控件]]></Val>
+            <Val><![CDATA[取色器控件]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Hue slider]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[色调滑块]]></Val>
+            <Val><![CDATA[色调值滑块]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -149,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press the Color Picker icon to capture a color from your screen.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[请按 "Color Picker" 图标来从屏幕中捕获颜色。]]></Val>
+            <Val><![CDATA[请点击 "取色器" 图标从屏幕中取色。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -167,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Pick color from screen]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[从屏幕中选择颜色]]></Val>
+            <Val><![CDATA[从屏幕中取色]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -194,7 +194,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Saturation slider]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[饱和度滑块]]></Val>
+            <Val><![CDATA[饱和值滑块]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -210,9 +210,9 @@
       </Item>
       <Item ItemId=";Select_color" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select color]]></Val>
+          <Val><![CDATA[Select this color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[选择颜色]]></Val>
+            <Val><![CDATA[选择这个颜色]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -221,7 +221,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Selected color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[所选颜色]]></Val>
+            <Val><![CDATA[当前颜色]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -284,7 +284,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Bright green]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[鲜绿色]]></Val>
+            <Val><![CDATA[亮绿色]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -464,7 +464,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Light turquoise]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[浅绿蓝色]]></Val>
+            <Val><![CDATA[浅青绿色]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -482,7 +482,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Lime]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[柠檬色]]></Val>
+            <Val><![CDATA[青柠色]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -599,7 +599,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Turquoise]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[绿蓝色]]></Val>
+            <Val><![CDATA[青绿色]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -626,7 +626,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Value slider]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[值滑块]]></Val>
+            <Val><![CDATA[明度值滑块]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

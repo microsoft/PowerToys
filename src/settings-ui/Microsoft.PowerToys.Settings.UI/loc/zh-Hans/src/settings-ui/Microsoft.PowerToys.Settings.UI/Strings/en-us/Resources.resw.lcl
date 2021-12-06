@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Customize the keyboard shortcut to activate this module]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[自定义用于激活此模块的键盘快捷方式]]></Val>
+            <Val><![CDATA[自定义执行此模块的键盘快捷键]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Activation shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[激活快捷方式]]></Val>
+            <Val><![CDATA[执行快捷键]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press a combination of keys to change this shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[按组合键以更改此快捷方式]]></Val>
+            <Val><![CDATA[输入新的组合键来重设快捷键]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Activation shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[激活快捷方式]]></Val>
+            <Val><![CDATA[执行快捷键]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A convenient way to keep your PC awake on-demand.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[一种使电脑保持唤醒状态的简便方法。]]></Val>
+            <Val><![CDATA[一种保持电脑处于唤醒状态的简便方法。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keep screen on]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[保持屏幕打开]]></Val>
+            <Val><![CDATA[保持屏幕常亮]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -149,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keep awake indefinitely]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[无限期保持唤醒状态]]></Val>
+            <Val><![CDATA[始终保持唤醒状态]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -158,7 +158,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Manage the state of your device when Awake is active]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[当唤醒处于活动状态时管理设备的状态]]></Val>
+            <Val><![CDATA[选择管理设备的状态的策略]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Set the preferred behaviour of Awake]]></Val>
@@ -177,9 +177,9 @@
       </Item>
       <Item ItemId=";Awake_NoKeepAwake.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Keep using the selected power plan]]></Val>
+          <Val><![CDATA[Keep using the current power plan]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[继续使用所选电源计划]]></Val>
+            <Val><![CDATA[继续使用当前电源计划]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -188,7 +188,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keep awake temporarily]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[暂时保持唤醒状态]]></Val>
+            <Val><![CDATA[临时保持唤醒状态]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -215,25 +215,25 @@
         <Str Cat="Text">
           <Val><![CDATA[Time before returning to the previous awakeness state]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[返回到上一次唤醒状态之前的时间]]></Val>
+            <Val><![CDATA[需要保持唤醒状态的时间]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorFormats.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Picker behavior]]></Val>
+          <Val><![CDATA[Activation behavior]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[选取器行为]]></Val>
+            <Val><![CDATA[执行方式]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorModeHeader.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[App theme]]></Val>
+          <Val><![CDATA[Color theme]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[应用主题]]></Val>
+            <Val><![CDATA[颜色主题]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Choose a mode]]></Val>
@@ -243,9 +243,9 @@
       </Item>
       <Item ItemId=";ColorPicker.ModuleDescription" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Quick and simple system-wide color picker.]]></Val>
+          <Val><![CDATA[Quick and easy screen color picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[快速、简单的系统范围颜色选择器。]]></Val>
+            <Val><![CDATA[快捷、易用的屏幕取色器。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -254,7 +254,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[颜色选取器]]></Val>
+            <Val><![CDATA[取色器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -270,18 +270,18 @@
       </Item>
       <Item ItemId=";ColorPickerFirst.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Pick a color and open editor]]></Val>
+          <Val><![CDATA[copy the color and open color editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[选取颜色并打开编辑器]]></Val>
+            <Val><![CDATA[复制颜色并打开颜色编辑器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorPickerOnly.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Only pick a color]]></Val>
+          <Val><![CDATA[Only copy the color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[仅选取颜色]]></Val>
+            <Val><![CDATA[仅复制颜色]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -290,7 +290,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Activation behavior]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[激活方式]]></Val>
+            <Val><![CDATA[执行方式]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -317,7 +317,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Change cursor when picking a color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在选择颜色时更改光标]]></Val>
+            <Val><![CDATA[在取色时更改光标]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -335,7 +335,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Select which color formats (and in what order) should show up in the editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[选择编辑器中应显示的颜色格式(以及显示顺序)]]></Val>
+            <Val><![CDATA[选择在编辑器中需要显示的颜色格式和顺序]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -351,18 +351,18 @@
       </Item>
       <Item ItemId=";ColorPicker_CopiedColorRepresentation.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[This format will be copied to your clipboard]]></Val>
+          <Val><![CDATA[This color format will be copied to your clipboard]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[此格式将被复制到剪贴板]]></Val>
+            <Val><![CDATA[请选择需要复制到剪贴板的目标颜色格式]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorPicker_CopiedColorRepresentation.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Default color format]]></Val>
+          <Val><![CDATA[Target color format]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[默认颜色格式]]></Val>
+            <Val><![CDATA[目标颜色格式]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Color format for clipboard]]></Val>
@@ -383,7 +383,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[启用颜色选择器]]></Val>
+            <Val><![CDATA[启用取色器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -392,7 +392,7 @@
         <Str Cat="Text">
           <Val><![CDATA[This will show the name of the color when picking a color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[这将在选取颜色时显示颜色的名称]]></Val>
+            <Val><![CDATA[取色时显示出颜色的名称]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -444,9 +444,9 @@
       </Item>
       <Item ItemId=";EditorFirst.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open editor]]></Val>
+          <Val><![CDATA[Only open editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[打开编辑器]]></Val>
+            <Val><![CDATA[仅打开编辑器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -572,7 +572,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Flash zones when switching layout]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[切换布局时刷写区域]]></Val>
+            <Val><![CDATA[切换布局时刷新区域]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -605,7 +605,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zone inactive color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[区域非活动颜色]]></Val>
+            <Val><![CDATA[非活动区域颜色]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1019,7 +1019,7 @@
         <Str Cat="Text">
           <Val><![CDATA[These settings allow you to manage your Windows File Explorer custom preview handlers.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[使用这些设置，可以管理 Windows 文件资源管理器自定义预览控件。]]></Val>
+            <Val><![CDATA[设置 Windows 文件资源管理器中的自定义预览控件。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1073,7 +1073,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A reboot may be required for changes to these settings to take effect]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[为了使对这些设置所做的更改生效，可能需要重新启动]]></Val>
+            <Val><![CDATA[可能需要重新启动, 更改的设置才能生效]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1197,9 +1197,9 @@
       </Item>
       <Item ItemId=";GeneralPage_RequestAFeature_URL.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Request a feature]]></Val>
+          <Val><![CDATA[Request new feature]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[申请功能]]></Val>
+            <Val><![CDATA[申请新增功能]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1313,7 +1313,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Running as user]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[以用户身份运行]]></Val>
+            <Val><![CDATA[以普通用户身份运行]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1322,7 +1322,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys is up to date.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys 是最新的。]]></Val>
+            <Val><![CDATA[PowerToys 已是最新版。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[PowerToys is up-to-date.]]></Val>
@@ -1343,7 +1343,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Download and install]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[本地预配向导和预配代理。]]></Val>
+            <Val><![CDATA[下载并安装]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1388,7 +1388,7 @@
         <Str Cat="Text">
           <Val><![CDATA[An update is ready to install:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[更新已准备好安装:]]></Val>
+            <Val><![CDATA[已准备好安装更新:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1406,7 +1406,7 @@
         <Str Cat="Text">
           <Val><![CDATA[GitHub repository]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[GitHub 存储库]]></Val>
+            <Val><![CDATA[GitHub 仓库]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1424,7 +1424,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Try again to download & install]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[请再次尝试下载并安装]]></Val>
+            <Val><![CDATA[请重新尝试下载并安装]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Try again to download and install]]></Val>
@@ -1436,7 +1436,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys is up to date]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys 是最新的]]></Val>
+            <Val><![CDATA[PowerToys 已是最新版]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1473,9 +1473,9 @@
       </Item>
       <Item ItemId=";ImageResizer.ModuleDescription" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Lets you resize images by right-clicking.]]></Val>
+          <Val><![CDATA[Resize images by right-clicking.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[让你可以通过右键单击来调整图像大小。]]></Val>
+            <Val><![CDATA[通过单击右键来调整图像尺寸。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1484,7 +1484,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[图像大小调整器]]></Val>
+            <Val><![CDATA[图像尺寸调整器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1502,7 +1502,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Add a size]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[添加大小]]></Val>
+            <Val><![CDATA[添加尺寸]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1520,7 +1520,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image sizes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[图像大小]]></Val>
+            <Val><![CDATA[图像尺寸]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1547,7 +1547,7 @@
         <Str Cat="Text">
           <Val><![CDATA[New size]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新建大小]]></Val>
+            <Val><![CDATA[新建尺寸]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1637,7 +1637,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[启用图像大小调整器]]></Val>
+            <Val><![CDATA[启用图像尺寸调整器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1727,7 +1727,7 @@
         <Str Cat="Text">
           <Val><![CDATA[This format is used as the filename for resized images]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[此格式用作已重设大小的图像的文件名]]></Val>
+            <Val><![CDATA[此格式用作已重设尺寸的图像的文件名]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1844,7 +1844,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Size name]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[大小名称]]></Val>
+            <Val><![CDATA[尺寸名称]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1862,7 +1862,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[图像大小调整器]]></Val>
+            <Val><![CDATA[图像尺寸调整器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1889,7 +1889,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Manage preset sizes that can be used in the editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[管理可在编辑器中使用的预设大小]]></Val>
+            <Val><![CDATA[管理可在编辑器中使用的预设尺寸]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1907,7 +1907,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Save sizes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[保存大小]]></Val>
+            <Val><![CDATA[保存尺寸]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2042,7 +2042,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keep the original modified date of the file (instead of the resize date)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[保留文件的原始修改日期(而不是重设大小的日期)]]></Val>
+            <Val><![CDATA[保留文件的原始修改日期(而不是重设尺寸的日期)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2069,7 +2069,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Size]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[图像大小]]></Val>
+            <Val><![CDATA[图像尺寸]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2285,7 +2285,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Launch Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[启动颜色选取器]]></Val>
+            <Val><![CDATA[启动取色器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2321,7 +2321,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Learn more about Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[了解有关颜色选取器的详细信息]]></Val>
+            <Val><![CDATA[了解有关取色器的详细信息]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2339,7 +2339,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Learn more about Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[了解有关图像大小调整器的详细信息]]></Val>
+            <Val><![CDATA[了解有关图像尺寸调整器的详细信息]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2519,7 +2519,7 @@
         <Str Cat="Text">
           <Val><![CDATA[You can always change modes quickly by {right-clicking the Awake icon} in the system tray.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[你始终可以通过 {right-clicking the Awake icon} 快速更改模式。]]></Val>
+            <Val><![CDATA[你始终可以通过 {对任务栏中的唤醒图标单击右键} 快速更改模式。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2528,7 +2528,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[颜色选择器]]></Val>
+            <Val><![CDATA[取色器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2537,7 +2537,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[颜色选取器是 Windows 系统范围内的颜色选择工具，使用此工具，可以从任何当前正在运行的应用程序中选取颜色，并自动将其以可配置格式复制到剪贴板。]]></Val>
+            <Val><![CDATA[取色器是 Windows 系统范围内的颜色选择工具，使用此工具可以从任何当前正在运行的应用程序中选取颜色，并自动将其以可配置格式复制到剪贴板。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows 10 that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
@@ -2549,7 +2549,7 @@
         <Str Cat="Text">
           <Val><![CDATA[to open Color Picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[打开“颜色选取器”。]]></Val>
+            <Val><![CDATA[打开“取色器”。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[{Win} + {Shift} + {C} to open Color Picker.]]></Val>
@@ -2559,12 +2559,12 @@
       </Item>
       <Item ItemId=";Oobe_ColorPicker_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[To select a color with more precision, **scroll the mouse wheel** to zoom in.]]></Val>
+          <Val><![CDATA[**scroll the mouse wheel** to select a color with more precision.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[要更精确地选择颜色，请 **滚动鼠标滚轮** 以放大。]]></Val>
+            <Val><![CDATA[**滚动鼠标滚轮** 可以更精准地取色。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[To select a color with more precision, {scroll the mouse wheel} to zoom in.]]></Val>
+            <Val><![CDATA[{scroll the mouse wheel} to select a color with more precision.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2711,7 +2711,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[图像大小调整器]]></Val>
+            <Val><![CDATA[图像尺寸调整器]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[ImageResizer]]></Val>
@@ -2723,7 +2723,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer is a Windows shell extension for simple bulk image-resizing.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[图像大小调整器是一个 Windows shell 扩展，用于简单的批量图像大小调整。]]></Val>
+            <Val><![CDATA[图像尺寸调整器是一个 Windows shell 扩展，用于简单的批量图像大小调整。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2732,7 +2732,7 @@
         <Str Cat="Text">
           <Val><![CDATA[In File Explorer, **right-clicking one or more image files** and **clicking on Resize pictures** from the context menu.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在“文件资源管理器”中，**右键单击一个或多个图像文件**，然后在上下文菜单中 **单击“重设图片大小”**。]]></Val>
+            <Val><![CDATA[在“文件资源管理器”中，**右键单击一个或多个图像文件**，然后在上下文菜单中 **单击“重设图片尺寸”**。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[In File Explorer, {right-clicking one or more image files} and {clicking on Resize pictures} from the context menu.]]></Val>
@@ -2744,7 +2744,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Want a custom size? You can add them in the PowerToys Settings!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[想要自定义大小? 你可以在 PowerToys 设置中添加它们!]]></Val>
+            <Val><![CDATA[想要自定义尺寸? 你可以在 PowerToys 设置中添加它们!]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2873,7 +2873,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename enables you to perform simple bulk renaming, searching and replacing file names.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[使用 PowerRename，可以执行简单的文件名批量重命名、搜索和替换。]]></Val>
+            <Val><![CDATA[使用 PowerRename 可以简单地执行批量重命名、搜索和替换文件名。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3779,7 +3779,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[颜色选择器]]></Val>
+            <Val><![CDATA[取色器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3806,7 +3806,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[图像大小调整器]]></Val>
+            <Val><![CDATA[图像尺寸调整器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4001,7 +4001,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[为显示需要按住多长时间(毫秒)]]></Val>
+            <Val><![CDATA[需要长按多久(毫秒)才显示]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4064,7 +4064,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Camera]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[照相机]]></Val>
+            <Val><![CDATA[摄像头]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4073,7 +4073,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Mute camera & microphone]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[将相机和麦克风静音]]></Val>
+            <Val><![CDATA[关闭摄像头和麦克风]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Mute camera and microphone]]></Val>
@@ -4085,7 +4085,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Mute camera]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[将照相机静音]]></Val>
+            <Val><![CDATA[将摄像头静音]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4094,7 +4094,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Camera overlay image preview]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[相机覆盖图像预览]]></Val>
+            <Val><![CDATA[摄像头覆盖图像预览]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4121,7 +4121,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Camera overlay image]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[相机覆盖图像]]></Val>
+            <Val><![CDATA[摄像头覆盖图像]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4142,7 +4142,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Hide toolbar when both camera and microphone are unmuted]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[取消相机和麦克风静音时隐藏工具栏]]></Val>
+            <Val><![CDATA[摄像头和麦克风未关闭时隐藏工具栏]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4169,7 +4169,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Selected camera]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[所选相机]]></Val>
+            <Val><![CDATA[所选摄像头]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4259,7 +4259,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Bottom center]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[靠下居中]]></Val>
+            <Val><![CDATA[下方居中]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4286,7 +4286,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Top center]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[靠上居中]]></Val>
+            <Val><![CDATA[上方居中]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
