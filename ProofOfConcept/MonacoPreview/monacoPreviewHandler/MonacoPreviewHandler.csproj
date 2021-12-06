@@ -26,6 +26,7 @@
       </PackageReference>
       <PackageReference Include="System.IO.Abstractions" Version="13.2.47" />
       <PackageReference Include="WindowsThemeListener" Version="1.0.0" />
+      <PackageReference Update="Microsoft.VCRTForwarders.140" Version="1.0.7" />
     </ItemGroup>
 
     <ItemGroup>
