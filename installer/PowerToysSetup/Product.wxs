@@ -529,11 +529,11 @@
     <!-- Image Resizer -->
     <DirectoryRef Id="ImageResizerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)">
       <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.deps.json" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.exe" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizerExt.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.runtimeconfig.json" />
         <File Id="ImageResizer_ManagedCommon" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ManagedCommon.dll" />
         <File Id="ImageResizer_ManagedTelemetry" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ManagedTelemetry.dll" />
         <File Id="ImageResizer_Microsoft.PowerToys.Common.UI" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Microsoft.PowerToys.Common.UI.dll" />
@@ -553,7 +553,7 @@
       </Component>
       <Component Id="Module_ImageResizer_Registry" Guid="8B593E2C-2D9B-4EBC-93F7-A2B69707DAC9" Win64="yes">
         <RegistryKey Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
-          <RegistryValue Value="[ImageResizerInstallFolder]ImageResizerExt.dll" Type="string" />
+          <RegistryValue Value="[ImageResizerInstallFolder]PowerToys.ImageResizerExt.dll" Type="string" />
           <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
         </RegistryKey>
 
