@@ -275,7 +275,7 @@ namespace MonacoPreviewHandler
                 }
                 else
                 {
-                    return Color.DimGray;
+                    return Color.Black;
                 }
             }
         }
