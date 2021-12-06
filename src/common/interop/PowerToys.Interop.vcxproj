@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
-    <AssemblyTitle>PowerToysInterop</AssemblyTitle>
+    <AssemblyTitle>PowerToys.Interop</AssemblyTitle>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2019 Microsoft Corp.</AssemblyCopyright>
   </PropertyGroup>
@@ -12,7 +12,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
     <RootNamespace>PowerToysInterop</RootNamespace>
-    <ProjectName>PowerToysInterop</ProjectName>
+    <ProjectName>PowerToys.Interop</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -32,7 +32,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <TargetName>PowerToysInterop</TargetName>
+    <TargetName>PowerToys.Interop</TargetName>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">

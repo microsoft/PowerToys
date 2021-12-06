@@ -75,7 +75,7 @@
     <PackageReference Include="System.Text.Json" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\interop\PowerToysInterop.vcxproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj" />
   </ItemGroup>
   <ItemGroup>

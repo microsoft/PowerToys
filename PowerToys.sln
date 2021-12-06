@@ -182,7 +182,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Library", "src\settings-ui\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj", "{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToysInterop", "src\common\interop\PowerToysInterop.vcxproj", "{F055103B-F80B-4D0C-BF48-057C55620033}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.Interop", "src\common\interop\PowerToys.Interop.vcxproj", "{F055103B-F80B-4D0C-BF48-057C55620033}"
 	ProjectSection(ProjectDependencies) = postProject
 		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF} = {CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}
 	EndProjectSection

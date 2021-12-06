@@ -195,7 +195,7 @@
                                                 </DataTemplate>
                                             </ListView.ItemTemplate>
                                         </ListView>
-                                        <HyperlinkButton Grid.Row="2" VerticalAlignment="Bottom">
+                                        <HyperlinkButton Grid.Row="2" VerticalAlignment="Bottom" NavigateUri="https://aka.ms/powertoysRegExHelp">
                                             <TextBlock x:Uid="RegExCheatSheet_LearnMore" />
                                         </HyperlinkButton>
                                     </Grid>
