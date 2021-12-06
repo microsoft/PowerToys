@@ -56,6 +56,14 @@ jobs:
     displayName: NuGet restore solutions dependencies
     inputs:
       command: restore
+      selectOrConfig: config
+      nugetConfigPath: .pipelines/release-nuget.config
+
+# we may need to do this one by one based on the cmd files for restoring.
+  - task: NuGetCommand@2
+    displayName: NuGet restore solutions dependencies
+    inputs:
+      command: restore
       restoreSolution: '**/*.sln'
       selectOrConfig: config
       nugetConfigPath: .pipelines/release-nuget.config
@@ -64,8 +72,7 @@ jobs:
     displayName: Moving telem files over
     inputs:
       script: |
-        dir
-        call nuget.exe restore -PackagesDirectory . .pipelines/packages.config || exit /b 1
+        call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "..\src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "..\src\common\Telemetry\TelemetryBase.cs" || exit /b 1
     
