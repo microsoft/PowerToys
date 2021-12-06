@@ -95,7 +95,7 @@ public:
         const NOTIFICATION_USER_INPUT_DATA*,
         ULONG) override
     {
-        auto lib = LoadLibraryW(L"BackgroundActivatorDLL.dll");
+        auto lib = LoadLibraryW(L"PowerToys.BackgroundActivatorDLL.dll");
         if (!lib)
         {
             return 1;
