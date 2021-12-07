@@ -655,10 +655,10 @@
     <!-- MouseUtils -->
     <DirectoryRef Id="MouseUtilsInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)">
       <Component Id="Module_FindMyMouse" Guid="60D0E4AE-188F-4403-BF06-1465AACC1BC5" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\FindMyMouse.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.FindMyMouse.dll" KeyPath="yes" />
       </Component>
       <Component Id="Module_MouseHighlighter" Guid="3BAEA39F-A73D-48D2-9616-BBED5B8C86D3" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\MouseHighlighter.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.MouseHighlighter.dll" KeyPath="yes" />
       </Component>
     </DirectoryRef>
 
