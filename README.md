@@ -72,16 +72,6 @@ Most contributions require you to agree to a [Contributor License Agreement (CLA
 
 For guidance on developing for PowerToys, please read the [developer docs](/doc/devdocs) for a detailed breakdown. This includes how to setup your computer to compile.
 
-## Communication (Support)
-
-For any kinds of questions you may have that doesn't require submitting an issue, please join us on Discord or Slack and somebody will answer any questions you may have regarding PowerToys.
-
-Note: 
-Questions should not go indepth in spec'ing, design, documentation, or finding bugs as those should be listed as issues. 
-
-Links:
-(https://discord.com/)
-(https://slack.com/)
 
 ## What's Happening
 
