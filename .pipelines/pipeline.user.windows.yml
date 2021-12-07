@@ -176,7 +176,7 @@ build:
             - 'modules\PowerRename\PowerToys.PowerRenameUILib.dll'
             - 'modules\PowerRename\PowerToys.PowerRename.exe'
             - 'modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe'
-            - 'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'
+            - 'modules\ShortcutGuide\ShortcutGuideModuleInterface\PowerToys.ShortcutGuideModuleInterface.dll'
             - 'modules\VideoConference\VideoConferenceModule.dll'
             - 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
             - 'Settings\PowerToys.ManagedTelemetry.dll'

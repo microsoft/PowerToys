@@ -665,7 +665,7 @@
     <!-- Shortcut guide -->
     <DirectoryRef Id="ShortcutGuideModuleInterfaceInstallFolder" FileSource="$(var.ShortcutGuideModuleInterface)">
       <Component Id="Module_ShortcutGuideModuleInterface" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
-        <File Source="$(var.ShortcutGuideModuleInterface)\ShortcutGuideModuleInterface.dll" KeyPath="yes" />
+        <File Source="$(var.ShortcutGuideModuleInterface)\PowerToys.ShortcutGuideModuleInterface.dll" KeyPath="yes" />
       </Component>
     </DirectoryRef>
 
