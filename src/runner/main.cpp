@@ -152,7 +152,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/MouseUtils/PowerToys.MouseHighlighter.dll"
 
         };
-        const auto VCM_PATH = L"modules/VideoConference/VideoConferenceModule.dll";
+        const auto VCM_PATH = L"modules/VideoConference/PowerToys.VideoConferenceModule.dll";
         if (const auto mf = LoadLibraryA("mf.dll"))
         {
             FreeLibrary(mf);

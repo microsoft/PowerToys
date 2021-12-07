@@ -440,7 +440,7 @@ void toggleProxyCamRegistration(const bool enable)
     auto vcmRoot = fs::path{ get_module_folderpath() } / "modules";
     vcmRoot /= "VideoConference";
 
-    std::array<fs::path, 2> proxyFilters = { vcmRoot / "VideoConferenceProxyFilter_x64.dll", vcmRoot / "VideoConferenceProxyFilter_x86.dll" };
+    std::array<fs::path, 2> proxyFilters = { vcmRoot / "PowerToys.VideoConferenceProxyFilter_x64.dll", vcmRoot / "PowerToys.VideoConferenceProxyFilter_x86.dll" };
     for (const auto filter : proxyFilters)
     {
         std::wstring params{ L"/s " };
