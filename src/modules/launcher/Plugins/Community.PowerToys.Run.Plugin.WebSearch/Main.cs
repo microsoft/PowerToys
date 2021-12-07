@@ -59,9 +59,15 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
         public List<Result> Query(Query query)
         {
+            if (query is null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             var results = new List<Result>();
 
-            if (IsActivationKeyword(query)
+            if (!AreResultsGlobal()
+                && query.ActionKeyword == query.RawQuery
                 && IsDefaultBrowserSet())
             {
                 results.Add(new Result
@@ -73,11 +79,13 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 return results;
             }
 
-            if (!string.IsNullOrEmpty(query?.Search))
+            if (!string.IsNullOrEmpty(query.Search))
             {
                 string searchTerm = query.Search;
 
-                if (_notGlobalIfUri
+                // Don't include in global results if the query is a URI
+                if (AreResultsGlobal()
+                    && _notGlobalIfUri
                     && IsURI(searchTerm))
                 {
                     return results;
@@ -110,6 +118,11 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
             return results;
 
+            bool AreResultsGlobal()
+            {
+                return string.IsNullOrEmpty(query.ActionKeyword);
+            }
+
             // Checks if input is a URI the same way Microsoft.Plugin.Uri.UriHelper.ExtendedUriParser does
             bool IsURI(string input)
             {
@@ -133,12 +146,6 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
                 return true;
             }
-        }
-
-        private static bool IsActivationKeyword(Query query)
-        {
-            return !string.IsNullOrEmpty(query?.ActionKeyword)
-                   && query?.ActionKeyword == query?.RawQuery;
         }
 
         private bool IsDefaultBrowserSet()
