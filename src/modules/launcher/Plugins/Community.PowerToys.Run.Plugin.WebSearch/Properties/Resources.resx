@@ -120,16 +120,16 @@
   <data name="plugin_description" xml:space="preserve">
     <value>Search the web.</value>
   </data>
+  <data name="plugin_global_if_uri" xml:space="preserve">
+    <value>Don't include in global results on queries that are URIs</value>
+  </data>
   <data name="plugin_name" xml:space="preserve">
     <value>Web Search</value>
   </data>
   <data name="plugin_open" xml:space="preserve">
-    <value>Open in default browser</value>
+    <value>Search the web in the default browser</value>
   </data>
   <data name="plugin_search_failed" xml:space="preserve">
-    <value>Failed to open URL:</value>
-  </data>
-  <data name="plugin_search_web" xml:space="preserve">
-    <value>Search the web for</value>
+    <value>Failed to open the default browser</value>
   </data>
 </root>

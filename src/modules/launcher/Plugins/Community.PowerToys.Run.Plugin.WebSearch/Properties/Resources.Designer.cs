@@ -70,6 +70,15 @@ namespace Community.PowerToys.Run.Plugin.WebSearch.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Don&apos;t include in global results on queries that are URIs.
+        /// </summary>
+        public static string plugin_global_if_uri {
+            get {
+                return ResourceManager.GetString("plugin_global_if_uri", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Web Search.
         /// </summary>
         public static string plugin_name {
@@ -79,7 +88,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open in default browser.
+        ///   Looks up a localized string similar to Search the web in the default browser.
         /// </summary>
         public static string plugin_open {
             get {
@@ -88,20 +97,11 @@ namespace Community.PowerToys.Run.Plugin.WebSearch.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to open URL:.
+        ///   Looks up a localized string similar to Failed to open the default browser.
         /// </summary>
         public static string plugin_search_failed {
             get {
                 return ResourceManager.GetString("plugin_search_failed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search the web for.
-        /// </summary>
-        public static string plugin_search_web {
-            get {
-                return ResourceManager.GetString("plugin_search_web", resourceCulture);
             }
         }
     }

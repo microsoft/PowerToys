@@ -5,20 +5,29 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Text;
+using System.Windows.Controls;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.WebSearch
 {
-    public class Main : IPlugin, IPluginI18n, IContextMenu, IDisposable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISettingProvider, IDisposable
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
         private static readonly IFile File = FileSystem.File;
 
+        private const string NotGlobalIfUri = nameof(NotGlobalIfUri);
+
+        /// <summary>
+        /// If true, dont show global result on queries that are URIs
+        /// </summary>
+        private bool _notGlobalIfUri = true;
         private bool _disposed;
 
         public string BrowserIconPath { get; set; }
@@ -32,6 +41,16 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
         public string Name => Properties.Resources.plugin_name;
 
         public string Description => Properties.Resources.plugin_description;
+
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        {
+            new PluginAdditionalOption()
+            {
+                Key = NotGlobalIfUri,
+                DisplayLabel = Properties.Resources.plugin_global_if_uri,
+                Value = true,
+            },
+        };
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
@@ -48,20 +67,8 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 results.Add(new Result
                 {
                     Title = Description.Remove(Description.Length - 1),
-                    SubTitle = BrowserPath,
                     IcoPath = DefaultIconPath,
-                    Action = action =>
-                    {
-                        if (!Helper.OpenInShell(BrowserPath))
-                        {
-                            var title = $"Plugin: {Name}";
-                            var message = $"{Properties.Resources.plugin_search_failed}: ";
-                            Context.API.ShowMsg(title, message);
-                            return false;
-                        }
-
-                        return true;
-                    },
+                    Action = action => true,
                 });
                 return results;
             }
@@ -69,12 +76,21 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             if (!string.IsNullOrEmpty(query?.Search))
             {
                 string searchTerm = query.Search;
+
+                if (_notGlobalIfUri
+                    && IsURI(searchTerm))
+                {
+                    return results;
+                }
+
                 string arguments = $"\"? {searchTerm}\"";
 
                 results.Add(new Result
                 {
-                    Title = $"{Properties.Resources.plugin_search_web}: \"{searchTerm}\"",
+                    Title = $"{searchTerm} - {Properties.Resources.plugin_name}",
+                    TitleHighlightData = Enumerable.Range(0, searchTerm.Length).ToList(),
                     SubTitle = Properties.Resources.plugin_open,
+                    QueryTextDisplay = searchTerm,
                     IcoPath = BrowserIconPath,
                     ProgramArguments = arguments,
                     Action = action =>
@@ -93,6 +109,30 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             }
 
             return results;
+
+            // Checks if input is a URI the same way Microsoft.Plugin.Uri.UriHelper.ExtendedUriParser does
+            bool IsURI(string input)
+            {
+                if (input.EndsWith(":", StringComparison.CurrentCulture)
+                    || input.EndsWith(".", StringComparison.CurrentCulture)
+                    || input.EndsWith(":/", StringComparison.CurrentCulture)
+                    || input.EndsWith("://", StringComparison.CurrentCulture)
+                    || input.All(char.IsDigit))
+                {
+                    return false;
+                }
+
+                try
+                {
+                    _ = new UriBuilder(input);
+                }
+                catch (UriFormatException)
+                {
+                    return false;
+                }
+
+                return true;
+            }
         }
 
         private static bool IsActivationKeyword(Query query)
@@ -227,6 +267,16 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
                 _disposed = true;
             }
+        }
+
+        public Control CreateSettingPanel()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            _notGlobalIfUri = settings?.AdditionalOptions?.FirstOrDefault(x => x.Key == NotGlobalIfUri)?.Value ?? false;
         }
     }
 }
