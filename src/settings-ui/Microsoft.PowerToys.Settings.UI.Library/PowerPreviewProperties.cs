@@ -97,6 +97,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool enableGcodePreview = true;
+
+        [JsonPropertyName("gcode-previewer-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableGcodePreview
+        {
+            get => enableGcodePreview;
+            set
+            {
+                if (value != enableGcodePreview)
+                {
+                    LogTelemetryEvent(value);
+                    enableGcodePreview = value;
+                }
+            }
+        }
+
         private bool enableGcodeThumbnail = true;
 
         [JsonPropertyName("gcode-thumbnail-toggle-setting")]

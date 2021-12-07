@@ -1832,4 +1832,11 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Description" xml:space="preserve">
+    <value>Only .gcode files with embedded thumbnails are supported</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
+    <value>Enable G-code (.gcode) preview</value>
+    <comment>Do you want this feature on / off</comment>
+  </data>
 </root>

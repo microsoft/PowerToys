@@ -50,6 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
             _mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
             _pdfRenderIsEnabled = Settings.Properties.EnablePdfPreview;
+            _gcodeRenderIsEnabled = Settings.Properties.EnableGcodePreview;
             _pdfThumbnailIsEnabled = Settings.Properties.EnablePdfThumbnail;
             _gcodeThumbnailIsEnabled = Settings.Properties.EnableGcodeThumbnail;
         }
@@ -57,6 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _svgRenderIsEnabled;
         private bool _mdRenderIsEnabled;
         private bool _pdfRenderIsEnabled;
+        private bool _gcodeRenderIsEnabled;
         private bool _svgThumbnailIsEnabled;
         private bool _pdfThumbnailIsEnabled;
         private bool _gcodeThumbnailIsEnabled;
@@ -146,6 +148,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _pdfThumbnailIsEnabled = value;
                     Settings.Properties.EnablePdfThumbnail = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool GCODERenderIsEnabled
+        {
+            get
+            {
+                return _gcodeRenderIsEnabled;
+            }
+
+            set
+            {
+                if (value != _gcodeRenderIsEnabled)
+                {
+                    _gcodeRenderIsEnabled = value;
+                    Settings.Properties.EnableGcodePreview = value;
                     RaisePropertyChanged();
                 }
             }

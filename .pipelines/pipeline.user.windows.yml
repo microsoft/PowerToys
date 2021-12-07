@@ -107,6 +107,8 @@ build:
             - 'modules\FancyZones\PowerToys.Interop.dll'
             - 'modules\FancyZones\Telemetry.dll'
             - 'modules\FancyZones\Microsoft.PowerToys.Common.UI.dll'
+            - 'modules\FileExplorerPreview\GcodePreviewHandler.dll'
+            - 'modules\FileExplorerPreview\GcodePreviewHandler.comhost.dll'
             - 'modules\FileExplorerPreview\GcodeThumbnailProvider.dll'
             - 'modules\FileExplorerPreview\GcodeThumbnailProvider.comhost.dll'
             - 'modules\FileExplorerPreview\PowerToys.ManagedTelemetry.dll'

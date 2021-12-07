@@ -50,6 +50,20 @@ inline registry::ChangeSet getPdfPreviewHandlerChangeSet(const std::wstring inst
                                   L".pdf");
 }
 
+inline registry::ChangeSet getGcodePreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
+{
+    using namespace registry::shellex;
+    return generatePreviewHandler(PreviewHandlerType::preview,
+                                  perUser,
+                                  L"{ec52dea8-7c9f-4130-a77b-1737d0418507}",
+                                  get_std_product_version(),
+                                  (fs::path{ installationDir } / LR"d(modules\FileExplorerPreview\GcodePreviewHandler.comhost.dll)d").wstring(),
+                                  registry::DOTNET_COMPONENT_CATEGORY_CLSID,
+                                  L"Microsoft.PowerToys.PreviewHandler.Gcode.GcodePreviewHandler",
+                                  L"G-code Preview Handler",
+                                  L".gcode");
+}
+
 inline registry::ChangeSet getSvgThumbnailHandlerChangeSet(const std::wstring installationDir, const bool perUser)
 {
     using namespace registry::shellex;
@@ -97,6 +111,7 @@ inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstri
     return { getSvgPreviewHandlerChangeSet(installationDir, perUser),
              getMdPreviewHandlerChangeSet(installationDir, perUser),
              getPdfPreviewHandlerChangeSet(installationDir, perUser),
+             getGcodePreviewHandlerChangeSet(installationDir, perUser),
              getSvgThumbnailHandlerChangeSet(installationDir, perUser),
              getPdfThumbnailHandlerChangeSet(installationDir, perUser),
              getGcodeThumbnailHandlerChangeSet(installationDir, perUser) };
