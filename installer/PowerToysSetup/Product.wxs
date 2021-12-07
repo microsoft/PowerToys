@@ -708,7 +708,7 @@
     <!-- KBM -->
     <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\">
       <Component Id="Module_KeyboardManager" Guid="9279BD82-786F-4F0B-8E49-DB484EE34C9B" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManager.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\PowerToys.KeyboardManager.dll" />
       </Component>
     </DirectoryRef>
 
