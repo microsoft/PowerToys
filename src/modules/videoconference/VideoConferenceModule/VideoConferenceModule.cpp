@@ -527,6 +527,11 @@ void VideoConferenceModule::destroy()
     instance = nullptr;
 }
 
+bool VideoConferenceModule::is_enabled_by_default() const
+{
+    return false;
+}
+
 void VideoConferenceModule::sendSourceCameraNameUpdate()
 {
     if (!_settingsUpdateChannel.has_value() || settings.selectedCamera.empty())

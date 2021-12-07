@@ -1825,4 +1825,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
   </data>
+  <data name="VideoConference_RunAsAdminRequired.Title" xml:space="preserve">
+    <value>You need to run as administrator to modify these settings.</value>
+  </data>
 </root>
