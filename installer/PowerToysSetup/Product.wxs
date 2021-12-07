@@ -780,39 +780,39 @@
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
         <!-- File to include PowerPreview Module native dll -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\powerpreview.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.powerpreview.dll" KeyPath="yes" />
         <!-- File to include common library used by preview handlers -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PreviewHandlerCommon.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PreviewHandlerCommon.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PreviewHandlerCommon.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PreviewHandlerCommon.deps.json" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.ManagedTelemetry.dll" />
         <!-- File to include dll for Svg Preview Handler -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.comhost.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgPreviewHandler.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgPreviewHandler.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgPreviewHandler.deps.json" />
         <!-- File to include dll for Svg Thumbnail Provider -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.comhost.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgThumbnailProvider.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgThumbnailProvider.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgThumbnailProvider.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgThumbnailProvider.deps.json" />
         <!-- Files to include dll's for Markdown Preview Handler and it's dependencies -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\MarkdownPreviewHandler.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\MarkdownPreviewHandler.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\MarkdownPreviewHandler.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MarkdownPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MarkdownPreviewHandler.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MarkdownPreviewHandler.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MarkdownPreviewHandler.deps.json" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Markdig.Signed.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\HtmlAgilityPack.dll" />
         <File Id="FileExplorerPreview_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.IO.Abstractions.dll" />
         <!-- File to include dll for Pdf Preview Handler -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.comhost.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.deps.json" />
         <!-- File to include dll for Pdf Thumbnail Provider -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.comhost.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.deps.json" />
       </Component>
     </DirectoryRef>
 

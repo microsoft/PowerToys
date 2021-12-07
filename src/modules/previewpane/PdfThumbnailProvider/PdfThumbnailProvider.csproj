@@ -4,8 +4,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ProjectGuid>{11491FD8-F921-48BF-880C-7FEA185B80A1}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.ThumbnailHandler.Pdf</RootNamespace>
-    <AssemblyName>PdfThumbnailProvider</AssemblyName>
-    <AssemblyTitle>PdfThumbnailProvider</AssemblyTitle>
+    <AssemblyName>PowerToys.PdfThumbnailProvider</AssemblyName>
+    <AssemblyTitle>PowerToys.PdfThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys PdfPreviewHandler</AssemblyDescription>
     <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
