@@ -144,7 +144,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/ImageResizer/PowerToys.ImageResizerExt.dll",
             L"modules/KeyboardManager/PowerToys.KeyboardManager.dll",
             L"modules/Launcher/Microsoft.Launcher.dll",
-            L"modules/PowerRename/PowerRenameExt.dll",
+            L"modules/PowerRename/PowerToys.PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.dll",
             L"modules/ColorPicker/PowerToys.ColorPicker.dll",
             L"modules/Awake/PowerToys.AwakeModuleInterface.dll",

@@ -624,12 +624,12 @@
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.Toolkit.Win32.UI.XamlHost.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\msvcp140_app.dll" />
-		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameUILib.dll" />
-		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRename.exe" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerToys.PowerRenameUILib.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerToys.PowerRename.exe" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\resources.pri" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_1_app.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_app.dll" />
-		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerToys.PowerRenameExt.dll" KeyPath="yes" />
 		    <!-- VCRuntime -->
 		    <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
 		      <File Id="PowerRename_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
@@ -637,7 +637,7 @@
         <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
           <RegistryValue Type="string" Value="PowerRename Shell Extension" />
           <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
-          <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerRenameExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerToys.PowerRenameExt.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
         <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
