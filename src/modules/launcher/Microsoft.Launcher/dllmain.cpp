@@ -226,9 +226,6 @@ public:
             processStartingMutex.unlock();
         }
 
-
-
-        m_enabled = true;
         ResetEvent(m_hCentralizedKeyboardHookEvent);
         ResetEvent(send_telemetry_event);
 
@@ -288,6 +285,7 @@ public:
             }
         }
         processStarting = false;
+        m_enabled = true;
         Logger::info("Microsoft_Launcher::enable() end");
     }
 
