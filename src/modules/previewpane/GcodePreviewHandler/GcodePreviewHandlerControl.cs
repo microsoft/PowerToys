@@ -61,7 +61,16 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
 
                     _infoBarAdded = false;
 
-                    AddPictureBoxControl(thumbnail);
+                    if (thumbnail == null)
+                    {
+                        _infoBarAdded = true;
+                        AddTextBoxControl(Resource.GcodeWithoutEmbeddedThumbnails);
+                    }
+                    else
+                    {
+                        AddPictureBoxControl(thumbnail);
+                    }
+
                     Resize += FormResized;
                     base.DoPreview(dataSource);
                     PowerToysTelemetry.Log.WriteEvent(new GcodeFilePreviewed());

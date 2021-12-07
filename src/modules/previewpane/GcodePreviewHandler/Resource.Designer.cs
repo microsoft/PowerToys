@@ -68,5 +68,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode {
                 return ResourceManager.GetString("GcodeNotPreviewedError", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This G-code does not contain any embedded thumbnails..
+        /// </summary>
+        internal static string GcodeWithoutEmbeddedThumbnails {
+            get {
+                return ResourceManager.GetString("GcodeWithoutEmbeddedThumbnails", resourceCulture);
+            }
+        }
     }
 }
