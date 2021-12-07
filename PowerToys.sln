@@ -374,6 +374,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FindMyMouse", "src\modules\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MouseHighlighter", "src\modules\MouseUtils\MouseHighlighter\MouseHighlighter.vcxproj", "{782A61BE-9D85-4081-B35C-1CCC9DCC1E88}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.WebSearch", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.WebSearch\Community.PowerToys.Run.Plugin.WebSearch.csproj", "{9F94B303-5E21-4364-9362-64426F8DB932}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -995,6 +997,12 @@ Global
 		{782A61BE-9D85-4081-B35C-1CCC9DCC1E88}.Release|x64.ActiveCfg = Release|x64
 		{782A61BE-9D85-4081-B35C-1CCC9DCC1E88}.Release|x64.Build.0 = Release|x64
 		{782A61BE-9D85-4081-B35C-1CCC9DCC1E88}.Release|x86.ActiveCfg = Release|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Debug|x64.ActiveCfg = Debug|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Debug|x64.Build.0 = Debug|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Debug|x86.ActiveCfg = Debug|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x64.ActiveCfg = Release|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x64.Build.0 = Release|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1115,6 +1123,7 @@ Global
 		{322566EF-20DC-43A6-B9F8-616AF942579A} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{E94FD11C-0591-456F-899F-EFC0CA548336} = {322566EF-20DC-43A6-B9F8-616AF942579A}
 		{782A61BE-9D85-4081-B35C-1CCC9DCC1E88} = {322566EF-20DC-43A6-B9F8-616AF942579A}
+		{9F94B303-5E21-4364-9362-64426F8DB932} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
