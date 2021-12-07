@@ -37,6 +37,8 @@ ignore$
 ^src/modules/powerrename/UWPui/pch\.h$
 ^src/modules/powerrename/UWPui/PowerRenameUWPUI\.vcxproj\.filters$
 ^src/modules/previewpane/PreviewPaneUnitTests/HelperFiles/MarkdownWithHTMLImageTag\.txt$
+^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag\.txt$
+^src/modules/MouseUtils/MouseHighlighter/MouseHighlighter\.vcxproj\.filters
 ^tools/CleanUp_tool/CleanUp_tool\.vcxproj\.filters$
 ^\.github/
 ^\.github/actions/spell-check/
