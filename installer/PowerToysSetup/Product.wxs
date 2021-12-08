@@ -1038,25 +1038,25 @@
                     <?define IdSafeLanguage = $(var.Language)?>
                 <?endif?>
                 <Component Id="Launcher_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)LauncherInstallFolder">
-                    <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerLauncher.resources.dll" />
+                    <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerToys.PowerLauncher.resources.dll" />
                 </Component>
                 <Component Id="FancyZonesEditor_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FancyZonesInstallFolder">
                     <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\PowerToys.FancyZonesEditor.resources.dll" />
                 </Component>
                 <Component Id="ImageResizer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ImageResizerInstallFolder">
-                    <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\ImageResizer.resources.dll" />
+                    <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\PowerToys.ImageResizer.resources.dll" />
                 </Component>
                 <Component Id="ColorPicker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder">
                     <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.Language)\PowerToys.ColorPickerUI.resources.dll" />
                 </Component>
                 <Component Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
-                    <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\MarkdownPreviewHandler.resources.dll" />
+                    <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.MarkdownPreviewHandler.resources.dll" />
                 </Component>
                 <Component Id="SVGPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
-                  <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\SvgPreviewHandler.resources.dll" />
+                  <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.SvgPreviewHandler.resources.dll" />
                 </Component>
                 <Component Id="PDFPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
-                  <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PdfPreviewHandler.resources.dll" />
+                  <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.PdfPreviewHandler.resources.dll" />
                 </Component>
                 <!-- PowerToys Run aka Launcher plugin resources -->
                 <Component Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder">
