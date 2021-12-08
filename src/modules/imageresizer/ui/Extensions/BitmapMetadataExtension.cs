@@ -112,7 +112,16 @@ namespace ImageResizer.Extensions
         {
             var listOfAllMetadata = new List<(string metadataPath, object value)>();
 
-            GetMetadataRecursively(metadata, string.Empty);
+            try
+            {
+                GetMetadataRecursively(metadata, string.Empty);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Debug.WriteLine(ex);
+            }
 
             return listOfAllMetadata;
 
@@ -202,7 +211,16 @@ namespace ImageResizer.Extensions
         {
             var listOfAllMetadata = new List<(string metadataPath, object value)>();
 
-            GetMetadataRecursively(metadata, string.Empty);
+            try
+            {
+                GetMetadataRecursively(metadata, string.Empty);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Debug.WriteLine(ex);
+            }
 
             return listOfAllMetadata;
 
