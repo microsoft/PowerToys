@@ -95,10 +95,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Images\websearch.dark.png">
+    <None Update="Images\WebSearch.dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Images\websearch.light.png">
+    <None Update="Images\WebSearch.light.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

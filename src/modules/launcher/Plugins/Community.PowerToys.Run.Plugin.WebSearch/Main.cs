@@ -83,7 +83,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             {
                 string searchTerm = query.Search;
 
-                // Don't include in global results if the query is a URI
+                // Don't include in global results if the query is a URI (and if the option NotGlobalIfUri is enabled)
                 if (AreResultsGlobal()
                     && _notGlobalIfUri
                     && IsURI(searchTerm))
@@ -249,11 +249,11 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                DefaultIconPath = "Images/websearch.light.png";
+                DefaultIconPath = "Images/WebSearch.light.png";
             }
             else
             {
-                DefaultIconPath = "Images/websearch.dark.png";
+                DefaultIconPath = "Images/WebSearch.dark.png";
             }
         }
 

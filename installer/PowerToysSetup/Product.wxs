@@ -1213,8 +1213,8 @@
         <?endforeach?>
       </Component>
       <Component Id="WebSearchImagesComponent" Directory="WebSearchImagesFolder" Guid="B3A5DA32-FA87-47E6-81F6-0454BA95CCA4">
-        <File Id="WebSearchLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\Images\websearch.light.png" />
-        <File Id="WebSearchDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\Images\websearch.dark.png" />
+        <File Id="WebSearchLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\Images\WebSearch.light.png" />
+        <File Id="WebSearchDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\Images\WebSearch.dark.png" />
       </Component>
 
       <!-- Uri Plugin -->
