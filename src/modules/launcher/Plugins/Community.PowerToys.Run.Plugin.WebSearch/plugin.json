@@ -8,6 +8,6 @@
   "Language": "csharp",
   "Website": "https://github.com/cyberrex5",
   "ExecuteFileName": "Community.PowerToys.Run.Plugin.WebSearch.dll",
-  "IcoPathDark": "Images\\websearch.dark.png",
-  "IcoPathLight": "Images\\websearch.light.png"
+  "IcoPathDark": "Images\\WebSearch.dark.png",
+  "IcoPathLight": "Images\\WebSearch.light.png"
 }
