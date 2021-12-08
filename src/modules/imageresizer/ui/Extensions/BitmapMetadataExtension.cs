@@ -120,6 +120,7 @@ namespace ImageResizer.Extensions
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
+                Debug.WriteLine($"Exception while trying to iterate recursively over metadata. We were able to read {listOfAllMetadata.Count} metadata entries.");
                 Debug.WriteLine(ex);
             }
 
@@ -219,6 +220,7 @@ namespace ImageResizer.Extensions
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
+                Debug.WriteLine($"Exception while trying to iterate recursively over metadata. We were able to read {listOfAllMetadata.Count} metadata entries.");
                 Debug.WriteLine(ex);
             }
 
