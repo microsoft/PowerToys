@@ -65,7 +65,7 @@ build:
         - from: 'x86/Release'
           to: 'Build_Output'
           include:
-            - 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
+            - 'modules\VideoConference\PowerToys.VideoConferenceProxyFilter_x86.dll'
           signing_options:
             sign_inline: true  # This does signing as soon as this command completes            
         - from: 'x64/Release'
