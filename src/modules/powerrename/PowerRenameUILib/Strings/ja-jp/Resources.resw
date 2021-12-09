@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SearchBox.PlaceholderText" xml:space="preserve">
+    <value>検索...</value>
+  </data>
+  <data name="RegExCheatSheet_Title.Text" xml:space="preserve">
+    <value>正規表現一覧</value>
+  </data>
+  <data name="RegExCheatSheet_MatchAny" xml:space="preserve">
+    <value>任意の1文字にマッチ</value>
+  </data>
+  <data name="RegExCheatSheet_MatchDigit" xml:space="preserve">
+    <value>全ての数字、[0-9]の省略形</value>
+  </data>
+  <data name="RegExCheatSheet_MatchNonDigit" xml:space="preserve">
+    <value>全ての数字以外の文字、[^0-9]の短縮形</value>
+  </data>
+  <data name="RegExCheatSheet_MatchNonWS" xml:space="preserve">
+    <value>全ての空白以外の文字、[^\\s]の短縮形</value>
+  </data>
+  <data name="RegExCheatSheet_MatchWordChar" xml:space="preserve">
+    <value>英数字・アンダーバー、[a-zA-Z_0-9]の短縮形</value>
+  </data>
+  <data name="RegExCheatSheet_MatchSeveralWS" xml:space="preserve">
+    <value>英数字・アンダーバーの繰り返し</value>
+  </data>
+  <data name="RegExCheatSheet_MatchWordBoundary" xml:space="preserve">
+    <value>[a-zA-Z0-9_]で構成される単語の末尾か先頭</value>
+  </data>
+  <data name="RegExCheatSheet_LearnMore.Text" xml:space="preserve">
+    <value>正規表現の詳しい説明</value>
+  </data>
+  <data name="ReplaceBox.PlaceholderText" xml:space="preserve">
+    <value>置換...</value>
+  </data>
+  <data name="DateTimeCheatSheet_Title.Text" xml:space="preserve">
+    <value>ファイル作成日時からファイル名を生成</value>
+  </data>
+  <data name="DateTimeCheatSheet_FullYear" xml:space="preserve">
+    <value>4または5桁表示の年。利用するカレンダーにより桁数は変化します。</value>
+  </data>
+  <data name="DateTimeCheatSheet_YearLastTwoDigits" xml:space="preserve">
+    <value>末尾2桁表示の年。1桁の場合は0埋めします。</value>
+  </data>
+  <data name="DateTimeCheatSheet_YearLastDigit" xml:space="preserve">
+    <value>末尾1桁表示の年。</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthName" xml:space="preserve">
+    <value>月の名前。</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthNameAbbr" xml:space="preserve">
+    <value>月の名前の短縮形。利用するカレンダーによっては数字になります。</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthDigitLZero" xml:space="preserve">
+    <value>月の数字表記。1桁の場合は0埋めします。</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthDigit" xml:space="preserve">
+    <value>月の数字表記。1桁の場合でも0埋めしません。</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayName" xml:space="preserve">
+    <value>曜日。</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayNameAbbr" xml:space="preserve">
+    <value>曜日の短縮形。</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayDigitLZero" xml:space="preserve">
+    <value>(月の)日。1桁の場合は0埋めします。</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayDigit" xml:space="preserve">
+    <value>(月の)日。1桁の場合でも0埋めしません。</value>
+  </data>
+  <data name="DateTimeCheatSheet_HoursLZero" xml:space="preserve">
+    <value>時。1桁の場合は0埋めします。</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours" xml:space="preserve">
+    <value>時。1桁の場合でも0埋めしません。</value>
+  </data>
+  <data name="DateTimeCheatSheet_MinutesLZero" xml:space="preserve">
+    <value>分。1桁の場合は0埋めします。</value>
+  </data>
+  <data name="DateTimeCheatSheet_Minutes" xml:space="preserve">
+    <value>分。1桁の場合でも0埋めしません。</value>
+  </data>
+  <data name="DateTimeCheatSheet_SecondsLZero" xml:space="preserve">
+    <value>秒。1桁の場合は0埋めします。</value>
+  </data>
+  <data name="DateTimeCheatSheet_Seconds" xml:space="preserve">
+    <value>秒。1桁の場合でも0埋めしません。</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds3D" xml:space="preserve">
+    <value>ミリ秒。3桁表記。</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds2D" xml:space="preserve">
+    <value>ミリ秒。上位2桁表記。</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds1D" xml:space="preserve">
+    <value>ミリ秒。最上位桁表記。</value>
+  </data>
+  <data name="CheckBox_RegEx.Content" xml:space="preserve">
+    <value>正規表現を利用</value>
+  </data>
+  <data name="CheckBox_MatchAll.Content" xml:space="preserve">
+    <value>マッチした全ての文字列に適用</value>
+  </data>
+  <data name="CheckBox_Case.Content" xml:space="preserve">
+    <value>大文字/小文字の区別</value>
+  </data>
+  <data name="TextBox_ApplyTo.Text" xml:space="preserve">
+    <value>適用対象</value>
+  </data>
+  <data name="DocsButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>ドキュメント</value>
+  </data>
+  <data name="DocsButton.AutomationProperties.Name" xml:space="preserve">
+    <value>ドキュメント</value>
+  </data>
+  <data name="ToggleButton_IncludeFiles.ToolTipService.ToolTip" xml:space="preserve">
+    <value>ファイルを含める</value>
+  </data>
+  <data name="ToggleButton_IncludeFiles.AutomationProperties.Name" xml:space="preserve">
+    <value>ファイルを含める</value>
+  </data>
+  <data name="ToggleButton_IncludeFolders.ToolTipService.ToolTip" xml:space="preserve">
+    <value>フォルダーを含める</value>
+  </data>
+  <data name="ToggleButton_IncludeFolders.AutomationProperties.Name" xml:space="preserve">
+    <value>フォルダーを含める</value>
+  </data>
+  <data name="ToggleButton_IncludeSubFolders.ToolTipService.ToolTip" xml:space="preserve">
+    <value>サブフォルダーを含める</value>
+  </data>
+  <data name="ToggleButton_IncludeSubFolders.AutomationProperties.Name" xml:space="preserve">
+    <value>サブフォルダーを含める</value>
+  </data>
+  <data name="TextBlock_TextFormatting.Text" xml:space="preserve">
+    <value>大文字/小文字変換</value>
+  </data>
+  <data name="ToggleButton_Lowercase.ToolTipService.ToolTip" xml:space="preserve">
+    <value>全て小文字</value>
+  </data>
+  <data name="ToggleButton_Lowercase.AutomationProperties.Name" xml:space="preserve">
+    <value>全て小文字</value>
+  </data>
+  <data name="ToggleButton_Uppercase.ToolTipService.ToolTip" xml:space="preserve">
+    <value>全て大文字</value>
+  </data>
+  <data name="ToggleButton_Uppercase.AutomationProperties.Name" xml:space="preserve">
+    <value>全て大文字</value>
+  </data>
+  <data name="ToggleButton_Titlecase.ToolTipService.ToolTip" xml:space="preserve">
+    <value>タイトルケース</value>
+  </data>
+  <data name="ToggleButton_Titlecase.AutomationProperties.Name" xml:space="preserve">
+    <value>タイトルケース</value>
+  </data>
+  <data name="ToggleButton_Capitalize.ToolTipService.ToolTip" xml:space="preserve">
+    <value>各単語の先頭を大文字</value>
+  </data>
+  <data name="ToggleButton_Capitalize.AutomationProperties.Name" xml:space="preserve">
+    <value>各単語の先頭を大文字</value>
+  </data>
+  <data name="ToggleButton_EnumItems.ToolTipService.ToolTip" xml:space="preserve">
+    <value>番号を付与</value>
+  </data>
+  <data name="ToggleButton_EnumItems.AutomationProperties.Name" xml:space="preserve">
+    <value>番号を付与</value>
+  </data>
+  <data name="SelectAllCheckBox.AutomationProperties.Name" xml:space="preserve">
+    <value>一括で選択/選択解除</value>
+  </data>
+  <data name="FilterButton.AutomationProperties.Name" xml:space="preserve">
+    <value>フィルター</value>
+  </data>
+  <data name="FilterButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>フィルター</value>
+  </data>
+  <data name="ShowAll.Text" xml:space="preserve">
+    <value>全てを表示する</value>
+  </data>
+  <data name="ShowOnly.Text" xml:space="preserve">
+    <value>変換対象のみを表示する</value>
+  </data>
+  <data name="TxtBlock_Original.Text" xml:space="preserve">
+    <value>変更前</value>
+  </data>
+  <data name="TxtBlock_Renamed.Text" xml:space="preserve">
+    <value>変更後</value>
+  </data>
+  <data name="TxtBlock_ButtonSettings.ToolTipService.ToolTip" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="TxtBlock_ButtonSettings.AutomationProperties.Name" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="TxtBlock_ButtonApply.Text" xml:space="preserve">
+    <value>適用</value>
+  </data>
+  <data name="ButtonApply.AutomationProperties.Name" xml:space="preserve">
+    <value>適用</value>
+  </data>
+  <data name="TxtBlock_ButtonApplyAndClose.Text" xml:space="preserve">
+    <value>適用して閉じる</value>
+  </data>
+  <data name="RegExButton.AutomationProperties.Name" xml:space="preserve">
+    <value>正規表現一覧</value>
+  </data>
+  <data name="RegExButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>正規表現一覧</value>
+  </data>
+  <data name="FileCreationButton.AutomationProperties.Name" xml:space="preserve">
+    <value>ファイル作成日時に関するヘルプ</value>
+  </data>
+  <data name="FileCreationButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>ファイル作成日時に関するヘルプ</value>
+  </data>
+</root>
