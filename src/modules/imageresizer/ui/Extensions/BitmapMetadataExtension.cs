@@ -105,9 +105,16 @@ namespace ImageResizer.Extensions
         }
 
         /// <summary>
-        /// Gets all metadata
-        /// Iterates recursively through all metadata
+        /// Gets all metadata.
+        /// Iterates recursively through metadata and adds valid items to a list while skipping invalid data items.
         /// </summary>
+        /// <remarks>
+        /// Invalid data items are items which throw an exception when reading the data with metadata.GetQuery(...).
+        /// Sometimes Metadata collections are improper closed and cause an exception on IEnumerator.MoveNext(). In this case, we return all data items which were successfully collected so far.
+        /// </remarks>
+        /// <returns>
+        /// metadata path and metadata value of all successfully read data items.
+        /// </returns>
         public static List<(string metadataPath, object value)> GetListOfMetadata(this BitmapMetadata metadata)
         {
             var listOfAllMetadata = new List<(string metadataPath, object value)>();
