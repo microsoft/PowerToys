@@ -217,7 +217,7 @@
     <value>Use regular expressions</value>
   </data>
   <data name="CheckBox_MatchAll.Content" xml:space="preserve">
-    <value>Match all occurences</value>
+    <value>Match all occurrences</value>
   </data>
   <data name="CheckBox_Case.Content" xml:space="preserve">
     <value>Case sensitive</value>
