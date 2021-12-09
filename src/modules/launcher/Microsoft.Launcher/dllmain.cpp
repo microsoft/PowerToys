@@ -14,6 +14,7 @@
 #include <common/utils/winapi_error.h>
 
 #include <filesystem>
+#include <mutex>
 
 namespace
 {
@@ -60,6 +61,8 @@ private:
     // Load initial settings from the persisted values.
     void init_settings();
 
+    bool processStarting = false;
+    std::mutex processStartingMutex;
     bool processStarted = false;
 
     //contains the name of the powerToys
@@ -204,8 +207,25 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        Logger::info("Microsoft_Launcher::enable()");
-        m_enabled = true;
+        Logger::info("Microsoft_Launcher::enable() begin");
+
+        // This synchronization code is here since we've seen logs of this function being entered twice in the same process/thread pair.
+        // The theory here is that the call to ShellExecuteExW might be enabling some context switching that allows the low level keyboard hook to be run.
+        // Ref: https://github.com/microsoft/PowerToys/issues/12908#issuecomment-986995633
+        // We want only one instance to be started at the same time.
+        processStartingMutex.lock();
+        if (processStarting)
+        {
+            processStartingMutex.unlock();
+            Logger::warn(L"Two PowerToys Run processes were trying to get started at the same time.");
+            return;
+        }
+        else
+        {
+            processStarting = true;
+            processStartingMutex.unlock();
+        }
+
         ResetEvent(m_hCentralizedKeyboardHookEvent);
         ResetEvent(send_telemetry_event);
 
@@ -264,6 +284,9 @@ public:
                 }
             }
         }
+        processStarting = false;
+        m_enabled = true;
+        Logger::info("Microsoft_Launcher::enable() end");
     }
 
     // Disable the powertoy
