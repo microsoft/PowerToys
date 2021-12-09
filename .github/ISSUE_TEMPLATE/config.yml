@@ -4,7 +4,7 @@ contact_links:
     url: https://msrc.microsoft.com/create-report
     about: Report security bugs
   - name: "\U0001F4DA PowerToys user documentation"
-    url: https://github.com/microsoft/PowerToys/wiki
+    url: https://aka.ms/powertoys-docs
     about: Documentation for users of PowerToys utilities
   - name: "\U0001F4DA PowerToys dev documentation"
     url: https://github.com/microsoft/PowerToys/tree/main/doc/devdocs
