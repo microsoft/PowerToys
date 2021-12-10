@@ -105,14 +105,31 @@ namespace ImageResizer.Extensions
         }
 
         /// <summary>
-        /// Gets all metadata
-        /// Iterates recursively through all metadata
+        /// Gets all metadata.
+        /// Iterates recursively through metadata and adds valid items to a list while skipping invalid data items.
         /// </summary>
+        /// <remarks>
+        /// Invalid data items are items which throw an exception when reading the data with metadata.GetQuery(...).
+        /// Sometimes Metadata collections are improper closed and cause an exception on IEnumerator.MoveNext(). In this case, we return all data items which were successfully collected so far.
+        /// </remarks>
+        /// <returns>
+        /// metadata path and metadata value of all successfully read data items.
+        /// </returns>
         public static List<(string metadataPath, object value)> GetListOfMetadata(this BitmapMetadata metadata)
         {
             var listOfAllMetadata = new List<(string metadataPath, object value)>();
 
-            GetMetadataRecursively(metadata, string.Empty);
+            try
+            {
+                GetMetadataRecursively(metadata, string.Empty);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Debug.WriteLine($"Exception while trying to iterate recursively over metadata. We were able to read {listOfAllMetadata.Count} metadata entries.");
+                Debug.WriteLine(ex);
+            }
 
             return listOfAllMetadata;
 
@@ -202,7 +219,17 @@ namespace ImageResizer.Extensions
         {
             var listOfAllMetadata = new List<(string metadataPath, object value)>();
 
-            GetMetadataRecursively(metadata, string.Empty);
+            try
+            {
+                GetMetadataRecursively(metadata, string.Empty);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Debug.WriteLine($"Exception while trying to iterate recursively over metadata. We were able to read {listOfAllMetadata.Count} metadata entries.");
+                Debug.WriteLine(ex);
+            }
 
             return listOfAllMetadata;
 

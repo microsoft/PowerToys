@@ -2,7 +2,7 @@
   <Import Project="..\..\..\Version.props" />
   
   <PropertyGroup>
-    <AssemblyTitle>ImageResizer</AssemblyTitle>
+    <AssemblyTitle>PowerToys.ImageResizer</AssemblyTitle>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2019 Microsoft Corp.</AssemblyCopyright>
     <CodeAnalysisRuleSet>..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
@@ -18,7 +18,7 @@
     <ProjectGuid>{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>ImageResizer</RootNamespace>
-    <AssemblyName>ImageResizer</AssemblyName>
+    <AssemblyName>PowerToys.ImageResizer</AssemblyName>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

@@ -132,10 +132,13 @@ backend
 backtracer
 bak
 bbwe
+bca
+bcc
 bck
 Bcl
 betadele
 betsegaw
+bfee
 BGR
 bgra
 BGSOUNDS
@@ -640,6 +643,8 @@ gacutil
 GBs
 GCLP
 gcnew
+gcode
+gcodepreviewhandler
 gdi
 gdiplus
 GDISCALED
@@ -1152,6 +1157,7 @@ MAPVK
 Markdig
 martinchrzan
 martinmoene
+MATCHMODE
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested

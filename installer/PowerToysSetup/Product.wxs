@@ -481,11 +481,11 @@
     <!-- FancyZone -->
     <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesModuleInterface.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.deps.json" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesModuleInterface.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesEditor.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesEditor.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesEditor.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesEditor.exe" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZones.exe" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ControlzEx.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Xaml.Behaviors.dll" />
@@ -529,11 +529,11 @@
     <!-- Image Resizer -->
     <DirectoryRef Id="ImageResizerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)">
       <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.deps.json" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.exe" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizerExt.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.runtimeconfig.json" />
         <File Id="ImageResizer_ManagedCommon" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ManagedCommon.dll" />
         <File Id="ImageResizer_ManagedTelemetry" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ManagedTelemetry.dll" />
         <File Id="ImageResizer_Microsoft.PowerToys.Common.UI" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Microsoft.PowerToys.Common.UI.dll" />
@@ -553,7 +553,7 @@
       </Component>
       <Component Id="Module_ImageResizer_Registry" Guid="8B593E2C-2D9B-4EBC-93F7-A2B69707DAC9" Win64="yes">
         <RegistryKey Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
-          <RegistryValue Value="[ImageResizerInstallFolder]ImageResizerExt.dll" Type="string" />
+          <RegistryValue Value="[ImageResizerInstallFolder]PowerToys.ImageResizerExt.dll" Type="string" />
           <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
         </RegistryKey>
 
@@ -624,12 +624,12 @@
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.Toolkit.Win32.UI.XamlHost.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\msvcp140_app.dll" />
-		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameUILib.dll" />
-		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRename.exe" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerToys.PowerRenameUILib.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerToys.PowerRename.exe" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\resources.pri" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_1_app.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_app.dll" />
-		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerToys.PowerRenameExt.dll" KeyPath="yes" />
 		    <!-- VCRuntime -->
 		    <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
 		      <File Id="PowerRename_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
@@ -637,7 +637,7 @@
         <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
           <RegistryValue Type="string" Value="PowerRename Shell Extension" />
           <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
-          <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerRenameExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerToys.PowerRenameExt.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
         <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
@@ -655,30 +655,30 @@
     <!-- MouseUtils -->
     <DirectoryRef Id="MouseUtilsInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)">
       <Component Id="Module_FindMyMouse" Guid="60D0E4AE-188F-4403-BF06-1465AACC1BC5" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\FindMyMouse.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.FindMyMouse.dll" KeyPath="yes" />
       </Component>
       <Component Id="Module_MouseHighlighter" Guid="3BAEA39F-A73D-48D2-9616-BBED5B8C86D3" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\MouseHighlighter.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.MouseHighlighter.dll" KeyPath="yes" />
       </Component>
     </DirectoryRef>
 
     <!-- Shortcut guide -->
     <DirectoryRef Id="ShortcutGuideModuleInterfaceInstallFolder" FileSource="$(var.ShortcutGuideModuleInterface)">
       <Component Id="Module_ShortcutGuideModuleInterface" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
-        <File Source="$(var.ShortcutGuideModuleInterface)\ShortcutGuideModuleInterface.dll" KeyPath="yes" />
+        <File Source="$(var.ShortcutGuideModuleInterface)\PowerToys.ShortcutGuideModuleInterface.dll" KeyPath="yes" />
       </Component>
     </DirectoryRef>
 
      <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
      <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
       <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
-      <File SelfRegCost="1" Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilter_x64.dll" KeyPath="yes">
+      <File SelfRegCost="1" Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x64.dll" KeyPath="yes">
         <Class Id="{31AD75E9-8C3A-49C8-B9ED-5880D6B4A764}" Context="InprocServer32" ThreadingModel="apartment" Description="PowerToys VideoConference Mute" />
       </File>
-      <File SelfRegCost="1" Source="$(var.BinX32Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilter_x86.dll">
+      <File SelfRegCost="1" Source="$(var.BinX32Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x86.dll">
         <Class Id="{31AD75E9-8C3A-49C8-B9ED-5880D6B4A732}" Context="InprocServer32" ThreadingModel="apartment" Description="PowerToys VideoConference Mute" />
       </File>
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceModule.dll" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceModule.dll" />
      </Component>
     </DirectoryRef>
     <DirectoryRef Id="VideoConferenceIconsFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons">
@@ -708,7 +708,7 @@
     <!-- KBM -->
     <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\">
       <Component Id="Module_KeyboardManager" Guid="9279BD82-786F-4F0B-8E49-DB484EE34C9B" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManager.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\PowerToys.KeyboardManager.dll" />
       </Component>
     </DirectoryRef>
 
@@ -729,7 +729,7 @@
     <!-- Color Picker -->
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
       <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
-        <?foreach File in ColorPicker.dll;System.IO.Abstractions.dll;ColorPickerUI.exe;ColorPickerUI.dll;ColorPickerUI.deps.json;ColorPickerUI.runtimeconfig.json;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;System.Text.Json.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;Microsoft.PowerToys.Common.UI.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
+        <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;System.Text.Json.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;Microsoft.PowerToys.Common.UI.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -747,7 +747,7 @@
     <!-- Awake -->
     <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)">
       <Component Id="Module_Awake" Guid="F26F5780-5B38-43B2-BC21-8406ED6E2071" Win64="yes">
-        <?foreach File in AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.Win32.Registry.dll;Microsoft.Win32.SystemEvents.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToys.Interop.dll;System.CommandLine.dll;System.Configuration.ConfigurationManager.dll;System.Drawing.Common.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Security.AccessControl.dll;System.Security.Cryptography.ProtectedData.dll;System.Security.Permissions.dll;System.Security.Principal.Windows.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Windows.Extensions.dll?>
+        <?foreach File in PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.Win32.Registry.dll;Microsoft.Win32.SystemEvents.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToys.Interop.dll;System.CommandLine.dll;System.Configuration.ConfigurationManager.dll;System.Drawing.Common.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Security.AccessControl.dll;System.Security.Cryptography.ProtectedData.dll;System.Security.Permissions.dll;System.Security.Principal.Windows.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Windows.Extensions.dll?>
         <File Id="AwakeFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -780,39 +780,49 @@
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
         <!-- File to include PowerPreview Module native dll -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\powerpreview.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.powerpreview.dll" KeyPath="yes" />
         <!-- File to include common library used by preview handlers -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PreviewHandlerCommon.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PreviewHandlerCommon.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PreviewHandlerCommon.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PreviewHandlerCommon.deps.json" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.ManagedTelemetry.dll" />
         <!-- File to include dll for Svg Preview Handler -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.comhost.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgPreviewHandler.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgPreviewHandler.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgPreviewHandler.deps.json" />
         <!-- File to include dll for Svg Thumbnail Provider -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.comhost.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgThumbnailProvider.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgThumbnailProvider.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgThumbnailProvider.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgThumbnailProvider.deps.json" />
         <!-- Files to include dll's for Markdown Preview Handler and it's dependencies -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\MarkdownPreviewHandler.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\MarkdownPreviewHandler.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\MarkdownPreviewHandler.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MarkdownPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MarkdownPreviewHandler.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MarkdownPreviewHandler.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MarkdownPreviewHandler.deps.json" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Markdig.Signed.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\HtmlAgilityPack.dll" />
         <File Id="FileExplorerPreview_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.IO.Abstractions.dll" />
         <!-- File to include dll for Pdf Preview Handler -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.comhost.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.deps.json" />
         <!-- File to include dll for Pdf Thumbnail Provider -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.comhost.dll" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.deps.json" />
+        <!-- File to include dll for G-code Preview Handler -->
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodePreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodePreviewHandler.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodePreviewHandler.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodePreviewHandler.deps.json" />
+        <!-- File to include dll for G-code Thumbnail Provider -->
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.deps.json" />
       </Component>
     </DirectoryRef>
 
@@ -1038,25 +1048,28 @@
                     <?define IdSafeLanguage = $(var.Language)?>
                 <?endif?>
                 <Component Id="Launcher_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)LauncherInstallFolder">
-                    <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerLauncher.resources.dll" />
+                    <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerToys.PowerLauncher.resources.dll" />
                 </Component>
                 <Component Id="FancyZonesEditor_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FancyZonesInstallFolder">
-                    <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\FancyZonesEditor.resources.dll" />
+                    <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\PowerToys.FancyZonesEditor.resources.dll" />
                 </Component>
                 <Component Id="ImageResizer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ImageResizerInstallFolder">
-                    <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\ImageResizer.resources.dll" />
+                    <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\PowerToys.ImageResizer.resources.dll" />
                 </Component>
                 <Component Id="ColorPicker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder">
-                    <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.Language)\ColorPickerUI.resources.dll" />
+                    <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.Language)\PowerToys.ColorPickerUI.resources.dll" />
                 </Component>
                 <Component Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
-                    <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\MarkdownPreviewHandler.resources.dll" />
+                    <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.MarkdownPreviewHandler.resources.dll" />
                 </Component>
                 <Component Id="SVGPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
-                  <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\SvgPreviewHandler.resources.dll" />
+                  <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.SvgPreviewHandler.resources.dll" />
                 </Component>
                 <Component Id="PDFPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
-                  <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PdfPreviewHandler.resources.dll" />
+                  <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.PdfPreviewHandler.resources.dll" />
+                </Component>
+                <Component Id="GcodePreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+                  <File Id="GcodePreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.GcodePreviewHandler.resources.dll" />
                 </Component>
                 <!-- PowerToys Run aka Launcher plugin resources -->
                 <Component Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder">
@@ -1116,8 +1129,8 @@
       </Component>
 
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
-        <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
+        <File Source="$(var.BinX64Dir)modules\Launcher\PowerToys.Launcher.dll" />
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.Lib.dll" />
