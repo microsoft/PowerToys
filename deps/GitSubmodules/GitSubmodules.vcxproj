@@ -66,21 +66,25 @@
     <NMakeBuildCommandLine>git submodule update --init &amp;&amp; type nul &gt; $(OutDir)git_submodules_placeholder.txt</NMakeBuildCommandLine>
     <NMakeOutput>$(OutDir)git_submodules_placeholder.txt</NMakeOutput>
     <NMakePreprocessorDefinitions>_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeCleanCommandLine>false</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <NMakeBuildCommandLine>git submodule update --init &amp;&amp; type nul &gt; $(OutDir)git_submodules_placeholder.txt</NMakeBuildCommandLine>
     <NMakeOutput>$(OutDir)git_submodules_placeholder.txt</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeCleanCommandLine>false</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <NMakeBuildCommandLine>git submodule update --init &amp;&amp; type nul &gt; $(OutDir)git_submodules_placeholder.txt</NMakeBuildCommandLine>
     <NMakeOutput>$(OutDir)git_submodules_placeholder.txt</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeCleanCommandLine>false</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <NMakeBuildCommandLine>git submodule update --init &amp;&amp; type nul &gt; $(OutDir)git_submodules_placeholder.txt</NMakeBuildCommandLine>
     <NMakeOutput>$(OutDir)git_submodules_placeholder.txt</NMakeOutput>
     <NMakePreprocessorDefinitions>NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeCleanCommandLine>false</NMakeCleanCommandLine>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
