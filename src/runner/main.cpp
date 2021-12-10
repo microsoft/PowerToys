@@ -139,20 +139,20 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         // Load Powertoys DLLs
 
         std::vector<std::wstring_view> knownModules = {
-            L"modules/FancyZones/FancyZonesModuleInterface.dll",
-            L"modules/FileExplorerPreview/powerpreview.dll",
-            L"modules/ImageResizer/ImageResizerExt.dll",
-            L"modules/KeyboardManager/KeyboardManager.dll",
-            L"modules/Launcher/Microsoft.Launcher.dll",
-            L"modules/PowerRename/PowerRenameExt.dll",
-            L"modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.dll",
-            L"modules/ColorPicker/ColorPicker.dll",
-            L"modules/Awake/AwakeModuleInterface.dll",
-            L"modules/MouseUtils/FindMyMouse.dll" ,
-            L"modules/MouseUtils/MouseHighlighter.dll"
+            L"modules/FancyZones/PowerToys.FancyZonesModuleInterface.dll",
+            L"modules/FileExplorerPreview/PowerToys.powerpreview.dll",
+            L"modules/ImageResizer/PowerToys.ImageResizerExt.dll",
+            L"modules/KeyboardManager/PowerToys.KeyboardManager.dll",
+            L"modules/Launcher/PowerToys.Launcher.dll",
+            L"modules/PowerRename/PowerToys.PowerRenameExt.dll",
+            L"modules/ShortcutGuide/ShortcutGuideModuleInterface/PowerToys.ShortcutGuideModuleInterface.dll",
+            L"modules/ColorPicker/PowerToys.ColorPicker.dll",
+            L"modules/Awake/PowerToys.AwakeModuleInterface.dll",
+            L"modules/MouseUtils/PowerToys.FindMyMouse.dll" ,
+            L"modules/MouseUtils/PowerToys.MouseHighlighter.dll"
 
         };
-        const auto VCM_PATH = L"modules/VideoConference/VideoConferenceModule.dll";
+        const auto VCM_PATH = L"modules/VideoConference/PowerToys.VideoConferenceModule.dll";
         if (const auto mf = LoadLibraryA("mf.dll"))
         {
             FreeLibrary(mf);

@@ -241,7 +241,7 @@ public:
 
             SHELLEXECUTEINFOW sei{ sizeof(sei) };
             sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-            sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
+            sei.lpFile = L"modules\\launcher\\PowerToys.PowerLauncher.exe";
             sei.nShow = SW_SHOWNORMAL;
             sei.lpParameters = executable_args.data();
 
@@ -262,7 +262,7 @@ public:
             std::wstring params;
             params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
             params += L"--started-from-runner ";
-            runExecutablePath += L"\\modules\\launcher\\PowerLauncher.exe";
+            runExecutablePath += L"\\modules\\launcher\\PowerToys.PowerLauncher.exe";
             if (RunNonElevatedEx(runExecutablePath, params))
             {
                 processStarted = true;
@@ -272,7 +272,7 @@ public:
             {
                 Logger::warn(L"RunNonElevatedEx() failed. Trying fallback");
                 std::wstring action_runner_path = get_module_folderpath() + L"\\PowerToys.ActionRunner.exe";
-                std::wstring newParams = L"-run-non-elevated -target modules\\launcher\\PowerLauncher.exe " + params;
+                std::wstring newParams = L"-run-non-elevated -target modules\\launcher\\PowerToys.PowerLauncher.exe " + params;
                 if (run_non_elevated(action_runner_path, newParams, nullptr))
                 {
                     processStarted = true;

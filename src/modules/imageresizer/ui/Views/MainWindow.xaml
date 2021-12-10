@@ -7,7 +7,7 @@
         xmlns:p="clr-namespace:ImageResizer.Properties"
         xmlns:vm="clr-namespace:ImageResizer.ViewModels"
         Content="{Binding CurrentPage}"
-        Icon="/ImageResizer;component/Resources/ImageResizer.ico"
+        Icon="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico"
         Name="_this"
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"

@@ -54,6 +54,12 @@
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\ShortcutGuide\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\ShortcutGuide\$(ProjectName)\</IntDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>PowerToys.ShortcutGuideModuleInterface</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>PowerToys.ShortcutGuideModuleInterface</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>;..\..\..\common\inc;..\..\..\common\Telemetry;..\..\..\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

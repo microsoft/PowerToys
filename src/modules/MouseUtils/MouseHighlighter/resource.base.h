@@ -6,8 +6,8 @@
 // Non-localizable
 
 #define FILE_DESCRIPTION "PowerToys MouseHighlighter"
-#define INTERNAL_NAME "MouseHighlighter"
-#define ORIGINAL_FILENAME "MouseHighlighter.dll"
+#define INTERNAL_NAME "PowerToys.MouseHighlighter"
+#define ORIGINAL_FILENAME "PowerToys.MouseHighlighter.dll"
 #define IDS_KEYBOARDMANAGER_ICON 1001
 
 // Non-localizable
