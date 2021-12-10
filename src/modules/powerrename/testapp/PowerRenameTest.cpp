@@ -38,7 +38,7 @@ int APIENTRY wWinMain(
     {
         // Set the application path based on the location of the dll
         std::wstring path = get_module_folderpath(g_hostHInst);
-        path = path + L"\\PowerRename.exe";
+        path = path + L"\\PowerToys.PowerRename.exe";
         LPTSTR lpApplicationName = (LPTSTR)path.c_str();
 
         CString commandLine;

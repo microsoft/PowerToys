@@ -4,8 +4,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ProjectGuid>{8FFE09DA-FA4F-4EE1-B3A2-AD5497FBD1AD}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.ThumbnailHandler.Svg</RootNamespace>
-    <AssemblyName>SvgThumbnailProvider</AssemblyName>
-    <AssemblyTitle>SvgThumbnailProvider</AssemblyTitle>
+    <AssemblyName>PowerToys.SvgThumbnailProvider</AssemblyName>
+    <AssemblyTitle>PowerToys.SvgThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys SvgPreviewHandler</AssemblyDescription>
     <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>

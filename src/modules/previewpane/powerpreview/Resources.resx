@@ -177,4 +177,13 @@
   <data name="Pdf_Thumbnail_Provider_Settings_Description" xml:space="preserve">
     <value>Pdf Thumbnail Provider</value>
   </data>
+  <data name="Gcode_Thumbnail_Provider_Settings_Description" xml:space="preserve">
+    <value>G-code Thumbnail Provider</value>
+  </data>
+  <data name="Prevpane_Gcode_Settings_Description" xml:space="preserve">
+    <value>G-code Previewer</value>
+  </data>
+  <data name="Prevpane_Gcode_Settings_Displayname" xml:space="preserve">
+    <value>G-code Previewer</value>
+  </data>
 </root>

@@ -9,16 +9,16 @@
         <File DestinationPath="PowerToys.exe" SourcePath="..\..\x64\Release\PowerToys.exe"/>
         <File DestinationPath="PowerToysSettings.exe" SourcePath="..\..\x64\Release\PowerToysSettings.exe"/>
 
-        <File DestinationPath="modules\FancyZonesEditor.exe" SourcePath="..\..\x64\Release\modules\FancyZonesEditor.exe"/>
+        <File DestinationPath="modules\PowerToys.FancyZonesEditor.exe" SourcePath="..\..\x64\Release\modules\PowerToys.FancyZonesEditor.exe"/>
         <File DestinationPath="modules\ControlzEx.dll" SourcePath="..\..\x64\Release\modules\ControlzEx.dll"/>
         <File DestinationPath="modules\fancyzones.dll" SourcePath="..\..\x64\Release\modules\fancyzones.dll"/>
         <File DestinationPath="modules\MahApps.Metro.dll" SourcePath="..\..\x64\Release\modules\MahApps.Metro.dll"/>
         <File DestinationPath="modules\Microsoft.Xaml.Behaviors.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Xaml.Behaviors.dll"/>
-        <File DestinationPath="modules\PowerRenameExt.dll" SourcePath="..\..\x64\Release\modules\PowerRenameExt.dll"/>
+        <File DestinationPath="modules\PowerToys.PowerRenameExt.dll" SourcePath="..\..\x64\Release\modules\PowerToys.PowerRenameExt.dll"/>
         <File DestinationPath="modules\shortcut_guide.dll" SourcePath="..\..\x64\Release\modules\shortcut_guide.dll"/>
         <File DestinationPath="modules\PowerRenameUWPUI.exe" SourcePath="..\..\x64\Release\modules\PowerRenameUWPUI.exe"/>
-        <File DestinationPath="modules\ImageResizer.exe" SourcePath="..\..\x64\Release\modules\ImageResizer.exe"/>
-        <File DestinationPath="modules\ImageResizerExt.dll" SourcePath="..\..\x64\Release\modules\ImageResizerExt.dll"/>
+        <File DestinationPath="modules\PowerToys.ImageResizer.exe" SourcePath="..\..\x64\Release\modules\PowerToys.ImageResizer.exe"/>
+        <File DestinationPath="modules\PowerToys.ImageResizerExt.dll" SourcePath="..\..\x64\Release\modules\PowerToys.ImageResizerExt.dll"/>
         <File DestinationPath="modules\GalaSoft.MvvmLight.dll" SourcePath="..\..\x64\Release\modules\GalaSoft.MvvmLight.dll"/>
         <File DestinationPath="modules\GalaSoft.MvvmLight.Platform.dll" SourcePath="..\..\x64\Release\modules\GalaSoft.MvvmLight.Platform.dll"/>
         <File DestinationPath="modules\GalaSoft.MvvmLight.Extras.dll" SourcePath="..\..\x64\Release\modules\GalaSoft.MvvmLight.Extras.dll"/>
@@ -34,15 +34,16 @@
         <File DestinationPath="modules\System.ValueTuple.dll" SourcePath="..\..\x64\Release\modules\System.ValueTuple.dll"/>
         <File DestinationPath="modules\System.Numerics.Vectors.dll" SourcePath="..\..\x64\Release\modules\System.Numerics.Vectors.dll"/>
         <File DestinationPath="modules\Microsoft.Bcl.AsyncInterfaces.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Bcl.AsyncInterfaces.dll"/>
-        <File DestinationPath="modules\powerpreview.dll" SourcePath="..\..\x64\Release\modules\powerpreview.dll"/>
-        <File DestinationPath="modules\PreviewHandlerCommon.dll" SourcePath="..\..\x64\Release\modules\PreviewHandlerCommon.dll"/>
-        <File DestinationPath="modules\SvgPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\SvgPreviewHandler.dll"/>
-        <File DestinationPath="modules\MarkdownPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\MarkdownPreviewHandler.dll"/>
+        <File DestinationPath="modules\PowerToys.powerpreview.dll" SourcePath="..\..\x64\Release\modules\PowerToys.powerpreview.dll"/>
+        <File DestinationPath="modules\PowerToys.PreviewHandlerCommon.dll" SourcePath="..\..\x64\Release\modules\PowerToys.PreviewHandlerCommon.dll"/>
+        <File DestinationPath="modules\PowerToys.SvgPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\PowerToys.SvgPreviewHandler.dll"/>
+        <File DestinationPath="modules\PowerToys.MarkdownPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\PowerToys.MarkdownPreviewHandler.dll"/>
+        <File DestinationPath="modules\PowerToys.GcodePreviewHandler.dll" SourcePath="..\..\x64\Release\modules\PowerToys.GcodePreviewHandler.dll"/>
         <File DestinationPath="modules\Markdig.Signed.dll" SourcePath="..\..\x64\Release\modules\Markdig.Signed.dll"/>
         <File DestinationPath="modules\HtmlAgilityPack.dll" SourcePath="..\..\x64\Release\modules\HtmlAgilityPack.dll"/>
         <File DestinationPath="registry.dat" SourcePath="registry.dat"/>
 
-        <File DestinationPath="modules\FancyZonesEditor.exe.config" SourcePath="..\..\x64\Release\modules\FancyZonesEditor.exe.config"/>
+        <File DestinationPath="modules\PowerToys.FancyZonesEditor.exe.config" SourcePath="..\..\x64\Release\modules\PowerToys.FancyZonesEditor.exe.config"/>
 
         <File DestinationPath="Notifications.dll" SourcePath="..\..\x64\Release\Notifications.dll"/>
 

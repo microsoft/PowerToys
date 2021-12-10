@@ -4,7 +4,7 @@ labels:
 - Issue-Bug
 - Area-Localization
 - Issue-Translation
-- Triage-Needed 
+- Needs-Triage 
 body:
 - type: markdown
   attributes:
