@@ -1544,7 +1544,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="EditButton.AutomationProperties.Name" xml:space="preserve">
     <value>Edit</value>
   </data>
-	<data name="ImageResizer_EditSize.AutomationProperties.Name" xml:space="preserve">
+  <data name="ImageResizer_EditSize.AutomationProperties.Name" xml:space="preserve">
     <value>Edit size</value>
   </data>
   <data name="No" xml:space="preserve">
@@ -1827,5 +1827,19 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="VideoConference_RunAsAdminRequired.Title" xml:space="preserve">
     <value>You need to run as administrator to modify these settings.</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail.Header" xml:space="preserve">
+    <value>Enable G-code (.gcode) thumbnails</value>
+    <comment>Do you want this feature on / off</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail.Description" xml:space="preserve">
+    <value>Only .gcode files with embedded thumbnails are supported</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Description" xml:space="preserve">
+    <value>Only .gcode files with embedded thumbnails are supported</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
+    <value>Enable G-code (.gcode) preview</value>
+    <comment>Do you want this feature on / off</comment>
   </data>
 </root>

@@ -38,6 +38,7 @@
         <File DestinationPath="modules\PowerToys.PreviewHandlerCommon.dll" SourcePath="..\..\x64\Release\modules\PowerToys.PreviewHandlerCommon.dll"/>
         <File DestinationPath="modules\PowerToys.SvgPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\PowerToys.SvgPreviewHandler.dll"/>
         <File DestinationPath="modules\PowerToys.MarkdownPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\PowerToys.MarkdownPreviewHandler.dll"/>
+        <File DestinationPath="modules\PowerToys.GcodePreviewHandler.dll" SourcePath="..\..\x64\Release\modules\PowerToys.GcodePreviewHandler.dll"/>
         <File DestinationPath="modules\Markdig.Signed.dll" SourcePath="..\..\x64\Release\modules\Markdig.Signed.dll"/>
         <File DestinationPath="modules\HtmlAgilityPack.dll" SourcePath="..\..\x64\Release\modules\HtmlAgilityPack.dll"/>
         <File DestinationPath="registry.dat" SourcePath="registry.dat"/>

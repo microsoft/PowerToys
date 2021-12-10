@@ -140,12 +140,14 @@ backend
 backtracer
 bak
 bbwe
+bca
 bcc
 bck
 Bcl
 BEGINLABELEDIT
 betadele
 betsegaw
+bfee
 BGR
 bgra
 BGSOUNDS
@@ -696,6 +698,8 @@ Gamebar
 GBs
 GCLP
 gcnew
+gcode
+gcodepreviewhandler
 gdi
 gdiplus
 GDISCALED

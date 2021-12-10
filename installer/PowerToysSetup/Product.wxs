@@ -813,6 +813,16 @@
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.comhost.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.runtimeconfig.json" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfThumbnailProvider.deps.json" />
+        <!-- File to include dll for G-code Preview Handler -->
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodePreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodePreviewHandler.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodePreviewHandler.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodePreviewHandler.deps.json" />
+        <!-- File to include dll for G-code Thumbnail Provider -->
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.deps.json" />
       </Component>
     </DirectoryRef>
 
@@ -1057,6 +1067,9 @@
                 </Component>
                 <Component Id="PDFPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
                   <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.PdfPreviewHandler.resources.dll" />
+                </Component>
+                <Component Id="GcodePreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+                  <File Id="GcodePreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.GcodePreviewHandler.resources.dll" />
                 </Component>
                 <!-- PowerToys Run aka Launcher plugin resources -->
                 <Component Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder">
