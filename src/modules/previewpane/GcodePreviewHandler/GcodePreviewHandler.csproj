@@ -2,12 +2,11 @@
   <PropertyGroup>
     <Platforms>x64</Platforms>
     <UseWindowsForms>true</UseWindowsForms>
-    <AssemblyTitle>GcodePreviewHandler</AssemblyTitle>
+    <AssemblyTitle>PowerToys.GcodePreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys GcodePreviewHandler</AssemblyDescription>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
-    <AssemblyTitle>GcodePreviewHandler</AssemblyTitle>
     <Company>Microsoft Corp.</Company>
     <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
@@ -19,6 +18,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AssemblyName>PowerToys.GcodePreviewHandler</AssemblyName>
   </PropertyGroup>
   
   <PropertyGroup>

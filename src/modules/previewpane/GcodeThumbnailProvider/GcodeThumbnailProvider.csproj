@@ -4,8 +4,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ProjectGuid>{809AA252-E17A-4FA2-B0A1-0450976B763F}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.ThumbnailHandler.Gcode</RootNamespace>
-    <AssemblyName>GcodeThumbnailProvider</AssemblyName>
-    <AssemblyTitle>GcodeThumbnailProvider</AssemblyTitle>
+    <AssemblyName>PowerToys.GcodeThumbnailProvider</AssemblyName>
+    <AssemblyTitle>PowerToys.GcodeThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys GcodePreviewHandler</AssemblyDescription>
     <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
