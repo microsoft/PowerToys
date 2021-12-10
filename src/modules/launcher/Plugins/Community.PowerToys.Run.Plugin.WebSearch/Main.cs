@@ -24,19 +24,18 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
         private const string NotGlobalIfUri = nameof(NotGlobalIfUri);
 
-        /// <summary>
-        /// If true, dont show global result on queries that are URIs
-        /// </summary>
+        /// <summary>If true, dont show global result on queries that are URIs</summary>
         private bool _notGlobalIfUri = true;
+
+        private PluginInitContext _context;
+
+        private string _searchEngineUrl;
+
+        private string _browserIconPath;
+        private string _browserPath;
+        private string _defaultIconPath;
+
         private bool _disposed;
-
-        public string BrowserIconPath { get; set; }
-
-        public string BrowserPath { get; set; }
-
-        public string DefaultIconPath { get; set; }
-
-        public PluginInitContext Context { get; protected set; }
 
         public string Name => Properties.Resources.plugin_name;
 
@@ -72,8 +71,10 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             {
                 results.Add(new Result
                 {
-                    Title = Description.Remove(Description.Length - 1),
-                    IcoPath = DefaultIconPath,
+                    Title = Properties.Resources.plugin_description.Remove(Description.Length - 1, 1),
+                    SubTitle = Properties.Resources.plugin_browser,
+                    QueryTextDisplay = string.Empty,
+                    IcoPath = _defaultIconPath,
                     Action = action => true,
                 });
                 return results;
@@ -91,29 +92,55 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                     return results;
                 }
 
-                string arguments = $"\"? {searchTerm}\"";
-
-                results.Add(new Result
+                var result = new Result
                 {
                     Title = $"{searchTerm} - {Properties.Resources.plugin_name}",
                     TitleHighlightData = Enumerable.Range(0, searchTerm.Length).ToList(),
                     SubTitle = Properties.Resources.plugin_open,
                     QueryTextDisplay = searchTerm,
-                    IcoPath = BrowserIconPath,
-                    ProgramArguments = arguments,
-                    Action = action =>
+                    IcoPath = _browserIconPath,
+                };
+
+                if (_searchEngineUrl is null)
+                {
+                    string arguments = $"\"? {searchTerm}\"";
+
+                    result.ProgramArguments = arguments;
+                    result.Action = action =>
                     {
-                        if (!Helper.OpenInShell(BrowserPath, arguments))
+                        if (!Helper.OpenInShell(_browserPath, arguments))
                         {
-                            var title = $"Plugin: {Properties.Resources.plugin_name}";
-                            var message = $"{Properties.Resources.plugin_search_failed}: ";
-                            Context.API.ShowMsg(title, message);
+                            _context.API.ShowMsg(
+                                $"Plugin: {Properties.Resources.plugin_name}",
+                                $"{Properties.Resources.plugin_search_failed}: ");
                             return false;
                         }
 
                         return true;
-                    },
-                });
+                    };
+                }
+                else
+                {
+                    // string.Format behaviour doesn't change in this case, so providing an IFormatProvider is not necessary
+#pragma warning disable CA1305 // Specify IFormatProvider
+                    string url = string.Format(_searchEngineUrl, searchTerm);
+#pragma warning restore CA1305 // Specify IFormatProvider
+
+                    result.Action = action =>
+                    {
+                        if (!Helper.OpenInShell(url))
+                        {
+                            _context.API.ShowMsg(
+                                $"Plugin: {Properties.Resources.plugin_name}",
+                                $"{Properties.Resources.plugin_search_failed}: ");
+                            return false;
+                        }
+
+                        return true;
+                    };
+                }
+
+                results.Add(result);
             }
 
             return results;
@@ -150,15 +177,15 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
         private bool IsDefaultBrowserSet()
         {
-            return !string.IsNullOrEmpty(BrowserPath);
+            return !string.IsNullOrEmpty(_browserPath);
         }
 
         public void Init(PluginInitContext context)
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-            Context.API.ThemeChanged += OnThemeChanged;
-            UpdateIconPath(Context.API.GetCurrentTheme());
-            UpdateBrowserIconPath(Context.API.GetCurrentTheme());
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _context.API.ThemeChanged += OnThemeChanged;
+            UpdateIconPath(_context.API.GetCurrentTheme());
+            UpdateBrowserIconPath(_context.API.GetCurrentTheme());
         }
 
         public string GetTranslatedPluginTitle()
@@ -188,6 +215,35 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 var progId = GetRegistryValue(
                     "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice",
                     "ProgId");
+
+                if (progId.StartsWith("Opera", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Opera user preferences file:
+                    string prefFile = System.IO.File.ReadAllText(
+                        $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\Opera Software\\{(progId.Contains("GX", StringComparison.OrdinalIgnoreCase) ? "Opera GX Stable" : "Opera Stable")}\\Preferences");
+
+                    string url = ExtraStringMethods.GetJSONStringValue(prefFile, new string[] { "default_search_provider_data", "template_url_data", "url" });
+                    url = url.Replace("{searchTerms}", "{0}", StringComparison.Ordinal);
+
+                    for (int i = ExtraStringMethods.GetStrNthIndex(url, '}', 2); i != -1; i = ExtraStringMethods.GetStrNthIndex(url, '}', 2))
+                    {
+                        for (int j = i - 1; j > 0; --j)
+                        {
+                            if (url[j] == '&')
+                            {
+                                url = url.Remove(j, i - j + 1);
+                                break;
+                            }
+                        }
+                    }
+
+                    _searchEngineUrl = url;
+                }
+                else
+                {
+                    _searchEngineUrl = null;
+                }
+
                 var programLocation =
 
                     // Resolve App Icon (UWP)
@@ -218,7 +274,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                         var extension = Path.GetExtension(directProgramLocation);
                         var themedProgLocation =
                             $"{directProgramLocation.Substring(0, directProgramLocation.Length - extension.Length)}_{themeIcon}{extension}";
-                        BrowserIconPath = File.Exists(themedProgLocation)
+                        _browserIconPath = File.Exists(themedProgLocation)
                             ? themedProgLocation
                             : directProgramLocation;
                     }
@@ -227,15 +283,15 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 {
                     // Using Ordinal since this is internal and used with a symbol
                     var indexOfComma = programLocation.IndexOf(',', StringComparison.Ordinal);
-                    BrowserIconPath = indexOfComma > 0
+                    _browserIconPath = indexOfComma > 0
                         ? programLocation.Substring(0, indexOfComma)
                         : programLocation;
-                    BrowserPath = BrowserIconPath;
+                    _browserPath = _browserIconPath;
                 }
             }
             catch (Exception e)
             {
-                BrowserIconPath = DefaultIconPath;
+                _browserIconPath = _defaultIconPath;
                 Log.Exception("Exception when retrieving icon", e, GetType());
             }
 
@@ -249,11 +305,11 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                DefaultIconPath = "Images/WebSearch.light.png";
+                _defaultIconPath = "Images/WebSearch.light.png";
             }
             else
             {
-                DefaultIconPath = "Images/WebSearch.dark.png";
+                _defaultIconPath = "Images/WebSearch.dark.png";
             }
         }
 
@@ -267,9 +323,9 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
         {
             if (!_disposed && disposing)
             {
-                if (Context != null && Context.API != null)
+                if (_context != null && _context.API != null)
                 {
-                    Context.API.ThemeChanged -= OnThemeChanged;
+                    _context.API.ThemeChanged -= OnThemeChanged;
                 }
 
                 _disposed = true;

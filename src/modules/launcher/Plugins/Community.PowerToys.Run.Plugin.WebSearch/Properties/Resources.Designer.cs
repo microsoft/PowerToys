@@ -61,6 +61,15 @@ namespace Community.PowerToys.Run.Plugin.WebSearch.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to In the default browser.
+        /// </summary>
+        public static string plugin_browser {
+            get {
+                return ResourceManager.GetString("plugin_browser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Search the web..
         /// </summary>
         public static string plugin_description {
