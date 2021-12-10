@@ -56,7 +56,12 @@ jobs:
     inputs:
       nuGetServiceConnections: PowerToysCDPxFeed
 
-# we may need to do this one by one based on the cmd files for restoring.
+# this will do the following:
+# - main solution
+# - Bug report tool
+# - Webcam report tool
+# - Installer
+# - Bootstrapper Installer
   - task: NuGetCommand@2
     displayName: NuGet restore solutions dependencies
     inputs:
@@ -72,7 +77,7 @@ jobs:
         call nuget.exe restore -PackagesDirectory . packages.config || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "..\src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "..\src\common\Telemetry\TelemetryBase.cs" || exit /b 1
-
+    
 #  - task: TouchdownBuildTask@1
 #    displayName: Download Localization Files
 #    inputs:
@@ -167,71 +172,193 @@ jobs:
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)\msbuild.binlog
       ArtifactName: binlog-$(BuildPlatform)
+
   - task: ComponentGovernanceComponentDetection@0
     displayName: Component Detection
+
   - task: CopyFiles@2
-    displayName: Copy *.appx/*.msix to Artifacts
-    inputs: # general format for how to publish artifacts -- move to below your build/sign rules
+    displayName: Copy VideoConferenceProxyFilter_x86 to build output
+    inputs: 
+      sourceFolder: 'x86/Release'
       Contents: >-
-        **/*.appx
-
-        **/*.msix
-
-        **/*.appxsym
-
-        !**/Microsoft.VCLibs*.appx
-      TargetFolder: $(Build.ArtifactStagingDirectory)/appx
+        'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
+      TargetFolder: Build_Output
       OverWrite: true
-      flattenFolders: true
-  - task: PublishBuildArtifacts@1
-    displayName: TERMINAL LEGACY - Publish Artifact (appx)
-    inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)/appx
-      ArtifactName: appx-$(BuildPlatform)-$(BuildConfiguration)
-  - task: PublishSymbols@2
-    displayName: Publish symbols path
-    continueOnError: True
-    inputs:
-      SearchPattern: '**/*.pdb'
-      IndexSources: false
-      SymbolServerType: TeamServices
-  - task: EsrpCodeSigning@1
-    displayName: USE AS BASE BUT TERMINAL CODE - Submit *.msixbundle to ESRP for code signing
-    inputs:
-      ConnectedServiceName: 9d6d2960-0793-4d59-943e-78dcb434840a
-      FolderPath: $(System.ArtifactsDirectory)
-      Pattern: Microsoft.WindowsTerminal*.msixbundle
-      UseMinimatch: true
-      signConfigType: inlineSignParams
-      inlineOperation: >-
-        [
-            {
-                "KeyCode": "Dynamic",
-                "CertTemplateName": "WINMSAPP1ST",
-                "CertSubjectName": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
-                "OperationCode": "SigntoolSign",
-                "Parameters": {
-                    "OpusName": "Microsoft",
-                    "OpusInfo": "http://www.microsoft.com",
-                    "FileDigest": "/fd \"SHA256\"",
-                    "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
-                },
-                "ToolName": "sign",
-                "ToolVersion": "1.0"
-            },
-            {
-                "KeyCode": "Dynamic",
-                "CertTemplateName": "WINMSAPP1ST",
-                "CertSubjectName": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
-                "OperationCode": "SigntoolVerify",
-                "Parameters": {},
-                "ToolName": "sign",
-                "ToolVersion": "1.0"
-            }
-        ]
-  - task: PublishBuildArtifacts@1
-    displayName: 'TERMINAL LEGACY - Publish Artifact: appxbundle-signed'
-    inputs:
-      PathtoPublish: $(System.ArtifactsDirectory)
-      ArtifactName: appxbundle-signed
+
+  - task: CopyFiles@2
+    displayName: Copy core files to build output
+    inputs: 
+      sourceFolder: 'x64/Release'
+      Contents: >-
+        'PowerToys.ActionRunner.exe'
+        'PowerToys.Update.exe'
+        'BackgroundActivatorDLL.dll'
+        'Notifications.dll'
+        'os-detection.dll'
+        'PowerToys.exe'
+        'PowerToysInterop.dll'
+        'BugReportTool\BugReportTool.exe'
+        '**\*.resources.dll'
+        'modules\ColorPicker\ColorPicker.dll'
+        'modules\ColorPicker\ColorPickerUI.dll'
+        'modules\ColorPicker\ColorPickerUI.exe'
+        'modules\ColorPicker\ManagedCommon.dll'
+        'modules\ColorPicker\ManagedTelemetry.dll'
+        'modules\ColorPicker\Microsoft.PowerToys.Common.UI.dll'
+        'modules\ColorPicker\Microsoft.PowerToys.Settings.UI.Lib.dll'
+        'modules\ColorPicker\PowerToysInterop.dll'
+        'modules\ColorPicker\Telemetry.dll'
+        '**\*.resources.dll'
+        'modules\Awake\AwakeModuleInterface.dll'
+        'modules\Awake\ManagedCommon.dll'
+        'modules\Awake\ManagedTelemetry.dll'
+        'modules\Awake\Microsoft.PowerToys.Settings.UI.Lib.dll'
+        'modules\Awake\PowerToys.Awake.exe'
+        'modules\Awake\PowerToys.Awake.dll'
+        'modules\Awake\PowerToysInterop.dll'
+        'modules\FancyZones\fancyzones.dll'
+        'modules\FancyZones\FancyZonesEditor.exe'
+        'modules\FancyZones\FancyZonesEditor.dll'
+        'modules\FancyZones\FancyZonesModuleInterface.dll'
+        'modules\FancyZones\ManagedCommon.dll'
+        'modules\FancyZones\ManagedTelemetry.dll'
+        'modules\FancyZones\PowerToys.FancyZones.exe'
+        'modules\FancyZones\PowerToysInterop.dll'
+        'modules\FancyZones\Telemetry.dll'
+        'modules\FancyZones\Microsoft.PowerToys.Common.UI.dll'
+        'modules\FileExplorerPreview\ManagedTelemetry.dll'
+        'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
+        'modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll'
+        'modules\FileExplorerPreview\PdfPreviewHandler.dll'
+        'modules\FileExplorerPreview\PdfPreviewHandler.comhost.dll'
+        'modules\FileExplorerPreview\PdfThumbnailProvider.dll'
+        'modules\FileExplorerPreview\PdfThumbnailProvider.comhost.dll'
+        'modules\FileExplorerPreview\powerpreview.dll'
+        'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
+        'modules\FileExplorerPreview\SvgPreviewHandler.dll'
+        'modules\FileExplorerPreview\SvgPreviewHandler.comhost.dll'
+        'modules\FileExplorerPreview\SvgThumbnailProvider.dll'
+        'modules\FileExplorerPreview\SvgThumbnailProvider.comhost.dll'
+        'modules\FileExplorerPreview\Telemetry.dll'
+        'modules\ImageResizer\ImageResizer.exe'
+        'modules\ImageResizer\ImageResizer.dll'
+        'modules\ImageResizer\ImageResizerExt.dll'
+        'modules\ImageResizer\PowerToysInterop.dll'
+        'modules\ImageResizer\ManagedCommon.dll'
+        'modules\ImageResizer\ManagedTelemetry.dll'
+        'modules\ImageResizer\Microsoft.PowerToys.Common.UI.dll'
+        'modules\KeyboardManager\KeyboardManager.dll'
+        'modules\KeyboardManager\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe'
+        'modules\KeyboardManager\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe'
+        'modules\launcher\Microsoft.PowerToys.Settings.UI.Lib.dll'
+        'modules\launcher\ManagedCommon.dll'
+        'modules\launcher\ManagedTelemetry.dll'
+        'modules\launcher\Microsoft.PowerToys.Common.UI.dll'
+        'modules\launcher\Microsoft.Launcher.dll'
+        'modules\launcher\Plugins\Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.dll'
+        'modules\launcher\Plugins\Calculator\ManagedTelemetry.dll'
+        'modules\launcher\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.dll'
+        'modules\launcher\Plugins\Microsoft.Plugin.Folder\ManagedTelemetry.dll'
+        'modules\launcher\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.dll'
+        'modules\launcher\Plugins\Microsoft.Plugin.Indexer\ManagedTelemetry.dll'
+        'modules\launcher\Plugins\Microsoft.Plugin.Program\Microsoft.Plugin.Program.dll'
+        'modules\launcher\Plugins\Microsoft.Plugin.Program\ManagedTelemetry.dll'
+        'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\Microsoft.PowerToys.Run.Plugin.Registry.dll'
+        'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\ManagedTelemetry.dll'
+        'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\ManagedTelemetry.dll'
+        'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll'
+        'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\WindowsSettings.json'
+        'modules\launcher\Plugins\Microsoft.Plugin.Shell\Microsoft.Plugin.Shell.dll'
+        'modules\launcher\Plugins\Microsoft.Plugin.Shell\ManagedTelemetry.dll'
+        'modules\launcher\Plugins\Microsoft.Plugin.Uri\Microsoft.Plugin.Uri.dll'
+        'modules\launcher\Plugins\Microsoft.Plugin.Uri\ManagedTelemetry.dll'
+        'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Microsoft.Plugin.WindowWalker.dll'
+        'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\ManagedTelemetry.dll'
+        'modules\launcher\Plugins\Community.UnitConverter\Community.PowerToys.Run.Plugin.UnitConverter.dll'
+        'modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll'
+        'modules\launcher\Plugins\Service\Microsoft.PowerToys.Run.Plugin.Service.dll'
+        'modules\launcher\Plugins\System\Microsoft.PowerToys.Run.Plugin.System.dll'
+        'modules\launcher\Plugins\WindowsTerminal\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll'
+        'modules\launcher\Plugins\WindowsTerminal\ManagedTelemetry.dll'
+        'modules\launcher\PowerLauncher.dll'
+        'modules\launcher\PowerLauncher.exe'
+        'modules\launcher\PowerLauncher.Telemetry.dll'
+        'modules\launcher\PowerLauncher.UI.exe'
+        'modules\launcher\PowerToysInterop.dll'
+        'modules\launcher\Telemetry.dll'
+        'modules\launcher\Wox.dll'
+        'modules\launcher\Wox.Infrastructure.dll'
+        'modules\launcher\Wox.Plugin.dll'
+        'modules\MouseUtils\FindMyMouse.dll'
+        'modules\PowerRename\PowerRenameExt.dll'
+        'modules\PowerRename\PowerRenameUILib.dll'
+        'modules\PowerRename\PowerRename.exe'
+        'modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe'
+        'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'
+        'modules\VideoConference\VideoConferenceModule.dll'
+        'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
+        'Settings\ManagedTelemetry.dll'
+        'Settings\Microsoft.PowerToys.Settings.UI.exe'
+        'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'
+        'Settings\PowerToys.Settings.dll'
+        'Settings\PowerToys.Settings.exe'
+        'Settings\PowerToysInterop.dll'
+        'Settings\Telemetry.dll'
+        'Settings\ManagedCommon.dll'
+      TargetFolder: Build_Output
+      OverWrite: true
+
+# DUSTIN: do we need build artifacts publishing?
+  #- task: PublishBuildArtifacts@1
+  #  displayName: TERMINAL LEGACY - Publish Artifact (appx)
+  #  inputs:
+  #    PathtoPublish: $(Build.ArtifactStagingDirectory)/appx
+  #    ArtifactName: appx-$(BuildPlatform)-$(BuildConfiguration)
+
+  #- task: PublishSymbols@2
+  #  displayName: Publish symbols path
+  #  continueOnError: True
+  #  inputs:
+  #    SearchPattern: '**/*.pdb'
+  #    IndexSources: false
+  #    SymbolServerType: TeamServices
+  #- task: EsrpCodeSigning@1
+  #  displayName: USE AS BASE BUT TERMINAL CODE - Submit *.msixbundle to ESRP for code signing
+  #  inputs:
+  #    ConnectedServiceName: 9d6d2960-0793-4d59-943e-78dcb434840a
+  #    FolderPath: $(System.ArtifactsDirectory)
+  #    Pattern: Microsoft.WindowsTerminal*.msixbundle
+  #    UseMinimatch: true
+  #    signConfigType: inlineSignParams
+  #    inlineOperation: >-
+  #      [
+  #          {
+  #              "KeyCode": "Dynamic",
+  #              "CertTemplateName": "WINMSAPP1ST",
+  #              "CertSubjectName": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+  #              "OperationCode": "SigntoolSign",
+  #              "Parameters": {
+  #                  "OpusName": "Microsoft",
+  #                  "OpusInfo": "http://www.microsoft.com",
+  #                  "FileDigest": "/fd \"SHA256\"",
+  #                  "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+  #              },
+  #              "ToolName": "sign",
+  #              "ToolVersion": "1.0"
+  #          },
+  #          {
+  #              "KeyCode": "Dynamic",
+  #              "CertTemplateName": "WINMSAPP1ST",
+  #              "CertSubjectName": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+  #              "OperationCode": "SigntoolVerify",
+  #              "Parameters": {},
+  #              "ToolName": "sign",
+  #              "ToolVersion": "1.0"
+  #          }
+  #      ]
+  #- task: PublishBuildArtifacts@1
+  #  displayName: 'TERMINAL LEGACY - Publish Artifact: appxbundle-signed'
+  #  inputs:
+  #    PathtoPublish: $(System.ArtifactsDirectory)
+  #    ArtifactName: appxbundle-signed
 ...
