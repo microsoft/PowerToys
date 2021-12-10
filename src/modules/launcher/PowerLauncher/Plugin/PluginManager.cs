@@ -53,7 +53,7 @@ namespace PowerLauncher.Plugin
                         {
                             _allPlugins = PluginConfig.Parse(Directories)
                                 .Where(x => x.Language.ToUpperInvariant() == AllowedLanguage.CSharp)
-                                .GroupBy(x => x.ID) // DeDuplicates plugins by ID, choosing for each ID the highest DLL product version. This fixes issues such as https://github.com/microsoft/PowerToys/issues/14701
+                                .GroupBy(x => x.ID) // Deduplicates plugins by ID, choosing for each ID the highest DLL product version. This fixes issues such as https://github.com/microsoft/PowerToys/issues/14701
                                 .Select(g => g.OrderByDescending(x => // , where an upgrade didn't remove older versions of the plugins.
                                 {
                                     try

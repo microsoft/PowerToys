@@ -419,6 +419,7 @@ declspec
 decltype
 Dedup
 Deduplicate
+Deduplicates
 DEFAULTCOLOR
 defaultcommand
 DEFAULTFLAGS
