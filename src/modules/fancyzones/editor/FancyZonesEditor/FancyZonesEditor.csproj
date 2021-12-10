@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <Import Project="..\..\..\..\Version.props" />
   <PropertyGroup>
-    <AssemblyTitle>FancyZonesEditor</AssemblyTitle>
+    <AssemblyTitle>PowerToys.FancyZonesEditor</AssemblyTitle>
     <AssemblyDescription>PowerToys FancyZones Editor</AssemblyDescription>
     <Description>PowerToys FancyZones Editor</Description>
     <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
@@ -47,6 +47,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>PowerToys.FancyZonesEditor</AssemblyName>
   </PropertyGroup>
  
   <ItemGroup>

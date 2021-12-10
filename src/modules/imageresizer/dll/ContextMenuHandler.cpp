@@ -212,7 +212,7 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
 {
     // Set the application path based on the location of the dll
     std::wstring path = get_module_folderpath(g_hInst_imageResizer);
-    path = path + L"\\ImageResizer.exe";
+    path = path + L"\\PowerToys.ImageResizer.exe";
     LPTSTR lpApplicationName = (LPTSTR)path.c_str();
     // Create an anonymous pipe to stream filenames
     SECURITY_ATTRIBUTES sa;
@@ -336,7 +336,7 @@ HRESULT __stdcall CContextMenuHandler::GetTitle(IShellItemArray* /*psiItemArray*
 
 HRESULT __stdcall CContextMenuHandler::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
 {
-    // Since ImageResizer is registered as a COM SurrogateServer the current module filename would be dllhost.exe. To get the icon we need the path of ImageResizerExt.dll, which can be obtained by passing the HINSTANCE of the dll
+    // Since ImageResizer is registered as a COM SurrogateServer the current module filename would be dllhost.exe. To get the icon we need the path of PowerToys.ImageResizerExt.dll, which can be obtained by passing the HINSTANCE of the dll
     std::wstring iconResourcePath = get_module_filename(g_hInst_imageResizer);
     iconResourcePath += L",-";
     iconResourcePath += std::to_wstring(IDI_RESIZE_PICTURES);

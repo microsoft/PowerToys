@@ -133,7 +133,7 @@ namespace ImageResizer.Models
                             Transform(originalFrame),
                             originalFrame.Thumbnail,
                             metadata,
-                            originalFrame.ColorContexts));
+                            null));
                 }
 
                 path = GetDestinationPath(encoder);

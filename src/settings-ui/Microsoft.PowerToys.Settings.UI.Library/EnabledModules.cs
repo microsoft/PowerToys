@@ -80,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool videoConference = true;
+        private bool videoConference; // defaulting to off https://github.com/microsoft/PowerToys/issues/14507
 
         [JsonPropertyName("Video Conference")]
         public bool VideoConference

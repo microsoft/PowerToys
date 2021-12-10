@@ -30,7 +30,7 @@ namespace Wox.Plugin
         private static readonly IPath Path = FileSystem.Path;
         private static readonly IDirectory Directory = FileSystem.Directory;
 
-        public const string ExeFileName = "PowerLauncher";
+        public const string ExeFileName = "PowerToys.PowerLauncher";
         public const string ModuleLocation = "Microsoft\\PowerToys\\PowerToys Run";
         public const string Plugins = "Plugins";
         public const string PortableFolderName = "UserData";

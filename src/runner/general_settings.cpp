@@ -179,9 +179,15 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     }
 }
 
-void start_initial_powertoys()
+void start_enabled_powertoys()
 {
     std::unordered_set<std::wstring> powertoys_to_disable;
+    // Take into account default values supplied by modules themselves
+    for (auto& [name, powertoy] : modules())
+    {
+        if (!powertoy->is_enabled_by_default())
+            powertoys_to_disable.emplace(name);
+    }
 
     json::JsonObject general_settings;
     try
@@ -192,9 +198,16 @@ void start_initial_powertoys()
             json::JsonObject enabled = general_settings.GetNamedObject(L"enabled");
             for (const auto& disabled_element : enabled)
             {
+                std::wstring disable_module_name{ static_cast<std::wstring_view>(disabled_element.Key()) };
+                // Disable explicitly disabled modules
                 if (!disabled_element.Value().GetBoolean())
                 {
-                    powertoys_to_disable.emplace(disabled_element.Key());
+                    powertoys_to_disable.emplace(std::move(disable_module_name));
+                }
+                // If module was scheduled for disable, but it's enabled in the settings - override default value
+                else if (auto it = powertoys_to_disable.find(disable_module_name); it != end(powertoys_to_disable))
+                {
+                    powertoys_to_disable.erase(it);
                 }
             }
         }
@@ -203,21 +216,11 @@ void start_initial_powertoys()
     {
     }
 
-    if (powertoys_to_disable.empty())
+    for (auto& [name, powertoy] : modules())
     {
-        for (auto& [name, powertoy] : modules())
+        if (!powertoys_to_disable.contains(name))
         {
             powertoy->enable();
-        }
-    }
-    else
-    {
-        for (auto& [name, powertoy] : modules())
-        {
-            if (powertoys_to_disable.find(name) == powertoys_to_disable.end())
-            {
-                powertoy->enable();
-            }
         }
     }
 }

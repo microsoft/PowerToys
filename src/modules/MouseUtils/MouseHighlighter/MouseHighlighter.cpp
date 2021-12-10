@@ -47,7 +47,7 @@ private:
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
 
     static constexpr auto m_className = L"MouseHighlighter";
-    static constexpr auto m_windowTitle = L"MouseHighlighter";
+    static constexpr auto m_windowTitle = L"PowerToys Mouse Highlighter";
     HWND m_hwndOwner = NULL;
     HWND m_hwnd = NULL;
     HINSTANCE m_hinstance = NULL;
