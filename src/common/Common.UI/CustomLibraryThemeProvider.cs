@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using ControlzEx.Theming;
 
-namespace Microsoft.PowerToys.Common.UI
+namespace Common.UI
 {
     public class CustomLibraryThemeProvider : LibraryThemeProvider
     {

@@ -5,12 +5,12 @@
 using System;
 using System.Text;
 using System.Windows;
+using Common.UI;
 using ImageResizer.Models;
 using ImageResizer.Properties;
 using ImageResizer.Utilities;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
-using Microsoft.PowerToys.Common.UI;
 
 namespace ImageResizer
 {

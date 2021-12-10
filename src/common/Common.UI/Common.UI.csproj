@@ -6,6 +6,7 @@
     <UseWPF>true</UseWPF>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>PowerToys.Common.UI</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
