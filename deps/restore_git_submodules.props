@@ -2,11 +2,9 @@
   <PropertyGroup>
     <RestoreGitSubmodulesImported>true</RestoreGitSubmodulesImported>
   </PropertyGroup>
-  <Target Name="RestoreGitSubmodules" BeforeTargets="PrepareForBuild">
-      <Exec IgnoreExitCode="true"
-            EchoOff="true"
-            StandardOutputImportance="low"
-            StandardErrorImportance="low"
-            Command="git submodule update --init" />
-  </Target>	
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\GitSubmodules\GitSubmodules.vcxproj">
+      <Project>{70E9123F-A56C-4569-8B82-F50E0911CDE7}</Project>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
