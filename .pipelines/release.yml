@@ -1,3 +1,8 @@
+# TODOs:
+# add in loc
+# need to rebase off main to get latest DLL namings
+# Signing needs to work
+
 # This build should never run as CI or against a pull request.
 trigger: none
 pr: none
@@ -67,7 +72,7 @@ jobs:
         call nuget.exe restore -PackagesDirectory . packages.config || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "..\src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "..\src\common\Telemetry\TelemetryBase.cs" || exit /b 1
-    
+
 #  - task: TouchdownBuildTask@1
 #    displayName: Download Localization Files
 #    inputs:
@@ -101,7 +106,7 @@ jobs:
 #        $Files | % { Move-Item -Verbose $_.Directory $_.Directory.Parent.Parent -EA:Ignore }
 #      pwsh: true
   - task: VSBuild@1
-    displayName: Build solution **\PowerToys.sln
+    displayName: Build PowerToys main project
     inputs:
       solution: '**\PowerToys.sln'
       vsVersion: 16.0
@@ -110,6 +115,51 @@ jobs:
       configuration: $(BuildConfiguration)
       clean: true
       maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Build BugReportTool
+    inputs:
+      solution: '**/tools/BugReportTool/BugReportTool.sln'
+      vsVersion: 16.0
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Build WebcamReportTool
+    inputs:
+      solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
+      vsVersion: 16.0
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Build PowerToysSetup PowerToysSetupCustomActions
+    inputs:
+      solution: '**/installer/PowerToysSetup.sln'
+      vsVersion: 16.0
+      msbuildArgs: /target:PowerToysSetupCustomActions /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Build PowerToysSetup
+    inputs:
+      solution: '**/installer/PowerToysSetup.sln'
+      vsVersion: 16.0
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: binlog'
     condition: failed()
