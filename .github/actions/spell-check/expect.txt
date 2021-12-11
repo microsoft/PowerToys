@@ -919,6 +919,7 @@ IPersist
 IPin
 IPlugin
 IPower
+ipreview
 ipreviewhandlertranslateaccelerator
 ipreviewhandlervisualssetfont
 IPrincipal
@@ -958,6 +959,7 @@ ITemplate
 ITerminal
 ITest
 ith
+ithumbnail
 IThrottled
 ITrigger
 IUI
