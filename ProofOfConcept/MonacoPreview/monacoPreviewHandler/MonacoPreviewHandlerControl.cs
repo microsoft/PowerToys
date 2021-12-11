@@ -105,8 +105,7 @@ namespace MonacoPreviewHandler
                                 // Initialize WebView
 
                                 await _webView.EnsureCoreWebView2Async(_webView2Environment);
-
-                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
+                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
                                 _webView.NavigateToString(html);
                                 _webView.NavigationCompleted += WebView2Init;
                                 _webView.Height = this.Height;
@@ -152,7 +151,7 @@ namespace MonacoPreviewHandler
 
             }
         }
-        
+
         public void FormResize(Object sender, EventArgs e)
         {
             // This function gets called when the form gets resized
@@ -175,7 +174,7 @@ namespace MonacoPreviewHandler
         [STAThread]
         private void WebView2Init(Object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
-            // This function sets the diiferent settings for the webview 
+            // This function sets the different settings for the webview 
 
             // Checks if already navigated
             if (!_hasNavigated)
@@ -196,7 +195,7 @@ namespace MonacoPreviewHandler
                 settings.AreDefaultScriptDialogsEnabled = false;
                 // Enables JavaScript
                 settings.IsScriptEnabled = true;
-                // Disable zoom woth ctrl and scroll
+                // Disable zoom with ctrl and scroll
                 settings.IsZoomControlEnabled = false;
                 // Disable developer menu
                 settings.IsBuiltInErrorPageEnabled = false;
