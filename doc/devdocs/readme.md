@@ -93,7 +93,7 @@ The installer can only be compiled in `Release` mode, step 1 and 2 must be done 
 
 ### Prerequisites for building the MSI installer
 
-1. Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=RobMensching.WiXToolset).
+1. Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2019Extension).
 2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
 
 ### Locally compiling the Bug reporting tool
