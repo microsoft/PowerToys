@@ -149,7 +149,6 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
         drawableRect.borderColor.a *= animationAlpha;
         drawableRect.fillColor.a *= animationAlpha;
 
-        m_renderTarget->CreateSolidColorBrush(drawableRect.textColor, &textBrush);
         m_renderTarget->CreateSolidColorBrush(drawableRect.borderColor, &borderBrush);
         m_renderTarget->CreateSolidColorBrush(drawableRect.fillColor, &fillBrush);
 
@@ -167,16 +166,21 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
 
         std::wstring idStr = std::to_wstring(drawableRect.id + 1);
 
-        if (textFormat && textBrush)
+        if (drawableRect.showText)
         {
-            textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
-            textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-            m_renderTarget->DrawTextW(idStr.c_str(), (UINT32)idStr.size(), textFormat, drawableRect.rect, textBrush);
-        }
+            m_renderTarget->CreateSolidColorBrush(drawableRect.textColor, &textBrush);
 
-        if (textBrush)
-        {
-            textBrush->Release();
+            if (textFormat && textBrush)
+            {
+                textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+                textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+                m_renderTarget->DrawTextW(idStr.c_str(), (UINT32)idStr.size(), textFormat, drawableRect.rect, textBrush);
+            }
+
+            if (textBrush)
+            {
+                textBrush->Release();
+            }
         }
     }
 
@@ -278,7 +282,8 @@ void ZonesOverlay::Flash()
 
 void ZonesOverlay::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                                      const ZoneIndexSet& highlightZones,
-                                     const ZoneColors& colors)
+                                     const ZoneColors& colors,
+                                     const bool showZoneText)
 {
     _TRACER_;
     std::unique_lock lock(m_mutex);
@@ -288,7 +293,7 @@ void ZonesOverlay::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
     auto borderColor = ConvertColor(colors.borderColor);
     auto inactiveColor = ConvertColor(colors.primaryColor);
     auto highlightColor = ConvertColor(colors.highlightColor);
-    auto textColor = ConvertColor(colors.textColor);
+    auto numberColor = ConvertColor(colors.numberColor);
 
     inactiveColor.a = colors.highlightOpacity / 100.f;
     highlightColor.a = colors.highlightOpacity / 100.f;
@@ -313,8 +318,9 @@ void ZonesOverlay::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                 .rect = ConvertRect(zone->GetZoneRect()),
                 .borderColor = borderColor,
                 .fillColor = inactiveColor,
-                .textColor = textColor,
-                .id = zone->Id()
+                .textColor = numberColor,
+                .id = zone->Id(),
+                .showText = showZoneText
             };
 
             m_sceneRects.push_back(drawableRect);
@@ -335,8 +341,9 @@ void ZonesOverlay::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                 .rect = ConvertRect(zone->GetZoneRect()),
                 .borderColor = borderColor,
                 .fillColor = highlightColor,
-                .textColor = textColor,
-                .id = zone->Id()
+                .textColor = numberColor,
+                .id = zone->Id(),
+                .showText = showZoneText
             };
 
             m_sceneRects.push_back(drawableRect);

@@ -145,4 +145,4 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea :
     IFACEMETHOD_(void, SetOverlappingZonesAlgorithm)(OverlappingZonesAlgorithm overlappingAlgorithm) = 0;
 };
 
-winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
+winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm, const bool showZoneText) noexcept;

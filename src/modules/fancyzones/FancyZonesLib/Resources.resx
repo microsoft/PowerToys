@@ -266,4 +266,10 @@
   <data name="Setting_Description_System_Theme" xml:space="preserve">
     <value>Use system theme</value>
   </data>
+  <data name="Setting_Description_Zone_Number_Color" xml:space="preserve">
+    <value>Zone number color (Default #000000)</value>
+  </data>
+  <data name="Setting_Description_Show_Zone_Number" xml:space="preserve">
+    <value>Show zone number</value>
+  </data>
 </root>

@@ -15,16 +15,20 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="SolidBackgroundBrush" Color="Black" />
+                    <SolidColorBrush x:Key="SolidZoneNumberBrush" Color="White" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="SolidBackgroundBrush" Color="White" />
+                    <SolidColorBrush x:Key="SolidZoneNumberBrush" Color="Black" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <SolidColorBrush x:Key="SolidBackgroundBrush" Color="Black" />
+                    <SolidColorBrush x:Key="SolidZoneNumberBrush" Color="White" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
             <SolidColorBrush x:Key="DefaultAccentBrush" Color="{ThemeResource SystemAccentColor}"/>
             <SolidColorBrush x:Key="DefaultBorderBrush" Color="{ThemeResource SystemAccentColor}"/>
+            <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
         </ResourceDictionary>
       
     </UserControl.Resources>
@@ -43,8 +47,14 @@
         </Border>
      
         <Grid Background="{ThemeResource SystemControlAcrylicElementBrush}" Grid.Row="2"  Grid.ColumnSpan="2"/>
-        <Border x:Name="Zone1" Margin="4,4,2,4" CornerRadius="2" Grid.RowSpan="2" BorderThickness="1"/>
-        <Border x:Name="Zone2" Margin="2,4,4,2" CornerRadius="2" Grid.Column="1" BorderThickness="1"/>
-        <Border x:Name="Zone3" Margin="2,2,4,4" CornerRadius="2" Grid.Row="1" Grid.Column="1" BorderThickness="1"/>
+        <Border x:Name="Zone1" Margin="4,4,2,4" CornerRadius="2" Grid.RowSpan="2" BorderThickness="1">
+            <TextBlock x:Name="Zone1Number" Text="1" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{x:Bind ShowZoneNumber, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        </Border>
+        <Border x:Name="Zone2" Margin="2,4,4,2" CornerRadius="2" Grid.Column="1" BorderThickness="1">
+            <TextBlock x:Name="Zone2Number" Text="2" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{x:Bind ShowZoneNumber, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        </Border>
+        <Border x:Name="Zone3" Margin="2,2,4,4" CornerRadius="2" Grid.Row="1" Grid.Column="1" BorderThickness="1">
+            <TextBlock x:Name="Zone3Number" Text="3" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{x:Bind ShowZoneNumber, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        </Border>
     </Grid>
 </UserControl>

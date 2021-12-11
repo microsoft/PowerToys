@@ -40,13 +40,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(IsSystemThemeProperty, value); }
         }
 
+        public static readonly DependencyProperty IsSystemThemeProperty = DependencyProperty.Register("IsSystemTheme", typeof(bool), typeof(FancyZonesPreviewControl), new PropertyMetadata(default(bool), OnPropertyChanged));
+
         public string WallpaperPath
         {
             get { return (string)GetValue(WallpaperPathProperty); }
             set { SetValue(WallpaperPathProperty, value); }
         }
-
-        public static readonly DependencyProperty IsSystemThemeProperty = DependencyProperty.Register("IsSystemTheme", typeof(bool), typeof(FancyZonesPreviewControl), new PropertyMetadata(default(bool), OnPropertyChanged));
 
         public static readonly DependencyProperty WallpaperPathProperty = DependencyProperty.Register("WallpaperPath", typeof(string), typeof(FancyZonesPreviewControl), new PropertyMetadata("ms-appx:///Assets/wallpaper_placeholder.png"));
 
@@ -74,6 +74,22 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty CustomHighlightColorProperty = DependencyProperty.Register("CustomHighlightColor", typeof(Color), typeof(FancyZonesPreviewControl), new PropertyMetadata(null, OnPropertyChanged));
 
+        public Color CustomNumberColor
+        {
+            get { return (Color)GetValue(CustomNumberColorProperty); }
+            set { SetValue(CustomNumberColorProperty, value); }
+        }
+
+        public static readonly DependencyProperty CustomNumberColorProperty = DependencyProperty.Register("CustomNumberColor", typeof(Color), typeof(FancyZonesPreviewControl), new PropertyMetadata(null, OnPropertyChanged));
+
+        public bool ShowZoneNumber
+        {
+            get { return (bool)GetValue(ShowZoneNumberProperty); }
+            set { SetValue(ShowZoneNumberProperty, value); }
+        }
+
+        public static readonly DependencyProperty ShowZoneNumberProperty = DependencyProperty.Register("ShowZoneNumber", typeof(bool), typeof(FancyZonesPreviewControl), new PropertyMetadata(default(bool), OnPropertyChanged));
+
         public double HighlightOpacity
         {
             get { return (double)GetValue(HighlightOpacityProperty); }
@@ -90,6 +106,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private SolidColorBrush highlightBrush;
         private SolidColorBrush inActiveBrush;
         private SolidColorBrush borderBrush;
+        private SolidColorBrush numberBrush;
 
         private void Update()
         {
@@ -98,12 +115,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 highlightBrush = new SolidColorBrush(CustomHighlightColor);
                 inActiveBrush = new SolidColorBrush(CustomInActiveColor);
                 borderBrush = new SolidColorBrush(CustomBorderColor);
+                numberBrush = new SolidColorBrush(CustomNumberColor);
             }
             else
             {
                 highlightBrush = (SolidColorBrush)this.Resources["DefaultAccentBrush"];
                 inActiveBrush = (SolidColorBrush)this.Resources["SolidBackgroundBrush"];
                 borderBrush = (SolidColorBrush)this.Resources["DefaultBorderBrush"];
+                numberBrush = (SolidColorBrush)this.Resources["SolidZoneNumberBrush"];
             }
 
             highlightBrush.Opacity = HighlightOpacity / 100;
@@ -115,6 +134,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             Zone1.BorderBrush = borderBrush;
             Zone2.BorderBrush = borderBrush;
             Zone3.BorderBrush = borderBrush;
+
+            Zone1Number.Foreground = numberBrush;
+            Zone2Number.Foreground = numberBrush;
+            Zone3Number.Foreground = numberBrush;
         }
     }
 }
