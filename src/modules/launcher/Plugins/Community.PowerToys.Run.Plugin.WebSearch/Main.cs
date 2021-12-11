@@ -121,10 +121,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 }
                 else
                 {
-                    // string.Format behaviour doesn't change in this case, so providing an IFormatProvider is not necessary
-#pragma warning disable CA1305 // Specify IFormatProvider
-                    string url = string.Format(_searchEngineUrl, searchTerm);
-#pragma warning restore CA1305 // Specify IFormatProvider
+                    string url = string.Format(System.Globalization.CultureInfo.InvariantCulture, _searchEngineUrl, searchTerm);
 
                     result.Action = action =>
                     {
