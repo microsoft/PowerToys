@@ -2,7 +2,7 @@
 
 **What is this about:**
 
-**What is include in the PR:** 
+**What is included in the PR:** 
 
 **How does someone test / validate:** 
 
