@@ -60,7 +60,6 @@ namespace monacoPreview
                 case "csx":
                     language = "csharp";
                     break;
-                // TO-DO: Add Communicating sequential processes file extension
                 case "css":
                     language = "css";
                     break;
@@ -70,7 +69,6 @@ namespace monacoPreview
                 case "dockerfile":
                     language = "dockerfile";
                     break;
-                // TO-DO: add ecl
                 case "fs":
                 case "fsi":
                 case "fsx":
@@ -83,8 +81,6 @@ namespace monacoPreview
                 case "graphql":
                     language = "graphql";
                     break;
-                // TO-DO: Add handlebars
-                // TO-DO: Add hashicorp configuration language
                 case "html":
                 case "htm":
                     language = "html";
@@ -116,7 +112,6 @@ namespace monacoPreview
                 case "less":
                     language = "less";
                     break;
-                // TO-DO: Add lexon
                 case "lua":
                     language = "lua";
                     break;
@@ -134,7 +129,6 @@ namespace monacoPreview
                 case "s":
                     language = "mips";
                     break;
-                // TO-DO: Add msdax
                 case "sql":
                     // TO-DO: differentiate the different sql languages
                     language = "sql";
@@ -147,7 +141,6 @@ namespace monacoPreview
                 case "pas":
                     language = "pascal";
                     break;
-                // TO-DO: Pascaligo
                 case "pl":
                 case "plx":
                 case "pm":
@@ -168,7 +161,6 @@ namespace monacoPreview
                 case "phar":
                     language = "php";
                     break;
-                // TO-DO: Postiats
                 case "pq":
                     language = "powerquery";
                     break;
@@ -182,7 +174,6 @@ namespace monacoPreview
                 case "cdxml":
                     language = "powershell";
                     break;
-                // TO-DO: Pug
                 case "py":
                 case "pyi":
                 case "pyc":
@@ -203,8 +194,6 @@ namespace monacoPreview
                 case "vbhtml":
                     language = "razor";
                     break;
-                // TO-DO: redis
-                // TO-DO: amazon redshift
                 case "rst":
                     language = "restructuredtext";
                     break;
@@ -233,7 +222,6 @@ namespace monacoPreview
                 case "sh":
                     language = "shell";
                     break;
-                // TO-DO: sol
                 case "st":
                 case "stx":
                     language = "st";
@@ -249,7 +237,6 @@ namespace monacoPreview
                 case "tbc":
                     language = "tcl";
                     break;
-                // TO-DO: twig
                 case "ts":
                 case "tsx":
                     language = "typescript";
@@ -262,7 +249,6 @@ namespace monacoPreview
                     language = "verilog";
                     break;
                 case "xml":
-                    // TO-DO: Take every file that starts with "<?xml" or just add more xml formats
                     language = "xml";
                     break;
                 case "yaml":

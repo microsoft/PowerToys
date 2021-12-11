@@ -106,8 +106,7 @@ namespace MonacoPreviewHandler
 
                                 await _webView.EnsureCoreWebView2Async(_webView2Environment);
 
-                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName,
-                                    AssemblyDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
+                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
                                 _webView.NavigateToString(html);
                                 _webView.NavigationCompleted += WebView2Init;
                                 _webView.Height = this.Height;
