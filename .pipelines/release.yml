@@ -143,6 +143,9 @@ jobs:
       clean: true
       maximumCpuCount: true
 
+# 1st PARTY FILES FILES NEED TO BE SIGNED HERE
+# 3rd PARTY FILES FILES NEED TO BE SIGNED HERE
+
   - task: VSBuild@1
     displayName: Build PowerToysSetup PowerToysSetupCustomActions
     inputs:
@@ -153,6 +156,8 @@ jobs:
       configuration: $(BuildConfiguration)
       clean: true
       maximumCpuCount: true
+
+# PowerToysSetupCustomActions.dll NEED TO BE SIGNED HERE
 
   - task: VSBuild@1
     displayName: Build PowerToysSetup
@@ -165,6 +170,8 @@ jobs:
       clean: true
       maximumCpuCount: true
 
+# SETUP NEED TO BE SIGNED HERE
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: binlog'
     condition: failed()
@@ -176,6 +183,9 @@ jobs:
   - task: ComponentGovernanceComponentDetection@0
     displayName: Component Detection
 
+# COPYING NEEDS TO BE MOVED HIGHER
+# IS THIS NEEDED REALLY?
+
   - task: CopyFiles@2
     displayName: Copy VideoConferenceProxyFilter_x86 to build output
     inputs: 
@@ -184,6 +194,9 @@ jobs:
         'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
       TargetFolder: Build_Output
       OverWrite: true
+
+# COPYING NEEDS TO BE MOVED HIGHER
+# IS THIS NEEDED REALLY?
 
   - task: CopyFiles@2
     displayName: Copy core files to build output
