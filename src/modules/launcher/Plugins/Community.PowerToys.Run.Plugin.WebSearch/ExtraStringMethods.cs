@@ -53,7 +53,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             return valStart.Substring(valStartIndex, valStart.IndexOf("\"", valStartIndex + 1, StringComparison.Ordinal) - valStartIndex);
         }
 
-        /// <summary>Gets the index of the nth occurance of the specified character in the string.</summary>
+        /// <summary>Gets the index of the nth occurrence of the specified character in the string.</summary>
         /// <returns>The zero-based index of <paramref name="val"/> if found, or -1 if not.</returns>
         public static int GetStrNthIndex(string s, char val, int n)
         {
