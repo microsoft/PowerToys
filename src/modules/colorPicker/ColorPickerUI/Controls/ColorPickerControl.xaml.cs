@@ -300,7 +300,7 @@ namespace ColorPicker.Controls
             }
 
             // Add # if not typed by user. Prevents us form crash in converter.ConvertFromString()
-            if (newValue.StartsWith("#", StringComparison.CurrentCulture))
+            if (!newValue.StartsWith("#", StringComparison.CurrentCulture))
             {
                 newValue = "#" + newValue;
                 insertHexTextHashtag = true;
