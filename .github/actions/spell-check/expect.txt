@@ -741,6 +741,7 @@ hashcode
 Hashset
 Hashtable
 HASHVAL
+Hashtag
 hbitmap
 hbmp
 hbr
