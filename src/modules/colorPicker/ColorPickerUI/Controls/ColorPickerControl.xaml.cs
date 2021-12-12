@@ -288,25 +288,40 @@ namespace ColorPicker.Controls
 
         private void HexCode_TextChanged(object sender, TextChangedEventArgs e)
         {
+            bool insertHexTextHashtag = false;
             var newValue = (sender as TextBox).Text;
 
             // support hex with 3 or 6 characters and with or without #
             var reg = new Regex("^#?([0-9A-Fa-f]{3}){1,2}$");
-
-            // Add # if not typed by user. Prevents us form crash in converter.ConvertFromString()
-            newValue = newValue.StartsWith("#", StringComparison.CurrentCulture) ? newValue : "#" + newValue;
 
             if (!reg.IsMatch(newValue))
             {
                 return;
             }
 
+            // Add # if not typed by user. Prevents us form crash in converter.ConvertFromString()
+            if (newValue.StartsWith("#", StringComparison.CurrentCulture))
+            {
+                newValue = "#" + newValue;
+                insertHexTextHashtag = true;
+            }
+
             if (!_ignoreHexChanges)
             {
+                _ignoreHexChanges = true;
+
+                // Update hex text box to show code with # and fix cursor position
+                if (insertHexTextHashtag)
+                {
+                    HexCode.Text = newValue;
+                    HexCode.Select(HexCode.Text.Length, 0);
+                    insertHexTextHashtag = false;
+                }
+
+                // Update other controls
                 var converter = new System.Drawing.ColorConverter();
 
                 var color = (System.Drawing.Color)converter.ConvertFromString(newValue);
-                _ignoreHexChanges = true;
                 SetColorFromTextBoxes(color);
                 _ignoreHexChanges = false;
             }
