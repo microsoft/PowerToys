@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             @"sinh\s*\(|cosh\s*\(|tanh\s*\(|arsinh\s*\(|arcosh\s*\(|artanh\s*\(|" +
             @"pi|" +
             @"==|~=|&&|\|\||" +
-            @"e|[0-9]|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
+            @"e|[0-9]|0x[0-9a-fA-F]+|0b[01]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
             @")+$", RegexOptions.Compiled);
 
         public static bool InputValid(string input)
