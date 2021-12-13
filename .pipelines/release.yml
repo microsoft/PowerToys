@@ -43,7 +43,16 @@ jobs:
     clean: true
     submodules: true
     persistCredentials: True
-    
+
+  - task: CopyFiles@2
+    displayName: test output
+    inputs: 
+      sourceFolder: './src'
+      Contents: >-
+        'readme.md'
+      TargetFolder: Build_Output
+      OverWrite: true
+
 #  - task: PkgESSetupBuild@12
 #    displayName: Package ES - Setup Build
 #    inputs:
