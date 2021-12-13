@@ -153,9 +153,6 @@ jobs:
       clean: true
       maximumCpuCount: true
 
-# 1st PARTY FILES FILES NEED TO BE SIGNED HERE
-# 3rd PARTY FILES FILES NEED TO BE SIGNED HERE
-
   - task: VSBuild@1
     displayName: Build PowerToysSetup PowerToysSetupCustomActions
     inputs:
@@ -167,7 +164,17 @@ jobs:
       clean: true
       maximumCpuCount: true
 
-# PowerToysSetupCustomActions.dll NEED TO BE SIGNED HERE
+# reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
+# https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: 'ESRP CodeSigning'
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: '$(BUILD.BINARIESDIRECTORY)\$(BuildConfiguration)\$(BuildPlatform)\Binaries'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_LooseFiles.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
 
   - task: VSBuild@1
     displayName: Build PowerToysSetup
@@ -179,6 +186,18 @@ jobs:
       configuration: $(BuildConfiguration)
       clean: true
       maximumCpuCount: true
+
+# reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
+# https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: 'ESRP CodeSigning'
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: '$(BUILD.BINARIESDIRECTORY)\$(BuildConfiguration)\$(BuildPlatform)\Binaries'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_Installer.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
 
 # SETUP NEED TO BE SIGNED HERE
 
