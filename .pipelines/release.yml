@@ -189,7 +189,7 @@ jobs:
   - task: CopyFiles@2
     displayName: Copy VideoConferenceProxyFilter_x86 to build output
     inputs: 
-      sourceFolder: '**/x86/Release'
+      sourceFolder: './x86/Release'
       Contents: >-
         'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
       TargetFolder: Build_Output
@@ -201,7 +201,7 @@ jobs:
   - task: CopyFiles@2
     displayName: Copy core files to build output
     inputs: 
-      sourceFolder: '**/x64/Release'
+      sourceFolder: './x64/Release'
       Contents: >-
         'PowerToys.ActionRunner.exe'
         'PowerToys.Update.exe'
