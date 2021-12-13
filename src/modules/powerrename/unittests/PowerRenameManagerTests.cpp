@@ -294,7 +294,7 @@ namespace PowerRenameManagerTests
         {
             rename_pairs renamePairs[] = {
                 { L"foo.FOO", L"foo.bar", true, true, 0 },
-                { L"foo.FOOO", L"foo.FOOO_norename", false, false, 0 },
+                { L"bar.FOO", L"bar.FOO_norename", false, false, 0 },
                 { L"foo.bar", L"foo.bar_norename", true, false, 0 }
             };
 
