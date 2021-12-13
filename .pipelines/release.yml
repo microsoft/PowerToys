@@ -49,7 +49,7 @@ jobs:
     inputs: 
       #sourceFolder: '.\src\'
       Contents: >-
-        'src\README.md'
+        'src/README.md'
       TargetFolder: Build_Output
       OverWrite: true
 
@@ -189,14 +189,14 @@ jobs:
 
 # reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
 # https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
-  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
-    displayName: 'ESRP CodeSigning'
-    inputs:
-      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
-      FolderPath: '$(BUILD.BINARIESDIRECTORY)\$(BuildConfiguration)\$(BuildPlatform)\Binaries'
-      signType: batchSigning
-      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_Installer.json'
-      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+  # - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+  #   displayName: 'ESRP CodeSigning'
+  #   inputs:
+  #     ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+  #     FolderPath: '$(BUILD.BINARIESDIRECTORY)\$(BuildConfiguration)\$(BuildPlatform)\Binaries'
+  #     signType: batchSigning
+  #     batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_Installer.json'
+  #     ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
 
 # SETUP NEED TO BE SIGNED HERE
@@ -212,143 +212,7 @@ jobs:
   - task: ComponentGovernanceComponentDetection@0
     displayName: Component Detection
 
-# COPYING NEEDS TO BE MOVED HIGHER
-# IS THIS NEEDED REALLY?
-
-  - task: CopyFiles@2
-    displayName: Copy VideoConferenceProxyFilter_x86 to build output
-    inputs: 
-      sourceFolder: './x86/Release/'
-      Contents: >-
-        'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
-      TargetFolder: Build_Output
-      OverWrite: true
-
-# COPYING NEEDS TO BE MOVED HIGHER
-# IS THIS NEEDED REALLY?
-
-  - task: CopyFiles@2
-    displayName: Copy core files to build output
-    inputs: 
-      sourceFolder: './x64/Release/'
-      Contents: >-
-        'PowerToys.ActionRunner.exe'
-        'PowerToys.Update.exe'
-        'BackgroundActivatorDLL.dll'
-        'Notifications.dll'
-        'os-detection.dll'
-        'PowerToys.exe'
-        'PowerToysInterop.dll'
-        'BugReportTool\BugReportTool.exe'
-        '**\*.resources.dll'
-        'modules\ColorPicker\ColorPicker.dll'
-        'modules\ColorPicker\ColorPickerUI.dll'
-        'modules\ColorPicker\ColorPickerUI.exe'
-        'modules\ColorPicker\ManagedCommon.dll'
-        'modules\ColorPicker\ManagedTelemetry.dll'
-        'modules\ColorPicker\Microsoft.PowerToys.Common.UI.dll'
-        'modules\ColorPicker\Microsoft.PowerToys.Settings.UI.Lib.dll'
-        'modules\ColorPicker\PowerToysInterop.dll'
-        'modules\ColorPicker\Telemetry.dll'
-        '**\*.resources.dll'
-        'modules\Awake\AwakeModuleInterface.dll'
-        'modules\Awake\ManagedCommon.dll'
-        'modules\Awake\ManagedTelemetry.dll'
-        'modules\Awake\Microsoft.PowerToys.Settings.UI.Lib.dll'
-        'modules\Awake\PowerToys.Awake.exe'
-        'modules\Awake\PowerToys.Awake.dll'
-        'modules\Awake\PowerToysInterop.dll'
-        'modules\FancyZones\fancyzones.dll'
-        'modules\FancyZones\FancyZonesEditor.exe'
-        'modules\FancyZones\FancyZonesEditor.dll'
-        'modules\FancyZones\FancyZonesModuleInterface.dll'
-        'modules\FancyZones\ManagedCommon.dll'
-        'modules\FancyZones\ManagedTelemetry.dll'
-        'modules\FancyZones\PowerToys.FancyZones.exe'
-        'modules\FancyZones\PowerToysInterop.dll'
-        'modules\FancyZones\Telemetry.dll'
-        'modules\FancyZones\Microsoft.PowerToys.Common.UI.dll'
-        'modules\FileExplorerPreview\ManagedTelemetry.dll'
-        'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
-        'modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll'
-        'modules\FileExplorerPreview\PdfPreviewHandler.dll'
-        'modules\FileExplorerPreview\PdfPreviewHandler.comhost.dll'
-        'modules\FileExplorerPreview\PdfThumbnailProvider.dll'
-        'modules\FileExplorerPreview\PdfThumbnailProvider.comhost.dll'
-        'modules\FileExplorerPreview\powerpreview.dll'
-        'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
-        'modules\FileExplorerPreview\SvgPreviewHandler.dll'
-        'modules\FileExplorerPreview\SvgPreviewHandler.comhost.dll'
-        'modules\FileExplorerPreview\SvgThumbnailProvider.dll'
-        'modules\FileExplorerPreview\SvgThumbnailProvider.comhost.dll'
-        'modules\FileExplorerPreview\Telemetry.dll'
-        'modules\ImageResizer\ImageResizer.exe'
-        'modules\ImageResizer\ImageResizer.dll'
-        'modules\ImageResizer\ImageResizerExt.dll'
-        'modules\ImageResizer\PowerToysInterop.dll'
-        'modules\ImageResizer\ManagedCommon.dll'
-        'modules\ImageResizer\ManagedTelemetry.dll'
-        'modules\ImageResizer\Microsoft.PowerToys.Common.UI.dll'
-        'modules\KeyboardManager\KeyboardManager.dll'
-        'modules\KeyboardManager\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe'
-        'modules\KeyboardManager\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe'
-        'modules\launcher\Microsoft.PowerToys.Settings.UI.Lib.dll'
-        'modules\launcher\ManagedCommon.dll'
-        'modules\launcher\ManagedTelemetry.dll'
-        'modules\launcher\Microsoft.PowerToys.Common.UI.dll'
-        'modules\launcher\Microsoft.Launcher.dll'
-        'modules\launcher\Plugins\Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.dll'
-        'modules\launcher\Plugins\Calculator\ManagedTelemetry.dll'
-        'modules\launcher\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.dll'
-        'modules\launcher\Plugins\Microsoft.Plugin.Folder\ManagedTelemetry.dll'
-        'modules\launcher\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.dll'
-        'modules\launcher\Plugins\Microsoft.Plugin.Indexer\ManagedTelemetry.dll'
-        'modules\launcher\Plugins\Microsoft.Plugin.Program\Microsoft.Plugin.Program.dll'
-        'modules\launcher\Plugins\Microsoft.Plugin.Program\ManagedTelemetry.dll'
-        'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\Microsoft.PowerToys.Run.Plugin.Registry.dll'
-        'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\ManagedTelemetry.dll'
-        'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\ManagedTelemetry.dll'
-        'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll'
-        'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\WindowsSettings.json'
-        'modules\launcher\Plugins\Microsoft.Plugin.Shell\Microsoft.Plugin.Shell.dll'
-        'modules\launcher\Plugins\Microsoft.Plugin.Shell\ManagedTelemetry.dll'
-        'modules\launcher\Plugins\Microsoft.Plugin.Uri\Microsoft.Plugin.Uri.dll'
-        'modules\launcher\Plugins\Microsoft.Plugin.Uri\ManagedTelemetry.dll'
-        'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Microsoft.Plugin.WindowWalker.dll'
-        'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\ManagedTelemetry.dll'
-        'modules\launcher\Plugins\Community.UnitConverter\Community.PowerToys.Run.Plugin.UnitConverter.dll'
-        'modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll'
-        'modules\launcher\Plugins\Service\Microsoft.PowerToys.Run.Plugin.Service.dll'
-        'modules\launcher\Plugins\System\Microsoft.PowerToys.Run.Plugin.System.dll'
-        'modules\launcher\Plugins\WindowsTerminal\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll'
-        'modules\launcher\Plugins\WindowsTerminal\ManagedTelemetry.dll'
-        'modules\launcher\PowerLauncher.dll'
-        'modules\launcher\PowerLauncher.exe'
-        'modules\launcher\PowerLauncher.Telemetry.dll'
-        'modules\launcher\PowerLauncher.UI.exe'
-        'modules\launcher\PowerToysInterop.dll'
-        'modules\launcher\Telemetry.dll'
-        'modules\launcher\Wox.dll'
-        'modules\launcher\Wox.Infrastructure.dll'
-        'modules\launcher\Wox.Plugin.dll'
-        'modules\MouseUtils\FindMyMouse.dll'
-        'modules\PowerRename\PowerRenameExt.dll'
-        'modules\PowerRename\PowerRenameUILib.dll'
-        'modules\PowerRename\PowerRename.exe'
-        'modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe'
-        'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'
-        'modules\VideoConference\VideoConferenceModule.dll'
-        'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
-        'Settings\ManagedTelemetry.dll'
-        'Settings\Microsoft.PowerToys.Settings.UI.exe'
-        'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'
-        'Settings\PowerToys.Settings.dll'
-        'Settings\PowerToys.Settings.exe'
-        'Settings\PowerToysInterop.dll'
-        'Settings\Telemetry.dll'
-        'Settings\ManagedCommon.dll'
-      TargetFolder: Build_Output
-      OverWrite: true
+# COPY stuff to build artifact
 
 # DUSTIN: do we need build artifacts publishing?
   #- task: PublishBuildArtifacts@1
