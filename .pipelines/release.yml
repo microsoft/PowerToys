@@ -47,9 +47,9 @@ jobs:
   - task: CopyFiles@2
     displayName: test output
     inputs: 
-      sourceFolder: 'src/'
+      #sourceFolder: '.\src\'
       Contents: >-
-        'readme.md'
+        'src\README.md'
       TargetFolder: Build_Output
       OverWrite: true
 
