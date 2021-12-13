@@ -47,7 +47,7 @@ jobs:
   - task: CopyFiles@2
     displayName: test output
     inputs: 
-      sourceFolder: './src'
+      sourceFolder: 'src/'
       Contents: >-
         'readme.md'
       TargetFolder: Build_Output
@@ -65,7 +65,7 @@ jobs:
     inputs:
       nuGetServiceConnections: PowerToysCDPxFeed
 
-# this will do the following:
+# this will restore the following nugets:
 # - main solution
 # - Bug report tool
 # - Webcam report tool
@@ -86,7 +86,8 @@ jobs:
         call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
-    
+
+# this is localization, we need this
 #  - task: TouchdownBuildTask@1
 #    displayName: Download Localization Files
 #    inputs:
@@ -198,7 +199,7 @@ jobs:
   - task: CopyFiles@2
     displayName: Copy VideoConferenceProxyFilter_x86 to build output
     inputs: 
-      sourceFolder: './x86/Release'
+      sourceFolder: './x86/Release/'
       Contents: >-
         'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
       TargetFolder: Build_Output
@@ -210,7 +211,7 @@ jobs:
   - task: CopyFiles@2
     displayName: Copy core files to build output
     inputs: 
-      sourceFolder: './x64/Release'
+      sourceFolder: './x64/Release/'
       Contents: >-
         'PowerToys.ActionRunner.exe'
         'PowerToys.Update.exe'
@@ -344,12 +345,14 @@ jobs:
   #    SearchPattern: '**/*.pdb'
   #    IndexSources: false
   #    SymbolServerType: TeamServices
+
+  # this is signing
   #- task: EsrpCodeSigning@1
   #  displayName: USE AS BASE BUT TERMINAL CODE - Submit *.msixbundle to ESRP for code signing
   #  inputs:
   #    ConnectedServiceName: 9d6d2960-0793-4d59-943e-78dcb434840a
   #    FolderPath: $(System.ArtifactsDirectory)
-  #    Pattern: Microsoft.WindowsTerminal*.msixbundle
+  #    Pattern: *.dll|*.exe
   #    UseMinimatch: true
   #    signConfigType: inlineSignParams
   #    inlineOperation: >-
