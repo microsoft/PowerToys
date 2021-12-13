@@ -1087,7 +1087,13 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                     wchar_t transformedName[MAX_PATH] = { 0 };
                     if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase || flags & Capitalized))
                     {
-                        winrt::check_hresult(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags, isFolder));
+                        try
+                        {
+                            winrt::check_hresult(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags, isFolder));
+                        }
+                        catch (...)
+                        {
+                        }
                         newNameToUse = transformedName;
                     }
 
