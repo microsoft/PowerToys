@@ -69,13 +69,26 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 && query.ActionKeyword == query.RawQuery
                 && IsDefaultBrowserSet())
             {
+                string arguments = "\"? \"";
                 results.Add(new Result
                 {
                     Title = Properties.Resources.plugin_description.Remove(Description.Length - 1, 1),
                     SubTitle = Properties.Resources.plugin_browser,
                     QueryTextDisplay = string.Empty,
                     IcoPath = _defaultIconPath,
-                    Action = action => true,
+                    ProgramArguments = arguments,
+                    Action = action =>
+                    {
+                        if (!Helper.OpenInShell(_browserPath, arguments))
+                        {
+                            _context.API.ShowMsg(
+                                $"Plugin: {Properties.Resources.plugin_name}",
+                                $"{Properties.Resources.plugin_search_failed}: ");
+                            return false;
+                        }
+
+                        return true;
+                    },
                 });
                 return results;
             }
@@ -150,6 +163,14 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             // Checks if input is a URI the same way Microsoft.Plugin.Uri.UriHelper.ExtendedUriParser does
             bool IsURI(string input)
             {
+                if (input.EndsWith(":", StringComparison.OrdinalIgnoreCase)
+                    && !input.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                    && !input.Contains("/", StringComparison.OrdinalIgnoreCase)
+                    && !input.All(char.IsDigit))
+                {
+                    return true;
+                }
+
                 if (input.EndsWith(":", StringComparison.CurrentCulture)
                     || input.EndsWith(".", StringComparison.CurrentCulture)
                     || input.EndsWith(":/", StringComparison.CurrentCulture)

@@ -29,28 +29,28 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 throw new ArgumentException($"{nameof(value)} cannot be empty.", nameof(value));
             }
 
-            string valStart = json;
+            int startIndex = 0;
             for (int i = 0; i < value.Length; ++i)
             {
                 string val = $"\"{value[i]}\"";
 
-                int valIndex = valStart.IndexOf(val, StringComparison.Ordinal);
+                int valIndex = json.IndexOf(val, startIndex, StringComparison.Ordinal);
                 if (valIndex == -1)
                 {
                     return null;
                 }
 
-                valStart = valStart.Substring(valIndex + val.Length + 1);
+                startIndex = valIndex + val.Length + 1;
             }
 
-            int valStartIndex = valStart.IndexOf('"', StringComparison.Ordinal);
+            int valStartIndex = json.IndexOf("\"", startIndex, StringComparison.Ordinal);
             if (valStartIndex == -1)
             {
                 throw new ArgumentException($"The specified value is not of type string.", nameof(value));
             }
 
             ++valStartIndex;
-            return valStart.Substring(valStartIndex, valStart.IndexOf("\"", valStartIndex + 1, StringComparison.Ordinal) - valStartIndex);
+            return json.Substring(valStartIndex, json.IndexOf("\"", valStartIndex + 1, StringComparison.Ordinal) - valStartIndex);
         }
 
         /// <summary>Gets the index of the nth occurrence of the specified character in the string.</summary>
