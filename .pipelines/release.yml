@@ -170,7 +170,7 @@ jobs:
     displayName: 'ESRP CodeSigning'
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
-      FolderPath: '$(BUILD.BINARIESDIRECTORY)\$(BuildConfiguration)\$(BuildPlatform)\Binaries'
+      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_LooseFiles.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
