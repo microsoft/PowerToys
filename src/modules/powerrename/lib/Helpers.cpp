@@ -52,20 +52,11 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
         {
             if (isFolder)
             {
-                if (!(flags & ExtensionOnly))
+                hr = StringCchCopy(result, cchMax, source);
+                if (SUCCEEDED(hr))
                 {
-                    hr = StringCchCopy(result, cchMax, source);
-                    if (SUCCEEDED(hr))
-                    {
-                        std::transform(result, result + wcslen(result), result, ::towupper);
-                    }
+                    std::transform(result, result + wcslen(result), result, ::towupper);
                 }
-                else
-                {
-                    // Nothing to do, but valid case.
-                    hr = S_OK;
-                }
-
             }
             else
             {
@@ -106,18 +97,10 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
         {
             if (isFolder)
             {
-                if (!(flags & ExtensionOnly))
+                hr = StringCchCopy(result, cchMax, source);
+                if (SUCCEEDED(hr))
                 {
-                    hr = StringCchCopy(result, cchMax, source);
-                    if (SUCCEEDED(hr))
-                    {
-                        std::transform(result, result + wcslen(result), result, ::towlower);
-                    }
-                }
-                else
-                {
-                    // Nothing to do, but valid case.
-                    hr = S_OK;
+                    std::transform(result, result + wcslen(result), result, ::towlower);
                 }
             }
             else

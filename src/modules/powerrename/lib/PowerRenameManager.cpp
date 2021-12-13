@@ -965,7 +965,8 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                     winrt::check_hresult(spItem->GetIsSubFolderContent(&isSubFolderContent));
                     if ((isFolder && (flags & PowerRenameFlags::ExcludeFolders)) ||
                         (!isFolder && (flags & PowerRenameFlags::ExcludeFiles)) ||
-                        (isSubFolderContent && (flags & PowerRenameFlags::ExcludeSubfolders)))
+                        (isSubFolderContent && (flags & PowerRenameFlags::ExcludeSubfolders)) ||
+                        (isFolder && (flags & PowerRenameFlags::ExtensionOnly)))
                     {
                         // Exclude this item from renaming.  Ensure new name is cleared.
                         winrt::check_hresult(spItem->PutNewName(nullptr));
@@ -987,11 +988,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
 
                     if (isFolder)
                     {
-                        // Folders don't have extensions - nothing to rename, leaving sourceName empty
-                        if (!(flags & ExtensionOnly))
-                        {
-                            StringCchCopy(sourceName, ARRAYSIZE(sourceName), originalName);
-                        }
+                        StringCchCopy(sourceName, ARRAYSIZE(sourceName), originalName);
                     
                     }
                     else
@@ -1053,10 +1050,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
 
                         if (isFolder)
                         {
-                            if (!(flags & ExtensionOnly))
-                            {
-                                StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
-                            }
+                            StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
                         }
                         else
                         {
