@@ -21,7 +21,7 @@ parameters:
     default:
       - x64
   - name: versionNumber
-    type: object
+    type: string
     default:
       - 0.0.1
 
