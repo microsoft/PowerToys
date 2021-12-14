@@ -276,11 +276,10 @@ jobs:
   #          }
   #      ]
 
-steps:
-- task: CopyFiles@2
-  inputs:
-    contents: '**/PowerToysSetup-*.exe'
-    targetFolder: $(Build.ArtifactStagingDirectory)
+  - task: CopyFiles@2
+    inputs:
+      contents: '**/PowerToysSetup-*.exe'
+      targetFolder: $(Build.ArtifactStagingDirectory)
 
   - task: PublishBuildArtifacts@1
    displayName: 'Publish Artifact: PowerToySetup'
