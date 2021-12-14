@@ -1,83 +1,83 @@
 environment:
   host:
-    os: "windows"
-    flavor: "server"
-    version: "2019"
+    os: 'windows'
+    flavor: 'server'
+    version: '2019'
   runtime:
-    provider: "appcontainer"
+    provider: 'appcontainer'
     # we will want to shift this to latest in the near future but this unblocks us
-    image: "cdpxwin1809.azurecr.io/global/vse2019@sha256:44a8af0de5efa68829dbdfc3ecef3864d9770f1fc426b897fc37888032c9f60c"
-    source_mode: "map"
+    image: 'cdpxwin1809.azurecr.io/global/vse2019@sha256:44a8af0de5efa68829dbdfc3ecef3864d9770f1fc426b897fc37888032c9f60c'
+    source_mode: 'map'
 
 version:
-  name: "PowerToys"
+  name: 'PowerToys'
   major: 1
   minor: 0
 
 signing_options:
-  profile: "external_distribution"
+  profile: 'external_distribution'
 
 package_sources:
   nuget:
     feeds:
-      "PowerToysCDPX_Feed": "https://github-private.pkgs.visualstudio.com/microsoft/_packaging/PowerToysCDPX_Feed/nuget/v3/index.json"
+      'PowerToysCDPX_Feed': 'https://github-private.pkgs.visualstudio.com/microsoft/_packaging/PowerToysCDPX_Feed/nuget/v3/index.json'
 restore:
   commands:
     - !!defaultcommand
-      name: "Restore Power Toys Telemetry"
+      name: 'Restore Power Toys Telemetry'
       command: '.pipelines\restore-telemetry.cmd'
     - !!defaultcommand
-      name: "Restore Power Toys"
+      name: 'Restore Power Toys'
       command: '.pipelines\restore.cmd'
     - !!defaultcommand
-      name: "Restore Installer"
+      name: 'Restore Installer'
       command: '.pipelines\restore-installer.cmd'
     - !!defaultcommand
-      name: "Restore Installer BootStrapper"
+      name: 'Restore Installer BootStrapper'
       command: '.pipelines\restore-bootstrapper.cmd'
     - !!defaultcommand
-      name: "Restore Localization packages"
+      name: 'Restore Localization packages'
       command: '.pipelines\restore-localization.cmd'
     - !!defaultcommand
-      name: "Restore Tools packages"
+      name: 'Restore Tools packages'
       command: '.pipelines\restore-tools.cmd'
 
 build:
   commands:
-    # Localize the files before the Build PowerToys step to generate translated resx files from the lcl files
+      # Localize the files before the Build PowerToys step to generate translated resx files from the lcl files
     - !!buildcommand
-      name: "Localize Power Toys"
+      name: 'Localize Power Toys'
       command: '.pipelines\build-localization.cmd'
       artifacts:
         - from: 'out\loc'
-          to: "loc"
+          to: 'loc'
           include:
-            - "**/*"
+            - '**/*'
     - !!buildcommand
-      name: "Build Power Toys"
+      name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
       artifacts:
-        - to: "Symbols"
+        - to: 'Symbols'
           include:
-            - "x64/**/*.pdb"
+            - 'x64/**/*.pdb'
           exclude:
-            - "x64/Release/obj/**/*.pdb"
-        - from: "x86/Release"
-          to: "Build_Output"
+            - 'x64/Release/obj/**/*.pdb'
+        - from: 'x86/Release'
+          to: 'Build_Output'
           include:
             - 'modules\VideoConference\PowerToys.VideoConferenceProxyFilter_x86.dll'
           signing_options:
-            sign_inline: true # This does signing as soon as this command completes
-        - from: "x64/Release"
-          to: "Build_Output"
+            sign_inline: true  # This does signing as soon as this command completes            
+        - from: 'x64/Release'
+          to: 'Build_Output'
           include:
-            - "PowerToys.ActionRunner.exe"
-            - "PowerToys.Update.exe"
-            - "PowerToys.BackgroundActivatorDLL.dll"
-            - "Notifications.dll"
-            - "os-detection.dll"
-            - "PowerToys.exe"
-            - "PowerToys.Interop.dll"
+            - 'PowerToys.ActionRunner.exe'
+            - 'PowerToys.Update.exe'
+            - 'PowerToys.BackgroundActivatorDLL.dll'
+            - 'Notifications.dll'
+            - 'os-detection.dll'
+            - 'PowerToys.exe'
+            - 'PowerToys.Interop.dll'
             - 'BugReportTool\BugReportTool.exe'
             - '**\*.resources.dll'
             - 'modules\ColorPicker\PowerToys.ColorPicker.dll'
@@ -191,51 +191,51 @@ build:
             - 'Settings\Telemetry.dll'
             - 'Settings\PowerToys.ManagedCommon.dll'
           signing_options:
-            sign_inline: true # This does signing as soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
-      name: "Build Power Toys Tools"
+      name: 'Build Power Toys Tools'
       command: '.pipelines\build-tools.cmd'
       artifacts:
         - from: 'x64\Release'
-          to: "Build_Output"
+          to: 'Build_Output'
           include:
             - 'BugReportTool\BugReportTool.exe'
             - 'WebcamReportTool\WebcamReportTool.exe'
           signing_options:
-            sign_inline: true # This does signing as soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
-      name: "Build Power Toys Installer Custom Action" # Need to do separately to sign dll before building installer
+      name: 'Build Power Toys Installer Custom Action' # Need to do separately to sign dll before building installer
       command: '.pipelines\build-installer-PTCustomActions.cmd'
       artifacts:
         - from: 'installer\PowerToysSetupCustomActions\x64\Release'
-          to: "Build_Output"
+          to: 'Build_Output'
           include:
-            - "PowerToysSetupCustomActions.dll"
+            - 'PowerToysSetupCustomActions.dll'
           signing_options:
-            sign_inline: true # This does signing as soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
-      name: "Build Power Toys Installer"
+      name: 'Build Power Toys Installer'
       command: '.pipelines\build-installer.cmd'
       artifacts:
         - from: 'installer\PowerToysSetup\x64\Release'
-          to: "Build_Installer_Output"
+          to: 'Build_Installer_Output'
           include:
-            - "PowerToysSetup-*.msi"
+            - 'PowerToysSetup-*.msi'
           signing_options:
-            sign_inline: true # This does signing as soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
-      name: "Build Power Toys Bootstrapper"
+      name: 'Build Power Toys Bootstrapper'
       command: '.pipelines\build-bootstrapper.cmd'
       artifacts:
-        - to: "Symbols"
+        - to: 'Symbols'
           include:
             - 'installer\PowerToysBootstrapper\x64\Release\PowerToysSetup-*.pdb'
         - from: 'installer\PowerToysBootstrapper\x64\Release'
-          to: "Build_Installer_Output"
+          to: 'Build_Installer_Output'
           include:
-            - "PowerToysSetup-*.exe"
+            - 'PowerToysSetup-*.exe'
           signing_options:
-            sign_inline: true # This does signing as soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
 
 #package:
 #  commands:
@@ -254,20 +254,20 @@ build:
 static_analysis_options:
   binskim_options:
     files_to_scan:
-      - from: "installer/packages"
+      - from: 'installer/packages'
         exclude:
-          - "WiX.*/**/*.dll"
-          - "Wix.*/**/*.exe"
-          - "Microsoft.Windows.CppWinRT.*/**/*.exe"
+          - 'WiX.*/**/*.dll'
+          - 'Wix.*/**/*.exe'
+          - 'Microsoft.Windows.CppWinRT.*/**/*.exe'
   moderncop_options:
     files_to_scan:
-      - from: "src"
+      - from: 'src'
         exclude:
-          - "**/just.config.js"
-          - "**/webpack.config.js"
-          - "**/webpack.serve.config.js"
-          - "**/dist/bundle.js"
+          - '**/just.config.js'
+          - '**/webpack.config.js'
+          - '**/webpack.serve.config.js'
+          - '**/dist/bundle.js'
   policheck_options:
     files_to_scan:
       - exclude:
-          - "**/*.lcl"
+        - '**/*.lcl'
