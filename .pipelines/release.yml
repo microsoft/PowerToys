@@ -23,7 +23,7 @@ parameters:
   - name: versionNumber
     type: object
     default:
-      - "0.0.1"
+      - '0.0.1'
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 resources:
@@ -54,8 +54,8 @@ jobs:
     inputs:
       scriptName: .pipelines/versionSetting.ps1
       arguments: >
-        -versionNumber "${{ parameters.versionNumber }}"
-        -DevEnvironment ""
+        -versionNumber '${{ parameters.versionNumber }}'
+        -DevEnvironment ''
 
 # TODO: verify with Dustin this is needed
 #  - task: PkgESSetupBuild@12
