@@ -1109,7 +1109,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PDF (.pdf) preview]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Activer l’aperçu du fichier PDF (. pdf)]]></Val>
+            <Val><![CDATA[Activer l’aperçu du fichier PDF (.pdf)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
