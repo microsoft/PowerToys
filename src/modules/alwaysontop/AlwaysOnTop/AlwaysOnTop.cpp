@@ -7,15 +7,28 @@
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 
-const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
+#include <WinHookEventIDs.h>
+
+namespace NonLocalizable
+{
+    const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
+}
 
 AlwaysOnTop::AlwaysOnTop() :
-    m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase))
+    m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
+    m_settings(nullptr)
 {
     s_instance = this;
 
-    Init();
-    StartTrackingTopmostWindows();
+    if (Init())
+    {
+        StartTrackingTopmostWindows();
+    }
+    else
+    {
+        Logger::error("Failed to init AlwaysOnTop module");
+        // TODO: show localized message
+    }
 }
 
 AlwaysOnTop::~AlwaysOnTop()
@@ -23,24 +36,30 @@ AlwaysOnTop::~AlwaysOnTop()
     CleanUp();
 }
 
-void AlwaysOnTop::Init()
+bool AlwaysOnTop::Init()
 {
     WNDCLASSEXW wcex{};
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.lpfnWndProc = WndProc_Helper;
     wcex.hInstance = m_hinstance;
-    wcex.lpszClassName = TOOL_WINDOW_CLASS_NAME;
+    wcex.lpszClassName = NonLocalizable::TOOL_WINDOW_CLASS_NAME;
     RegisterClassExW(&wcex);
 
-    m_window = CreateWindowExW(WS_EX_TOOLWINDOW, TOOL_WINDOW_CLASS_NAME, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
+    m_window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::TOOL_WINDOW_CLASS_NAME, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
     if (!m_window)
     {
         Logger::error(L"Failed to create AlwaysOnTop window: {}", get_last_error_or_default(GetLastError()));
-        return;
+        return false;
     }
 
-    RegisterHotKey(m_window, 1, MOD_CONTROL | MOD_NOREPEAT, 0x54 /* T */);
+    m_settings = std::make_unique<AlwaysOnTopSettings>(m_window);
+    if (!m_settings)
+    {
+        return false;
+    }
 
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), m_settings->GetSettings().hotkey.get_modifiers(), m_settings->GetSettings().hotkey.get_code());
+    
     // subscribe to windows events
     std::array<DWORD, 4> events_to_subscribe = {
         EVENT_OBJECT_LOCATIONCHANGE,
@@ -60,6 +79,8 @@ void AlwaysOnTop::Init()
             Logger::error(L"Failed to set win event hook");
         }
     }
+
+    return true;
 }
 
 LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
@@ -71,13 +92,18 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
             ProcessCommand(fw);
         }
     }
+    else if (message == WM_PRIV_SETTINGS_CHANGED)
+    {
+        m_settings->LoadSettings();
+    }
+    
     return 0;
 }
 
 void AlwaysOnTop::ProcessCommand(HWND window)
 {
     bool gameMode = detect_game_mode();
-    if (!m_activateInGameMode && gameMode)
+    if (!m_settings->GetSettings().blockInGameMode && gameMode)
     {
         return;
     }
@@ -110,10 +136,14 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         }
     }
 
-    auto soundPlayed = PlaySound((LPCTSTR)SND_ALIAS_SYSTEMASTERISK, NULL, SND_ALIAS_ID);
-    if (!soundPlayed)
+    if (m_settings->GetSettings().enableSound)
     {
-        Logger::error(L"Sound playing error");
+        // TODO: don't block main thread
+        auto soundPlayed = PlaySound((LPCTSTR)SND_ALIAS_SYSTEMASTERISK, NULL, SND_ALIAS_ID);
+        if (!soundPlayed)
+        {
+            Logger::error(L"Sound playing error");
+        }
     }
 }
 
@@ -179,7 +209,7 @@ void AlwaysOnTop::CleanUp()
         m_window = nullptr;
     }
 
-    UnregisterClass(TOOL_WINDOW_CLASS_NAME, reinterpret_cast<HINSTANCE>(&__ImageBase));
+    UnregisterClass(NonLocalizable::TOOL_WINDOW_CLASS_NAME, reinterpret_cast<HINSTANCE>(&__ImageBase));
 }
 
 bool AlwaysOnTop::IsTopmost(HWND window) const noexcept
@@ -208,6 +238,11 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
     auto iter = m_topmostWindows.find(data->hwnd);
     if (iter == m_topmostWindows.end())
+    {
+        return;
+    }
+
+    if (!m_settings->GetSettings().enableFrame)
     {
         return;
     }

@@ -152,16 +152,20 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="WindowTracker.cpp" />
+    <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlwaysOnTop.h" />
     <ClInclude Include="FrameDrawer.h" />
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="WindowTracker.h" />
+    <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

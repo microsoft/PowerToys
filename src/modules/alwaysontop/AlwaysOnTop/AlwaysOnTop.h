@@ -1,6 +1,7 @@
 #pragma once
 
 #include <WindowTracker.h>
+#include <Settings.h>
 
 #include <common/hooks/WinHookEvent.h>
 
@@ -10,7 +11,7 @@ public:
     AlwaysOnTop();
     ~AlwaysOnTop();
 
-    void Init();
+    bool Init();
 
 protected:
     static LRESULT CALLBACK WndProc_Helper(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
@@ -29,12 +30,19 @@ protected:
     }
 
 private:
+    // IDs used to register hot keys (keyboard shortcuts).
+    enum class HotkeyId : int
+    {
+        Pin = 1,
+    };
+
     static inline AlwaysOnTop* s_instance = nullptr;
     std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
 
     HWND m_window{ nullptr };
     HINSTANCE m_hinstance;
     std::map<HWND, std::unique_ptr<WindowTracker>> m_topmostWindows;
+    std::unique_ptr<AlwaysOnTopSettings> m_settings;
 
     bool m_activateInGameMode = false;
 
