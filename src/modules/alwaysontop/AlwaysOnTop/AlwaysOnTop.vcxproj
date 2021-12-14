@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="AlwaysOnTop.h" />
     <ClInclude Include="FrameDrawer.h" />
+    <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="WindowTracker.h" />
@@ -171,9 +172,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\FancyZonesLib\FancyZonesLib.vcxproj">
-      <Project>{f9c68edf-ac74-4b77-9af1-005d9c9f6a99}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

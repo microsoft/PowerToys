@@ -7,12 +7,12 @@
 #include <common/utils/winapi_error.h>
 
 #include <AlwaysOnTop/trace.h>
+#include <AlwaysOnTop/ModuleConstants.h>
 
 #include <shellapi.h>
 
 namespace NonLocalizable
 {
-    const wchar_t ModuleName[] = L"AlwaysOnTop";
     const wchar_t ModulePath[] = L"modules\\AlwaysOnTop\\PowerToys.AlwaysOnTop.exe";
 }
 
@@ -95,7 +95,7 @@ public:
     AlwaysOnTopModuleInterface()
     {
         app_name = L"AlwaysOnTop"; //TODO: localize
-        app_key = NonLocalizable::ModuleName;
+        app_key = NonLocalizable::ModuleKey;
     }
 
 private:
