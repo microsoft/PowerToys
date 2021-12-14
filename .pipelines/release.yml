@@ -21,9 +21,8 @@ parameters:
     default:
       - x64
   - name: versionNumber
-    type: object
-    default:
-      - '0.0.1'
+    type: string
+    default: '0.0.1'
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 resources:
