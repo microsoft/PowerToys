@@ -20,7 +20,7 @@ parameters:
     type: object
     default:
       - x64
-  - name: BuildVersion
+  - name: versionNumber
     type: object
     default:
       - 0.0.1
@@ -86,8 +86,10 @@ jobs:
   - task: PowerShell@1
     displayName: 'Set Versions.Prop'
     inputs:
-      scriptName: tools/build/versionSetting.ps1
-      arguments: '-versionNumber "$(BuildVersion)" -DevEnvironment "$(DevEnvironment)"'
+      scriptName: .pipelines/versionSetting.ps1
+      arguments: >
+        -versionNumber "$(versionNumber)" 
+        -DevEnvironment "$(DevEnvironment)"
 
 # TODO: Localize
 # this is localization, we need this
