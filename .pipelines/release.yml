@@ -21,6 +21,11 @@ parameters:
     default:
       - x64
 
+  - name: BuildVersion
+    type: object
+    default:
+      - 0.0.1
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 resources:
   repositories:
@@ -86,6 +91,12 @@ jobs:
         call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
+
+  - task: PowerShell@1
+    displayName: 'Set Versions.Prop'
+    inputs:
+      scriptName: tools/build/versionSetting.ps1
+      arguments: '-versionNumber "$(BuildVersion)" -DevEnvironment "$(DevEnvironment)"'
 
 # this is localization, we need this
 #  - task: TouchdownBuildTask@1
@@ -264,9 +275,16 @@ jobs:
   #              "ToolVersion": "1.0"
   #          }
   #      ]
-  #- task: PublishBuildArtifacts@1
-  #  displayName: 'TERMINAL LEGACY - Publish Artifact: appxbundle-signed'
-  #  inputs:
-  #    PathtoPublish: $(System.ArtifactsDirectory)
-  #    ArtifactName: appxbundle-signed
+
+steps:
+- task: CopyFiles@2
+  inputs:
+    contents: '**/PowerToysSetup-*.exe'
+    targetFolder: $(Build.ArtifactStagingDirectory)
+
+  - task: PublishBuildArtifacts@1
+   displayName: 'Publish Artifact: PowerToySetup'
+   inputs:
+     PathtoPublish: $(System.ArtifactsDirectory)
+     ArtifactName: BuildArtifacts
 ...
