@@ -9,6 +9,6 @@ public:
     class AlwaysOnTop
     {
     public:
-        //TODO
+        static void Enable(bool enabled) noexcept;
     };
 };
