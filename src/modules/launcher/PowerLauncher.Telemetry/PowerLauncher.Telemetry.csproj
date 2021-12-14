@@ -14,6 +14,7 @@
     <PackageTags>PowerToys</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyName>PowerToys.PowerLauncher.Telemetry</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

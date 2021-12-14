@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
-    <AssemblyTitle>PowerToys Run</AssemblyTitle>
+    <AssemblyTitle>PowerToys.Run</AssemblyTitle>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
@@ -23,6 +23,7 @@
     <RepositoryType>Github</RepositoryType>
     <PackageTags>PowerToys</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
+    <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
   </PropertyGroup>
 
 

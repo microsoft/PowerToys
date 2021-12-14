@@ -9,6 +9,7 @@
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
+    HighContrastAdjustment="None"
     muxc:BackdropMaterial.ApplyToRootOrPageBackground="True"
     mc:Ignorable="d">
 

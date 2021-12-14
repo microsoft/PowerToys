@@ -120,10 +120,12 @@ steps:
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
+      **\UnitTests-GcodeThumbnailProvider.dll
       **\UnitTests-SvgThumbnailProvider.dll
       **\UnitTests-PdfThumbnailProvider.dll
       **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
       **\UnitTests-MarkdownPreviewHandler.dll
+      **\UnitTests-GcodePreviewHandler.dll
       **\UnitTests-PdfPreviewHandler.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
