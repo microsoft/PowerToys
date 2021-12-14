@@ -54,7 +54,7 @@ jobs:
     inputs:
       scriptName: .pipelines/versionSetting.ps1
       arguments: >
-        -versionNumber ${{ parameters.versionNumber }}
+        -versionNumber "${{ parameters.versionNumber }}"
         -DevEnvironment ""
 
 # TODO: verify with Dustin this is needed
