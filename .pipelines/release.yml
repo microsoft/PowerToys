@@ -48,6 +48,15 @@ jobs:
     submodules: true
     persistCredentials: True
 
+# Sets versions for all PowerToy created DLLs
+  - task: PowerShell@1
+    displayName: 'Set Versions.Prop'
+    inputs:
+      scriptName: .pipelines/versionSetting.ps1
+      arguments: >
+        -versionNumber $(parameters.versionNumber)
+        -DevEnvironment ""
+
 # TODO: verify with Dustin this is needed
 #  - task: PkgESSetupBuild@12
 #    displayName: Package ES - Setup Build
@@ -83,13 +92,7 @@ jobs:
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
 
-  - task: PowerShell@1
-    displayName: 'Set Versions.Prop'
-    inputs:
-      scriptName: .pipelines/versionSetting.ps1
-      arguments: >
-        -versionNumber $(versionNumber)
-        -DevEnvironment $(DevEnvironment)
+
 
 # TODO: Localize
 # this is localization, we need this
