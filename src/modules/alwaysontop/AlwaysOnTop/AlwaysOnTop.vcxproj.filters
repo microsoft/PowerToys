@@ -53,5 +53,8 @@
     <ClInclude Include="WindowTracker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ModuleConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
