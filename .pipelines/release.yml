@@ -20,7 +20,6 @@ parameters:
     type: object
     default:
       - x64
-
   - name: BuildVersion
     type: object
     default:
@@ -282,8 +281,8 @@ jobs:
       targetFolder: $(Build.ArtifactStagingDirectory)
 
   - task: PublishBuildArtifacts@1
-   displayName: 'Publish Artifact: PowerToySetup'
-   inputs:
-     PathtoPublish: $(System.ArtifactsDirectory)
-     ArtifactName: BuildArtifacts
+    displayName: 'Publish Artifact: PowerToySetup'
+    inputs:
+      PathtoPublish: $(System.ArtifactsDirectory)
+      ArtifactName: BuildArtifacts
 ...
