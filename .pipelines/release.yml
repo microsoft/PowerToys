@@ -53,9 +53,7 @@ jobs:
     displayName: 'Set Versions.Prop'
     inputs:
       scriptName: .pipelines/versionSetting.ps1
-      arguments: >
-        -versionNumber '${{ parameters.versionNumber }}'
-        -DevEnvironment ''
+      arguments: -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
 
 # TODO: verify with Dustin this is needed
 #  - task: PkgESSetupBuild@12
