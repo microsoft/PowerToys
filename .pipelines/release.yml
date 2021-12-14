@@ -48,15 +48,7 @@ jobs:
     submodules: true
     persistCredentials: True
 
-  - task: CopyFiles@2
-    displayName: test output
-    inputs: 
-      #sourceFolder: '.\src\'
-      Contents: >-
-        'src/README.md'
-      TargetFolder: Build_Output
-      OverWrite: true
-
+# TODO: verify with Dustin this is needed
 #  - task: PkgESSetupBuild@12
 #    displayName: Package ES - Setup Build
 #    inputs:
@@ -97,6 +89,7 @@ jobs:
       scriptName: tools/build/versionSetting.ps1
       arguments: '-versionNumber "$(BuildVersion)" -DevEnvironment "$(DevEnvironment)"'
 
+# TODO: Localize
 # this is localization, we need this
 #  - task: TouchdownBuildTask@1
 #    displayName: Download Localization Files
@@ -197,19 +190,21 @@ jobs:
       clean: true
       maximumCpuCount: true
 
-# reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
-# https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
-  # - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
-  #   displayName: 'ESRP CodeSigning'
-  #   inputs:
-  #     ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
-  #     FolderPath: '$(BUILD.BINARIESDIRECTORY)\$(BuildConfiguration)\$(BuildPlatform)\Binaries'
-  #     signType: batchSigning
-  #     batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_Installer.json'
-  #     ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+# TODO: MSI NEED TO BE SIGNED HERE
 
+  - task: VSBuild@1
+    displayName: Build PowerToysSetup
+    inputs:
+      solution: '**/installer/PowerToysBootstrapper/PowerToysBootstrapper.sln'
+      vsVersion: 16.0
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
 
-# SETUP NEED TO BE SIGNED HERE
+# TODO: BOOTSTRAPPER NEED TO BE SIGNED HERE
+
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: binlog'
@@ -222,7 +217,7 @@ jobs:
   - task: ComponentGovernanceComponentDetection@0
     displayName: Component Detection
 
-# COPY stuff to build artifact
+# TODO: COPY stuff to build artifact
 
 # DUSTIN: do we need build artifacts publishing?
   #- task: PublishBuildArtifacts@1
