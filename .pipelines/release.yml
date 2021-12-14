@@ -88,8 +88,8 @@ jobs:
     inputs:
       scriptName: .pipelines/versionSetting.ps1
       arguments: >
-        -versionNumber "$(versionNumber)" 
-        -DevEnvironment "$(DevEnvironment)"
+        -versionNumber $(versionNumber)
+        -DevEnvironment $(DevEnvironment)
 
 # TODO: Localize
 # this is localization, we need this
