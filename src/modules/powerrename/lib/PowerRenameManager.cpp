@@ -965,7 +965,8 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                     winrt::check_hresult(spItem->GetIsSubFolderContent(&isSubFolderContent));
                     if ((isFolder && (flags & PowerRenameFlags::ExcludeFolders)) ||
                         (!isFolder && (flags & PowerRenameFlags::ExcludeFiles)) ||
-                        (isSubFolderContent && (flags & PowerRenameFlags::ExcludeSubfolders)))
+                        (isSubFolderContent && (flags & PowerRenameFlags::ExcludeSubfolders)) ||
+                        (isFolder && (flags & PowerRenameFlags::ExtensionOnly)))
                     {
                         // Exclude this item from renaming.  Ensure new name is cleared.
                         winrt::check_hresult(spItem->PutNewName(nullptr));
@@ -984,22 +985,31 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                     winrt::check_hresult(spItem->GetNewName(&currentNewName));
 
                     wchar_t sourceName[MAX_PATH] = { 0 };
-                    if (flags & NameOnly)
+
+                    if (isFolder)
                     {
-                        StringCchCopy(sourceName, ARRAYSIZE(sourceName), fs::path(originalName).stem().c_str());
-                    }
-                    else if (flags & ExtensionOnly)
-                    {
-                        std::wstring extension = fs::path(originalName).extension().wstring();
-                        if (!extension.empty() && extension.front() == '.')
-                        {
-                            extension = extension.erase(0, 1);
-                        }
-                        StringCchCopy(sourceName, ARRAYSIZE(sourceName), extension.c_str());
+                        StringCchCopy(sourceName, ARRAYSIZE(sourceName), originalName);
+                    
                     }
                     else
                     {
-                        StringCchCopy(sourceName, ARRAYSIZE(sourceName), originalName);
+                        if (flags & NameOnly)
+                        {
+                            StringCchCopy(sourceName, ARRAYSIZE(sourceName), fs::path(originalName).stem().c_str());
+                        }
+                        else if (flags & ExtensionOnly)
+                        {
+                            std::wstring extension = fs::path(originalName).extension().wstring();
+                            if (!extension.empty() && extension.front() == '.')
+                            {
+                                extension = extension.erase(0, 1);
+                            }
+                            StringCchCopy(sourceName, ARRAYSIZE(sourceName), extension.c_str());
+                        }
+                        else
+                        {
+                            StringCchCopy(sourceName, ARRAYSIZE(sourceName), originalName);
+                        }
                     }
 
                     SYSTEMTIME fileTime = { 0 };
@@ -1037,25 +1047,33 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                     if (newName != nullptr)
                     {
                         newNameToUse = resultName;
-                        if (flags & NameOnly)
+
+                        if (isFolder)
                         {
-                            StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s%s", newName, fs::path(originalName).extension().c_str());
-                        }
-                        else if (flags & ExtensionOnly)
-                        {
-                            std::wstring extension = fs::path(originalName).extension().wstring();
-                            if (!extension.empty())
-                            {
-                                StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s.%s", fs::path(originalName).stem().c_str(), newName);
-                            }
-                            else
-                            {
-                                StringCchCopy(resultName, ARRAYSIZE(resultName), originalName);
-                            }
+                            StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
                         }
                         else
                         {
-                            StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
+                            if (flags & NameOnly)
+                            {
+                                StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s%s", newName, fs::path(originalName).extension().c_str());
+                            }
+                            else if (flags & ExtensionOnly)
+                            {
+                                std::wstring extension = fs::path(originalName).extension().wstring();
+                                if (!extension.empty())
+                                {
+                                    StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s.%s", fs::path(originalName).stem().c_str(), newName);
+                                }
+                                else
+                                {
+                                    StringCchCopy(resultName, ARRAYSIZE(resultName), originalName);
+                                }
+                            }
+                            else
+                            {
+                                StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
+                            }
                         }
                     }
 
@@ -1069,7 +1087,13 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                     wchar_t transformedName[MAX_PATH] = { 0 };
                     if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase || flags & Capitalized))
                     {
-                        winrt::check_hresult(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags));
+                        try
+                        {
+                            winrt::check_hresult(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags, isFolder));
+                        }
+                        catch (...)
+                        {
+                        }
                         newNameToUse = transformedName;
                     }
 
