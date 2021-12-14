@@ -4,6 +4,9 @@
 // Telemetry strings should not be localized.
 #define LoggingProviderKey "Microsoft.PowerToys"
 
+#define EventEnableAlwaysOnTopKey "AlwaysOnTop_EnableAlwaysOnTop"
+#define EventEnabledKey "Enabled"
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
     LoggingProviderKey,
@@ -19,4 +22,14 @@ void Trace::RegisterProvider() noexcept
 void Trace::UnregisterProvider() noexcept
 {
     TraceLoggingUnregister(g_hProvider);
+}
+
+void Trace::AlwaysOnTop::Enable(bool enabled) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        EventEnableAlwaysOnTopKey,
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, EventEnabledKey));
 }
