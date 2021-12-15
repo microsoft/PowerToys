@@ -43,13 +43,35 @@ jobs:
 #    displayName: Package ES - Setup Build
 #    inputs:
 #      disableOutputRedirect: true
+  - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
+    displayName: 'Download Localization Files -- PowerToys 37400'
+    inputs:
+      teamId: 37400
+      authId: '$(TouchdownApplicationID)'
+      authKey: '$(TouchdownApplicationKey)'
+      resourceFilePath: |
+       **\Resources.resx
+       **\Resource.resx
+       **\Resources.resw
+      appendRelativeDir: true
+      localizationTarget: false
+      pseudoSetting: Included
+  - task: PowerShell@2
+    displayName: Move Loc files into correct locations
+    inputs:
+      targetType: inline
+      script: >-
+        $VerbosePreference = "Continue"
+        ./tools/build/move-and-rename-resx.ps1
+        ./tools/build/move-uwp-resw.ps1
+      pwsh: true
+  - task: NuGetAuthenticate@0
+    inputs:
+      nuGetServiceConnections: PowerToysCDPxFeed
   - task: NuGetToolInstaller@1
     displayName: Use NuGet 5.10
     inputs:
       versionSpec: 5.10
-  - task: NuGetAuthenticate@0
-    inputs:
-      nuGetServiceConnections: PowerToysCDPxFeed
   - task: NuGetCommand@2
     displayName: NuGet restore all solutions
     inputs:
@@ -57,38 +79,6 @@ jobs:
       restoreSolution: '**/*.sln'
       selectOrConfig: config
       nugetConfigPath: .pipelines/release-nuget.config
-#  - task: TouchdownBuildTask@1
-#    displayName: Download Localization Files
-#    inputs:
-#      teamId: 7105
-#      authId: $(TouchdownAppId)
-#      authKey: $(TouchdownAppKey)
-#      resourceFilePath: >-
-#        src\cascadia\TerminalApp\Resources\en-US\Resources.resw
-#
-#        src\cascadia\TerminalControl\Resources\en-US\Resources.resw
-#
-#        src\cascadia\TerminalConnection\Resources\en-US\Resources.resw
-#
-#        src\cascadia\TerminalSettingsModel\Resources\en-US\Resources.resw
-#
-#        src\cascadia\TerminalSettingsEditor\Resources\en-US\Resources.resw
-#
-#        src\cascadia\WindowsTerminalUniversal\Resources\en-US\Resources.resw
-#
-#        src\cascadia\CascadiaPackage\Resources\en-US\Resources.resw
-#      appendRelativeDir: true
-#      localizationTarget: false
-#      pseudoSetting: Included
-#  - task: PowerShell@2
-#    displayName: Move Loc files one level up
-#    inputs:
-#      targetType: inline
-#      script: >-
-#        $Files = Get-ChildItem . -R -Filter 'Resources.resw' | ? FullName -Like '*en-US\*\Resources.resw'
-#
-#        $Files | % { Move-Item -Verbose $_.Directory $_.Directory.Parent.Parent -EA:Ignore }
-#      pwsh: true
   - task: VSBuild@1
     displayName: Build solution **\PowerToys.sln
     inputs:
