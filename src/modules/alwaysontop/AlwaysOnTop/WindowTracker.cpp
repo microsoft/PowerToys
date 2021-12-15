@@ -107,7 +107,7 @@ bool WindowTracker::Init(HINSTANCE hinstance)
     return true;
 }
 
-void WindowTracker::DrawFrame() const
+void WindowTracker::RedrawFrame() const
 {
     if (!m_trackingWindow)
     {
