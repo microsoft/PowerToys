@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "AlwaysOnTop.h"
 
-#include <mmsystem.h> // sound
-
 #include <common/utils/game_mode.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
@@ -134,12 +132,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
 
     if (m_settings.GetSettings().enableSound)
     {
-        // TODO: don't block main thread
-        auto soundPlayed = PlaySound((LPCTSTR)SND_ALIAS_SYSTEMASTERISK, NULL, SND_ALIAS_ID);
-        if (!soundPlayed)
-        {
-            Logger::error(L"Sound playing error");
-        }
+        m_sound.Play();    
     }
 }
 
