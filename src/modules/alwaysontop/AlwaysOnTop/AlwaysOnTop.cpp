@@ -62,6 +62,7 @@ bool AlwaysOnTop::InitMainWindow()
 
 void AlwaysOnTop::UpdateSettings()
 {
+    // frames
     if (m_settings.GetSettings().enableFrame)
     {
         for (auto& iter : m_topmostWindows)
@@ -76,6 +77,9 @@ void AlwaysOnTop::UpdateSettings()
             iter.second = nullptr;
         }
     }
+
+    // hotkeys
+    RegisterHotkey();
 }
 
 LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
