@@ -163,6 +163,7 @@
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="Sound.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="WindowTracker.h" />
     <ClInclude Include="WinHookEventIDs.h" />
