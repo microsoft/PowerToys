@@ -15,13 +15,20 @@ namespace NonLocalizable
 }
 
 AlwaysOnTop::AlwaysOnTop() :
-    m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
-    m_settings(nullptr)
+    m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase))
 {
     s_instance = this;
 
-    if (Init())
+    if (InitMainWindow())
     {
+        InitializeWinhookEventIds();
+
+        m_settings.InitFileWatcher();
+        m_settings.AddObserver(std::bind(&AlwaysOnTop::UpdateSettings, this));
+        m_settings.LoadSettings();
+
+        RegisterHotkey();
+        SubscribeToEvents();
         StartTrackingTopmostWindows();
     }
     else
@@ -36,7 +43,7 @@ AlwaysOnTop::~AlwaysOnTop()
     CleanUp();
 }
 
-bool AlwaysOnTop::Init()
+bool AlwaysOnTop::InitMainWindow()
 {
     WNDCLASSEXW wcex{};
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -52,35 +59,25 @@ bool AlwaysOnTop::Init()
         return false;
     }
 
-    m_settings = std::make_unique<AlwaysOnTopSettings>(m_window);
-    if (!m_settings)
-    {
-        return false;
-    }
-
-    RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), m_settings->GetSettings().hotkey.get_modifiers(), m_settings->GetSettings().hotkey.get_code());
-    
-    // subscribe to windows events
-    std::array<DWORD, 4> events_to_subscribe = {
-        EVENT_OBJECT_LOCATIONCHANGE,
-        EVENT_SYSTEM_MOVESIZEEND,
-        EVENT_SYSTEM_SWITCHEND,
-        EVENT_OBJECT_DESTROY
-    };
-    for (const auto event : events_to_subscribe)
-    {
-        auto hook = SetWinEventHook(event, event, nullptr, WinHookProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
-        if (hook)
-        {
-            m_staticWinEventHooks.emplace_back(hook);
-        }
-        else
-        {
-            Logger::error(L"Failed to set win event hook");
-        }
-    }
-
     return true;
+}
+
+void AlwaysOnTop::UpdateSettings()
+{
+    if (m_settings.GetSettings().enableFrame)
+    {
+        for (auto& iter : m_topmostWindows)
+        {
+            AssignTracker(iter.first);
+        }
+    }
+    else
+    {
+        for (auto& iter : m_topmostWindows)
+        {
+            iter.second = nullptr;
+        }
+    }
 }
 
 LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
@@ -94,7 +91,7 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
     }
     else if (message == WM_PRIV_SETTINGS_CHANGED)
     {
-        m_settings->LoadSettings();
+        m_settings.LoadSettings();
     }
     
     return 0;
@@ -103,7 +100,7 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
 void AlwaysOnTop::ProcessCommand(HWND window)
 {
     bool gameMode = detect_game_mode();
-    if (!m_settings->GetSettings().blockInGameMode && gameMode)
+    if (!m_settings.GetSettings().blockInGameMode && gameMode)
     {
         return;
     }
@@ -124,7 +121,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         if (PinTopmostWindow(window))
         {
-            if (m_settings->GetSettings().enableFrame)
+            if (m_settings.GetSettings().enableFrame)
             {
                 AssignTracker(window);
             }
@@ -135,7 +132,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         }
     }
 
-    if (m_settings->GetSettings().enableSound)
+    if (m_settings.GetSettings().enableSound)
     {
         // TODO: don't block main thread
         auto soundPlayed = PlaySound((LPCTSTR)SND_ALIAS_SYSTEMASTERISK, NULL, SND_ALIAS_ID);
@@ -192,6 +189,36 @@ bool AlwaysOnTop::AssignTracker(HWND window)
     return true;
 }
 
+void AlwaysOnTop::RegisterHotkey() const
+{
+    UnregisterHotKey(m_window, static_cast<int>(HotkeyId::Pin));
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), m_settings.GetSettings().hotkey.get_modifiers(), m_settings.GetSettings().hotkey.get_code());
+}
+
+void AlwaysOnTop::SubscribeToEvents()
+{
+    // subscribe to windows events
+    std::array<DWORD, 4> events_to_subscribe = {
+        EVENT_OBJECT_LOCATIONCHANGE,
+        EVENT_SYSTEM_MOVESIZEEND,
+        EVENT_SYSTEM_SWITCHEND,
+        EVENT_OBJECT_DESTROY
+    };
+
+    for (const auto event : events_to_subscribe)
+    {
+        auto hook = SetWinEventHook(event, event, nullptr, WinHookProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+        if (hook)
+        {
+            m_staticWinEventHooks.emplace_back(hook);
+        }
+        else
+        {
+            Logger::error(L"Failed to set win event hook");
+        }
+    }
+}
+
 void AlwaysOnTop::UnpinAll()
 {
     for (const auto& [topWindow, tracker] : m_topmostWindows)
@@ -241,7 +268,7 @@ bool AlwaysOnTop::IsTracked(HWND window) const noexcept
 
 void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
-    if (!m_settings->GetSettings().enableFrame)
+    if (!m_settings.GetSettings().enableFrame)
     {
         return;
     }

@@ -3,6 +3,8 @@
 #include <common/SettingsAPI/FileWatcher.h>
 #include <common/SettingsAPI/settings_objects.h>
 
+using NotificationCallback = std::function<void()>;
+
 struct Settings
 {
     PowerToysSettings::HotkeyObject hotkey = PowerToysSettings::HotkeyObject::from_settings(true, true, false, false, 84); // win + ctrl + T
@@ -14,13 +16,15 @@ struct Settings
 class AlwaysOnTopSettings
 {
 public: 
-    AlwaysOnTopSettings(HWND window, const std::wstring& settingsFileName = GetSettingsFileName());
+    AlwaysOnTopSettings();
     ~AlwaysOnTopSettings() = default;
 
+    void InitFileWatcher();
     static std::wstring GetSettingsFileName();
 
-    void LoadSettings();
+    void AddObserver(const NotificationCallback& callback);
 
+    void LoadSettings();
     inline const Settings& GetSettings() const 
     {
         return m_settings;
@@ -28,5 +32,8 @@ public:
 
 private:
     Settings m_settings;
-    FileWatcher m_settingsFileWatcher;
+    std::unique_ptr<FileWatcher> m_settingsFileWatcher;
+    std::vector<NotificationCallback> m_observerCallbacks;
+
+    void NotifyObservers() const;
 };

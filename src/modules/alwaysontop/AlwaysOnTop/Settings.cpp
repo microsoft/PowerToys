@@ -16,18 +16,27 @@ namespace NonLocalizable
     const static wchar_t* BlockInGameModeID = L"block-in-game-mode";
 }
 
-AlwaysOnTopSettings::AlwaysOnTopSettings(HWND window, const std::wstring& settingsFileName) :
-    m_settingsFileWatcher(settingsFileName, [&]() {
-        PostMessageW(window, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
-    })
+AlwaysOnTopSettings::AlwaysOnTopSettings()
 {
-    LoadSettings();
+}
+
+void AlwaysOnTopSettings::InitFileWatcher()
+{
+    const std::wstring& settingsFileName = GetSettingsFileName();
+    m_settingsFileWatcher = std::make_unique<FileWatcher>(settingsFileName, [&]() {
+        PostMessageW(HWND_BROADCAST, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
+    });
 }
 
 std::wstring AlwaysOnTopSettings::GetSettingsFileName()
 {
     std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
     return saveFolderPath + L"\\" + std::wstring(NonLocalizable::SettingsFileName);
+}
+
+void AlwaysOnTopSettings::AddObserver(const NotificationCallback& callback)
+{
+    m_observerCallbacks.push_back(callback);
 }
 
 void AlwaysOnTopSettings::LoadSettings()
@@ -55,11 +64,21 @@ void AlwaysOnTopSettings::LoadSettings()
         {
             m_settings.blockInGameMode = *val;
         }
+
+        NotifyObservers();
     }
     catch (...)
     {
         // Log error message and continue with default settings.
         Logger::error("Failed to read settings");
         // TODO: show localized message
+    }
+}
+
+void AlwaysOnTopSettings::NotifyObservers() const
+{
+    for (const auto& callback : m_observerCallbacks)
+    {
+        callback();
     }
 }
