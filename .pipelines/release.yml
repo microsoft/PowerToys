@@ -218,7 +218,7 @@ jobs:
     displayName: Sign MSI
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
-      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
+      FolderPath: 'installer/$(BuildPlatform)\$(BuildConfiguration)'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
@@ -240,7 +240,7 @@ jobs:
     displayName: Sign Boostrapper
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
-      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
+      FolderPath: 'installer/$(BuildPlatform)\$(BuildConfiguration)'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
