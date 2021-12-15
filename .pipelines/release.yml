@@ -78,7 +78,9 @@ jobs:
       targetType: inline
       script: >-
         $VerbosePreference = "Continue"
+
         ./tools/build/move-and-rename-resx.ps1
+
         ./tools/build/move-uwp-resw.ps1
       pwsh: true
   - task: NuGetAuthenticate@0
