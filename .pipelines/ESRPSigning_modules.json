@@ -1,0 +1,166 @@
+{
+    "Version": "1.0.0",
+    "UseMinimatch": false,
+    "SignBatches": [
+        {
+            "MatchedPath": [
+                "Microsoft.PowerToys.Common.UI.dll",
+                "Microsoft.PowerToys.Settings.UI.Lib.dll",
+                "modules\\ColorPicker\\ColorPicker.dll",
+                "modules\\ColorPicker\\ColorPickerUI.dll",
+                "modules\\ColorPicker\\ColorPickerUI.exe",
+                "modules\\Awake\\AwakeModuleInterface.dll",
+                "modules\\Awake\\PowerToys.Awake.exe",
+                "modules\\Awake\\PowerToys.Awake.dll",
+                "modules\\FancyZones\\fancyzones.dll",
+                "modules\\FancyZones\\FancyZonesEditor.exe",
+                "modules\\FancyZones\\FancyZonesEditor.dll",
+                "modules\\FancyZones\\FancyZonesModuleInterface.dll",
+                "modules\\FancyZones\\PowerToys.FancyZones.exe",
+                "modules\\FileExplorerPreview\\MarkdownPreviewHandler.dll",
+                "modules\\FileExplorerPreview\\MarkdownPreviewHandler.comhost.dll",
+                "modules\\FileExplorerPreview\\PdfPreviewHandler.dll",
+                "modules\\FileExplorerPreview\\PdfPreviewHandler.comhost.dll",
+                "modules\\FileExplorerPreview\\PdfThumbnailProvider.dll",
+                "modules\\FileExplorerPreview\\PdfThumbnailProvider.comhost.dll",
+                "modules\\FileExplorerPreview\\powerpreview.dll",
+                "modules\\FileExplorerPreview\\PreviewHandlerCommon.dll",
+                "modules\\FileExplorerPreview\\SvgPreviewHandler.dll",
+                "modules\\FileExplorerPreview\\SvgPreviewHandler.comhost.dll",
+                "modules\\FileExplorerPreview\\SvgThumbnailProvider.dll",
+                "modules\\FileExplorerPreview\\SvgThumbnailProvider.comhost.dll",
+                "modules\\ImageResizer\\ImageResizer.exe",
+                "modules\\ImageResizer\\ImageResizer.dll",
+                "modules\\ImageResizer\\ImageResizerExt.dll",
+                "modules\\KeyboardManager\\KeyboardManager.dll",
+                "modules\\KeyboardManager\\KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
+                "modules\\KeyboardManager\\KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe",
+                "modules\\MouseUtils\\FindMyMouse.dll",
+                "modules\\PowerRename\\PowerRenameExt.dll",
+                "modules\\PowerRename\\PowerRenameUILib.dll",
+                "modules\\PowerRename\\PowerRename.exe",
+                "modules\\ShortcutGuide\\ShortcutGuide\\PowerToys.ShortcutGuide.exe",
+                "modules\\ShortcutGuide\\ShortcutGuideModuleInterface\\ShortcutGuideModuleInterface.dll",
+                "modules\\VideoConference\\VideoConferenceModule.dll",
+                "modules\\VideoConference\\VideoConferenceProxyFilter_x86.dll",
+                "modules\\VideoConference\\VideoConferenceProxyFilter_x86.dll",
+                "Settings\\Microsoft.PowerToys.Settings.UI.exe",
+                "Settings\\PowerToys.Settings.dll",
+                "Settings\\PowerToys.Settings.exe"
+            ],
+            "SigningInfo": {
+                "Operations": [
+                    {
+                        "KeyCode": "CP-230012",
+                        "OperationSetCode": "SigntoolSign",
+                        "Parameters": [
+                            {
+                                "parameterName": "OpusName",
+                                "parameterValue": "Microsoft"
+                            },
+                            {
+                                "parameterName": "OpusInfo",
+                                "parameterValue": "http://www.microsoft.com"
+                            },
+                            {
+                                "parameterName": "FileDigest",
+                                "parameterValue": "/fd \"SHA256\""
+                            },
+                            {
+                                "parameterName": "PageHash",
+                                "parameterValue": "/NPH"
+                            },
+                            {
+                                "parameterName": "TimeStamp",
+                                "parameterValue": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                            }
+                        ],
+                        "ToolName": "sign",
+                        "ToolVersion": "1.0"
+                    },
+                    {
+                        "KeyCode": "CP-230012",
+                        "OperationSetCode": "SigntoolVerify",
+                        "Parameters": [],
+                        "ToolName": "sign",
+                        "ToolVersion": "1.0"
+                    }
+                ]
+            }
+        },
+        {
+            "MatchedPath": [
+                "Microsoft.Search.Interop.dll",
+                "ModernWpf.dll",
+                "ModernWpf.Controls.dll", 
+                "System.IO.Abstractions.dll", 
+                "Mono.Cecil.dll",
+                "Mono.Cecil.Mdb.dll",
+                "Mono.Cecil.Pdb.dll",
+                "Mono.Cecil.Rocks.dll",
+                "NLog.dll",
+                "HtmlAgilityPack.dll",
+                "Markdig.Signed.dll",
+                "Mages.Core.dll",
+                "JetBrains.Annotations.dll",
+                "ICSharpCode.SharpZipLib.dll",
+                "NLog.Extensions.Logging.dll", 
+                "concrt140_app.dll",
+                "msvcp140_1_app.dll",
+                "msvcp140_2_app.dll",
+                "msvcp140_app.dll",
+                "vcamp140_app.dll",
+                "vccorlib140_app.dll",
+                "vcomp140_app.dll",
+                "vcruntime140_1_app.dll",
+                "vcruntime140_app.dll", 
+                "ColorCode.Core.dll", 
+                "ColorCode.UWP.dll",
+                "UnitsNet.dll"
+            ],
+            "SigningInfo": {
+                "Operations": [
+                    {
+                        "KeyCode": "CP-231522",
+                        "OperationSetCode": "SigntoolSign",
+                        "Parameters": [
+                            {
+                                "parameterName": "OpusName",
+                                "parameterValue": "Microsoft"
+                            },
+                            {
+                                "parameterName": "OpusInfo",
+                                "parameterValue": "http://www.microsoft.com"
+                            },
+                            {
+                                "parameterName": "FileDigest",
+                                "parameterValue": "/fd \"SHA256\""
+                            },
+                            {
+                                "parameterName": "Append",
+                                "parameterValue": "/as"
+                            },
+                            {
+                                "parameterName": "PageHash",
+                                "parameterValue": "/NPH"
+                            },
+                            {
+                                "parameterName": "TimeStamp",
+                                "parameterValue": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                            }
+                        ],
+                        "ToolName": "sign",
+                        "ToolVersion": "1.0"
+                    },
+                    {
+                        "KeyCode": "CP-231522",
+                        "OperationSetCode": "SigntoolVerify",
+                        "Parameters": [],
+                        "ToolName": "sign",
+                        "ToolVersion": "1.0"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -170,12 +170,30 @@ jobs:
 # reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
 # https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign common files
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_common.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign launcher
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_launcher.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     displayName: Sign all loose files
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
       FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
       signType: batchSigning
-      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_LooseFiles.json'
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_modules.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
   - task: VSBuild@1
@@ -195,7 +213,7 @@ jobs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
       FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
       signType: batchSigning
-      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_LooseFiles.json'
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
   - task: VSBuild@1
@@ -215,7 +233,7 @@ jobs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
       FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
       signType: batchSigning
-      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_LooseFiles.json'
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
   - task: PublishBuildArtifacts@1
