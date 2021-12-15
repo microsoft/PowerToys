@@ -123,6 +123,8 @@ jobs:
 #
 #        $Files | % { Move-Item -Verbose $_.Directory $_.Directory.Parent.Parent -EA:Ignore }
 #      pwsh: true
+
+## ALL BUT INSTALLER BUILDING
   - task: VSBuild@1
     displayName: Build PowerToys main project
     inputs:
@@ -167,6 +169,7 @@ jobs:
       clean: true
       maximumCpuCount: true
 
+#### MAIN SIGNING AREA
 # reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
 # https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
@@ -188,14 +191,18 @@ jobs:
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
-    displayName: Sign all loose files
+    displayName: Sign remaining modules
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
       FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_modules.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+#### END SIGNING 
+## END MAIN
 
+## INSTALLER START
+#### MSI BUILDING AND SIGNING
   - task: VSBuild@1
     displayName: Build MSI
     inputs:
@@ -215,7 +222,9 @@ jobs:
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+#### END MSI
 
+#### BOOTSTRAP BUILDING AND SIGNING
   - task: VSBuild@1
     displayName: Build Bootstrapper
     inputs:
@@ -235,6 +244,8 @@ jobs:
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+#### END BOOTSTRAP
+## END INSTALLER
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: binlog'
