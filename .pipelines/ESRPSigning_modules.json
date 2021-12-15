@@ -4,8 +4,6 @@
     "SignBatches": [
         {
             "MatchedPath": [
-                "Microsoft.PowerToys.Common.UI.dll",
-                "Microsoft.PowerToys.Settings.UI.Lib.dll",
                 "modules\\ColorPicker\\ColorPicker.dll",
                 "modules\\ColorPicker\\ColorPickerUI.dll",
                 "modules\\ColorPicker\\ColorPickerUI.exe",

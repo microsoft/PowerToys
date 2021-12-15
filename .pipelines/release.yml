@@ -198,6 +198,15 @@ jobs:
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_modules.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+  
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign PowerToysSetupCustomActions
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: 'installer/PowerToysSetupCustomActions/$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 #### END SIGNING 
 ## END MAIN
 
@@ -218,7 +227,7 @@ jobs:
     displayName: Sign MSI
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
-      FolderPath: 'installer/$(BuildPlatform)\$(BuildConfiguration)'
+      FolderPath: 'installer/PowerToysSetup/$(BuildPlatform)\$(BuildConfiguration)'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
@@ -240,7 +249,7 @@ jobs:
     displayName: Sign Boostrapper
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
-      FolderPath: 'installer/$(BuildPlatform)\$(BuildConfiguration)'
+      FolderPath: 'installer/PowerToysBootstrapper/$(BuildPlatform)\$(BuildConfiguration)'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'

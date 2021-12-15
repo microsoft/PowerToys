@@ -4,6 +4,7 @@
     "SignBatches": [
         {
             "MatchedPath": [
+                "PowerToysSetupCustomActions.dll",
                 "PowerToysSetup-*.exe",
                 "PowerToysSetup-*.msi"
             ],
