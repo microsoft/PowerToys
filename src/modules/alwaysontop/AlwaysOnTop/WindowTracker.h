@@ -11,7 +11,7 @@ public:
 
     bool Init(HINSTANCE hinstance);
 
-    void DrawFrame() const;
+    void RedrawFrame() const;
     void Hide() const;
 
 protected:

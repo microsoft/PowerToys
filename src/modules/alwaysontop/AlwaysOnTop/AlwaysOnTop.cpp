@@ -124,15 +124,14 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         if (PinTopmostWindow(window))
         {
-            auto tracker = std::make_unique<WindowTracker>(window);
-            if (!tracker->Init(m_hinstance))
+            if (m_settings->GetSettings().enableFrame)
             {
-                // Failed to init tracker, reset topmost
-                UnpinTopmostWindow(window);
-                return;
+                AssignTracker(window);
             }
-
-            m_topmostWindows[window] = std::move(tracker);
+            else
+            {
+                m_topmostWindows[window] = nullptr;
+            }
         }
     }
 
@@ -174,17 +173,23 @@ void AlwaysOnTop::StartTrackingTopmostWindows()
     {
         if (IsTopmost(window))
         {
-            auto tracker = std::make_unique<WindowTracker>(window);
-            if (!tracker->Init(m_hinstance))
-            {
-                // Failed to init tracker, reset topmost
-                UnpinTopmostWindow(window);
-                return;
-            }
-
-            m_topmostWindows[window] = std::move(tracker);
+            AssignTracker(window);
         }
     }
+}
+
+bool AlwaysOnTop::AssignTracker(HWND window)
+{
+    auto tracker = std::make_unique<WindowTracker>(window);
+    if (!tracker->Init(m_hinstance))
+    {
+        // Failed to init tracker, reset topmost
+        UnpinTopmostWindow(window);
+        return false;
+    }
+
+    m_topmostWindows[window] = std::move(tracker);
+    return true;
 }
 
 void AlwaysOnTop::UnpinAll()
@@ -236,13 +241,13 @@ bool AlwaysOnTop::IsTracked(HWND window) const noexcept
 
 void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
-    auto iter = m_topmostWindows.find(data->hwnd);
-    if (iter == m_topmostWindows.end())
+    if (!m_settings->GetSettings().enableFrame)
     {
         return;
     }
 
-    if (!m_settings->GetSettings().enableFrame)
+    auto iter = m_topmostWindows.find(data->hwnd);
+    if (iter == m_topmostWindows.end())
     {
         return;
     }
@@ -253,7 +258,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     case EVENT_SYSTEM_MOVESIZEEND:
     {
         const auto& tracker = iter->second;
-        tracker->DrawFrame();
+        tracker->RedrawFrame();
     }
     break;
     case EVENT_OBJECT_DESTROY:

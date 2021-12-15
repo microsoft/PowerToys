@@ -53,11 +53,12 @@ private:
     void UnpinAll();
     void CleanUp();
 
+    bool IsTracked(HWND window) const noexcept;
     bool IsTopmost(HWND window) const noexcept;
+
     bool PinTopmostWindow(HWND window) const noexcept;
     bool UnpinTopmostWindow(HWND window) const noexcept;
-
-    bool IsTracked(HWND window) const noexcept;
+    bool AssignTracker(HWND window);
 
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
 
