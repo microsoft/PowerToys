@@ -437,6 +437,7 @@ int Bootstrapper(HINSTANCE hInstance)
                 else
                 {
                     spdlog::error("Couldn't download dotnet");
+                    ShowMessageBoxError(IDS_DOTNET_CORE_DOWNLOAD_FAILURE);
                 }
 
                 if (!installedSuccessfully)
