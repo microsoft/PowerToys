@@ -49,7 +49,7 @@ jobs:
 
 # Sets versions for all PowerToy created DLLs
   - task: PowerShell@1
-    displayName: 'Set Versions.Prop'
+    displayName: Set Versions.Prop
     inputs:
       scriptName: .pipelines/versionSetting.ps1
       arguments: -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
@@ -82,14 +82,12 @@ jobs:
       nugetConfigPath: .pipelines/release-nuget.config
       
   - task: CmdLine@2
-    displayName: Moving telem files over
+    displayName: Moving telem files
     inputs:
       script: |
         call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
-
-
 
 # TODO: Localize
 # this is localization, we need this
@@ -159,7 +157,7 @@ jobs:
       maximumCpuCount: true
 
   - task: VSBuild@1
-    displayName: Build PowerToysSetup PowerToysSetupCustomActions
+    displayName: Build PowerToysSetupCustomActions
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
       vsVersion: 16.0
@@ -172,7 +170,7 @@ jobs:
 # reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
 # https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
-    displayName: 'ESRP CodeSigning'
+    displayName: Sign all loose files
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
       FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
@@ -180,9 +178,8 @@ jobs:
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_LooseFiles.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
-
   - task: VSBuild@1
-    displayName: Build PowerToysSetup
+    displayName: Build MSI
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
       vsVersion: 16.0
@@ -192,10 +189,17 @@ jobs:
       clean: true
       maximumCpuCount: true
 
-# TODO: MSI NEED TO BE SIGNED HERE
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign MSI
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_LooseFiles.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
   - task: VSBuild@1
-    displayName: Build PowerToysSetup
+    displayName: Build Bootstrapper
     inputs:
       solution: '**/installer/PowerToysBootstrapper/PowerToysBootstrapper.sln'
       vsVersion: 16.0
@@ -205,8 +209,14 @@ jobs:
       clean: true
       maximumCpuCount: true
 
-# TODO: BOOTSTRAPPER NEED TO BE SIGNED HERE
-
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign Boostrapper
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_LooseFiles.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: binlog'
@@ -275,6 +285,7 @@ jobs:
   - task: CopyFiles@2
     inputs:
       contents: '**/PowerToysSetup-*.exe'
+      flattenFolders: True
       targetFolder: $(Build.ArtifactStagingDirectory)
 
   - task: PublishBuildArtifacts@1
