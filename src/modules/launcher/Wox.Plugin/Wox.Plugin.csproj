@@ -75,8 +75,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\..\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj" />
-    <ProjectReference Include="..\..\..\settings-ui\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs">

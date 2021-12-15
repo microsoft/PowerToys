@@ -4,11 +4,11 @@
 
 using System.Linq;
 using System.Windows.Input;
+using Common.UI;
 using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Properties;
 using ImageResizer.Views;
-using Microsoft.PowerToys.Common.UI;
 
 namespace ImageResizer.ViewModels
 {

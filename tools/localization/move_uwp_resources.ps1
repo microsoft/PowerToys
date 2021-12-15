@@ -1,8 +1,8 @@
 # List of resource folders
-$input_resource_folder_list = @( "src\settings-ui\Microsoft.PowerToys.Settings.UI\Strings\",
+$input_resource_folder_list = @( "src\settings-ui\Settings.UI\Strings\",
                                  "src\modules\powerrename\PowerRenameUILib\Strings\"
                                 )
-$output_resource_folder_list = @( "src\settings-ui\Microsoft.PowerToys.Settings.UI\Strings\",
+$output_resource_folder_list = @( "src\settings-ui\Settings.UI\Strings\",
                                   "src\modules\powerrename\PowerRenameUILib\Strings\"
                                 )
 

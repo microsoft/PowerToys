@@ -495,7 +495,7 @@
 
         <File Id="FancyZones_interop" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.Interop.dll" />
         <File Id="FancyZones_ManagedCommon" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.ManagedCommon.dll" />
-        <File Id="FancyZones_Microsoft.PowerToys.Common.UI" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.PowerToys.Common.UI.dll" />
+        <File Id="FancyZones_Common.UI" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.Common.UI.dll" />
         <File Id="FancyZones_Telemetry.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.ManagedTelemetry.dll" />
         <File Id="FancyZone_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.IO.Abstractions.dll" />
         <File Id="FancyZones_System.Runtime.CompilerServices.Unsafe.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Runtime.CompilerServices.Unsafe.dll" />
@@ -536,7 +536,7 @@
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.runtimeconfig.json" />
         <File Id="ImageResizer_ManagedCommon" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ManagedCommon.dll" />
         <File Id="ImageResizer_ManagedTelemetry" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ManagedTelemetry.dll" />
-        <File Id="ImageResizer_Microsoft.PowerToys.Common.UI" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Microsoft.PowerToys.Common.UI.dll" />
+        <File Id="ImageResizer_Common.UI" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.Common.UI.dll" />
         <File Id="Module_ImageResizer_ControlzEX" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ControlzEx.dll" />
         <File Id="Module_ImageResizer_ModernWpf_Controls" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ModernWpf.Controls.dll" />
         <File Id="Module_ImageResizer_ModernWpf" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ModernWpf.dll" />
@@ -729,7 +729,7 @@
     <!-- Color Picker -->
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
       <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
-        <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;System.Text.Json.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;Microsoft.PowerToys.Common.UI.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
+        <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;System.Text.Json.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -747,7 +747,7 @@
     <!-- Awake -->
     <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)">
       <Component Id="Module_Awake" Guid="F26F5780-5B38-43B2-BC21-8406ED6E2071" Win64="yes">
-        <?foreach File in PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.Win32.Registry.dll;Microsoft.Win32.SystemEvents.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToys.Interop.dll;System.CommandLine.dll;System.Configuration.ConfigurationManager.dll;System.Drawing.Common.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Security.AccessControl.dll;System.Security.Cryptography.ProtectedData.dll;System.Security.Permissions.dll;System.Security.Principal.Windows.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Windows.Extensions.dll?>
+        <?foreach File in PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;Microsoft.Win32.Registry.dll;Microsoft.Win32.SystemEvents.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToys.Interop.dll;System.CommandLine.dll;System.Configuration.ConfigurationManager.dll;System.Drawing.Common.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Security.AccessControl.dll;System.Security.Cryptography.ProtectedData.dll;System.Security.Permissions.dll;System.Security.Principal.Windows.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Windows.Extensions.dll?>
         <File Id="AwakeFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -831,9 +831,9 @@
       <Component Id="SettingsV2" Guid="4B108DC0-4B2C-4AC4-AAA9-1B2DC8399F7C" Win64="yes">
         <!-- exe -->
         <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.exe"/>
-        <File Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.exe"/>
+        <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.UI.exe"/>
         <!-- dll -->
-        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToys.Settings.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;PowerToys.Interop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ColorCode.Core.dll;ColorCode.UWP.dll;Microsoft.Graphics.Canvas.winmd;Microsoft.Toolkit.Uwp.UI.Controls.Core.dll;Microsoft.Toolkit.Uwp.UI.Controls.DataGrid.dll;Microsoft.Toolkit.Uwp.UI.Controls.Input.dll;Microsoft.Toolkit.Uwp.UI.Controls.Layout.dll;Microsoft.Toolkit.Uwp.UI.Controls.Markdown.dll;Microsoft.Toolkit.Uwp.UI.Controls.Media.dll;Microsoft.Toolkit.Uwp.UI.Controls.Primitives.dll?>
+        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;System.IO.Abstractions.dll;PowerToys.Settings.UI.Lib.dll;PowerToys.Settings.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;PowerToys.Interop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ColorCode.Core.dll;ColorCode.UWP.dll;Microsoft.Graphics.Canvas.winmd;Microsoft.Toolkit.Uwp.UI.Controls.Core.dll;Microsoft.Toolkit.Uwp.UI.Controls.DataGrid.dll;Microsoft.Toolkit.Uwp.UI.Controls.Input.dll;Microsoft.Toolkit.Uwp.UI.Controls.Layout.dll;Microsoft.Toolkit.Uwp.UI.Controls.Markdown.dll;Microsoft.Toolkit.Uwp.UI.Controls.Media.dll;Microsoft.Toolkit.Uwp.UI.Controls.Primitives.dll?>
           <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)Settings\$(var.File)" />
         <?endforeach?>
         <!-- json -->
@@ -851,7 +851,7 @@
         <!-- xbf -->
         <File Id="SettingsV2_App.xbf" Source="$(var.BinX64Dir)Settings\App.xbf"/>
         <!-- xml -->
-        <File Id="SettingsV2_Microsoft.PowerToys.Settings.UI.xr.xml" Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.xr.xml"/>
+        <File Id="SettingsV2_PowerToys.Settings.UI.xr.xml" Source="$(var.BinX64Dir)Settings\PowerToys.Settings.UI.xr.xml"/>
         <File Id="SettingsV2_Microsoft.Toolkit.Win32.UI.XamlHost.xml" Source="$(var.BinX64Dir)Settings\Microsoft.Toolkit.Win32.UI.XamlHost.xml"/>
         <!-- VCRuntime -->
         <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
@@ -1130,10 +1130,10 @@
 
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\PowerToys.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
-        <File Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.Lib.dll" />
+        <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.UI.Lib.dll" />
         <!-- VCRuntime -->
         <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
           <File Id="File_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
