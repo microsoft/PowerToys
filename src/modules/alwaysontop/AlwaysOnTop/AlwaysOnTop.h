@@ -11,8 +11,6 @@ public:
     AlwaysOnTop();
     ~AlwaysOnTop();
 
-    bool Init();
-
 protected:
     static LRESULT CALLBACK WndProc_Helper(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
     {
@@ -37,16 +35,20 @@ private:
     };
 
     static inline AlwaysOnTop* s_instance = nullptr;
-    std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
+    std::vector<HWINEVENTHOOK> m_staticWinEventHooks{};
+    AlwaysOnTopSettings m_settings;
 
     HWND m_window{ nullptr };
     HINSTANCE m_hinstance;
-    std::map<HWND, std::unique_ptr<WindowTracker>> m_topmostWindows;
-    std::unique_ptr<AlwaysOnTopSettings> m_settings;
-
-    bool m_activateInGameMode = false;
+    std::map<HWND, std::unique_ptr<WindowTracker>> m_topmostWindows{};
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
+    void HandleWinHookEvent(WinHookEvent* data) noexcept;
+    
+    bool InitMainWindow();
+    void UpdateSettings();
+    void RegisterHotkey() const;
+    void SubscribeToEvents();
 
     void ProcessCommand(HWND window);
     void StartTrackingTopmostWindows();
@@ -59,9 +61,7 @@ private:
     bool PinTopmostWindow(HWND window) const noexcept;
     bool UnpinTopmostWindow(HWND window) const noexcept;
     bool AssignTracker(HWND window);
-
-    void HandleWinHookEvent(WinHookEvent* data) noexcept;
-
+        
     static void CALLBACK WinHookProc(HWINEVENTHOOK winEventHook,
                                      DWORD event,
                                      HWND window,
