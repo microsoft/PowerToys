@@ -1,3 +1,8 @@
+# TODOs:
+# add in loc
+# need to rebase off main to get latest DLL namings
+# Signing needs to work
+
 # This build should never run as CI or against a pull request.
 trigger: none
 pr: none
@@ -15,6 +20,9 @@ parameters:
     type: object
     default:
       - x64
+  - name: versionNumber
+    type: string
+    default: '0.0.1'
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 resources:
@@ -38,7 +46,15 @@ jobs:
     clean: true
     submodules: true
     persistCredentials: True
-    
+
+# Sets versions for all PowerToy created DLLs
+  - task: PowerShell@1
+    displayName: Set Versions.Prop
+    inputs:
+      scriptName: .pipelines/versionSetting.ps1
+      arguments: -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
+
+# TODO: verify with Dustin this is needed
 #  - task: PkgESSetupBuild@12
 #    displayName: Package ES - Setup Build
 #    inputs:
@@ -72,15 +88,31 @@ jobs:
     displayName: Use NuGet 5.10
     inputs:
       versionSpec: 5.10
+# this will restore the following nugets:
+# - main solution
+# - Bug report tool
+# - Webcam report tool
+# - Installer
+# - Bootstrapper Installer
   - task: NuGetCommand@2
-    displayName: NuGet restore all solutions
+    displayName: NuGet restore solutions dependencies
     inputs:
       command: restore
       restoreSolution: '**/*.sln'
       selectOrConfig: config
       nugetConfigPath: .pipelines/release-nuget.config
+      
+  - task: CmdLine@2
+    displayName: Moving telem files
+    inputs:
+      script: |
+        call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
+        move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
+        move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
+
+## ALL BUT INSTALLER BUILDING
   - task: VSBuild@1
-    displayName: Build solution **\PowerToys.sln
+    displayName: Build PowerToys main project
     inputs:
       solution: '**\PowerToys.sln'
       vsVersion: 16.0
@@ -89,6 +121,136 @@ jobs:
       configuration: $(BuildConfiguration)
       clean: true
       maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Build BugReportTool
+    inputs:
+      solution: '**/tools/BugReportTool/BugReportTool.sln'
+      vsVersion: 16.0
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Build WebcamReportTool
+    inputs:
+      solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
+      vsVersion: 16.0
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Build PowerToysSetupCustomActions
+    inputs:
+      solution: '**/installer/PowerToysSetup.sln'
+      vsVersion: 16.0
+      msbuildArgs: /target:PowerToysSetupCustomActions /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
+
+#### MAIN SIGNING AREA
+# reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
+# https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign common files
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_common.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign 3rd party files
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_3rdparty.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign launcher
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)\modules\launcher'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_launcher.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign remaining modules
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_modules.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+  
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign PowerToysSetupCustomActions
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: 'installer/PowerToysSetupCustomActions/$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+#### END SIGNING 
+## END MAIN
+
+## INSTALLER START
+#### MSI BUILDING AND SIGNING
+  - task: VSBuild@1
+    displayName: Build MSI
+    inputs:
+      solution: '**/installer/PowerToysSetup.sln'
+      vsVersion: 16.0
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign MSI
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: 'installer/PowerToysSetup/$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+#### END MSI
+
+#### BOOTSTRAP BUILDING AND SIGNING
+  - task: VSBuild@1
+    displayName: Build Bootstrapper
+    inputs:
+      solution: '**/installer/PowerToysBootstrapper/PowerToysBootstrapper.sln'
+      vsVersion: 16.0
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign Boostrapper
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: 'installer/PowerToysBootstrapper/$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+#### END BOOTSTRAP
+## END INSTALLER
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: binlog'
     condition: failed()
@@ -96,71 +258,72 @@ jobs:
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)\msbuild.binlog
       ArtifactName: binlog-$(BuildPlatform)
+
   - task: ComponentGovernanceComponentDetection@0
     displayName: Component Detection
+
+# TODO: COPY stuff to build artifact
+
+# DUSTIN: do we need build artifacts publishing?
+  #- task: PublishBuildArtifacts@1
+  #  displayName: TERMINAL LEGACY - Publish Artifact (appx)
+  #  inputs:
+  #    PathtoPublish: $(Build.ArtifactStagingDirectory)/appx
+  #    ArtifactName: appx-$(BuildPlatform)-$(BuildConfiguration)
+
+  #- task: PublishSymbols@2
+  #  displayName: Publish symbols path
+  #  continueOnError: True
+  #  inputs:
+  #    SearchPattern: '**/*.pdb'
+  #    IndexSources: false
+  #    SymbolServerType: TeamServices
+
+  # this is signing
+  #- task: EsrpCodeSigning@1
+  #  displayName: USE AS BASE BUT TERMINAL CODE - Submit *.msixbundle to ESRP for code signing
+  #  inputs:
+  #    ConnectedServiceName: 9d6d2960-0793-4d59-943e-78dcb434840a
+  #    FolderPath: $(System.ArtifactsDirectory)
+  #    Pattern: *.dll|*.exe
+  #    UseMinimatch: true
+  #    signConfigType: inlineSignParams
+  #    inlineOperation: >-
+  #      [
+  #          {
+  #              "KeyCode": "Dynamic",
+  #              "CertTemplateName": "WINMSAPP1ST",
+  #              "CertSubjectName": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+  #              "OperationCode": "SigntoolSign",
+  #              "Parameters": {
+  #                  "OpusName": "Microsoft",
+  #                  "OpusInfo": "http://www.microsoft.com",
+  #                  "FileDigest": "/fd \"SHA256\"",
+  #                  "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+  #              },
+  #              "ToolName": "sign",
+  #              "ToolVersion": "1.0"
+  #          },
+  #          {
+  #              "KeyCode": "Dynamic",
+  #              "CertTemplateName": "WINMSAPP1ST",
+  #              "CertSubjectName": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+  #              "OperationCode": "SigntoolVerify",
+  #              "Parameters": {},
+  #              "ToolName": "sign",
+  #              "ToolVersion": "1.0"
+  #          }
+  #      ]
+
   - task: CopyFiles@2
-    displayName: Copy *.appx/*.msix to Artifacts
-    inputs: # general format for how to publish artifacts -- move to below your build/sign rules
-      Contents: >-
-        **/*.appx
+    inputs:
+      contents: '**/PowerToysSetup-*.exe'
+      flattenFolders: True
+      targetFolder: $(Build.ArtifactStagingDirectory)
 
-        **/*.msix
-
-        **/*.appxsym
-
-        !**/Microsoft.VCLibs*.appx
-      TargetFolder: $(Build.ArtifactStagingDirectory)/appx
-      OverWrite: true
-      flattenFolders: true
   - task: PublishBuildArtifacts@1
-    displayName: Publish Artifact (appx)
-    inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)/appx
-      ArtifactName: appx-$(BuildPlatform)-$(BuildConfiguration)
-  - task: PublishSymbols@2
-    displayName: Publish symbols path
-    continueOnError: True
-    inputs:
-      SearchPattern: '**/*.pdb'
-      IndexSources: false
-      SymbolServerType: TeamServices
-  - task: EsrpCodeSigning@1
-    displayName: Submit *.msixbundle to ESRP for code signing
-    inputs:
-      ConnectedServiceName: 9d6d2960-0793-4d59-943e-78dcb434840a
-      FolderPath: $(System.ArtifactsDirectory)
-      Pattern: Microsoft.WindowsTerminal*.msixbundle
-      UseMinimatch: true
-      signConfigType: inlineSignParams
-      inlineOperation: >-
-        [
-            {
-                "KeyCode": "Dynamic",
-                "CertTemplateName": "WINMSAPP1ST",
-                "CertSubjectName": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
-                "OperationCode": "SigntoolSign",
-                "Parameters": {
-                    "OpusName": "Microsoft",
-                    "OpusInfo": "http://www.microsoft.com",
-                    "FileDigest": "/fd \"SHA256\"",
-                    "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
-                },
-                "ToolName": "sign",
-                "ToolVersion": "1.0"
-            },
-            {
-                "KeyCode": "Dynamic",
-                "CertTemplateName": "WINMSAPP1ST",
-                "CertSubjectName": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
-                "OperationCode": "SigntoolVerify",
-                "Parameters": {},
-                "ToolName": "sign",
-                "ToolVersion": "1.0"
-            }
-        ]
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: appxbundle-signed'
+    displayName: 'Publish Artifact: PowerToySetup'
     inputs:
       PathtoPublish: $(System.ArtifactsDirectory)
-      ArtifactName: appxbundle-signed
+      ArtifactName: BuildArtifacts
 ...

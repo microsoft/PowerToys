@@ -1,0 +1,71 @@
+{
+    "Version": "1.0.0",
+    "UseMinimatch": false,
+    "SignBatches": [
+        {
+            "MatchedPath": [
+                "Microsoft.Launcher.dll",
+                "PowerLauncher.dll",
+                "PowerLauncher.exe",
+                "PowerLauncher.Telemetry.dll",
+                "PowerLauncher.UI.exe",
+                "Wox.dll",
+                "Wox.Infrastructure.dll",
+                "Wox.Plugin.dll",
+                "Plugins\\Calculator\\Microsoft.PowerToys.Run.Plugin.Calculator.dll",
+                "Plugins\\Microsoft.Plugin.Folder\\Microsoft.Plugin.Folder.dll",
+                "Plugins\\Microsoft.Plugin.Indexer\\Microsoft.Plugin.Indexer.dll",
+                "Plugins\\Microsoft.Plugin.Program\\Microsoft.Plugin.Program.dll",
+                "Plugins\\Microsoft.PowerToys.Run.Plugin.Registry\\Microsoft.PowerToys.Run.Plugin.Registry.dll",
+                "Plugins\\Microsoft.PowerToys.Run.Plugin.WindowsSettings\\Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll",
+                "Plugins\\Microsoft.Plugin.Shell\\Microsoft.Plugin.Shell.dll",
+                "Plugins\\Microsoft.Plugin.Uri\\Microsoft.Plugin.Uri.dll",
+                "Plugins\\Microsoft.Plugin.WindowWalker\\Microsoft.Plugin.WindowWalker.dll",
+                "Plugins\\Community.UnitConverter\\Community.PowerToys.Run.Plugin.UnitConverter.dll",
+                "Plugins\\VSCodeWorkspaces\\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll",
+                "Plugins\\Service\\Microsoft.PowerToys.Run.Plugin.Service.dll",
+                "Plugins\\System\\Microsoft.PowerToys.Run.Plugin.System.dll",
+                "Plugins\\WindowsTerminal\\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll"
+            ],
+            "SigningInfo": {
+                "Operations": [
+                    {
+                        "KeyCode": "CP-230012",
+                        "OperationSetCode": "SigntoolSign",
+                        "Parameters": [
+                            {
+                                "parameterName": "OpusName",
+                                "parameterValue": "Microsoft"
+                            },
+                            {
+                                "parameterName": "OpusInfo",
+                                "parameterValue": "http://www.microsoft.com"
+                            },
+                            {
+                                "parameterName": "FileDigest",
+                                "parameterValue": "/fd \"SHA256\""
+                            },
+                            {
+                                "parameterName": "PageHash",
+                                "parameterValue": "/NPH"
+                            },
+                            {
+                                "parameterName": "TimeStamp",
+                                "parameterValue": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                            }
+                        ],
+                        "ToolName": "sign",
+                        "ToolVersion": "1.0"
+                    },
+                    {
+                        "KeyCode": "CP-230012",
+                        "OperationSetCode": "SigntoolVerify",
+                        "Parameters": [],
+                        "ToolName": "sign",
+                        "ToolVersion": "1.0"
+                    }
+                ]
+            }
+        }
+    ]
+}
