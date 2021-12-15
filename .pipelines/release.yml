@@ -182,10 +182,19 @@ jobs:
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
-    displayName: Sign launcher
+    displayName: Sign 3rd party files
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
       FolderPath: '$(BuildPlatform)\$(BuildConfiguration)'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_3rdparty.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign launcher
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: '$(BuildPlatform)\$(BuildConfiguration)\modules\launcher'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_launcher.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
