@@ -24,6 +24,9 @@ parameters:
     type: string
     default: '0.0.1'
 
+variables:
+  IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 resources:
   repositories:
