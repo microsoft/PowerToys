@@ -2,7 +2,7 @@
 
 namespace ZoneConstants
 {
-    constexpr int MAX_NEGATIVE_SPACING = -10;
+    constexpr int MAX_NEGATIVE_SPACING = -20;
 }
 
 using ZoneIndex = int64_t;
