@@ -24,6 +24,9 @@ parameters:
     type: string
     default: '0.0.1'
 
+variables:
+  IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 resources:
   repositories:
@@ -40,6 +43,7 @@ jobs:
             BuildConfiguration: ${{ config }}
             BuildPlatform: ${{ platform }}
   displayName: Build
+  timeoutInMinutes: 120 # Some of the loc stuff adds quite a bit of time.
   cancelTimeoutInMinutes: 1
   steps:
   - checkout: self
@@ -59,14 +63,37 @@ jobs:
 #    displayName: Package ES - Setup Build
 #    inputs:
 #      disableOutputRedirect: true
+  - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
+    displayName: 'Download Localization Files -- PowerToys 37400'
+    inputs:
+      teamId: 37400
+      authId: '$(TouchdownApplicationID)'
+      authKey: '$(TouchdownApplicationKey)'
+      resourceFilePath: |
+       **\Resources.resx
+       **\Resource.resx
+       **\Resources.resw
+      appendRelativeDir: true
+      localizationTarget: false
+      pseudoSetting: Included
+  - task: PowerShell@2
+    displayName: Move Loc files into correct locations
+    inputs:
+      targetType: inline
+      script: >-
+        $VerbosePreference = "Continue"
+
+        ./tools/build/move-and-rename-resx.ps1
+
+        ./tools/build/move-uwp-resw.ps1
+      pwsh: true
+  - task: NuGetAuthenticate@0
+    inputs:
+      nuGetServiceConnections: PowerToysCDPxFeed
   - task: NuGetToolInstaller@1
     displayName: Use NuGet 5.10
     inputs:
       versionSpec: 5.10
-  - task: NuGetAuthenticate@0
-    inputs:
-      nuGetServiceConnections: PowerToysCDPxFeed
-
 # this will restore the following nugets:
 # - main solution
 # - Bug report tool
@@ -88,41 +115,6 @@ jobs:
         call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
         move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
-
-# TODO: Localize
-# this is localization, we need this
-#  - task: TouchdownBuildTask@1
-#    displayName: Download Localization Files
-#    inputs:
-#      teamId: 7105
-#      authId: $(TouchdownAppId)
-#      authKey: $(TouchdownAppKey)
-#      resourceFilePath: >-
-#        src\cascadia\TerminalApp\Resources\en-US\Resources.resw
-#
-#        src\cascadia\TerminalControl\Resources\en-US\Resources.resw
-#
-#        src\cascadia\TerminalConnection\Resources\en-US\Resources.resw
-#
-#        src\cascadia\TerminalSettingsModel\Resources\en-US\Resources.resw
-#
-#        src\cascadia\TerminalSettingsEditor\Resources\en-US\Resources.resw
-#
-#        src\cascadia\WindowsTerminalUniversal\Resources\en-US\Resources.resw
-#
-#        src\cascadia\CascadiaPackage\Resources\en-US\Resources.resw
-#      appendRelativeDir: true
-#      localizationTarget: false
-#      pseudoSetting: Included
-#  - task: PowerShell@2
-#    displayName: Move Loc files one level up
-#    inputs:
-#      targetType: inline
-#      script: >-
-#        $Files = Get-ChildItem . -R -Filter 'Resources.resw' | ? FullName -Like '*en-US\*\Resources.resw'
-#
-#        $Files | % { Move-Item -Verbose $_.Directory $_.Directory.Parent.Parent -EA:Ignore }
-#      pwsh: true
 
 ## ALL BUT INSTALLER BUILDING
   - task: VSBuild@1
@@ -167,6 +159,37 @@ jobs:
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Publish Settings for Packaging
+    inputs:
+      solution: 'src/settings-ui/PowerToys.Settings/PowerToys.Settings.csproj'
+      vsVersion: 16.0
+      msbuildArgs: >-
+        /target:Publish
+        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
+        /p:VCRTForwarders-IncludeDebugCRT=false
+        /p:PowerToysRoot=$(Build.SourcesDirectory)
+        /p:PublishProfile=InstallationPublishProfile.pubxml
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Publish Launcher for Packaging
+    inputs:
+      solution: 'src/modules/launcher/PowerLauncher/PowerLauncher.csproj'
+      vsVersion: 16.0
+      # The arguments should be the same as the ones for Settings; make sure they are.
+      msbuildArgs: >-
+        /target:Publish
+        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
+        /p:VCRTForwarders-IncludeDebugCRT=false
+        /p:PowerToysRoot=$(Build.SourcesDirectory)
+        /p:PublishProfile=InstallationPublishProfile.pubxml
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
       maximumCpuCount: true
 
 #### MAIN SIGNING AREA
