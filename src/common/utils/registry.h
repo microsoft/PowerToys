@@ -8,6 +8,7 @@
 #include <vector>
 #include <optional>
 #include <cassert>
+#include <sstream>
 
 #include "../logger/logger.h"
 #include "../utils/winapi_error.h"
@@ -334,11 +335,11 @@ namespace registry
             std::wstring assemblyKeyValue;
             if (const auto lastDotPos = className.rfind(L'.'); lastDotPos != std::wstring::npos)
             {
-                assemblyKeyValue = className.substr(lastDotPos + 1);
+                assemblyKeyValue = L"PowerToys." + className.substr(lastDotPos + 1);
             }
             else
             {
-                assemblyKeyValue = className;
+                assemblyKeyValue = L"PowerToys." + className;
             }
 
             assemblyKeyValue += L", Version=";

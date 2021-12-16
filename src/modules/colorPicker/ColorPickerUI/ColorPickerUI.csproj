@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
     <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
-    <AssemblyTitle>ColorPickerUI</AssemblyTitle>
+    <AssemblyTitle>PowerToys.ColorPickerUI</AssemblyTitle>
+    <Company>Microsoft Corporation</Company>
     <AssemblyDescription>PowerToys ColorPicker</AssemblyDescription>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
@@ -19,7 +20,7 @@
     <ProjectGuid>{BA58206B-1493-4C75-BFEA-A85768A1E156}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>ColorPicker</RootNamespace>
-    <AssemblyName>ColorPickerUI</AssemblyName>
+    <AssemblyName>PowerToys.ColorPickerUI</AssemblyName>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -76,8 +77,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
-    <ProjectReference Include="..\..\..\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj" />
-    <ProjectReference Include="..\..\..\settings-ui\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />

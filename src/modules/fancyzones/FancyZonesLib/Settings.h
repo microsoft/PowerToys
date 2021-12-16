@@ -11,7 +11,7 @@ enum struct OverlappingZonesAlgorithm : int
     EnumElements = 4, // number of elements in the enum, not counting this
 };
 
-// in reality, this file needs to be kept in sync currently with src/settings-ui/Microsoft.PowerToys.Settings.UI.Library/FZConfigProperties.cs
+// in reality, this file needs to be kept in sync currently with src/settings-ui/Settings.UI.Library/FZConfigProperties.cs
 struct Settings
 {
     // The values specified here are the defaults.

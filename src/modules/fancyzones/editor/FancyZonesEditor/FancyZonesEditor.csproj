@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <Import Project="..\..\..\..\Version.props" />
   <PropertyGroup>
-    <AssemblyTitle>FancyZonesEditor</AssemblyTitle>
+    <AssemblyTitle>PowerToys.FancyZonesEditor</AssemblyTitle>
     <AssemblyDescription>PowerToys FancyZones Editor</AssemblyDescription>
     <Description>PowerToys FancyZones Editor</Description>
     <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
@@ -47,6 +47,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>PowerToys.FancyZonesEditor</AssemblyName>
   </PropertyGroup>
  
   <ItemGroup>
@@ -81,9 +82,9 @@
     <Resource Include="images\FancyZonesEditor.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\common\interop\PowerToysInterop.vcxproj" />
+    <ProjectReference Include="..\..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\..\..\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

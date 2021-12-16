@@ -84,7 +84,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\PowerToysInterop.vcxproj" />
+    <ProjectReference Include="..\PowerToys.Interop.vcxproj" />
   </ItemGroup>
 
 </Project>

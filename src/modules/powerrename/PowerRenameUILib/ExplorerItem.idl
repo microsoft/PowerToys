@@ -12,5 +12,6 @@ namespace PowerRenameUILib
         String ImagePath { get; };
         Int32 Type;
         Boolean Checked;
+        Windows.UI.Xaml.Visibility Highlight { get; };
     }
 }

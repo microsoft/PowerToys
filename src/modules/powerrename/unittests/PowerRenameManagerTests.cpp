@@ -293,8 +293,9 @@ namespace PowerRenameManagerTests
         TEST_METHOD (VerifyExtensionOnlyTransform)
         {
             rename_pairs renamePairs[] = {
-                { L"foo.FOO", L"foo.bar", false, true, 0 },
-                { L"foo.bar", L"foo.bar_norename", false, false, 0 }
+                { L"foo.FOO", L"foo.bar", true, true, 0 },
+                { L"bar.FOO", L"bar.FOO_norename", false, false, 0 },
+                { L"foo.bar", L"foo.bar_norename", true, false, 0 }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Lowercase | ExtensionOnly);

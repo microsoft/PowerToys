@@ -93,7 +93,7 @@ The installer can only be compiled in `Release` mode, step 1 and 2 must be done 
 
 ### Prerequisites for building the MSI installer
 
-1. Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=RobMensching.WiXToolset).
+1. Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2019Extension).
 2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
 
 ### Locally compiling the Bug reporting tool
@@ -166,29 +166,6 @@ Definition of the interface used by the [`runner`](/src/runner) to manage the Po
 
 The common lib, as the name suggests, contains code shared by multiple PowerToys components and modules, e.g. [json parsing](/src/common/json.h) and [IPC primitives](/src/common/two_way_pipe_message_ipc.h).
 
-### [`Settings`](settings.md)
+### [`Settings`](settingsv2/)
 
-WebView project for editing the PowerToys settings.
-
-The html portion of the project that is shown in the WebView is contained in [`settings-html`](/src/settings/settings-html).
-Instructions on how build a new version and update this project are in the [Web project for the Settings UI](./settings-web.md).
-
-While developing, it's possible to connect the WebView to the development server running in localhost by setting the `_DEBUG_WITH_LOCALHOST` flag to `1` and following the instructions near it in `./main.cpp`.
-
-### [`Settings-web`](settings-web.md)
-This project generates the web UI shown in the [PowerToys Settings](/src/editor).
-It's a `ReactJS` project created using [Fluent UI](https://developer.microsoft.com/en-us/fluentui#/).
-
-#### Options
-
-This module has a setting to serve as an example for each of the currently implemented settings property:
-
-- BoolToggle property
-- IntSpinner property
-- String property
-- ColorPicker property
-- CustomAction property
-
-![Image of the Options](/doc/images/settings/example_settings.png)
-
-[installerArgWiki]: https://github.com/microsoft/PowerToys/wiki/Installer-arguments-for-exe
+Settings v2 is our current settings implementation.  Please head over to the dev docs that goes into the current settings system.

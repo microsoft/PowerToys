@@ -121,10 +121,7 @@ bool DesktopWindow::NavigateFocus(MSG* msg)
     else
     {
         const bool islandIsFocused = GetFocusedIsland() != nullptr;
-        byte keyboardState[256] = {};
-        WINRT_VERIFY(::GetKeyboardState(keyboardState));
-        const bool isMenuModifier = keyboardState[VK_MENU] & 0x80;
-        if (islandIsFocused && !isMenuModifier)
+        if (islandIsFocused)
         {
             return false;
         }

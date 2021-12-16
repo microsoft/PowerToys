@@ -2,12 +2,11 @@
   <PropertyGroup>
     <Platforms>x64</Platforms>
     <UseWindowsForms>true</UseWindowsForms>
-    <AssemblyTitle>PreviewHandlerCommon</AssemblyTitle>
+    <AssemblyTitle>PowerToys.PreviewHandlerCommon</AssemblyTitle>
     <AssemblyDescription>PowerToys PreviewHandlerCommon</AssemblyDescription>
     <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
-    <AssemblyTitle>PreviewHandlerCommon</AssemblyTitle>
     <Company>Microsoft Corporation</Company>
     <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
@@ -25,6 +24,7 @@
     <ProjectGuid>{AF2349B8-E5B6-4004-9502-687C1C7730B1}</ProjectGuid>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
+    <AssemblyName>PowerToys.PreviewHandlerCommon</AssemblyName>
   </PropertyGroup>
   
   <Import Project="..\..\..\Version.props" />

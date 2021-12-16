@@ -171,7 +171,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreview", "src\modules
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "settings-ui", "settings-ui", "{C3081D9A-1586-441A-B5F4-ED815B3719C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Settings.UI", "src\settings-ui\Microsoft.PowerToys.Settings.UI\Microsoft.PowerToys.Settings.UI.csproj", "{A7D5099E-F0FD-4BF3-8522-5A682759F915}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Settings.UI", "src\settings-ui\Settings.UI\Settings.UI.csproj", "{A7D5099E-F0FD-4BF3-8522-5A682759F915}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4981CCD1-4CD9-4A49-B240-00AA46493FF8}"
 	ProjectSection(SolutionItems) = preProject
@@ -180,9 +180,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Solution.props = Solution.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Library", "src\settings-ui\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj", "{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Settings.UI.Library", "src\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj", "{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToysInterop", "src\common\interop\PowerToysInterop.vcxproj", "{F055103B-F80B-4D0C-BF48-057C55620033}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.Interop", "src\common\interop\PowerToys.Interop.vcxproj", "{F055103B-F80B-4D0C-BF48-057C55620033}"
 	ProjectSection(ProjectDependencies) = postProject
 		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF} = {CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}
 	EndProjectSection
@@ -214,7 +214,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Uri.UnitTests\Microsoft.Plugin.Uri.UnitTests.csproj", "{B81FB7B6-D30E-428F-908A-41422EFC1172}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.UnitTests", "src\settings-ui\Microsoft.PowerToys.Settings.UI.UnitTests\Microsoft.PowerToys.Settings.UI.UnitTests.csproj", "{0F85E674-34AE-443D-954C-8321EB8B93B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Settings.UI.UnitTests", "src\settings-ui\Settings.UI.UnitTests\Settings.UI.UnitTests.csproj", "{0F85E674-34AE-443D-954C-8321EB8B93B1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.csproj", "{632BBE62-5421-49EA-835A-7FFA4F499BD6}"
 EndProject
@@ -294,7 +294,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{
 		src\common\Telemetry\TraceLoggingDefines.h = src\common\Telemetry\TraceLoggingDefines.h
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Common.UI", "src\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj", "{C3A17DCA-217B-462C-BB0C-BE086AF80081}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.UI", "src\common\Common.UI\Common.UI.csproj", "{C3A17DCA-217B-462C-BB0C-BE086AF80081}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfPreviewHandler", "src\modules\previewpane\PdfPreviewHandler\PdfPreviewHandler.csproj", "{69E1EE8D-143A-4060-9129-4658ACF14AAF}"
 EndProject
@@ -373,6 +373,14 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FindMyMouse", "src\modules\MouseUtils\FindMyMouse\FindMyMouse.vcxproj", "{E94FD11C-0591-456F-899F-EFC0CA548336}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MouseHighlighter", "src\modules\MouseUtils\MouseHighlighter\MouseHighlighter.vcxproj", "{782A61BE-9D85-4081-B35C-1CCC9DCC1E88}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcodeThumbnailProvider", "src\modules\previewpane\GcodeThumbnailProvider\GcodeThumbnailProvider.csproj", "{809AA252-E17A-4FA2-B0A1-0450976B763F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-GcodeThumbnailProvider", "src\modules\previewpane\UnitTests-GcodeThumbnailProvider\UnitTests-GcodeThumbnailProvider.csproj", "{133281D8-1BCE-4D07-B31E-796612A9609E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcodePreviewHandler", "src\modules\previewpane\GcodePreviewHandler\GcodePreviewHandler.csproj", "{805306FF-A562-4415-8DEF-E493BDC45918}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-GcodePreviewHandler", "src\modules\previewpane\UnitTests-GcodePreviewHandler\UnitTests-GcodePreviewHandler.csproj", "{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -995,6 +1003,30 @@ Global
 		{782A61BE-9D85-4081-B35C-1CCC9DCC1E88}.Release|x64.ActiveCfg = Release|x64
 		{782A61BE-9D85-4081-B35C-1CCC9DCC1E88}.Release|x64.Build.0 = Release|x64
 		{782A61BE-9D85-4081-B35C-1CCC9DCC1E88}.Release|x86.ActiveCfg = Release|x64
+		{809AA252-E17A-4FA2-B0A1-0450976B763F}.Debug|x64.ActiveCfg = Debug|x64
+		{809AA252-E17A-4FA2-B0A1-0450976B763F}.Debug|x64.Build.0 = Debug|x64
+		{809AA252-E17A-4FA2-B0A1-0450976B763F}.Debug|x86.ActiveCfg = Debug|x64
+		{809AA252-E17A-4FA2-B0A1-0450976B763F}.Release|x64.ActiveCfg = Release|x64
+		{809AA252-E17A-4FA2-B0A1-0450976B763F}.Release|x64.Build.0 = Release|x64
+		{809AA252-E17A-4FA2-B0A1-0450976B763F}.Release|x86.ActiveCfg = Release|x64
+		{133281D8-1BCE-4D07-B31E-796612A9609E}.Debug|x64.ActiveCfg = Debug|x64
+		{133281D8-1BCE-4D07-B31E-796612A9609E}.Debug|x64.Build.0 = Debug|x64
+		{133281D8-1BCE-4D07-B31E-796612A9609E}.Debug|x86.ActiveCfg = Debug|x64
+		{133281D8-1BCE-4D07-B31E-796612A9609E}.Release|x64.ActiveCfg = Release|x64
+		{133281D8-1BCE-4D07-B31E-796612A9609E}.Release|x64.Build.0 = Release|x64
+		{133281D8-1BCE-4D07-B31E-796612A9609E}.Release|x86.ActiveCfg = Release|x64
+		{805306FF-A562-4415-8DEF-E493BDC45918}.Debug|x64.ActiveCfg = Debug|x64
+		{805306FF-A562-4415-8DEF-E493BDC45918}.Debug|x64.Build.0 = Debug|x64
+		{805306FF-A562-4415-8DEF-E493BDC45918}.Debug|x86.ActiveCfg = Debug|x64
+		{805306FF-A562-4415-8DEF-E493BDC45918}.Release|x64.ActiveCfg = Release|x64
+		{805306FF-A562-4415-8DEF-E493BDC45918}.Release|x64.Build.0 = Release|x64
+		{805306FF-A562-4415-8DEF-E493BDC45918}.Release|x86.ActiveCfg = Release|x64
+		{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3}.Debug|x64.ActiveCfg = Debug|x64
+		{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3}.Debug|x64.Build.0 = Debug|x64
+		{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3}.Debug|x86.ActiveCfg = Debug|x64
+		{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3}.Release|x64.ActiveCfg = Release|x64
+		{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3}.Release|x64.Build.0 = Release|x64
+		{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1115,6 +1147,10 @@ Global
 		{322566EF-20DC-43A6-B9F8-616AF942579A} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{E94FD11C-0591-456F-899F-EFC0CA548336} = {322566EF-20DC-43A6-B9F8-616AF942579A}
 		{782A61BE-9D85-4081-B35C-1CCC9DCC1E88} = {322566EF-20DC-43A6-B9F8-616AF942579A}
+		{809AA252-E17A-4FA2-B0A1-0450976B763F} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{133281D8-1BCE-4D07-B31E-796612A9609E} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{805306FF-A562-4415-8DEF-E493BDC45918} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

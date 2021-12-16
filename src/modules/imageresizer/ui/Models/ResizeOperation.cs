@@ -83,17 +83,14 @@ namespace ImageResizer.Models
                     {
                         try
                         {
-                            // Detect whether metadata can copied successfully
-                            var modifiableMetadata = metadata.Clone();
-
 #if DEBUG
                             Debug.WriteLine($"### Processing metadata of file {_file}");
-                            modifiableMetadata.PrintsAllMetadataToDebugOutput();
+                            metadata.PrintsAllMetadataToDebugOutput();
 #endif
 
                             // read all metadata and build up metadata object from the scratch. Discard invalid (unreadable/unwritable) metadata.
                             var newMetadata = new BitmapMetadata(metadata.Format);
-                            var listOfMetadata = modifiableMetadata.GetListOfMetadata();
+                            var listOfMetadata = metadata.GetListOfMetadata();
                             foreach (var (metadataPath, value) in listOfMetadata)
                             {
                                 if (value is BitmapMetadata bitmapMetadata)
@@ -133,7 +130,7 @@ namespace ImageResizer.Models
                             Transform(originalFrame),
                             originalFrame.Thumbnail,
                             metadata,
-                            originalFrame.ColorContexts));
+                            null));
                 }
 
                 path = GetDestinationPath(encoder);

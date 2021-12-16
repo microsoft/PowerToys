@@ -139,20 +139,20 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         // Load Powertoys DLLs
 
         std::vector<std::wstring_view> knownModules = {
-            L"modules/FancyZones/FancyZonesModuleInterface.dll",
-            L"modules/FileExplorerPreview/powerpreview.dll",
-            L"modules/ImageResizer/ImageResizerExt.dll",
-            L"modules/KeyboardManager/KeyboardManager.dll",
-            L"modules/Launcher/Microsoft.Launcher.dll",
-            L"modules/PowerRename/PowerRenameExt.dll",
-            L"modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.dll",
-            L"modules/ColorPicker/ColorPicker.dll",
-            L"modules/Awake/AwakeModuleInterface.dll",
-            L"modules/MouseUtils/FindMyMouse.dll" ,
-            L"modules/MouseUtils/MouseHighlighter.dll"
+            L"modules/FancyZones/PowerToys.FancyZonesModuleInterface.dll",
+            L"modules/FileExplorerPreview/PowerToys.powerpreview.dll",
+            L"modules/ImageResizer/PowerToys.ImageResizerExt.dll",
+            L"modules/KeyboardManager/PowerToys.KeyboardManager.dll",
+            L"modules/Launcher/PowerToys.Launcher.dll",
+            L"modules/PowerRename/PowerToys.PowerRenameExt.dll",
+            L"modules/ShortcutGuide/ShortcutGuideModuleInterface/PowerToys.ShortcutGuideModuleInterface.dll",
+            L"modules/ColorPicker/PowerToys.ColorPicker.dll",
+            L"modules/Awake/PowerToys.AwakeModuleInterface.dll",
+            L"modules/MouseUtils/PowerToys.FindMyMouse.dll" ,
+            L"modules/MouseUtils/PowerToys.MouseHighlighter.dll"
 
         };
-        const auto VCM_PATH = L"modules/VideoConference/VideoConferenceModule.dll";
+        const auto VCM_PATH = L"modules/VideoConference/PowerToys.VideoConferenceModule.dll";
         if (const auto mf = LoadLibraryA("mf.dll"))
         {
             FreeLibrary(mf);
@@ -177,7 +177,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             }
         }
         // Start initial powertoys
-        start_initial_powertoys();
+        start_enabled_powertoys();
 
         Trace::EventLaunch(get_product_version(), isProcessElevated);
 
@@ -403,6 +403,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         MessageBoxW(nullptr, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
         result = -1;
     }
+
+    // Save settings on closing
+    auto general_settings = load_general_settings();
+    apply_general_settings(general_settings);
 
     // We need to release the mutexes to be able to restart the application
     if (msi_mutex)

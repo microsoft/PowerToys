@@ -670,7 +670,13 @@ namespace Microsoft.Plugin.Program.Programs
                         continue;
                     }
 
-                    foreach (var childDirectory in Directory.EnumerateDirectories(currentDirectory, "*", SearchOption.TopDirectoryOnly))
+                    foreach (var childDirectory in Directory.EnumerateDirectories(currentDirectory, "*", new EnumerationOptions()
+                    {
+                        // https://docs.microsoft.com/en-us/dotnet/api/system.io.enumerationoptions?view=net-6.0
+                        // Exclude directories with the Reparse Point file attribute, to avoid loops due to symbolic links / directory junction / mount points.
+                        AttributesToSkip = FileAttributes.Hidden | FileAttributes.System | FileAttributes.ReparsePoint,
+                        RecurseSubdirectories = false,
+                    }))
                     {
                         folderQueue.Enqueue(childDirectory);
                     }

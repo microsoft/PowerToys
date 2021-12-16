@@ -1,7 +1,7 @@
 name: "⭐ Feature / enhancement request"
 description: Propose something new.
 labels: 
-- Triage-Needed 
+- Needs-Triage 
 body:
 - type: textarea
   attributes: 

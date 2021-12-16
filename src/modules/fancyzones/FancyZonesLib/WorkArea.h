@@ -108,8 +108,14 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea :
     * @returns Zone index of the window
     */
     IFACEMETHOD_(ZoneIndexSet, GetWindowZoneIndexes)(HWND window) const = 0;
-    IFACEMETHOD_(void, ShowZoneWindow)() = 0;
-    IFACEMETHOD_(void, HideZoneWindow)() = 0;
+    /**
+     * Show a drawing of the zones in the work area.
+     */
+    IFACEMETHOD_(void, ShowZonesOverlay)() = 0;
+    /**
+     * Hide the drawing of the zones in the work area.
+     */
+    IFACEMETHOD_(void, HideZonesOverlay)() = 0;
     /**
      * Update currently active zone layout for this work area.
      */

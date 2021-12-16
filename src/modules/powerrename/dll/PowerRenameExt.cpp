@@ -129,7 +129,7 @@ HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemAr
         Trace::Invoked();
         // Set the application path based on the location of the dll
         std::wstring path = get_module_folderpath(g_hInst);
-        path = path + L"\\PowerRename.exe";
+        path = path + L"\\PowerToys.PowerRename.exe";
         LPTSTR lpApplicationName = (LPTSTR)path.c_str();
         // Create an anonymous pipe to stream filenames
         SECURITY_ATTRIBUTES sa;

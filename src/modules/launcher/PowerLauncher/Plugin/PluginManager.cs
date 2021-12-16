@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
@@ -52,6 +53,24 @@ namespace PowerLauncher.Plugin
                         {
                             _allPlugins = PluginConfig.Parse(Directories)
                                 .Where(x => x.Language.ToUpperInvariant() == AllowedLanguage.CSharp)
+                                .GroupBy(x => x.ID) // Deduplicates plugins by ID, choosing for each ID the highest DLL product version. This fixes issues such as https://github.com/microsoft/PowerToys/issues/14701
+                                .Select(g => g.OrderByDescending(x => // , where an upgrade didn't remove older versions of the plugins.
+                                {
+                                    try
+                                    {
+                                        // Return a comparable produce version.
+                                        var fileVersion = FileVersionInfo.GetVersionInfo(x.ExecuteFilePath);
+                                        return ((uint)fileVersion.ProductMajorPart << 48)
+                                        | ((uint)fileVersion.ProductMinorPart << 32)
+                                        | ((uint)fileVersion.ProductBuildPart << 16)
+                                        | ((uint)fileVersion.ProductPrivatePart);
+                                    }
+                                    catch (System.IO.FileNotFoundException)
+                                    {
+                                        // We'll get an error when loading the DLL later on if there's not a decent version of this plugin.
+                                        return 0U;
+                                    }
+                                }).First())
                                 .Select(x => new PluginPair(x))
                                 .ToList();
                         }
@@ -168,7 +187,7 @@ namespace PowerLauncher.Plugin
             {
                 List<Result> results = null;
                 var metadata = pair.Metadata;
-                var milliseconds = Stopwatch.Debug($"PluginManager.QueryForPlugin - Cost for {metadata.Name}", () =>
+                var milliseconds = Wox.Infrastructure.Stopwatch.Debug($"PluginManager.QueryForPlugin - Cost for {metadata.Name}", () =>
                 {
                     if (delayedExecution && (pair.Plugin is IDelayedExecutionPlugin))
                     {

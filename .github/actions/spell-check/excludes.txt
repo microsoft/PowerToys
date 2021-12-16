@@ -3,6 +3,7 @@
 (?:^|/)(?i)LICEN[CS]E
 (?:^|/)package(?:-lock)\.json$
 (?:^|/)vendor/
+(?:^|/)WindowsSettings\.json$
 /package(?:-lock|)\.json$
 /pinyindb/
 /settings-html/
@@ -12,6 +13,8 @@ ignore$
 \.bmp$
 \.dat$
 \.dll$
+\.filters$
+\.gcode$
 \.gif$
 \.gitignore$
 \.ico$
@@ -37,8 +40,8 @@ ignore$
 ^src/modules/powerrename/UWPui/pch\.h$
 ^src/modules/powerrename/UWPui/PowerRenameUWPUI\.vcxproj\.filters$
 ^src/modules/previewpane/PreviewPaneUnitTests/HelperFiles/MarkdownWithHTMLImageTag\.txt$
+^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag.txt$
 ^tools/CleanUp_tool/CleanUp_tool\.vcxproj\.filters$
 ^\.github/
 ^\.github/actions/spell-check/
 ^\.gitmodules$
-(?:^|/)WindowsSettings\.json$
