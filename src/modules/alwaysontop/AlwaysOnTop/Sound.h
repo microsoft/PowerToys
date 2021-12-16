@@ -8,26 +8,34 @@
 class Sound
 {
 public:
+    enum class Type
+    {
+        On,
+        Off,
+    };
+    
     Sound()
         : isPlaying(false)
     {}
 
-    void Play()
+    void Play(Type type)
     {
-        if (!isPlaying)
+        BOOL success = false;
+        switch (type)
         {
-            std::thread soundThread([&]() {
-                isPlaying = true;
+        case Type::On:
+            success = PlaySound(TEXT("Media\\Speech On.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            break;
+        case Type::Off:
+            success = PlaySound(TEXT("Media\\Speech Off.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            break;
+        default:
+            break;
+        }
 
-                auto soundPlayed = PlaySound((LPCTSTR)SND_ALIAS_SYSTEMASTERISK, NULL, SND_ALIAS_ID);
-                if (!soundPlayed)
-                {
-                    Logger::error(L"Sound playing error");
-                }
-
-                isPlaying = false;
-            });
-            soundThread.detach();  
+        if (!success)
+        {
+            Logger::error(L"Sound playing error");
         }
     }
 

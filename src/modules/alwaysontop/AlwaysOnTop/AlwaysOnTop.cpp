@@ -107,6 +107,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         return;
     }
 
+    Sound::Type soundType = Sound::Type::Off;
     bool topmost = IsTopmost(window);
     if (topmost)
     {
@@ -123,6 +124,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         if (PinTopmostWindow(window))
         {
+            soundType = Sound::Type::On;
             if (m_settings.GetSettings().enableFrame)
             {
                 AssignTracker(window);
@@ -136,7 +138,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
 
     if (m_settings.GetSettings().enableSound)
     {
-        m_sound.Play();    
+        m_sound.Play(soundType);    
     }
 }
 
