@@ -138,26 +138,38 @@
         },
         {
             "MatchedPath": [
-                "*.resources.dll",
-                "PowerToys.ActionRunner.exe",
-                "PowerToys.Update.exe",
-                "BackgroundActivatorDLL.dll",
-                "Notifications.dll",
-                "os-detection.dll",
-                "PowerToys.exe",
-                "PowerToysInterop.dll",
-                "BugReportTool\\BugReportTool.exe",
-                "WebcamReportTool\\WebcamReportTool.exe",
-                "Telemetry.dll",
-                "ManagedTelemetry.dll",
-                "ManagedCommon.dll",
-                "Microsoft.PowerToys.Common.UI.dll",
-                "Microsoft.PowerToys.Settings.UI.Lib.dll"
+                "Microsoft.Search.Interop.dll",
+                "ModernWpf.dll",
+                "ModernWpf.Controls.dll", 
+                "System.IO.Abstractions.dll", 
+                "Mono.Cecil.dll",
+                "Mono.Cecil.Mdb.dll",
+                "Mono.Cecil.Pdb.dll",
+                "Mono.Cecil.Rocks.dll",
+                "NLog.dll",
+                "HtmlAgilityPack.dll",
+                "Markdig.Signed.dll",
+                "Mages.Core.dll",
+                "JetBrains.Annotations.dll",
+                "ICSharpCode.SharpZipLib.dll",
+                "NLog.Extensions.Logging.dll", 
+                "concrt140_app.dll",
+                "msvcp140_1_app.dll",
+                "msvcp140_2_app.dll",
+                "msvcp140_app.dll",
+                "vcamp140_app.dll",
+                "vccorlib140_app.dll",
+                "vcomp140_app.dll",
+                "vcruntime140_1_app.dll",
+                "vcruntime140_app.dll", 
+                "ColorCode.Core.dll", 
+                "ColorCode.UWP.dll",
+                "UnitsNet.dll"
             ],
             "SigningInfo": {
                 "Operations": [
                     {
-                        "KeyCode": "CP-230012",
+                        "KeyCode": "CP-231522",
                         "OperationSetCode": "SigntoolSign",
                         "Parameters": [
                             {
@@ -173,6 +185,10 @@
                                 "parameterValue": "/fd \"SHA256\""
                             },
                             {
+                                "parameterName": "Append",
+                                "parameterValue": "/as"
+                            },
+                            {
                                 "parameterName": "PageHash",
                                 "parameterValue": "/NPH"
                             },
@@ -185,7 +201,7 @@
                         "ToolVersion": "1.0"
                     },
                     {
-                        "KeyCode": "CP-230012",
+                        "KeyCode": "CP-231522",
                         "OperationSetCode": "SigntoolVerify",
                         "Parameters": [],
                         "ToolName": "sign",
