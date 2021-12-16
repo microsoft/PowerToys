@@ -186,7 +186,7 @@ jobs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
       FolderPath: 'x86/$(BuildConfiguration)' # Video conf uses x86 and x64.  This path will also work for PowerToysSetupCustomActions which is in a different root dir
       signType: batchSigning
-      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_core.json'
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_vcm.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 #### END SIGNING 
 ## END MAIN
