@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<LCX SchemaVersion="6.0" Name="S:\src\modules\previewpane\SvgPreviewHandler\Resource.resx" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="pl-PL" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+<LCX SchemaVersion="6.0" Name="S:\src\modules\previewpane\SvgPreviewHandler\Properties\Resource.resx" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="tr-TR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
   <OwnedComments>
     <Cmt Name="Dev" />
     <Cmt Name="LcxAdmin" />
@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Some elements have been blocked to help prevent the sender from identifying your computer. Open this item to view all elements.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Niektóre elementy zostały zablokowane, aby zapobiec identyfikowaniu komputera przez nadawcę. Otwórz ten element, aby wyświetlić wszystkie elementy.]]></Val>
+            <Val><![CDATA[Gönderenin bilgisayarınızı tanımlamasına engel olmak için bazı öğeler engellendi. Tüm öğeleri görüntülemek için bu öğeyi açın.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The Svg could not be preview due to an internal error in Svg Preview Handler.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nie można wyświetlić podglądu pliku SVG z powodu błędu wewnętrznego w programie obsługi podglądu plików SVG.]]></Val>
+            <Val><![CDATA[SVG Önizleme İşleyicisindeki bir iç hata nedeniyle SVG önizlemesi görüntülenemedi.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
