@@ -64,7 +64,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
                     if (thumbnail == null)
                     {
                         _infoBarAdded = true;
-                        AddTextBoxControl(Resource.GcodeWithoutEmbeddedThumbnails);
+                        AddTextBoxControl(Properties.Resource.GcodeWithoutEmbeddedThumbnails);
                     }
                     else
                     {
@@ -212,7 +212,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
             PowerToysTelemetry.Log.WriteEvent(new GcodeFilePreviewError { Message = exception.Message });
             Controls.Clear();
             _infoBarAdded = true;
-            AddTextBoxControl(Resource.GcodeNotPreviewedError);
+            AddTextBoxControl(Properties.Resource.GcodeNotPreviewedError);
             base.DoPreview(dataSource);
         }
     }

@@ -87,7 +87,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     if (blocked)
                     {
                         _infoBarAdded = true;
-                        AddTextBoxControl(Resource.BlockedElementInfoText);
+                        AddTextBoxControl(Properties.Resource.BlockedElementInfoText);
                     }
 
                     AddBrowserControl(svgData);
@@ -172,7 +172,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = exception.Message });
             Controls.Clear();
             _infoBarAdded = true;
-            AddTextBoxControl(Resource.SvgNotPreviewedError);
+            AddTextBoxControl(Properties.Resource.SvgNotPreviewedError);
             base.DoPreview(dataSource);
         }
     }
