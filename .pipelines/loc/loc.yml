@@ -1,7 +1,7 @@
 trigger: none
 pr: none
 schedules:
-  - cron: "0 3 * * 2-6" # Run at 03:00 UTC Tursday through Saturday (After the work day in Pacific, Mon-Fri)
+  - cron: "0 3 * * 2-6" # Run at 03:00 UTC Tuesday through Saturday (After the work day in Pacific, Mon-Fri)
     displayName: "Nightly Localization Build"
     branches:
       include: main
