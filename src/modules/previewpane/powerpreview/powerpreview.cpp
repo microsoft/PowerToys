@@ -38,6 +38,10 @@ PowerPreviewModule::PowerPreviewModule() :
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_PDF_SETTINGS_DESCRIPTION),
                                       .registryChanges = getPdfPreviewHandlerChangeSet(installationDir, installPerUser) });
 
+    m_fileExplorerModules.push_back({ .settingName = L"gcode-previewer-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_GCODE_SETTINGS_DESCRIPTION),
+                                      .registryChanges = getGcodePreviewHandlerChangeSet(installationDir, installPerUser) });
+
     m_fileExplorerModules.push_back({ .settingName = L"svg-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                                       .registryChanges = getSvgThumbnailHandlerChangeSet(installationDir, installPerUser) });
@@ -45,6 +49,10 @@ PowerPreviewModule::PowerPreviewModule() :
     m_fileExplorerModules.push_back({ .settingName = L"pdf-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PDF_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                                       .registryChanges = getPdfThumbnailHandlerChangeSet(installationDir, installPerUser) });
+    
+    m_fileExplorerModules.push_back({ .settingName = L"gcode-thumbnail-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_GCODE_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
+                                      .registryChanges = getGcodeThumbnailHandlerChangeSet(installationDir, installPerUser) });
 
     try
     {

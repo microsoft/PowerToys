@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,7 +8,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Windows.Input;
-using Microsoft.PowerToys.Common.UI;
+using Common.UI;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
@@ -202,7 +202,7 @@ namespace PowerLauncher
         }
 
         /// <summary>
-        /// Add new plugins and updates additional options for existing ones
+        /// Add new plugins and updates properties and additional options for existing ones
         /// </summary>
         private static void UpdateSettings(PowerLauncherSettings settings)
         {
@@ -214,6 +214,9 @@ namespace PowerLauncher
                     var additionalOptions = CombineAdditionalOptions(defaultPlugins[plugin.Id].AdditionalOptions, plugin.AdditionalOptions);
                     plugin.Name = defaultPlugins[plugin.Id].Name;
                     plugin.Description = defaultPlugins[plugin.Id].Description;
+                    plugin.Author = defaultPlugins[plugin.Id].Author;
+                    plugin.IconPathDark = defaultPlugins[plugin.Id].IconPathDark;
+                    plugin.IconPathLight = defaultPlugins[plugin.Id].IconPathLight;
                     defaultPlugins[plugin.Id] = plugin;
                     defaultPlugins[plugin.Id].AdditionalOptions = additionalOptions;
                 }

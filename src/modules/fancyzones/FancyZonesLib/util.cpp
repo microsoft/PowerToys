@@ -16,8 +16,8 @@
 // Non-Localizable strings
 namespace NonLocalizable
 {
-    const wchar_t PowerToysAppPowerLauncher[] = L"POWERLAUNCHER.EXE";
-    const wchar_t PowerToysAppFZEditor[] = L"FANCYZONESEDITOR.EXE";
+    const wchar_t PowerToysAppPowerLauncher[] = L"POWERTOYS.POWERLAUNCHER.EXE";
+    const wchar_t PowerToysAppFZEditor[] = L"POWERTOYS.FANCYZONESEDITOR.EXE";
     const wchar_t SplashClassName[] = L"MsoSplash";
 }
 
@@ -367,6 +367,22 @@ namespace FancyZonesUtils
         // Do it again, allowing Windows to resize the window and set correct scaling
         // This fixes Issue #365
         ::SetWindowPlacement(window, &placement);
+    }
+
+    void SwitchToWindow(HWND window) noexcept
+    {
+        // Check if the window is minimized
+        if (IsIconic(window))
+        {
+            // Show the window since SetForegroundWindow fails on minimized windows
+            ShowWindow(window, SW_RESTORE);
+        }
+
+        // This is a hack to bypass the restriction on setting the foreground window
+        INPUT inputs[1] = { { .type = INPUT_MOUSE } };
+        SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+
+        SetForegroundWindow(window);
     }
 
     bool HasNoVisibleOwner(HWND window) noexcept

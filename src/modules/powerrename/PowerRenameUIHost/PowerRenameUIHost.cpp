@@ -116,8 +116,27 @@ void AppWindow::CreateAndShowWindow()
     LoadStringW(m_instance, IDS_APP_TITLE, title, ARRAYSIZE(title));
 
     // hardcoded width and height (1200 x 600) - with WinUI 3, it should auto-scale to the content
-    m_window = CreateWindowW(c_WindowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 1200, 600, nullptr, nullptr, m_instance, this);
+    int windowWidth = 1200;
+    int windowHeight = 600;
+    m_window = CreateWindowW(c_WindowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, windowWidth, windowHeight, nullptr, nullptr, m_instance, this);
     THROW_LAST_ERROR_IF(!m_window);
+
+    POINT cursorPosition{};
+    if (GetCursorPos(&cursorPosition))
+    {
+        HMONITOR hMonitor = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
+        MONITORINFOEX monitorInfo;
+        monitorInfo.cbSize = sizeof(MONITORINFOEX);
+        GetMonitorInfo(hMonitor, &monitorInfo);
+
+        SetWindowPos(m_window,
+                     HWND_TOP,
+                     monitorInfo.rcWork.left + (monitorInfo.rcWork.right - monitorInfo.rcWork.left - windowWidth) / 2,
+                     monitorInfo.rcWork.top + (monitorInfo.rcWork.bottom - monitorInfo.rcWork.top - windowHeight) / 2,
+                     0,
+                     0,
+                     SWP_NOSIZE);
+    }
 
     ShowWindow(m_window, SW_SHOWNORMAL);
     UpdateWindow(m_window);
@@ -134,6 +153,7 @@ bool AppWindow::OnCreate(HWND, LPCREATESTRUCT) noexcept
     try
     {
         PopulateExplorerItems();
+        UpdateCounts();
         SetHandlers();
         ReadSettings();
     }
@@ -246,11 +266,6 @@ void AppWindow::PopulateExplorerItems()
     m_prManager->GetVisibleItemCount(&count);
     Logger::debug(L"Number of visible items: {}", count);
 
-    UINT currDepth = 0;
-    std::stack<UINT> parents{};
-    UINT prevId = 0;
-    parents.push(0);
-
     for (UINT i = 0; i < count; ++i)
     {
         CComPtr<IPowerRenameItem> renameItem;
@@ -274,23 +289,8 @@ void AppWindow::PopulateExplorerItems()
             bool isSubFolderContent = false;
             winrt::check_hresult(renameItem->GetIsFolder(&isFolder));
 
-            if (depth > currDepth)
-            {
-                parents.push(prevId);
-                currDepth = depth;
-            }
-            else
-            {
-                while (currDepth > depth)
-                {
-                    parents.pop();
-                    currDepth--;
-                }
-                currDepth = depth;
-            }
             m_mainUserControl.AddExplorerItem(
-                id, originalName, newName == nullptr ? hstring{} : hstring{ newName }, isFolder ? 0 : 1, parents.top(), selected);
-            prevId = id;
+                id, originalName, newName == nullptr ? hstring{} : hstring{ newName }, isFolder ? 0 : 1, depth, selected);
         }
     }
 }
@@ -638,6 +638,7 @@ void AppWindow::SwitchView()
 
     m_prManager->SwitchFilter(0);
     PopulateExplorerItems();
+    UpdateCounts();
 }
 
 void AppWindow::Rename(bool closeWindow)
@@ -851,11 +852,12 @@ void AppWindow::UpdateCounts()
         m_selectedCount = selectedCount;
         m_renamingCount = renamingCount;
 
-        // Update counts UI elements if/when added
-
         // Update Rename button state
         m_mainUserControl.UIUpdatesItem().ButtonRenameEnabled(renamingCount > 0);
     }
+
+    m_mainUserControl.UIUpdatesItem().OriginalCount(std::to_wstring(m_mainUserControl.ExplorerItems().Size()));
+    m_mainUserControl.UIUpdatesItem().RenamedCount(std::to_wstring(m_renamingCount));
 }
 
 HRESULT AppWindow::OnItemAdded(_In_ IPowerRenameItem* renameItem)
@@ -878,7 +880,6 @@ HRESULT AppWindow::OnUpdate(_In_ IPowerRenameItem* renameItem)
         }
     }
 
-    UpdateCounts();
     return S_OK;
 }
 
@@ -935,6 +936,7 @@ HRESULT AppWindow::OnRegExCompleted(_In_ DWORD threadId)
         }
     }
 
+    UpdateCounts();
     return S_OK;
 }
 

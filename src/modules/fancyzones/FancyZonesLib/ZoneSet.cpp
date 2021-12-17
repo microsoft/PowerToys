@@ -594,18 +594,16 @@ ZoneSet::CycleTabs(HWND window, bool reverse) noexcept
     for (;;)
     {
         auto next = GetNextTab(indexSet, window, reverse);
-        if (next == NULL)
-        {
-            break;
-        }
 
-        auto success = SetForegroundWindow(next);
-        if (!success && GetLastError() == ERROR_INVALID_WINDOW_HANDLE)
+        // Determine whether the window still exists
+        if (!IsWindow(next))
         {
             // Dismiss the encountered window since it was probably closed
             DismissWindow(next);
             continue;
         }
+
+        SwitchToWindow(next);
 
         break;
     }

@@ -177,7 +177,7 @@ namespace Awake.Core
             // No keep-awake menu item.
             CheckButtonToolStripMenuItem? passiveMenuItem = new CheckButtonToolStripMenuItem
             {
-                Text = "Off (Passive)",
+                Text = "Off (Keep using the selected power plan)",
             };
 
             passiveMenuItem.Checked = mode == AwakeMode.PASSIVE;

@@ -7,7 +7,7 @@
 
 #define FILE_DESCRIPTION "PowerToys Notifications"
 #define INTERNAL_NAME "Notifications"
-#define ORIGINAL_FILENAME "BackgroundActivatorDLL.dll"
+#define ORIGINAL_FILENAME "PowerToys.BackgroundActivatorDLL.dll"
 
 // Non-localizable
 //////////////////////////////

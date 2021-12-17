@@ -10,12 +10,25 @@ namespace Microsoft.Plugin.Uri.UriHelper
 {
     public class ExtendedUriParser : IUriParser
     {
-        public bool TryParse(string input, out System.Uri result)
+        public bool TryParse(string input, out System.Uri result, out bool isWebUri)
         {
             if (string.IsNullOrEmpty(input))
             {
                 result = default;
+                isWebUri = false;
                 return false;
+            }
+
+            // Handling URL with only scheme, typically mailto or application uri.
+            // Do nothing, return the result without urlBuilder
+            if (input.EndsWith(":", StringComparison.OrdinalIgnoreCase)
+                && !input.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                && !input.Contains("/", StringComparison.OrdinalIgnoreCase)
+                && !input.All(char.IsDigit))
+            {
+                result = new System.Uri(input);
+                isWebUri = false;
+                return true;
             }
 
             // Handle common cases UriBuilder does not handle
@@ -23,9 +36,11 @@ namespace Microsoft.Plugin.Uri.UriHelper
             if (input.EndsWith(":", StringComparison.CurrentCulture)
                 || input.EndsWith(".", StringComparison.CurrentCulture)
                 || input.EndsWith(":/", StringComparison.CurrentCulture)
+                || input.EndsWith("://", StringComparison.CurrentCulture)
                 || input.All(char.IsDigit))
             {
                 result = default;
+                isWebUri = false;
                 return false;
             }
 
@@ -35,27 +50,31 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 var hadDefaultPort = urlBuilder.Uri.IsDefaultPort;
                 urlBuilder.Port = hadDefaultPort ? -1 : urlBuilder.Port;
 
-                if (input.Contains("HTTP://", StringComparison.OrdinalIgnoreCase))
+                if (input.StartsWith("HTTP://", StringComparison.OrdinalIgnoreCase))
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttp;
+                    isWebUri = true;
                 }
                 else if (input.Contains(":", StringComparison.OrdinalIgnoreCase) &&
-                        !input.Contains("http", StringComparison.OrdinalIgnoreCase) &&
+                        !input.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
                         !input.Contains("[", StringComparison.OrdinalIgnoreCase))
                 {
                     // Do nothing, leave unchanged
+                    isWebUri = false;
                 }
                 else
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttps;
+                    isWebUri = true;
                 }
 
                 result = urlBuilder.Uri;
                 return true;
             }
-            catch (System.UriFormatException)
+            catch (UriFormatException)
             {
                 result = default;
+                isWebUri = false;
                 return false;
             }
         }

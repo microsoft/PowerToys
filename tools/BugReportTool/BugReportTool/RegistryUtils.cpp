@@ -16,7 +16,9 @@ namespace
     { HKEY_CLASSES_ROOT, L"CLSID\\{45769bcc-e8fd-42d0-947e-02beef77a1f5}" },
     { HKEY_CLASSES_ROOT, L"AppID\\{CF142243-F059-45AF-8842-DBBE9783DB14}" },
     { HKEY_CLASSES_ROOT, L"CLSID\\{07665729-6243-4746-95b7-79579308d1b2}" },
+    { HKEY_CLASSES_ROOT, L"CLSID\\{ec52dea8-7c9f-4130-a77b-1737d0418507}" },
     { HKEY_CLASSES_ROOT, L"CLSID\\{BCC13D15-9720-4CC4-8371-EA74A274741E}" },
+    { HKEY_CLASSES_ROOT, L"CLSID\\{BFEE99B4-B74D-4348-BCA5-E757029647FF}" },
     { HKEY_CLASSES_ROOT, L"CLSID\\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\\InprocServer32" },
     { HKEY_CLASSES_ROOT, L"CLSID\\{0440049F-D1DC-4E46-B27B-98393D79486B}" },
     { HKEY_CLASSES_ROOT, L"AllFileSystemObjects\\ShellEx\\ContextMenuHandlers\\PowerRenameExt" },
@@ -25,13 +27,16 @@ namespace
     { HKEY_CLASSES_ROOT, L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" },
     { HKEY_CLASSES_ROOT, L".md\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
     { HKEY_CLASSES_ROOT, L".pdf\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
-    { HKEY_CLASSES_ROOT, L".pdf\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" }
+    { HKEY_CLASSES_ROOT, L".pdf\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" },
+    { HKEY_CLASSES_ROOT, L".gcode\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
+    { HKEY_CLASSES_ROOT, L".gcode\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" }
     };
 
     vector<tuple<HKEY, wstring, wstring>> registryValues = {
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{ddee2b8a-6807-48a6-bb20-2338174ff779}" },
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}" },
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{07665729-6243-4746-95b7-79579308d1b2}" },
+        { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{ec52dea8-7c9f-4130-a77b-1737d0418507}" },
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"prevhost.exe" },
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"dllhost.exe" }
     };

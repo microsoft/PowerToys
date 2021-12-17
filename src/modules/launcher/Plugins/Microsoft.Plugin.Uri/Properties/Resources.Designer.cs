@@ -70,7 +70,7 @@ namespace Microsoft.Plugin.Uri.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open Default Browser.
+        ///   Looks up a localized string similar to Open default browser.
         /// </summary>
         public static string Microsoft_plugin_uri_default_browser {
             get {
@@ -79,7 +79,16 @@ namespace Microsoft.Plugin.Uri.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to open URL.
+        ///   Looks up a localized string similar to Open URI.
+        /// </summary>
+        public static string Microsoft_plugin_uri_open {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_uri_open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to open URI.
         /// </summary>
         public static string Microsoft_plugin_uri_open_failed {
             get {

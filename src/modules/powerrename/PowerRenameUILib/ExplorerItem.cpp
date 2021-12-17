@@ -2,15 +2,18 @@
 #include "ExplorerItem.h"
 #include "ExplorerItem.g.cpp"
 
+namespace {
+    const wchar_t fileImagePath[] = L"ms-appx:///Assets/file.png";
+    const wchar_t folderImagePath[] = L"ms-appx:///Assets/folder.png";
+}
+
 namespace winrt::PowerRenameUILib::implementation
 {
-    ExplorerItem::ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, bool checked) :
-        m_id{ id }, m_idStr{ std::to_wstring(id) }, m_original{ original }, m_renamed{ renamed }, m_type{ type }, m_checked{ checked }
+    ExplorerItem::ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked) :
+        m_id{ id }, m_idStr{ std::to_wstring(id) }, m_original{ original }, m_renamed{ renamed }, m_type{ type }, m_depth{ depth }, m_checked{ checked }
     {
-        if (m_type == static_cast<UINT>(ExplorerItemType::Folder))
-        {
-            m_children = winrt::single_threaded_observable_vector<PowerRenameUILib::ExplorerItem>();
-        }
+        m_imagePath = (m_type == static_cast<UINT>(ExplorerItemType::Folder)) ? folderImagePath : fileImagePath;
+        m_highlight = m_checked && !m_renamed.empty() ? Windows::UI::Xaml::Visibility::Visible : Windows::UI::Xaml::Visibility::Collapsed;
     }
 
     int32_t ExplorerItem::Id()
@@ -48,7 +51,23 @@ namespace winrt::PowerRenameUILib::implementation
         {
             m_renamed = value;
             m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Renamed" });
+
+            auto visibility = m_checked && !m_renamed.empty() ? Windows::UI::Xaml::Visibility::Visible : Windows::UI::Xaml::Visibility::Collapsed;
+            if (m_highlight != visibility)
+            {
+                m_highlight = visibility;
+                m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Highlight" });
+            }
         }
+    }
+
+    double ExplorerItem::Indentation() {
+        return static_cast<double>(m_depth) * 12;
+    }
+
+    hstring ExplorerItem::ImagePath()
+    {
+        return m_imagePath;
     }
 
     int32_t ExplorerItem::Type()
@@ -76,21 +95,19 @@ namespace winrt::PowerRenameUILib::implementation
         {
             m_checked = value;
             m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Checked" });
+
+            auto visibility = m_checked && !m_renamed.empty() ? Windows::UI::Xaml::Visibility::Visible : Windows::UI::Xaml::Visibility::Collapsed;
+            if (m_highlight != visibility)
+            {
+                m_highlight = visibility;
+                m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Highlight" });
+            }
         }
     }
 
-    winrt::Windows::Foundation::Collections::IObservableVector<winrt::PowerRenameUILib::ExplorerItem> ExplorerItem::Children()
+    winrt::Windows::UI::Xaml::Visibility ExplorerItem::Highlight()
     {
-        return m_children;
-    }
-
-    void ExplorerItem::Children(Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::ExplorerItem> const& value)
-    {
-        if (m_children != value)
-        {
-            m_children = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Children" });
-        }
+        return m_highlight;
     }
 
     winrt::event_token ExplorerItem::PropertyChanged(winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler const& handler)

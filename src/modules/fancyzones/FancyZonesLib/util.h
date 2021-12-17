@@ -195,6 +195,8 @@ namespace FancyZonesUtils
     // Parameter rect must be in screen coordinates (e.g. obtained from GetWindowRect)
     void SizeWindowToRect(HWND window, RECT rect) noexcept;
 
+    void SwitchToWindow(HWND window) noexcept;
+
     bool HasNoVisibleOwner(HWND window) noexcept;
     bool IsStandardWindow(HWND window);
     bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;

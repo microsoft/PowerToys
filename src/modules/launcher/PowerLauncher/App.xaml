@@ -1,7 +1,7 @@
 ﻿<Application x:Class="PowerLauncher.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:theming="clr-namespace:Microsoft.PowerToys.Common.UI;assembly=Microsoft.PowerToys.Common.UI"
+             xmlns:theming="clr-namespace:Common.UI;assembly=PowerToys.Common.UI"
              xmlns:ui="http://schemas.modernwpf.com/2019"
              ShutdownMode="OnMainWindowClose"
              Startup="OnStartup">

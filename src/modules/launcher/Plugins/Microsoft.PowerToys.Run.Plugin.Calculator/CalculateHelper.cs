@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             @"sinh\s*\(|cosh\s*\(|tanh\s*\(|arsinh\s*\(|arcosh\s*\(|artanh\s*\(|" +
             @"pi|" +
             @"==|~=|&&|\|\||" +
-            @"e|[0-9]|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
+            @"e|[0-9]|0x[0-9a-fA-F]+|0b[01]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
             @")+$", RegexOptions.Compiled);
 
         public static bool InputValid(string input)
@@ -28,7 +28,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 throw new ArgumentNullException(paramName: nameof(input));
             }
 
-            if (input.Length <= 2)
+            bool singleDigitFactorial = input.EndsWith("!", StringComparison.InvariantCulture);
+            if (input.Length <= 2 && !singleDigitFactorial)
             {
                 return false;
             }

@@ -45,6 +45,14 @@ namespace ColorPicker.Helpers
         }
 
         /// <summary>
+        /// Convert a given <see cref="Color"/> to a float color styling(0.1f, 0.1f, 0.1f)
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>The int / 255d for each value to get value between 0 and 1</returns>
+        internal static (double red, double green, double blue) ConvertToDouble(Color color)
+            => (color.R / 255d, color.G / 255d, color.B / 255d);
+
+        /// <summary>
         /// Convert a given <see cref="Color"/> to a HSB color (hue, saturation, brightness)
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>

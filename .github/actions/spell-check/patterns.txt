@@ -12,11 +12,24 @@ https?://(?:(?:www\.|)youtube\.com|youtu.be)/[-a-zA-Z0-9?&=]*
 # msdn
 \b(?:download\.visualstudio|docs|msdn)\.microsoft\.com/[-_a-zA-Z0-9()=./]*
 
-data:[a-zA-Z=;,/0-9+-]+
-0x[0-9a-fA-F](?:\.[0-9a-fA-F]*|)[pP]
-(?:0[Xx]|U\+|#)[a-f0-9A-FGgRr]{2,}[Uu]?[Ll]{0,2}\b
+publicKeyToken=(['"]|)[0-9a-f]+\g{-1}
+\@sha256:[0-9a-f]{64}\b
+
+# data urls
+(['"])data:.*?\g{-1}
+data:[-a-zA-Z=;:/0-9+]*,\S*
+
 # uuid:
-[-<({"'>][0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[<'"})>]
+L?(["']|[-<({>]|\b)[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}(?:\g{-1}|[<})>])
+
+# c99 hex digits (not the full format, just one I've seen)
+0x[0-9a-fA-F](?:\.[0-9a-fA-F]*|)[pP]
+
+# wregex
+std::wregex\(L"[^"]*"\)
+
+# hex digits including css/html color classes:
+(?:[\\0][xX]|\\u|[uU]\+|#x?|\%23|L")[0-9a-fA-FgGrR_]{2,}(?:[uU]?[lL]{0,2}|u\d+)\b
 
 # ignore long runs of a single character:
 \b([A-Za-z])\g{-1}{3,}\b

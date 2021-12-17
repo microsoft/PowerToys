@@ -5,7 +5,7 @@
 //////////////////////////////
 // Non-localizable
 
-#define FILE_DESCRIPTION "PowerToys Runner"
+#define FILE_DESCRIPTION "PowerToys.Runner"
 #define INTERNAL_NAME "PowerToys"
 #define ORIGINAL_FILENAME "PowerToys.exe"
 

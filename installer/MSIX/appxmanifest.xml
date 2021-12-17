@@ -46,7 +46,7 @@
               <com:Class Id="0440049F-D1DC-4E46-B27B-98393D79486B"/>
             </com:ExeServer>
             <com:SurrogateServer DisplayName="ImageResizerExt">
-              <com:Class Id="51B4D7E5-7568-4234-B4BB-47FB3C016A69" Path="modules\ImageResizerExt.dll" ThreadingModel="STA"/>
+              <com:Class Id="51B4D7E5-7568-4234-B4BB-47FB3C016A69" Path="modules\PowerToys.ImageResizerExt.dll" ThreadingModel="STA"/>
             </com:SurrogateServer>
           </com:ComServer>
         </com:Extension>
@@ -87,12 +87,21 @@
             <desktop2:DesktopPreviewHandler Clsid="4F6D533B-4185-43A6-AD75-9B20034B14CA"/>
           </uap3:FileTypeAssociation>
         </uap:Extension>
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap3:FileTypeAssociation Name="gcodepreviewhandler" desktop2:AllowSilentDefaultTakeOver="true">
+            <uap:SupportedFileTypes>
+              <uap:FileType>.gcode</uap:FileType>
+            </uap:SupportedFileTypes>
+            <desktop2:DesktopPreviewHandler Clsid="516CB24F-562F-422F-8B01-6B580474D093"/>
+          </uap3:FileTypeAssociation>
+        </uap:Extension>
         <com:Extension Category="windows.comServer">
           <com:ComServer>
             <com:SurrogateServer DisplayName="Preview Handler" AppId="E39A92FE-D89A-417B-9B9D-F0B6BD564B36" SystemSurrogate="PreviewHost">
-              <com:Class Id="74619BDA-A66B-451D-864C-A7726F5FE650" Path="modules\powerpreview.dll" ThreadingModel="Both"/>
-              <com:Class Id="E0907A95-6F9A-4D1B-A97A-7D9D2648881E" Path="modules\powerpreview.dll" ThreadingModel="Both"/>
-              <com:Class Id="4F6D533B-4185-43A6-AD75-9B20034B14CA" Path="modules\powerpreview.dll" ThreadingModel="Both"/>
+              <com:Class Id="74619BDA-A66B-451D-864C-A7726F5FE650" Path="modules\PowerToys.powerpreview.dll" ThreadingModel="Both"/>
+              <com:Class Id="E0907A95-6F9A-4D1B-A97A-7D9D2648881E" Path="modules\PowerToys.powerpreview.dll" ThreadingModel="Both"/>
+              <com:Class Id="4F6D533B-4185-43A6-AD75-9B20034B14CA" Path="modules\PowerToys.powerpreview.dll" ThreadingModel="Both"/>
+              <com:Class Id="516CB24F-562F-422F-8B01-6B580474D093" Path="modules\PowerToys.powerpreview.dll" ThreadingModel="Both"/>
             </com:SurrogateServer>
           </com:ComServer>
         </com:Extension>

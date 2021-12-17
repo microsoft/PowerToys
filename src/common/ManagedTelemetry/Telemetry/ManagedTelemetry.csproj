@@ -15,6 +15,7 @@
     <PackageTags>PowerToys</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyName>PowerToys.ManagedTelemetry</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

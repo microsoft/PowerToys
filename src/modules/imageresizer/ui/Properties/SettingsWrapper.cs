@@ -9,7 +9,7 @@ namespace ImageResizer.Properties
     public class SettingsWrapper
     {
         [JsonPropertyName("name")]
-        public string Name { get; set; } = "ImageResizer";
+        public string Name { get; set; } = "Image Resizer";
 
         [JsonPropertyName("version")]
         public string Version { get; set; } = "1";
