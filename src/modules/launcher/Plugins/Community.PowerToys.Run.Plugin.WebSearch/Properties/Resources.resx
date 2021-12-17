@@ -130,7 +130,7 @@
     <value>Web Search</value>
   </data>
   <data name="plugin_open" xml:space="preserve">
-    <value>Search the web in the default browser</value>
+    <value>Search the web in {0}</value>
   </data>
   <data name="plugin_search_failed" xml:space="preserve">
     <value>Failed to open the default browser</value>

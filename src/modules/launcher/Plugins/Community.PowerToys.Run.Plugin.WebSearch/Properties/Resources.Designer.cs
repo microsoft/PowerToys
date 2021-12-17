@@ -97,7 +97,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search the web in the default browser.
+        ///   Looks up a localized string similar to Search the web in {0}.
         /// </summary>
         public static string plugin_open {
             get {

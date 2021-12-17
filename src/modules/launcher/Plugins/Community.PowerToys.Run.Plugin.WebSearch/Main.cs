@@ -31,6 +31,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
         private string _searchEngineUrl;
 
+        private string _browserName;
         private string _browserIconPath;
         private string _browserPath;
         private string _defaultIconPath;
@@ -98,8 +99,8 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 string searchTerm = query.Search;
 
                 // Don't include in global results if the query is a URI (and if the option NotGlobalIfUri is enabled)
-                if (AreResultsGlobal()
-                    && _notGlobalIfUri
+                if (_notGlobalIfUri
+                    && AreResultsGlobal()
                     && IsURI(searchTerm))
                 {
                     return results;
@@ -107,11 +108,10 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
                 var result = new Result
                 {
-                    Title = $"{searchTerm} - {Properties.Resources.plugin_name}",
-                    TitleHighlightData = Enumerable.Range(0, searchTerm.Length).ToList(),
-                    SubTitle = Properties.Resources.plugin_open,
+                    Title = searchTerm,
+                    SubTitle = string.Format(System.Globalization.CultureInfo.CurrentCulture, Properties.Resources.plugin_open, _browserName),
                     QueryTextDisplay = searchTerm,
-                    IcoPath = _browserIconPath,
+                    IcoPath = _defaultIconPath,
                 };
 
                 if (_searchEngineUrl is null)
@@ -230,15 +230,25 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
         {
             try
             {
-                var progId = GetRegistryValue(
+                string progId = GetRegistryValue(
                     "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice",
                     "ProgId");
 
                 if (progId.StartsWith("Opera", StringComparison.OrdinalIgnoreCase))
                 {
                     // Opera user preferences file:
-                    string prefFile = System.IO.File.ReadAllText(
-                        $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\Opera Software\\{(progId.Contains("GX", StringComparison.OrdinalIgnoreCase) ? "Opera GX Stable" : "Opera Stable")}\\Preferences");
+                    string prefFile;
+
+                    if (progId.Contains("GX", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _browserName = "Opera GX";
+                        prefFile = System.IO.File.ReadAllText($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\Opera Software\\Opera GX Stable\\Preferences");
+                    }
+                    else
+                    {
+                        _browserName = "Opera";
+                        prefFile = System.IO.File.ReadAllText($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\Opera Software\\Opera Stable\\Preferences");
+                    }
 
                     string url = ExtraStringMethods.GetJSONStringValue(prefFile, new string[] { "default_search_provider_data", "template_url_data", "url" });
                     url = url.Replace("{searchTerms}", "{0}", StringComparison.Ordinal);
@@ -259,6 +269,31 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 }
                 else
                 {
+                    if (progId.StartsWith("Chrome", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _browserName = "Chrome";
+                    }
+                    else if (progId.StartsWith("MSEdge", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _browserName = "Edge";
+                    }
+                    else if (progId.Contains("Firefox", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _browserName = "Firefox";
+                    }
+                    else if (progId.StartsWith("Vivaldi", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _browserName = "Vivaldi";
+                    }
+                    else if (progId.StartsWith("IE", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _browserName = "Internet Explorer";
+                    }
+                    else
+                    {
+                        _browserName = "the default browser";
+                    }
+
                     _searchEngineUrl = null;
                 }
 
