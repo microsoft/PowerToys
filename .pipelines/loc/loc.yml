@@ -4,7 +4,8 @@ schedules:
   - cron: "0 3 * * 2-6" # Run at 03:00 UTC Tuesday through Saturday (After the work day in Pacific, Mon-Fri)
     displayName: "Nightly Localization Build"
     branches:
-      include: main
+      include:
+        - main
     always: false # only run if there's code changes!
 
 pool:
