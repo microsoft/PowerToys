@@ -37,7 +37,7 @@
     <Compile Update="Properties\Resource.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Properties\Resource.resx</DependentUpon>
+      <DependentUpon>Resource.resx</DependentUpon>
     </Compile>
   </ItemGroup>
   
@@ -73,7 +73,7 @@
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resource.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Properties\Resource.Designer.cs</LastGenOutput>
+      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 </Project>
