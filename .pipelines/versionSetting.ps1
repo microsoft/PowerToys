@@ -13,11 +13,11 @@ $versionRegex = "(\d+)\.(\d+)\.(\d+)"
 
 if($versionNumber -match $versionRegEx)
 {
-  $buildDayOfYear = (Get-Date).DayofYear;
-  $buildTime = Get-Date -Format HH;
-  # $buildTime = Get-Date -Format HHmmss;
-  # $buildYear = Get-Date -Format yy;
-  # $revision = [string]::Format("{0}{1}{2}", $buildYear, $buildDayOfYear, $buildTime )
+  #$buildDayOfYear = (Get-Date).DayofYear;
+  #$buildTime = Get-Date -Format HH;
+  #$buildTime = Get-Date -Format HHmmss;
+  #$buildYear = Get-Date -Format yy;
+  #$revision = [string]::Format("{0}{1}{2}", $buildYear, $buildDayOfYear, $buildTime )
 
   # max UInt16, 65535
   #$revision = [string]::Format("{0}{1}", $buildDayOfYear, $buildTime )
@@ -26,8 +26,9 @@ if($versionNumber -match $versionRegEx)
   $versionNumber = [int]::Parse($matches[1]).ToString() + "." + [int]::Parse($matches[2]).ToString() + "." + [int]::Parse($matches[3]).ToString() # + "." + $revision
   Write-Host "Version Number" $versionNumber
 }
-else{
-	throw "Build format does not match the expected pattern (buildName_w.x.y.z)"
+else
+{
+  throw "Build format does not match the expected pattern (buildName_w.x.y.z)"
 }
 
 $verPropWriteFileLocation = $PSScriptRoot + '/../src/Version.props';
