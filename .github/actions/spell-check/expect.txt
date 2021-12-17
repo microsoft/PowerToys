@@ -659,6 +659,7 @@ Filterx
 finalizer
 findfast
 findstr
+Firefox
 FIXEDFILEINFO
 FLASHZONES
 FLASHZONESONQUICKSWITCH
