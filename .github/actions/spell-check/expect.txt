@@ -707,7 +707,7 @@ hmon
 hmonitor
 HOLDENTER
 HOLDESC
-Homepage
+homepage
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 hostname
