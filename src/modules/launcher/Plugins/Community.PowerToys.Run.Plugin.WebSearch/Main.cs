@@ -25,7 +25,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
         private const string NotGlobalIfUri = nameof(NotGlobalIfUri);
 
         /// <summary>If true, dont show global result on queries that are URIs</summary>
-        private bool _notGlobalIfUri = true;
+        private bool _notGlobalIfUri;
 
         private PluginInitContext _context;
 
@@ -48,7 +48,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             {
                 Key = NotGlobalIfUri,
                 DisplayLabel = Properties.Resources.plugin_global_if_uri,
-                Value = true,
+                Value = false,
             },
         };
 
@@ -251,16 +251,30 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                     }
 
                     string url = ExtraStringMethods.GetJSONStringValue(prefFile, new string[] { "default_search_provider_data", "template_url_data", "url" });
-                    url = url.Replace("{searchTerms}", "{0}", StringComparison.Ordinal);
 
-                    for (int i = ExtraStringMethods.GetStrNthIndex(url, '}', 2); i != -1; i = ExtraStringMethods.GetStrNthIndex(url, '}', 2))
+                    if (url is null)
                     {
-                        for (int j = i - 1; j > 0; --j)
+                        // "default_search_provider_data" doesn't exist in Preferences if the user hasn't searched for the first time,
+                        // therefore we set `url` to opera's default search engine.
+                        url = "https://www.google.com/search?client=opera&q={0}&sourceid=opera";
+                    }
+                    else
+                    {
+                        url = url
+                            .Replace("{searchTerms}", "{0}", StringComparison.Ordinal)
+                            .Replace("{inputEncoding}", "UTF-8", StringComparison.Ordinal)
+                            .Replace("{outputEncoding}", "UTF-8", StringComparison.Ordinal);
+
+                        // just in case there are other url parameters
+                        for (int i = ExtraStringMethods.GetStrNthIndex(url, '}', 2); i != -1; i = ExtraStringMethods.GetStrNthIndex(url, '}', 2))
                         {
-                            if (url[j] == '&')
+                            for (int j = i - 1; j > 0; --j)
                             {
-                                url = url.Remove(j, i - j + 1);
-                                break;
+                                if (url[j] == '&')
+                                {
+                                    url = url.Remove(j, i - j + 1);
+                                    break;
+                                }
                             }
                         }
                     }
