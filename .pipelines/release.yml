@@ -1,8 +1,3 @@
-# TODOs:
-# add in loc
-# need to rebase off main to get latest DLL namings
-# Signing needs to work
-
 # This build should never run as CI or against a pull request.
 trigger: none
 pr: none
@@ -58,11 +53,6 @@ jobs:
       scriptName: .pipelines/versionSetting.ps1
       arguments: -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
 
-# TODO: verify with Dustin this is needed
-#  - task: PkgESSetupBuild@12
-#    displayName: Package ES - Setup Build
-#    inputs:
-#      disableOutputRedirect: true
   - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
     displayName: 'Download Localization Files -- PowerToys 37400'
     inputs:
