@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<LCX SchemaVersion="6.0" Name="S:\src\modules\previewpane\SvgPreviewHandler\Resource.resx" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="it-IT" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+<LCX SchemaVersion="6.0" Name="S:\src\modules\previewpane\SvgPreviewHandler\Properties\Resource.resx" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="ko-KR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
   <OwnedComments>
     <Cmt Name="Dev" />
     <Cmt Name="LcxAdmin" />
@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Some elements have been blocked to help prevent the sender from identifying your computer. Open this item to view all elements.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Alcuni elementi sono stati bloccati per impedire al mittente di identificare il computer. Aprire questa voce per visualizzare tutti gli elementi.]]></Val>
+            <Val><![CDATA[보낸 사람이 사용자 컴퓨터를 확인하지 못하도록 일부 요소가 차단되었습니다. 이 항목을 열어 모든 요소를 표시하세요.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The Svg could not be preview due to an internal error in Svg Preview Handler.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è stato possibile visualizzare in anteprima il file SVG a causa di un errore interno in Gestore anteprima SVG.]]></Val>
+            <Val><![CDATA[SVG 미리 보기 처리기의 내부 오류로 인해 SVG를 미리 볼 수 없습니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

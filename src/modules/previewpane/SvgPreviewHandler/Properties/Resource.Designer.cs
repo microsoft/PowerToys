@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.PowerToys.PreviewHandler.Gcode {
+namespace Microsoft.PowerToys.PreviewHandler.Svg.Properties {
     using System;
     
     
@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resource {
@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.PowerToys.PreviewHandler.Gcode.Resource", typeof(Resource).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.PowerToys.PreviewHandler.Svg.Properties.Resource", typeof(Resource).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,20 +61,20 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This G-code could not be previewed due to an internal error..
+        ///   Looks up a localized string similar to Some elements have been blocked to help prevent the sender from identifying your computer. Open this item to view all elements..
         /// </summary>
-        internal static string GcodeNotPreviewedError {
+        internal static string BlockedElementInfoText {
             get {
-                return ResourceManager.GetString("GcodeNotPreviewedError", resourceCulture);
+                return ResourceManager.GetString("BlockedElementInfoText", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This G-code does not contain any embedded thumbnails..
+        ///   Looks up a localized string similar to The Svg could not be preview due to an internal error in Svg Preview Handler..
         /// </summary>
-        internal static string GcodeWithoutEmbeddedThumbnails {
+        internal static string SvgNotPreviewedError {
             get {
-                return ResourceManager.GetString("GcodeWithoutEmbeddedThumbnails", resourceCulture);
+                return ResourceManager.GetString("SvgNotPreviewedError", resourceCulture);
             }
         }
     }

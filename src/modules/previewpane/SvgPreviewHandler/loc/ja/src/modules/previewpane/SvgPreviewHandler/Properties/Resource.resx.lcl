@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<LCX SchemaVersion="6.0" Name="S:\src\modules\previewpane\SvgPreviewHandler\Resource.resx" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="pt-BR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+<LCX SchemaVersion="6.0" Name="S:\src\modules\previewpane\SvgPreviewHandler\Properties\Resource.resx" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="ja-JP" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
   <OwnedComments>
     <Cmt Name="Dev" />
     <Cmt Name="LcxAdmin" />
@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Some elements have been blocked to help prevent the sender from identifying your computer. Open this item to view all elements.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Alguns elementos foram bloqueados para ajudar a impedir que o remetente identifique o seu computador. Abra este item para exibir todos os elementos.]]></Val>
+            <Val><![CDATA[お客様のコンピューターを送信者が識別できないようするため、一部の要素がブロックされました。すべての要素を表示するには、この項目を開きます。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The Svg could not be preview due to an internal error in Svg Preview Handler.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Não foi possível visualizar a SVG devido a um erro interno no Manipulador de Visualização de SVG.]]></Val>
+            <Val><![CDATA[SVG プレビュー ハンドラーで内部エラーが発生したため、SVG をプレビューできませんでした。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

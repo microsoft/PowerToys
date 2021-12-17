@@ -310,6 +310,7 @@ CREATEWINDOWFAILED
 cref
 critsec
 crlf
+cron
 Crossdevice
 CRSEL
 crutkas
@@ -348,6 +349,7 @@ CXVIRTUALSCREEN
 cxxopts
 CYSMICON
 CYVIRTUALSCREEN
+czf
 cziplib
 Dac
 dacl
@@ -1496,6 +1498,7 @@ printf
 prm
 proactively
 PROCESSKEY
+PRODEXT
 PRODUCTVERSION
 Progman
 programdata
