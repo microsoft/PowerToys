@@ -10,13 +10,8 @@ $Items = Get-ChildItem . -Recurse -Filter *.resx
 # in a Properties directory. We **DO NOT** want to move
 # resource files from other projects (since we use resx files
 # in standard Win32 projects as well.)
-#
-# **SPECIAL CASE**
-# The SvgPreviewHandler project did not follow this convention.
-# Renaming it now might cause a re-localization event.
 $Items = $Items | Where-Object {
-	$_.Directory.Parent.Name -Eq "Properties" -Or
-		$_.Directory.Parent.Name -Eq "SvgPreviewHandler"
+	$_.Directory.Parent.Name -Eq "Properties"
 }
 
 If ($Items.Count -Le 0) {
