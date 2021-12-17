@@ -31,7 +31,7 @@ UWP differs from this as it expects the resources to have the same Resources.res
 
 For example, `path\en-us\Resources.resw` for English and `path\fr-fr\Resources.resw` for French.
 
-Since the pipeline generates it in this format, [a script is run](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/build-localization.cmd#L29-L31) to move these resw files to the correct format expected by all UWP projects. Currently the only UWP project is [Microsoft.PowerToys.Settings.UI](https://github.com/microsoft/PowerToys/tree/main/src/core/Microsoft.PowerToys.Settings.UI). The script used for moving the resources can be [found here](https://github.com/microsoft/PowerToys/blob/main/tools/localization/move_uwp_resources.ps1). The equivalent full language IDs for each shortened language ID obtained from the pipeline has been hardcoded in the script.
+Since the pipeline generates it in this format, [a script is run](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/build-localization.cmd#L29-L31) to move these resw files to the correct format expected by all UWP projects. Currently the only UWP project is [Settings.UI](https://github.com/microsoft/PowerToys/tree/main/src/core/Settings.UI). The script used for moving the resources can be [found here](https://github.com/microsoft/PowerToys/blob/main/tools/localization/move_uwp_resources.ps1). The equivalent full language IDs for each shortened language ID obtained from the pipeline has been hardcoded in the script.
 
 ## Enabling localization on a new project
 To enable localization on a new project, the first step is to create a file `LocProject.json` in the project root.

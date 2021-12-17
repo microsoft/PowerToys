@@ -42,7 +42,7 @@ HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
     return hr;
 }
 
-HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, DWORD flags)
+HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, DWORD flags, bool isFolder)
 {
     std::locale::global(std::locale(""));
     HRESULT hr = E_INVALIDARG;
@@ -50,19 +50,38 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
     {
         if (flags & Uppercase)
         {
-            if (flags & NameOnly)
+            if (isFolder)
             {
-                std::wstring stem = fs::path(source).stem().wstring();
-                std::transform(stem.begin(), stem.end(), stem.begin(), ::towupper);
-                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
-            }
-            else if (flags & ExtensionOnly)
-            {
-                std::wstring extension = fs::path(source).extension().wstring();
-                if (!extension.empty())
+                hr = StringCchCopy(result, cchMax, source);
+                if (SUCCEEDED(hr))
                 {
-                    std::transform(extension.begin(), extension.end(), extension.begin(), ::towupper);
-                    hr = StringCchPrintf(result, cchMax, L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+                    std::transform(result, result + wcslen(result), result, ::towupper);
+                }
+            }
+            else
+            {
+                if (flags & NameOnly)
+                {
+                    std::wstring stem = fs::path(source).stem().wstring();
+                    std::transform(stem.begin(), stem.end(), stem.begin(), ::towupper);
+                    hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
+                }
+                else if (flags & ExtensionOnly)
+                {
+                    std::wstring extension = fs::path(source).extension().wstring();
+                    if (!extension.empty())
+                    {
+                        std::transform(extension.begin(), extension.end(), extension.begin(), ::towupper);
+                        hr = StringCchPrintf(result, cchMax, L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+                    }
+                    else
+                    {
+                        hr = StringCchCopy(result, cchMax, source);
+                        if (SUCCEEDED(hr))
+                        {
+                            std::transform(result, result + wcslen(result), result, ::towupper);
+                        }
+                    }
                 }
                 else
                 {
@@ -73,30 +92,41 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                     }
                 }
             }
-            else
+        }
+        else if (flags & Lowercase)
+        {
+            if (isFolder)
             {
                 hr = StringCchCopy(result, cchMax, source);
                 if (SUCCEEDED(hr))
                 {
-                    std::transform(result, result + wcslen(result), result, ::towupper);
+                    std::transform(result, result + wcslen(result), result, ::towlower);
                 }
             }
-        }
-        else if (flags & Lowercase)
-        {
-            if (flags & NameOnly)
+            else
             {
-                std::wstring stem = fs::path(source).stem().wstring();
-                std::transform(stem.begin(), stem.end(), stem.begin(), ::towlower);
-                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
-            }
-            else if (flags & ExtensionOnly)
-            {
-                std::wstring extension = fs::path(source).extension().wstring();
-                if (!extension.empty())
+                if (flags & NameOnly)
                 {
-                    std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
-                    hr = StringCchPrintf(result, cchMax, L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+                    std::wstring stem = fs::path(source).stem().wstring();
+                    std::transform(stem.begin(), stem.end(), stem.begin(), ::towlower);
+                    hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
+                }
+                else if (flags & ExtensionOnly)
+                {
+                    std::wstring extension = fs::path(source).extension().wstring();
+                    if (!extension.empty())
+                    {
+                        std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+                        hr = StringCchPrintf(result, cchMax, L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+                    }
+                    else
+                    {
+                        hr = StringCchCopy(result, cchMax, source);
+                        if (SUCCEEDED(hr))
+                        {
+                            std::transform(result, result + wcslen(result), result, ::towlower);
+                        }
+                    }
                 }
                 else
                 {
@@ -107,22 +137,14 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                     }
                 }
             }
-            else
-            {
-                hr = StringCchCopy(result, cchMax, source);
-                if (SUCCEEDED(hr))
-                {
-                    std::transform(result, result + wcslen(result), result, ::towlower);
-                }
-            }
         }
         else if (flags & Titlecase)
         {
             if (!(flags & ExtensionOnly))
             {
                 std::vector<std::wstring> exceptions = { L"a", L"an", L"to", L"the", L"at", L"by", L"for", L"in", L"of", L"on", L"up", L"and", L"as", L"but", L"or", L"nor" };
-                std::wstring stem = fs::path(source).stem().wstring();
-                std::wstring extension = fs::path(source).extension().wstring();
+                std::wstring stem = isFolder ? source : fs::path(source).stem().wstring();
+                std::wstring extension = isFolder ? L"" : fs::path(source).extension().wstring();
 
                 size_t stemLength = stem.length();
                 bool isFirstWord = true;
@@ -171,8 +193,8 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
         {
             if (!(flags & ExtensionOnly))
             {
-                std::wstring stem = fs::path(source).stem().wstring();
-                std::wstring extension = fs::path(source).extension().wstring();
+                std::wstring stem = isFolder ? source : fs::path(source).stem().wstring();
+                std::wstring extension = isFolder ? L"" : fs::path(source).extension().wstring();
 
                 size_t stemLength = stem.length();
 

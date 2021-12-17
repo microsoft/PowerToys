@@ -9,10 +9,10 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Common.UI;
 using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
-using Microsoft.PowerToys.Common.UI;
 using ModernWpf.Controls;
 
 namespace FancyZonesEditor

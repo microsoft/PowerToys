@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using Common.UI;
 using ManagedCommon;
-using Microsoft.PowerToys.Common.UI;
 
 namespace Wox.Plugin
 {
