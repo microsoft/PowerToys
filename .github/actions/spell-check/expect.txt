@@ -154,6 +154,7 @@ Bicubic
 bigbar
 bigobj
 binaryformatter
+binlog
 binskim
 bitmapimage
 BITMAPINFO
@@ -174,6 +175,7 @@ Bokm
 BOKMAL
 boolalpha
 Bools
+Boostrapper
 bootstrapper
 Bopomofo
 BOTTOMALIGN
@@ -462,6 +464,7 @@ diffing
 difftime
 DIIRFLAG
 dimm
+directshow
 dirs
 DISABLEASACTIONKEY
 dispid
@@ -509,6 +512,7 @@ dst
 DSVG
 DText
 dupenv
+DUSTIN
 dutil
 DVASPECT
 DVASPECTINFO
@@ -551,6 +555,7 @@ efa
 efgh
 EFile
 egistry
+ekus
 elif
 elseif
 Emoji
@@ -580,6 +585,7 @@ ERRORMESSAGE
 ERRORTITLE
 ESettings
 esize
+esrp
 estdir
 etcore
 etl
@@ -692,6 +698,7 @@ gabime
 GAC
 gacutil
 Gamebar
+GBarm
 GBs
 GCLP
 gcnew
@@ -718,6 +725,7 @@ GNumber
 google
 GPTR
 Grayscale
+gtm
 gui
 guiddef
 GUITHREADINFO
@@ -786,8 +794,8 @@ hmon
 hmonitor
 HOLDENTER
 HOLDESC
-homljgmgpmcbpjbnjpfijnhipfkiclkd
 Homepage
+homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 hostname
 hotkeycontrol
@@ -818,6 +826,7 @@ html
 htt
 http
 HTTRANSPARENT
+Hvci
 hwb
 HWINEVENTHOOK
 hwnd
@@ -1298,6 +1307,7 @@ MIIM
 millis
 mimetype
 mindaro
+Minimatch
 Minimizeallwindows
 MINIMIZEBOX
 miniz
@@ -1381,6 +1391,7 @@ NAMECHANGE
 nameof
 NAMEONLY
 namespace
+namings
 NATIVEFNTCTL
 NCACTIVATE
 ncc
@@ -1477,6 +1488,7 @@ Noto
 NOTRACK
 NOUPDATE
 NOZORDER
+NPH
 npm
 npos
 NResize
@@ -1558,6 +1570,7 @@ PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
 pathcch
+Pathto
 PAUDIO
 pbc
 Pbgra
@@ -1601,6 +1614,9 @@ PKEY
 placeholders
 plib
 PLK
+ploc
+ploca
+plocm
 plugin
 pluginsmodel
 plvdi
@@ -1704,6 +1720,7 @@ pushd
 PVOID
 pwa
 pwcs
+pwsh
 PWSTR
 pwsz
 pwtd
@@ -1711,6 +1728,7 @@ qianlifeng
 qit
 QITAB
 QITABENT
+qps
 Queryable
 QUERYENDSESSION
 QUERYOPEN
@@ -1803,6 +1821,7 @@ resw
 resx
 retval
 rexit
+rfc
 rfind
 rgb
 RGBQUAD
@@ -1826,6 +1845,7 @@ roslyn
 royvou
 Rpc
 RRF
+rrr
 rshift
 Rsp
 rst
@@ -1902,6 +1922,7 @@ Setttings
 SETWORKAREA
 sfgao
 SFGAOF
+SFP
 SHAREIMAGELISTS
 sharpkeys
 SHCNE
@@ -1949,11 +1970,13 @@ sidepanel
 siex
 SIGABRT
 sigdn
+SIGNINGSCENARIO
 signtool
 SINGLEKEY
 singlekeyremapcontrol
 SINGLESEL
 singletones
+sipolicy
 SIZEBOX
 sizeg
 Sizename
@@ -1979,13 +2002,14 @@ Soref
 SORTDOWN
 SOURCECLIENTAREAONLY
 SOURCEHEADER
+sourcesdirectory
 spamming
 spdisp
 spdlog
 spdo
 spdth
-spec'ing
 specialfolder
+spec'ing
 spesi
 splitwstring
 sppd
@@ -2124,7 +2148,9 @@ tbody
 tchar
 tcscpy
 TCustom
+tdbuild
 TDevice
+telem
 tellg
 Templated
 templatenamespace
@@ -2352,13 +2378,13 @@ wdksetup
 wdkvsix
 wdp
 wdupenv
-We'd
 weakme
 webcam
 webclient
 webpack
 webpage
 website
+We'd
 wekyb
 Wevtapi
 wgpocpl
@@ -2373,6 +2399,7 @@ wikipedia
 wil
 wildcards
 winapi
+winappdriver
 wincodec
 Wincodecsdk
 wincolor
@@ -2404,6 +2431,7 @@ Winhook
 winkey
 WINL
 winmd
+WINMSAPP
 winnt
 winres
 winrt
@@ -2522,31 +2550,3 @@ ZONESETCHANGE
 Zoneszonabletester
 Zoomusingmagnifier
 zzz
-binlog
-Boostrapper
-directshow
-DUSTIN
-ekus
-esrp
-GBarm
-gtm
-Hvci
-Minimatch
-namings
-NPH
-Pathto
-ploc
-ploca
-plocm
-pwsh
-qps
-rfc
-rrr
-SFP
-SIGNINGSCENARIO
-sipolicy
-sourcesdirectory
-tdbuild
-telem
-winappdriver
-WINMSAPP
