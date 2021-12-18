@@ -1,5 +1,4 @@
 <Project>
-	<Import Project="restore_git_submodules.props" Condition="'$(RestoreGitSubmodulesImported)' == ''" />
 	<ItemDefinitionGroup>
 		<ClCompile>
 			<AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

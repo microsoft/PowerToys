@@ -139,6 +139,7 @@ Bicubic
 bigbar
 bigobj
 binaryformatter
+binlog
 binskim
 bitmapimage
 BITMAPINFO
@@ -158,6 +159,7 @@ Bokm
 BOKMAL
 boolalpha
 Bools
+Boostrapper
 bootstrapper
 Bopomofo
 BOTTOMALIGN
@@ -417,6 +419,7 @@ diffing
 difftime
 DIIRFLAG
 dimm
+directshow
 dirs
 DISABLEASACTIONKEY
 dispid
@@ -456,6 +459,8 @@ dshow
 dst
 DSVG
 DText
+dupenv
+DUSTIN
 dutil
 DVASPECT
 DVASPECTINFO
@@ -493,6 +498,7 @@ editshortcutswindow
 efgh
 EFile
 egistry
+ekus
 elif
 elseif
 Emoji
@@ -520,6 +526,8 @@ ERRORMESSAGE
 ERRORTITLE
 ESettings
 esize
+esrp
+estdir
 etcore
 etl
 etw
@@ -611,6 +619,8 @@ FZE
 gabime
 GAC
 gacutil
+Gamebar
+GBarm
 GBs
 GCLP
 gcnew
@@ -635,6 +645,8 @@ globals
 GNumber
 google
 GPTR
+Grayscale
+gtm
 gui
 guiddef
 GUITHREADINFO
@@ -723,6 +735,7 @@ htcfreek
 HTHUMBNAIL
 Htmdid
 HTTRANSPARENT
+Hvci
 hwb
 HWINEVENTHOOK
 hwnd
@@ -1143,6 +1156,8 @@ MIIM
 millis
 mimetype
 mindaro
+Minimatch
+Minimizeallwindows
 MINIMIZEBOX
 miniz
 minlevel
@@ -1221,6 +1236,7 @@ MYICON
 NAMECHANGE
 nameof
 namespace
+namings
 NATIVEFNTCTL
 NCACTIVATE
 ncc
@@ -1312,6 +1328,8 @@ Noto
 NOTRACK
 NOUPDATE
 NOZORDER
+NPH
+npm
 npos
 NResize
 ntdll
@@ -1425,6 +1443,9 @@ PKBDLLHOOKSTRUCT
 PKEY
 plib
 PLK
+ploc
+ploca
+plocm
 plugin
 pluginsmodel
 PMSIHANDLE
@@ -1509,6 +1530,7 @@ pushd
 PVOID
 pwa
 pwcs
+pwsh
 PWSTR
 pwsz
 pwtd
@@ -1517,6 +1539,7 @@ Qin
 qit
 QITAB
 QITABENT
+qps
 Queryable
 QUERYENDSESSION
 QUERYOPEN
@@ -1604,6 +1627,7 @@ resw
 resx
 retval
 rexit
+rfc
 rfind
 RGBQUAD
 rgbs
@@ -1626,6 +1650,7 @@ roslyn
 royvou
 Rpc
 RRF
+rrr
 rshift
 Rsp
 rst
@@ -1695,6 +1720,8 @@ Setttings
 SETWORKAREA
 sfgao
 SFGAOF
+SFP
+SHAREIMAGELISTS
 sharpkeys
 SHCNE
 SHCNF
@@ -1740,10 +1767,12 @@ sid
 siex
 SIGABRT
 sigdn
+SIGNINGSCENARIO
 signtool
 SINGLEKEY
 singlekeyremapcontrol
 singletones
+sipolicy
 SIZEBOX
 sizeg
 Sizename
@@ -1767,11 +1796,14 @@ somil
 Soref
 SOURCECLIENTAREAONLY
 SOURCEHEADER
+sourcesdirectory
+spamming
 spdisp
 spdlog
 spdo
-spec'ing
+spdth
 specialfolder
+spec'ing
 spesi
 splitwstring
 sprintf
@@ -1898,6 +1930,7 @@ tcscpy
 TCustom
 tdbuild
 TDevice
+telem
 tellg
 Templated
 templatenamespace
@@ -2108,6 +2141,7 @@ webclient
 webpack
 webpage
 website
+We'd
 wekyb
 Wevtapi
 wgpocpl
@@ -2122,6 +2156,7 @@ wikipedia
 wil
 wildcards
 winapi
+winappdriver
 wincodec
 Wincodecsdk
 wincolor
@@ -2152,6 +2187,7 @@ Winhook
 winkey
 WINL
 winmd
+WINMSAPP
 winnt
 winres
 winrt
