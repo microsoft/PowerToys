@@ -3,7 +3,7 @@
   <Import Project="..\packages\WiX.3.11.2\build\wix.props" Condition="Exists('..\packages\WiX.3.11.2\build\wix.props')" />
   <Import Project="..\..\src\Version.props" />
   <PropertyGroup>
-      <DefineConstants>Version=$(Version)</DefineConstants>
+    <DefineConstants>Version=$(Version)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
@@ -73,6 +73,10 @@
     <Error Condition="!Exists('..\packages\WiX.3.11.2\build\wix.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WiX.3.11.2\build\wix.props'))" />
   </Target>
   <PropertyGroup>
+    <!-- THIS IS AN INNER LOOP OPTIMIZATION
+    The build pipeline builds the Settings and Launcher projects for Publication
+    using a specific profile. If you're doing local installer builds, this will
+    simulate the build pipeline doing that for you. -->
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.18362.0
 SET PTRoot=..\..\..\..

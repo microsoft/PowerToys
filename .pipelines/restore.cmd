@@ -1,5 +1,8 @@
 cd /D "%~dp0"
 
+REM Just in case CDPx (Legacy) doesn't do it
+git submodule update --init --recursive
+
 nuget restore ../PowerToys.sln || exit /b 1
 
 powershell.exe -Command "Invoke-WebRequest -OutFile %tmp%\wdksetup.exe https://go.microsoft.com/fwlink/p/?linkid=2085767"
