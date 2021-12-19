@@ -303,7 +303,7 @@ namespace ColorPicker.Controls
             {
                 var converter = new System.Drawing.ColorConverter();
 
-                // "FormatHexColorString()" is needed to add hashtag if missing and convert to convert the hex code from three characters to six charaters. Without this we get format exceptions and incorrect color values.
+                // "FormatHexColorString()" is needed to add hashtag if missing and to convert the hex code from three to six characters. Without this we get format exceptions and incorrect color values.
                 var color = (System.Drawing.Color)converter.ConvertFromString(FormatHexColorString(HexCode.Text));
                 _ignoreHexChanges = true;
                 SetColorFromTextBoxes(color);
