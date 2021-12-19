@@ -437,7 +437,8 @@
                                              GotKeyboardFocus="HexCode_GotKeyboardFocus"
                                              TextChanged="HexCode_TextChanged"
                                              TextWrapping="Wrap"
-                                             MaxLength="7" />
+                                             MaxLength="7"
+                                             CharacterCasing="Upper" />
                                 </StackPanel>
 
                                 <Button Margin="0,32,0,0"
