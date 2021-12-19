@@ -302,7 +302,7 @@ namespace ColorPicker.Controls
             {
                 var converter = new System.Drawing.ColorConverter();
 
-                var color = (System.Drawing.Color)converter.ConvertFromString(HexCode.Text);
+                var color = (System.Drawing.Color)converter.ConvertFromString(FormatHexColorString(HexCode.Text));
                 _ignoreHexChanges = true;
                 SetColorFromTextBoxes(color);
                 _ignoreHexChanges = false;
@@ -329,6 +329,25 @@ namespace ColorPicker.Controls
         private static string ColorToHex(Color color)
         {
             return "#" + BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty, StringComparison.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Formats the hex code string to be accepted by <see cref="ConvertFromString()"/> of <see cref="ColorConverter.ColorConverter"/>. We are adding hashtag at the beginning if neede and convert from three characters to six characters code.
+        /// </summary>
+        /// <param name="hexCodeText">The string we read from the hex text box.</param>
+        /// <returns>Formatted string with hashtag and six characters of hex code.</returns>
+        private static string FormatHexColorString(string hexCodeText)
+        {
+            if (hexCodeText.Length == 3 | hexCodeText.Length == 4)
+            {
+                // Hex with or without hashtag and three characters
+                return Regex.Replace(hexCodeText, "^#?([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$", "#$1$1$2$2$3$3");
+            }
+            else
+            {
+                // Hex with or without hashtag and six characters
+                return Regex.Match(hexCodeText, "^#.*$").Success ? hexCodeText : "#" + hexCodeText;
+            }
         }
 
         private void HexCode_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
