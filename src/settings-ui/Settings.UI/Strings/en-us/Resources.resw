@@ -384,7 +384,7 @@
     <value>Executable name</value>
   </data>
   <data name="PowerLauncher_MaximumNumberOfResults.Header" xml:space="preserve">
-    <value>Maximum number of results</value>
+    <value>Number of results shown before scrolling</value>
   </data>
   <data name="PowerLauncher_OpenPowerLauncher.Header" xml:space="preserve">
     <value>Open PowerToys Run</value>
