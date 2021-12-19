@@ -72,7 +72,7 @@ namespace ColorPicker.Controls
             control._ignoreHexChanges = true;
             control._ignoreRGBChanges = true;
 
-            control.HexCode.Text = ColorToHex(newColor, control.HexCode.Text);
+            control.HexCode.Text = ColorToHex(newColor);
             control.RNumberBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
             control.GNumberBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
             control.BNumberBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
@@ -166,6 +166,7 @@ namespace ColorPicker.Controls
         {
             if (!_ignoreHexChanges)
             {
+                // Second parameter is set to keep the hashtag if typed by the user before
                 HexCode.Text = ColorToHex(currentColor, HexCode.Text);
             }
 
@@ -243,7 +244,7 @@ namespace ColorPicker.Controls
             var originalColorBackground = new SolidColorBrush(_originalColor);
             CurrentColorButton.Background = originalColorBackground;
 
-            HexCode.Text = ColorToHex(_originalColor, HexCode.Text);
+            HexCode.Text = ColorToHex(_originalColor);
         }
 
 #pragma warning disable CA1822 // Mark members as static
