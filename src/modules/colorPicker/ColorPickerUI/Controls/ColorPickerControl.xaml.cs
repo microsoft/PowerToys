@@ -290,8 +290,8 @@ namespace ColorPicker.Controls
         {
             var newValue = (sender as TextBox).Text;
 
-            // support hex with 3 and 6 characters
-            var reg = new Regex("^#([0-9A-Fa-f]{3}){1,2}$");
+            // support hex with 3 and 6 characters and optional with hashtag
+            var reg = new Regex("^#?([0-9A-Fa-f]{3}){1,2}$");
 
             if (!reg.IsMatch(newValue))
             {
