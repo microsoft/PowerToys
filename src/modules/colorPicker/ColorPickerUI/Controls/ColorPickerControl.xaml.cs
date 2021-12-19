@@ -350,7 +350,7 @@ namespace ColorPicker.Controls
             else
             {
                 // Hex with or without hashtag and six characters
-                return Regex.Match(hexCodeText, "^#.*$").Success ? hexCodeText : "#" + hexCodeText;
+                return hexCodeText.StartsWith("#", StringComparison.InvariantCulture) ? hexCodeText : "#" + hexCodeText;
             }
         }
 
