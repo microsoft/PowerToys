@@ -72,7 +72,7 @@ namespace ColorPicker.Controls
             control._ignoreHexChanges = true;
             control._ignoreRGBChanges = true;
 
-            control.HexCode.Text = ColorToHex(newColor);
+            control.HexCode.Text = ColorToHex(newColor, control.HexCode.Text);
             control.RNumberBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
             control.GNumberBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
             control.BNumberBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
@@ -166,7 +166,7 @@ namespace ColorPicker.Controls
         {
             if (!_ignoreHexChanges)
             {
-                HexCode.Text = ColorToHex(currentColor);
+                HexCode.Text = ColorToHex(currentColor, HexCode.Text);
             }
 
             if (!_ignoreRGBChanges)
@@ -243,7 +243,7 @@ namespace ColorPicker.Controls
             var originalColorBackground = new SolidColorBrush(_originalColor);
             CurrentColorButton.Background = originalColorBackground;
 
-            HexCode.Text = ColorToHex(_originalColor);
+            HexCode.Text = ColorToHex(_originalColor, HexCode.Text);
         }
 
 #pragma warning disable CA1822 // Mark members as static
@@ -326,9 +326,13 @@ namespace ColorPicker.Controls
             UpdateTextBoxesAndCurrentColor(Color.FromRgb(color.R, color.G, color.B));
         }
 
-        private static string ColorToHex(Color color)
+        private static string ColorToHex(Color color, string oldValue = "")
         {
-            return "#" + BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty, StringComparison.InvariantCulture);
+            string newHexString = BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty, StringComparison.InvariantCulture);
+
+            // Return only with hashtag if user typed it before
+            bool addHashtag = oldValue.StartsWith("#", StringComparison.InvariantCulture);
+            return addHashtag ? "#" + newHexString : newHexString;
         }
 
         /// <summary>
