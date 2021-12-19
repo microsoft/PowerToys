@@ -31,7 +31,7 @@
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=IsEnabled}" />
+                        <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=IsEnabled}" x:Uid="ToggleSwitch"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 

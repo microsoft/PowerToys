@@ -24,7 +24,7 @@
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAwake.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" HorizontalAlignment="Right"/>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch" HorizontalAlignment="Right"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
@@ -69,7 +69,7 @@
 
                     <controls:Setting x:Uid="Awake_EnableDisplayKeepAwake" Icon="&#xE7FB;">
                         <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" x:Uid="ToggleSwitch" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 

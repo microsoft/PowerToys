@@ -165,7 +165,7 @@
                                       IsEnabled="{Binding AutoUpdatesEnabled}" 
                                       Visibility="{Binding Mode=OneWay, Path=IsAdmin, Converter={StaticResource VisibleIfTrueConverter}}">
                         <controls:Setting.ActionContent>
-                            <ToggleSwitch  IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
+                            <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                     </controls:SettingsGroup>
@@ -194,7 +194,7 @@
                                                          x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
                                     </controls:Setting.Description>
                                     <controls:Setting.ActionContent>
-                                        <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=RunElevated}"/>
+                                        <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=RunElevated}" x:Uid="ToggleSwitch"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                                 <muxc:InfoBar x:Uid="General_RunAsAdminRequired" 
@@ -230,7 +230,7 @@
                             </controls:Setting>
                     <controls:Setting x:Uid="GeneralPage_RunAtStartUp">
                         <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=Startup}"/>
+                            <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=Startup}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>

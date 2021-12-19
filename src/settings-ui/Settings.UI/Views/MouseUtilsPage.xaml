@@ -19,7 +19,7 @@
                             <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFindMyMouse.png" ShowAsMonochrome="False" />
                         </controls:Setting.Icon>
                         <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" HorizontalAlignment="Right"/>
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" IsExpanded="False" >
@@ -93,7 +93,7 @@
                             <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseHighlighter.png" ShowAsMonochrome="False" />
                         </controls:Setting.Icon>
                         <controls:Setting.ActionContent>
-                                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" HorizontalAlignment="Right"/>
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
 
