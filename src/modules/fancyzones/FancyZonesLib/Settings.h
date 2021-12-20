@@ -33,9 +33,11 @@ struct Settings
     bool spanZonesAcrossMonitors = false;
     bool makeDraggedWindowTransparent = true;
     bool systemTheme = true;
+    bool showZoneNumber = true;
     std::wstring zoneColor = L"#AACDFF";
     std::wstring zoneBorderColor = L"#FFFFFF";
     std::wstring zoneHighlightColor = L"#008CFF";
+    std::wstring zoneNumberColor = L"#000000";
     int zoneHighlightOpacity = 50;
     OverlappingZonesAlgorithm overlappingZonesAlgorithm = OverlappingZonesAlgorithm::Smallest;
     PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, VK_OEM_3);

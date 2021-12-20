@@ -113,11 +113,17 @@
                                                                    CustomHighlightColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=OneWay}"
                                                                    CustomBorderColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=OneWay}"
                                                                    CustomInActiveColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=OneWay}"
+                                                                   CustomNumberColor="{x:Bind Path=ViewModel.ZoneNumberColor, Mode=OneWay}"
+                                                                   ShowZoneNumber="{x:Bind Path=ViewModel.ShowZoneNumber, Mode=OneWay}"
                                                                    Margin="{StaticResource ExpanderSettingMargin}" 
                                                                    HorizontalAlignment="Left"
                                                                    Width="170"
                                                                    Grid.Column="1"
                                                                    Height="86"/>
+                                
+                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <CheckBox x:Uid="FancyZones_ShowZoneNumberCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowZoneNumber}" Margin="{StaticResource ExpanderSettingMargin}"/>
+                                
                                 <controls:Setting x:Uid="FancyZones_HighlightOpacity" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <Slider Minimum="0"
@@ -127,7 +133,7 @@
                                             HorizontalAlignment="Right"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
-
+                                      
                                 <StackPanel Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource FalseToVisibleConverter}}" >
                                     <controls:Setting x:Uid="FancyZones_ZoneHighlightColor" Style="{StaticResource ExpanderContentSettingStyle}">
                                         <controls:Setting.ActionContent>
@@ -144,6 +150,12 @@
                                     <controls:Setting x:Uid="FancyZones_BorderColor" Style="{StaticResource ExpanderContentSettingStyle}">
                                         <controls:Setting.ActionContent>
                                             <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
+                                        </controls:Setting.ActionContent>
+                                    </controls:Setting>
+                                    
+                                    <controls:Setting x:Uid="FancyZones_NumberColor" Style="{StaticResource ExpanderContentSettingStyle}">
+                                        <controls:Setting.ActionContent>
+                                            <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneNumberColor, Mode=TwoWay}" />
                                         </controls:Setting.ActionContent>
                                     </controls:Setting>
                                 </StackPanel>

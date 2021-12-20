@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Drawing;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -89,6 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
             _systemTheme = Settings.Properties.FancyzonesSystemTheme.Value;
+            _showZoneNumber = Settings.Properties.FancyzonesShowZoneNumber.Value;
             EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
             _windowSwitching = Settings.Properties.FancyzonesWindowSwitching.Value;
             NextTabHotkey = Settings.Properties.FancyzonesNextTabHotkey.Value;
@@ -98,13 +97,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
 
             string inactiveColor = Settings.Properties.FancyzonesInActiveColor.Value;
-            _zoneInActiveColor = !string.IsNullOrEmpty(inactiveColor) ? inactiveColor : "#F5FCFF";
+            _zoneInActiveColor = !string.IsNullOrEmpty(inactiveColor) ? inactiveColor : ConfigDefaults.DefaultFancyZonesInActiveColor;
 
             string borderColor = Settings.Properties.FancyzonesBorderColor.Value;
-            _zoneBorderColor = !string.IsNullOrEmpty(borderColor) ? borderColor : "#FFFFFF";
+            _zoneBorderColor = !string.IsNullOrEmpty(borderColor) ? borderColor : ConfigDefaults.DefaultFancyzonesBorderColor;
 
             string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
-            _zoneHighlightColor = !string.IsNullOrEmpty(highlightColor) ? highlightColor : "#0078D7";
+            _zoneHighlightColor = !string.IsNullOrEmpty(highlightColor) ? highlightColor : ConfigDefaults.DefaultFancyZonesZoneHighlightColor;
+
+            string numberColor = Settings.Properties.FancyzonesNumberColor.Value;
+            _zoneNumberColor = !string.IsNullOrEmpty(numberColor) ? numberColor : ConfigDefaults.DefaultFancyzonesNumberColor;
 
             _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
         }
@@ -128,6 +130,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _showOnAllMonitors;
         private bool _makeDraggedWindowTransparent;
         private bool _systemTheme;
+        private bool _showZoneNumber;
 
         private int _highlightOpacity;
         private string _excludedApps;
@@ -138,6 +141,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private string _zoneInActiveColor;
         private string _zoneBorderColor;
         private string _zoneHighlightColor;
+        private string _zoneNumberColor;
 
         public bool IsEnabled
         {
@@ -540,6 +544,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool ShowZoneNumber
+        {
+            get
+            {
+                return _showZoneNumber;
+            }
+
+            set
+            {
+                if (value != _showZoneNumber)
+                {
+                    _showZoneNumber = value;
+                    Settings.Properties.FancyzonesShowZoneNumber.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         // For the following setters we use OrdinalIgnoreCase string comparison since
         // we expect value to be a hex code.
         public string ZoneHighlightColor
@@ -603,6 +625,28 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _zoneInActiveColor = value;
                     Settings.Properties.FancyzonesInActiveColor.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string ZoneNumberColor
+        {
+            get
+            {
+                return _zoneNumberColor;
+            }
+
+            set
+            {
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                if (!value.Equals(_zoneNumberColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _zoneNumberColor = value;
+                    Settings.Properties.FancyzonesNumberColor.Value = value;
                     NotifyPropertyChanged();
                 }
             }

@@ -10,6 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static readonly string DefaultFancyZonesZoneHighlightColor = "#0078D7";
         public static readonly string DefaultFancyZonesInActiveColor = "#F5FCFF";
         public static readonly string DefaultFancyzonesBorderColor = "#FFFFFF";
+        public static readonly string DefaultFancyzonesNumberColor = "#000000";
 
         // Fancy Zones Default Flags.
         public static readonly bool DefaultFancyzonesShiftDrag = true;
