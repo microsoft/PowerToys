@@ -26,7 +26,7 @@
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}"/>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
@@ -192,7 +192,7 @@
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FancyZones_WindowSwitching_GroupSettings" Icon="&#xE140;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
-                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.WindowSwitching}"/>
+                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.WindowSwitching}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
@@ -217,7 +217,7 @@
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FancyZones_OverrideSnapHotkeys" Icon="&#xE145;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
-                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}"/>
+                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
@@ -262,7 +262,7 @@
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FancyZones_QuickLayoutSwitch" Icon="&#xE737;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
-                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}"/>
+                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>

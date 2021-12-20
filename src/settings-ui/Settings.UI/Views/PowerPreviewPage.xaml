@@ -38,28 +38,32 @@
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}"
-                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"
+                                          x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD" Icon="&#xE943;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MDRenderIsEnabled}"
-                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"
+                                          x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF" Icon="&#xEA90;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}"
-                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"
+                                          x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_GCODE" Icon="&#xE81E;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODERenderIsEnabled}"
-                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"
+                                          x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>
@@ -74,21 +78,24 @@
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}"
-                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"
+                                          x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_PDF_Thumbnail" Icon="&#xEA90;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFThumbnailIsEnabled}"
-                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"
+                                          x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail" Icon="&#xE81E;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODEThumbnailIsEnabled}"
-                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"
+                                          x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>

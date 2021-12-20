@@ -1003,7 +1003,7 @@
   </Fragment>
 
   <!-- Languages for localization on build farm -->
-  <?define LocLanguageList = cs;de;es;fr;hu;it;ja;ko;nl;pl;pt-BR;pt-PT;ru;sv;tr;zh-Hans;zh-Hant?>
+  <?define LocLanguageList = cs-CZ;de-DE;es-ES;fr-FR;hu-HU;it-IT;ja-JP;ko-KR;nl-NL;pl-PL;pt-BR;pt-PT;qps-ploc;qps-ploca;qps-plocm;ru-RU;sv-SE;tr-TR;zh-CN;zh-TW?>
 
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
@@ -1013,16 +1013,48 @@
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
                     <!--NB: Ids can't contain hyphens-->
-                    <?if $(var.Language) = pt-BR?>
-                    <?define IdSafeLanguage = pt_BR?>
+                    <?if $(var.Language) = cs-CZ?>
+                        <?define IdSafeLanguage = cs_CZ?>
+                    <?elseif $(var.Language) = de-DE?>
+                        <?define IdSafeLanguage = de_DE?>
+                    <?elseif $(var.Language) = es-ES?>
+                        <?define IdSafeLanguage = es_ES?>
+                    <?elseif $(var.Language) = fr-FR?>
+                        <?define IdSafeLanguage = fr_FR?>
+                    <?elseif $(var.Language) = hu-HU?>
+                        <?define IdSafeLanguage = hu_HU?>
+                    <?elseif $(var.Language) = it-IT?>
+                        <?define IdSafeLanguage = it_IT?>
+                    <?elseif $(var.Language) = ja-JP?>
+                        <?define IdSafeLanguage = ja_JP?>
+                    <?elseif $(var.Language) = ko-KR?>
+                        <?define IdSafeLanguage = ko_KR?>
+                    <?elseif $(var.Language) = nl-NL?>
+                        <?define IdSafeLanguage = nl_NL?>
+                    <?elseif $(var.Language) = pl-PL?>
+                        <?define IdSafeLanguage = pl_PL?>
+                    <?elseif $(var.Language) = pt-BR?>
+                        <?define IdSafeLanguage = pt_BR?>
                     <?elseif $(var.Language) = pt-PT?>
-                    <?define IdSafeLanguage = pt_PT?>
-                    <?elseif $(var.Language) = zh-Hans?>
-                    <?define IdSafeLanguage = zh_Hans?>
-                    <?elseif $(var.Language) = zh-Hant?>
-                    <?define IdSafeLanguage = zh_Hant?>
+                        <?define IdSafeLanguage = pt_PT?>
+                    <?elseif $(var.Language) = qps-ploc?>
+                        <?define IdSafeLanguage = qps_ploc?>
+                    <?elseif $(var.Language) = qps-ploca?>
+                        <?define IdSafeLanguage = qps_ploca?>
+                    <?elseif $(var.Language) = qps-plocm?>
+                        <?define IdSafeLanguage = qps_plocm?>
+                    <?elseif $(var.Language) = ru-RU?>
+                        <?define IdSafeLanguage = ru_RU?>
+                    <?elseif $(var.Language) = sv-SE?>
+                        <?define IdSafeLanguage = sv_SE?>
+                    <?elseif $(var.Language) = tr-TR?>
+                        <?define IdSafeLanguage = tr_TR?>
+                    <?elseif $(var.Language) = zh-CN?>
+                        <?define IdSafeLanguage = zh_CN?>
+                    <?elseif $(var.Language) = zh-TW?>
+                        <?define IdSafeLanguage = zh_TW?>
                     <?else?>
-                    <?define IdSafeLanguage = $(var.Language)?>
+                        <?define IdSafeLanguage = $(var.Language)?>
                     <?endif?>
                     <Directory Id="Resource$(var.IdSafeLanguage)$(var.ParentDirectory)" Name="$(var.Language)" />
                     <?undef IdSafeLanguage?>
@@ -1036,14 +1068,46 @@
             <!-- Components for adding resource files -->
             <?foreach Language in $(var.LocLanguageList)?>
                 <!--NB: Ids can't contain hyphens-->
-                <?if $(var.Language) = pt-BR?>
+                <?if $(var.Language) = cs-CZ?>
+                    <?define IdSafeLanguage = cs_CZ?>
+                <?elseif $(var.Language) = de-DE?>
+                    <?define IdSafeLanguage = de_DE?>
+                <?elseif $(var.Language) = es-ES?>
+                    <?define IdSafeLanguage = es_ES?>
+                <?elseif $(var.Language) = fr-FR?>
+                    <?define IdSafeLanguage = fr_FR?>
+                <?elseif $(var.Language) = hu-HU?>
+                    <?define IdSafeLanguage = hu_HU?>
+                <?elseif $(var.Language) = it-IT?>
+                    <?define IdSafeLanguage = it_IT?>
+                <?elseif $(var.Language) = ja-JP?>
+                    <?define IdSafeLanguage = ja_JP?>
+                <?elseif $(var.Language) = ko-KR?>
+                    <?define IdSafeLanguage = ko_KR?>
+                <?elseif $(var.Language) = nl-NL?>
+                    <?define IdSafeLanguage = nl_NL?>
+                <?elseif $(var.Language) = pl-PL?>
+                    <?define IdSafeLanguage = pl_PL?>
+                <?elseif $(var.Language) = pt-BR?>
                     <?define IdSafeLanguage = pt_BR?>
                 <?elseif $(var.Language) = pt-PT?>
                     <?define IdSafeLanguage = pt_PT?>
-                <?elseif $(var.Language) = zh-Hans?>
-                    <?define IdSafeLanguage = zh_Hans?>
-                <?elseif $(var.Language) = zh-Hant?>
-                    <?define IdSafeLanguage = zh_Hant?>
+                <?elseif $(var.Language) = qps-ploc?>
+                    <?define IdSafeLanguage = qps_ploc?>
+                <?elseif $(var.Language) = qps-ploca?>
+                    <?define IdSafeLanguage = qps_ploca?>
+                <?elseif $(var.Language) = qps-plocm?>
+                    <?define IdSafeLanguage = qps_plocm?>
+                <?elseif $(var.Language) = ru-RU?>
+                    <?define IdSafeLanguage = ru_RU?>
+                <?elseif $(var.Language) = sv-SE?>
+                    <?define IdSafeLanguage = sv_SE?>
+                <?elseif $(var.Language) = tr-TR?>
+                    <?define IdSafeLanguage = tr_TR?>
+                <?elseif $(var.Language) = zh-CN?>
+                    <?define IdSafeLanguage = zh_CN?>
+                <?elseif $(var.Language) = zh-TW?>
+                    <?define IdSafeLanguage = zh_TW?>
                 <?else?>
                     <?define IdSafeLanguage = $(var.Language)?>
                 <?endif?>
