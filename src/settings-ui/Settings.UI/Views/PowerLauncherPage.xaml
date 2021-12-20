@@ -28,7 +28,7 @@
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
@@ -189,7 +189,7 @@
                               SelectionMode="None"
                               x:Name="PluginsListView">
                         <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
+                            <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
                                 <Grid>
                                     <controls:SettingExpander>
                                         <controls:SettingExpander.Header>
@@ -205,11 +205,11 @@
                                                         <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
                                                                         Visibility="{x:Bind ShowNotAccessibleWarning}"
                                                                         Style="{StaticResource CriticalIconInfoBadgeStyle}" />
-                                                     
+
                                                         <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
                                                                       IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"/>
                                                     </StackPanel>
-                                                
+
                                                 </controls:Setting.ActionContent>
                                             </controls:Setting>
                                         </controls:SettingExpander.Header>
@@ -231,11 +231,10 @@
                                                               IsOpen="{x:Bind ShowNotAllowedKeywordWarning}"
                                                               IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                                <CheckBox 
-                                                           AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
+                                                <CheckBox AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
                                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
                                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}"
-                                                            Margin="56, 0, 40, 16">
+                                                          Margin="56, 0, 40, 16">
                                                     <StackPanel Orientation="Vertical">
                                                         <TextBlock x:Name="IncludeInGlobalResultTitle"
                                                                    Margin="0,10,0,0"
@@ -245,7 +244,7 @@
                                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                                     </StackPanel>
                                                 </CheckBox>
-                                               
+
                                                 <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
                                                           SelectionMode="None"
                                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}">
@@ -258,11 +257,10 @@
                                                                       IsChecked="{x:Bind Path=Value, Mode=TwoWay}"
                                                                       Margin="{StaticResource ExpanderSettingMargin}"/>
                                                             </StackPanel>
-                                                        
+
                                                         </DataTemplate>
                                                     </ListView.ItemTemplate>
                                                 </ListView>
-
 
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                                 <TextBlock Opacity="{x:Bind DisabledOpacity}"
@@ -273,19 +271,16 @@
                                                                <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                                 </TextBlock>
                                             </StackPanel>
-
-                                       
-
                                         </controls:SettingExpander.Content>
                                     </controls:SettingExpander>
                                 </Grid>
                             </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </controls:SettingsGroup>
             </StackPanel>
 
-    </controls:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="LearnMore_Run" Link="https://aka.ms/PowerToysOverview_PowerToysRun"/>
         </controls:SettingsPageControl.PrimaryLinks>

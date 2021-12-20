@@ -384,7 +384,7 @@
     <value>Executable name</value>
   </data>
   <data name="PowerLauncher_MaximumNumberOfResults.Header" xml:space="preserve">
-    <value>Maximum number of results</value>
+    <value>Number of results shown before scrolling</value>
   </data>
   <data name="PowerLauncher_OpenPowerLauncher.Header" xml:space="preserve">
     <value>Open PowerToys Run</value>
@@ -1185,6 +1185,12 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PowerLauncher_EnablePluginToggle.AutomationProperties.Name" xml:space="preserve">
     <value>Enable plugin</value>
   </data>
+	<data name="PowerLauncher_EnablePluginToggle.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+	<data name="PowerLauncher_EnablePluginToggle.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
   <data name="Run_AdditionalOptions.Text" xml:space="preserve">
     <value>Additional options</value>
   </data>
@@ -1841,5 +1847,13 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
     <value>Enable G-code (.gcode) preview</value>
     <comment>Do you want this feature on / off</comment>
+  </data>
+  <data name="ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Off</value>
+    <comment>The state of a ToggleSwitch when it's off</comment>
+  </data>
+  <data name="ToggleSwitch.OnContent" xml:space="preserve">
+    <value>On</value>
+    <comment>The state of a ToggleSwitch when it's on</comment>
   </data>
 </root>
