@@ -12,8 +12,8 @@ namespace ColorPicker.Behaviors
     public class ChangeWindowPositionBehavior : Behavior<Window>
     {
         // color window should not get into these zones, only mouse to avoid window getting outsize of monitor
-        private const int MonitorRightSideDeadZone = 200;
-        private const int MonitorBottomSideDeadZone = 80;
+        private const int MonitorRightSideDeadZone = 275;
+        private const int MonitorBottomSideDeadZone = 70;
 
         private const int YOffset = 10;
         private const int XOffset = 5;
@@ -65,7 +65,7 @@ namespace ColorPicker.Behaviors
 
             if ((windowTop + MonitorBottomSideDeadZone) > monitorBounds.Bottom / dpi.DpiScaleX)
             {
-                windowTop -= MonitorBottomSideDeadZone - (((int)monitorBounds.Bottom / dpi.DpiScaleX) - windowTop);
+                windowTop -= MonitorBottomSideDeadZone;
             }
 
             AssociatedObject.Left = windowLeft;
