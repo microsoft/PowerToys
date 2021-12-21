@@ -13,6 +13,7 @@ struct Settings
     bool blockInGameMode = true;
     float frameThickness = 15.0f;
     COLORREF frameColor = RGB(0, 173, 239);
+    std::vector<std::wstring> excludedApps{};
 };
 
 class AlwaysOnTopSettings
