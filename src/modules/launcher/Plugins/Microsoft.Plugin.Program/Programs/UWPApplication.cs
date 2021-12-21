@@ -17,6 +17,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Xml;
 using ManagedCommon;
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Win32;
@@ -268,12 +269,27 @@ namespace Microsoft.Plugin.Program.Programs
                 var manifest = Package.Location + "\\AppxManifest.xml";
                 if (File.Exists(manifest))
                 {
-                    var file = File.ReadAllText(manifest);
-
-                    // Using OrdinalIgnoreCase since this is used internally
-                    if (file.Contains("TrustLevel=\"mediumIL\"", StringComparison.OrdinalIgnoreCase))
+                    try
                     {
-                        return true;
+                        // Check the manifest to verify if the Trust Level for the application is "mediumIL"
+                        var file = File.ReadAllText(manifest);
+                        var xmlDoc = new XmlDocument();
+                        xmlDoc.LoadXml(file);
+                        var xmlRoot = xmlDoc.DocumentElement;
+                        var namespaceManager = new XmlNamespaceManager(xmlDoc.NameTable);
+                        namespaceManager.AddNamespace("uap10", "http://schemas.microsoft.com/appx/manifest/uap/windows10/10");
+                        var trustLevelNode = xmlRoot.SelectSingleNode("//*[local-name()='Application' and @uap10:TrustLevel]", namespaceManager); // According to https://docs.microsoft.com/en-us/windows/apps/desktop/modernize/grant-identity-to-nonpackaged-apps#create-a-package-manifest-for-the-sparse-package and https://docs.microsoft.com/en-us/uwp/schemas/appxpackage/uapmanifestschema/element-application#attributes
+
+                        if (trustLevelNode?.Attributes["uap10:TrustLevel"]?.Value == "mediumIL")
+                        {
+                            return true;
+                        }
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        ProgramLogger.Exception($"Unable to parse manifest file for {DisplayName}", e, MethodBase.GetCurrentMethod().DeclaringType, manifest);
                     }
                 }
             }
