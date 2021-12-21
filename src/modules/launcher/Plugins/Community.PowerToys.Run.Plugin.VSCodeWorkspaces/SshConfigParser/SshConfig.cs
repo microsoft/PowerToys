@@ -21,7 +21,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser
 
         public static IEnumerable<SshHost> Parse(string str)
         {
-            str = str.Replace('\r', '\0');
+            str = str.Replace("\r", string.Empty);
             var list = new List<SshHost>();
             foreach (Match match in _sshConfig.Matches(str))
             {
