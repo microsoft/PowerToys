@@ -4,7 +4,7 @@
   "ActionKeyword": "{",
   "Name": "VS Code Workspaces",
   "Author": "ricardosantos9521",
-  "Version": "1.0.0",
+  "Version": "1.1.0",
   "Language": "csharp",
   "Website": "https://github.com/ricardosantos9521/PowerToys/",
   "ExecuteFileName": "Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll",

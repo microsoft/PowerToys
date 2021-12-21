@@ -18,13 +18,13 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
         {
         }
 
-        private VSCodeWorkspace ParseVSCodeUri(string uri, VSCodeInstance vscodeInstance)
+        private VSCodeWorkspace ParseVSCodeUri(string uri, VSCodeInstance vscodeInstance, bool isWorkspaceFile = false)
         {
             if (uri != null && uri is string)
             {
                 string unescapeUri = Uri.UnescapeDataString(uri);
-                var typeWorkspace = WorkspacesHelper.ParseVSCodeUri.GetTypeWorkspace(unescapeUri);
-                if (typeWorkspace.TypeWorkspace.HasValue)
+                var typeWorkspace = WorkspacesHelper.ParseVSCodeUri.GetWorkspaceEnvironment(unescapeUri);
+                if (typeWorkspace.WorkspaceEnvironment.HasValue)
                 {
                     var folderName = Path.GetFileName(unescapeUri);
 
@@ -38,10 +38,11 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                     return new VSCodeWorkspace()
                     {
                         Path = uri,
+                        WorkspaceType = isWorkspaceFile ? WorkspaceType.WorkspaceFile : WorkspaceType.ProjectFolder,
                         RelativePath = typeWorkspace.Path,
                         FolderName = folderName,
                         ExtraInfo = typeWorkspace.MachineName,
-                        TypeWorkspace = typeWorkspace.TypeWorkspace.Value,
+                        WorkspaceEnvironment = typeWorkspace.WorkspaceEnvironment.Value,
                         VSCodeInstance = vscodeInstance,
                     };
                 }
@@ -76,10 +77,10 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                                 {
                                     foreach (var workspaceUri in vscodeStorageFile.OpenedPathsList.Workspaces3)
                                     {
-                                        var uri = ParseVSCodeUri(workspaceUri, vscodeInstance);
-                                        if (uri != null)
+                                        var workspace = ParseVSCodeUri(workspaceUri, vscodeInstance);
+                                        if (workspace != null)
                                         {
-                                            results.Add(uri);
+                                            results.Add(workspace);
                                         }
                                     }
                                 }
@@ -87,12 +88,20 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                                 // vscode v1.55.0 or later
                                 if (vscodeStorageFile.OpenedPathsList.Entries != null)
                                 {
-                                    foreach (var workspaceUri in vscodeStorageFile.OpenedPathsList.Entries.Select(x => x.FolderUri))
+                                    foreach (var entry in vscodeStorageFile.OpenedPathsList.Entries)
                                     {
-                                        var uri = ParseVSCodeUri(workspaceUri, vscodeInstance);
-                                        if (uri != null)
+                                        bool isWorkspaceFile = false;
+                                        var uri = entry.FolderUri;
+                                        if (entry.Workspace != null && entry.Workspace.ConfigPath != null)
                                         {
-                                            results.Add(uri);
+                                            isWorkspaceFile = true;
+                                            uri = entry.Workspace.ConfigPath;
+                                        }
+
+                                        var workspace = ParseVSCodeUri(uri, vscodeInstance, isWorkspaceFile);
+                                        if (workspace != null)
+                                        {
+                                            results.Add(workspace);
                                         }
                                     }
                                 }
