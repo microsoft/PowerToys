@@ -109,15 +109,16 @@ void FrameDrawer::Show()
     m_cv.notify_all();
 }
 
-void FrameDrawer::SetBorderRect(RECT windowRect)
+void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, float thickness)
 {
     std::unique_lock lock(m_mutex);
 
-    auto borderColor = ConvertColor(RGB(0, 173, 239));
+    auto borderColor = ConvertColor(color);
 
     m_sceneRect = DrawableRect{
         .rect = ConvertRect(windowRect),
-        .borderColor = borderColor
+        .borderColor = borderColor,
+        .thickness = thickness
     };
 }
 
@@ -173,7 +174,7 @@ FrameDrawer::RenderResult FrameDrawer::Render()
 
     if (borderBrush)
     {
-        m_renderTarget->DrawRectangle(m_sceneRect.rect, borderBrush, 15.f);
+        m_renderTarget->DrawRectangle(m_sceneRect.rect, borderBrush, m_sceneRect.thickness);
         borderBrush->Release();
     }
 

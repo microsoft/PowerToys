@@ -17,13 +17,14 @@ public:
 
     void Show();
     void Hide();
-    void SetBorderRect(RECT windowRect);
+    void SetBorderRect(RECT windowRect, COLORREF color, float thickness);
 
 private:
     struct DrawableRect
     {
         D2D1_RECT_F rect;
         D2D1_COLOR_F borderColor;
+        float thickness;
     };
 
     enum struct RenderResult

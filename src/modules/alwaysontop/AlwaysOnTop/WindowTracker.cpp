@@ -101,7 +101,7 @@ bool WindowTracker::Init(HINSTANCE hinstance)
     }
 
     RECT frameRect{ 0, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top };
-    m_frameDrawer->SetBorderRect(frameRect);
+    m_frameDrawer->SetBorderRect(frameRect, AlwaysOnTopSettings::settings().frameColor, AlwaysOnTopSettings::settings().frameThickness);
     m_frameDrawer->Show();
 
     return true;
