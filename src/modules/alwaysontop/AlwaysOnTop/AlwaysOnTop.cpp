@@ -21,9 +21,8 @@ AlwaysOnTop::AlwaysOnTop() :
     {
         InitializeWinhookEventIds();
 
-        m_settings.InitFileWatcher();
-        m_settings.AddObserver(std::bind(&AlwaysOnTop::UpdateSettings, this));
-        m_settings.LoadSettings();
+        AlwaysOnTopSettings::instance().InitFileWatcher();
+        AlwaysOnTopSettings::instance().LoadSettings();
 
         RegisterHotkey();
         SubscribeToEvents();
@@ -63,7 +62,7 @@ bool AlwaysOnTop::InitMainWindow()
 void AlwaysOnTop::UpdateSettings()
 {
     // frames
-    if (m_settings.GetSettings().enableFrame)
+    if (AlwaysOnTopSettings::settings().enableFrame)
     {
         for (auto& iter : m_topmostWindows)
         {
@@ -93,7 +92,7 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
     }
     else if (message == WM_PRIV_SETTINGS_CHANGED)
     {
-        m_settings.LoadSettings();
+        AlwaysOnTopSettings::instance().LoadSettings();
     }
     
     return 0;
@@ -102,7 +101,7 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
 void AlwaysOnTop::ProcessCommand(HWND window)
 {
     bool gameMode = detect_game_mode();
-    if (!m_settings.GetSettings().blockInGameMode && gameMode)
+    if (!AlwaysOnTopSettings::settings().blockInGameMode && gameMode)
     {
         return;
     }
@@ -125,7 +124,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         if (PinTopmostWindow(window))
         {
             soundType = Sound::Type::On;
-            if (m_settings.GetSettings().enableFrame)
+            if (AlwaysOnTopSettings::settings().enableFrame)
             {
                 AssignTracker(window);
             }
@@ -136,7 +135,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         }
     }
 
-    if (m_settings.GetSettings().enableSound)
+    if (AlwaysOnTopSettings::settings().enableSound)
     {
         m_sound.Play(soundType);    
     }
@@ -191,7 +190,7 @@ bool AlwaysOnTop::AssignTracker(HWND window)
 void AlwaysOnTop::RegisterHotkey() const
 {
     UnregisterHotKey(m_window, static_cast<int>(HotkeyId::Pin));
-    RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), m_settings.GetSettings().hotkey.get_modifiers(), m_settings.GetSettings().hotkey.get_code());
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), AlwaysOnTopSettings::settings().hotkey.get_modifiers(), AlwaysOnTopSettings::settings().hotkey.get_code());
 }
 
 void AlwaysOnTop::SubscribeToEvents()
@@ -267,7 +266,7 @@ bool AlwaysOnTop::IsTracked(HWND window) const noexcept
 
 void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
-    if (!m_settings.GetSettings().enableFrame)
+    if (!AlwaysOnTopSettings::settings().enableFrame)
     {
         return;
     }

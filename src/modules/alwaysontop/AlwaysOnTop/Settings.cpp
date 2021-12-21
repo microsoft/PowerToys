@@ -20,6 +20,12 @@ AlwaysOnTopSettings::AlwaysOnTopSettings()
 {
 }
 
+AlwaysOnTopSettings& AlwaysOnTopSettings::instance()
+{
+    static AlwaysOnTopSettings instance;
+    return instance;
+}
+
 void AlwaysOnTopSettings::InitFileWatcher()
 {
     const std::wstring& settingsFileName = GetSettingsFileName();
