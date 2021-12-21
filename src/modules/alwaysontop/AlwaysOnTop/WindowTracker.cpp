@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "WindowTracker.h"
 
+#include <Settings.h>
+
 // Non-Localizable strings
 namespace NonLocalizable
 {
@@ -15,7 +17,9 @@ std::optional<RECT> GetFrameRect(HWND window)
         return std::nullopt;
     }
 
-    rect.top -= 5;
+    int border = static_cast<int>(AlwaysOnTopSettings::settings().frameThickness / 2);
+    rect.top -= border;
+
     return rect;
 }
 
