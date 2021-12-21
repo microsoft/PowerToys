@@ -535,11 +535,11 @@
 
       <Component Id="Module_PowerPreview_Registry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
         <!-- Update Key to use IE11 for prevhost.exe -->
-        <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
           <RegistryValue Type="integer" Name="prevhost.exe" Value="11000" />
         </RegistryKey>
         <!-- Update Key to use IE11 for dllhost.exe -->
-        <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
             <RegistryValue Type="integer" Name="dllhost.exe" Value="11000" />
         </RegistryKey>
       </Component>
@@ -1210,7 +1210,7 @@
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherShortcutComponent" Directory="LauncherInstallFolder" Guid="8824006B-CD06-4D87-8AC4-1B40C71DB4D7">
         <!-- Toast Notification AUMID -->
-        <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
+        <RegistryKey Root="HKCU" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
           <RegistryValue Type="string" Name="DisplayName" Value="PowerToys Run" />
           <RegistryValue Type="string" Name="IconUri" Value="[LauncherImagesFolder]RunAsset.ico" />
         </RegistryKey>
