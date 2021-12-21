@@ -15,9 +15,12 @@ struct Settings
 
 class AlwaysOnTopSettings
 {
-public: 
-    AlwaysOnTopSettings();
-    ~AlwaysOnTopSettings() = default;
+public:
+    static AlwaysOnTopSettings& instance();
+    static inline const Settings& settings()
+    {
+        return instance().m_settings;
+    }
 
     void InitFileWatcher();
     static std::wstring GetSettingsFileName();
@@ -25,12 +28,11 @@ public:
     void AddObserver(const NotificationCallback& callback);
 
     void LoadSettings();
-    inline const Settings& GetSettings() const 
-    {
-        return m_settings;
-    }
 
 private:
+    AlwaysOnTopSettings();
+    ~AlwaysOnTopSettings() = default;
+
     Settings m_settings;
     std::unique_ptr<FileWatcher> m_settingsFileWatcher;
     std::vector<NotificationCallback> m_observerCallbacks;

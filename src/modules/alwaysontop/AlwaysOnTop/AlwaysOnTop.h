@@ -37,7 +37,6 @@ private:
 
     static inline AlwaysOnTop* s_instance = nullptr;
     std::vector<HWINEVENTHOOK> m_staticWinEventHooks{};
-    AlwaysOnTopSettings m_settings;
     Sound m_sound;
 
     HWND m_window{ nullptr };
