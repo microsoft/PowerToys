@@ -11,7 +11,6 @@
   <?define VideoConferenceProjectName="VideoConference"?>
   <?define AwakeProjectName="Awake"?>
   <?define MouseUtilsProjectName="MouseUtils"?>
-  <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
@@ -26,7 +25,7 @@
        Manufacturer="Microsoft Corporation"
        UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
 
-    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="x64" />
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" InstallPrivileges="limited" Platform="x64" />
 
     <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
 
@@ -59,7 +58,18 @@
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
     <UI>
-      <UIRef Id="WixUI_PTInstallDir"/>
+      <UIRef Id="WixUI_InstallDir"/>
+      <Publish Dialog="WelcomeDlg"
+                Control="Next"
+                Event="NewDialog"
+                Value="InstallDirDlg"
+                Order="99">1</Publish>        
+      <Publish Dialog="InstallDirDlg"
+                Control="Back"
+                Event="NewDialog"
+                Value="WelcomeDlg"
+                Order="99">1</Publish> 
+        
       <Publish Dialog="ExitDialog"
             Control="Finish"
             Event="EndDialog"
@@ -268,9 +278,8 @@
 
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="ProgramFiles64Folder">
+      <Directory Id="LocalAppDataFolder">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
-          <Directory Id="SvgsInstallFolder" Name="svgs"/>
           <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)" />
@@ -315,13 +324,8 @@
             <Directory Id="MouseUtilsInstallFolder" Name="$(var.MouseUtilsProjectName)">
             </Directory>
 
-            <!-- AlwaysOnTop -->
-            <Directory Id="AlwaysOnTopInstallFolder" Name="$(var.AlwaysOnTopProjectName)">
-            </Directory>
-
             <!-- Launcher -->
             <Directory Id="LauncherInstallFolder" Name="launcher">
-              <Directory Id="AssetsFolder" Name="Assets" />
               <Directory Id="LauncherImagesFolder" Name="Images" />
               <Directory Id="LauncherPropertiesFolder" Name="Properties" />
 
@@ -416,15 +420,17 @@
   <Fragment>
     <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinX64Dir)">
       <Component Id="powertoys_toast_clsid" Win64="yes">
-        <RegistryKey Root="HKCR" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
+        <RemoveFolder Id='Remove_powertoys_toast_clsid' On='uninstall' />
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
           <RegistryValue Type="string" Value="PowerToys Toast Notifications Background Activator" />
           <RegistryValue Type="string" Key="LocalServer32" Value="[INSTALLFOLDER]PowerToys.exe -ToastActivated" />
           <RegistryValue Type="string" Key="LocalServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
       </Component>
       <Component Id="powertoys_exe" Guid="A2C66D91-3485-4D00-B04D-91844E6B345B" Win64="yes">
-        <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes" />
-        <RegistryKey Root="HKCR" Key="powertoys">
+          <RemoveFolder Id='Remove_powertoys_exe' On='uninstall' />
+          <File Id="PowerToys.exe" KeyPath="no" Checksum="yes" />
+        <RegistryKey Root="HKCU" Key="Software\Classes\powertoys">
           <RegistryValue Type="string" Name="URL Protocol" Value=""/>
           <RegistryValue Type="string" Value="URL:PowerToys custom internal URI protocol"/>
           <RegistryKey Key="DefaultIcon">
@@ -436,25 +442,67 @@
         </RegistryKey>
       </Component>
       <Component Id="BackgroundActivator_dll" Guid="23B25EE4-BCA2-45DF-BBCD-82FBDF01C5AB" Win64="yes">
-        <File Id="PowerToys.BackgroundActivatorDLL.dll" KeyPath="yes" Checksum="yes" />
+          <RemoveFolder Id='Remove_BackgroundActivator_dll' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+               Name='BackgroundActivator_dll'
+               Value='[INSTALLFOLDER]'
+               Type='string'
+               KeyPath='yes' />
+          <File Id="PowerToys.BackgroundActivatorDLL.dll" KeyPath="no" Checksum="yes" />
       </Component>
       <Component Id="PowerToys_ActionRunner_exe" Guid="626ABB17-16F0-4007-9A58-6998724A5E14" Win64="yes">
-        <File Id="PowerToys.ActionRunner.exe" KeyPath="yes" Checksum="yes" />
+          <RemoveFolder Id='Remove_PowerToys_ActionRunner_exe' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+               Name='PowerToys_ActionRunner_exe'
+               Value='[INSTALLFOLDER]'
+               Type='string'
+               KeyPath='yes' />
+          <File Id="PowerToys.ActionRunner.exe" KeyPath="no" Checksum="yes" />
       </Component>
       <Component Id="PowerToys_Update_exe" Guid="446D0AD4-AA8F-45BA-BDAC-6C620DF77AFF" Win64="yes">
-        <File Id="PowerToys.Update.exe" KeyPath="yes" Checksum="yes" />
+          <RemoveFolder Id='Remove_PowerToys_Update_exe' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+               Name='PowerToys_Update_exe'
+               Value='[INSTALLFOLDER]'
+               Type='string'
+               KeyPath='yes' />
+          <File Id="PowerToys.Update.exe" KeyPath="no" Checksum="yes" />
       </Component>      
       <Component Id="License_rtf" Guid="3E5AE43B-CFB4-449B-A346-94CAAFF3312E" Win64="yes">
-        <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" KeyPath="yes" />
+          <RemoveFolder Id='Remove_License_rtf' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+               Name='License_rtf'
+               Value='[INSTALLFOLDER]'
+               Type='string'
+               KeyPath='yes' />
+          <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" KeyPath="no" />
       </Component>
       <Component Id="Notice_md" Guid="E2FE99F5-5DF7-44EA-8B1C-2BDF8CEC5E6D" Win64="yes">
-        <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" KeyPath="yes" />
+          <RemoveFolder Id='Remove_Notice_md' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+               Name='Notice_md'
+               Value='[INSTALLFOLDER]'
+               Type='string'
+               KeyPath='yes' />
+          <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" KeyPath="no" />
       </Component>
       <Component Id="powertoysinterop_dll" Guid="B7DD2DF4-C8F2-46FA-9571-D6EF1588ADF3" Win64="yes">
-        <File Id="PowerToys.Interop.dll" KeyPath="yes" Checksum="yes" />
+          <RemoveFolder Id='Remove_powertoysinterop_dll' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+               Name='powertoysinterop_dll'
+               Value='[INSTALLFOLDER]'
+               Type='string'
+               KeyPath='yes' />
+          <File Id="PowerToys.Interop.dll" KeyPath="no" Checksum="yes" />
       </Component>
       <Component Id="vcredist_dlls" Guid="CBE26CB0-3AD0-4336-A7D6-503046BADEBC" Win64="yes">
-        <!-- VCRuntime -->
+          <RemoveFolder Id='Remove_vcredist_dlls' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+               Name='vcredist_dlls'
+               Value='[INSTALLFOLDER]'
+               Type='string'
+               KeyPath='yes' />
+          <!-- VCRuntime -->
         <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
           <File Id="$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
         <?endforeach?>
@@ -463,7 +511,12 @@
 
     <DirectoryRef Id="ApplicationProgramsFolder">
       <Component Id="PowerToysStartMenuShortcut" Guid="336AB4F9-078C-4DCA-B69F-3808A9FFD758">
-        <Shortcut Id="ApplicationStartMenuShortcut"
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+               Name='PowerToysStartMenuShortcut'
+               Value='[INSTALLFOLDER]'
+               Type='string'
+               KeyPath='yes' />
+          <Shortcut Id="ApplicationStartMenuShortcut"
           Name="PowerToys (Preview)"
           Description="PowerToys - Windows system utilities to maximize productivity"
           Icon="powertoys.exe"
@@ -474,13 +527,19 @@
         </Shortcut>
         <RemoveFolder Id="CleanUpStartMenuShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
         <!-- ApplicationStartMenuShortcut is implicitly installed in HKCU, so WIX won't allow changing this reg value to HKLM. -->
-        <RegistryValue Root="HKCU" Key="Software\Microsoft\PowerToys" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\Microsoft\PowerToys" Name="installed" Type="integer" Value="1" KeyPath="no"/>
       </Component>
     </DirectoryRef>
     
     <!-- Shortcut guide files -->
     <DirectoryRef Id="ShortcutGuideSvgsInstallFolder" FileSource="$(var.ShortcutGuideExecutable)\svgs\">
       <Component Id="ShortcutGuideSvgs" Guid="7C4D4EED-9338-423D-992C-DCE02F3E2D35" Win64="yes">
+        <RemoveFolder Id='Remove_ShortcutGuideSvgs' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='ShortcutGuideSvgs'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />          
         <File Source="$(var.ShortcutGuideExecutable)\svgs\0.svg" />
         <File Source="$(var.ShortcutGuideExecutable)\svgs\1.svg" />
         <File Source="$(var.ShortcutGuideExecutable)\svgs\2.svg" />
@@ -500,7 +559,13 @@
     <!-- FancyZone -->
     <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesModuleInterface.dll" KeyPath="yes" />
+        <RemoveFolder Id='Remove_Module_FancyZones' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_FancyZones'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                    
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesModuleInterface.dll" KeyPath="no" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesEditor.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesEditor.runtimeconfig.json" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZonesEditor.deps.json" />
@@ -524,14 +589,51 @@
 
     <DirectoryRef Id="ToolsFolder">
       <Component Id="BugReportTool_exe" Guid="0F8E3E9F-2E86-4660-A3BF-AE4DD431B93C" Win64="yes">
-        <File Source="$(var.BinX64Dir)BugReportTool\BugReportTool.exe" Id="BugReportTool.exe" KeyPath="yes" Checksum="yes" />
+        <RemoveFolder Id='Remove_BugReportTool_exe' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='BugReportTool_exe'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />
+        <File Source="$(var.BinX64Dir)BugReportTool\BugReportTool.exe" Id="BugReportTool.exe" KeyPath="no" Checksum="yes" />
       </Component>
       <Component Id="WebcamReportTool_exe" Guid="B6005DAC-8C26-4865-91B3-99F098422C13" Win64="yes">
+        <RemoveFolder Id='Remove_WebcamReportTool_exe' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='WebcamReportTool_exe'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />          
         <File Source="$(var.BinX64Dir)WebcamReportTool\WebcamReportTool.exe" Id="WebcamReportTool.exe" Checksum="yes" />
       </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
+        <Component Id="RemoveUnreferencedDirectories" Guid="54C11986-744F-4E67-83BD-C396EE068CF2" Win64="yes">
+            <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                  Name='RemoveUnreferencedDirectories'
+                  Value='[INSTALLFOLDER]'
+                  Type='string'
+                  KeyPath='yes' />
+            <RemoveFolder Id="Remove_ModulesInstallFolder" On="uninstall" Directory="ModulesInstallFolder"/>
+            <RemoveFolder Id="Remove_ShortcutGuideInstallFolder" On="uninstall" Directory="ShortcutGuideInstallFolder"/>
+            <RemoveFolder Id="Remove_AwakeInstallFolderRuntimesWinLib" On="uninstall" Directory="AwakeInstallFolderRuntimesWinLib"/>
+            <RemoveFolder Id="Remove_AwakeInstallFolderRuntimesWin" On="uninstall" Directory="AwakeInstallFolderRuntimesWin"/>
+            <RemoveFolder Id="Remove_AwakeInstallFolderRuntimes" On="uninstall" Directory="AwakeInstallFolderRuntimes"/>
+            <RemoveFolder Id="Remove_LauncherPropertiesFolder" On="uninstall" Directory="LauncherPropertiesFolder"/>
+            <RemoveFolder Id="Remove_CalculatorLanguagesFolder" On="uninstall" Directory="CalculatorLanguagesFolder"/>
+            <RemoveFolder Id="Remove_LauncherPluginsFolder" On="uninstall" Directory="LauncherPluginsFolder"/>
+            <RemoveFolder Id="Remove_FolderPluginLanguagesFolder" On="uninstall" Directory="FolderPluginLanguagesFolder"/>
+            <RemoveFolder Id="Remove_ProgramLanguagesFolder" On="uninstall" Directory="ProgramLanguagesFolder"/>
+            <RemoveFolder Id="Remove_ShellLanguagesFolder" On="uninstall" Directory="ShellLanguagesFolder"/>
+            <RemoveFolder Id="Remove_IndexerLanguagesFolder" On="uninstall" Directory="IndexerLanguagesFolder"/>
+            <RemoveFolder Id="Remove_UriLanguagesFolder" On="uninstall" Directory="UriLanguagesFolder"/>
+            <RemoveFolder Id="Remove_UnitConverterLanguagesFolder" On="uninstall" Directory="UnitConverterLanguagesFolder"/>
+            <RemoveFolder Id="Remove_VSCodeWorkspaceLanguagesFolder" On="uninstall" Directory="VSCodeWorkspaceLanguagesFolder"/>
+            <RemoveFolder Id="Remove_WindowWalkerLanguagesFolder" On="uninstall" Directory="WindowWalkerLanguagesFolder"/>
+            <RemoveFolder Id="Remove_RegistryLanguagesFolder" On="uninstall" Directory="RegistryLanguagesFolder"/>
+            <RemoveFolder Id="Remove_WindowsSettingsLanguagesFolder" On="uninstall" Directory="WindowsSettingsLanguagesFolder"/>
+        </Component>
 
       <Component Id="Module_PowerPreview_Registry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
         <!-- Update Key to use IE11 for prevhost.exe -->
@@ -548,8 +650,14 @@
     <!-- Image Resizer -->
     <DirectoryRef Id="ImageResizerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)">
       <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
+        <RemoveFolder Id='Remove_Module_ImageResizer' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_ImageResizer'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.exe" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizerExt.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizerExt.dll" KeyPath="no" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.deps.json" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.ImageResizer.runtimeconfig.json" />
@@ -571,17 +679,22 @@
         <?endforeach?>
       </Component>
       <Component Id="Module_ImageResizer_Registry" Guid="8B593E2C-2D9B-4EBC-93F7-A2B69707DAC9" Win64="yes">
-        <RegistryKey Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
+        <RemoveFolder Id='Remove_Module_ImageResizer_Registry' On='uninstall' />
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
           <RegistryValue Value="[ImageResizerInstallFolder]PowerToys.ImageResizerExt.dll" Type="string" />
           <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
         </RegistryKey>
 
         <!-- Registry Key for the drag and drop handler -->
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\Directory\ShellEx\DragDropHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <!-- Registry Keys for the context menu handler for each of the following image formats: bmp, dib, gif, jfif, jpe, jpeg, jpg, jxr, png, rle, tif, tiff, wdp  -->
         <RegistryValue Root="HKCR"
                        Key="Directory\ShellEx\DragDropHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <!-- Registry Keys for the context menu handler for each of the following image formats: bmp, dib, gif, jfif, jpe, jpeg, jpg, jxr, png, rle, tif, tiff, wdp  -->
         <RegistryValue Root="HKCR"
                        Key="SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
@@ -640,7 +753,13 @@
     <!-- PowerRename -->
     <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
       <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
-		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.Toolkit.Win32.UI.XamlHost.dll" />
+          <RemoveFolder Id='Remove_Module_PowerRename' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+              Name='Module_PowerRename'
+              Value='[INSTALLFOLDER]'
+              Type='string'
+              KeyPath='yes' />
+          <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.Toolkit.Win32.UI.XamlHost.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\msvcp140_app.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerToys.PowerRenameUILib.dll" />
@@ -648,18 +767,18 @@
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\resources.pri" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_1_app.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_app.dll" />
-		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerToys.PowerRenameExt.dll" KeyPath="yes" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerToys.PowerRenameExt.dll" KeyPath="no" />
 		    <!-- VCRuntime -->
 		    <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
 		      <File Id="PowerRename_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
 		    <?endforeach?>
-        <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
           <RegistryValue Type="string" Value="PowerRename Shell Extension" />
           <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
           <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerToys.PowerRenameExt.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
-        <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
+        <RegistryKey Root="HKCU" Key="Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
           <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
         </RegistryKey>
       </Component>
@@ -667,6 +786,12 @@
 
     <DirectoryRef Id="PowerRenameAssetsFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
       <Component Id="Module_PowerRename_Assets" Guid="5976BEDF-64F5-4836-8674-EE7577C77508" Win64="yes">
+          <RemoveFolder Id='Remove_Module_PowerRename_Assets' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+              Name='Module_PowerRename_Assets'
+              Value='[INSTALLFOLDER]'
+              Type='string'
+              KeyPath='yes' />          
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Assets\file.png" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Assets\folder.png" />
       </Component>
@@ -674,22 +799,46 @@
     <!-- MouseUtils -->
     <DirectoryRef Id="MouseUtilsInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)">
       <Component Id="Module_FindMyMouse" Guid="60D0E4AE-188F-4403-BF06-1465AACC1BC5" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.FindMyMouse.dll" KeyPath="yes" />
+          <RemoveFolder Id='Remove_Module_FindMyMouse' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+              Name='Module_FindMyMouse'
+              Value='[INSTALLFOLDER]'
+              Type='string'
+              KeyPath='yes' />                    
+        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.FindMyMouse.dll" KeyPath="no" />
       </Component>
       <Component Id="Module_MouseHighlighter" Guid="3BAEA39F-A73D-48D2-9616-BBED5B8C86D3" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.MouseHighlighter.dll" KeyPath="yes" />
+          <RemoveFolder Id='Remove_Module_MouseHighlighter' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+              Name='Module_MouseHighlighter'
+              Value='[INSTALLFOLDER]'
+              Type='string'
+              KeyPath='yes' />                              
+        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.MouseHighlighter.dll" KeyPath="no" />
       </Component>
     </DirectoryRef>
 
     <!-- Shortcut guide -->
     <DirectoryRef Id="ShortcutGuideModuleInterfaceInstallFolder" FileSource="$(var.ShortcutGuideModuleInterface)">
       <Component Id="Module_ShortcutGuideModuleInterface" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
-        <File Source="$(var.ShortcutGuideModuleInterface)\PowerToys.ShortcutGuideModuleInterface.dll" KeyPath="yes" />
+        <RemoveFolder Id='Remove_Module_ShortcutGuideModuleInterface' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_ShortcutGuideModuleInterface'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                        
+        <File Source="$(var.ShortcutGuideModuleInterface)\PowerToys.ShortcutGuideModuleInterface.dll" KeyPath="no" />
       </Component>
     </DirectoryRef>
 
      <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
      <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
+      <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+          Name='Module_VideoConference'
+          Value='[INSTALLFOLDER]'
+          Type='string'
+          KeyPath='yes' />                    
+      <RemoveFolder Id='Remove_Module_VideoConference' On='uninstall' />
       <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x64.dll" />
       <File Source="$(var.BinX32Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x86.dll" />
@@ -698,31 +847,49 @@
     </DirectoryRef>
     <DirectoryRef Id="VideoConferenceIconsFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons">
      <Component Id="Module_VideoConferenceIcons" Guid="5996527a-40fc-432e-b34c-abc0b4bd3887" Win64="yes">
-      <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Dark.png" />
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Light.png" />
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Dark.png" />
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Light.png" />
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Dark.png" />
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Light.png" />
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Dark.png" />
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Light.png" />
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Light.png" />
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Dark.png" />
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Dark.png" />
-      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Light.png" />
+        <RemoveFolder Id='Remove_Module_VideoConferenceIcons' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_VideoConferenceIcons'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                        
+        <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Dark.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Light.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Dark.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Light.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Dark.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Light.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Dark.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Light.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Light.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Dark.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Dark.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Light.png" />
      </Component>
     </DirectoryRef> 
 
     <DirectoryRef Id="ShortcutGuideExecutableInstallFolder" FileSource="$(var.ShortcutGuideExecutable)">
       <Component Id="Module_ShortcutGuideExecutable" Guid="DA6E5710-F1DF-44EB-A316-300FA39544E9" Win64="yes">
-        <File Source="$(var.ShortcutGuideExecutable)\PowerToys.ShortcutGuide.exe" KeyPath="yes" />
+        <RemoveFolder Id='Remove_Module_ShortcutGuideExecutable' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_ShortcutGuideExecutable'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                  
+        <File Source="$(var.ShortcutGuideExecutable)\PowerToys.ShortcutGuide.exe" KeyPath="no" />
       </Component>
     </DirectoryRef>
 
     <!-- KBM -->
     <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\">
       <Component Id="Module_KeyboardManager" Guid="9279BD82-786F-4F0B-8E49-DB484EE34C9B" Win64="yes">
+        <RemoveFolder Id='Remove_Module_KeyboardManager' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_KeyboardManager'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                          
         <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\PowerToys.KeyboardManager.dll" />
       </Component>
     </DirectoryRef>
@@ -730,6 +897,12 @@
     <!-- KBM Editor -->
     <DirectoryRef Id="KeyboardManagerEditorInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor">
       <Component Id="Module_KeyboardManager_Editor" Guid="1240F1B8-17FE-4D68-B9AF-91882B0B1933" Win64="yes">
+        <RemoveFolder Id='Remove_Module_KeyboardManager_Editor' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_KeyboardManager_Editor'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                    
         <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe" />
       </Component>
     </DirectoryRef>
@@ -737,6 +910,12 @@
     <!-- KBM Engine -->
     <DirectoryRef Id="KeyboardManagerEngineInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine">
       <Component Id="Module_KeyboardManager_Engine" Guid="14DBAA38-B98D-431F-9439-8EDE1C0670DB" Win64="yes">
+        <RemoveFolder Id='Remove_Module_KeyboardManager_Engine' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_KeyboardManager_Engine'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                              
         <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe" />
       </Component>
     </DirectoryRef>
@@ -744,6 +923,12 @@
     <!-- Color Picker -->
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
       <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
+        <RemoveFolder Id='Remove_Module_ColorPicker' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_ColorPicker'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                                        
         <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;System.Text.Json.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
         <?endforeach?>
@@ -753,6 +938,12 @@
     <!-- Color Picker Resources -->
     <DirectoryRef Id="ColorPickerResourcesFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources">
       <Component Id="Module_ColorPicker_Resources" Guid="7544BD0F-1DB6-4C53-89D3-ADAD472FDCC1">
+        <RemoveFolder Id='Remove_Module_ColorPicker_Resources' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_ColorPicker_Resources'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                              
         <?foreach File in colorPicker.cur;icon.ico?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources\$(var.File)" />
         <?endforeach?>
@@ -762,6 +953,12 @@
     <!-- Awake -->
     <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)">
       <Component Id="Module_Awake" Guid="F26F5780-5B38-43B2-BC21-8406ED6E2071" Win64="yes">
+        <RemoveFolder Id='Remove_Module_Awake' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_Awake'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                              
         <?foreach File in PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;Microsoft.Win32.Registry.dll;Microsoft.Win32.SystemEvents.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToys.Interop.dll;System.CommandLine.dll;System.Configuration.ConfigurationManager.dll;System.Drawing.Common.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Security.AccessControl.dll;System.Security.Cryptography.ProtectedData.dll;System.Security.Permissions.dll;System.Security.Principal.Windows.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Windows.Extensions.dll?>
         <File Id="AwakeFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\$(var.File)" />
         <?endforeach?>
@@ -770,6 +967,12 @@
     
     <DirectoryRef Id="AwakeInstallFolderNetStandard20" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0">
       <Component Id="Module_Awake_runtime_netstandard20" Guid="414A31AB-91A8-4F17-9B4B-DB7B93A2BB23">
+        <RemoveFolder Id='Remove_Module_Awake_runtime_netstandard20' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_Awake_runtime_netstandard20'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                              
         <File Id="AwakeFile_runtime_Microsoft.Win32.Registry.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" />
         <File Id="AwakeFile_runtime_System.Runtime.Caching.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll" />
         <File Id="AwakeFile_runtime_System.Security.AccessControl.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll" />
@@ -779,6 +982,12 @@
 
     <DirectoryRef Id="AwakeInstallFolderNetcoreApp30" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0">
       <Component Id="Module_Awake_runtime_netcoreapp30" Guid="1EBB21FE-083A-4AE6-9208-7DC72A421860">
+        <RemoveFolder Id='Remove_Module_Awake_runtime_netcoreapp30' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_Awake_runtime_netcoreapp30'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                              
         <File Id="AwakeFile_runtime_Microsoft.Win32.SystemEvents.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll" />
         <File Id="AwakeFile_runtime_System.Drawing.Common.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll" />
         <File Id="AwakeFile_runtime_System.Windows.Extensions.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll" />
@@ -787,15 +996,27 @@
 
     <DirectoryRef Id="AwakeInstallFolderNetcoreApp21" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp2.1">
       <Component Id="Module_Awake_runtime_netcoreapp21" Guid="52ED2831-6F3F-47D3-AA1A-88C697BE9D0F">
+        <RemoveFolder Id='Remove_Module_Awake_runtime_netcoreapp21' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_Awake_runtime_netcoreapp21'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                              
         <File Id="AwakeFile_runtime_System.Security.Principal.Windows.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll" />
       </Component>
     </DirectoryRef>
     
     <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
+        <RemoveFolder Id='Remove_Module_PowerPreview' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='Module_PowerPreview'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                              
         <!-- Component to include PowerPreview Module Source dll's -->
         <!-- File to include PowerPreview Module native dll -->
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.powerpreview.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.powerpreview.dll" KeyPath="no" />
         <!-- File to include common library used by preview handlers -->
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PreviewHandlerCommon.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PreviewHandlerCommon.deps.json" />
@@ -841,17 +1062,15 @@
       </Component>
     </DirectoryRef>
 
-    <!-- AlwaysOnTop -->
-    <DirectoryRef Id="AlwaysOnTopInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.AlwaysOnTopProjectName)">
-      <Component Id="Module_AlwaysOnTop" Guid="599D40E7-862A-4A4C-8013-D9CE0BEB3D6C" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.AlwaysOnTopProjectName)\PowerToys.AlwaysOnTopModuleInterface.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)modules\$(var.AlwaysOnTopProjectName)\PowerToys.AlwaysOnTop.exe" />
-      </Component>
-    </DirectoryRef>
-
     <!-- SettingsV2 components -->
     <DirectoryRef Id="SettingsV2InstallFolder" FileSource="$(var.BinX64Dir)Settings\">
       <Component Id="SettingsV2" Guid="4B108DC0-4B2C-4AC4-AAA9-1B2DC8399F7C" Win64="yes">
+        <RemoveFolder Id='Remove_SettingsV2' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SettingsV2'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                                  
         <!-- exe -->
         <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.exe"/>
         <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.UI.exe"/>
@@ -884,6 +1103,12 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets">
       <Component Id="SettingsV2Assets" Guid="705B863B-D813-49B9-BAA1-210DA913F765" Win64="yes">
+        <RemoveFolder Id='Remove_SettingsV2Assets' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SettingsV2Assets'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                                  
         <?foreach File in Logo.scale-200.png;SplashScreen.png;StoreLogo.scale-100.png?>
           <File Source="$(var.BinX64Dir)Settings\Assets\$(var.File)" />
         <?endforeach?>
@@ -896,27 +1121,51 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules">
       <Component Id="SettingsV2AssetsModules" Guid="A0B961A9-77D0-4223-88A9-E3B41BD9C329" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png;Wallpaper.png?>
+        <RemoveFolder Id='Remove_SettingsV2AssetsModules' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SettingsV2AssetsModules'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                                  
+        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png;Wallpaper.png?>
           <File Id="SettingsV2AssetsModules_$(var.File)" Source="$(var.BinX64Dir)Settings\Assets\Modules\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules\OOBE">
       <Component Id="SettingsV2OOBEAssetsModules" Guid="E2360A83-6694-4B33-B5F6-641A906359EE" Win64="yes">
-        <?foreach File in ColorPicker.gif;AlwaysOnTop.png;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
+        <RemoveFolder Id='Remove_SettingsV2OOBEAssetsModules' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SettingsV2OOBEAssetsModules'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                                  
+        <?foreach File in ColorPicker.gif;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
           <File Id="SettingsV2OOBEAssetsModules_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\Modules\OOBE\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\FluentIcons">
       <Component Id="SettingsV2OOBEAssetsFluentIcons" Guid="6A380D5A-DA63-45B5-B68F-06D57CDD1B9C" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png ?>
+        <RemoveFolder Id='Remove_SettingsV2OOBEAssetsFluentIcons' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SettingsV2OOBEAssetsFluentIcons'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                                  
+        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png ?>
           <File Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2ControlsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Controls\ShortcutControl">
       <Component Id="SettingsV2Controls" Guid="05C55C88-B59A-4450-A07C-EB7626E0781A" Win64="yes">
+        <RemoveFolder Id='Remove_SettingsV2Controls' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SettingsV2Controls'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                                  
         <?foreach File in ShortcutControl.xbf?>
           <File Id="SettingsV2_Controls_$(var.File)" Source="$(var.BinX64Dir)Settings\Controls\ShortcutControl\$(var.File)" />
         <?endforeach?>
@@ -924,6 +1173,12 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2PropertiesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Properties">
       <Component Id="SettingsV2Properties" Guid="8F910A41-B27B-4289-8FAC-9AB34F070CF6" Win64="yes">
+        <RemoveFolder Id='Remove_SettingsV2Properties' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SettingsV2Properties'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                                  
         <?foreach File in Default.rd.xml?>
           <File Id="SettingsV2_Properties_$(var.File)" Source="$(var.BinX64Dir)Settings\Properties\$(var.File)" />
         <?endforeach?>
@@ -931,6 +1186,12 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2StylesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Styles">
       <Component Id="SettingsV2Styles" Guid="44B5C0E0-76DA-4604-BB86-FCD27A00EB71" Win64="yes">
+        <RemoveFolder Id='Remove_SettingsV2Styles' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SettingsV2Styles'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                                  
         <?foreach File in TextBlock.xbf;Button.xbf?>
           <File Id="SettingsV2_Styles_$(var.File)" Source="$(var.BinX64Dir)Settings\Styles\$(var.File)" />
         <?endforeach?>
@@ -938,6 +1199,12 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2ViewsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Views">
       <Component Id="SettingsV2Views" Guid="C140BFBA-6370-4F67-862C-5B42660385CD" Win64="yes">
+        <RemoveFolder Id='Remove_SettingsV2Views' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SettingsV2Views'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                                  
         <?foreach File in FancyZonesPage.xbf;GeneralPage.xbf;ImageResizerPage.xbf;KeyboardManagerPage.xbf;PowerLauncherPage.xbf;PowerPreviewPage.xbf;PowerRenamePage.xbf;ShellPage.xbf;ShortcutGuidePage.xbf?>
           <File Id="SettingsV2_Views_$(var.File)" Source="$(var.BinX64Dir)Settings\Views\$(var.File)" />
         <?endforeach?>
@@ -945,6 +1212,13 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2XamlAssetsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Microsoft.UI.Xaml\Assets">
       <Component Id="SettingsV2XamlAssets" Guid="98A136DB-C1BD-42B1-9AB4-0E16F0ECE86A" Win64="yes">
+        <RemoveFolder Id='Remove_SettingsV2XamlInstallFolder' On='uninstall' Directory='SettingsV2XamlInstallFolder' />
+        <RemoveFolder Id='Remove_SettingsV2XamlAssetsInstallFolder' On='uninstall' Directory='SettingsV2XamlAssetsInstallFolder' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SettingsV2XamlAssets'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                                                                                  
         <?foreach File in NoiseAsset_256X256_PNG.png?>
           <File Id="SettingsV2_XamlAssets_$(var.File)" Source="$(var.BinX64Dir)Settings\Microsoft.UI.Xaml\Assets\$(var.File)" />
         <?endforeach?>
@@ -953,6 +1227,13 @@
 
     <DirectoryRef Id="DesktopFolder">
       <Component Id="DesktopShortcut" Guid="87321F2B-CC48-4326-881E-9C62CC260DC8">
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+              Name='DesktopShortcut'
+              Value='[INSTALLFOLDER]'
+              Type='string'
+              KeyPath='yes' />
+
+        <RemoveFolder Id='Remove_DesktopShortcut' On='uninstall' />
         <Condition>INSTALLDESKTOPSHORTCUT</Condition>
         <!-- DesktopShortcutId is implicitly installed in HKCU, so WIX won't allow changing this reg value to HKLM. -->
         <RegistryValue Root="HKCU"
@@ -960,7 +1241,7 @@
                         Name="desktopshorcutinstalled"
                         Type="integer"
                         Value="1"
-                        KeyPath="yes"/>
+                        KeyPath="no"/>
         <Shortcut Id="DesktopShortcutId"
                   Name="PowerToys (Preview)"
                   Description="PowerToys - Windows system utilities to maximize productivity"
@@ -997,6 +1278,7 @@
       <ComponentRef Id="Module_ImageResizer_Registry" />
       <ComponentRef Id="Module_PowerPreview" />
       <ComponentRef Id="Module_PowerPreview_Registry" />
+      <ComponentRef Id="RemoveUnreferencedDirectories" />
       <ComponentRef Id="Module_KeyboardManager" />
       <ComponentRef Id="Module_KeyboardManager_Editor" />
       <ComponentRef Id="Module_KeyboardManager_Engine" />
@@ -1008,7 +1290,6 @@
       <ComponentRef Id="Module_Awake_runtime_netcoreapp21"/>
       <ComponentRef Id="Module_FindMyMouse"/>
       <ComponentRef Id="Module_MouseHighlighter"/>
-      <ComponentRef Id="Module_AlwaysOnTop"/>
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
       <ComponentRef Id="SettingsV2AssetsModules" />
@@ -1136,68 +1417,197 @@
                     <?define IdSafeLanguage = $(var.Language)?>
                 <?endif?>
                 <Component Id="Launcher_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)LauncherInstallFolder">
+                    <RemoveFolder Id='Remove_Launcher_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RemoveFolder Id='Remove_RegistryPluginFolder' On='uninstall' Directory='RegistryPluginFolder'/>
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                                                                                  
                     <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerToys.PowerLauncher.resources.dll" />
                 </Component>
                 <Component Id="FancyZonesEditor_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FancyZonesInstallFolder">
+                    <RemoveFolder Id='Remove_FancyZonesEditor_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='FancyZonesEditor_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\PowerToys.FancyZonesEditor.resources.dll" />
                 </Component>
                 <Component Id="ImageResizer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ImageResizerInstallFolder">
+                    <RemoveFolder Id='Remove_ImageResizer_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='ImageResizer_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\PowerToys.ImageResizer.resources.dll" />
                 </Component>
                 <Component Id="ColorPicker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder">
+                    <RemoveFolder Id='Remove_ColorPicker_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='ColorPicker_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.Language)\PowerToys.ColorPickerUI.resources.dll" />
                 </Component>
                 <Component Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+                    <RemoveFolder Id='Remove_MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.MarkdownPreviewHandler.resources.dll" />
                 </Component>
                 <Component Id="SVGPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+                  <RemoveFolder Id='Remove_SVGPreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                  <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                      Name='SVGPreviewHandler_$(var.IdSafeLanguage)_Component'
+                      Value='[INSTALLFOLDER]'
+                      Type='string'
+                      KeyPath='yes' />                
                   <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.SvgPreviewHandler.resources.dll" />
                 </Component>
                 <Component Id="PDFPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+                  <RemoveFolder Id='Remove_PDFPreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                  <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                      Name='PDFPreviewHandler_$(var.IdSafeLanguage)_Component'
+                      Value='[INSTALLFOLDER]'
+                      Type='string'
+                      KeyPath='yes' />                
                   <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.PdfPreviewHandler.resources.dll" />
                 </Component>
                 <Component Id="GcodePreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+                  <RemoveFolder Id='Remove_GcodePreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                  <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                      Name='GcodePreviewHandler_$(var.IdSafeLanguage)_Component'
+                      Value='[INSTALLFOLDER]'
+                      Type='string'
+                      KeyPath='yes' />                
                   <File Id="GcodePreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.GcodePreviewHandler.resources.dll" />
                 </Component>
                 <!-- PowerToys Run aka Launcher plugin resources -->
                 <Component Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder">
+                    <RemoveFolder Id='Remove_Launcher_Calculator_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_Calculator_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Folder_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder">
+                    <RemoveFolder Id='Remove_Launcher_Folder_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_Folder_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_Folder_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Folder\$(var.Language)\Microsoft.Plugin.Folder.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Program_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ProgramPluginFolder">
+                    <RemoveFolder Id='Remove_Launcher_Program_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_Program_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_Program_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Program\$(var.Language)\Microsoft.Plugin.Program.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Shell_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ShellPluginFolder">
+                    <RemoveFolder Id='Remove_Launcher_Shell_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_Shell_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_Shell_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Shell\$(var.Language)\Microsoft.Plugin.Shell.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Indexer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)IndexerPluginFolder">
+                    <RemoveFolder Id='Remove_Launcher_Indexer_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_Indexer_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Uri_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)UriPluginFolder">
+                    <RemoveFolder Id='Remove_Launcher_Uri_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_Uri_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
                 </Component>
                 <Component Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder">
+                  <RemoveFolder Id='Remove_Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                  <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                      Name='Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component'
+                      Value='[INSTALLFOLDER]'
+                      Type='string'
+                      KeyPath='yes' />                
                   <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.Language)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
                 </Component>
                 <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
+                    <RemoveFolder Id='Remove_Launcher_WindowWalker_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_WindowWalker_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Registry_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)RegistryPluginFolder">
+                    <RemoveFolder Id='Remove_Launcher_Registry_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_Registry_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_Registry_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Registry.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Service_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ServicePluginFolder">
+                    <RemoveFolder Id='Remove_Launcher_Service_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_Service_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_Service_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Service.resources.dll" />
                 </Component>
                 <Component Id="Launcher_System_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder">
+                    <RemoveFolder Id='Remove_Launcher_System_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_System_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
                 </Component>
                 <Component Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
+                    <RemoveFolder Id='Remove_Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RemoveFolder Id='Remove_WindowsSettingsLanguagesFolder' On='uninstall' Directory='WindowsSettingsLanguagesFolder' />
+                    
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
                 </Component>
                 <!-- Uncomment after Plugin receives the localization files.
                 <Component Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsTerminalFolder">
+                  <RemoveFolder Id='Remove_Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component' On='uninstall' />
+                    <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+                        Name='Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component'
+                        Value='[INSTALLFOLDER]'
+                        Type='string'
+                        KeyPath='yes' />                
                     <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
                 </Component>
                 -->
@@ -1217,6 +1627,12 @@
       </Component>
 
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
+        <RemoveFolder Id='Remove_launcherInstallComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='launcherInstallComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                
         <File Source="$(var.BinX64Dir)modules\Launcher\PowerToys.Launcher.dll" />
         <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
@@ -1228,6 +1644,12 @@
         <?endforeach?>
       </Component>
       <Component Id="launcherImagesComponent" Directory="LauncherImagesFolder" Guid="D254220C-1DD9-4C74-8810-1AAB2F940DE8">
+        <RemoveFolder Id='Remove_launcherImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='launcherImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                
         <?foreach File in app.dark.png;app.light.png;app_error.dark.png;app_error.light.png;RunAsset.ico?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Images\$(var.File)" />
         <?endforeach?>
@@ -1235,22 +1657,46 @@
 
       <!-- Calculator Plugin -->
       <Component Id="calculatorComponent" Directory="CalculatorPluginFolder" Guid="19DE1022-583C-4969-9AFC-D43CB944003D">
+        <RemoveFolder Id='Remove_calculatorComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='calculatorComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                
         <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.Calculator.deps.json;Microsoft.PowerToys.Run.Plugin.Calculator.dll;PowerToys.ManagedTelemetry.dll?>
           <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Calculator\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="calculatorImagesComponent" Directory="CalculatorImagesFolder" Guid="07EC9232-CF9A-4CDB-8D8E-E79DC75096C0">
+        <RemoveFolder Id='Remove_calculatorImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='calculatorImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                
         <File Id="calculatorPluginImg_calculator_light" Source="$(var.BinX64Dir)modules\launcher\Plugins\Calculator\Images\calculator.light.png" />
         <File Id="calculatorPluginImg_calculator_dark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Calculator\Images\calculator.dark.png" />
       </Component>
 
       <!-- Folder Plugin -->
       <Component Id="FolderComponent" Directory="FolderPluginFolder" Guid="453D6C29-8F0D-46EC-B210-82E6AF547039">
+        <RemoveFolder Id='Remove_FolderComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='FolderComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in plugin.json;Microsoft.Plugin.Folder.deps.json;Microsoft.Plugin.Folder.dll;PowerToys.ManagedTelemetry.dll?>
         <File Id="Folder_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Folder\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="FolderImagesComponent" Directory="FolderPluginImagesFolder" Guid="6C5226EB-E312-4768-B4D1-B1D3ACFCCBDF">
+        <RemoveFolder Id='Remove_FolderImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='FolderImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in copy.dark.png;copy.light.png;delete.dark.png;delete.light.png;file.dark.png;file.light.png;folder.dark.png;folder.light.png;user.dark.png;user.light.png;Warning.dark.png;Warning.light.png?>
           <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Folder\Images\$(var.File)" />
         <?endforeach?>
@@ -1258,11 +1704,23 @@
 
       <!-- Program Plugin -->
       <Component Id="ProgramComponent" Directory="ProgramPluginFolder" Guid="3C5CA6E6-3D36-4F4E-B40E-38AA5E5CB799">
+        <RemoveFolder Id='Remove_ProgramComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='ProgramComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in plugin.json;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll;PowerToys.ManagedTelemetry.dll?>
           <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Program\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="ProgramImagesComponent" Directory="ProgramImagesFolder" Guid="30D357F5-406F-47D1-BEFE-6022746469B4">
+        <RemoveFolder Id='Remove_ProgramImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='ProgramImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in app.dark.png;app.light.png;disable.light.png;disable.dark.png;folder.light.png;folder.dark.png;shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
           <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Program\Images\$(var.File)" />
         <?endforeach?>
@@ -1270,11 +1728,23 @@
 
       <!-- Shell Plugin -->
       <Component Id="ShellComponent" Directory="ShellPluginFolder" Guid="6D3D7294-1804-47C9-83E5-47A8867F3801">
+        <RemoveFolder Id='Remove_ShellComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='ShellComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in plugin.json;Microsoft.Plugin.Shell.deps.json;Microsoft.Plugin.Shell.dll;PowerToys.ManagedTelemetry.dll?>
           <File Id="Shell_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Shell\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="ShellImagesComponent" Directory="ShellImagesFolder" Guid="15B5DBAE-E7C1-4BF7-A29E-6CE76242F8F4">
+        <RemoveFolder Id='Remove_ShellImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='ShellImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
        <?foreach File in shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
           <File Id="Shell_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Shell\Images\$(var.File)" />
         <?endforeach?>
@@ -1282,11 +1752,23 @@
 
       <!-- Indexer Plugin -->
       <Component Id="IndexerComponent" Directory="IndexerPluginFolder" Guid="FEA9816A-B4F7-42CC-99AF-B05F3E7F7EBF">
+        <RemoveFolder Id='Remove_IndexerComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='IndexerComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in Microsoft.Plugin.Indexer.deps.json;Microsoft.Plugin.Indexer.dll;plugin.json;PowerToys.ManagedTelemetry.dll?>
           <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Indexer\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="IndexerImagesComponent" Directory="IndexerImagesFolder" Guid="DB2E8D49-D104-425B-9616-952AC8CAB676">
+        <RemoveFolder Id='Remove_IndexerImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='IndexerImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in indexer.dark.png;indexer.light.png;Warning.light.png;Warning.dark.png?>
           <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Indexer\Images\$(var.File)" />
         <?endforeach?>
@@ -1294,11 +1776,23 @@
 
       <!-- UnitConverter Plugin -->
       <Component Id="UnitConverterComponent" Directory="UnitConverterPluginFolder" Guid="D4F429E3-C619-49D6-9416-88A757D18E02">
+        <RemoveFolder Id='Remove_UnitConverterComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='UnitConverterComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.UnitConverter.deps.json;Community.PowerToys.Run.Plugin.UnitConverter.dll?>
         <File Id="UnitConverter_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="UnitConverterImagesComponent" Directory="UnitConverterImagesFolder" Guid="16ABD217-0898-47B2-89D9-AF1ABF00F543">
+        <RemoveFolder Id='Remove_UnitConverterImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='UnitConverterImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <File Id="UnitConverterLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.light.png" />
         <File Id="UnitConverterDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.dark.png" />
       </Component>
@@ -1316,23 +1810,47 @@
 
       <!-- Uri Plugin -->
       <Component Id="UriComponent" Directory="UriPluginFolder" Guid="C7DC8F88-554C-4375-9510-9435399B5D3D">
+        <RemoveFolder Id='Remove_UriComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='UriComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in plugin.json;Microsoft.Plugin.Uri.deps.json;Microsoft.Plugin.Uri.dll;PowerToys.ManagedTelemetry.dll?>
           <File Id="Uri_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="UriImagesComponent" Directory="UriImagesFolder" Guid="8C9C1634-28C8-45C4-A8EA-8D4C9B4810D0">
+        <RemoveFolder Id='Remove_UriImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='UriImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <File Id="UriDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\Images\Uri.dark.png" />
         <File Id="UriLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\Images\Uri.light.png" />
       </Component>
 
       <!-- VSCodeWorkspaces Plugin -->
       <Component Id="VSCodeWorkspacesComponent" Directory="VSCodeWorkspacesPluginFolder" Guid="78363DBD-7E38-4D5F-8987-9963DF609B94">
+        <RemoveFolder Id='Remove_VSCodeWorkspacesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='VSCodeWorkspacesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <File Id="VSCodeWorkspaceFolder_deps" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.deps.json" />
         <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll?>
           <File Id="VSCodeWorkspaces_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="VSCodeWorkspacesImagesComponent" Directory="VSCodeWorkspaceImagesFolder" Guid="6F3C0CF1-7024-4333-BFA1-850D340AEE69">
+        <RemoveFolder Id='Remove_VSCodeWorkspacesImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='VSCodeWorkspacesImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <File Id="VSCodeWorkspaceCodeLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code-light.png" />
         <File Id="VSCodeWorkspaceCodeDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code-dark.png" />
         <File Id="VSCodeWorkspaceFolder" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\folder.png" />
@@ -1341,44 +1859,92 @@
 
       <!-- WindowWalker Plugin -->  
       <Component Id="WindowWalkerComponent" Directory="WindowWalkerPluginFolder" Guid="EB1391C9-B701-421F-80FC-ABB2FEDFAD19">
+        <RemoveFolder Id='Remove_WindowWalkerComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='WindowWalkerComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in plugin.json;Microsoft.Plugin.WindowWalker.deps.json;Microsoft.Plugin.WindowWalker.dll;PowerToys.ManagedTelemetry.dll?>
           <File Id="WindowWalker_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="WindowWalkerImagesComponent" Directory="WindowWalkerImagesFolder" Guid="3944A7F5-77F4-4979-9911-EDE709B2F509">
+        <RemoveFolder Id='Remove_WindowWalkerImagesComponent' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+              Name='WindowWalkerImagesComponent'
+              Value='[INSTALLFOLDER]'
+              Type='string'
+              KeyPath='yes' />                      
           <File Id="WindowWalkerDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\windowwalker.dark.png" />
           <File Id="WindowWalkerLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\windowwalker.light.png" />
       </Component>
 
       <!-- Registry Plugin -->
       <Component Id="RegistryComponent" Directory="RegistryPluginFolder" Guid="186FDFDC-12F1-4221-BEF6-DE6763F54B18">
+        <RemoveFolder Id='Remove_RegistryComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='RegistryComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;PowerToys.ManagedTelemetry.dll?>
           <File Id="Registry_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="RegistryImagesComponent" Directory="RegistryImagesFolder" Guid="2E2C91A2-9F53-40C6-BBE9-E6FD6D6E94EB">
+          <RemoveFolder Id='Remove_RegistryImagesComponent' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+              Name='RegistryImagesComponent'
+              Value='[INSTALLFOLDER]'
+              Type='string'
+              KeyPath='yes' />                      
           <File Id="RegistryDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\Images\reg.dark.png" />
           <File Id="RegistryLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\Images\reg.light.png" />
       </Component>
 
       <!-- Service Plugin -->
       <Component Id="ServiceComponent" Directory="ServicePluginFolder" Guid="66245D20-0078-4136-8A34-4A282FB894D5">
+        <RemoveFolder Id='Remove_ServiceComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='ServiceComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.Service.deps.json;Microsoft.PowerToys.Run.Plugin.Service.dll?>
           <File Id="Service_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="ServiceImagesComponent" Directory="ServiceImagesFolder" Guid="5846BF01-5BCB-47DC-9472-0E478A41B1AE">
+        <RemoveFolder Id='Remove_ServiceImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='ServiceImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <File Id="ServiceDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\Images\service.dark.png" />
         <File Id="ServiceLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\Images\service.light.png" />
       </Component>
 
       <!-- System Plugin -->
       <Component Id="SystemComponent" Directory="SystemPluginFolder" Guid="05894C7C-7207-4669-ADB9-E02DD9DB4CCD">
+        <RemoveFolder Id='Remove_SystemComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SystemComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.System.deps.json;Microsoft.PowerToys.Run.Plugin.System.dll?>
           <File Id="System_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="SystemImagesComponent" Directory="SystemImagesFolder" Guid="8886318A-0CD8-4990-85D1-50D44D5ADA21">
+        <RemoveFolder Id='Remove_SystemImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='SystemImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <File Id="SystemLockDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\lock.dark.png" />
         <File Id="SystemLockLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\lock.light.png" />
         <File Id="SystemLogoffDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\logoff.dark.png" />
@@ -1395,22 +1961,46 @@
 
       <!-- WindowsSettings Plugin -->
       <Component Id="WindowsSettingsComponent" Directory="WindowsSettingsPluginFolder" Guid="ACEC2B6D-8E95-43BF-A1E4-137E95F07C96">
+        <RemoveFolder Id='Remove_WindowsSettingsComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='WindowsSettingsComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;PowerToys.ManagedTelemetry.dll?>
           <File Id="WindowsSettings_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="WindowsSettingsImagesComponent" Directory="WindowsSettingsImagesFolder" Guid="E1CE33A7-6318-4FA6-A46B-9302A00BD6AA">
+          <RemoveFolder Id='Remove_WindowsSettingsImagesComponent' On='uninstall' />
+          <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+              Name='WindowsSettingsImagesComponent'
+              Value='[INSTALLFOLDER]'
+              Type='string'
+              KeyPath='yes' />                      
           <File Id="WindowsSettingsDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\Images\WindowsSettings.dark.png" />
           <File Id="WindowsSettingsLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\Images\WindowsSettings.light.png" />
       </Component>
 
       <!-- WindowsTerminal Plugin -->
       <Component Id="WindowsTerminalComponent" Directory="WindowsTerminalPluginFolder" Guid="5392FD11-9A69-4409-A711-748C225F1A18">
+        <RemoveFolder Id='Remove_WindowsTerminalComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='WindowsTerminalComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
           <File Id="WindowsTerminal_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="WindowsTerminalImagesComponent" Directory="WindowsTerminalImagesFolder" Guid="CDD21BEB-E2F3-4138-A1F8-72FD3B52706A">
+        <RemoveFolder Id='Remove_WindowsTerminalImagesComponent' On='uninstall' />
+        <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
+            Name='WindowsTerminalImagesComponent'
+            Value='[INSTALLFOLDER]'
+            Type='string'
+            KeyPath='yes' />                      
         <File Id="WindowsTerminalDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.dark.png" />
         <File Id="WindowsTerminalLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.light.png" />
       </Component>
