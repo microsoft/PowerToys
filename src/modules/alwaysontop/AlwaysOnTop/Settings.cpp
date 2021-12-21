@@ -17,8 +17,10 @@ namespace NonLocalizable
     const static wchar_t* FrameThicknessID = L"frame-thickness";
     const static wchar_t* FrameColorID = L"frame-color";
     const static wchar_t* BlockInGameModeID = L"block-in-game-mode";
+    const static wchar_t* ExcludedAppsID = L"excluded-apps";
 }
 
+// TODO: move to common utils
 inline COLORREF HexToRGB(std::wstring_view hex, const COLORREF fallbackColor = RGB(255, 255, 255))
 {
     hex = left_trim<wchar_t>(trim<wchar_t>(hex), L"#");
@@ -100,6 +102,29 @@ void AlwaysOnTopSettings::LoadSettings()
         if (const auto val = values.get_bool_value(NonLocalizable::BlockInGameModeID))
         {
             m_settings.blockInGameMode = *val;
+        }
+
+        if (auto val = values.get_string_value(NonLocalizable::ExcludedAppsID))
+        {
+            std::wstring apps = std::move(*val);
+            m_settings.excludedApps.clear();
+            auto excludedUppercase = apps;
+            CharUpperBuffW(excludedUppercase.data(), (DWORD)excludedUppercase.length());
+            std::wstring_view view(excludedUppercase);
+            while (view.starts_with('\n') || view.starts_with('\r'))
+            {
+                view.remove_prefix(1);
+            }
+            while (!view.empty())
+            {
+                auto pos = (std::min)(view.find_first_of(L"\r\n"), view.length());
+                m_settings.excludedApps.emplace_back(view.substr(0, pos));
+                view.remove_prefix(pos);
+                while (view.starts_with('\n') || view.starts_with('\r'))
+                {
+                    view.remove_prefix(1);
+                }
+            }
         }
 
         NotifyObservers();
