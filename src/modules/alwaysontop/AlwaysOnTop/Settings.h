@@ -8,9 +8,11 @@ using NotificationCallback = std::function<void()>;
 struct Settings
 {
     PowerToysSettings::HotkeyObject hotkey = PowerToysSettings::HotkeyObject::from_settings(true, true, false, false, 84); // win + ctrl + T
-    bool enableSound = false;
-    bool enableFrame = false;
+    bool enableFrame = true;
+    bool enableSound = true;
     bool blockInGameMode = true;
+    float frameThickness = 15.0f;
+    COLORREF frameColor = RGB(0, 173, 239);
 };
 
 class AlwaysOnTopSettings
