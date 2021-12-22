@@ -62,6 +62,7 @@ namespace PowerToys.Settings
                         switch (args[(int)Arguments.SettingsWindow])
                         {
                             case "Overview": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.GeneralPage); break;
+                            case "AlwaysOnTop": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.AlwaysOnTopPage); break;
                             case "Awake": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.AwakePage); break;
                             case "ColorPicker": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.ColorPickerPage); break;
                             case "FancyZones": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.FancyZonesPage); break;
