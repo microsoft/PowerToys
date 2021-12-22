@@ -264,7 +264,6 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                                 if (element.TryGetProperty("url", out element))
                                 {
                                     url = element.GetString();
-                                    return;
                                 }
                             }
                         }
