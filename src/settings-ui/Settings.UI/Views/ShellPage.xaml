@@ -48,6 +48,14 @@
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
 
+                <muxc:NavigationViewItem x:Uid="Shell_AlwaysOnTop"
+                                         helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+
                 <muxc:NavigationViewItem x:Uid="Shell_Awake"
                                          helpers:NavHelper.NavigateTo="views:AwakePage">
                     <muxc:NavigationViewItem.Icon>
