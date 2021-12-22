@@ -1862,4 +1862,58 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>On</value>
     <comment>The state of a ToggleSwitch when it's on</comment>
   </data>
+  <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
+    <value>Always On Top is a quick and easy way to pin windows on top.</value>
+  </data>
+  <data name="AlwaysOnTop.ModuleTitle" xml:space="preserve">
+    <value>Always On Top </value>
+  </data>
+  <data name="AlwaysOnTop_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="AlwaysOnTop_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable AlwaysOnTop</value>
+  </data>
+  <data name="AlwaysOnTop_ExcludedApps.Description" xml:space="preserve">
+    <value>Excludes an application from pinning on top</value>
+  </data>
+  <data name="AlwaysOnTop_ExcludedApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="AlwaysOnTop_ExcludedApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
+  </data>
+  <data name="AlwaysOnTop_FrameColor.Header" xml:space="preserve">
+    <value>Frame color</value>
+  </data>
+  <data name="AlwaysOnTop_FrameEnabled.Description" xml:space="preserve">
+    <value>Draw frame around pinned window</value>
+  </data>
+  <data name="AlwaysOnTop_FrameEnabled.Header" xml:space="preserve">
+    <value>Frame</value>
+  </data>
+  <data name="AlwaysOnTop_FrameThickness.Header" xml:space="preserve">
+    <value>Frame thickness</value>
+  </data>
+  <data name="AlwaysOnTop_Behavior_GroupSettings.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="Shell_AlwaysOnTop.Content" xml:space="preserve">
+    <value>Always On Top</value>
+  </data>
+  <data name="AlwaysOnTop_GameMode.Header" xml:space="preserve">
+    <value>Game Mode</value>
+  </data>
+  <data name="AlwaysOnTop_PreventActivationOnGameMode.Content" xml:space="preserve">
+    <value>Do not activate when Game Mode is on</value>
+  </data>
+  <data name="AlwaysOnTop_Sound.Header" xml:space="preserve">
+    <value>Sound</value>
+  </data>
+  <data name="AlwaysOnTop_SoundEnabled.Content" xml:space="preserve">
+    <value>Enable sound on pinning/unpinning window</value>
+  </data>
+  <data name="LearnMore_AlwaysOnTop.Text" xml:space="preserve">
+    <value>Learn more about AlwaysOnTop</value>
+  </data>
 </root>
