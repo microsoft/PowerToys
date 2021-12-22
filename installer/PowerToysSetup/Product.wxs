@@ -415,7 +415,7 @@
 
     <Fragment>
         <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinX64Dir)">
-            <Component Id="powertoys_toast_clsid" Win64="yes">
+            <Component Id="powertoys_toast_clsid" Win64="yes" Guid="78D30568-E735-435D-9E08-59CDA1DC6555">
                 <RemoveFolder Id='Remove_powertoys_toast_clsid' On='uninstall' />
                 <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
                     <RegistryValue Type="string" Value="PowerToys Toast Notifications Background Activator" />
@@ -1412,7 +1412,10 @@
             <?else?>
             <?define IdSafeLanguage = $(var.Language)?>
             <?endif?>
-            <Component Id="Launcher_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)LauncherInstallFolder">
+            <Component
+                Id="Launcher_$(var.IdSafeLanguage)_Component"
+                Directory="Resource$(var.IdSafeLanguage)LauncherInstallFolder"
+                Guid="06968E27-9753-44D4-BB12-9E0179EB10FC">
                 <RemoveFolder Id='Remove_Launcher_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RemoveFolder Id='Remove_RegistryPluginFolder' On='uninstall' Directory='RegistryPluginFolder'/>
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
@@ -1422,7 +1425,10 @@
                     KeyPath='yes' />
                 <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerToys.PowerLauncher.resources.dll" />
             </Component>
-            <Component Id="FancyZonesEditor_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FancyZonesInstallFolder">
+            <Component
+                Id="FancyZonesEditor_$(var.IdSafeLanguage)_Component"
+                Directory="Resource$(var.IdSafeLanguage)FancyZonesInstallFolder"
+                Guid="4F388475-71CF-45C7-9786-6C723C6F6B32">
                 <RemoveFolder Id='Remove_FancyZonesEditor_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='FancyZonesEditor_$(var.IdSafeLanguage)_Component'
@@ -1431,7 +1437,10 @@
                     KeyPath='yes' />
                 <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\PowerToys.FancyZonesEditor.resources.dll" />
             </Component>
-            <Component Id="ImageResizer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ImageResizerInstallFolder">
+            <Component
+                Id="ImageResizer_$(var.IdSafeLanguage)_Component"
+                Directory="Resource$(var.IdSafeLanguage)ImageResizerInstallFolder"
+                Guid="B92DBB42-DBCC-44FE-9EE3-DE3C382F8C19">
                 <RemoveFolder Id='Remove_ImageResizer_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='ImageResizer_$(var.IdSafeLanguage)_Component'
@@ -1440,7 +1449,10 @@
                     KeyPath='yes' />
                 <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\PowerToys.ImageResizer.resources.dll" />
             </Component>
-            <Component Id="ColorPicker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder">
+            <Component
+                Id="ColorPicker_$(var.IdSafeLanguage)_Component"
+                Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder"
+                Guid="576F296D-FAC7-47CE-8D87-11D9C01F6D24">
                 <RemoveFolder Id='Remove_ColorPicker_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='ColorPicker_$(var.IdSafeLanguage)_Component'
@@ -1449,7 +1461,10 @@
                     KeyPath='yes' />
                 <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.Language)\PowerToys.ColorPickerUI.resources.dll" />
             </Component>
-            <Component Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+            <Component
+                Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component"
+                Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
+                Guid="6DBAF8DA-A679-45FA-89C7-455804261223">
                 <RemoveFolder Id='Remove_MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component'
@@ -1458,7 +1473,10 @@
                     KeyPath='yes' />
                 <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.MarkdownPreviewHandler.resources.dll" />
             </Component>
-            <Component Id="SVGPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+            <Component
+                Id="SVGPreviewHandler_$(var.IdSafeLanguage)_Component"
+                Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
+                Guid="8D45B1A5-78A5-4EDA-8950-66F4E7BEF7F7">
                 <RemoveFolder Id='Remove_SVGPreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='SVGPreviewHandler_$(var.IdSafeLanguage)_Component'
@@ -1467,7 +1485,10 @@
                     KeyPath='yes' />
                 <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.SvgPreviewHandler.resources.dll" />
             </Component>
-            <Component Id="PDFPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+            <Component
+                Id="PDFPreviewHandler_$(var.IdSafeLanguage)_Component"
+                Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
+                Guid="F2C76FEE-8F46-471D-94F3-F33F38C593BB">
                 <RemoveFolder Id='Remove_PDFPreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='PDFPreviewHandler_$(var.IdSafeLanguage)_Component'
@@ -1476,7 +1497,10 @@
                     KeyPath='yes' />
                 <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.PdfPreviewHandler.resources.dll" />
             </Component>
-            <Component Id="GcodePreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+            <Component
+                Id="GcodePreviewHandler_$(var.IdSafeLanguage)_Component"
+                Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
+                Guid="692E8FB9-851C-449A-B966-FDB736CA43BF">
                 <RemoveFolder Id='Remove_GcodePreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='GcodePreviewHandler_$(var.IdSafeLanguage)_Component'
@@ -1486,7 +1510,10 @@
                 <File Id="GcodePreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.GcodePreviewHandler.resources.dll" />
             </Component>
             <!-- PowerToys Run aka Launcher plugin resources -->
-            <Component Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder">
+            <Component
+                Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component"
+                Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder"
+                Guid="61A23FBA-7D45-46E5-B228-4E8521FE6FD2">
                 <RemoveFolder Id='Remove_Launcher_Calculator_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_Calculator_$(var.IdSafeLanguage)_Component'
@@ -1495,7 +1522,10 @@
                     KeyPath='yes' />
                 <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
             </Component>
-            <Component Id="Launcher_Folder_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder">
+            <Component
+                Id="Launcher_Folder_$(var.IdSafeLanguage)_Component"
+                Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder"
+                Guid="3F84F27F-AE2D-476D-B9B2-BDF4CA3A8337">
                 <RemoveFolder Id='Remove_Launcher_Folder_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_Folder_$(var.IdSafeLanguage)_Component'
@@ -1504,7 +1534,10 @@
                     KeyPath='yes' />
                 <File Id="Launcher_Folder_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Folder\$(var.Language)\Microsoft.Plugin.Folder.resources.dll" />
             </Component>
-            <Component Id="Launcher_Program_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ProgramPluginFolder">
+            <Component
+                Id="Launcher_Program_$(var.IdSafeLanguage)_Component"
+                Guid="1F2CBF84-BAAB-47D3-974D-83443DF89DA4"
+                Directory="Resource$(var.IdSafeLanguage)ProgramPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Program_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_Program_$(var.IdSafeLanguage)_Component'
@@ -1513,7 +1546,10 @@
                     KeyPath='yes' />
                 <File Id="Launcher_Program_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Program\$(var.Language)\Microsoft.Plugin.Program.resources.dll" />
             </Component>
-            <Component Id="Launcher_Shell_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ShellPluginFolder">
+            <Component
+                Id="Launcher_Shell_$(var.IdSafeLanguage)_Component"
+                Guid="AEA3DB77-FE60-4A99-BDD9-B4D5A94BE9A1"
+                Directory="Resource$(var.IdSafeLanguage)ShellPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Shell_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_Shell_$(var.IdSafeLanguage)_Component'
@@ -1522,7 +1558,10 @@
                     KeyPath='yes' />
                 <File Id="Launcher_Shell_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Shell\$(var.Language)\Microsoft.Plugin.Shell.resources.dll" />
             </Component>
-            <Component Id="Launcher_Indexer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)IndexerPluginFolder">
+            <Component
+                Id="Launcher_Indexer_$(var.IdSafeLanguage)_Component"
+                Guid="91538C35-6C3C-44C3-A655-9409A3C6EE14"
+                Directory="Resource$(var.IdSafeLanguage)IndexerPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Indexer_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_Indexer_$(var.IdSafeLanguage)_Component'
@@ -1531,7 +1570,10 @@
                     KeyPath='yes' />
                 <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
             </Component>
-            <Component Id="Launcher_Uri_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)UriPluginFolder">
+            <Component
+                Id="Launcher_Uri_$(var.IdSafeLanguage)_Component"
+                Guid="F09AFC25-C74F-4F24-A80D-74D2599CBC62"
+                Directory="Resource$(var.IdSafeLanguage)UriPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Uri_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_Uri_$(var.IdSafeLanguage)_Component'
@@ -1540,7 +1582,10 @@
                     KeyPath='yes' />
                 <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
             </Component>
-            <Component Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder">
+            <Component
+                Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component"
+                Guid="E84BB2EB-EEBE-4008-911F-9B6B814FA119"
+                Directory="Resource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component'
@@ -1549,7 +1594,9 @@
                     KeyPath='yes' />
                 <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.Language)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
             </Component>
-            <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
+            <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component"
+                       Guid="0665D74F-3D68-4E77-BE4A-D1549A491E27"
+                       Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_WindowWalker_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_WindowWalker_$(var.IdSafeLanguage)_Component'
@@ -1558,7 +1605,10 @@
                     KeyPath='yes' />
                 <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
             </Component>
-            <Component Id="Launcher_Registry_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)RegistryPluginFolder">
+            <Component
+                Id="Launcher_Registry_$(var.IdSafeLanguage)_Component"
+                Guid="728CD7B0-68E5-43FA-B779-B3B672011B0C"
+                Directory="Resource$(var.IdSafeLanguage)RegistryPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Registry_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_Registry_$(var.IdSafeLanguage)_Component'
@@ -1567,7 +1617,10 @@
                     KeyPath='yes' />
                 <File Id="Launcher_Registry_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Registry.resources.dll" />
             </Component>
-            <Component Id="Launcher_Service_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ServicePluginFolder">
+            <Component
+                Id="Launcher_Service_$(var.IdSafeLanguage)_Component"
+                Guid="1A6900E3-4894-4383-B822-A34DE9B29765"
+                Directory="Resource$(var.IdSafeLanguage)ServicePluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Service_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_Service_$(var.IdSafeLanguage)_Component'
@@ -1576,7 +1629,10 @@
                     KeyPath='yes' />
                 <File Id="Launcher_Service_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Service.resources.dll" />
             </Component>
-            <Component Id="Launcher_System_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder">
+            <Component
+                Id="Launcher_System_$(var.IdSafeLanguage)_Component"
+                Guid="FCC9FFC6-625A-4901-A6D9-4CB033012D4A"
+                Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_System_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_System_$(var.IdSafeLanguage)_Component'
@@ -1585,7 +1641,10 @@
                     KeyPath='yes' />
                 <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
             </Component>
-            <Component Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
+            <Component
+                Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component"
+                Guid="4C3F7C6E-B9C8-4C2A-B041-514F7662A4BE"
+                Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RemoveFolder Id='Remove_WindowsSettingsLanguagesFolder' On='uninstall' Directory='WindowsSettingsLanguagesFolder' />
 
@@ -1597,7 +1656,10 @@
                 <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
             </Component>
             <!-- Uncomment after Plugin receives the localization files.
-                <Component Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsTerminalFolder">
+                <Component 
+                    Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component" 
+                    Guid="B0550173-6954-4B59-951C-EA99DB591238"                
+                    Directory="Resource$(var.IdSafeLanguage)WindowsTerminalFolder">
                   <RemoveFolder Id='Remove_Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component' On='uninstall' />
                     <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                         Name='Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component'
