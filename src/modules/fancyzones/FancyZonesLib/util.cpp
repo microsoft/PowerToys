@@ -441,20 +441,10 @@ namespace FancyZonesUtils
         return true;
     }
 
-    bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
+    bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
     {
         auto zonable = IsStandardWindow(window) && HasNoVisibleOwner(window);
         if (!zonable)
-        {
-            return false;
-        }
-
-        return IsZonableByProcessPath(get_process_path(window), excludedApps);
-    }
-
-    bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
-    {
-        if (!IsStandardWindow(window))
         {
             return false;
         }

@@ -416,7 +416,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    const bool isCandidateForLastKnownZone = FancyZonesUtils::IsCandidateForLastKnownZone(window, m_settings->GetSettings()->excludedAppsArray);
+    const bool isCandidateForLastKnownZone = FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray);
     if (!isCandidateForLastKnownZone)
     {
         return;
