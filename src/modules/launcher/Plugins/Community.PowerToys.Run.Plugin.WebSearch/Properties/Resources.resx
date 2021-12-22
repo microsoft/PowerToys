@@ -118,13 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="plugin_browser" xml:space="preserve">
-    <value>In the default browser</value>
+    <value>the default browser</value>
   </data>
   <data name="plugin_description" xml:space="preserve">
     <value>Search the web.</value>
   </data>
   <data name="plugin_global_if_uri" xml:space="preserve">
     <value>Don't include in global results on queries that are URIs</value>
+  </data>
+  <data name="plugin_in_browser" xml:space="preserve">
+    <value>In the default browser</value>
   </data>
   <data name="plugin_name" xml:space="preserve">
     <value>Web Search</value>

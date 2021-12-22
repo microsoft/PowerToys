@@ -31,7 +31,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
         private string _searchEngineUrl;
 
-        private string _browserName;
+        private string _browserName = Properties.Resources.plugin_browser;
         private string _browserIconPath;
         private string _browserPath;
         private string _defaultIconPath;
@@ -74,7 +74,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 results.Add(new Result
                 {
                     Title = Properties.Resources.plugin_description.Remove(Description.Length - 1, 1),
-                    SubTitle = Properties.Resources.plugin_browser,
+                    SubTitle = Properties.Resources.plugin_in_browser,
                     QueryTextDisplay = string.Empty,
                     IcoPath = _defaultIconPath,
                     ProgramArguments = arguments,
@@ -234,6 +234,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                     "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice",
                     "ProgId");
 
+                // The `?` argument doesn't work on opera, so we get the user's default search engine:
                 if (progId.StartsWith("Opera", StringComparison.OrdinalIgnoreCase))
                 {
                     // Opera user preferences file:
@@ -250,31 +251,43 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                         prefFile = System.IO.File.ReadAllText($"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\Opera Software\\Opera Stable\\Preferences");
                     }
 
-                    string url = ExtraStringMethods.GetJSONStringValue(prefFile, new string[] { "default_search_provider_data", "template_url_data", "url" });
+                    // "default_search_provider_data" doesn't exist if the user hasn't searched for the first time,
+                    // therefore we set `url` to opera's default search engine:
+                    string url = "https://www.google.com/search?client=opera&q={0}&sourceid=opera";
 
-                    if (url is null)
+                    using (System.Text.Json.JsonDocument doc = System.Text.Json.JsonDocument.Parse(prefFile))
                     {
-                        // "default_search_provider_data" doesn't exist in Preferences if the user hasn't searched for the first time,
-                        // therefore we set `url` to opera's default search engine.
-                        url = "https://www.google.com/search?client=opera&q={0}&sourceid=opera";
-                    }
-                    else
-                    {
-                        url = url
-                            .Replace("{searchTerms}", "{0}", StringComparison.Ordinal)
-                            .Replace("{inputEncoding}", "UTF-8", StringComparison.Ordinal)
-                            .Replace("{outputEncoding}", "UTF-8", StringComparison.Ordinal);
-
-                        // just in case there are other url parameters
-                        for (int i = ExtraStringMethods.GetStrNthIndex(url, '}', 2); i != -1; i = ExtraStringMethods.GetStrNthIndex(url, '}', 2))
+                        if (doc.RootElement.TryGetProperty("default_search_provider_data", out var element))
                         {
-                            for (int j = i - 1; j > 0; --j)
+                            if (element.TryGetProperty("template_url_data", out element))
                             {
-                                if (url[j] == '&')
+                                if (element.TryGetProperty("url", out element))
                                 {
-                                    url = url.Remove(j, i - j + 1);
-                                    break;
+                                    url = element.GetString();
+                                    return;
                                 }
+                            }
+                        }
+                    }
+
+                    url = url
+                        .Replace("{searchTerms}", "{0}", StringComparison.Ordinal)
+                        .Replace("{inputEncoding}", "UTF-8", StringComparison.Ordinal)
+                        .Replace("{outputEncoding}", "UTF-8", StringComparison.Ordinal);
+
+                    int startIndex = url.IndexOf('}', StringComparison.Ordinal) + 1;
+
+                    // In case there are other url parameters (e.g. `&foo={bar}`), remove them:
+                    for (int i = url.IndexOf("}", startIndex, StringComparison.Ordinal);
+                            i != -1;
+                            i = url.IndexOf("}", startIndex, StringComparison.Ordinal))
+                    {
+                        for (int j = i - 1; j > 0; --j)
+                        {
+                            if (url[j] == '&')
+                            {
+                                url = url.Remove(j, i - j + 1);
+                                break;
                             }
                         }
                     }
@@ -283,30 +296,29 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 }
                 else
                 {
-                    if (progId.StartsWith("Chrome", StringComparison.OrdinalIgnoreCase))
+                    string appName = GetRegistryValue($"HKEY_CLASSES_ROOT\\{progId}\\Application", "ApplicationName")
+                        ?? GetRegistryValue($"HKEY_CLASSES_ROOT\\{progId}", "FriendlyTypeName");
+
+                    if (appName is null)
                     {
-                        _browserName = "Chrome";
-                    }
-                    else if (progId.StartsWith("MSEdge", StringComparison.OrdinalIgnoreCase))
-                    {
-                        _browserName = "Edge";
-                    }
-                    else if (progId.Contains("Firefox", StringComparison.OrdinalIgnoreCase))
-                    {
-                        _browserName = "Firefox";
-                    }
-                    else if (progId.StartsWith("Vivaldi", StringComparison.OrdinalIgnoreCase))
-                    {
-                        _browserName = "Vivaldi";
-                    }
-                    else if (progId.StartsWith("IE", StringComparison.OrdinalIgnoreCase))
-                    {
-                        _browserName = "Internet Explorer";
+                        appName = Properties.Resources.plugin_browser;
                     }
                     else
                     {
-                        _browserName = "the default browser";
+                        // Handle indirect strings:
+                        if (appName.StartsWith("@", StringComparison.Ordinal))
+                        {
+                            appName = GetIndirectString(appName);
+                        }
+
+                        appName = appName
+                            .Replace("URL", null, StringComparison.OrdinalIgnoreCase)
+                            .Replace("HTML", null, StringComparison.OrdinalIgnoreCase)
+                            .Replace("Document", null, StringComparison.OrdinalIgnoreCase)
+                            .TrimEnd();
                     }
+
+                    _browserName = appName;
 
                     _searchEngineUrl = null;
                 }
@@ -325,26 +337,17 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 // Using Ordinal since this is internal and used with a symbol
                 if (programLocation.StartsWith("@", StringComparison.Ordinal))
                 {
-                    var directProgramLocationStringBuilder = new StringBuilder(128);
-                    if (NativeMethods.SHLoadIndirectString(
-                            programLocation,
-                            directProgramLocationStringBuilder,
-                            (uint)directProgramLocationStringBuilder.Capacity,
-                            IntPtr.Zero) ==
-                        NativeMethods.Hresult.Ok)
-                    {
-                        // Check if there's a postfix with contract-white/contrast-black icon is available and use that instead
-                        var directProgramLocation = directProgramLocationStringBuilder.ToString();
-                        var themeIcon = newTheme == Theme.Light || newTheme == Theme.HighContrastWhite
-                            ? "contrast-white"
-                            : "contrast-black";
-                        var extension = Path.GetExtension(directProgramLocation);
-                        var themedProgLocation =
-                            $"{directProgramLocation.Substring(0, directProgramLocation.Length - extension.Length)}_{themeIcon}{extension}";
-                        _browserIconPath = File.Exists(themedProgLocation)
-                            ? themedProgLocation
-                            : directProgramLocation;
-                    }
+                    // Check if there's a postfix with contract-white/contrast-black icon is available and use that instead
+                    string directProgramLocation = GetIndirectString(programLocation);
+                    var themeIcon = newTheme == Theme.Light || newTheme == Theme.HighContrastWhite
+                        ? "contrast-white"
+                        : "contrast-black";
+                    var extension = Path.GetExtension(directProgramLocation);
+                    var themedProgLocation =
+                        $"{directProgramLocation.Substring(0, directProgramLocation.Length - extension.Length)}_{themeIcon}{extension}";
+                    _browserIconPath = File.Exists(themedProgLocation)
+                        ? themedProgLocation
+                        : directProgramLocation;
                 }
                 else
                 {
@@ -365,6 +368,22 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             string GetRegistryValue(string registryLocation, string valueName)
             {
                 return Microsoft.Win32.Registry.GetValue(registryLocation, valueName, null) as string;
+            }
+
+            string GetIndirectString(string str)
+            {
+                var stringBuilder = new StringBuilder(128);
+                if (NativeMethods.SHLoadIndirectString(
+                        str,
+                        stringBuilder,
+                        (uint)stringBuilder.Capacity,
+                        IntPtr.Zero)
+                    == NativeMethods.Hresult.Ok)
+                {
+                    return stringBuilder.ToString();
+                }
+
+                throw new Exception("Could not load indirect string.");
             }
         }
 
