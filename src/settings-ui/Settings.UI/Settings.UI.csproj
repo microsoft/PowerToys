@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="..\..\Version.props" />
@@ -186,6 +186,9 @@
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
+    <Compile Include="Views\AlwaysOnTopPage.xaml.cs">
+      <DependentUpon>AlwaysOnTopPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\AwakePage.xaml.cs">
       <DependentUpon>AwakePage.xaml</DependentUpon>
     </Compile>
@@ -233,6 +236,7 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\FluentIcons\FluentIconsAlwaysOnTop.png" />
     <Content Include="Assets\FluentIcons\FluentIconsColorPicker.png" />
     <Content Include="Assets\FluentIcons\FluentIconsAwake.png" />
     <Content Include="Assets\FluentIcons\FluentIconsFancyZones.png" />
@@ -250,6 +254,7 @@
     <Content Include="Assets\FluentIcons\FluentIconsShortcutGuide.png" />
     <Content Include="Assets\FluentIcons\FluentIconsVideoConferenceMute.png" />
     <Content Include="Assets\Logo.scale-200.png" />
+    <Content Include="Assets\Modules\AlwaysOnTop.png" />
     <Content Include="Assets\Modules\ColorPicker.png" />
     <Content Include="Assets\Modules\Awake.png" />
     <Content Include="Assets\Modules\FancyZones.png" />
@@ -437,6 +442,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\SettingsExpanderStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\AlwaysOnTopPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
