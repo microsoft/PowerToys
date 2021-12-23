@@ -1,12 +1,15 @@
 #pragma once
 
-#include <WindowTracker.h>
+#include <map>
+
 #include <Settings.h>
+#include <SettingsObserver.h>
 #include <Sound.h>
+#include <WindowTracker.h>
 
 #include <common/hooks/WinHookEvent.h>
 
-class AlwaysOnTop
+class AlwaysOnTop : public SettingsObserver
 {
 public:
     AlwaysOnTop();
@@ -47,7 +50,6 @@ private:
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
     
     bool InitMainWindow();
-    void UpdateSettings();
     void RegisterHotkey() const;
     void SubscribeToEvents();
 
@@ -62,7 +64,9 @@ private:
     bool PinTopmostWindow(HWND window) const noexcept;
     bool UnpinTopmostWindow(HWND window) const noexcept;
     bool AssignTracker(HWND window);
-        
+
+    virtual void SettingsUpdate(SettingId type) override;
+
     static void CALLBACK WinHookProc(HWINEVENTHOOK winEventHook,
                                      DWORD event,
                                      HWND window,

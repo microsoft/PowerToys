@@ -1,8 +1,10 @@
 #pragma once
 
-#include <FrameDrawer.h>
+#include <SettingsObserver.h>
 
-class WindowTracker
+class FrameDrawer;
+
+class WindowTracker : public SettingsObserver
 {
 public:
     WindowTracker(HWND window);
@@ -35,4 +37,6 @@ private:
     std::unique_ptr<FrameDrawer> m_frameDrawer;
 
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
+
+    virtual void SettingsUpdate(SettingId id) override;
 };
