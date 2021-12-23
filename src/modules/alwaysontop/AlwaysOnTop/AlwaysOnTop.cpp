@@ -37,6 +37,7 @@ bool isExcluded(HWND window)
 }
 
 AlwaysOnTop::AlwaysOnTop() :
+    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps}),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase))
 {
     s_instance = this;
@@ -83,26 +84,44 @@ bool AlwaysOnTop::InitMainWindow()
     return true;
 }
 
-void AlwaysOnTop::UpdateSettings()
+void AlwaysOnTop::SettingsUpdate(SettingId id)
 {
-    // frames
-    if (AlwaysOnTopSettings::settings().enableFrame)
+    switch (id)
     {
-        for (auto& iter : m_topmostWindows)
-        {
-            AssignTracker(iter.first);
-        }
-    }
-    else
+    case SettingId::Hotkey:
     {
-        for (auto& iter : m_topmostWindows)
-        {
-            iter.second = nullptr;
-        }
+        RegisterHotkey();
     }
-
-    // hotkeys
-    RegisterHotkey();
+    break;
+    case SettingId::FrameEnabled:
+    {
+        if (AlwaysOnTopSettings::settings().enableFrame)
+        {
+            for (auto& iter : m_topmostWindows)
+            {
+                if (!iter.second)
+                {
+                    AssignTracker(iter.first);
+                }
+            }
+        }
+        else
+        {
+            for (auto& iter : m_topmostWindows)
+            {
+                iter.second = nullptr;
+            }
+        }    
+    }
+    break;
+    case SettingId::ExcludeApps:
+    {
+        //TODO: remove excluded windows     
+    }
+    break;
+    default:
+        break;
+    }
 }
 
 LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept

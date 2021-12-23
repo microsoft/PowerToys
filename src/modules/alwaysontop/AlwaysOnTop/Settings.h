@@ -1,9 +1,13 @@
 #pragma once
 
+#include <unordered_set>
+
 #include <common/SettingsAPI/FileWatcher.h>
 #include <common/SettingsAPI/settings_objects.h>
 
-using NotificationCallback = std::function<void()>;
+#include <SettingsConstants.h>
+
+class SettingsObserver;
 
 struct Settings
 {
@@ -28,7 +32,8 @@ public:
     void InitFileWatcher();
     static std::wstring GetSettingsFileName();
 
-    void AddObserver(const NotificationCallback& callback);
+    void AddObserver(SettingsObserver& observer);
+    void RemoveObserver(SettingsObserver& observer);
 
     void LoadSettings();
 
@@ -38,7 +43,7 @@ private:
 
     Settings m_settings;
     std::unique_ptr<FileWatcher> m_settingsFileWatcher;
-    std::vector<NotificationCallback> m_observerCallbacks;
+    std::unordered_set<SettingsObserver*> m_observers;
 
-    void NotifyObservers() const;
+    void NotifyObservers(SettingId id) const;
 };

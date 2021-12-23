@@ -2,6 +2,7 @@
 #include "Settings.h"
 
 #include <ModuleConstants.h>
+#include <SettingsObserver.h>
 #include <WinHookEventIDs.h>
 
 #include <common/SettingsAPI/settings_helpers.h>
@@ -63,9 +64,18 @@ std::wstring AlwaysOnTopSettings::GetSettingsFileName()
     return saveFolderPath + L"\\" + std::wstring(NonLocalizable::SettingsFileName);
 }
 
-void AlwaysOnTopSettings::AddObserver(const NotificationCallback& callback)
+void AlwaysOnTopSettings::AddObserver(SettingsObserver& observer)
 {
-    m_observerCallbacks.push_back(callback);
+    m_observers.insert(&observer);
+}
+
+void AlwaysOnTopSettings::RemoveObserver(SettingsObserver& observer)
+{
+    auto iter = m_observers.find(&observer);
+    if (iter != m_observers.end())
+    {
+        m_observers.erase(iter);
+    }
 }
 
 void AlwaysOnTopSettings::LoadSettings()
@@ -74,40 +84,70 @@ void AlwaysOnTopSettings::LoadSettings()
     {
         PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::load_from_settings_file(NonLocalizable::ModuleKey);
 
-        if (const auto val = values.get_json(NonLocalizable::HotkeyID))
+        if (const auto jsonVal = values.get_json(NonLocalizable::HotkeyID))
         {
-            m_settings.hotkey = PowerToysSettings::HotkeyObject::from_json(*val);
-        }
-
-        if (const auto val = values.get_bool_value(NonLocalizable::SoundEnabledID))
-        {
-            m_settings.enableSound = *val;
-        }
-
-        if (const auto val = values.get_bool_value(NonLocalizable::FrameEnabledID))
-        {
-            m_settings.enableFrame = *val;
-        }
-
-        if (const auto val = values.get_int_value(NonLocalizable::FrameThicknessID))
-        {
-            m_settings.frameThickness = static_cast<float>(*val);
+            auto val = PowerToysSettings::HotkeyObject::from_json(*jsonVal);
+            if (m_settings.hotkey.get_modifiers() != val.get_modifiers() || m_settings.hotkey.get_key() != val.get_key() || m_settings.hotkey.get_code() != val.get_code())
+            {
+                m_settings.hotkey = val;
+                NotifyObservers(SettingId::Hotkey);
+            }
         }
         
-        if (const auto val = values.get_string_value(NonLocalizable::FrameColorID))
+        if (const auto jsonVal = values.get_bool_value(NonLocalizable::SoundEnabledID))
         {
-            m_settings.frameColor = HexToRGB(*val);
+            auto val = *jsonVal;
+            if (m_settings.enableSound != val)
+            {
+                m_settings.enableSound = val;
+                NotifyObservers(SettingId::SoundEnabled);
+            }
         }
 
-        if (const auto val = values.get_bool_value(NonLocalizable::BlockInGameModeID))
+        if (const auto jsonVal = values.get_int_value(NonLocalizable::FrameThicknessID))
         {
-            m_settings.blockInGameMode = *val;
+            auto val = *jsonVal;
+            if (m_settings.frameThickness != val)
+            {
+                m_settings.frameThickness = static_cast<float>(val);
+                NotifyObservers(SettingId::FrameThickness);
+            }
         }
 
-        if (auto val = values.get_string_value(NonLocalizable::ExcludedAppsID))
+        if (const auto jsonVal = values.get_string_value(NonLocalizable::FrameColorID))
         {
-            std::wstring apps = std::move(*val);
-            m_settings.excludedApps.clear();
+            auto val = HexToRGB(*jsonVal);
+            if (m_settings.frameColor != val)
+            {
+                m_settings.frameColor = val;
+                NotifyObservers(SettingId::FrameColor);
+            }
+        }
+
+        if (const auto jsonVal = values.get_bool_value(NonLocalizable::FrameEnabledID))
+        {
+            auto val = *jsonVal;
+            if (m_settings.enableFrame != val)
+            {
+                m_settings.enableFrame = val;
+                NotifyObservers(SettingId::FrameEnabled);
+            }            
+        }
+
+        if (const auto jsonVal = values.get_bool_value(NonLocalizable::BlockInGameModeID))
+        {
+            auto val = *jsonVal;
+            if (m_settings.blockInGameMode != val)
+            {
+                m_settings.blockInGameMode = val;
+                NotifyObservers(SettingId::BlockInGameMode);
+            }
+        }
+
+        if (auto jsonVal = values.get_string_value(NonLocalizable::ExcludedAppsID))
+        {
+            std::wstring apps = std::move(*jsonVal);
+            std::vector<std::wstring> excludedApps;
             auto excludedUppercase = apps;
             CharUpperBuffW(excludedUppercase.data(), (DWORD)excludedUppercase.length());
             std::wstring_view view(excludedUppercase);
@@ -118,16 +158,20 @@ void AlwaysOnTopSettings::LoadSettings()
             while (!view.empty())
             {
                 auto pos = (std::min)(view.find_first_of(L"\r\n"), view.length());
-                m_settings.excludedApps.emplace_back(view.substr(0, pos));
+                excludedApps.emplace_back(view.substr(0, pos));
                 view.remove_prefix(pos);
                 while (view.starts_with('\n') || view.starts_with('\r'))
                 {
                     view.remove_prefix(1);
                 }
             }
-        }
 
-        NotifyObservers();
+            if (m_settings.excludedApps != excludedApps)
+            {
+                m_settings.excludedApps = excludedApps;
+                NotifyObservers(SettingId::ExcludeApps);
+            }
+        }
     }
     catch (...)
     {
@@ -137,10 +181,13 @@ void AlwaysOnTopSettings::LoadSettings()
     }
 }
 
-void AlwaysOnTopSettings::NotifyObservers() const
+void AlwaysOnTopSettings::NotifyObservers(SettingId id) const
 {
-    for (const auto& callback : m_observerCallbacks)
+    for (auto observer : m_observers)
     {
-        callback();
+        if (observer->WantsToBeNotified(id))
+        {
+            observer->SettingsUpdate(id);
+        }
     }
 }
