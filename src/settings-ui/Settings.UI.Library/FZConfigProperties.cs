@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -46,7 +46,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FancyzonesExcludedApps = new StringProperty();
             FancyzonesInActiveColor = new StringProperty(ConfigDefaults.DefaultFancyZonesInActiveColor);
             FancyzonesBorderColor = new StringProperty(ConfigDefaults.DefaultFancyzonesBorderColor);
+            FancyzonesNumberColor = new StringProperty(ConfigDefaults.DefaultFancyzonesNumberColor);
             FancyzonesSystemTheme = new BoolProperty(true);
+            FancyzonesShowZoneNumber = new BoolProperty(true);
         }
 
         [JsonPropertyName("fancyzones_shiftDrag")]
@@ -127,8 +129,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("fancyzones_zoneColor")]
         public StringProperty FancyzonesInActiveColor { get; set; }
 
+        [JsonPropertyName("fancyzones_zoneNumberColor")]
+        public StringProperty FancyzonesNumberColor { get; set; }
+
         [JsonPropertyName("fancyzones_systemTheme")]
         public BoolProperty FancyzonesSystemTheme { get; set; }
+
+        [JsonPropertyName("fancyzones_showZoneNumber")]
+        public BoolProperty FancyzonesShowZoneNumber { get; set; }
 
         // converts the current to a json string.
         public string ToJsonString()

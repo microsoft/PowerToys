@@ -22,6 +22,7 @@ class ZonesOverlay
         D2D1_COLOR_F fillColor;
         D2D1_COLOR_F textColor;
         ZoneIndex id;
+        bool showText;
     };
 
     struct AnimationInfo
@@ -67,5 +68,6 @@ public:
     void Flash();
     void DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                            const ZoneIndexSet& highlightZones,
-                           const ZoneColors& colors);
+                           const ZoneColors& colors,
+                           const bool showZoneText);
 };

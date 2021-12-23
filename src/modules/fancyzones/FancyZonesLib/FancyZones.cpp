@@ -416,7 +416,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    const bool isCandidateForLastKnownZone = FancyZonesUtils::IsCandidateForLastKnownZone(window, m_settings->GetSettings()->excludedAppsArray);
+    const bool isCandidateForLastKnownZone = FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray);
     if (!isCandidateForLastKnownZone)
     {
         return;
@@ -874,7 +874,7 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noe
             parentId = parentArea->UniqueId();
         }
 
-        auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId, GetZoneColors(), m_settings->GetSettings()->overlappingZonesAlgorithm);
+        auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId, GetZoneColors(), m_settings->GetSettings()->overlappingZonesAlgorithm, m_settings->GetSettings()->showZoneNumber);
         if (workArea)
         {
             m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
@@ -1394,13 +1394,14 @@ ZoneColors FancyZones::GetZoneColors() const noexcept
     if (m_settings->GetSettings()->systemTheme)
     {
         GetSystemTheme();
-        auto textColor = currentBackgroundColor == RGB(0, 0, 0) ? RGB(255, 255, 255) : RGB(0, 0, 0);
+        auto numberColor = currentBackgroundColor == RGB(0, 0, 0) ? RGB(255, 255, 255) : RGB(0, 0, 0);
+
 
         return ZoneColors{
             .primaryColor = currentBackgroundColor,
             .borderColor = currentAccentColor,
             .highlightColor = currentAccentColor,
-            .textColor = textColor,
+            .numberColor = numberColor,
             .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
         };
     }
@@ -1410,7 +1411,7 @@ ZoneColors FancyZones::GetZoneColors() const noexcept
             .primaryColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor),
             .borderColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor),
             .highlightColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor),
-            .textColor = RGB(0, 0, 0),
+            .numberColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneNumberColor),
             .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
         };
     } 

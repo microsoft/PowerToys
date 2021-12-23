@@ -16,7 +16,6 @@
 // Non-Localizable strings
 namespace NonLocalizable
 {
-    const wchar_t PowerToysAppPowerLauncher[] = L"POWERTOYS.POWERLAUNCHER.EXE";
     const wchar_t PowerToysAppFZEditor[] = L"POWERTOYS.FANCYZONESEDITOR.EXE";
     const wchar_t SplashClassName[] = L"MsoSplash";
 }
@@ -42,10 +41,6 @@ namespace
         // Filter out user specified apps
         CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), (DWORD)processPath.length());
         if (find_app_name_in_path(processPath, excludedApps))
-        {
-            return false;
-        }
-        if (find_app_name_in_path(processPath, { NonLocalizable::PowerToysAppPowerLauncher }))
         {
             return false;
         }
@@ -446,20 +441,10 @@ namespace FancyZonesUtils
         return true;
     }
 
-    bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
+    bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
     {
         auto zonable = IsStandardWindow(window) && HasNoVisibleOwner(window);
         if (!zonable)
-        {
-            return false;
-        }
-
-        return IsZonableByProcessPath(get_process_path(window), excludedApps);
-    }
-
-    bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
-    {
-        if (!IsStandardWindow(window))
         {
             return false;
         }

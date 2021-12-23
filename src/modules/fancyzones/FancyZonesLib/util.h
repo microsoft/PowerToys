@@ -199,7 +199,6 @@ namespace FancyZonesUtils
 
     bool HasNoVisibleOwner(HWND window) noexcept;
     bool IsStandardWindow(HWND window);
-    bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
     bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
 
     bool IsWindowMaximized(HWND window) noexcept;

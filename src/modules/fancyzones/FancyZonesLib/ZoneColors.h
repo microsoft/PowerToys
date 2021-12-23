@@ -6,6 +6,6 @@ struct ZoneColors
     COLORREF primaryColor;
     COLORREF borderColor;
     COLORREF highlightColor;
-    COLORREF textColor;
+    COLORREF numberColor;
     int highlightOpacity;
 };

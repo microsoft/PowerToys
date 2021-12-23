@@ -51,6 +51,7 @@
                           Content="{TemplateBinding Icon}"
                           HorizontalAlignment="Center"
                           FontSize="20"
+                          IsTextScaleFactorEnabled="False"
                           Margin="2,0,18,0"
                           MaxWidth="20"
                           AutomationProperties.AccessibilityView="Raw"

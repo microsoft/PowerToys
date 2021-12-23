@@ -28,16 +28,18 @@ namespace NonLocalizable
     const wchar_t SpanZonesAcrossMonitorsID[] = L"fancyzones_span_zones_across_monitors";
     const wchar_t MakeDraggedWindowTransparentID[] = L"fancyzones_makeDraggedWindowTransparent";
 
-    const wchar_t SystemTheme[] = L"fancyzones_systemTheme";
+    const wchar_t SystemThemeID[] = L"fancyzones_systemTheme";
     const wchar_t ZoneColorID[] = L"fancyzones_zoneColor";
     const wchar_t ZoneBorderColorID[] = L"fancyzones_zoneBorderColor";
     const wchar_t ZoneHighlightColorID[] = L"fancyzones_zoneHighlightColor";
+    const wchar_t ZoneNumberColorID[] = L"fancyzones_zoneNumberColor";
     const wchar_t EditorHotkeyID[] = L"fancyzones_editor_hotkey";
     const wchar_t WindowSwitchingToggleID[] = L"fancyzones_windowSwitching";
     const wchar_t NextTabHotkeyID[] = L"fancyzones_nextTab_hotkey";
     const wchar_t PrevTabHotkeyID[] = L"fancyzones_prevTab_hotkey";
     const wchar_t ExcludedAppsID[] = L"fancyzones_excluded_apps";
     const wchar_t ZoneHighlightOpacityID[] = L"fancyzones_highlight_opacity";
+    const wchar_t ShowZoneNumberID[] = L"fancyzones_showZoneNumber";
 
     const wchar_t ToggleEditorActionID[] = L"ToggledFZEditor";
     const wchar_t IconKeyID[] = L"pt-fancy-zones";
@@ -81,7 +83,7 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[18] = {
+    } m_configBools[19] = {
         { NonLocalizable::ShiftDragID, &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
         { NonLocalizable::MouseSwitchID, &m_settings.mouseSwitch, IDS_SETTING_DESCRIPTION_MOUSESWITCH },
         { NonLocalizable::OverrideSnapHotKeysID, &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
@@ -99,7 +101,8 @@ private:
         { NonLocalizable::SpanZonesAcrossMonitorsID, &m_settings.spanZonesAcrossMonitors, IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS },
         { NonLocalizable::MakeDraggedWindowTransparentID, &m_settings.makeDraggedWindowTransparent, IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT },
         { NonLocalizable::WindowSwitchingToggleID, &m_settings.windowSwitching, IDS_SETTING_WINDOW_SWITCHING_TOGGLE_LABEL },
-        { NonLocalizable::SystemTheme, &m_settings.systemTheme, IDS_SETTING_DESCRIPTION_SYSTEM_THEME },
+        { NonLocalizable::SystemThemeID, &m_settings.systemTheme, IDS_SETTING_DESCRIPTION_SYSTEM_THEME },
+        { NonLocalizable::ShowZoneNumberID, &m_settings.showZoneNumber, IDS_SETTING_DESCRIPTION_SHOW_ZONE_NUMBER },
     };
 };
 
@@ -185,6 +188,11 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept
             m_settings.zoneHighlightColor = std::move(*val);
         }
 
+        if (auto val = values.get_string_value(NonLocalizable::ZoneNumberColorID))
+        {
+            m_settings.zoneNumberColor = std::move(*val);
+        }
+
         if (const auto val = values.get_json(NonLocalizable::EditorHotkeyID))
         {
             m_settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
@@ -261,6 +269,7 @@ void FancyZonesSettings::SaveSettings() noexcept
         values.add_property(NonLocalizable::ZoneColorID, m_settings.zoneColor);
         values.add_property(NonLocalizable::ZoneBorderColorID, m_settings.zoneBorderColor);
         values.add_property(NonLocalizable::ZoneHighlightColorID, m_settings.zoneHighlightColor);
+        values.add_property(NonLocalizable::ZoneNumberColorID, m_settings.zoneNumberColor);
         values.add_property(NonLocalizable::ZoneHighlightOpacityID, m_settings.zoneHighlightOpacity);
         values.add_property(NonLocalizable::OverlappingZonesAlgorithmID, (int)m_settings.overlappingZonesAlgorithm);
         values.add_property(NonLocalizable::EditorHotkeyID, m_settings.editorHotkey.get_json());
