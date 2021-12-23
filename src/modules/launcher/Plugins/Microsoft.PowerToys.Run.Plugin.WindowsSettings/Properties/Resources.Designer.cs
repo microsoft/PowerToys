@@ -160,7 +160,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add/Remove Programs.
+        ///   Looks up a localized string similar to Add or remove programs.
         /// </summary>
         internal static string AddRemovePrograms {
             get {
@@ -295,7 +295,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Apps and Features.
+        ///   Looks up a localized string similar to Apps &amp; Features.
         /// </summary>
         internal static string AppsAndFeatures {
             get {
@@ -840,6 +840,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string CellularAndSim {
             get {
                 return ResourceManager.GetString("CellularAndSim", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change programs.
+        /// </summary>
+        internal static string ChangePrograms {
+            get {
+                return ResourceManager.GetString("ChangePrograms", resourceCulture);
             }
         }
         
@@ -3058,6 +3067,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remove programs.
+        /// </summary>
+        internal static string RemovePrograms {
+            get {
+                return ResourceManager.GetString("RemovePrograms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Repair programs.
+        /// </summary>
+        internal static string RepairPrograms {
+            get {
+                return ResourceManager.GetString("RepairPrograms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Scanners and cameras.
         /// </summary>
         internal static string ScannersAndCameras {
@@ -3630,6 +3657,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string Uninstall {
             get {
                 return ResourceManager.GetString("Uninstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall programs.
+        /// </summary>
+        internal static string UninstallPrograms {
+            get {
+                return ResourceManager.GetString("UninstallPrograms", resourceCulture);
             }
         }
         
