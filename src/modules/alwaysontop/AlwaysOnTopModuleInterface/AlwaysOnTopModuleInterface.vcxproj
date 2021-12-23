@@ -46,10 +46,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\AlwaysOnTop\trace.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\AlwaysOnTop\trace.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
@@ -61,9 +63,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\AlwaysOnTop\AlwaysOnTop.vcxproj">
-      <Project>{1dc3be92-ce89-43fb-8110-9c043a2fe7a2}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
