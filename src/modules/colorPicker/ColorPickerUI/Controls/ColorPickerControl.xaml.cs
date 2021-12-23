@@ -332,6 +332,10 @@ namespace ColorPicker.Controls
         {
             string newHexString = BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty, StringComparison.InvariantCulture);
 
+#pragma warning disable CA1308 // Normalize strings to uppercase - Supressed because we want to show hex value in lower case on all places
+            newHexString = newHexString.ToLowerInvariant();
+#pragma warning restore CA1308 // Normalize strings to uppercase
+
             // Return only with hashtag if user typed it before
             bool addHashtag = oldValue.StartsWith("#", StringComparison.InvariantCulture);
             return addHashtag ? "#" + newHexString : newHexString;
@@ -344,7 +348,7 @@ namespace ColorPicker.Controls
         /// <returns>Formatted string with hashtag and six characters of hex code.</returns>
         private static string FormatHexColorString(string hexCodeText)
         {
-            if (hexCodeText.Length == 3 | hexCodeText.Length == 4)
+            if (hexCodeText.Length == 3 || hexCodeText.Length == 4)
             {
                 // Hex with or without hashtag and three characters
                 return Regex.Replace(hexCodeText, "^#?([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$", "#$1$1$2$2$3$3");

@@ -438,7 +438,7 @@
                                              TextChanged="HexCode_TextChanged"
                                              TextWrapping="Wrap"
                                              MaxLength="7"
-                                             CharacterCasing="Upper" />
+                                             CharacterCasing="Lower" />
                                 </StackPanel>
 
                                 <Button Margin="0,32,0,0"
