@@ -1916,4 +1916,16 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="LearnMore_AlwaysOnTop.Text" xml:space="preserve">
     <value>Learn more about AlwaysOnTop</value>
   </data>
+  <data name="Oobe_AlwaysOnTop" xml:space="preserve">
+    <value>AlwaysOnTop</value>
+  </data>
+  <data name="Oobe_AlwaysOnTop_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Oobe_AlwaysOnTop_HowToUse.Text" xml:space="preserve">
+    <value>How to use</value>
+  </data>
+  <data name="Oobe_AlwaysOnTop_TipsAndTricks.Text" xml:space="preserve">
+    <value>Tips and tricks</value>
+  </data>
 </root>
