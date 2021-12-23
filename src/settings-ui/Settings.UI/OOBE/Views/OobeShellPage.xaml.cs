@@ -71,6 +71,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 DescriptionLink = "https://aka.ms/PowerToysOverview",
                 Link = "https://github.com/microsoft/PowerToys/releases/",
             });
+            Modules.Insert((int)PowerToysModulesEnum.AlwaysOnTop, new OobePowerToysModule()
+            {
+                ModuleName = loader.GetString("Oobe_AlwaysOnTop"),
+                Tag = "AlwaysOnTop",
+                IsNew = true,
+                Icon = "\uEC32",
+                Image = "ms-appx:///Assets/Modules/AlwaysOnTop.png",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png",
+                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/AlwaysOnTop.png",
+                Description = loader.GetString("Oobe_AlwaysOnTop_Description"),
+                Link = "https://aka.ms/PowerToysOverview_AlwaysOnTop",
+            });
             Modules.Insert((int)PowerToysModulesEnum.Awake, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_Awake"),
@@ -230,6 +242,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             switch (selectedItem.Tag)
             {
                 case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
+                case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                 case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
                 case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
                 case "FancyZones": NavigationFrame.Navigate(typeof(OobeFancyZones)); break;
