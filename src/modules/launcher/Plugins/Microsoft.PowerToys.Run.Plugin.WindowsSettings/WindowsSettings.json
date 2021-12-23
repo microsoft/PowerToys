@@ -1281,7 +1281,7 @@
       "Name": "AddRemovePrograms",
       "Areas": [ "AreaHardwareAndSound" ],
       "Type": "AppControlPanel",
-      "AltNames": [ "appwiz.cpl", "UninstallPrograms", "RemovePrograms", "ChangePrograms", "RepairPrograms" ],
+      "AltNames": [ "appwiz.cpl", "UninstallPrograms", "ChangePrograms", "RepairPrograms" ],
       "Command": "control appwiz.cpl"
     },
     {
