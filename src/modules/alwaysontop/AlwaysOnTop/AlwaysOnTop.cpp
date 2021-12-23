@@ -116,7 +116,20 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
     break;
     case SettingId::ExcludeApps:
     {
-        //TODO: remove excluded windows     
+        std::vector<HWND> toErase{};
+        for (const auto& [window, tracker] : m_topmostWindows)
+        {
+            if (isExcluded(window))
+            {
+                UnpinTopmostWindow(window);
+                toErase.push_back(window);
+            }
+        }
+
+        for (const auto window: toErase)
+        {
+            m_topmostWindows.erase(window);
+        }
     }
     break;
     default:
