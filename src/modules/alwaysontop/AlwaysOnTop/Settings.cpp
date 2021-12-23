@@ -17,7 +17,7 @@ namespace NonLocalizable
     const static wchar_t* FrameEnabledID = L"frame-enabled";
     const static wchar_t* FrameThicknessID = L"frame-thickness";
     const static wchar_t* FrameColorID = L"frame-color";
-    const static wchar_t* BlockInGameModeID = L"block-in-game-mode";
+    const static wchar_t* BlockInGameModeID = L"do-not-activate-on-game-mode";
     const static wchar_t* ExcludedAppsID = L"excluded-apps";
 }
 
