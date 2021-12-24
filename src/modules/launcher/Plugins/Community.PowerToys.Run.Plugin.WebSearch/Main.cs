@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
@@ -74,7 +75,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 results.Add(new Result
                 {
                     Title = Properties.Resources.plugin_description.Remove(Description.Length - 1, 1),
-                    SubTitle = Properties.Resources.plugin_in_browser,
+                    SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_in_browser_name, _browserName),
                     QueryTextDisplay = string.Empty,
                     IcoPath = _defaultIconPath,
                     ProgramArguments = arguments,
@@ -109,7 +110,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 var result = new Result
                 {
                     Title = searchTerm,
-                    SubTitle = string.Format(System.Globalization.CultureInfo.CurrentCulture, Properties.Resources.plugin_open, _browserName),
+                    SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_open, _browserName),
                     QueryTextDisplay = searchTerm,
                     IcoPath = _defaultIconPath,
                 };
@@ -134,7 +135,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 }
                 else
                 {
-                    string url = string.Format(System.Globalization.CultureInfo.InvariantCulture, _searchEngineUrl, searchTerm);
+                    string url = string.Format(CultureInfo.InvariantCulture, _searchEngineUrl, searchTerm);
 
                     result.Action = action =>
                     {
