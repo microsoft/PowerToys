@@ -97,6 +97,15 @@ namespace Community.PowerToys.Run.Plugin.WebSearch.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to In {0}.
+        /// </summary>
+        public static string plugin_in_browser_name {
+            get {
+                return ResourceManager.GetString("plugin_in_browser_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Web Search.
         /// </summary>
         public static string plugin_name {
