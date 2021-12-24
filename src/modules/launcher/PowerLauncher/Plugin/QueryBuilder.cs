@@ -25,13 +25,12 @@ namespace PowerLauncher.Plugin
             foreach (var plugin in PluginManager.NonGlobalPlugins)
             {
                 var pluginActionKeyword = plugin.Metadata.ActionKeyword;
-
                 if (plugin.Metadata.Disabled || !text.StartsWith(pluginActionKeyword, StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                // Cache the length of the longest matching keyword
+                // Save the length of the longest matching keyword for later
                 if (pluginActionKeyword.Length > longestActionKeywordLength)
                 {
                     longestActionKeywordLength = pluginActionKeyword.Length;
