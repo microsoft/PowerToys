@@ -91,7 +91,7 @@ namespace Wox.Test
         }
 
         [TestMethod]
-        public void QueryBuildShouldGenerateCorrectQueryForPluginsWhoseActionKeywordsHaveSamePrefix()
+        public void QueryBuildShouldGenerateQueriesOnlyForPluginsWhoseActionKeywordsAreLongestIfMultipleMatch()
         {
             // Arrange
             string firstSearchQuery = "abcdefgh";
