@@ -13,10 +13,16 @@
             IconSourceFile="$(var.BinX64Dir)svgs\icon.ico"
             UpgradeCode="$(var.UpgradeCode)">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
-            <bal:WixStandardBootstrapperApplication LicenseFile="$(var.RepoDir)\installer\License.rtf" LogoFile="$(var.RepoDir)\installer\MSIX\Images\logo44.png" SuppressOptionsUI="yes" SuppressRepair="yes" />
+            <bal:WixStandardBootstrapperApplication 
+              LicenseFile="$(var.RepoDir)\installer\License.rtf"
+              LogoFile="$(var.RepoDir)\installer\MSIX\Images\logo44.png"
+              SuppressOptionsUI="no"
+              SuppressRepair="yes" />
         </BootstrapperApplicationRef>
 
         <util:FileSearch Variable="HasDotnet3122" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\3.1.22\System.Xaml.dll" Result="exists" />
+
+        <Variable Name="InstallFolder" Type="string" Value="[LocalAppDataFolder]PowerToys"/>
 
         <Chain>
             <ExePackage
@@ -40,7 +46,9 @@
             <MsiPackage
                 SourceFile="x64\Release\PowerToysSetup-$(var.Version)-x64.msi"
                 Compressed="yes"
-                DisplayInternalUI="yes" />
+                DisplayInternalUI="no">
+                <MsiProperty Name="INSTALLFOLDER" Value="[InstallFolder]" />
+            </MsiPackage>
         </Chain>
     </Bundle>
 </Wix>
