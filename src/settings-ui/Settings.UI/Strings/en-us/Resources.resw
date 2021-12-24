@@ -1884,16 +1884,16 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Example: outlook.exe</value>
   </data>
   <data name="AlwaysOnTop_FrameColor.Header" xml:space="preserve">
-    <value>Frame color</value>
+    <value>Color</value>
+  </data>
+	<data name="AlwaysOnTop_FrameEnabled.Header" xml:space="preserve">
+    <value>Border</value>
   </data>
   <data name="AlwaysOnTop_FrameEnabled.Description" xml:space="preserve">
-    <value>Draw frame around pinned window</value>
-  </data>
-  <data name="AlwaysOnTop_FrameEnabled.Header" xml:space="preserve">
-    <value>Frame</value>
+    <value>Show a border around the pinned window</value>
   </data>
   <data name="AlwaysOnTop_FrameThickness.Header" xml:space="preserve">
-    <value>Frame thickness</value>
+    <value>Thickness</value>
   </data>
   <data name="AlwaysOnTop_Behavior_GroupSettings.Header" xml:space="preserve">
    <value>Appearance &amp; behavior</value>
@@ -1901,14 +1901,17 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="Shell_AlwaysOnTop.Content" xml:space="preserve">
     <value>Always On Top</value>
   </data>
-  <data name="AlwaysOnTop_GameMode.Header" xml:space="preserve">
+  <data name="AlwaysOnTop_GameMode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
 	  <comment>Game Mode is a Windows feature</comment>
   </data>
-  <data name="AlwaysOnTop_Sound.Header" xml:space="preserve">
+  <data name="AlwaysOnTop_Sound.Content" xml:space="preserve">
     <value>Play a sound when (un)pinning a window</value>
   </data>
-  <data name="LearnMore_AlwaysOnTop.Text" xml:space="preserve">
+	<data name="AlwaysOnTop_Behavior.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+	<data name="LearnMore_AlwaysOnTop.Text" xml:space="preserve">
     <value>Learn more about Always On Top</value>
   </data>
 	<data name="AlwaysOnTop_ActivationShortcut.Header" xml:space="preserve">
