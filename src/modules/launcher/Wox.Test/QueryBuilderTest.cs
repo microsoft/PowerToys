@@ -94,7 +94,8 @@ namespace Wox.Test
         public void QueryBuildShouldGenerateCorrectQueryForPluginsWhoseActionKeywordsHaveSamePrefix()
         {
             // Arrange
-            string searchQuery = "abcdefgh";
+            string firstSearchQuery = "abcdefgh";
+            string secondSearchQuery = "ab cdefg";
             var firstPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" });
             var secondPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "abcd", ID = "plugin2" });
             PluginManager.SetAllPlugins(new List<PluginPair>()
@@ -104,16 +105,25 @@ namespace Wox.Test
             });
 
             // Act
-            var pluginQueryPairs = QueryBuilder.Build(searchQuery);
+            var pluginQueryPairs1 = QueryBuilder.Build(firstSearchQuery);
 
-            Query firstQuery = null;
-            pluginQueryPairs.TryGetValue(firstPlugin, out firstQuery);
-            Query secondQuery = null;
-            pluginQueryPairs.TryGetValue(secondPlugin, out secondQuery);
+            Query firstQuerySearch1 = null;
+            pluginQueryPairs1.TryGetValue(firstPlugin, out firstQuerySearch1);
+            Query secondQuerySearch1 = null;
+            pluginQueryPairs1.TryGetValue(secondPlugin, out secondQuerySearch1);
+
+            var pluginQueryPairs2 = QueryBuilder.Build(secondSearchQuery);
+
+            Query firstQuerySearch2 = null;
+            pluginQueryPairs2.TryGetValue(firstPlugin, out firstQuerySearch2);
+            Query secondQuerySearch2 = null;
+            pluginQueryPairs2.TryGetValue(secondPlugin, out secondQuerySearch2);
 
             // Assert
-            Assert.IsTrue(AreEqual(firstQuery, null));
-            Assert.IsTrue(AreEqual(secondQuery, new Query(searchQuery, secondPlugin.Metadata.ActionKeyword)));
+            Assert.IsTrue(AreEqual(firstQuerySearch1, null));
+            Assert.IsTrue(AreEqual(secondQuerySearch1, new Query(firstSearchQuery, secondPlugin.Metadata.ActionKeyword)));
+            Assert.IsTrue(AreEqual(firstQuerySearch2, new Query(secondSearchQuery, firstPlugin.Metadata.ActionKeyword)));
+            Assert.IsTrue(AreEqual(secondQuerySearch2, null));
         }
 
         [TestMethod]
