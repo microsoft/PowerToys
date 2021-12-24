@@ -1919,15 +1919,15 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>"Always On Top" is the name of the utility.</comment>
   </data>
   <data name="Oobe_AlwaysOnTop" xml:space="preserve">
-    <value>AlwaysOnTop</value>
+    <value>Always On Top</value>
   </data>
   <data name="Oobe_AlwaysOnTop_Description" xml:space="preserve">
     <value>Description</value>
   </data>
   <data name="Oobe_AlwaysOnTop_HowToUse.Text" xml:space="preserve">
-    <value>How to use</value>
+    <value>to pin or unpin the selected window so it's always on top of all other windows.</value>
   </data>
   <data name="Oobe_AlwaysOnTop_TipsAndTricks.Text" xml:space="preserve">
-    <value>Tips and tricks</value>
+    <value>You can tweak the visual outline of the pinned windows in PowerToys Settings.</value>
   </data>
 </root>

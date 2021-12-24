@@ -18,13 +18,14 @@
                 <TextBlock x:Uid="Oobe_HowToUse"
                            Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_AlwaysOnTop_HowToUse" />
+                <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_AlwaysOnTop_HowToUse" />
+
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                            Style="{ThemeResource OobeSubtitleStyle}"/>
 
                 <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_AlwaysOnTop_TipsAndTricks" />
-
+                
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                     <Button x:Uid="OOBE_Settings"
                             Click="SettingsLaunchButton_Click"/>
