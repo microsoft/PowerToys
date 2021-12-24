@@ -347,6 +347,7 @@ cxfksword
 CXSMICON
 CXVIRTUALSCREEN
 cxxopts
+cyberrex
 CYSMICON
 CYVIRTUALSCREEN
 czf
@@ -589,6 +590,7 @@ Filterx
 finalizer
 findfast
 findstr
+Firefox
 FIXEDFILEINFO
 FLASHZONES
 FLASHZONESONQUICKSWITCH
@@ -1796,6 +1798,7 @@ somil
 Soref
 SOURCECLIENTAREAONLY
 SOURCEHEADER
+sourceid
 sourcesdirectory
 spamming
 spdisp

@@ -129,6 +129,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Launcher", "src\m
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerLauncher", "src\modules\launcher\PowerLauncher\PowerLauncher.csproj", "{F97E5003-F263-4D4A-A964-0F1F3C82DEF2}"
 	ProjectSection(ProjectDependencies) = postProject
+		{9F94B303-5E21-4364-9362-64426F8DB932} = {9F94B303-5E21-4364-9362-64426F8DB932}
 		{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B} = {FD8EB419-FF9C-4D88-BB6F-BF6CED37747B}
 		{03276A39-D4E9-417C-8FFD-200B0EE5E871} = {03276A39-D4E9-417C-8FFD-200B0EE5E871}
 		{4D971245-7A70-41D5-BAA0-DDB5684CAF51} = {4D971245-7A70-41D5-BAA0-DDB5684CAF51}
@@ -381,6 +382,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcodePreviewHandler", "src\modules\previewpane\GcodePreviewHandler\GcodePreviewHandler.csproj", "{805306FF-A562-4415-8DEF-E493BDC45918}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-GcodePreviewHandler", "src\modules\previewpane\UnitTests-GcodePreviewHandler\UnitTests-GcodePreviewHandler.csproj", "{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.WebSearch", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.WebSearch\Community.PowerToys.Run.Plugin.WebSearch.csproj", "{9F94B303-5E21-4364-9362-64426F8DB932}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1027,6 +1030,12 @@ Global
 		{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3}.Release|x64.ActiveCfg = Release|x64
 		{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3}.Release|x64.Build.0 = Release|x64
 		{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3}.Release|x86.ActiveCfg = Release|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Debug|x64.ActiveCfg = Debug|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Debug|x64.Build.0 = Debug|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Debug|x86.ActiveCfg = Debug|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x64.ActiveCfg = Release|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x64.Build.0 = Release|x64
+		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1151,6 +1160,7 @@ Global
 		{133281D8-1BCE-4D07-B31E-796612A9609E} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{805306FF-A562-4415-8DEF-E493BDC45918} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{FCF3E52D-B80A-4FC3-98FD-6391354F0EE3} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{9F94B303-5E21-4364-9362-64426F8DB932} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

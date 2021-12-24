@@ -14,3 +14,4 @@
     - [Sys](/doc/devdocs/modules/launcher/plugins/sys.md)
     - [Uri](/doc/devdocs/modules/launcher/plugins/uri.md)
     - [Window Walker](/doc/devdocs/modules/launcher/plugins/windowwalker.md)
+    - [Web Search](/doc/devdocs/modules/launcher/plugins/WebSearch.md)

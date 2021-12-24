@@ -312,6 +312,10 @@
 
               <!-- Plugins -->
               <Directory Id="LauncherPluginsFolder" Name="Plugins">
+                <Directory Id="WebSearchPluginFolder" Name="WebSearch">
+                  <Directory Id="WebSearchImagesFolder" Name="Images" />
+                  <Directory Id="WebSearchLanguagesFolder" Name="Languages" />
+                </Directory>
                 <Directory Id="CalculatorPluginFolder" Name="Calculator">
                   <Directory Id="CalculatorImagesFolder" Name="Images" />
                   <Directory Id="CalculatorLanguagesFolder" Name="Languages" />
@@ -1008,7 +1012,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
             <DirectoryRef Id="$(var.ParentDirectory)">
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
@@ -1277,6 +1281,17 @@
       <Component Id="UnitConverterImagesComponent" Directory="UnitConverterImagesFolder" Guid="16ABD217-0898-47B2-89D9-AF1ABF00F543">
         <File Id="UnitConverterLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.light.png" />
         <File Id="UnitConverterDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.dark.png" />
+      </Component>
+      
+      <!-- WebSearch Plugin -->
+      <Component Id="WebSearchComponent" Directory="WebSearchPluginFolder" Guid="C996F2B4-FF2E-4277-9175-494B6A613898" >
+        <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.WebSearch.deps.json;Community.PowerToys.Run.Plugin.WebSearch.dll?>
+        <File Id="WebSearch_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="WebSearchImagesComponent" Directory="WebSearchImagesFolder" Guid="B3A5DA32-FA87-47E6-81F6-0454BA95CCA4">
+        <File Id="WebSearchLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\Images\WebSearch.light.png" />
+        <File Id="WebSearchDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\Images\WebSearch.dark.png" />
       </Component>
 
       <!-- Uri Plugin -->
