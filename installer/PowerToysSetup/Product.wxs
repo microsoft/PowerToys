@@ -90,7 +90,7 @@
         <Property Id="WixShellExecTarget" Value="[#PowerToys_ActionRunner.exe]" />
 
         <InstallExecuteSequence>
-            <Custom Action="DetectPrevInstallPath" After="CostFinalize" />
+            <Custom Action="DetectPrevInstallPath" Before="CostFinalize" />
             <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
             <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
             <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
