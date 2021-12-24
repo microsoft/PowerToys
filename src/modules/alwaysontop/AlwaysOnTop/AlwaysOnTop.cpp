@@ -353,6 +353,10 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     }
     break;
     case EVENT_OBJECT_DESTROY:
+    {
+        m_topmostWindows.erase(iter);
+    }
+    break;
     case EVENT_SYSTEM_SWITCHEND:
     {
         const auto& tracker = iter->second;
