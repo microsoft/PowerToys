@@ -5,6 +5,7 @@
 #include <Settings.h>
 #include <SettingsObserver.h>
 #include <Sound.h>
+#include <VirtualDesktopUtils.h>
 #include <WindowTracker.h>
 
 #include <common/hooks/WinHookEvent.h>
@@ -41,6 +42,7 @@ private:
     static inline AlwaysOnTop* s_instance = nullptr;
     std::vector<HWINEVENTHOOK> m_staticWinEventHooks{};
     Sound m_sound;
+    VirtualDesktopUtils m_virtualDesktopUtils;
 
     HWND m_window{ nullptr };
     HINSTANCE m_hinstance;
@@ -57,6 +59,8 @@ private:
     void StartTrackingTopmostWindows();
     void UnpinAll();
     void CleanUp();
+
+    void VirtualDesktopSwitchedHandle();
 
     bool IsTracked(HWND window) const noexcept;
     bool IsTopmost(HWND window) const noexcept;

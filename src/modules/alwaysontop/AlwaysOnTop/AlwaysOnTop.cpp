@@ -262,11 +262,12 @@ void AlwaysOnTop::RegisterHotkey() const
 void AlwaysOnTop::SubscribeToEvents()
 {
     // subscribe to windows events
-    std::array<DWORD, 4> events_to_subscribe = {
+    std::array<DWORD, 5> events_to_subscribe = {
         EVENT_OBJECT_LOCATIONCHANGE,
         EVENT_SYSTEM_MOVESIZEEND,
         EVENT_SYSTEM_SWITCHEND,
-        EVENT_OBJECT_DESTROY
+        EVENT_OBJECT_DESTROY,
+        EVENT_OBJECT_NAMECHANGE
     };
 
     for (const auto event : events_to_subscribe)
@@ -337,33 +338,64 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         return;
     }
 
-    auto iter = m_topmostWindows.find(data->hwnd);
-    if (iter == m_topmostWindows.end())
-    {
-        return;
-    }
-
     switch (data->event)
     {
     case EVENT_OBJECT_LOCATIONCHANGE:
     case EVENT_SYSTEM_MOVESIZEEND:
     {
-        const auto& tracker = iter->second;
-        tracker->RedrawFrame();
+        auto iter = m_topmostWindows.find(data->hwnd);
+        if (iter != m_topmostWindows.end())
+        {
+            const auto& tracker = iter->second;
+            tracker->RedrawFrame();
+        }
     }
     break;
     case EVENT_OBJECT_DESTROY:
     {
-        m_topmostWindows.erase(iter);
+        auto iter = m_topmostWindows.find(data->hwnd);
+        if (iter != m_topmostWindows.end())
+        {
+            m_topmostWindows.erase(iter);
+        }
     }
     break;
     case EVENT_SYSTEM_SWITCHEND:
     {
-        const auto& tracker = iter->second;
-        tracker->Hide();
+        auto iter = m_topmostWindows.find(data->hwnd);
+        if (iter != m_topmostWindows.end())
+        {
+            const auto& tracker = iter->second;
+            tracker->Hide();
+        }
+    }
+    break;
+    case EVENT_OBJECT_NAMECHANGE:
+    {
+        // The accessibility name of the desktop window changes whenever the user
+        // switches virtual desktops.
+        if (data->hwnd == GetDesktopWindow())
+        {
+            VirtualDesktopSwitchedHandle();
+        }
     }
     break;
     default:
         break;
+    }
+}
+
+void AlwaysOnTop::VirtualDesktopSwitchedHandle()
+{
+    for (const auto& [window, tracker] : m_topmostWindows)
+    {
+        if (m_virtualDesktopUtils.IsWindowOnCurrentDesktop(window))
+        {
+            tracker->RedrawFrame();
+        }
+        else
+        {
+            tracker->Hide();
+        }
     }
 }

@@ -154,6 +154,7 @@
     </ClCompile>
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="trace.cpp" />
+    <ClCompile Include="VirtualDesktopUtils.cpp" />
     <ClCompile Include="WindowTracker.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
@@ -167,6 +168,7 @@
     <ClInclude Include="SettingsObserver.h" />
     <ClInclude Include="Sound.h" />
     <ClInclude Include="trace.h" />
+    <ClInclude Include="VirtualDesktopUtils.h" />
     <ClInclude Include="WindowTracker.h" />
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
