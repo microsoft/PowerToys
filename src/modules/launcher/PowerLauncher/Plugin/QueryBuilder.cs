@@ -18,20 +18,39 @@ namespace PowerLauncher.Plugin
             }
 
             text = text.Trim();
+            int longestActionKeywordLength = 0;
 
             // This Dictionary contains the corresponding query for each plugin
             Dictionary<PluginPair, Query> pluginQueryPair = new Dictionary<PluginPair, Query>();
             foreach (var plugin in PluginManager.NonGlobalPlugins)
             {
                 var pluginActionKeyword = plugin.Metadata.ActionKeyword;
+
                 if (plugin.Metadata.Disabled || !text.StartsWith(pluginActionKeyword, StringComparison.Ordinal))
                 {
                     continue;
                 }
 
+                // Cache the length of the longest matching keyword
+                if (pluginActionKeyword.Length > longestActionKeywordLength)
+                {
+                    longestActionKeywordLength = pluginActionKeyword.Length;
+                }
+
                 // A new query is constructed for each plugin
                 var query = new Query(text, pluginActionKeyword);
                 pluginQueryPair.TryAdd(plugin, query);
+            }
+
+            // If we have plugin action keywords that start with the same char we get false positives (Example: ? and ??)
+            // Here we remove each query pair that has a shorter keyword than the longest matching one
+            var pairList = pluginQueryPair;
+            foreach (var pair in pairList)
+            {
+                if (pair.Key.Metadata.ActionKeyword.Length < longestActionKeywordLength)
+                {
+                    pluginQueryPair.Remove(pair.Key);
+                }
             }
 
             // If the user has specified a matching action keyword, then do not
