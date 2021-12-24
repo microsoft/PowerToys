@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using ManagedCommon;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -33,7 +34,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             }
 
             NumberTranslator translator = NumberTranslator.Create(CultureInfo.CurrentCulture, new CultureInfo("en-US"));
-            var input = translator.Translate(query.Search);
+            var input = translator.Translate(query.Search.Normalize(NormalizationForm.FormKC));
 
             if (!CalculateHelper.InputValid(input))
             {
