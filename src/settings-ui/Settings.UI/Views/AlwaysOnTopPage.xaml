@@ -4,8 +4,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls" xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
     <controls:SettingsPageControl x:Uid="AlwaysOnTop" IsTabStop="False"
@@ -65,7 +64,7 @@
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting Icon="&#xE790;" Style="{StaticResource ExpanderHeaderSettingStyle}" x:Uid="AlwaysOnTop_Behavior"/>
+                            <controls:Setting Style="{StaticResource ExpanderHeaderSettingStyle}" x:Uid="AlwaysOnTop_Behavior"/>
                             </controls:SettingExpander.Header>
                                 <controls:SettingExpander.Content>
                             <StackPanel>
