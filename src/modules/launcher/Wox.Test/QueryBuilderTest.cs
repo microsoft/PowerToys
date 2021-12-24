@@ -16,6 +16,11 @@ namespace Wox.Test
     {
         private static bool AreEqual(Query firstQuery, Query secondQuery)
         {
+            if (firstQuery is null && secondQuery is null)
+            {
+                return true;
+            }
+
             // Using Ordinal since this is used internally
             return firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.Ordinal)
                 && firstQuery.Search.Equals(secondQuery.Search, StringComparison.Ordinal)
@@ -101,11 +106,13 @@ namespace Wox.Test
             // Act
             var pluginQueryPairs = QueryBuilder.Build(searchQuery);
 
-            var firstQuery = pluginQueryPairs.GetValueOrDefault(firstPlugin);
-            var secondQuery = pluginQueryPairs.GetValueOrDefault(secondPlugin);
+            Query firstQuery = null;
+            pluginQueryPairs.TryGetValue(firstPlugin, out firstQuery);
+            Query secondQuery = null;
+            pluginQueryPairs.TryGetValue(secondPlugin, out secondQuery);
 
             // Assert
-            Assert.IsTrue(AreEqual(firstQuery, new Query(searchQuery, firstPlugin.Metadata.ActionKeyword)));
+            Assert.IsTrue(AreEqual(firstQuery, null));
             Assert.IsTrue(AreEqual(secondQuery, new Query(searchQuery, secondPlugin.Metadata.ActionKeyword)));
         }
 
@@ -113,25 +120,24 @@ namespace Wox.Test
         public void QueryBuilderShouldSetTermsCorrectlyWhenCalled()
         {
             // Arrange
-            string searchQuery = "abcd efgh";
-            var firstPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" });
-            var secondPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "abcd", ID = "plugin2" });
+            string searchQuery = "abcde fgh ijkl";
+            var plugin = new PluginPair(new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" });
             PluginManager.SetAllPlugins(new List<PluginPair>()
             {
-                firstPlugin,
-                secondPlugin,
+                plugin,
             });
 
             // Act
             var pluginQueryPairs = QueryBuilder.Build(searchQuery);
 
-            var firstQuery = pluginQueryPairs.GetValueOrDefault(firstPlugin);
-            var secondQuery = pluginQueryPairs.GetValueOrDefault(secondPlugin);
+            var builtQuery = pluginQueryPairs.GetValueOrDefault(plugin);
 
             // Assert
             // Using Ordinal since this is used internally
-            Assert.IsTrue(firstQuery.Terms[0].Equals("cd", StringComparison.Ordinal) && firstQuery.Terms[1].Equals("efgh", StringComparison.Ordinal) && firstQuery.Terms.Count == 2);
-            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.Ordinal) && secondQuery.Terms.Count == 1);
+            Assert.IsTrue(builtQuery.Terms.Count == 3
+                && builtQuery.Terms[0].Equals("cde", StringComparison.Ordinal)
+                && builtQuery.Terms[1].Equals("fgh", StringComparison.Ordinal)
+                && builtQuery.Terms[2].Equals("ijkl", StringComparison.Ordinal));
         }
 
         [TestMethod]
