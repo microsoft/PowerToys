@@ -74,7 +74,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 results.Add(new Result
                 {
                     Title = Properties.Resources.plugin_description.Remove(Description.Length - 1, 1),
-                    SubTitle = Properties.Resources.plugin_in_browser,
+                    SubTitle = string.Format(System.Globalization.CultureInfo.CurrentCulture, Properties.Resources.plugin_open, _browserName),
                     QueryTextDisplay = string.Empty,
                     IcoPath = _defaultIconPath,
                     ProgramArguments = arguments,
