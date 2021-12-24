@@ -13,8 +13,9 @@ public:
 
     bool Init(HINSTANCE hinstance);
 
-    void RedrawFrame() const;
+    void Show() const;
     void Hide() const;
+    void RedrawFrame() const;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept

@@ -249,6 +249,11 @@ bool AlwaysOnTop::AssignTracker(HWND window)
         return false;
     }
 
+    if (m_virtualDesktopUtils.IsWindowOnCurrentDesktop(window))
+    {
+        tracker->Show();
+    }
+
     m_topmostWindows[window] = std::move(tracker);
     return true;
 }
@@ -391,7 +396,7 @@ void AlwaysOnTop::VirtualDesktopSwitchedHandle()
     {
         if (m_virtualDesktopUtils.IsWindowOnCurrentDesktop(window))
         {
-            tracker->RedrawFrame();
+            tracker->Show();
         }
         else
         {

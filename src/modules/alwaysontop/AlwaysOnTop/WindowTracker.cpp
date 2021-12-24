@@ -102,16 +102,7 @@ bool WindowTracker::Init(HINSTANCE hinstance)
     }
 
     m_frameDrawer = FrameDrawer::Create(m_window);
-    if (!m_frameDrawer)
-    {
-        return false;
-    }
-
-    RECT frameRect{ 0, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top };
-    m_frameDrawer->SetBorderRect(frameRect, AlwaysOnTopSettings::settings().frameColor, AlwaysOnTopSettings::settings().frameThickness);
-    m_frameDrawer->Show();
-
-    return true;
+    return m_frameDrawer != nullptr;
 }
 
 void WindowTracker::RedrawFrame() const
@@ -129,6 +120,26 @@ void WindowTracker::RedrawFrame() const
 
     RECT rect = rectOpt.value();
     SetWindowPos(m_window, m_trackingWindow, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOREDRAW);
+}
+
+void WindowTracker::Show() const
+{
+    if (!m_trackingWindow || !m_frameDrawer)
+    {
+        return;
+    }
+
+    auto windowRectOpt = GetFrameRect(m_trackingWindow);
+    if (!windowRectOpt.has_value())
+    {
+        return;
+    }
+
+    RECT windowRect = windowRectOpt.value();
+
+    RECT frameRect{ 0, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top };
+    m_frameDrawer->SetBorderRect(frameRect, AlwaysOnTopSettings::settings().frameColor, AlwaysOnTopSettings::settings().frameThickness);
+    m_frameDrawer->Show();
 }
 
 void WindowTracker::Hide() const
