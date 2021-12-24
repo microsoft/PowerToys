@@ -149,7 +149,8 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/ColorPicker/PowerToys.ColorPicker.dll",
             L"modules/Awake/PowerToys.AwakeModuleInterface.dll",
             L"modules/MouseUtils/PowerToys.FindMyMouse.dll" ,
-            L"modules/MouseUtils/PowerToys.MouseHighlighter.dll"
+            L"modules/MouseUtils/PowerToys.MouseHighlighter.dll",
+            L"modules/AlwaysOnTop/PowerToys.AlwaysOnTopModuleInterface.dll",
 
         };
         const auto VCM_PATH = L"modules/VideoConference/PowerToys.VideoConferenceModule.dll";
