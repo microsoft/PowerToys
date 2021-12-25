@@ -2,12 +2,11 @@
   <PropertyGroup>
     <Platforms>x64</Platforms>
     <UseWindowsForms>true</UseWindowsForms>
-    <AssemblyTitle>SvgPreviewHandler</AssemblyTitle>
+    <AssemblyTitle>PowerToys.SvgPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys SvgPreviewHandler</AssemblyDescription>
     <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
-    <AssemblyTitle>SvgPreviewHandler</AssemblyTitle>
     <Company>Microsoft Corporation</Company>
     <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
@@ -28,13 +27,14 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
+    <AssemblyName>PowerToys.SvgPreviewHandler</AssemblyName>
   </PropertyGroup>
 
   <Import Project="..\..\..\Version.props" />
   
   <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-    <Compile Update="Resource.Designer.cs">
+    <Compile Update="Properties\Resource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resource.resx</DependentUpon>
@@ -60,5 +60,12 @@
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

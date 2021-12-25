@@ -12,10 +12,8 @@ namespace PreviewHandlerCommon
     /// <summary>
     /// Customized the WebBrowser to get control over what it downloads, displays and executes.
     /// </summary>
-#pragma warning disable CA2119
     public class WebBrowserExt : WebBrowser
     {
-#pragma warning restore CA2119
         /// <inheritdoc/>
         protected override WebBrowserSiteBase CreateWebBrowserSiteBase()
         {
@@ -69,8 +67,7 @@ namespace PreviewHandlerCommon
                         WebBrowserDownloadControlFlags.NO_DLACTIVEXCTLS |
                         WebBrowserDownloadControlFlags.NO_RUNACTIVEXCTLS |
                         WebBrowserDownloadControlFlags.NO_BEHAVIORS |
-                        WebBrowserDownloadControlFlags.SILENT,
-                        CultureInfo.InvariantCulture);
+                        WebBrowserDownloadControlFlags.SILENT, CultureInfo.InvariantCulture);
                 }
                 else
                 {
