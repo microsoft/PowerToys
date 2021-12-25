@@ -85,6 +85,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                         {
                             string errorMsgString = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_search_failed, _browserName);
 
+                            Log.Error(errorMsgString, GetType());
                             _context.API.ShowMsg(
                                 $"Plugin: {Properties.Resources.plugin_name}",
                                 $"{errorMsgString}.");
@@ -128,6 +129,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                         {
                             string errorMsgString = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_search_failed, _browserName);
 
+                            Log.Error(errorMsgString, GetType());
                             _context.API.ShowMsg(
                                 $"Plugin: {Properties.Resources.plugin_name}",
                                 $"{errorMsgString}.");
@@ -147,6 +149,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                         {
                             string errorMsgString = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_search_failed, _browserName);
 
+                            Log.Error(errorMsgString, GetType());
                             _context.API.ShowMsg(
                                 $"Plugin: {Properties.Resources.plugin_name}",
                                 $"{errorMsgString}.");
