@@ -4,11 +4,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
-
     <controls:SettingsPageControl x:Uid="AlwaysOnTop" IsTabStop="False"
                                   ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -19,29 +17,37 @@
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}"/>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;">
-                        <controls:Setting.ActionContent>
-                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                  HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}"/>
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>
+                 
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="AlwaysOnTop_ActivationShortcut" Icon="&#xEDA7;">
+                            <controls:Setting.ActionContent>
+                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}"/>
+                            </controls:Setting.ActionContent>
+                        </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel>
+                                <CheckBox IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DoNotActivateOnGameMode}" x:Uid="AlwaysOnTop_GameMode" Margin="{StaticResource ExpanderSettingMargin}"/>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="AlwaysOnTop_FrameEnabled" Icon="&#xE737;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                            <controls:Setting Icon="&#xE790;" Style="{StaticResource ExpanderHeaderSettingStyle}" x:Uid="AlwaysOnTop_FrameEnabled">
                                 <controls:Setting.ActionContent>
-                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FrameEnabled}"/>
+                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FrameEnabled}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
-
                         <controls:SettingExpander.Content>
                             <StackPanel>
                                 <controls:Setting x:Uid="AlwaysOnTop_FrameColor" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
@@ -52,13 +58,10 @@
 
                                 <controls:Setting x:Uid="AlwaysOnTop_FrameThickness" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox
-                                                Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}"
+                                        <Slider Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}"
                                                 Minimum="0"
-                                                SpinButtonPlacementMode="Compact"
-                                                Margin="8,0,0,0"
-                                                HorizontalAlignment="Left"
-                                                Width="96"
+                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                HorizontalAlignment="Right"
                                                 Maximum="30"
                                                 SmallChange="1" 
                                                 LargeChange="5"/>
@@ -70,22 +73,12 @@
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="AlwaysOnTop_Sound" Icon="&#xE7F3;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
-                        </controls:SettingExpander.Header>
-
-                        <controls:SettingExpander.Content>
-                            <CheckBox x:Uid="AlwaysOnTop_SoundEnabled" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SoundEnabled}" Margin="{StaticResource ExpanderSettingMargin}"  />
-                        </controls:SettingExpander.Content>
-                        
-                    </controls:SettingExpander>
-
-                    <controls:SettingExpander IsExpanded="True">
-                        <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="AlwaysOnTop_GameMode" Icon="&#xE7FC;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
-                        </controls:SettingExpander.Header>
-
-                        <controls:SettingExpander.Content>
-                            <CheckBox x:Uid="AlwaysOnTop_PreventActivationOnGameMode" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DoNotActivateOnGameMode}" Margin="{StaticResource ExpanderSettingMargin}"  />
+                            <controls:Setting Style="{StaticResource ExpanderHeaderSettingStyle}" x:Uid="AlwaysOnTop_SoundTitle" Icon="&#xE7F3;"/>
+                            </controls:SettingExpander.Header>
+                                <controls:SettingExpander.Content>
+                            <StackPanel>
+                                <CheckBox IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SoundEnabled}" x:Uid="AlwaysOnTop_Sound" Margin="{StaticResource ExpanderSettingMargin}"/>
+                            </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
                 </controls:SettingsGroup>

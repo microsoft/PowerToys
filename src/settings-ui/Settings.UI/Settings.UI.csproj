@@ -264,6 +264,7 @@
     <Content Include="Assets\Modules\ImageResizer.png" />
     <Content Include="Assets\Modules\KBM.png" />
     <Content Include="Assets\Modules\MouseUtils.png" />
+    <Content Include="Assets\Modules\OOBE\AlwaysOnTop.png" />
     <Content Include="Assets\Modules\OOBE\ColorPicker.gif" />
     <Content Include="Assets\Modules\OOBE\Awake.png" />
     <Content Include="Assets\Modules\OOBE\FancyZones.gif" />
