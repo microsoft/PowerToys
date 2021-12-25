@@ -129,6 +129,10 @@
   <data name="plugin_in_browser" xml:space="preserve">
     <value>In the default browser</value>
   </data>
+  <data name="plugin_in_browser_name" xml:space="preserve">
+    <value>In {0}</value>
+    <comment>Like "Search the web in {the browser name}"</comment>
+  </data>
   <data name="plugin_name" xml:space="preserve">
     <value>Web Search</value>
   </data>
