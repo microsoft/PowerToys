@@ -105,25 +105,19 @@ namespace Wox.Test
             });
 
             // Act
-            var pluginQueryPairs1 = QueryBuilder.Build(firstSearchQuery);
+            var firstSearchQueryPluginPair = QueryBuilder.Build(firstSearchQuery);
+            var firstSearchQueryFirstPlugin = firstSearchQueryPluginPair.GetValueOrDefault(firstPlugin);
+            var firstSearchQuerySecondPlugin = firstSearchQueryPluginPair.GetValueOrDefault(secondPlugin);
 
-            Query firstQuerySearch1 = null;
-            pluginQueryPairs1.TryGetValue(firstPlugin, out firstQuerySearch1);
-            Query secondQuerySearch1 = null;
-            pluginQueryPairs1.TryGetValue(secondPlugin, out secondQuerySearch1);
-
-            var pluginQueryPairs2 = QueryBuilder.Build(secondSearchQuery);
-
-            Query firstQuerySearch2 = null;
-            pluginQueryPairs2.TryGetValue(firstPlugin, out firstQuerySearch2);
-            Query secondQuerySearch2 = null;
-            pluginQueryPairs2.TryGetValue(secondPlugin, out secondQuerySearch2);
+            var secondSearchQueryPluginPair = QueryBuilder.Build(secondSearchQuery);
+            var secondSearchQueryFirstPlugin = secondSearchQueryPluginPair.GetValueOrDefault(firstPlugin);
+            var secondSearchQuerySecondPlugin = secondSearchQueryPluginPair.GetValueOrDefault(secondPlugin);
 
             // Assert
-            Assert.IsTrue(AreEqual(firstQuerySearch1, null));
-            Assert.IsTrue(AreEqual(secondQuerySearch1, new Query(firstSearchQuery, secondPlugin.Metadata.ActionKeyword)));
-            Assert.IsTrue(AreEqual(firstQuerySearch2, new Query(secondSearchQuery, firstPlugin.Metadata.ActionKeyword)));
-            Assert.IsTrue(AreEqual(secondQuerySearch2, null));
+            Assert.IsTrue(AreEqual(firstSearchQueryFirstPlugin, null));
+            Assert.IsTrue(AreEqual(firstSearchQuerySecondPlugin, new Query(firstSearchQuery, secondPlugin.Metadata.ActionKeyword)));
+            Assert.IsTrue(AreEqual(secondSearchQueryFirstPlugin, new Query(secondSearchQuery, firstPlugin.Metadata.ActionKeyword)));
+            Assert.IsTrue(AreEqual(secondSearchQuerySecondPlugin, null));
         }
 
         [TestMethod]
