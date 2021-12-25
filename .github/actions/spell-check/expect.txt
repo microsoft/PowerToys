@@ -2225,7 +2225,7 @@ WNDPROC
 wofstream
 wordpad
 workaround
-Workflow
+workflow
 workspaces
 wostream
 wostringstream
