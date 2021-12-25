@@ -74,8 +74,8 @@ namespace Wox.Test
                 plugin,
             });
 
-            var firstQueryText = "asearch";
-            var secondQueryText = "a search";
+            var firstQueryText = "aSearch";
+            var secondQueryText = "a Search";
 
             // Act
             var firstPluginQueryPair = QueryBuilder.Build(firstQueryText);
@@ -94,10 +94,10 @@ namespace Wox.Test
         public void QueryBuildShouldGenerateQueriesOnlyForPluginsWhoseActionKeywordsAreLongestIfMultipleMatch()
         {
             // Arrange
-            string firstSearchQuery = "abcdefgh";
-            string secondSearchQuery = "ab cdefg";
-            var firstPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" });
-            var secondPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "abcd", ID = "plugin2" });
+            string firstSearchQuery = "MyKeyword";
+            string secondSearchQuery = "My Keyword";
+            var firstPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "My", ID = "plugin1" });
+            var secondPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "MyKey", ID = "plugin2" });
             PluginManager.SetAllPlugins(new List<PluginPair>()
             {
                 firstPlugin,
@@ -124,8 +124,8 @@ namespace Wox.Test
         public void QueryBuilderShouldSetTermsCorrectlyWhenCalled()
         {
             // Arrange
-            string searchQuery = "abcde fgh ijkl";
-            var plugin = new PluginPair(new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" });
+            string searchQuery = "MyTest search term";
+            var plugin = new PluginPair(new PluginMetadata { ActionKeyword = "My", ID = "plugin1" });
             PluginManager.SetAllPlugins(new List<PluginPair>()
             {
                 plugin,
@@ -139,16 +139,16 @@ namespace Wox.Test
             // Assert
             // Using Ordinal since this is used internally
             Assert.IsTrue(builtQuery.Terms.Count == 3
-                && builtQuery.Terms[0].Equals("cde", StringComparison.Ordinal)
-                && builtQuery.Terms[1].Equals("fgh", StringComparison.Ordinal)
-                && builtQuery.Terms[2].Equals("ijkl", StringComparison.Ordinal));
+                && builtQuery.Terms[0].Equals("Test", StringComparison.Ordinal)
+                && builtQuery.Terms[1].Equals("search", StringComparison.Ordinal)
+                && builtQuery.Terms[2].Equals("term", StringComparison.Ordinal));
         }
 
         [TestMethod]
         public void QueryBuilderShouldReturnAllPluginsWithTheActionWord()
         {
             // Arrange
-            string searchQuery = "!efgh";
+            string searchQuery = "!Query";
             var firstPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "!", ID = "plugin1" });
             var secondPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "!", ID = "plugin2" });
             PluginManager.SetAllPlugins(new List<PluginPair>()
