@@ -22,15 +22,15 @@ namespace PowerLauncher.Plugin
 
             // This Dictionary contains the corresponding query for each plugin
             Dictionary<PluginPair, Query> pluginQueryPair = new Dictionary<PluginPair, Query>();
-            foreach (var plugin in PluginManager.NonGlobalPlugins)
+            foreach (var nonGlobalPlugin in PluginManager.NonGlobalPlugins)
             {
-                var pluginActionKeyword = plugin.Metadata.ActionKeyword;
-                if (plugin.Metadata.Disabled || !text.StartsWith(pluginActionKeyword, StringComparison.Ordinal))
+                var pluginActionKeyword = nonGlobalPlugin.Metadata.ActionKeyword;
+                if (nonGlobalPlugin.Metadata.Disabled || !text.StartsWith(pluginActionKeyword, StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                // Save the length of the longest matching keyword for later
+                // Save the length of the longest matching keyword for later use
                 if (pluginActionKeyword.Length > longestActionKeywordLength)
                 {
                     longestActionKeywordLength = pluginActionKeyword.Length;
@@ -38,17 +38,16 @@ namespace PowerLauncher.Plugin
 
                 // A new query is constructed for each plugin
                 var query = new Query(text, pluginActionKeyword);
-                pluginQueryPair.TryAdd(plugin, query);
+                pluginQueryPair.TryAdd(nonGlobalPlugin, query);
             }
 
             // If we have plugin action keywords that start with the same char we get false positives (Example: ? and ??)
             // Here we remove each query pair that has a shorter keyword than the longest matching one
-            var pairList = pluginQueryPair;
-            foreach (var pair in pairList)
+            foreach (PluginPair plugin in pluginQueryPair.Keys)
             {
-                if (pair.Key.Metadata.ActionKeyword.Length < longestActionKeywordLength)
+                if (plugin.Metadata.ActionKeyword.Length < longestActionKeywordLength)
                 {
-                    pluginQueryPair.Remove(pair.Key);
+                    pluginQueryPair.Remove(plugin);
                 }
             }
 
