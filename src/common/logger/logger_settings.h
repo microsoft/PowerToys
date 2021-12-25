@@ -13,6 +13,8 @@ struct LogSettings
     inline const static std::wstring actionRunnerLogPath = L"RunnerLogs\\action-runner-log.txt";
     inline const static std::string updateLoggerName = "update";
     inline const static std::wstring updateLogPath = L"UpdateLogs\\update-log.txt";
+    inline const static std::string fileExplorerLoggerName = "FileExplorer";
+    inline const static std::wstring fileExplorerLogPath = L"Logs\\file-explorer-log.txt";
     inline const static std::string launcherLoggerName = "launcher";
     inline const static std::wstring launcherLogPath = L"LogsModuleInterface\\launcher-log.txt";
     inline const static std::wstring awakeLogPath = L"Logs\\awake-log.txt";
@@ -23,6 +25,9 @@ struct LogSettings
     inline const static std::wstring shortcutGuideLogPath = L"ShortcutGuideLogs\\shortcut-guide-log.txt";
     inline const static std::string keyboardManagerLoggerName = "keyboard-manager";
     inline const static std::wstring keyboardManagerLogPath = L"Logs\\keyboard-manager-log.txt";
+    inline const static std::string findMyMouseLoggerName = "find-my-mouse";
+    inline const static std::string mouseHighlighterLoggerName = "mouse-highlighter";
+    inline const static std::string powerRenameLoggerName = "powerrename";
     inline const static int retention = 30;
     std::wstring logLevel;
     LogSettings();

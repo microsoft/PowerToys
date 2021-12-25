@@ -75,11 +75,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
             list.Add(new ContextMenuResult
             {
                 AcceleratorKey = Key.Enter,
+                AcceleratorModifiers = ModifierKeys.Control,
                 Action = _ => TryToOpenInRegistryEditor(entry),
                 FontFamily = "Segoe MDL2 Assets",
                 Glyph = "\xE8A7",                           // E8A7 => Symbol: OpenInNewWindow
                 PluginName = assemblyName,
-                Title = $"{Resources.OpenKeyInRegistryEditor} (Enter)",
+                Title = $"{Resources.OpenKeyInRegistryEditor} (Ctrl+Enter)",
             });
 
             return list;

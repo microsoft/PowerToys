@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "required": [ "Settings" ],
+  "properties": {
+    "$schema": {
+      "description": "Path to the schema file.",
+      "type": "string"
+    },
+    "Settings": {
+      "description": "A list with all possible windows settings.",
+      "type": "array",
+      "items": {
+        "additionalProperties": false,
+        "required": [ "Name", "Command", "Type" ],
+        "type": "object",
+        "properties": {
+          "Name": {
+            "description": "The name of this setting.",
+            "type": "string"
+          },
+          "Areas": {
+            "description": "A list of areas of this setting",
+            "type": "array",
+            "items": {
+              "description": "A area of this setting",
+              "type": "string",
+              "pattern": "^Area"
+            }
+          },
+          "Type": {
+            "description": "The type of this setting.",
+            "type": "string",
+            "pattern": "^App"
+          },
+          "AltNames": {
+            "description": "A list with alternative names for this setting",
+            "type": "array",
+            "items": {
+              "description": "A alternative name for this setting",
+              "type": "string"
+            }
+          },
+          "Command": {
+            "description": "The command for this setting.",
+            "type": "string"
+          },
+          "Note": {
+            "description": "A additional note for this setting.",
+            "type": "string",
+            "pattern": "^Note"
+          },
+          "DeprecatedInBuild": {
+            "description": "The Windows build since this settings is not longer present.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "IntroducedInBuild": {
+            "description": "The minimum need Windows build for this setting.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "ShowAsFirstResult": {
+            "description": "Use a higher score as normal for this setting to show it as one of the first results.",
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

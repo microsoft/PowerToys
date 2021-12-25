@@ -1,15 +1,12 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
-  - name: "\U0001F4F7 Video Conference Mute Issue"
-    url: https://github.com/microsoft/PowerToys/issues/6246
-    about: Report Bug for the Video Conference Mute utility
   - name: "\U0001F6A8 Microsoft Security Response Center (MSRC)"
     url: https://msrc.microsoft.com/create-report
     about: Report security bugs
   - name: "\U0001F4DA PowerToys user documentation"
-    url: https://github.com/microsoft/PowerToys/wiki
+    url: https://aka.ms/powertoys-docs
     about: Documentation for users of PowerToys utilities
   - name: "\U0001F4DA PowerToys dev documentation"
-    url: https://github.com/microsoft/PowerToys/tree/master/doc/devdocs
+    url: https://github.com/microsoft/PowerToys/tree/main/doc/devdocs
     about: Documentation for people interested in developing and contributing for PowerToys
  

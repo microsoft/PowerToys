@@ -47,7 +47,7 @@ public:
 
         std::strong_ordering operator<=>(const Hotkey&) const = default;
     };
-    
+
     struct HotkeyEx
     {
         WORD modifiersMask = 0;
@@ -98,9 +98,19 @@ public:
      */
     virtual bool on_hotkey(size_t hotkeyId) { return false; }
 
+    /* These are for enabling the legacy behavior of showing the shortcut guide after pressing the win key.
+     * keep_track_of_pressed_win_key returns true if the module wants to keep track of the win key being pressed.
+     * milliseconds_win_key_must_be_pressed returns the number of milliseconds the win key should be pressed before triggering the module.
+     * Don't use these for new modules.
+     */
+    virtual bool keep_track_of_pressed_win_key() { return false; }
+    virtual UINT milliseconds_win_key_must_be_pressed() { return 0; }
+
     virtual void send_settings_telemetry()
     {
     }
+
+    virtual bool is_enabled_by_default() const { return true; }
 
 protected:
     HANDLE CreateDefaultEvent(const wchar_t* eventName)

@@ -42,6 +42,25 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
+        private bool _useCentralizedKeyboardHook;
+
+        public bool UseCentralizedKeyboardHook
+        {
+            get
+            {
+                return _useCentralizedKeyboardHook;
+            }
+
+            set
+            {
+                if (_useCentralizedKeyboardHook != value)
+                {
+                    _useCentralizedKeyboardHook = value;
+                    OnPropertyChanged(nameof(UseCentralizedKeyboardHook));
+                }
+            }
+        }
+
         public string Language { get; set; } = "en";
 
         public Theme Theme { get; set; } = Theme.System;
@@ -172,7 +191,7 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
-        public bool UsePowerToysRunnerKeyboardHook { get; set; }
+        public bool StartedFromPowerToysRunner { get; set; }
 
         public HttpProxy Proxy { get; set; } = new HttpProxy();
 

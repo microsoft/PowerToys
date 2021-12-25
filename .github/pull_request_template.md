@@ -2,7 +2,7 @@
 
 **What is this about:**
 
-**What is include in the PR:** 
+**What is included in the PR:** 
 
 **How does someone test / validate:** 
 
@@ -16,8 +16,8 @@
 - [ ] **Docs:** Added/ updated
 - [ ] **Binaries:** Any new files are added to WXS / YML
    - [ ] No new binaries
-   - [ ] [YML for signing](https://github.com/microsoft/PowerToys/blob/master/.pipelines/pipeline.user.windows.yml#L68) for new binaries
-   - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/master/installer/PowerToysSetup/Product.wxs) for new binaries
+   - [ ] [YML for signing](https://github.com/microsoft/PowerToys/blob/main/.pipelines/pipeline.user.windows.yml#L68) for new binaries
+   - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/main/installer/PowerToysSetup/Product.wxs) for new binaries
 
 ## Contributor License Agreement (CLA)
 A CLA must be signed. If not, go over [here](https://cla.opensource.microsoft.com/microsoft/PowerToys) and sign the CLA.

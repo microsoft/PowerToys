@@ -28,6 +28,12 @@
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\ImageResizer\</OutDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>PowerToys.ImageResizerExt</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>PowerToys.ImageResizerExt</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -77,7 +83,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ContextMenuHandler.cpp" />
-    <ClCompile Include="HDropIterator.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(CIBuild)'!='true'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">
@@ -97,7 +102,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ContextMenuHandler.h" />
-    <ClInclude Include="HDropIterator.h" />
     <ClInclude Include="dllmain.h" />
     <None Include="resource.base.h" />
     <ClInclude Include="ImageResizerConstants.h" />

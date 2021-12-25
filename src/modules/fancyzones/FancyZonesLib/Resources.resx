@@ -196,6 +196,15 @@
   <data name="Setting_Launch_Editor_Hotkey_Label" xml:space="preserve">
     <value>Configure the zone editor hotkey</value>
   </data>
+  <data name="Setting_Window_Switching_Toggle_Label" xml:space="preserve">
+    <value>Toggle shortcuts for switching between windows in the current zone</value>
+  </data>
+  <data name="Setting_Next_Tab_Hotkey_Label" xml:space="preserve">
+    <value>Shortcut for switching to the next window in the current zone</value>
+  </data>
+  <data name="Setting_Prev_Tab_Hotkey_Label" xml:space="preserve">
+    <value>Shortcut for switching to the previous window in the current zone</value>
+  </data>
   <data name="Setting_Excluded_Apps_Description" xml:space="preserve">
     <value>To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings.</value>
     <comment>Windows refers to the Operating system</comment>
@@ -210,7 +219,7 @@
   </data>
   <data name="Cant_Drag_Elevated" xml:space="preserve">
     <value>We've detected an application running with administrator privileges. This will prevent certain interactions with these applications.</value>
-    <comment>administrator is context of user account.</comment> 
+    <comment>administrator is context of user account.</comment>
   </data>
   <data name="Cant_Drag_Elevated_Learn_More" xml:space="preserve">
     <value>Learn more</value>
@@ -253,5 +262,14 @@
   </data>
   <data name="Setting_Description_FlashZonesOnQuickSwitch" xml:space="preserve">
     <value>Flash zones when switching layout</value>
+  </data>
+  <data name="Setting_Description_System_Theme" xml:space="preserve">
+    <value>Use system theme</value>
+  </data>
+  <data name="Setting_Description_Zone_Number_Color" xml:space="preserve">
+    <value>Zone number color (Default #000000)</value>
+  </data>
+  <data name="Setting_Description_Show_Zone_Number" xml:space="preserve">
+    <value>Show zone number</value>
   </data>
 </root>

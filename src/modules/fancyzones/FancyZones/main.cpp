@@ -25,9 +25,8 @@ const std::wstring instanceMutexName = L"Local\\PowerToys_FancyZones_InstanceMut
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR lpCmdLine, _In_ int nCmdShow)
 {
     winrt::init_apartment();
-    InitUnhandledExceptionHandler_x64();
-
     LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::fancyZonesLoggerName);
+    InitUnhandledExceptionHandler_x64();    
 
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)

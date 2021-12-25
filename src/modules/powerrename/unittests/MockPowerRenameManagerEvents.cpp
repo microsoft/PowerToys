@@ -41,6 +41,12 @@ IFACEMETHODIMP CMockPowerRenameManagerEvents::OnUpdate(_In_ IPowerRenameItem* pI
     return S_OK;
 }
 
+IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRename(_In_ IPowerRenameItem* pItem)
+{
+    m_itemRenamed = pItem;
+    return S_OK;
+}
+
 IFACEMETHODIMP CMockPowerRenameManagerEvents::OnError(_In_ IPowerRenameItem* pItem)
 {
     m_itemError = pItem;
@@ -71,22 +77,9 @@ IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRenameStarted()
     return S_OK;
 }
 
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRenameCompleted()
+IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRenameCompleted(bool closeUIWindowAfterRenaming)
 {
     m_renameCompleted = true;
+    m_closeUIWindowAfterRenaming = closeUIWindowAfterRenaming;
     return S_OK;
-}
-
-HRESULT CMockPowerRenameManagerEvents::s_CreateInstance(_In_ IPowerRenameManager* psrm, _Outptr_ IPowerRenameUI** ppsrui)
-{
-    *ppsrui = nullptr;
-    CMockPowerRenameManagerEvents* events = new CMockPowerRenameManagerEvents();
-    HRESULT hr = E_OUTOFMEMORY;
-    if (events != nullptr)
-    {
-        hr = events->QueryInterface(IID_PPV_ARGS(ppsrui));
-        events->Release();
-    }
-
-    return hr;
 }

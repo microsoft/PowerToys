@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 {
                     Action = (_) => DoOpenSettingsAction(entry),
                     IcoPath = iconPath,
-                    SubTitle = $"{Resources.Area} \"{entry.Area}\" {Resources.SubtitlePreposition} {entry.Type}",
+                    SubTitle = entry.JoinedFullSettingsPath,
                     Title = entry.Name,
                     ContextData = entry,
                 };
@@ -62,7 +62,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             var toolTipText = new StringBuilder();
 
             toolTipText.AppendLine($"{Resources.Application}: {entry.Type}");
-            toolTipText.AppendLine($"{Resources.Area}: {entry.Area}");
+
+            if (entry.Areas != null && entry.Areas.Any())
+            {
+                toolTipText.AppendLine($"{Resources.Area}: {entry.JoinedAreaPath}");
+            }
 
             if (entry.AltNames != null && entry.AltNames.Any())
             {
@@ -142,6 +146,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             var lowScore = 1_000;
             var mediumScore = 5_000;
             var highScore = 10_000;
+            var firstResultScore = 10_500;
 
             foreach (var result in resultList)
             {
@@ -150,39 +155,99 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     continue;
                 }
 
-                if (windowsSetting.Name.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(query))
                 {
-                    result.Score = highScore--;
-                    continue;
+                    if (windowsSetting.Name.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        result.Score = !windowsSetting.ShowAsFirstResult ? highScore-- : firstResultScore--;
+                        continue;
+                    }
+
+                    // If query starts with second or next word of name, set score.
+                    if (windowsSetting.Name.Contains($" {query}", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        result.Score = !windowsSetting.ShowAsFirstResult ? mediumScore-- : firstResultScore--;
+                        continue;
+                    }
+
+                    if (windowsSetting.Areas is null)
+                    {
+                        result.Score = !windowsSetting.ShowAsFirstResult ? lowScore-- : firstResultScore--;
+                        continue;
+                    }
+
+                    if (windowsSetting.Areas.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
+                    {
+                        result.Score = !windowsSetting.ShowAsFirstResult ? lowScore-- : firstResultScore--;
+                        continue;
+                    }
+
+                    if (windowsSetting.AltNames is null)
+                    {
+                        result.Score = !windowsSetting.ShowAsFirstResult ? lowScore-- : firstResultScore--;
+                        continue;
+                    }
+
+                    if (windowsSetting.AltNames.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
+                    {
+                        result.Score = !windowsSetting.ShowAsFirstResult ? mediumScore-- : firstResultScore--;
+                        continue;
+                    }
                 }
 
-                // If query starts with second or next word of name, set score.
-                if (windowsSetting.Name.Contains($" {query}", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    result.Score = mediumScore--;
-                    continue;
-                }
-
-                if (windowsSetting.Area.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    result.Score = lowScore--;
-                    continue;
-                }
-
-                if (windowsSetting.AltNames is null)
-                {
-                    result.Score = lowScore--;
-                    continue;
-                }
-
-                if (windowsSetting.AltNames.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
-                {
-                    result.Score = mediumScore--;
-                    continue;
-                }
-
-                result.Score = lowScore--;
+                // On empty queries
+                result.Score = !windowsSetting.ShowAsFirstResult ? lowScore-- : firstResultScore--;
             }
+        }
+
+        /// <summary>
+        /// Checks if a setting <see cref="WindowsSetting"/> matches the search string <see cref="Query.Search"/> to filter settings by settings path.
+        /// This method is called from the <see cref="Predicate{T}"/> method in <see cref="Main.Query(Query)"/> if the search string <see cref="Query.Search"/> contains the character ">".
+        /// </summary>
+        /// <param name="found">The WindowsSetting's result that should be checked.</param>
+        /// <param name="queryString">The searchString entered by the user <see cref="Query.Search"/>s.</param>
+        internal static bool FilterBySettingsPath(in WindowsSetting found, in string queryString)
+        {
+            if (!queryString.Contains('>'))
+            {
+                return false;
+            }
+
+            // Init vars
+            var queryElements = queryString.Split('>');
+
+            List<string> settingsPath = new List<string>();
+            settingsPath.Add(found.Type);
+            if (!(found.Areas is null))
+            {
+                settingsPath.AddRange(found.Areas);
+            }
+
+            // Compare query and settings path
+            for (int i = 0; i < queryElements.Length; i++)
+            {
+                if (string.IsNullOrWhiteSpace(queryElements[i]))
+                {
+                    // The queryElement is an WhiteSpace. Nothing to compare.
+                    break;
+                }
+
+                if (i < settingsPath.Count)
+                {
+                    if (!settingsPath[i].StartsWith(queryElements[i], StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    // The user has entered more query parts than existing elements in settings path.
+                    return false;
+                }
+            }
+
+            // Return "true" if <found> matches <queryString>.
+            return true;
         }
     }
 }

@@ -120,9 +120,12 @@ steps:
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
+      **\UnitTests-GcodeThumbnailProvider.dll
       **\UnitTests-SvgThumbnailProvider.dll
-      **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
+      **\UnitTests-PdfThumbnailProvider.dll
+      **\Settings.UI.UnitTests.dll
       **\UnitTests-MarkdownPreviewHandler.dll
+      **\UnitTests-GcodePreviewHandler.dll
       **\UnitTests-PdfPreviewHandler.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
@@ -137,7 +140,8 @@ steps:
       **\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.dll
       **\Microsoft.Plugin.Uri.UnitTests.dll
       **\Wox.Test.dll
-      **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
+      **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll     
+      **\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests.dll
       !**\obj\**
 
 # Native dlls

@@ -5,6 +5,8 @@
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
@@ -13,6 +15,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// </summary>
     internal class OpenWindows
     {
+        /// <summary>
+        /// PowerLauncher main executable
+        /// </summary>
+        private static readonly string _powerLauncherExe = Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName);
+
         /// <summary>
         /// Delegate handler for open windows updates
         /// </summary>
@@ -86,7 +93,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
                 (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&
-                newWindow.ClassName != "Windows.UI.Core.CoreWindow")
+                newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.ProcessName != _powerLauncherExe)
             {
                 windows.Add(newWindow);
             }

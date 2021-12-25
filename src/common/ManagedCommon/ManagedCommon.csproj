@@ -15,6 +15,7 @@
     <RepositoryType>Github</RepositoryType>
     <PackageTags>PowerToys</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
+    <AssemblyName>PowerToys.ManagedCommon</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

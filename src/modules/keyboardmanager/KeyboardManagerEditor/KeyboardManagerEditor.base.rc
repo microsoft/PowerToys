@@ -41,7 +41,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", COMPANY_NAME
-            VALUE "FileDescription", "PowerToys Keyboard Manager Editor"
+            VALUE "FileDescription", "PowerToys.KeyboardManagerEditor"
             VALUE "FileVersion", FILE_VERSION_STRING
             VALUE "InternalName", "PowerToys.KeyboardManagerEditor.exe"
             VALUE "LegalCopyright", COPYRIGHT_NOTE

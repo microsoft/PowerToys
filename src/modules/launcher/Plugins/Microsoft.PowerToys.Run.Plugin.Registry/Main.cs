@@ -86,23 +86,27 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry
                 // no base key found
                 return ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath);
             }
+            else if (baseKeyList.Count() == 1)
+            {
+                // only one base key was found -> start search for the sub-key
+                var list = RegistryHelper.SearchForSubKey(baseKeyList.First(), subKey);
+
+                // when only one sub-key was found and a user search for values ("\\")
+                // show the filtered list of values of one sub-key
+                if (searchForValueName && list.Count == 1)
+                {
+                    return ResultHelper.GetValuesFromKey(list.First().Key, _defaultIconPath, queryValueName);
+                }
+
+                return ResultHelper.GetResultList(list, _defaultIconPath);
+            }
             else if (baseKeyList.Count() > 1)
             {
                 // more than one base key was found -> show results
                 return ResultHelper.GetResultList(baseKeyList.Select(found => new RegistryEntry(found)), _defaultIconPath);
             }
 
-            // only one base key was found -> start search for the sub-key
-            var list = RegistryHelper.SearchForSubKey(baseKeyList.First(), subKey);
-
-            // when only one sub-key was found and a user search for values ("\\")
-            // show the filtered list of values of one sub-key
-            if (searchForValueName && list.Count == 1)
-            {
-                return ResultHelper.GetValuesFromKey(list.First().Key, _defaultIconPath, queryValueName);
-            }
-
-            return ResultHelper.GetResultList(list, _defaultIconPath);
+            return new List<Result>();
         }
 
         /// <summary>

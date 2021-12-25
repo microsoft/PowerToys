@@ -2,7 +2,7 @@ name: "🐛 Bug report"
 description: Report errors or unexpected behavior
 labels: 
 - Issue-Bug
-- Triage-Needed
+- Needs-Triage
 body:
 - type: markdown
   attributes:
@@ -39,12 +39,18 @@ body:
       - Image Resizer
       - Keyboard Manager
       - MD Preview
+      - Mouse Utilities
+      - PDF Preview
+      - PDF Thumbnail
+      - G-code Preview
+      - G-code Thumbnail
       - PowerRename
       - PowerToys Run
       - Shortcut Guide
       - SVG Preview
       - SVG Thumbnail
       - Settings
+      - Video Conference Mute
       - Welcome / PowerToys Tour window
       - System tray interaction
       - Installer

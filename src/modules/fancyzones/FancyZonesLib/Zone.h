@@ -2,7 +2,7 @@
 
 namespace ZoneConstants
 {
-    constexpr int MAX_NEGATIVE_SPACING = -10;
+    constexpr int MAX_NEGATIVE_SPACING = -20;
 }
 
 using ZoneIndex = int64_t;
@@ -26,16 +26,6 @@ interface __declspec(uuid("{8228E934-B6EF-402A-9892-15A1441BF8B0}")) IZone : pub
      * @returns Zone identifier.
      */
     IFACEMETHOD_(ZoneIndex, Id)() const = 0;
-    /**
-     * Compute the coordinates of the rectangle to which a window should be resized.
-     *
-     * @param   window     Handle of window which should be assigned to zone.
-     * @param   zoneWindow The m_window of a WorkArea, it's a hidden window representing the
-     *                     current monitor desktop work area.
-     * @returns a RECT structure, describing global coordinates to which a window should be resized
-     */
-    IFACEMETHOD_(RECT, ComputeActualZoneRect)(HWND window, HWND zoneWindow) const = 0;
-
 };
 
 winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect, const ZoneIndex zoneId) noexcept;

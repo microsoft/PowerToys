@@ -44,13 +44,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                     var title = $"{a.FolderName}";
 
                     var typeWorkspace = a.WorkspaceTypeToString();
-                    if (a.TypeWorkspace == TypeWorkspace.Codespaces)
+                    if (a.TypeWorkspace != TypeWorkspace.Local)
                     {
-                        title += $" - {typeWorkspace}";
-                    }
-                    else if (a.TypeWorkspace != TypeWorkspace.Local)
-                    {
-                        title += $" - {(a.ExtraInfo != null ? $"{a.ExtraInfo} ({typeWorkspace})" : typeWorkspace)}";
+                        title = $"{title}{(a.ExtraInfo != null ? $" - {a.ExtraInfo}" : string.Empty)} ({typeWorkspace})";
                     }
 
                     var tooltip = new ToolTipData(title, $"{Resources.Workspace}{(a.TypeWorkspace != TypeWorkspace.Local ? $" {Resources.In} {typeWorkspace}" : string.Empty)}: {SystemPath.RealPath(a.RelativePath)}");

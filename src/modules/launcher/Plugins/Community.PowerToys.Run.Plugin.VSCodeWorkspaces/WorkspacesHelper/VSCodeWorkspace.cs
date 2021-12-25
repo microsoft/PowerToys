@@ -30,6 +30,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                 case TypeWorkspace.RemoteContainers: return Resources.TypeWorkspaceContainer;
                 case TypeWorkspace.RemoteSSH: return "SSH";
                 case TypeWorkspace.RemoteWSL: return "WSL";
+                case TypeWorkspace.DevContainer: return Resources.TypeWorkspaceDevContainer;
             }
 
             return string.Empty;
@@ -43,5 +44,6 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
         RemoteWSL = 3,
         RemoteSSH = 4,
         RemoteContainers = 5,
+        DevContainer = 6,
     }
 }

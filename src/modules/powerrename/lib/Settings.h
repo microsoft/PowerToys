@@ -5,8 +5,6 @@
 class CSettings
 {
 public:
-    static const int MAX_INPUT_STRING_LEN = 1024;
-
     CSettings();
 
     inline bool GetEnabled()
@@ -146,6 +144,3 @@ private:
 };
 
 CSettings& CSettingsInstance();
-
-HRESULT CRenameMRUSearch_CreateInstance(_Outptr_ IUnknown** ppUnk);
-HRESULT CRenameMRUReplace_CreateInstance(_Outptr_ IUnknown** ppUnk);

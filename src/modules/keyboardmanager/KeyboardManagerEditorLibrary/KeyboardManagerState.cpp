@@ -171,8 +171,22 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
                 AddKeyToLayout(currentShortcutUI2.as<StackPanel>(), shortcut[i]);
             }
         }
-        currentShortcutUI1.as<StackPanel>().UpdateLayout();
-        currentShortcutUI2.as<StackPanel>().UpdateLayout();
+        try
+        {
+            // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
+            currentShortcutUI1.as<StackPanel>().UpdateLayout();
+        }
+        catch (...)
+        {
+        }
+        try
+        {
+            // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
+            currentShortcutUI2.as<StackPanel>().UpdateLayout();
+        }
+        catch (...)
+        {
+        }
     });
 }
 
@@ -189,7 +203,14 @@ void KeyboardManagerState::UpdateDetectSingleKeyRemapUI()
         currentSingleKeyUI.as<StackPanel>().Children().Clear();
         hstring key = winrt::to_hstring(keyboardMap.GetKeyName(detectedRemapKey).c_str());
         AddKeyToLayout(currentSingleKeyUI.as<StackPanel>(), key);
-        currentSingleKeyUI.as<StackPanel>().UpdateLayout();
+        try
+        {
+            // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
+            currentSingleKeyUI.as<StackPanel>().UpdateLayout();
+        }
+        catch (...)
+        {
+        }
     });
 }
 

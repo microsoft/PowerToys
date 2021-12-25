@@ -85,9 +85,9 @@ IFACEMETHODIMP CPowerRenameRegEx::GetSearchTerm(_Outptr_ PWSTR* searchTerm)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameRegEx::PutSearchTerm(_In_ PCWSTR searchTerm)
+IFACEMETHODIMP CPowerRenameRegEx::PutSearchTerm(_In_ PCWSTR searchTerm, bool forceRenaming)
 {
-    bool changed = false;
+    bool changed = false || forceRenaming;
     HRESULT hr = S_OK;
     if (searchTerm)
     {
@@ -96,7 +96,14 @@ IFACEMETHODIMP CPowerRenameRegEx::PutSearchTerm(_In_ PCWSTR searchTerm)
         {
             changed = true;
             CoTaskMemFree(m_searchTerm);
-            hr = SHStrDup(searchTerm, &m_searchTerm);
+            if (lstrcmp(searchTerm, L"") == 0)
+            {
+                m_searchTerm = NULL;
+            }
+            else
+            {
+                hr = SHStrDup(searchTerm, &m_searchTerm);
+            }
         }
     }
 
@@ -120,9 +127,9 @@ IFACEMETHODIMP CPowerRenameRegEx::GetReplaceTerm(_Outptr_ PWSTR* replaceTerm)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm)
+IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm, bool forceRenaming)
 {
-    bool changed = false;
+    bool changed = false || forceRenaming;
     HRESULT hr = S_OK;
     if (replaceTerm)
     {

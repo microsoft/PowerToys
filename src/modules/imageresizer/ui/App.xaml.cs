@@ -5,12 +5,12 @@
 using System;
 using System.Text;
 using System.Windows;
+using Common.UI;
 using ImageResizer.Models;
 using ImageResizer.Properties;
 using ImageResizer.Utilities;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
-using Microsoft.PowerToys.Common.UI;
 
 namespace ImageResizer
 {
@@ -26,6 +26,8 @@ namespace ImageResizer
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Fix for .net 3.1.19 making Image Resizer not adapt to DPI changes.
+            NativeMethods.SetProcessDPIAware();
             var batch = ResizeBatch.FromCommandLine(Console.In, e?.Args);
 
             // TODO: Add command-line parameters that can be used in lieu of the input page (issue #14)

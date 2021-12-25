@@ -6,6 +6,8 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
+using System.Windows;
+using System.Windows.Interop;
 
 namespace ColorPicker
 {
@@ -13,6 +15,9 @@ namespace ColorPicker
     // will have to rename
     public static class NativeMethods
     {
+        private const int GWL_STYLE = -16;
+        private const int WS_POPUP = 1 << 31; // 0x80000000
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Interop")]
         public const int WH_KEYBOARD_LL = 13;
@@ -168,5 +173,17 @@ namespace ColorPicker
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         internal static extern int GetWindowText(int hwnd, StringBuilder text, int count);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll")]
+        internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        internal static void SetPopupStyle(Window win)
+        {
+            var hwnd = new WindowInteropHelper(win).Handle;
+            _ = SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) | WS_POPUP);
+        }
     }
 }

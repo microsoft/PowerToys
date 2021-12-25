@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
+using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -417,6 +418,8 @@ namespace FancyZonesEditor
 
         public void DoMerge(List<int> indices)
         {
+            Logger.LogTrace();
+
             if (indices.Count == 0)
             {
                 return;
@@ -455,6 +458,7 @@ namespace FancyZonesEditor
 
         public void Split(int zoneIndex, int position, Orientation orientation)
         {
+            Logger.LogTrace();
             if (!CanSplit(zoneIndex, position, orientation))
             {
                 return;
@@ -519,6 +523,8 @@ namespace FancyZonesEditor
 
         public void Drag(int resizerIndex, int delta)
         {
+            Logger.LogTrace();
+
             if (!CanDrag(resizerIndex, delta))
             {
                 return;

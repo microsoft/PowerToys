@@ -189,12 +189,16 @@ namespace FancyZonesUtils
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept;
     void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);
 
+    // Parameter rect is in windowOfRect coordinates
+    RECT AdjustRectForSizeWindowToRect(HWND window, RECT rect, HWND windowOfRect) noexcept;
+
     // Parameter rect must be in screen coordinates (e.g. obtained from GetWindowRect)
     void SizeWindowToRect(HWND window, RECT rect) noexcept;
 
+    void SwitchToWindow(HWND window) noexcept;
+
     bool HasNoVisibleOwner(HWND window) noexcept;
     bool IsStandardWindow(HWND window);
-    bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
     bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
 
     bool IsWindowMaximized(HWND window) noexcept;
@@ -207,12 +211,9 @@ namespace FancyZonesUtils
 
     std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const std::wstring& virtualDesktopId);
     std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId);
-
     std::wstring TrimDeviceId(const std::wstring& deviceId);
-    std::optional<FancyZonesDataTypes::DeviceIdData> ParseDeviceId(const std::wstring& deviceId);
-    bool IsValidDeviceId(const std::wstring& str);
 
-    RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept;
+    RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept;
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
 
     // If HWND is already dead, we assume it wasn't elevated

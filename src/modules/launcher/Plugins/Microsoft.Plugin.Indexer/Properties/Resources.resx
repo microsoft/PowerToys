@@ -160,6 +160,6 @@
     <value>Search</value>
   </data>
   <data name="disable_drive_detection_warning" xml:space="preserve">
-    <value>Disable drive detection warning</value>
+    <value>Disable non-indexed files warning</value>
   </data>
 </root>

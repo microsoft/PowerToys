@@ -1,0 +1,20 @@
+parameters:
+  configuration: 'Release'
+  platform: ''
+  additionalBuildArguments: '-m'
+
+jobs:
+- job: Build${{ parameters.platform }}${{ parameters.configuration }}
+  displayName: Build ${{ parameters.platform }} ${{ parameters.configuration }}
+  variables:
+    BuildConfiguration: ${{ parameters.configuration }}
+    BuildPlatform: ${{ parameters.platform }}
+  pool:
+      name: WinDevPool-L
+  timeoutInMinutes: 120
+  strategy:
+    maxParallel: 10
+  steps:
+  - template: build-powertoys-steps.yml
+    parameters:
+      additionalBuildArguments: ${{ parameters.additionalBuildArguments }}

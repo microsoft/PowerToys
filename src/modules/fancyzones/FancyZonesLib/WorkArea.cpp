@@ -1,16 +1,16 @@
 #include "pch.h"
 #include "WorkArea.h"
 
+#include <common/logger/call_tracer.h>
 #include <common/logger/logger.h>
 
 #include "FancyZonesData.h"
 #include "FancyZonesDataTypes.h"
-#include "ZoneWindowDrawing.h"
+#include "ZonesOverlay.h"
 #include "trace.h"
 #include "util.h"
 #include "on_thread_executor.h"
 #include "Settings.h"
-#include "CallTracer.h"
 
 #include <ShellScalingApi.h>
 #include <mutex>
@@ -21,7 +21,7 @@
 // Non-Localizable strings
 namespace NonLocalizable
 {
-    const wchar_t ToolWindowClassName[] = L"SuperFancyZones_ZoneWindow";
+    const wchar_t ToolWindowClassName[] = L"FancyZones_ZonesOverlay";
 }
 
 using namespace FancyZonesUtils;
@@ -57,13 +57,13 @@ namespace
 
     public:
 
-        HWND NewZoneWindow(Rect position, HINSTANCE hinstance, WorkArea* owner)
+        HWND NewZonesOverlayWindow(Rect position, HINSTANCE hinstance, WorkArea* owner)
         {
             HWND windowFromPool = ExtractWindow();
             if (windowFromPool == NULL)
             {
                 HWND window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, position.left(), position.top(), position.width(), position.height(), nullptr, nullptr, hinstance, owner);
-                Logger::info("Creating new zone window, hWnd = {}", (void*)window);
+                Logger::info("Creating new ZonesOverlay window, hWnd = {}", (void*)window);
                 MakeWindowTransparent(window);
 
                 // According to ShowWindow docs, we must call it with SW_SHOWNORMAL the first time
@@ -73,17 +73,17 @@ namespace
             }
             else
             {
-                Logger::info("Reusing zone window from pool, hWnd = {}", (void*)windowFromPool);
+                Logger::info("Reusing ZonesOverlay window from pool, hWnd = {}", (void*)windowFromPool);
                 SetWindowLongPtrW(windowFromPool, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(owner));
                 MoveWindow(windowFromPool, position.left(), position.top(), position.width(), position.height(), TRUE);
                 return windowFromPool;
             }
         }
 
-        void FreeZoneWindow(HWND window)
+        void FreeZonesOverlayWindow(HWND window)
         {
             _TRACER_;
-            Logger::info("Freeing zone window, hWnd = {}", (void*)window);
+            Logger::info("Freeing ZonesOverlay window into pool, hWnd = {}", (void*)window);
             SetWindowLongPtrW(window, GWLP_USERDATA, 0);
             ShowWindow(window, SW_HIDE);
 
@@ -109,7 +109,7 @@ public:
     WorkArea(HINSTANCE hinstance);
     ~WorkArea();
 
-    bool Init(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm);
+    bool Init(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm, const bool showZoneText);
 
     IFACEMETHODIMP MoveSizeEnter(HWND window) noexcept;
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
@@ -117,27 +117,29 @@ public:
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept;
+    MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool suppressMove = false) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
     ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
-    IFACEMETHODIMP_(std::wstring)
+    IFACEMETHODIMP_(FancyZonesDataTypes::DeviceIdData)
     UniqueId() const noexcept { return { m_uniqueId }; }
     IFACEMETHODIMP_(void)
     SaveWindowProcessToZoneIndex(HWND window) noexcept;
     IFACEMETHODIMP_(IZoneSet*)
-    ActiveZoneSet() const noexcept { return m_activeZoneSet.get(); }
+    ZoneSet() const noexcept { return m_zoneSet.get(); }
     IFACEMETHODIMP_(ZoneIndexSet)
     GetWindowZoneIndexes(HWND window) const noexcept;
     IFACEMETHODIMP_(void)
-    ShowZoneWindow() noexcept;
+    ShowZonesOverlay() noexcept;
     IFACEMETHODIMP_(void)
-    HideZoneWindow() noexcept;
+    HideZonesOverlay() noexcept;
     IFACEMETHODIMP_(void)
     UpdateActiveZoneSet() noexcept;
+    IFACEMETHODIMP_(void)
+    CycleTabs(HWND window, bool reverse) noexcept;
     IFACEMETHODIMP_(void)
     ClearSelectedZones() noexcept;
     IFACEMETHODIMP_(void)
@@ -151,7 +153,7 @@ protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
 private:
-    void InitializeZoneSets(const std::wstring& parentUniqueId) noexcept;
+    void InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept;
     void CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -159,18 +161,18 @@ private:
     void SetAsTopmostWindow() noexcept;
 
     HMONITOR m_monitor{};
-    std::wstring m_uniqueId; // Parsed deviceId + resolution + virtualDesktopId
+    FancyZonesDataTypes::DeviceIdData m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
-    winrt::com_ptr<IZoneSet> m_activeZoneSet;
-    std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
+    winrt::com_ptr<IZoneSet> m_zoneSet;
     ZoneIndexSet m_initialHighlightZone;
     ZoneIndexSet m_highlightZone;
     WPARAM m_keyLast{};
     size_t m_keyCycle{};
-    std::unique_ptr<ZoneWindowDrawing> m_zoneWindowDrawing;
+    std::unique_ptr<ZonesOverlay> m_zonesOverlay;
     ZoneColors m_zoneColors;
     OverlappingZonesAlgorithm m_overlappingAlgorithm;
+    bool m_showZoneText;
 };
 
 WorkArea::WorkArea(HINSTANCE hinstance)
@@ -186,13 +188,14 @@ WorkArea::WorkArea(HINSTANCE hinstance)
 
 WorkArea::~WorkArea()
 {
-    windowPool.FreeZoneWindow(m_window);
+    windowPool.FreeZonesOverlayWindow(m_window);
 }
 
-bool WorkArea::Init(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm)
+bool WorkArea::Init(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm, const bool showZoneText)
 {
     m_zoneColors = zoneColors;
     m_overlappingAlgorithm = overlappingAlgorithm;
+    m_showZoneText = showZoneText;
 
     Rect workAreaRect;
     m_monitor = monitor;
@@ -214,14 +217,14 @@ bool WorkArea::Init(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& u
     m_uniqueId = uniqueId;
     InitializeZoneSets(parentUniqueId);
 
-    m_window = windowPool.NewZoneWindow(workAreaRect, hinstance, this);
+    m_window = windowPool.NewZonesOverlayWindow(workAreaRect, hinstance, this);
 
     if (!m_window)
     {
         return false;
     }
 
-    m_zoneWindowDrawing = std::make_unique<ZoneWindowDrawing>(m_window);
+    m_zonesOverlay = std::make_unique<ZonesOverlay>(m_window);
 
     return true;
 }
@@ -231,7 +234,8 @@ IFACEMETHODIMP WorkArea::MoveSizeEnter(HWND window) noexcept
     m_windowMoveSize = window;
     m_highlightZone = {};
     m_initialHighlightZone = {};
-    ShowZoneWindow();
+    ShowZonesOverlay();
+    Trace::WorkArea::MoveOrResizeStarted(m_zoneSet);
     return S_OK;
 }
 
@@ -254,7 +258,7 @@ IFACEMETHODIMP WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled,
             }
             else
             {
-                highlightZone = m_activeZoneSet->GetCombinedZoneRange(m_initialHighlightZone, highlightZone);
+                highlightZone = m_zoneSet->GetCombinedZoneRange(m_initialHighlightZone, highlightZone);
             }
         }
         else
@@ -273,7 +277,7 @@ IFACEMETHODIMP WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled,
 
     if (redraw)
     {
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
+        m_zonesOverlay->DrawActiveZoneSet(m_zoneSet->GetZones(), m_highlightZone, m_zoneColors, m_showZoneText);
     }
 
     return S_OK;
@@ -286,20 +290,20 @@ IFACEMETHODIMP WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcep
         return E_INVALIDARG;
     }
 
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
         POINT ptClient = ptScreen;
         MapWindowPoints(nullptr, m_window, &ptClient, 1);
-        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, m_highlightZone);
+        m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, m_highlightZone);
 
         if (FancyZonesUtils::HasNoVisibleOwner(window))
         {
             SaveWindowProcessToZoneIndex(window);
         }
     }
-    Trace::WorkArea::MoveSizeEnd(m_activeZoneSet);
+    Trace::WorkArea::MoveOrResizeEnd(m_zoneSet);
 
-    HideZoneWindow();
+    HideZonesOverlay();
     m_windowMoveSize = nullptr;
     return S_OK;
 }
@@ -311,20 +315,20 @@ WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
 }
 
 IFACEMETHODIMP_(void)
-WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept
+WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool suppressMove) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet);
+        m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet, suppressMove);
     }
 }
 
 IFACEMETHODIMP_(bool)
 WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window, vkCode, cycle))
+        if (m_zoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window, vkCode, cycle))
         {
             if (FancyZonesUtils::HasNoVisibleOwner(window))
             {
@@ -339,9 +343,9 @@ WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool 
 IFACEMETHODIMP_(bool)
 WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndPosition(window, m_window, vkCode, cycle))
+        if (m_zoneSet->MoveWindowIntoZoneByDirectionAndPosition(window, m_window, vkCode, cycle))
         {
             SaveWindowProcessToZoneIndex(window);
             return true;
@@ -353,9 +357,9 @@ WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bo
 IFACEMETHODIMP_(bool)
 WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        if (m_activeZoneSet->ExtendWindowByDirectionAndPosition(window, m_window, vkCode))
+        if (m_zoneSet->ExtendWindowByDirectionAndPosition(window, m_window, vkCode))
         {
             SaveWindowProcessToZoneIndex(window);
             return true;
@@ -367,13 +371,13 @@ WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept
 IFACEMETHODIMP_(void)
 WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        auto zoneIndexSet = m_activeZoneSet->GetZoneIndexSetFromWindow(window);
+        auto zoneIndexSet = m_zoneSet->GetZoneIndexSetFromWindow(window);
         if (zoneIndexSet.size())
         {
             OLECHAR* guidString;
-            if (StringFromCLSID(m_activeZoneSet->Id(), &guidString) == S_OK)
+            if (StringFromCLSID(m_zoneSet->Id(), &guidString) == S_OK)
             {
                 FancyZonesDataInstance().SetAppLastZones(window, m_uniqueId, guidString, zoneIndexSet);
             }
@@ -386,10 +390,10 @@ WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
 IFACEMETHODIMP_(ZoneIndexSet)
 WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
         wil::unique_cotaskmem_string zoneSetId;
-        if (SUCCEEDED(StringFromCLSID(m_activeZoneSet->Id(), &zoneSetId)))
+        if (SUCCEEDED(StringFromCLSID(m_zoneSet->Id(), &zoneSetId)))
         {
             return FancyZonesDataInstance().GetAppLastZoneIndexSet(window, m_uniqueId, zoneSetId.get());
         }
@@ -398,22 +402,22 @@ WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
 }
 
 IFACEMETHODIMP_(void)
-WorkArea::ShowZoneWindow() noexcept
+WorkArea::ShowZonesOverlay() noexcept
 {
     if (m_window)
     {
         SetAsTopmostWindow();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
-        m_zoneWindowDrawing->Show();
+        m_zonesOverlay->DrawActiveZoneSet(m_zoneSet->GetZones(), m_highlightZone, m_zoneColors, m_showZoneText);
+        m_zonesOverlay->Show();
     }
 }
 
 IFACEMETHODIMP_(void)
-WorkArea::HideZoneWindow() noexcept
+WorkArea::HideZonesOverlay() noexcept
 {
     if (m_window)
     {
-        m_zoneWindowDrawing->Hide();
+        m_zonesOverlay->Hide();
         m_keyLast = 0;
         m_windowMoveSize = nullptr;
         m_highlightZone = {};
@@ -427,7 +431,16 @@ WorkArea::UpdateActiveZoneSet() noexcept
     if (m_window)
     {
         m_highlightZone.clear();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
+        m_zonesOverlay->DrawActiveZoneSet(m_zoneSet->GetZones(), m_highlightZone, m_zoneColors, m_showZoneText);
+    }
+}
+
+IFACEMETHODIMP_(void)
+WorkArea::CycleTabs(HWND window, bool reverse) noexcept
+{
+    if (m_zoneSet)
+    {
+        m_zoneSet->CycleTabs(window, reverse);
     }
 }
 
@@ -437,7 +450,7 @@ WorkArea::ClearSelectedZones() noexcept
     if (m_highlightZone.size())
     {
         m_highlightZone.clear();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
+        m_zonesOverlay->DrawActiveZoneSet(m_zoneSet->GetZones(), m_highlightZone, m_zoneColors, m_showZoneText);
     }
 }
 
@@ -447,8 +460,8 @@ WorkArea::FlashZones() noexcept
     if (m_window)
     {
         SetAsTopmostWindow();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), {}, m_zoneColors);
-        m_zoneWindowDrawing->Flash();
+        m_zonesOverlay->DrawActiveZoneSet(m_zoneSet->GetZones(), {}, m_zoneColors, m_showZoneText);
+        m_zonesOverlay->Flash();
     }
 }
 
@@ -467,11 +480,17 @@ WorkArea::SetOverlappingZonesAlgorithm(OverlappingZonesAlgorithm overlappingAlgo
 
 #pragma region private
 
-void WorkArea::InitializeZoneSets(const std::wstring& parentUniqueId) noexcept
+void WorkArea::InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept
 {
+    wil::unique_cotaskmem_string virtualDesktopId;
+    if (SUCCEEDED(StringFromCLSID(m_uniqueId.virtualDesktopId, &virtualDesktopId)))
+    {
+        Logger::debug(L"Initialize zone sets on the virtual desktop {}", virtualDesktopId.get());
+    }
+    
     bool deviceAdded = FancyZonesDataInstance().AddDevice(m_uniqueId);
     // If the device has been added, check if it should inherit the parent's layout
-    if (deviceAdded && !parentUniqueId.empty())
+    if (deviceAdded && parentUniqueId.virtualDesktopId != GUID_NULL)
     {
         FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
     }
@@ -537,16 +556,16 @@ void WorkArea::CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) 
 
 void WorkArea::UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept
 {
-    m_activeZoneSet.copy_from(zoneSet);
+    m_zoneSet.copy_from(zoneSet);
 
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
         wil::unique_cotaskmem_string zoneSetId;
-        if (SUCCEEDED_LOG(StringFromCLSID(m_activeZoneSet->Id(), &zoneSetId)))
+        if (SUCCEEDED_LOG(StringFromCLSID(m_zoneSet->Id(), &zoneSetId)))
         {
             FancyZonesDataTypes::ZoneSetData data{
                 .uuid = zoneSetId.get(),
-                .type = m_activeZoneSet->LayoutType()
+                .type = m_zoneSet->LayoutType()
             };
             FancyZonesDataInstance().SetActiveZoneSet(m_uniqueId, data);
         }
@@ -577,9 +596,9 @@ LRESULT WorkArea::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
 
 ZoneIndexSet WorkArea::ZonesFromPoint(POINT pt) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        return m_activeZoneSet->ZonesFromPoint(pt);
+        return m_zoneSet->ZonesFromPoint(pt);
     }
     return {};
 }
@@ -618,10 +637,10 @@ LRESULT CALLBACK WorkArea::s_WndProc(HWND window, UINT message, WPARAM wparam, L
                                   DefWindowProc(window, message, wparam, lparam);
 }
 
-winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept
+winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm, const bool showZoneText) noexcept
 {
     auto self = winrt::make_self<WorkArea>(hinstance);
-    if (self->Init(hinstance, monitor, uniqueId, parentUniqueId, zoneColors, overlappingAlgorithm))
+    if (self->Init(hinstance, monitor, uniqueId, parentUniqueId, zoneColors, overlappingAlgorithm, showZoneText))
     {
         return self;
     }

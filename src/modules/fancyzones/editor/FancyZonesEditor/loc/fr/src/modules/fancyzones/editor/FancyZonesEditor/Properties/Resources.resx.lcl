@@ -409,6 +409,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";KeyboardControlsDescription" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[]D;]A;     - [Shift]5D;+S to split currently focused zone.]D;]A;     - Ctrl+Tab to focus zones/resizers.]D;]A;     - Tab to cycle zones and resizers.]D;]A;     - Delete to remove the focused resizer.]D;]A;     - Arrows to move the focused resizer.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[]D;]A;     - [Maj]5D;+S pour fractionner la zone actuellement ciblée.]D;]A;     -Ctrl+Tabulation pour cibler les zones/les redimensionneurs.]D;]A;     -Onglet pour faire défiler les zones et les redimensionneurs.]D;]A;     -Supprimer pour supprimer le redimensionneur ciblé.]D;]A;    -Flèches pour déplacer le redimensionneur ciblé.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";KeyboardControlsName" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Keyboard Navigation:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Navigation au clavier :]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Layout_Canvas_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create layouts that have overlapping zones]]></Val>

@@ -4,6 +4,7 @@
 
 using System.Linq;
 using System.Windows.Input;
+using Common.UI;
 using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Properties;
@@ -35,6 +36,7 @@ namespace ImageResizer.ViewModels
 
             ResizeCommand = new RelayCommand(Resize);
             CancelCommand = new RelayCommand(Cancel);
+            OpenSettingsCommand = new RelayCommand(OpenSettings);
         }
 
         public Settings Settings { get; }
@@ -42,6 +44,8 @@ namespace ImageResizer.ViewModels
         public ICommand ResizeCommand { get; }
 
         public ICommand CancelCommand { get; }
+
+        public ICommand OpenSettingsCommand { get; }
 
         public bool TryingToResizeGifFiles
         {
@@ -56,6 +60,11 @@ namespace ImageResizer.ViewModels
         {
             Settings.Save();
             _mainViewModel.CurrentPage = new ProgressViewModel(_batch, _mainViewModel, _mainView);
+        }
+
+        public static void OpenSettings()
+        {
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ImageResizer);
         }
 
         public void Cancel()

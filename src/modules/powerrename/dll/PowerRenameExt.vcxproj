@@ -8,11 +8,12 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{B25AC7A5-FB9F-4789-B392-D5C85E948670}</ProjectGuid>
     <RootNamespace>PowerRenameExt</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <TargetName>$(ProjectName)</TargetName>
+    <TargetName>PowerToys.PowerRenameExt</TargetName>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerRename\</OutDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -21,7 +22,7 @@
       <AdditionalIncludeDirectories>..\lib\;..\ui\;..\;..\..\..\;..\..\..\common\telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Pathcch.lib;comctl32.lib;$(SolutionDir)$(Platform)\$(Configuration)\obj\PowerRenameUI\PowerRenameUI.res;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Pathcch.lib;comctl32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PowerRenameExt.def</ModuleDefinitionFile>
       <DelayLoadDLLs>gdi32.dll;shell32.dll;ole32.dll;shlwapi.dll;oleaut32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
@@ -54,20 +55,21 @@
     <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
       <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
+      <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
     </ProjectReference>
     <ProjectReference Include="..\lib\PowerRenameLib.vcxproj">
       <Project>{51920f1f-c28c-4adf-8660-4238766796c2}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\ui\PowerRenameUI.vcxproj">
-      <Project>{0e072714-d127-460b-afad-b4c40b412798}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources.resx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="..\..\..\..\packages\boost.1.72.0.0\build\boost.targets" Condition="Exists('..\..\..\..\packages\boost.1.72.0.0\build\boost.targets')" />

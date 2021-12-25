@@ -17,9 +17,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         public WindowsSetting()
         {
             Name = string.Empty;
-            Area = string.Empty;
             Command = string.Empty;
             Type = string.Empty;
+            ShowAsFirstResult = false;
         }
 
         /// <summary>
@@ -28,9 +28,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the area of this setting.
+        /// Gets or sets the areas of this setting. The order is fixed to the order in json.
         /// </summary>
-        public string Area { get; set; }
+        public IList<string>? Areas { get; set; }
 
         /// <summary>
         /// Gets or sets the command of this setting.
@@ -62,5 +62,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         /// Gets or sets the Windows build since this settings is not longer present.
         /// </summary>
         public uint? DeprecatedInBuild { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to use a higher score as normal for this setting to show it as one of the first results.
+        /// </summary>
+        public bool ShowAsFirstResult { get; set; }
+
+        /// <summary>
+        /// Gets or sets the the value with the generated area path as string.
+        /// This Property IS NOT PART OF THE DATA IN "WindowsSettings.json".
+        /// This property will be filled on runtime by "WindowsSettingsPathHelper".
+        /// </summary>
+        public string? JoinedAreaPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the the value with the generated full settings path (App and areas) as string.
+        /// This Property IS NOT PART OF THE DATA IN "WindowsSettings.json".
+        /// This property will be filled on runtime by "WindowsSettingsPathHelper".
+        /// </summary>
+        public string? JoinedFullSettingsPath { get; set; }
     }
 }

@@ -35,7 +35,7 @@ namespace ColorPicker.Helpers
         internal static string GetStringRepresentation(Color color, ColorRepresentationType colorRepresentationType)
             => colorRepresentationType switch
             {
-                ColorRepresentationType.CMYK => ColorToCYMK(color),
+                ColorRepresentationType.CMYK => ColorToCMYK(color),
                 ColorRepresentationType.HEX => ColorToHex(color),
                 ColorRepresentationType.HSB => ColorToHSB(color),
                 ColorRepresentationType.HSI => ColorToHSI(color),
@@ -44,17 +44,21 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.HWB => ColorToHWB(color),
                 ColorRepresentationType.NCol => ColorToNCol(color),
                 ColorRepresentationType.RGB => ColorToRGB(color),
+                ColorRepresentationType.CIELAB => ColorToCIELAB(color),
+                ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
+                ColorRepresentationType.VEC4 => ColorToFloat(color),
+                ColorRepresentationType.DecimalValue => ColorToDecimal(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
                 _ => ColorToHex(color),
             };
 
         /// <summary>
-        /// Return a <see cref="string"/> representation of a CYMK color
+        /// Return a <see cref="string"/> representation of a CMYK color
         /// </summary>
-        /// <param name="color">The <see cref="Color"/> for the CYMK color presentation</param>
-        /// <returns>A <see cref="string"/> representation of a CYMK color</returns>
-        private static string ColorToCYMK(Color color)
+        /// <param name="color">The <see cref="Color"/> for the CMYK color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a CMYK color</returns>
+        private static string ColorToCMYK(Color color)
         {
             var (cyan, magenta, yellow, blackKey) = ColorHelper.ConvertToCMYKColor(color);
 
@@ -75,7 +79,7 @@ namespace ColorPicker.Helpers
         /// <param name="color">The see cref="Color"/> for the hexadecimal presentation</param>
         /// <returns>A hexadecimal <see cref="string"/> representation of a RGB color</returns>
         private static string ColorToHex(Color color)
-            => $"#{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
+            => $"{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
              + $"{color.G.ToString("X2", CultureInfo.InvariantCulture)}"
              + $"{color.B.ToString("X2", CultureInfo.InvariantCulture)}";
 
@@ -95,6 +99,29 @@ namespace ColorPicker.Helpers
             return $"hsb({hue.ToString(CultureInfo.InvariantCulture)}"
                  + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {brightness.ToString(CultureInfo.InvariantCulture)}%)";
+        }
+
+        /// <summary>
+        /// Return a <see cref="string"/> representation float color styling(0.1f, 0.1f, 0.1f)
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>a string value (0.1f, 0.1f, 0.1f)</returns>
+        private static string ColorToFloat(Color color)
+        {
+            var (red, green, blue) = ColorHelper.ConvertToDouble(color);
+            var precision = 2;
+
+            return $"({Math.Round(red, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, {Math.Round(green, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, {Math.Round(blue, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, 1f)";
+        }
+
+        /// <summary>
+        /// Return a <see cref="string"/> representation decimal color value
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>a string value number</returns>
+        private static string ColorToDecimal(Color color)
+        {
+            return $"{color.R + (color.G * 256) + (color.B * 65536)}";
         }
 
         /// <summary>
@@ -191,11 +218,46 @@ namespace ColorPicker.Helpers
         /// <summary>
         /// Return a <see cref="string"/> representation of a RGB color
         /// </summary>
-        /// <param name="color">The see cref="Color"/> for the RGB color presentation</param>
+        /// <param name="color">The <see cref="Color"/> for the RGB color presentation</param>
         /// <returns>A <see cref="string"/> representation of a RGB color</returns>
         private static string ColorToRGB(Color color)
             => $"rgb({color.R.ToString(CultureInfo.InvariantCulture)}"
              + $", {color.G.ToString(CultureInfo.InvariantCulture)}"
              + $", {color.B.ToString(CultureInfo.InvariantCulture)})";
+
+        /// <summary>
+        /// Returns a <see cref="string"/> representation of a CIE LAB color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the CIE LAB color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a CIE LAB color</returns>
+        private static string ColorToCIELAB(Color color)
+        {
+            var (lightness, chromaticityA, chromaticityB) = ColorHelper.ConvertToCIELABColor(color);
+            lightness = Math.Round(lightness, 2);
+            chromaticityA = Math.Round(chromaticityA, 2);
+            chromaticityB = Math.Round(chromaticityB, 2);
+
+            return $"CIELab({lightness.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {chromaticityA.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {chromaticityB.ToString(CultureInfo.InvariantCulture)})";
+        }
+
+        /// <summary>
+        /// Returns a <see cref="string"/> representation of a CIE XYZ color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the CIE XYZ color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a CIE XYZ color</returns>
+        private static string ColorToCIEXYZ(Color color)
+        {
+            var (x, y, z) = ColorHelper.ConvertToCIEXYZColor(color);
+
+            x = Math.Round(x * 100, 4);
+            y = Math.Round(y * 100, 4);
+            z = Math.Round(z * 100, 4);
+
+            return $"xyz({x.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {y.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {z.ToString(CultureInfo.InvariantCulture)})";
+        }
     }
 }
