@@ -1888,10 +1888,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="AlwaysOnTop_FrameColor.Header" xml:space="preserve">
     <value>Color</value>
   </data>
-	<data name="AlwaysOnTop_FrameEnabled.Header" xml:space="preserve">
-    <value>Border</value>
-  </data>
-  <data name="AlwaysOnTop_FrameEnabled.Description" xml:space="preserve">
+  <data name="AlwaysOnTop_FrameEnabled.Header" xml:space="preserve">
     <value>Show a border around the pinned window</value>
   </data>
   <data name="AlwaysOnTop_FrameThickness.Header" xml:space="preserve">
@@ -1908,8 +1905,11 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Do not activate when Game Mode is on</value>
 	  <comment>Game Mode is a Windows feature</comment>
   </data>
+	  <data name="AlwaysOnTop_SoundTitle.Header" xml:space="preserve">
+    <value>Sound</value>
+  </data>
   <data name="AlwaysOnTop_Sound.Content" xml:space="preserve">
-    <value>Play a sound when pinning or unpinning a window</value>
+    <value>Play a sound when pinning a window</value>
   </data>
 	<data name="AlwaysOnTop_Behavior.Header" xml:space="preserve">
     <value>Behavior</value>
@@ -1930,7 +1930,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
       <comment>"Always On Top" is the name of the utility</comment>
   </data>
   <data name="Oobe_AlwaysOnTop_Description" xml:space="preserve">
-    <value>Always On Top improves your multitasking workflow with a single keystroke so that an application window stays in front even when focus changes to another window after that.</value>
+    <value>Always On Top improves your multitasking workflow by pinning an application window so it's always in front - even when focus changes to another window after that.</value>
       <comment>"Always On Top" is the name of the utility</comment>
   </data>
   <data name="Oobe_AlwaysOnTop_HowToUse.Text" xml:space="preserve">
