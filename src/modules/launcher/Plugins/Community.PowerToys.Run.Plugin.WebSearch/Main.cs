@@ -88,7 +88,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                             Log.Error(errorMsgString, GetType());
                             _context.API.ShowMsg(
                                 $"Plugin: {Properties.Resources.plugin_name}",
-                                $"{errorMsgString}.");
+                                errorMsgString);
                             return false;
                         }
 
@@ -132,7 +132,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                             Log.Error(errorMsgString, GetType());
                             _context.API.ShowMsg(
                                 $"Plugin: {Properties.Resources.plugin_name}",
-                                $"{errorMsgString}.");
+                                errorMsgString);
                             return false;
                         }
 
@@ -152,7 +152,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                             Log.Error(errorMsgString, GetType());
                             _context.API.ShowMsg(
                                 $"Plugin: {Properties.Resources.plugin_name}",
-                                $"{errorMsgString}.");
+                                errorMsgString);
                             return false;
                         }
 

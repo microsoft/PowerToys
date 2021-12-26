@@ -124,7 +124,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to open {0}.
+        ///   Looks up a localized string similar to Failed to open {0}..
         /// </summary>
         public static string plugin_search_failed {
             get {
