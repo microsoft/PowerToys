@@ -315,6 +315,7 @@ namespace FancyZonesEditor
             }
 
             Keyboard.ClearFocus();
+            EditLayoutDialog.Title = string.Format(Properties.Resources.Edit_Template, ((LayoutModel)dataContext).Name);
             await EditLayoutDialog.ShowAsync();
         }
 
