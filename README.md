@@ -141,13 +141,16 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 
 We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software. 
 
-[@Aaron-Junker](https://github.com/Aaron-Junker), [@ChaseKnowlden](https://github.com/ChaseKnowlden), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@cyberrex5](https://github.com/cyberrex5), [@davidegiacometti](https://github.com/davidegiacometti), [@gsuberland](https://github.com/gsuberland), [@jsoref](https://github.com/jsoref), [@niels9001](https://github.com/), and [@ricardosantos9521](https://github.com/ricardosantos9521)
+[@Aaron-Junker](https://github.com/Aaron-Junker), [@ChaseKnowlden](https://github.com/ChaseKnowlden), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@cyberrex5](https://github.com/cyberrex5), [@davidegiacometti](https://github.com/davidegiacometti), [@gsuberland](https://github.com/gsuberland), [@jsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), and [@ricardosantos9521](https://github.com/ricardosantos9521)
 
 #### What is being planned for v0.55
 
-For [v0.55][github-next-release-work], XXXX
+For [v0.55][github-next-release-work], we'll work on adding more stability in with VCM and getting dev file preview pane added in so we get 150 file types :)
 
 - We are working to heavily reduce / remove the UAC prompt over the next few releases on install. This is a big shift so it is spanning multiple releases so we can isolate issues if they do occur. Work is tracked in [#10126](https://github.com/microsoft/PowerToys/issues/10126)
+- Getting the dev file preview pane work integrated. (Monaco Editor)
+- .NET 6 upgrade to all available surfaces
+- Find my mouse feature, accessibility cross-hair
 
 ## PowerToys Community
 
