@@ -105,7 +105,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - PT Run will not show in Window Walker results anymore.  Thanks @davidegiacometti
 - Fix log / ln calculations
 - Fix to make previous results clear
-- Fix to detect symlinks and prevent loopbacks
+- Fix to detect symlinks and prevent recursive loops
 - Fix for trackpad scrolling being too fast
 - Removed unneeded nuget package.  Thanks @ChaseKnowlden
 - Better detection for if a packaged app can be elevated
