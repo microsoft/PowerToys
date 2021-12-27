@@ -69,7 +69,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 # TODO
 - Jan work
 
-##### 0.53 - December 2021 Update
+#### 0.53 - December 2021 Update
 
 We hope everyone has had a wonderful December 2021. The PowerToys community has been busy with a bunch improvements. We're still working on improving the installer but this should drastically improve things.  3 things you will want to check out are GCode support in file explorer preview pane and thumbnails, the new web search plugin from PowerToys Run via <kbd>??</kbd> action phrase, and largest of all, the new Always on top utility via <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>
 
@@ -128,8 +128,8 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - Removed bootstrapper
 - Removed unused image assets that were still being shipped. Thanks @niels9001
 
-#### Arm64 support
-- Setting WinUI3 proof-of-concept and validate we do need at least one more feature, elevation support
+#### ARM64 support
+- Setting WinUI3 proof-of-concept and validate we do need at least one more feature, elevation support from WinUI 3 unpackaged applications.
 
 #### Dev improvements
 - New YAML based pipeline for building our signed installer. This will allow us to consolidate our CI to use same file. This was critical for us to unblock ARM64 and .NET 6 migration.
@@ -143,7 +143,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 
 We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software. 
 
-[@Aaron-Junker](https://github.com/), [@ChaseKnowlden](https://github.com/), [@CleanCodeDeveloper](https://github.com/), [@cyberrex5](https://github.com/), [@davidegiacometti](https://github.com/), [@gsuberland](https://github.com/), [@jsoref](https://github.com/), [@niels9001](https://github.com/), and [@ricardosantos9521](https://github.com/)
+[@Aaron-Junker](https://github.com/Aaron-Junker), [@ChaseKnowlden](https://github.com/ChaseKnowlden), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@cyberrex5](https://github.com/cyberrex5), [@davidegiacometti](https://github.com/davidegiacometti), [@gsuberland](https://github.com/gsuberland), [@jsoref](https://github.com/jsoref), [@niels9001](https://github.com/), and [@ricardosantos9521](https://github.com/ricardosantos9521)
 
 #### What is being planned for v0.55
 
