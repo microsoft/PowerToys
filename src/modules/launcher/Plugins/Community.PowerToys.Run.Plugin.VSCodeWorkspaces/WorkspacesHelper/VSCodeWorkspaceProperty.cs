@@ -6,15 +6,12 @@ using System.Text.Json.Serialization;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
-    public class VSCodeWorkspaceEntry
+    public class VSCodeWorkspaceProperty
     {
-        [JsonPropertyName("folderUri")]
-        public string FolderUri { get; set; }
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
 
-        [JsonPropertyName("label")]
-        public string Label { get; set; }
-
-        [JsonPropertyName("workspace")]
-        public VSCodeWorkspaceProperty Workspace { get; set; }
+        [JsonPropertyName("configPath")]
+        public string ConfigPath { get; set; }
     }
 }
