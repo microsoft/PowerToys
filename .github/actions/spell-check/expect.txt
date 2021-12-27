@@ -1900,6 +1900,8 @@ swprintf
 SWRESTORE
 swscanf
 SYMED
+symlink
+symlinks
 SYMOPT
 SYNCMFT
 SYNCPAINT
@@ -1980,6 +1982,7 @@ Towindow
 towlower
 towupper
 tracelogging
+trackpad
 traies
 transcoded
 transparrent
