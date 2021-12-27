@@ -661,6 +661,7 @@ HARDWAREINPUT
 hashcode
 Hashset
 Hashtable
+hashtag
 HASHVAL
 hbitmap
 hbmp
