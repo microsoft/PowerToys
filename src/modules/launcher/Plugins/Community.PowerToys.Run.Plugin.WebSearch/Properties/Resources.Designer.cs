@@ -70,7 +70,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search the web..
+        ///   Looks up a localized string similar to Search the web in your default browser using your default search engine..
         /// </summary>
         public static string plugin_description {
             get {
@@ -84,6 +84,15 @@ namespace Community.PowerToys.Run.Plugin.WebSearch.Properties {
         public static string plugin_global_if_uri {
             get {
                 return ResourceManager.GetString("plugin_global_if_uri", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In the default browser.
+        /// </summary>
+        public static string plugin_in_browser {
+            get {
+                return ResourceManager.GetString("plugin_in_browser", resourceCulture);
             }
         }
         
@@ -115,7 +124,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to open the default browser.
+        ///   Looks up a localized string similar to Failed to open {0}..
         /// </summary>
         public static string plugin_search_failed {
             get {
