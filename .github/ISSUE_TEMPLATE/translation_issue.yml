@@ -24,7 +24,7 @@ body:
     options:
       - General
       - Always on Top
-      - PowerToys Awake
+      - Awake
       - ColorPicker
       - FancyZones
       - FancyZones Editor 
@@ -32,12 +32,17 @@ body:
       - Keyboard Manager
       - MD Preview
       - Mouse Utilities
+      - PDF Preview
+      - PDF Thumbnail
+      - G-code Preview
+      - G-code Thumbnail
       - PowerRename
       - PowerToys Run
       - Shortcut Guide
       - SVG Preview
       - SVG Thumbnail
       - Settings
+      - Video Conference Mute
       - Welcome / PowerToys Tour window
       - System tray interaction
       - Installer
