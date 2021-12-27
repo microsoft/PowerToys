@@ -42,7 +42,8 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 3. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
 
 ### Get Submodules to compile
-We have 
+We have submodules that need to be initialized before you can compile most parts of PowerToys.  This should be a one time step.
+
 1. Open a terminal
 2. Navigate to the folder you cloned PowerToys to.
 3. Run `git submodule update --init --recursive`
