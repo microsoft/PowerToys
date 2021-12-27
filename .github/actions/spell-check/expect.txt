@@ -1,7 +1,5 @@
 aaaa
-abcd
 abcdef
-abcdefgh
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 abgr
 abi
@@ -496,7 +494,6 @@ editkeyboardwindow
 editorconfig
 EDITSHORTCUTS
 editshortcutswindow
-efgh
 EFile
 egistry
 ekus
