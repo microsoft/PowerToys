@@ -1372,52 +1372,74 @@
             <?foreach Language in $(var.LocLanguageList)?>
             <!--NB: Ids can't contain hyphens-->
             <?if $(var.Language) = cs-CZ?>
+            <!-- CompGUIDPrefix is language-dependent guid prefix missing the last 2 digits. -->
+            <?define CompGUIDPrefix = 3E93405A-B91B-4E04-BAEC-26BEEE60F9?>
             <?define IdSafeLanguage = cs_CZ?>
             <?elseif $(var.Language) = de-DE?>
+            <?define CompGUIDPrefix = AF28C057-7ED9-474C-8E7E-D583BE8ECF?>
             <?define IdSafeLanguage = de_DE?>
             <?elseif $(var.Language) = es-ES?>
+            <?define CompGUIDPrefix = DD1FEEBD-55F0-44BA-A0FF-62C5C1C952?>
             <?define IdSafeLanguage = es_ES?>
             <?elseif $(var.Language) = fr-FR?>
+            <?define CompGUIDPrefix = F9F86D61-C747-43FC-8509-F3D1F198E1?>
             <?define IdSafeLanguage = fr_FR?>
             <?elseif $(var.Language) = hu-HU?>
+            <?define CompGUIDPrefix = 9A919A40-E457-47F5-97C8-E886F06DDE?>
             <?define IdSafeLanguage = hu_HU?>
             <?elseif $(var.Language) = it-IT?>
+            <?define CompGUIDPrefix = 48FBF6D9-32DB-46FF-A64C-225269E738?>
             <?define IdSafeLanguage = it_IT?>
             <?elseif $(var.Language) = ja-JP?>
+            <?define CompGUIDPrefix = FB8E04AB-C8E8-43C0-8883-19F73E4EBA?>
             <?define IdSafeLanguage = ja_JP?>
             <?elseif $(var.Language) = ko-KR?>
+            <?define CompGUIDPrefix = 86C8F07C-80CA-420A-B6E7-86933D640C?>
             <?define IdSafeLanguage = ko_KR?>
             <?elseif $(var.Language) = nl-NL?>
+            <?define CompGUIDPrefix = C68F115F-28DD-4B45-9512-405C432458?>
             <?define IdSafeLanguage = nl_NL?>
             <?elseif $(var.Language) = pl-PL?>
+            <?define CompGUIDPrefix = 97494A31-5F57-4EC1-A6A9-994DF0813B?>
             <?define IdSafeLanguage = pl_PL?>
             <?elseif $(var.Language) = pt-BR?>
+            <?define CompGUIDPrefix = F4985235-2AB9-446B-BF8E-B14929A160?>
             <?define IdSafeLanguage = pt_BR?>
             <?elseif $(var.Language) = pt-PT?>
+            <?define CompGUIDPrefix = 58155841-D53A-4330-89D3-5C0338B928?>
             <?define IdSafeLanguage = pt_PT?>
             <?elseif $(var.Language) = qps-ploc?>
+            <?define CompGUIDPrefix = 75710CB2-DBDA-420B-9676-34D5F9D4A2?>
             <?define IdSafeLanguage = qps_ploc?>
             <?elseif $(var.Language) = qps-ploca?>
+            <?define CompGUIDPrefix = 55AF2A35-F959-49AB-B9EF-DFC9964A4F?>
             <?define IdSafeLanguage = qps_ploca?>
             <?elseif $(var.Language) = qps-plocm?>
+            <?define CompGUIDPrefix = D8CE2F7B-B0A1-4687-BFB7-1792B2FCCD?>
             <?define IdSafeLanguage = qps_plocm?>
             <?elseif $(var.Language) = ru-RU?>
+            <?define CompGUIDPrefix = 157BAF33-8D3F-46B7-9CF9-2C18E601CC?>
             <?define IdSafeLanguage = ru_RU?>
             <?elseif $(var.Language) = sv-SE?>
+            <?define CompGUIDPrefix = 85B4199F-5F89-42C3-B7C2-DBCD3E5267?>
             <?define IdSafeLanguage = sv_SE?>
             <?elseif $(var.Language) = tr-TR?>
+            <?define CompGUIDPrefix = EA375345-F52A-499B-A45E-108CE67EAF?>
             <?define IdSafeLanguage = tr_TR?>
             <?elseif $(var.Language) = zh-CN?>
+            <?define CompGUIDPrefix = F8EE7CE9-58EA-4850-B76F-C22362DC0E?>
             <?define IdSafeLanguage = zh_CN?>
             <?elseif $(var.Language) = zh-TW?>
+            <?define CompGUIDPrefix = F07F3210-79E2-4C38-AEF7-D8EBE06621?>
             <?define IdSafeLanguage = zh_TW?>
             <?else?>
             <?define IdSafeLanguage = $(var.Language)?>
+            <?define CompGUIDPrefix = 94D9A417-56FC-435D-8167-A45F5D7A75?>
             <?endif?>
             <Component
                 Id="Launcher_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)LauncherInstallFolder"
-                Guid="06968E27-9753-44D4-BB12-9E0179EB10FC">
+                Guid="$(var.CompGUIDPrefix)00">
                 <RemoveFolder Id='Remove_Launcher_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RemoveFolder Id='Remove_RegistryPluginFolder' On='uninstall' Directory='RegistryPluginFolder'/>
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
@@ -1430,7 +1452,7 @@
             <Component
                 Id="FancyZonesEditor_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FancyZonesInstallFolder"
-                Guid="4F388475-71CF-45C7-9786-6C723C6F6B32">
+                Guid="$(var.CompGUIDPrefix)01">
                 <RemoveFolder Id='Remove_FancyZonesEditor_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='FancyZonesEditor_$(var.IdSafeLanguage)_Component'
@@ -1442,7 +1464,7 @@
             <Component
                 Id="ImageResizer_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)ImageResizerInstallFolder"
-                Guid="B92DBB42-DBCC-44FE-9EE3-DE3C382F8C19">
+                Guid="$(var.CompGUIDPrefix)02">
                 <RemoveFolder Id='Remove_ImageResizer_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='ImageResizer_$(var.IdSafeLanguage)_Component'
@@ -1454,7 +1476,7 @@
             <Component
                 Id="ColorPicker_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder"
-                Guid="576F296D-FAC7-47CE-8D87-11D9C01F6D24">
+                Guid="$(var.CompGUIDPrefix)03">
                 <RemoveFolder Id='Remove_ColorPicker_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='ColorPicker_$(var.IdSafeLanguage)_Component'
@@ -1466,7 +1488,7 @@
             <Component
                 Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
-                Guid="6DBAF8DA-A679-45FA-89C7-455804261223">
+                Guid="$(var.CompGUIDPrefix)04">
                 <RemoveFolder Id='Remove_MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component'
@@ -1478,7 +1500,7 @@
             <Component
                 Id="SVGPreviewHandler_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
-                Guid="8D45B1A5-78A5-4EDA-8950-66F4E7BEF7F7">
+                Guid="$(var.CompGUIDPrefix)05">
                 <RemoveFolder Id='Remove_SVGPreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='SVGPreviewHandler_$(var.IdSafeLanguage)_Component'
@@ -1490,7 +1512,7 @@
             <Component
                 Id="PDFPreviewHandler_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
-                Guid="F2C76FEE-8F46-471D-94F3-F33F38C593BB">
+                Guid="$(var.CompGUIDPrefix)06">
                 <RemoveFolder Id='Remove_PDFPreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='PDFPreviewHandler_$(var.IdSafeLanguage)_Component'
@@ -1502,7 +1524,7 @@
             <Component
                 Id="GcodePreviewHandler_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
-                Guid="692E8FB9-851C-449A-B966-FDB736CA43BF">
+                Guid="$(var.CompGUIDPrefix)07">
                 <RemoveFolder Id='Remove_GcodePreviewHandler_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='GcodePreviewHandler_$(var.IdSafeLanguage)_Component'
@@ -1515,7 +1537,7 @@
             <Component
                 Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder"
-                Guid="61A23FBA-7D45-46E5-B228-4E8521FE6FD2">
+                Guid="$(var.CompGUIDPrefix)08">
                 <RemoveFolder Id='Remove_Launcher_Calculator_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_Calculator_$(var.IdSafeLanguage)_Component'
@@ -1527,7 +1549,7 @@
             <Component
                 Id="Launcher_Folder_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder"
-                Guid="3F84F27F-AE2D-476D-B9B2-BDF4CA3A8337">
+                Guid="$(var.CompGUIDPrefix)09">
                 <RemoveFolder Id='Remove_Launcher_Folder_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_Folder_$(var.IdSafeLanguage)_Component'
@@ -1538,7 +1560,7 @@
             </Component>
             <Component
                 Id="Launcher_Program_$(var.IdSafeLanguage)_Component"
-                Guid="1F2CBF84-BAAB-47D3-974D-83443DF89DA4"
+                Guid="$(var.CompGUIDPrefix)0A"
                 Directory="Resource$(var.IdSafeLanguage)ProgramPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Program_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
@@ -1550,7 +1572,7 @@
             </Component>
             <Component
                 Id="Launcher_Shell_$(var.IdSafeLanguage)_Component"
-                Guid="AEA3DB77-FE60-4A99-BDD9-B4D5A94BE9A1"
+                Guid="$(var.CompGUIDPrefix)0B"
                 Directory="Resource$(var.IdSafeLanguage)ShellPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Shell_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
@@ -1562,7 +1584,7 @@
             </Component>
             <Component
                 Id="Launcher_Indexer_$(var.IdSafeLanguage)_Component"
-                Guid="91538C35-6C3C-44C3-A655-9409A3C6EE14"
+                Guid="$(var.CompGUIDPrefix)0C"
                 Directory="Resource$(var.IdSafeLanguage)IndexerPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Indexer_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
@@ -1574,7 +1596,7 @@
             </Component>
             <Component
                 Id="Launcher_Uri_$(var.IdSafeLanguage)_Component"
-                Guid="F09AFC25-C74F-4F24-A80D-74D2599CBC62"
+                Guid="$(var.CompGUIDPrefix)0D"
                 Directory="Resource$(var.IdSafeLanguage)UriPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Uri_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
@@ -1586,7 +1608,7 @@
             </Component>
             <Component
                 Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component"
-                Guid="E84BB2EB-EEBE-4008-911F-9B6B814FA119"
+                Guid="$(var.CompGUIDPrefix)0E"
                 Directory="Resource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
@@ -1597,7 +1619,7 @@
                 <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.Language)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
             </Component>
             <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component"
-                       Guid="0665D74F-3D68-4E77-BE4A-D1549A491E27"
+                       Guid="$(var.CompGUIDPrefix)0F"
                        Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_WindowWalker_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
@@ -1609,7 +1631,7 @@
             </Component>
             <Component
                 Id="Launcher_Registry_$(var.IdSafeLanguage)_Component"
-                Guid="728CD7B0-68E5-43FA-B779-B3B672011B0C"
+                Guid="$(var.CompGUIDPrefix)10"
                 Directory="Resource$(var.IdSafeLanguage)RegistryPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Registry_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
@@ -1621,7 +1643,7 @@
             </Component>
             <Component
                 Id="Launcher_Service_$(var.IdSafeLanguage)_Component"
-                Guid="1A6900E3-4894-4383-B822-A34DE9B29765"
+                Guid="$(var.CompGUIDPrefix)11"
                 Directory="Resource$(var.IdSafeLanguage)ServicePluginFolder">
                 <RemoveFolder Id='Remove_Launcher_Service_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
@@ -1633,7 +1655,7 @@
             </Component>
             <Component
                 Id="Launcher_System_$(var.IdSafeLanguage)_Component"
-                Guid="FCC9FFC6-625A-4901-A6D9-4CB033012D4A"
+                Guid="$(var.CompGUIDPrefix)12"
                 Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_System_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
@@ -1645,7 +1667,7 @@
             </Component>
             <Component
                 Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component"
-                Guid="4C3F7C6E-B9C8-4C2A-B041-514F7662A4BE"
+                Guid="$(var.CompGUIDPrefix)13"
                 Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component' On='uninstall' />
                 <RemoveFolder Id='Remove_WindowsSettingsLanguagesFolder' On='uninstall' Directory='WindowsSettingsLanguagesFolder' />
@@ -1660,7 +1682,7 @@
             <!-- Uncomment after Plugin receives the localization files.
                 <Component 
                     Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component" 
-                    Guid="B0550173-6954-4B59-951C-EA99DB591238"                
+                    Guid="$(var.CompGUIDPrefix)14"                
                     Directory="Resource$(var.IdSafeLanguage)WindowsTerminalFolder">
                   <RemoveFolder Id='Remove_Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component' On='uninstall' />
                     <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'

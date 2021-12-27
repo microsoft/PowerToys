@@ -124,12 +124,16 @@ AYUV
 azurecr
 backend
 backtracer
+BAEC
+BAF
 bak
 bbwe
 bck
 Bcl
+BEEE
 betadele
 betsegaw
+BFB
 BGR
 bgra
 BGSOUNDS
@@ -202,6 +206,7 @@ CDEF
 cdpx
 cdpxwin
 CENTERALIGN
+CFDB
 cguid
 changecursor
 Changemove
@@ -219,7 +224,6 @@ cielab
 ciexyz
 CImage
 cinttypes
-CFDB
 cla
 clangformat
 CLASSDC
@@ -362,6 +366,8 @@ Datavalue
 DATAW
 davidegiacometti
 Dayof
+DBCD
+DBDA
 dbg
 Dbghelp
 DBLCLKS
@@ -490,6 +496,9 @@ dwrite
 dxgi
 dxgiformat
 dxguid
+EAF
+EBA
+EBE
 ecount
 ededf
 EDITKEYBOARD
@@ -497,8 +506,8 @@ editkeyboardwindow
 editorconfig
 EDITSHORTCUTS
 editshortcutswindow
-efgh
 EFBD
+efgh
 EFile
 egistry
 ekus
@@ -569,7 +578,10 @@ FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 Farbraum
 FARPROC
+FBF
+FCCD
 fdw
+FEEBD
 feimage
 ffaa
 fff
@@ -1810,8 +1822,8 @@ spdisp
 spdlog
 spdo
 spdth
-specialfolder
 spec'ing
+specialfolder
 spesi
 splitwstring
 sprintf
@@ -2146,13 +2158,13 @@ wdksetup
 wdkvsix
 wdp
 wdupenv
+We'd
 weakme
 webcam
 webclient
 webpack
 webpage
 website
-We'd
 wekyb
 Wevtapi
 wgpocpl
