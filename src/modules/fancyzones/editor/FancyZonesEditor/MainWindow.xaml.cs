@@ -314,6 +314,7 @@ namespace FancyZonesEditor
                 _backup = new CanvasLayoutModel(canvas);
             }
 
+            Keyboard.ClearFocus();
             await EditLayoutDialog.ShowAsync();
         }
 
