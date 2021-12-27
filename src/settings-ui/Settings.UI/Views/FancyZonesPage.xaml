@@ -116,7 +116,7 @@
                                                                    CustomNumberColor="{x:Bind Path=ViewModel.ZoneNumberColor, Mode=OneWay}"
                                                                    ShowZoneNumber="{x:Bind Path=ViewModel.ShowZoneNumber, Mode=OneWay}"
                                                                    Margin="{StaticResource ExpanderSettingMargin}" 
-                                                                   HorizontalAlignment="Left"
+                                                                   HorizontalAlignment="Center"
                                                                    Width="170"
                                                                    Grid.Column="1"
                                                                    Height="86"/>

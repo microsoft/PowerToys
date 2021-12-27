@@ -6,10 +6,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    Loaded="FancyZonesPreviewControl_Loaded"
     RequestedTheme="Dark"
-    mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400">
+    mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
@@ -32,7 +31,7 @@
         </ResourceDictionary>
       
     </UserControl.Resources>
-        <Grid CornerRadius="4" BorderBrush="Black" Background="Black" BorderThickness="6" HorizontalAlignment="Center">
+    <Grid x:Name="RootGrid" CornerRadius="4" BorderBrush="Black" Background="Black" BorderThickness="6" HorizontalAlignment="Center" MinWidth="170" MinHeight="86">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
@@ -42,6 +41,16 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal"/>
+                <VisualState x:Name="Disabled">
+                    <VisualState.Setters>
+                        <Setter Target="RootGrid.Opacity" Value="0.4" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
         <Border Opacity="0.8" Grid.ColumnSpan="2" Grid.RowSpan="3" CornerRadius="2" >
             <Image Source="{x:Bind WallpaperPath, Mode=OneWay}" Stretch="UniformToFill" AutomationProperties.AccessibilityView="Raw"/>
         </Border>
