@@ -66,9 +66,6 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-# TODO
-- Jan work
-
 #### 0.53 - December 2021 Update
 
 We hope everyone has had a wonderful December 2021. The PowerToys community has been busy with a bunch improvements. We're still working on improving the installer but this should drastically improve things.  3 things you will want to check out are GCode support in file explorer preview pane and thumbnails, the new web search plugin from PowerToys Run via <kbd>??</kbd> action phrase, and the new Always on Top utility via <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>.
@@ -133,6 +130,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 
 #### Dev improvements
 - New YAML based pipeline for building our signed installer. This will allow us to consolidate our CI to use same file. This was critical for us to unblock ARM64 and .NET 6 migration.
+- Our submodules will no longer auto fetch to prevent locking issues. If you want a refresher on how to do this, head to [our dev docs](https://github.com/microsoft/PowerToys/tree/main/doc/devdocs#get-submodules-to-compile)
 - Localization system shifted to Touchdown from CDPx.  This should remove many of the loc issues.
 - Consolidated a lot of the naming of EXEs and DLLs along with projects
 - Update to spell checker.  Thanks @jsoref
@@ -176,5 +174,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F27
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F26
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F28
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F27
