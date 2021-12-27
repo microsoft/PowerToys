@@ -66,104 +66,90 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.51 - November 2021 Update
+# TODO
+- Jan work
 
-The [v0.51 release cycle][github-current-release-work] introduces some new things regarding our mouse utilities. First is we've added in a presentation mode helper to highlight your mouse when you click. We've also added additional settings toward Find my mouse to enable more customization.
+##### 0.53 - December 2021 Update
 
-Next we've been focusing work on "Always on Top" system to help make any window you want to be the top most. A lot of thought is currently going into interaction models to make sure it 'feels' right for toggling as well as visualizing.
+We hope everyone has had a wonderful December 2021. The PowerToys community has been busy with a bunch improvements. We're still working on improving the installer but this should drastically improve things.  3 things you will want to check out are GCode support in file explorer preview pane and thumbnails, the new web search plugin from PowerToys Run via <kbd>??</kbd> action phrase, and largest of all, the new Always on top utility via <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>
 
-Last, we've been working on our engineering systems this month and into next. This work will improve our localization integration and our 'build farm' match our CI system far more. Behind the scene work but very important work for working faster. 
+@Aaron-Junker also has done some great progress on implementing developer file preview via the Monaco engine from Visual Studio Code.
 
-#### Highlights from v0.51
+#### Always on Top
+- With a quick <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>, the window in focus is toggled to be on top.  Toggle again, and reverts back to normal.
 
-**Things to note**
-- We shifted our localization internal service and are working on adding automated integrations back in. 
+#### ColorPicker
+- HEX input improvements.  Thanks @htcfreek
+- Better bottom right screen detection for overlay
 
-**PowerToys Awake**
-- System tray and settings use same language for turning things on.
+#### FancyZones
+- Increased negative space margin
+- Fix for not snapping children windows
+- Fix for clearing keyboard focus on editor launch
+- Fix to improve overlays to reduce brightness and hide numbers. Thanks @davidegiacometti
 
-**Color Picker**
-- New formats added to copy colors as a float or decimal value.
-- Adjust color window now accepts lower-case HEX codes.
+#### File Explorer
+- Added GCode support for thumbnails and preview pane.  Thanks @pedrolamas 
 
-**FancyZones**
-- New window switching functionality! Now users can assign multiple windows to a zone and cycle between them using the <kbd>Win</kbd> + <kbd>PgDn/PgUp</kbd> commands by default. Thanks [@FLOAT4](https://github.com/FLOAT4)!
-- Added functionality for zones to adopt system accent color and theme. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Added visual preview of zone appearance in settings menu. Thanks [@niels9001](https://github.com/niels9001)!
-- Fixed bug where FancyZones crashes on launch.
+#### Image Resizer
+- Fixed regression from Metadata tag removal of ColorSpace.  Thanks @CleanCodeDeveloper
 
-**Image Resizer**
-- Fixed bug where resizing images creates empty folders.
-- Added option to remove non-essential metadata. Helps significantly reduce the size of files. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
-- Fixed bug caused by Image Resizer receiving an unexpected property type or value. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
+#### PowerRename
+- Row highlighting + preview support now implemented. Thanks @niels9001
+- Fixed AltGR input issue
+- Improved folder renaming support
+- Opens on active monitor
 
-**Mouse utilities**
-- Find My Mouse: Improved functionality to activate when user double click time configuration is set above 100ms.
-- Find My Mouse: Fixed display on all virtual desktops as opposed to only the virtual desktop where it was created.
-- Find My Mouse: New settings to enable a lot more customization based on your feedback.
-- Minor UI tweaks for fluent icons, appearance, <kbd>Ctrl</kbd> usage, and utility descriptions. Thanks [@niels9001](https://github.com/niels9001)!
-- New Mouse Highlighter PowerToy! When enabled, activate mouse highlighting with <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> by default to begin displaying visual cues on your display when either the left or right mouse buttons are clicked. There is a much more powerful tool called [SysInternal ZoomIt](https://docs.microsoft.com/en-us/sysinternals/downloads/zoomit) that is very helpful as well.
+#### PowerToys Run
+- Web searching. `?? What is the answer to life` will go to your favorite search engine via your browser.  You can change the default action key too!  Thanks @cyberrex5 for primary implementation and @franky920920 and @htcfreek for supporting
+- VS Code workspace improvements. Thanks @ricardosantos9521
+- Binary and Hex number support.  Thanks @gsuberland
+- Ability to use factorials in calculations
+- PT Run will not show in Window Walker results anymore.  Thanks @davidegiacometti
+- Fix log / ln calculations
+- Fix to make previous results clear
+- Fix to detect symlinks and prevent loopbacks
+- Fix for trackpad scrolling being too fast
+- Removed unneeded nuget package.  Thanks @ChaseKnowlden
+- Better detection for if a packaged app can be elevated
+- Improve crash resiliency for Program plugin.  Thanks @davidegiacometti
+- Improved Windows setting results.  Thanks @htcfreek
 
-![highlighter turned on while dragging mouse](https://user-images.githubusercontent.com/9866362/142475413-77b00bae-bd28-42ae-a6c8-0dc4356e8525.gif)
+#### Video conference mute
+- Disabled by default
 
-**PowerRename**
-- Improved rename performance! This is now at parity (or better) with the prior version based on multiple tests.
-- Added keyboard accelerators with <kbd>Enter</kbd> and <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to execute rename. Thanks [@niels9001](https://github.com/niels9001)!
-- UI tweaks to now add number of items selected, grid-lines for improved readability, reduced font sizes & margins, and improved window resizing.
-- Fixed UI focus issues. Thanks [@niels9001](https://github.com/niels9001)!
-- Added default window width and height. Thanks [@niels9001](https://github.com/niels9001)!
-- Added PowerRename event logging for BugReportTool
+#### Settings
+- Multiple accessibility, layout, image, string and icons fixes. Thanks @niels9001
 
-**PowerToys Run**
-- New entries added for settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)! 
-- Added support for application URI handling like `mailto:` and  `ms-settings:`. Thanks [@franky920920](https://github.com/franky920920)!
-- Added DevContainer workspaces to search results of the VSCode Workspaces Plugin. Thanks [@JacobDeuchert](https://github.com/JacobDeuchert)!
-- Fixes for crashing issues.
+#### Runner
+- Improved mutex support to prevent multiple PT Run instances from running
 
-**Shortcut Guide**
-- Added rounded corners to keys and tooltips, and system accent colors for desktop backdrop. Thanks [@niels9001](https://github.com/niels9001)!
+#### Installer
+- Removed bootstrapper
+- Removed unused image assets that were still being shipped. Thanks @niels9001
 
-**Settings**
-- Fixed default settings window size to prevent it from opening offscreen. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+#### Arm64 support
+- Setting WinUI3 proof-of-concept and validate we do need at least one more feature, elevation support
 
-**Video Conference Mute**
-- Minor UI tweaks for icon, clear button, and overlay image selection [#14248](https://github.com/microsoft/PowerToys/issues/14248). Thanks [@niels9001](https://github.com/niels9001)!
+#### Dev improvements
+- New YAML based pipeline for building our signed installer. This will allow us to consolidate our CI to use same file. This was critical for us to unblock ARM64 and .NET 6 migration.
+- Localization system shifted to Touchdown from CDPx.  This should remove many of the loc issues.
+- Consolidated a lot of the naming of EXEs and DLLs along with projects
+- Update to spell checker.  Thanks @jsoref
+- /dup response has been added
+- /reportbug /bugreport will ask for a "report bug" zip
 
-**Prototype work**
-- Always on top prototype of being actively worked on.  Right now you hit a key-combo and it enables it.  We are investigating ways to highlight the window in some form as well.
-
-**Installer**
-- Investigated how to fully shift to WIX bootstrapper and remove custom boot strapper
-- Investigated how to fully shift to HKCU vs HKLM.
-
-**Random helping out**
-- Spell check fix - Thanks [@franky920920](https://github.com/franky920920)!
-- Fix a URL - Thanks [@JeffersonQin](https://github.com/JeffersonQin)!
-
-**Development relevant**
-- Focusing on cleaning up backlog of issues and developing a method to aid in prioritizing. [@Dend](https://github.com/dend) and [@crutkas](https://github.com/crutkas) are partnering to see if we can develop one signal to see what we are calling ['centers of gravity'](https://gravity-issues.netlify.app/).
-- Our primary dev branch is now named `Main`.
-- Adjusting plugin folder structure for PT Run [#10796](https://github.com/microsoft/PowerToys/issues/10796)
-- Working on shifting our release pipeline onto same system that Windows Terminal uses.
-- Improvements to environment variable usage/update process in PT Run. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Update .NET to 3.1.20.
-- Centralized process list in the BugReportTool.
-- Registry handling improvement for MSI and File Explorer add-ons.
-
-**Community contributions**
+#### Community contributions
 
 We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software. 
 
-[@AnonymousWP](https://github.com/AnonymousWP), [@Aaron-Junker](https://github.com/Aaron-Junker), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@davidegiacometti](https://github.com/davidegiacometti), [@FLOAT4](https://github.com/FLOAT4), [@franky920920](https://github.com/franky920920), [@htcfreek](https://github.com/htcfreek), [@JacobDeuchert](https://github.com/JacobDeuchert), [@Jay-o-Way](https://github.com/jay-o-way) [@JeffersonQin](https://github.com/JeffersonQin), [@niels9001](https://github.com/niels9001), and [@rdeveen](https://github.com/rdeveen). 
+[@Aaron-Junker](https://github.com/), [@ChaseKnowlden](https://github.com/), [@CleanCodeDeveloper](https://github.com/), [@cyberrex5](https://github.com/), [@davidegiacometti](https://github.com/), [@gsuberland](https://github.com/), [@jsoref](https://github.com/), [@niels9001](https://github.com/), and [@ricardosantos9521](https://github.com/)
 
-#### What is being planned for v0.53
+#### What is being planned for v0.55
 
-For [v0.53][github-next-release-work], due to holidays, we'll be in a maintenance sprint but here are some of the larger items:
+For [v0.55][github-next-release-work], XXXX
 
-- Hope to add Always on Top into PowerToys. We currently have a proof of concept ready.
 - We are working to heavily reduce / remove the UAC prompt over the next few releases on install. This is a big shift so it is spanning multiple releases so we can isolate issues if they do occur. Work is tracked in [#10126](https://github.com/microsoft/PowerToys/issues/10126)
-- Update the PowerToys Build Pipeline to allow .NET 6 integration
-- Engineering Systems/Stability/Bug fixes
 
 ## PowerToys Community
 
