@@ -81,6 +81,7 @@
       "Name": "AppsAndFeatures",
       "Areas": [ "AreaApps" ],
       "Type": "AppSettingsApp",
+      "AltNames": [ "UninstallPrograms", "RemovePrograms", "ChangePrograms", "RepairPrograms" ],
       "Command": "ms-settings:appsfeatures"
     },
     {
@@ -1280,7 +1281,7 @@
       "Name": "AddRemovePrograms",
       "Areas": [ "AreaHardwareAndSound" ],
       "Type": "AppControlPanel",
-      "AltNames": [ "appwiz.cpl" ],
+      "AltNames": [ "appwiz.cpl", "UninstallPrograms", "ChangePrograms", "RepairPrograms" ],
       "Command": "control appwiz.cpl"
     },
     {
