@@ -35,7 +35,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
 
                         try
                         {
-                            JsonElement vscodeSettingsFile = JsonSerializer.Deserialize<JsonElement>(fileContent);
+                            JsonElement vscodeSettingsFile = JsonSerializer.Deserialize<JsonElement>(fileContent, new JsonSerializerOptions() { AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip });
                             if (vscodeSettingsFile.TryGetProperty("remote.SSH.configFile", out var pathElement))
                             {
                                 var path = pathElement.GetString();
