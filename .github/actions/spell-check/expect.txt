@@ -204,6 +204,7 @@ cguid
 changecursor
 Changemove
 charconv
+ChaseKnowlden
 chdir
 CHILDACTIVATE
 CHILDWINDOW
@@ -222,6 +223,7 @@ clangformat
 CLASSDC
 classname
 CLASSNOTAVAILABLE
+CleanCodeDeveloper
 clickable
 clickonce
 CLIENTEDGE
@@ -346,6 +348,7 @@ CXSMICON
 CXVIRTUALSCREEN
 cxxopts
 cyberrex
+cyberrex5
 CYSMICON
 CYVIRTUALSCREEN
 czf
@@ -645,6 +648,7 @@ GNumber
 google
 GPTR
 Grayscale
+gsuberland
 gtm
 gui
 guiddef
@@ -1420,6 +1424,7 @@ pdto
 pdtobj
 pdw
 PDWORD
+pedrolamas
 PERCEIVEDFLAG
 pesi
 PEXCEPTION
@@ -1635,6 +1640,7 @@ rgn
 rgs
 rhs
 ricardosantos
+ricardosantos9521
 Richtext
 RIDEV
 RIGHTSCROLLBAR
