@@ -348,7 +348,6 @@ CXSMICON
 CXVIRTUALSCREEN
 cxxopts
 cyberrex
-cyberrex5
 CYSMICON
 CYVIRTUALSCREEN
 czf
@@ -1641,7 +1640,6 @@ rgn
 rgs
 rhs
 ricardosantos
-ricardosantos9521
 Richtext
 RIDEV
 RIGHTSCROLLBAR
