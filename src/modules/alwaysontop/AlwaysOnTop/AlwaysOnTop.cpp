@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "AlwaysOnTop.h"
 
+#include <common/display/dpi_aware.h>
 #include <common/utils/game_mode.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
@@ -41,6 +42,7 @@ AlwaysOnTop::AlwaysOnTop() :
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase))
 {
     s_instance = this;
+    DPIAware::EnableDPIAwarenessForThisProcess();
 
     if (InitMainWindow())
     {

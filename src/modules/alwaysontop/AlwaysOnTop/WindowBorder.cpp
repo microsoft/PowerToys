@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "WindowBorder.h"
 
+#include <dwmapi.h>
+
 #include <FrameDrawer.h>
 #include <Settings.h>
 
@@ -13,13 +15,16 @@ namespace NonLocalizable
 std::optional<RECT> GetFrameRect(HWND window)
 {
     RECT rect;
-    if (!GetWindowRect(window, &rect))
+    if (!SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(rect))))
     {
         return std::nullopt;
     }
 
     int border = static_cast<int>(AlwaysOnTopSettings::settings().frameThickness / 2);
     rect.top -= border;
+    rect.left -= border;
+    rect.right += border;
+    rect.bottom += border;
 
     return rect;
 }
