@@ -171,26 +171,28 @@ LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexce
 
 void WindowBorder::SettingsUpdate(SettingId id)
 {
+    if (!AlwaysOnTopSettings::settings().enableFrame)
+    {
+        return;
+    }
+
+    auto windowRectOpt = GetFrameRect(m_trackingWindow);
+    if (!windowRectOpt.has_value())
+    {
+        return;
+    }
+
     switch (id)
     {
     case SettingId::FrameThickness:
+    {
+        RedrawFrame(); 
+    }
+    break;
+    
     case SettingId::FrameColor:
     {
-        if (!AlwaysOnTopSettings::settings().enableFrame)
-        {
-            return;
-        }
-
-        auto windowRectOpt = GetFrameRect(m_trackingWindow);
-        if (!windowRectOpt.has_value())
-        {
-            return;
-        }
-
-        RECT windowRect = windowRectOpt.value();
-        RECT frameRect{ 0, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top };
-        m_frameDrawer->SetBorderRect(frameRect, AlwaysOnTopSettings::settings().frameColor, AlwaysOnTopSettings::settings().frameThickness);
-        m_frameDrawer->Show();
+        Show();
     }
     break;
 
