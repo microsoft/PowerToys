@@ -12,6 +12,9 @@ Aaron has helped triaging, discussing, and creating a substantial number of issu
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
 Davide has helped fix multiple bugs, added new features, as well as help us with the ARM64 effort by porting applications to .NET Core.
 
+### [@franky920920](https://github.com/franky920920) - [Franky Chen](https://frankychen.net)
+Franky has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys.
+
 ### [@htcfreek](https://github.com/htcfreek) - Heiko
 Heiko has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys.
 
