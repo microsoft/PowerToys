@@ -252,46 +252,61 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 names.AddRange(timeZone.TimeNamesDaylight);
             }
 
-            var stringBuilder = new StringBuilder();
-            var lastEntry = names.LastOrDefault();
-
-            foreach (var name in names)
+            if (names.Any())
             {
-                stringBuilder.Append(name);
+                var stringBuilder = new StringBuilder();
+                var lastEntry = names.LastOrDefault();
 
-                if (name != lastEntry)
+                foreach (var name in names)
                 {
-                    stringBuilder.Append(',');
-                    stringBuilder.Append(' ');
-                }
-            }
+                    stringBuilder.Append(name);
 
-            // To many names (first pass) => use shortcuts
-            if (stringBuilder.Length > maxLength)
-            {
-                stringBuilder.Replace("Time Zone", "TZ");
-                stringBuilder.Replace("Standard Time", "ST");
-                stringBuilder.Replace("Daylight Time", "DT");
-            }
-
-            // To many names (second pass) => cut name length
-            if (stringBuilder.Length > maxLength)
-            {
-                foreach (var country in names)
-                {
-                    stringBuilder.SaveAppend(country, maxLength: 5);
-
-                    if (country != lastEntry)
+                    if (name != lastEntry)
                     {
                         stringBuilder.Append(',');
                         stringBuilder.Append(' ');
                     }
                 }
+
+                // To many names (first pass) => use shortcuts
+                if (stringBuilder.Length > maxLength)
+                {
+                    stringBuilder.Replace("Time Zone", "TZ");
+                    stringBuilder.Replace("Standard Time", "ST");
+                    stringBuilder.Replace("Daylight Time", "DT");
+                }
+
+                // To many names (second pass) => cut name length
+                if (stringBuilder.Length > maxLength)
+                {
+                    foreach (var country in names)
+                    {
+                        stringBuilder.SaveAppend(country, maxLength: 5);
+
+                        if (country != lastEntry)
+                        {
+                            stringBuilder.Append(',');
+                            stringBuilder.Append(' ');
+                        }
+                    }
+                }
+
+                stringBuilder.CutTooLong(maxLength);
+
+                return stringBuilder.ToString();
             }
-
-            stringBuilder.CutTooLong(maxLength);
-
-            return stringBuilder.ToString();
+            else
+            {
+                // fall-back
+                if (timeZone.Offset.StartsWith('-'))
+                {
+                    return $"UTC{timeZone.Offset}";
+                }
+                else
+                {
+                    return $"UTC+{timeZone.Offset}";
+                }
+            }
         }
 
         /// <summary>
