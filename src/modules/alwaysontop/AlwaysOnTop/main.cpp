@@ -28,7 +28,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
-        Logger::warn(L"AlwaysOnTop instance is already running");
         return 0;
     }
 

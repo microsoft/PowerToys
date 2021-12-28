@@ -151,19 +151,14 @@ void AlwaysOnTopSettings::LoadSettings()
             auto excludedUppercase = apps;
             CharUpperBuffW(excludedUppercase.data(), (DWORD)excludedUppercase.length());
             std::wstring_view view(excludedUppercase);
-            while (view.starts_with('\n') || view.starts_with('\r'))
-            {
-                view.remove_prefix(1);
-            }
+            view = left_trim<wchar_t>(trim<wchar_t>(view));
+
             while (!view.empty())
             {
                 auto pos = (std::min)(view.find_first_of(L"\r\n"), view.length());
                 excludedApps.emplace_back(view.substr(0, pos));
                 view.remove_prefix(pos);
-                while (view.starts_with('\n') || view.starts_with('\r'))
-                {
-                    view.remove_prefix(1);
-                }
+                view = left_trim<wchar_t>(trim<wchar_t>(view));
             }
 
             if (m_settings.excludedApps != excludedApps)

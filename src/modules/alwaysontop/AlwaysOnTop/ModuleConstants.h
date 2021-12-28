@@ -2,5 +2,5 @@
 
 namespace NonLocalizable
 {
-    const wchar_t ModuleKey[] = L"AlwaysOnTop";
+    const inline wchar_t ModuleKey[] = L"AlwaysOnTop";
 }

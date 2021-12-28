@@ -32,7 +32,7 @@ bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wst
 bool isExcluded(HWND window)
 {
     auto processPath = get_process_path(window);
-    CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), (DWORD)processPath.length());
+    CharUpperBuffW(processPath.data(), (DWORD)processPath.length());
     return find_app_name_in_path(processPath, AlwaysOnTopSettings::settings().excludedApps);
 }
 
