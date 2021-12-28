@@ -34,6 +34,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 return default;
             }
 
+            // mages has quirky log representation
+            // mage has log == ln vs log10
+            input = input.
+                        Replace("log(", "log10(", true, CultureInfo.CurrentCulture).
+                        Replace("ln(", "log(", true, CultureInfo.CurrentCulture);
+
             var result = _magesEngine.Interpret(input);
 
             // This could happen for some incorrect queries, like pi(2)
