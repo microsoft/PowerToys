@@ -1773,7 +1773,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
 	<comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Description" xml:space="preserve">
-    <value>Pause before for the spotlight to appear (ms)</value>
+    <value>Time before the spotlight appears (ms)</value>
 	<comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
@@ -1813,7 +1813,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
 	<comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Description" xml:space="preserve">
-    <value>Pause before a highlight starts to disappear (ms)</value>
+    <value>Time before a highlight appears (ms)</value>
 	<comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Header" xml:space="preserve">
