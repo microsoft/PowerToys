@@ -33,31 +33,6 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
   - don't close the issue if it's a bug in the current released version since users tend to not search for closed issues, we will close the resolved issues when a new version is released.
   - if it's not a code fix that effects the end user, the issue can be closed (for example a fix in the build or a code refactoring and so on).
 
-
-## Repository Overview
-
-General project organization:
-
-### The [`doc`](/doc) folder
-
-Documentation for the project.
-
-### The [`Wiki`](https://github.com/microsoft/PowerToys/wiki)
-
-The Wiki contains the current specs for the project.
-
-### The [`installer`](/installer) folder
-
-Contains the source code of the PowerToys installer.
-
-### The [`src`](/src) folder
-
-Contains the source code of the PowerToys runner and of all of the PowerToys modules. **This is where most of the magic happens.**
-
-### The [`tools`](/tools) folder
-
-Various tools used by PowerToys. Includes the Visual Studio 2019 project template for new PowerToys.
-
 ## Compiling PowerToys
 
 ### Prerequisites for Compiling PowerToys
@@ -66,10 +41,12 @@ Various tools used by PowerToys. Includes the Visual Studio 2019 project templat
 2. Visual Studio Community/Professional/Enterprise 2019
 3. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
 
-**Optional step:**<br/>
-4. to build the Video Conference module, install the [WDK version 1903](https://docs.microsoft.com/en-us/windows-hardware/drivers/other-wdk-downloads) ([direct download link](https://go.microsoft.com/fwlink/?linkid=2085767))<br />
-   During the installation, make sure that, when prompted, the `Install Windows Driver Kit Visual Studio extension` option is checked.
+### Get Submodules to compile
+We have submodules that need to be initialized before you can compile most parts of PowerToys.  This should be a one time step.
 
+1. Open a terminal
+2. Navigate to the folder you cloned PowerToys to.
+3. Run `git submodule update --init --recursive`
 
 ### Compiling Source Code
 
