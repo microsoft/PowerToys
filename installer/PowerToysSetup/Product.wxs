@@ -1669,7 +1669,7 @@
                 Guid="$(var.CompGUIDPrefix)13"
                 Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
                 <RemoveFolder Id='Remove_Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component' On='uninstall' />
-                <RemoveFolder Id='Remove_WindowsSettingsLanguagesFolder' On='uninstall' Directory='WindowsSettingsLanguagesFolder' />
+                <RemoveFolder Id='Remove_WindowsSettingsLanguagesFolder_$(var.IdSafeLanguage)' On='uninstall' Directory='WindowsSettingsLanguagesFolder' />
 
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component'
