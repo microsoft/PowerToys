@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,15 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
@@ -318,7 +313,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             uint processId = GetProcessIDFromWindowHandle(hwnd);
             ProcessID = processId;
-            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)processId);
+            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.QueryLimitedInformation, true, (int)processId);
             StringBuilder processName = new StringBuilder(MaximumFileNameLength);
 
             if (NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
