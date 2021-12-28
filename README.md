@@ -111,6 +111,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - Better detection for if a packaged app can be elevated
 - Improve crash resiliency for Program plugin.  Thanks @davidegiacometti
 - Improved Windows setting results.  Thanks @htcfreek
+- Fixed a bug where some similar activation phrases aren't working as expected. Thanks @htcfreek and @cyberrex5.
 
 #### Video conference mute
 - Disabled by default
