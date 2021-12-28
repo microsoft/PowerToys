@@ -9,6 +9,7 @@
 
 class SettingsObserver;
 
+// Needs to be kept in sync with src\settings-ui\Settings.UI.Library\AlwaysOnTopProperties.cs
 struct Settings
 {
     PowerToysSettings::HotkeyObject hotkey = PowerToysSettings::HotkeyObject::from_settings(true, true, false, false, 84); // win + ctrl + T
