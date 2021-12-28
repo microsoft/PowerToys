@@ -101,7 +101,7 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
             {
                 if (!iter.second)
                 {
-                    AssignTracker(iter.first);
+                    AssignBorderTracker(iter.first);
                 }
             }
         }
@@ -187,7 +187,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
             soundType = Sound::Type::On;
             if (AlwaysOnTopSettings::settings().enableFrame)
             {
-                AssignTracker(window);
+                AssignBorderTracker(window);
             }
             else
             {
@@ -234,12 +234,19 @@ void AlwaysOnTop::StartTrackingTopmostWindows()
     {
         if (IsTopmost(window))
         {
-            AssignTracker(window);
+            if (AlwaysOnTopSettings::settings().enableFrame)
+            {
+                AssignBorderTracker(window);
+            }
+            else
+            {
+                m_topmostWindows[window] = nullptr;
+            }
         }
     }
 }
 
-bool AlwaysOnTop::AssignTracker(HWND window)
+bool AlwaysOnTop::AssignBorderTracker(HWND window)
 {
     auto tracker = std::make_unique<WindowTracker>(window);
     if (!tracker->Init(m_hinstance))
