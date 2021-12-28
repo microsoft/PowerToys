@@ -286,7 +286,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit &apos;{0}&apos; template.
+        ///   Looks up a localized string similar to Edit &apos;{0}&apos;.
         /// </summary>
         public static string Edit_Template {
             get {

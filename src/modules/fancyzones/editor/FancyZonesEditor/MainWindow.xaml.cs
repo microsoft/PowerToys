@@ -548,5 +548,11 @@ namespace FancyZonesEditor
         {
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.FancyZones);
         }
+
+        private void EditLayoutDialogTitle_Loaded(object sender, EventArgs e)
+        {
+            EditLayoutDialogTitle.TextTrimming = TextTrimming.CharacterEllipsis;
+            EditLayoutDialogTitle.TextWrapping = TextWrapping.NoWrap;
+        }
     }
 }

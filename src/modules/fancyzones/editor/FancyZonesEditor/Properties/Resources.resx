@@ -372,7 +372,7 @@
     <value>Layout shortcut</value>
   </data>
   <data name="Edit_Template" xml:space="preserve">
-    <value>Edit '{0}' template</value>
+    <value>Edit '{0}'</value>
   </data>
   <data name="Edit_Layout_Open_Announce" xml:space="preserve">
     <value>opened</value>
