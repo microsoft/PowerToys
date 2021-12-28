@@ -1893,7 +1893,8 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Show a border around the pinned window</value>
   </data>
   <data name="AlwaysOnTop_FrameThickness.Header" xml:space="preserve">
-    <value>Thickness</value>
+    <value>Thickness (px)</value>
+    <comment>px = pixels</comment>
   </data>
   <data name="AlwaysOnTop_Behavior_GroupSettings.Header" xml:space="preserve">
    <value>Appearance &amp; behavior</value>
