@@ -630,7 +630,6 @@
                 <RemoveFolder Id="Remove_VSCodeWorkspaceLanguagesFolder" On="uninstall" Directory="VSCodeWorkspaceLanguagesFolder"/>
                 <RemoveFolder Id="Remove_WindowWalkerLanguagesFolder" On="uninstall" Directory="WindowWalkerLanguagesFolder"/>
                 <RemoveFolder Id="Remove_RegistryLanguagesFolder" On="uninstall" Directory="RegistryLanguagesFolder"/>
-                <RemoveFolder Id="Remove_WindowsSettingsLanguagesFolder" On="uninstall" Directory="WindowsSettingsLanguagesFolder"/>
             </Component>
 
             <Component Id="Module_PowerPreview_Registry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
@@ -1694,6 +1693,7 @@
                 </Component>
                 -->
             <?undef IdSafeLanguage?>
+            <?undef CompGUIDPrefix?>
             <?endforeach?>
             <?endif?>
         </ComponentGroup>
