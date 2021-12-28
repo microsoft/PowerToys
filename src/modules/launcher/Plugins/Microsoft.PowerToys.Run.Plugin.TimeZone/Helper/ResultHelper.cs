@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// </summary>
         /// <param name="timeZone">The time zone that contain all information.</param>
         /// <param name="utcNow">The current time in UTC.</param>
-        /// <param name="daylightSavingTime">indicate that the result is for a timezone that use a daylight saving time.</param>
+        /// <param name="daylightSavingTime">indicate that the result is for a time zone that use a daylight saving time.</param>
         /// <returns>The current local time in a time zone.</returns>
         private static DateTime GetTimeInTimeZone(OneTimeZone timeZone, DateTime utcNow, bool daylightSavingTime)
         {
@@ -139,7 +139,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <param name="timeZone">The time zone that contain all information.</param>
         /// <param name="options">Additional options to limit the results.</param>
         /// <param name="utcNow">The current time in UTC.</param>
-        /// <param name="daylightSavingTime">indicate that the result is for a timezone that use a daylight saving time.</param>
+        /// <param name="daylightSavingTime">indicate that the result is for a time zone that use a daylight saving time.</param>
         /// <returns>A title for a time zone.</returns>
         private static string GetTitle(OneTimeZone timeZone, TimeZoneSettings options, DateTime utcNow, bool daylightSavingTime)
         {
@@ -271,9 +271,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 // To many names (first pass) => use shortcuts
                 if (stringBuilder.Length > maxLength)
                 {
-                    stringBuilder.Replace("Time Zone", "TZ");
-                    stringBuilder.Replace("Standard Time", "ST");
-                    stringBuilder.Replace("Daylight Time", "DT");
+                    stringBuilder.Replace(Resources.TimeZone, Resources.TimeZoneShortcut);
+                    stringBuilder.Replace(Resources.StandardTime, Resources.TimeZoneShortcut);
+                    stringBuilder.Replace(Resources.DaylightTime, Resources.DaylightTimeShortcut);
+                    stringBuilder.Replace(Resources.Time, Resources.TimeShortcut);
                 }
 
                 // To many names (second pass) => cut name length
@@ -298,13 +299,18 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             else
             {
                 // fall-back
-                if (timeZone.Offset.StartsWith('-'))
+                var totalMinutes = timeZone.OffsetAsTimeSpan.TotalMinutes;
+                if (totalMinutes < 0)
                 {
                     return $"UTC{timeZone.Offset}";
                 }
-                else
+                else if (totalMinutes > 0)
                 {
                     return $"UTC+{timeZone.Offset}";
+                }
+                else
+                {
+                    return "UTC±00:00";
                 }
             }
         }

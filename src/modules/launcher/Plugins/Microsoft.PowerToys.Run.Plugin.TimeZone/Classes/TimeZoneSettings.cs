@@ -30,10 +30,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         internal bool ShowMilitaryTimeZoneNames { get; set; }
 
         /// <summary>
-        /// Return a list with all settings.
+        /// Return a list with all settings. Additional
         /// </summary>
         /// <returns>A list with all settings.</returns>
-        internal List<PluginAdditionalOption> GetAddtionalOptions()
+        internal List<PluginAdditionalOption> GetAdditionalOptions()
         {
             var optionList = new List<PluginAdditionalOption>
             {

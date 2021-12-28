@@ -74,7 +74,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         /// <summary>
         /// Gets the additional options for this plugin.
         /// </summary>
-        public IEnumerable<PluginAdditionalOption> AdditionalOptions => _timeZoneSettings.GetAddtionalOptions();
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => _timeZoneSettings.GetAdditionalOptions();
 
         /// <summary>
         /// Initialize the plugin with the given <see cref="PluginInitContext"/>

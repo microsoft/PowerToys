@@ -2163,6 +2163,7 @@ USESTDHANDLES
 ushort
 USRDLL
 Utc
+utc
 utf
 utils
 uuidof

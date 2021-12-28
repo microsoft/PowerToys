@@ -126,6 +126,13 @@
   <data name="CountriesWithDst" xml:space="preserve">
     <value>Countries with daylight saving time</value>
   </data>
+  <data name="DaylightTime" xml:space="preserve">
+    <value>Daylight Time</value>
+  </data>
+  <data name="DaylightTimeShortcut" xml:space="preserve">
+    <value>DT</value>
+    <comment>Short for "Daylight Time"</comment>
+  </data>
   <data name="Names" xml:space="preserve">
     <value>Names</value>
   </data>
@@ -153,8 +160,33 @@
     <value>Show time zone names</value>
     <comment>PowerToysRun Option</comment>
   </data>
+  <data name="StandardTime" xml:space="preserve">
+    <value>Standard Time</value>
+  </data>
+  <data name="StandardTimeShortcut" xml:space="preserve">
+    <value>ST</value>
+    <comment>Short for "Standard Time"</comment>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="TimeShortcut" xml:space="preserve">
+    <value>T</value>
+    <comment>Short for "Time"</comment>
+  </data>
+  <data name="TimeZone" xml:space="preserve">
+    <value>Time Zone</value>
+  </data>
+  <data name="TimeZoneShortcut" xml:space="preserve">
+    <value>TZ</value>
+    <comment>Short for "Time Zone"</comment>
+  </data>
   <data name="UseDst" xml:space="preserve">
     <value>Use daylight saving time</value>
+  </data>
+  <data name="UTC" xml:space="preserve">
+    <value>UTC</value>
+    <comment>Short for "Coordinated Universal Time"</comment>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
