@@ -13,29 +13,21 @@ std::unique_ptr<FrameDrawer> FrameDrawer::Create(HWND window)
 }
 
 FrameDrawer::FrameDrawer(FrameDrawer&& other) :
-    m_window(other.m_window), 
-    m_clientRect(std::move(other.m_clientRect)), 
+    m_window(other.m_window),
     m_renderTarget(std::move(other.m_renderTarget)), 
-    m_sceneRect(std::move(other.m_sceneRect)), 
-    m_shouldRender(other.m_shouldRender.load()), 
-    m_abortThread(other.m_abortThread.load()), 
+    m_sceneRect(std::move(other.m_sceneRect)),
     m_renderThread(std::move(m_renderThread))
 {
 }
 
 FrameDrawer::FrameDrawer(HWND window) :
-    m_window(window), m_renderTarget(nullptr), m_shouldRender(false)
+    m_window(window), m_renderTarget(nullptr)
 {
 }
 
 FrameDrawer::~FrameDrawer()
 {
-    {
-        std::unique_lock lock(m_mutex);
-        m_abortThread = true;
-        m_shouldRender = true;
-    }
-    m_cv.notify_all();
+    m_abortThread = true;
     m_renderThread.join();
 
     if (m_renderTarget)
@@ -46,8 +38,10 @@ FrameDrawer::~FrameDrawer()
 
 bool FrameDrawer::Init()
 {
+    RECT clientRect;
+
     // Obtain the size of the drawing area.
-    if (!GetClientRect(m_window, &m_clientRect))
+    if (!GetClientRect(m_window, &clientRect))
     {
         return false;
     }
@@ -62,7 +56,7 @@ bool FrameDrawer::Init()
         96.f,
         96.f);
 
-    auto renderTargetSize = D2D1::SizeU(m_clientRect.right - m_clientRect.left, m_clientRect.bottom - m_clientRect.top);
+    auto renderTargetSize = D2D1::SizeU(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
     auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(m_window, renderTargetSize);
 
     hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, &m_renderTarget);
@@ -79,34 +73,12 @@ bool FrameDrawer::Init()
 
 void FrameDrawer::Hide()
 {
-    bool shouldHideWindow = true;
-    {
-        std::unique_lock lock(m_mutex);
-        shouldHideWindow = m_shouldRender;
-        m_shouldRender = false;
-    }
-
-    if (shouldHideWindow)
-    {
-        ShowWindow(m_window, SW_HIDE);
-    }
+    ShowWindow(m_window, SW_HIDE);
 }
 
 void FrameDrawer::Show()
 {
-    bool shouldShowWindow = true;
-    {
-        std::unique_lock lock(m_mutex);
-        shouldShowWindow = !m_shouldRender;
-        m_shouldRender = true;
-    }
-
-    if (shouldShowWindow)
-    {
-        ShowWindow(m_window, SW_SHOWNA);
-    }
-
-    m_cv.notify_all();
+    ShowWindow(m_window, SW_SHOWNA);
 }
 
 void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, float thickness)
@@ -189,17 +161,12 @@ void FrameDrawer::RenderLoop()
 {
     while (!m_abortThread)
     {
-        {
-            // Wait here while rendering is disabled
-            std::unique_lock lock(m_mutex);
-            m_cv.wait(lock, [this]() { return (bool)m_shouldRender; });
-        }
-
         auto result = Render();
-
         if (result == RenderResult::Failed)
         {
+            Logger::error("Render failed");
             Hide();
+            m_abortThread = true;
         }
     }
 }

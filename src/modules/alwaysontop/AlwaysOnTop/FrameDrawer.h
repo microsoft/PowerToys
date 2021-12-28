@@ -41,14 +41,11 @@ private:
     void RenderLoop();
 
     HWND m_window = nullptr;
-    RECT m_clientRect{};
     ID2D1HwndRenderTarget* m_renderTarget = nullptr;
 
     std::mutex m_mutex;
     DrawableRect m_sceneRect;
 
-    std::atomic<bool> m_shouldRender = false;
     std::atomic<bool> m_abortThread = false;
-    std::condition_variable m_cv;
     std::thread m_renderThread;
 };
