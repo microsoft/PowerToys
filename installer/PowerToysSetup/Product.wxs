@@ -1440,7 +1440,7 @@
                 Directory="Resource$(var.IdSafeLanguage)LauncherInstallFolder"
                 Guid="$(var.CompGUIDPrefix)00">
                 <RemoveFolder Id='Remove_Launcher_$(var.IdSafeLanguage)_Component' On='uninstall' />
-                <RemoveFolder Id='Remove_RegistryPluginFolder' On='uninstall' Directory='RegistryPluginFolder'/>
+                <RemoveFolder Id='Remove_$(var.IdSafeLanguage)_RegistryPluginFolder' On='uninstall' Directory='RegistryPluginFolder'/>
                 <RegistryValue Root='HKCU' Key='Software\Microsoft\PowerToys'
                     Name='Launcher_$(var.IdSafeLanguage)_Component'
                     Value='[INSTALLFOLDER]'
