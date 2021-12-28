@@ -447,7 +447,7 @@
     <value>Excludes an application from snapping to zones and will only react to Windows Snap - add one application name per line</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
-    <value>Opacity</value>
+    <value>Opacity (%)</value>
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open layout editor</value>
@@ -658,11 +658,11 @@
     <value>Shows a help overlay with Windows shortcuts.</value>
   </data>
   <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
-    <value>Press duration before showing</value>
-    <comment>pressing a key in milliseconds</comment>
+    <value>Press duration before showing (ms)</value>
+    <comment>ms = milliseconds</comment>
   </data>
   <data name="ShortcutGuide_PressTime.Description" xml:space="preserve">
-    <value>How long to press the Windows key to activate the module (in ms)</value>
+    <value>How long to press the Windows key to activate the module</value>
   </data>
   <data name="ShortcutGuide_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
@@ -687,7 +687,7 @@
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
-    <value>Opacity of background</value>
+    <value>Background opacity (%)</value>
   </data>
   <data name="ShortcutGuide_DisabledApps.Header" xml:space="preserve">
     <value>Exclude apps</value>
@@ -753,7 +753,7 @@
     <value>Save sizes</value>
   </data>
   <data name="ImageResizer_Encoding.Header" xml:space="preserve">
-    <value>JPEG quality level</value>
+    <value>JPEG quality level (%)</value>
   </data>
   <data name="ImageResizer_PNGInterlacing.Header" xml:space="preserve">
     <value>PNG interlacing</value>
@@ -1756,10 +1756,11 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Spotlight color</value>
   </data>
   <data name="MouseUtils_FindMyMouse_OverlayOpacity.Header" xml:space="preserve">
-    <value>Overlay opacity</value>
+    <value>Overlay opacity (%)</value>
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightRadius.Header" xml:space="preserve">
-    <value>Spotlight radius</value>
+    <value>Spotlight radius (px)</value>
+	<comment>px = pixels</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Header" xml:space="preserve">
     <value>Spotlight initial zoom</value>
@@ -1768,10 +1769,12 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Spotlight zoom factor at animation start</value>
   </data>
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Header" xml:space="preserve">
-    <value>Animation duration</value>
+    <value>Animation duration (ms)</value>
+	<comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Description" xml:space="preserve">
-    <value>How long it takes for the spotlight to appear/disappear (in ms)</value>
+    <value>Time before the spotlight appears (ms)</value>
+	<comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
     <value>Mouse Highlighter</value>
@@ -1799,22 +1802,27 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Right button highlight color</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_HighlightOpacity.Header" xml:space="preserve">
-    <value>Opacity</value>
+    <value>Opacity (%)</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_HighlightRadius.Header" xml:space="preserve">
-    <value>Radius</value>
+    <value>Radius (px)</value>
+	<comment>px = pixels</comment>  
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Header" xml:space="preserve">
-    <value>Fade delay</value>
+    <value>Fade delay (ms)</value>
+	<comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Description" xml:space="preserve">
-    <value>How long it takes before a highlight starts to disappear (in ms)</value>
+    <value>Time before a highlight appears (ms)</value>
+	<comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Header" xml:space="preserve">
-    <value>Fade duration</value>
+    <value>Fade duration (ms)</value>
+	<comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Description" xml:space="preserve">
-    <value>Duration of the disappear animation (in ms)</value>
+    <value>Duration of the disappear animation (ms)</value>
+	<comment>ms = milliseconds</comment>
   </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
