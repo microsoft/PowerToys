@@ -248,7 +248,7 @@ void AlwaysOnTop::StartTrackingTopmostWindows()
 
 bool AlwaysOnTop::AssignBorderTracker(HWND window)
 {
-    auto tracker = std::make_unique<WindowTracker>(window);
+    auto tracker = std::make_unique<WindowBorder>(window);
     if (!tracker->Init(m_hinstance))
     {
         // Failed to init tracker, reset topmost

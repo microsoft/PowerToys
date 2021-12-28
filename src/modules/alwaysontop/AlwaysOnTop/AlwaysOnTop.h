@@ -6,7 +6,7 @@
 #include <SettingsObserver.h>
 #include <Sound.h>
 #include <VirtualDesktopUtils.h>
-#include <WindowTracker.h>
+#include <WindowBorder.h>
 
 #include <common/hooks/WinHookEvent.h>
 
@@ -46,7 +46,7 @@ private:
 
     HWND m_window{ nullptr };
     HINSTANCE m_hinstance;
-    std::map<HWND, std::unique_ptr<WindowTracker>> m_topmostWindows{};
+    std::map<HWND, std::unique_ptr<WindowBorder>> m_topmostWindows{};
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
@@ -67,7 +67,7 @@ private:
 
     bool PinTopmostWindow(HWND window) const noexcept;
     bool UnpinTopmostWindow(HWND window) const noexcept;
-    bool AssignTracker(HWND window);
+    bool AssignBorderTracker(HWND window);
 
     virtual void SettingsUpdate(SettingId type) override;
 

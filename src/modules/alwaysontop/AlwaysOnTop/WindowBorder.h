@@ -4,12 +4,12 @@
 
 class FrameDrawer;
 
-class WindowTracker : public SettingsObserver
+class WindowBorder : public SettingsObserver
 {
 public:
-    WindowTracker(HWND window);
-    WindowTracker(WindowTracker&& other);
-    ~WindowTracker();
+    WindowBorder(HWND window);
+    WindowBorder(WindowBorder&& other);
+    ~WindowBorder();
 
     bool Init(HINSTANCE hinstance);
 
@@ -20,11 +20,11 @@ public:
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
     {
-        auto thisRef = reinterpret_cast<WindowTracker*>(GetWindowLongPtr(window, GWLP_USERDATA));
+        auto thisRef = reinterpret_cast<WindowBorder*>(GetWindowLongPtr(window, GWLP_USERDATA));
         if ((thisRef == nullptr) && (message == WM_CREATE))
         {
             auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
-            thisRef = reinterpret_cast<WindowTracker*>(createStruct->lpCreateParams);
+            thisRef = reinterpret_cast<WindowBorder*>(createStruct->lpCreateParams);
             SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
         }
 

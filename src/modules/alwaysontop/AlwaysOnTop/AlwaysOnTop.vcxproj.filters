@@ -30,7 +30,7 @@
     <ClCompile Include="FrameDrawer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WindowTracker.cpp">
+    <ClCompile Include="WindowBorder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Settings.cpp">
@@ -59,7 +59,7 @@
     <ClInclude Include="FrameDrawer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WindowTracker.h">
+    <ClInclude Include="WindowBorder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Settings.h">

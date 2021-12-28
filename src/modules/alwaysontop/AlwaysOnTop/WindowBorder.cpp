@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "WindowTracker.h"
+#include "WindowBorder.h"
 
 #include <FrameDrawer.h>
 #include <Settings.h>
@@ -24,7 +24,7 @@ std::optional<RECT> GetFrameRect(HWND window)
     return rect;
 }
 
-WindowTracker::WindowTracker(HWND window) :
+WindowBorder::WindowBorder(HWND window) :
     SettingsObserver({SettingId::FrameColor, SettingId::FrameThickness}),
     m_window(nullptr), 
     m_trackingWindow(window), 
@@ -32,7 +32,7 @@ WindowTracker::WindowTracker(HWND window) :
 {
 }
 
-WindowTracker::WindowTracker(WindowTracker&& other) :
+WindowBorder::WindowBorder(WindowBorder&& other) :
     SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness }),
     m_window(other.m_window), 
     m_trackingWindow(other.m_trackingWindow), 
@@ -40,7 +40,7 @@ WindowTracker::WindowTracker(WindowTracker&& other) :
 {
 }
 
-WindowTracker::~WindowTracker()
+WindowBorder::~WindowBorder()
 {
     if (m_frameDrawer)
     {
@@ -55,7 +55,7 @@ WindowTracker::~WindowTracker()
     }
 }
 
-bool WindowTracker::Init(HINSTANCE hinstance)
+bool WindowBorder::Init(HINSTANCE hinstance)
 {
     if (!m_trackingWindow)
     {
@@ -105,7 +105,7 @@ bool WindowTracker::Init(HINSTANCE hinstance)
     return m_frameDrawer != nullptr;
 }
 
-void WindowTracker::RedrawFrame() const
+void WindowBorder::RedrawFrame() const
 {
     if (!m_trackingWindow)
     {
@@ -122,7 +122,7 @@ void WindowTracker::RedrawFrame() const
     SetWindowPos(m_window, m_trackingWindow, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOREDRAW);
 }
 
-void WindowTracker::Show() const
+void WindowBorder::Show() const
 {
     if (!m_trackingWindow || !m_frameDrawer)
     {
@@ -142,12 +142,12 @@ void WindowTracker::Show() const
     m_frameDrawer->Show();
 }
 
-void WindowTracker::Hide() const
+void WindowBorder::Hide() const
 {
     m_frameDrawer->Hide();
 }
 
-LRESULT WindowTracker::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
+LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
     switch (message)
     {
@@ -169,7 +169,7 @@ LRESULT WindowTracker::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexc
     return FALSE;
 }
 
-void WindowTracker::SettingsUpdate(SettingId id)
+void WindowBorder::SettingsUpdate(SettingId id)
 {
     switch (id)
     {

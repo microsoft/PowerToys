@@ -155,7 +155,7 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="VirtualDesktopUtils.cpp" />
-    <ClCompile Include="WindowTracker.cpp" />
+    <ClCompile Include="WindowBorder.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -169,7 +169,7 @@
     <ClInclude Include="Sound.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="VirtualDesktopUtils.h" />
-    <ClInclude Include="WindowTracker.h" />
+    <ClInclude Include="WindowBorder.h" />
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>
