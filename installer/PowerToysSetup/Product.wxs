@@ -305,9 +305,9 @@
             <Directory Id="MouseUtilsInstallFolder" Name="$(var.MouseUtilsProjectName)">
             </Directory>
 
-			<!-- AlwaysOnTop -->
-			<Directory Id="AlwaysOnTopInstallFolder" Name="$(var.AlwaysOnTopProjectName)">
-			</Directory>
+            <!-- AlwaysOnTop -->
+            <Directory Id="AlwaysOnTopInstallFolder" Name="$(var.AlwaysOnTopProjectName)">
+            </Directory>
 
             <!-- Launcher -->
             <Directory Id="LauncherInstallFolder" Name="launcher">
