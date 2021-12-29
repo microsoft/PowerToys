@@ -207,6 +207,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool alwaysOnTop = true;
+
+        [JsonPropertyName("AlwaysOnTop")]
+        public bool AlwaysOnTop
+        {
+            get => alwaysOnTop;
+            set
+            {
+                if (alwaysOnTop != value)
+                {
+                    LogTelemetryEvent(value);
+                    alwaysOnTop = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

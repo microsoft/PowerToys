@@ -1185,10 +1185,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PowerLauncher_EnablePluginToggle.AutomationProperties.Name" xml:space="preserve">
     <value>Enable plugin</value>
   </data>
-	<data name="PowerLauncher_EnablePluginToggle.OnContent" xml:space="preserve">
+  <data name="PowerLauncher_EnablePluginToggle.OnContent" xml:space="preserve">
     <value>On</value>
   </data>
-	<data name="PowerLauncher_EnablePluginToggle.OffContent" xml:space="preserve">
+  <data name="PowerLauncher_EnablePluginToggle.OffContent" xml:space="preserve">
     <value>Off</value>
   </data>
   <data name="Run_AdditionalOptions.Text" xml:space="preserve">
@@ -1550,7 +1550,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="EditButton.AutomationProperties.Name" xml:space="preserve">
     <value>Edit</value>
   </data>
-    <data name="ImageResizer_EditSize.AutomationProperties.Name" xml:space="preserve">
+  <data name="ImageResizer_EditSize.AutomationProperties.Name" xml:space="preserve">
     <value>Edit size</value>
   </data>
   <data name="No" xml:space="preserve">
@@ -1869,5 +1869,84 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="ToggleSwitch.OnContent" xml:space="preserve">
     <value>On</value>
     <comment>The state of a ToggleSwitch when it's on</comment>
+  </data>
+  <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
+    <value>Always On Top is a quick and easy way to pin windows on top.</value>
+      <comment>"Always On Top" is the name of the utility</comment>
+  </data>
+  <data name="AlwaysOnTop.ModuleTitle" xml:space="preserve">
+    <value>Always On Top </value>
+      <comment>"Always On Top" is the name of the utility</comment>
+  </data>
+  <data name="AlwaysOnTop_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="AlwaysOnTop_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Always On Top</value>
+    <comment>"Always On Top" is the name of the utility</comment>
+  </data>
+  <data name="AlwaysOnTop_ExcludedApps.Description" xml:space="preserve">
+    <value>Excludes an application from pinning on top</value>
+  </data>
+  <data name="AlwaysOnTop_ExcludedApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="AlwaysOnTop_ExcludedApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
+  </data>
+  <data name="AlwaysOnTop_FrameColor.Header" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="AlwaysOnTop_FrameEnabled.Header" xml:space="preserve">
+    <value>Show a border around the pinned window</value>
+  </data>
+  <data name="AlwaysOnTop_FrameThickness.Header" xml:space="preserve">
+    <value>Thickness (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="AlwaysOnTop_Behavior_GroupSettings.Header" xml:space="preserve">
+   <value>Appearance &amp; behavior</value>
+  </data>
+  <data name="Shell_AlwaysOnTop.Content" xml:space="preserve">
+    <value>Always On Top</value>
+      <comment>"Always On Top" is the name of the utility</comment>
+  </data>
+  <data name="AlwaysOnTop_GameMode.Content" xml:space="preserve">
+    <value>Do not activate when Game Mode is on</value>
+	  <comment>Game Mode is a Windows feature</comment>
+  </data>
+	  <data name="AlwaysOnTop_SoundTitle.Header" xml:space="preserve">
+    <value>Sound</value>
+  </data>
+  <data name="AlwaysOnTop_Sound.Content" xml:space="preserve">
+    <value>Play a sound when pinning a window</value>
+  </data>
+	<data name="AlwaysOnTop_Behavior.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+	<data name="LearnMore_AlwaysOnTop.Text" xml:space="preserve">
+    <value>Learn more about Always On Top</value>
+	    <comment>"Always On Top" is the name of the utility</comment>
+  </data>
+	<data name="AlwaysOnTop_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+	<data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to pin or unpin an app window</value>
+    <comment>"Always On Top" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AlwaysOnTop" xml:space="preserve">
+    <value>Always On Top</value>
+      <comment>"Always On Top" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AlwaysOnTop_Description" xml:space="preserve">
+    <value>Always On Top improves your multitasking workflow by pinning an application window so it's always in front - even when focus changes to another window after that.</value>
+      <comment>"Always On Top" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AlwaysOnTop_HowToUse.Text" xml:space="preserve">
+    <value>to pin or unpin the selected window so it's always on top of all other windows.</value>
+  </data>
+  <data name="Oobe_AlwaysOnTop_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can tweak the visual outline of the pinned windows in PowerToys settings.</value>
   </data>
 </root>

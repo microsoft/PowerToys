@@ -90,6 +90,8 @@ build:
             - 'modules\ColorPicker\PowerToys.Interop.dll'
             - 'modules\ColorPicker\Telemetry.dll'
             - '**\*.resources.dll'
+            - 'modules\AlwaysOnTop\PowerToys.AlwaysOnTop.exe'
+            - 'modules\AlwaysOnTop\PowerToys.AlwaysOnTopModuleInterface.dll'
             - 'modules\Awake\PowerToys.AwakeModuleInterface.dll'
             - 'modules\Awake\PowerToys.ManagedCommon.dll'
             - 'modules\Awake\PowerToys.ManagedTelemetry.dll'

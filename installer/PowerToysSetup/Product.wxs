@@ -11,6 +11,7 @@
   <?define VideoConferenceProjectName="VideoConference"?>
   <?define AwakeProjectName="Awake"?>
   <?define MouseUtilsProjectName="MouseUtils"?>
+  <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
@@ -302,6 +303,10 @@
 
             <!-- Mouse Utils -->
             <Directory Id="MouseUtilsInstallFolder" Name="$(var.MouseUtilsProjectName)">
+            </Directory>
+
+            <!-- AlwaysOnTop -->
+            <Directory Id="AlwaysOnTopInstallFolder" Name="$(var.AlwaysOnTopProjectName)">
             </Directory>
 
             <!-- Launcher -->
@@ -830,6 +835,14 @@
       </Component>
     </DirectoryRef>
 
+    <!-- AlwaysOnTop -->
+    <DirectoryRef Id="AlwaysOnTopInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.AlwaysOnTopProjectName)">
+      <Component Id="Module_AlwaysOnTop" Guid="599D40E7-862A-4A4C-8013-D9CE0BEB3D6C" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.AlwaysOnTopProjectName)\PowerToys.AlwaysOnTopModuleInterface.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.AlwaysOnTopProjectName)\PowerToys.AlwaysOnTop.exe" />
+      </Component>
+    </DirectoryRef>
+
     <!-- SettingsV2 components -->
     <DirectoryRef Id="SettingsV2InstallFolder" FileSource="$(var.BinX64Dir)Settings\">
       <Component Id="SettingsV2" Guid="4B108DC0-4B2C-4AC4-AAA9-1B2DC8399F7C" Win64="yes">
@@ -877,21 +890,21 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules">
       <Component Id="SettingsV2AssetsModules" Guid="A0B961A9-77D0-4223-88A9-E3B41BD9C329" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png;Wallpaper.png?>
+        <?foreach File in ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png;Wallpaper.png?>
           <File Id="SettingsV2AssetsModules_$(var.File)" Source="$(var.BinX64Dir)Settings\Assets\Modules\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules\OOBE">
       <Component Id="SettingsV2OOBEAssetsModules" Guid="E2360A83-6694-4B33-B5F6-641A906359EE" Win64="yes">
-        <?foreach File in ColorPicker.gif;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
+        <?foreach File in ColorPicker.gif;AlwaysOnTop.png;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
           <File Id="SettingsV2OOBEAssetsModules_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\Modules\OOBE\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\FluentIcons">
       <Component Id="SettingsV2OOBEAssetsFluentIcons" Guid="6A380D5A-DA63-45B5-B68F-06D57CDD1B9C" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png ?>
+        <?foreach File in ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png ?>
           <File Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
         <?endforeach?>
       </Component>
@@ -989,6 +1002,7 @@
       <ComponentRef Id="Module_Awake_runtime_netcoreapp21"/>
       <ComponentRef Id="Module_FindMyMouse"/>
       <ComponentRef Id="Module_MouseHighlighter"/>
+      <ComponentRef Id="Module_AlwaysOnTop"/>
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
       <ComponentRef Id="SettingsV2AssetsModules" />
