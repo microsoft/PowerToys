@@ -31,7 +31,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Via GitHub with EXE [Recommended]
 
- [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.51.1-x64.exe` to download the PowerToys installer.
+ [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.53.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -68,12 +68,12 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 #### 0.53 - December 2021 Update
 
-We hope everyone has had a wonderful December 2021. The PowerToys community has been busy with a bunch improvements. We're still working on improving the installer but this should drastically improve things.  3 things you will want to check out are GCode support in file explorer preview pane and thumbnails, the new web search plugin from PowerToys Run via <kbd>??</kbd> action phrase, and the new Always on Top utility via <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>.
+We hope everyone has had a wonderful December 2021. The PowerToys community has been busy with a bunch of improvements. We're still working on improving the installer but this should drastically improve things.  3 things you will want to check out are GCode support in file explorer preview pane and thumbnails, the new web search plugin from PowerToys Run via <kbd>??</kbd> action phrase, and the new Always on Top utility via <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>.
 
-[@Aaron-Junker](https://github.com/Aaron-Junker) also has done some great progress on implementing developer file preview via the Monaco engine from Visual Studio Code.
+[@Aaron-Junker](https://github.com/Aaron-Junker) also has done some great progress on [implementing developer file preview pane](https://github.com/microsoft/PowerToys/issues/1527) via the Monaco engine from Visual Studio Code.
 
 #### Always on Top
-- With a quick <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>, the window in focus is toggled to be on top.  Toggle again, and reverts back to normal.
+- With a quick <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>, the window in focus is toggled to be on top.  Toggle again, and it reverts back to normal.
 
 #### ColorPicker
 - HEX input improvements for adjust color menu including support for hex code without hashtag and short hex code like #CF0.  Thanks @htcfreek
@@ -81,7 +81,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 
 #### FancyZones
 - Increased negative space margin
-- Fix for not snapping children windows
+- Fix for not snapping child windows
 - Fix for clearing keyboard focus on editor launch
 - Fix to improve overlays to reduce brightness and hide numbers. Thanks @davidegiacometti
 
