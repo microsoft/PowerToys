@@ -110,7 +110,7 @@ bool WindowBorder::Init(HINSTANCE hinstance)
     return m_frameDrawer != nullptr;
 }
 
-void WindowBorder::RedrawFrame() const
+void WindowBorder::UpdateBorderPosition() const
 {
     if (!m_trackingWindow)
     {
@@ -127,7 +127,7 @@ void WindowBorder::RedrawFrame() const
     SetWindowPos(m_window, m_trackingWindow, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOREDRAW);
 }
 
-void WindowBorder::Show() const
+void WindowBorder::UpdateBorderProperties() const
 {
     if (!m_trackingWindow || !m_frameDrawer)
     {
@@ -141,9 +141,13 @@ void WindowBorder::Show() const
     }
 
     RECT windowRect = windowRectOpt.value();
-
     RECT frameRect{ 0, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top };
     m_frameDrawer->SetBorderRect(frameRect, AlwaysOnTopSettings::settings().frameColor, AlwaysOnTopSettings::settings().frameThickness);
+}
+
+void WindowBorder::Show() const
+{
+    UpdateBorderProperties();
     m_frameDrawer->Show();
 }
 
@@ -191,13 +195,14 @@ void WindowBorder::SettingsUpdate(SettingId id)
     {
     case SettingId::FrameThickness:
     {
-        RedrawFrame(); 
+        UpdateBorderPosition();
+        UpdateBorderProperties();
     }
     break;
     
     case SettingId::FrameColor:
     {
-        Show();
+        UpdateBorderProperties();
     }
     break;
 

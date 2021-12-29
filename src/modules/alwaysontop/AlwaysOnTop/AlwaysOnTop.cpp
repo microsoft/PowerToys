@@ -361,7 +361,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         if (iter != m_topmostWindows.end())
         {
             const auto& tracker = iter->second;
-            tracker->RedrawFrame();
+            tracker->UpdateBorderPosition();
         }
     }
     break;

@@ -15,7 +15,9 @@ public:
 
     void Show() const;
     void Hide() const;
-    void RedrawFrame() const;
+
+    void UpdateBorderPosition() const;
+    void UpdateBorderProperties() const;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
