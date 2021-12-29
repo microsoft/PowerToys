@@ -351,12 +351,15 @@
                           PrimaryButtonText="{x:Static props:Resources.Save}"
                           PrimaryButtonClick="EditLayoutDialog_PrimaryButtonClick"
                           SecondaryButtonClick="EditLayoutDialog_SecondaryButtonClick"
-                          Title="{x:Static props:Resources.Edit_Layout}"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          MaxWidth="320"
                           Opened="Dialog_Opened"
                           Closed="Dialog_Closed">
+            <ui:ContentDialog.Title>
+                <TextBlock x:Name="EditLayoutDialogTitle" MaxWidth="320" Margin="0,0,96,0" Loaded="EditLayoutDialogTitle_Loaded"/>
+            </ui:ContentDialog.Title>
             <Grid DataContext="{Binding SelectedModel}"
-                  MinWidth="320" Margin="4,4,24,32">
+                 Margin="4,4,24,32">
 
                 <StackPanel Margin="0,-37,0,0"
                             HorizontalAlignment="Right"
@@ -423,6 +426,7 @@
                                  Margin="12,0,0,0"
                                  ui:ControlHelper.Header="{x:Static props:Resources.Name}"
                                  MinWidth="286"
+                                 MaxWidth="286"
                                  HorizontalAlignment="Stretch"
                                  GotKeyboardFocus="TextBox_GotKeyboardFocus" />
 
