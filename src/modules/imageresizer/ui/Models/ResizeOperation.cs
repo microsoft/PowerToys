@@ -104,7 +104,15 @@ namespace ImageResizer.Models
                                 }
                             }
 
-                            metadata = newMetadata;
+                            if (newMetadata.IsMetadataObjectValid())
+                            {
+                                metadata = newMetadata;
+                            }
+                            else
+                            {
+                                // Seems like we build an invalid metadata object. ImageResizer will fail when trying to write the image to disk. We discard all metadata to be able to save the image.
+                                metadata = null;
+                            }
                         }
                         catch (ArgumentException ex)
                         {
