@@ -106,6 +106,16 @@ bool WindowBorder::Init(HINSTANCE hinstance)
         return false;
     }
 
+    // set position of the border-window behind the tracking window
+    // helps to prevent border overlapping (happens after turning borders off and on)
+    SetWindowPos(m_trackingWindow
+        , m_window
+        , windowRect.left
+        , windowRect.top
+        , windowRect.right - windowRect.left - static_cast<int>(AlwaysOnTopSettings::settings().frameThickness)
+        , windowRect.bottom - windowRect.top - static_cast<int>(AlwaysOnTopSettings::settings().frameThickness)
+        , SWP_NOMOVE | SWP_NOSIZE);
+
     m_frameDrawer = FrameDrawer::Create(m_window);
     return m_frameDrawer != nullptr;
 }
