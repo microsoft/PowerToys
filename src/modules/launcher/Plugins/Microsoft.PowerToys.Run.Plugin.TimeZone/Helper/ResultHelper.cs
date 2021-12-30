@@ -15,7 +15,7 @@ using Wox.Plugin;
 // TODO: revisit time zone names
 // TODO: revisit standard time names
 // TODO: revisit DST time names
-// TODO: add time zone shortcuts
+// TODO: add more time zone shortcuts
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 {
     /// <summary>
@@ -327,7 +327,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         {
             IEnumerable<string> countries;
 
-            // TODO: translate country names
             if (query is null || string.IsNullOrWhiteSpace(query.Search))
             {
                 countries = timeZone.CountriesStandard;
@@ -415,7 +414,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         {
             IEnumerable<string> countries;
 
-            // TODO: translate country names
             if (query is null || string.IsNullOrWhiteSpace(query.Search))
             {
                 countries = timeZone.CountriesDaylight;
@@ -503,7 +501,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         {
             IEnumerable<string> countries;
 
-            // TODO: translate country names
             if (query is null || string.IsNullOrWhiteSpace(query.Search))
             {
                 countries = timeZone.CountriesDaylight.Concat(timeZone.CountriesStandard);

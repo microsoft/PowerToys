@@ -87,6 +87,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
             UpdateIconPath(_context.API.GetCurrentTheme());
 
             _timeZoneList = JsonHelper.ReadAllPossibleTimezones();
+
+            TranslationHelper.TranslateAllSettings(_timeZoneList);
         }
 
         /// <summary>
