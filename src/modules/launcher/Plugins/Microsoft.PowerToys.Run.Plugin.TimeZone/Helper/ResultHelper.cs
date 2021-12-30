@@ -38,7 +38,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
             foreach (var timeZone in timeZones)
             {
-                if (MatchNames(timeZone, query)
+                if (MatchShortcuts(timeZone, query)
+                || MatchNames(timeZone, query)
                 || MatchStandardNames(timeZone, query)
                 || MatchDaylightNames(timeZone, query)
                 || MatchStandardCountries(timeZone, query)
@@ -578,6 +579,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             stringBuilder.CutTooLong(maxLength);
 
             return stringBuilder.ToString();
+        }
+
+        private static bool MatchShortcuts(OneTimeZone timeZone, Query query)
+        {
+            var result = timeZone.Shortcut.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase);
+            return result;
         }
 
         private static bool MatchNames(OneTimeZone timeZone, Query query)
