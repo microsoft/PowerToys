@@ -18,7 +18,7 @@ Franky has helped triaging, discussing, and creating a substantial number of iss
 ### [@htcfreek](https://github.com/htcfreek) - Heiko
 Heiko has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys.
 
-### [@Jay-o-Way](https://github.com/Jay-o-Way) - Jay-o-Way
+### [@Jay-o-Way](https://github.com/Jay-o-Way) - Jay
 Jay has helped triaging, discussing, creating a substantial number of issues and PRs.
 
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
