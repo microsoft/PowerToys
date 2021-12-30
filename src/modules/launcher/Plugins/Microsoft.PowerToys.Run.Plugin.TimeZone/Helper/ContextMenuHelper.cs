@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
+using Microsoft.PowerToys.Run.Plugin.TimeZone.Classes;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -24,9 +26,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <param name="result">The result for the context menu entires</param>
         /// <param name="assemblyName">The name of the this assembly</param>
         /// <returns>A list with context menu entries</returns>
-        internal static List<ContextMenuResult> GetContextMenu(Result result, string assemblyName)
+        internal static List<ContextMenuResult> GetContextMenu(in Result result, in string assemblyName)
         {
-            if (!(result?.ContextData is TimeZoneInfo timeZoneInfo))
+            if (!(result?.ContextData is DateTime dateTime))
             {
                 return new List<ContextMenuResult>(0);
             }
@@ -37,7 +39,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 {
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
-                    Action = _ => TryToCopyToClipBoard(GetTimeInTimeZone(timeZoneInfo)),
+                    Action = _ => TryToCopyToClipBoard($"{dateTime:HH:mm:ss}"),
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
@@ -48,19 +50,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             return list;
         }
 
-        /// <summary>
-        /// Return a human readable time of the current time in the given <see cref="TimeZoneInfo"/>.
-        /// </summary>
-        /// <param name="timeZoneInfo">The <see cref="TimeZoneInfo"/> to calculate the current time in it.</param>
-        /// <returns>A human readable time.</returns>
-        private static string GetTimeInTimeZone(TimeZoneInfo timeZoneInfo)
-        {
-            var timeInTimeZone = TimeZoneInfo.ConvertTime(DateTime.UtcNow, timeZoneInfo);
-            var stringToCopy = $"{timeInTimeZone:HH:mm:ss}";
-            return stringToCopy;
-        }
-
-        #pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable CA1031 // Do not catch general exception types
 
         /// <summary>
         /// Copy the given text to the clipboard
