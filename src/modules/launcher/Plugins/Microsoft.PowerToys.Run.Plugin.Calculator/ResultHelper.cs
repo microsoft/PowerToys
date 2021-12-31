@@ -46,7 +46,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 {
                     try
                     {
-                        // Using CurrentUICulture since this is user facing
                         Clipboard.SetText(roundedResult?.ToString(CultureInfo.CurrentCulture));
                         ret = true;
                     }
