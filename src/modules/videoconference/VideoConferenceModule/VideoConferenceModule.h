@@ -18,7 +18,7 @@ extern class VideoConferenceModule* instance;
 
 struct VideoConferenceSettings
 {
-    PowerToysSettings::HotkeyObject cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, 78);
+    PowerToysSettings::HotkeyObject cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 81);
     PowerToysSettings::HotkeyObject microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 65);
     PowerToysSettings::HotkeyObject cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 79);
 
