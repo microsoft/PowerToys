@@ -23,7 +23,6 @@
 ```
 - [ ] Do not use plugin name or PowerToys as prefixes for entities inside of the plugin project
 - [ ] The plugin has to have Unit tests. Use MSTest framework
-- [ ] To enable localization add `LocProject.json` file to the plugin root folder. For details see [`localization.md`](/doc/devdocs/localization.md#enabling-localization-on-a-new-project)
 - [ ] Plugin's output code and assets have to be included in the installer [`Product.wxs`](/installer/PowerToysSetup/Product.wxs)
 - [ ] Test the plugin with a local build. Build the installer, install, check that the plugin works as expected
 - [ ] All plugin's binaries have to be included in the signed build [`pipeline.user.windows.yml`](/.pipelines/pipeline.user.windows.yml)
