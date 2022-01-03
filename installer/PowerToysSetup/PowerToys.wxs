@@ -24,6 +24,13 @@
 
         <Variable Name="InstallFolder" Type="string" Value="[LocalAppDataFolder]PowerToys"/>
 
+
+      <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys. -->
+      <Variable Name="DetectedPowerToysVersion" Type="version" Value="0.0.0.0"/>
+      <Variable Name="TargetPowerToysVersion" Type="version" Value="$(var.Version)"/>
+      <util:ProductSearch Id="SearchInstalledPowerToysVersion" Variable="DetectedPowerToysVersion" UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708" Result="version" />
+      <bal:Condition Message="A later version of PowerToys is already installed." >TargetPowerToysVersion &gt;= DetectedPowerToysVersion</bal:Condition>
+
         <Chain>
             <ExePackage
                 Name="windowsdesktop-runtime-3.1.22-win-x64.exe"
