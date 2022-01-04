@@ -21,6 +21,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
             TimeNamesDaylight = Enumerable.Empty<string>();
             CountriesStandard = Enumerable.Empty<string>();
             CountriesDaylight = Enumerable.Empty<string>();
+            ShortcutsStandard = Enumerable.Empty<string>();
+            ShortcutsDaylight = Enumerable.Empty<string>();
         }
 
         /// <summary>
@@ -62,6 +64,16 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         /// Gets or sets a list with all countries in this time zone that use a daylight saving time.
         /// </summary>
         public IEnumerable<string> CountriesDaylight { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list with shortcuts for the names for the standard time.
+        /// </summary>
+        public IEnumerable<string> ShortcutsStandard { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list with shortcuts for the names for the daylight saving time.
+        /// </summary>
+        public IEnumerable<string> ShortcutsDaylight { get; set; }
 
         /// <summary>
         /// Gets a compatible <see cref="TimeSpan"/> of the <see cref="Offset"/>.

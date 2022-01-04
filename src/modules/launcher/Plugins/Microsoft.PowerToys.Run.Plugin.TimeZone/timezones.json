@@ -7,6 +7,12 @@
             "Name": "International Date Line West time zone",
             "Shortcut": "IDLW",
             "MilitaryName": "Yankee Time Zone",
+            "TimeNamesStandard": [
+                "Baker Island Time"
+            ],
+            "ShortcutsStandard": [
+                "BIT"
+            ],
             "CountriesStandard": [
                 "Baker Island",
                 "Howland Island"
@@ -17,16 +23,29 @@
             "Name": "Samoa Time Zone",
             "MilitaryName": "X-ray Time Zone",
             "TimeNamesStandard": [
+                "Niue Time",
                 "Samoa Standard Time"
             ],
-            "CountriesStandard":
-            [
+            "ShortcutsStandard": [
+                "NUT",
+                "SST"
+            ],
+            "TimeNamesDaylight": [
+                "Samoa Daylight Time"
+            ],
+            "ShortcutsDaylight": [
+                "SDT"
+            ],
+            "CountriesStandard": [
                 "American Samoa",
                 "Jarvis Island",
                 "Kingman Reef",
                 "Midway Atoll",
                 "Niue",
                 "Palmyra Atoll"
+            ],
+            "CountriesDaylight": [
+                "American Samoa"
             ]
         },
         {
@@ -34,10 +53,18 @@
             "Name": "Hawaii–Aleutian Time Zone",
             "MilitaryName": "Whiskey Time Zone",
             "TimeNamesStandard": [
-                "Hawaii–Aleutian Standard Time"
+                "Hawaii–Aleutian Standard Time",
+                "Tahiti Time"
+            ],
+            "ShortcutsStandard": [
+                "HST",
+                "TAHT"
             ],
             "TimeNamesDaylight": [
                 "Hawaii–Aleutian Daylight Time"
+            ],
+            "ShortcutsDaylight": [
+                "HDT"
             ],
             "CountriesStandard": [
                 "Cook Islands",
@@ -54,6 +81,13 @@
         },
         {
             "Offset": "-09:30",
+            "TimeNamesStandard": [
+                "Marquesas Islands Time"
+            ],
+            "ShortcutsStandard": [
+                "MART",
+                "MIT"
+            ],
             "CountriesStandard": [
                 "Marquesas Islands (French Polynesia)"
             ]
@@ -62,6 +96,21 @@
             "Offset": "-09:00",
             "Name": "Alaska Time Zone",
             "MilitaryName": "Victor Time Zone",
+            "TimeNamesStandard": [
+                "Alaska Standard Time",
+                "Gambier Islands Time"
+            ],
+            "ShortcutsStandard": [
+                "AKST",
+                "GAMT",
+                "GIT"
+            ],
+            "TimeNamesDaylight": [
+                "Alaska Daylight Time"
+            ],
+            "ShortcutsDaylight": [
+                "AKDT"
+            ],
             "CountriesStandard": [
                 "Gambier Islands (French Polynesia)"
             ],
@@ -77,8 +126,14 @@
             "TimeNamesStandard": [
                 "Pacific Standard Time"
             ],
+            "ShortcutsStandard": [
+                "PST"
+            ],
             "TimeNamesDaylight": [
                 "Pacific Daylight Time"
+            ],
+            "ShortcutsDaylight": [
+                "PDT"
             ],
             "CountriesStandard": [
                 "Clipperton Island",
@@ -101,8 +156,14 @@
             "TimeNamesStandard": [
                 "Mountain Standard Time"
             ],
+            "ShortcutsStandard": [
+                "MST"
+            ],
             "TimeNamesDaylight": [
                 "Mountain Daylight Time"
+            ],
+            "ShortcutsDaylight": [
+                "MDT"
             ],
             "CountriesStandard": [
                 "British Columbia (northeast, Canada)",
@@ -133,10 +194,22 @@
             "Shortcut": "CT",
             "MilitaryName": "Sierra Time Zone",
             "TimeNamesStandard": [
-                "Central Standard Time"
+                "Central Standard Time",
+                "Easter Island Standard Time",
+                "Galápagos Time"
+            ],
+            "ShortcutsStandard": [
+                "CST",
+                "EAST",
+                "GALT"
             ],
             "TimeNamesDaylight": [
-                "Central Daylight Time"
+                "Central Daylight Time",
+                "Easter Island Summer Time"
+            ],
+            "ShortcutsDaylight": [
+                "CDT",
+                "EASST"
             ],
             "CountriesStandard": [
                 "Belize",
@@ -178,10 +251,30 @@
             "Shortcut": "ET",
             "MilitaryName": "Romeo Time Zone",
             "TimeNamesStandard": [
-                "Eastern Standard Time"
+                "Acre Time",
+                "Colombia Time",
+                "Cuba Standard Time",
+                "Ecuador Time",
+                "Eastern Standard Time",
+                "Peru Time"
+            ],
+            "ShortcutsStandard": [
+                "ACT",
+                "COT",
+                "CST",
+                "ECT",
+                "EST",
+                "PET"
             ],
             "TimeNamesDaylight": [
+                "Cuba Daylight Time",
+                "Colombia Summer Time",
                 "Eastern Daylight Time"
+            ],
+            "ShortcutsDaylight": [
+                "CDT",
+                "COST",
+                "EDT"
             ],
             "CountriesStandard": [
                 "Acre (Brazil)",
@@ -234,10 +327,38 @@
             "Name": "Atlantic Time Zone",
             "MilitaryName": "Quebec Time Zone",
             "TimeNamesStandard": [
-                "Atlantic Standard Time"
+                "Amazon Time",
+                "Atlantic Standard Time",
+                "Bolivia Time",
+                "Eastern Caribbean Time",
+                "Falkland Islands Time",
+                "Guyana Time",
+                "Paraguay Time",
+                "Venezuelan Standard Time"
+            ],
+            "ShortcutsStandard": [
+                "AMT",
+                "AST",
+                "BOT",
+                "ECT",
+                "FKT",
+                "GYT",
+                "PYT",
+                "VET"
             ],
             "TimeNamesDaylight": [
-                "Atlantic Daylight Time"
+                "Atlantic Daylight Time",
+                "Amazon Summer Time",
+                "Chile Summer Time",
+                "Falkland Islands Summer Time",
+                "Paraguay Summer Time"
+            ],
+            "ShortcutsDaylight": [
+                "AMST",
+                "ADT",
+                "CLST",
+                "FKST",
+                "PYST"
             ],
             "CountriesStandard": [
                 "Anguilla",
@@ -287,14 +408,60 @@
             "Offset": "-03:30",
             "Name": "Newfoundland Time Zone",
             "Shortcut": "NT",
+            "TimeNamesStandard": [
+                "Newfoundland Standard Time"
+            ],
+            "ShortcutsStandard": [
+                "NST"
+            ],
+            "TimeNamesDaylight": [
+                "Newfoundland Daylight Time"
+            ],
+            "ShortcutsDaylight": [
+                "NDT"
+            ],
             "CountriesStandard": [
-                "Newfoundland (Canada)",
                 "Labrador (southeast, Canada)"
+            ],
+            "CountriesDaylight": [
+                "Newfoundland (Canada)"
             ]
         },
         {
             "Offset": "-03:00",
             "MilitaryName": "Papa Time Zone",
+            "TimeNamesStandard": [
+                "Argentina Time",
+                "Brasília Time",
+                "French Guiana Time",
+                "Saint Pierre and Miquelon Standard Time",
+                "Rothera Research Station Time",
+                "Suriname Time",
+                "Uruguay Standard Time",
+                "West Greenland Time"
+            ],
+            "ShortcutsStandard": [
+                "ART",
+                "BRT",
+                "GFT",
+                "PMST",
+                "ROTT",
+                "SRT",
+                "UYT",
+                "WGT"
+            ],
+            "TimeNamesDaylight": [
+                "Brasília Summer Time",
+                "Saint Pierre and Miquelon Daylight Time",
+                "Uruguay Summer Time",
+                "West Greenland Summer Time"
+            ],
+            "ShortcutsDaylight": [
+                "BRST",
+                "PMDT",
+                "WGST",
+                "UYST"
+            ],
             "CountriesStandard": [
                 "Argentina",
                 "Brazil (most)",
@@ -312,6 +479,14 @@
         {
             "Offset": "-02:00",
             "MilitaryName": "Oscar Time Zone",
+            "TimeNamesStandard": [
+                "Fernando de Noronha Time",
+                "South Georgia and the South Sandwich Islands Time"
+            ],
+            "ShortcutsStandard": [
+                "FNT",
+                "GST"
+            ],
             "CountriesStandard": [
                 "Fernando de Noronha (Brazil)",
                 "South Georgia and the South Sandwich Islands"
@@ -320,6 +495,24 @@
         {
             "Offset": "-01:00",
             "MilitaryName": "November Time Zone",
+            "TimeNamesStandard": [
+                "Azores Standard Time",
+                "Cape Verde Time",
+                "Eastern Greenland Time"
+            ],
+            "ShortcutsStandard": [
+                "AZOT",
+                "CVT",
+                "EGT"
+            ],
+            "TimeNamesDaylight": [
+                "Azores Summer Time",
+                "Eastern Greenland Summer Time"
+            ],
+            "ShortcutsDaylight": [
+                "AZOST",
+                "EGST"
+            ],
             "CountriesStandard": [
                 "Cape Verde"
             ],
@@ -333,13 +526,18 @@
             "Name": "Coordinated Universal Time",
             "Shortcut": "UTC",
             "MilitaryName": "Zulu Time Zone",
+            "TimeNamesStandard": [
+                "Greenwich Mean Time",
+                "Western European Time"
+            ],
+            "ShortcutsStandard": [
+                "GMT",
+                "WET"
+            ],
             "TimeNamesDaylight": [
                 "Western European Summer Time",
                 "British Summer Time",
                 "Irish Standard Time"
-            ],
-            "TimeNamesStandard": [
-                "Western European Time"
             ],
             "CountriesStandard": [
                 "Ascension and Tristan da Cunha",
