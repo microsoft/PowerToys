@@ -37,8 +37,6 @@ ignore$
 ^src/modules/imageresizer/dll/ContextMenuHandler\.rgs$
 ^src/modules/imageresizer/dll/ImageResizerExt\.rgs$
 ^src/modules/powerrename/testapp/PowerRenameTest\.vcxproj\.filters$
-^src/modules/powerrename/UWPui/pch\.h$
-^src/modules/powerrename/UWPui/PowerRenameUWPUI\.vcxproj\.filters$
 ^src/modules/previewpane/PreviewPaneUnitTests/HelperFiles/MarkdownWithHTMLImageTag\.txt$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag.txt$
 ^tools/CleanUp_tool/CleanUp_tool\.vcxproj\.filters$
