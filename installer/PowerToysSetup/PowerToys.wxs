@@ -22,7 +22,7 @@
 
         <util:FileSearch Variable="HasDotnet3122" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\3.1.22\System.Xaml.dll" Result="exists" />
 
-        <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles6432Folder]PowerToys"/>
+        <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles64Folder]PowerToys"/>
 
 
       <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys, to handle the case in which PowerToys was installed from old MSI (before WiX bootstrapper was used) -->
