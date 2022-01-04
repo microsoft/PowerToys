@@ -25,7 +25,7 @@
         <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles6432Folder]PowerToys"/>
 
 
-      <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys, to handle the case in which PowerToys was installed from old MSIs (before WiX bootstrapper was used) -->
+      <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys, to handle the case in which PowerToys was installed from old MSI (before WiX bootstrapper was used) -->
       <!-- If the previous installation is a bundle installation, just let WiX run its logic. -->
       <Variable Name="DetectedPowerToysVersion" Type="version" Value="0.0.0.0"/>
       <Variable Name="TargetPowerToysVersion" Type="version" Value="$(var.Version)"/>
