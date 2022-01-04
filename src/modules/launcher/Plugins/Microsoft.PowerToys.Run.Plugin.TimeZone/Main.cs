@@ -57,24 +57,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         public Main()
         {
             _assemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? GetTranslatedPluginTitle();
-            _defaultIconPath = "Images/reg.light.png";
+            _defaultIconPath = "Images/timeZone.light.png";
             _timeZoneSettings = new TimeZoneSettings();
         }
 
         /// <summary>
         /// Gets the localized name.
         /// </summary>
-        public string Name => Resources.PluginTitle;
+        public string Name
+        {
+            get { return Resources.PluginTitle; }
+        }
 
         /// <summary>
         /// Gets the localized description.
         /// </summary>
-        public string Description => Resources.PluginDescription;
+        public string Description
+        {
+            get { return Resources.PluginDescription; }
+        }
 
         /// <summary>
         /// Gets the additional options for this plugin.
         /// </summary>
-        public IEnumerable<PluginAdditionalOption> AdditionalOptions => _timeZoneSettings.GetAdditionalOptions();
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions
+        {
+            get { return _timeZoneSettings.GetAdditionalOptions(); }
+        }
 
         /// <summary>
         /// Initialize the plugin with the given <see cref="PluginInitContext"/>
@@ -86,7 +95,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(_context.API.GetCurrentTheme());
 
-            _timeZoneList = JsonHelper.ReadAllPossibleTimezones();
+            _timeZoneList = JsonHelper.ReadAllPossibleTimeZones();
 
             TranslationHelper.TranslateAllSettings(_timeZoneList);
         }
@@ -139,8 +148,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         private void UpdateIconPath(Theme theme)
         {
             _defaultIconPath = theme == Theme.Light || theme == Theme.HighContrastWhite
-                ? "Images/reg.light.png"
-                : "Images/reg.dark.png";
+                ? "Images/timeZone.light.png"
+                : "Images/timeZone.dark.png";
         }
 
         /// <inheritdoc/>
@@ -199,7 +208,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         /// <summary>
         /// Update the plugin settings
         /// </summary>
-        /// <param name="settings">The settings for all power launcher plugins.</param>
+        /// <param name="settings">The settings for all power launcher plugin.</param>
         public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
             _timeZoneSettings.UpdateSettings(settings);

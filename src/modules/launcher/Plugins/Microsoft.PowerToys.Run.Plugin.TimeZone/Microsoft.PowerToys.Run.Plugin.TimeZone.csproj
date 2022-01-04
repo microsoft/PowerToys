@@ -108,10 +108,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Images\reg.dark.png">
+    <None Update="Images\timeZone.light.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Images\reg.light.png">
+    <None Update="Images\timeZone.dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
