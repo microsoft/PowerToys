@@ -254,7 +254,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
             else
             {
-                NativeMethods.ShowWindow(Hwnd, NativeMethods.ShowWindowCommands.Restore);
+                if (!NativeMethods.ShowWindow(Hwnd, NativeMethods.ShowWindowCommands.Restore))
+                {
+                    // ShowWindow doesn't work if the process is running elevated: fallback to SendMessage
+                    _ = NativeMethods.SendMessage(Hwnd, NativeMethods.WM_SYSCOMMAND, NativeMethods.SC_RESTORE);
+                }
             }
 
             NativeMethods.FlashWindow(Hwnd, true);
