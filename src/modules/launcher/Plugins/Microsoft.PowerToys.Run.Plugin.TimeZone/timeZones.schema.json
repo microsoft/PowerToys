@@ -41,6 +41,22 @@
                             "type": "string"
                         }
                     },
+                    "ShortcutsStandard": {
+                        "type": "array",
+                        "description": "A list with shortcuts for the names for the standard time.",
+                        "uniqueItems": true,
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "ShortcutsDaylight": {
+                        "type": "array",
+                        "description": "A list with shortcuts for the names for the daylight saving time.",
+                        "uniqueItems": true,
+                        "items": {
+                            "type": "string"
+                        }
+                    },
                     "CountriesStandard": {
                         "type": "array",
                         "description": "A list with all countries in this time zone that use a standard time.",
