@@ -66,6 +66,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         /// <summary>
         /// Gets a compatible <see cref="TimeSpan"/> of the <see cref="Offset"/>.
         /// </summary>
-        internal TimeSpan OffsetAsTimeSpan => TimeSpan.TryParse(Offset, out var result) ? result : new TimeSpan(0, 0, 0);
+        internal TimeSpan OffsetAsTimeSpan
+        {
+            get { return TimeSpan.TryParse(Offset, out var result) ? result : new TimeSpan(0, 0, 0); }
+        }
     }
 }

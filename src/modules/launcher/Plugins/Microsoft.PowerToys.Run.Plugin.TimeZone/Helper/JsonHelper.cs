@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// Read all possible time zones.
         /// </summary>
         /// <returns>A object that contain a list with time zones.</returns>
-        internal static TimeZoneList ReadAllPossibleTimezones()
+        internal static TimeZoneList ReadAllPossibleTimeZones()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var type = Array.Find(assembly.GetTypes(), x => x.Name == nameof(Main));

@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         /// <summary>
         /// Update this settings.
         /// </summary>
-        /// <param name="settings">The settings for all power launcher plugins.</param>
+        /// <param name="settings">The settings for all power launcher plugin.</param>
         internal void UpdateSettings(PowerLauncherPluginSettings settings)
         {
             if (settings is null || settings.AdditionalOptions is null)
@@ -81,7 +81,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         /// </summary>
         /// <param name="settings">The object that contain all settings.</param>
         /// <param name="name">The name of the setting.</param>
-        /// <param name="fallbackValue">The fall-back value that is used when the setting si not found.</param>
+        /// <param name="fallbackValue">The fall-back value that is used when the setting is not found.</param>
         /// <returns>A settings value.</returns>
         private static bool GetOneBoolSetting(PowerLauncherPluginSettings settings, string name, bool fallbackValue)
         {
