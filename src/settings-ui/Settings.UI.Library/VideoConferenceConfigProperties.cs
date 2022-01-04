@@ -17,9 +17,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     Win = true,
                     Ctrl = false,
                     Alt = false,
-                    Shift = false,
-                    Key = "N",
-                    Code = 78,
+                    Shift = true,
+                    Key = "Q",
+                    Code = 81,
                 });
 
             this.MuteMicrophoneHotkey = new KeyboardKeysProperty(
