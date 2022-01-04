@@ -1432,7 +1432,6 @@ pch
 PCIDLIST
 PCWSTR
 pdb
-Pdb
 pdbonly
 pdfpreviewhandler
 pdo
@@ -1987,7 +1986,6 @@ Toolchain
 toolkitcontrols
 toolkitconverters
 toolset
-Toolset
 toolstrip
 toolwindow
 TOPDOWNDIB
