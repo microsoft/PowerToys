@@ -58,7 +58,6 @@ api
 APIENTRY
 APIIs
 APPBARDATA
-appcontainer
 appdata
 APPICON
 appid
@@ -121,7 +120,6 @@ awakeness
 awakeversion
 AWAYMODE
 AYUV
-azurecr
 backend
 backtracer
 bak
@@ -139,7 +137,6 @@ bigbar
 bigobj
 binaryformatter
 binlog
-binskim
 bitmapimage
 BITMAPINFO
 BITMAPINFOHEADER
@@ -178,8 +175,6 @@ buf
 BUFSIZE
 bugreport
 Buid
-buildcommand
-buildtools
 buildtransitive
 BValue
 bytearray
@@ -199,7 +194,6 @@ cdecl
 CDeclaration
 CDEF
 cdpx
-cdpxwin
 CENTERALIGN
 cguid
 changecursor
@@ -296,12 +290,10 @@ COULDNOT
 countof
 cout
 CPower
-CPPARM
 cppblog
 cppruntime
 cppstd
 cppwinrt
-CPPx
 CProj
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -376,7 +368,6 @@ decltype
 Dedup
 deduplicate
 DEFAULTCOLOR
-defaultcommand
 DEFAULTFLAGS
 DEFAULTONLY
 DEFAULTTONEAREST
@@ -459,8 +450,6 @@ dshow
 dst
 DSVG
 DText
-dupenv
-DUSTIN
 dutil
 DVASPECT
 DVASPECTINFO
@@ -520,14 +509,11 @@ ERASEBKGND
 EREOF
 EResize
 errc
-errorlevel
 ERRORMESSAGE
 ERRORTITLE
 ESettings
 esize
 esrp
-estdir
-etcore
 etl
 etw
 EUQ
@@ -588,7 +574,6 @@ Filterx
 finalizer
 findfast
 findstr
-Firefox
 FIXEDFILEINFO
 FLASHZONES
 FLASHZONESONQUICKSWITCH
@@ -619,7 +604,6 @@ FZE
 gabime
 GAC
 gacutil
-Gamebar
 GBarm
 GBs
 GCLP
@@ -645,7 +629,6 @@ globals
 GNumber
 google
 GPTR
-Grayscale
 gtm
 gui
 guiddef
@@ -1008,7 +991,6 @@ Lambson
 lamotile
 langword
 Lastdevice
-LASTEXITCODE
 Laute
 laute
 laviusmotileng
@@ -1027,7 +1009,6 @@ ldx
 LEFTSCROLLBAR
 lego
 len
-LEQ
 LError
 Lessthan
 LEVELID
@@ -1039,7 +1020,6 @@ LIGHTORANGE
 LIGHTTURQUOISE
 lindex
 linkedin
-linkid
 linq
 LINQTo
 Linux
@@ -1158,14 +1138,12 @@ millis
 mimetype
 mindaro
 Minimatch
-Minimizeallwindows
 MINIMIZEBOX
 miniz
 minlevel
 Miracast
 mirophone
 mjpg
-mkdir
 mlcfg
 mmdeviceapi
 mmi
@@ -1173,7 +1151,6 @@ mmsys
 mmsystem
 mockapi
 MODECHANGE
-moderncop
 modernwpf
 modulekey
 MONITORINFO
@@ -1238,7 +1215,6 @@ MYICON
 NAMECHANGE
 nameof
 namespace
-namings
 NATIVEFNTCTL
 NCACTIVATE
 ncc
@@ -1262,7 +1238,6 @@ NCRBUTTONUP
 NDEBUG
 ndp
 NEEDDISPATCH
-neq
 NESW
 netcore
 netcoreapp
@@ -1289,7 +1264,6 @@ NLSTEXT
 NOACTIVATE
 NOAGGREGATION
 NOASYNC
-nocache
 NOCLOSEPROCESS
 NOCOPYBITS
 nodeca
@@ -1332,7 +1306,6 @@ NOTRACK
 NOUPDATE
 NOZORDER
 NPH
-npm
 npos
 NResize
 ntdll
@@ -1415,7 +1388,7 @@ pcb
 pch
 PCIDLIST
 PCWSTR
-pdb
+Pdb
 pdbonly
 pdfpreviewhandler
 pdo
@@ -1452,8 +1425,6 @@ plocm
 plugin
 pluginsmodel
 PMSIHANDLE
-policheck
-popd
 popup
 POPUPWINDOW
 posix
@@ -1529,7 +1500,6 @@ PToy
 ptr
 ptstr
 Pui
-pushd
 PVOID
 pwa
 pwcs
@@ -1647,7 +1617,6 @@ RKey
 RMENU
 RNumber
 roadmap
-robocopy
 Roboto
 roslyn
 royvou
@@ -1724,7 +1693,6 @@ SETWORKAREA
 sfgao
 SFGAOF
 SFP
-SHAREIMAGELISTS
 sharpkeys
 SHCNE
 SHCNF
@@ -1801,13 +1769,11 @@ SOURCECLIENTAREAONLY
 SOURCEHEADER
 sourceid
 sourcesdirectory
-spamming
 spdisp
 spdlog
 spdo
-spdth
-specialfolder
 spec'ing
+specialfolder
 spesi
 splitwstring
 sprintf
@@ -1892,7 +1858,6 @@ SVGIO
 svgpreviewhandler
 SWC
 SWFO
-Switchbetweenvirtualdesktops
 SWITCHEND
 SWP
 swprintf
@@ -1914,7 +1879,6 @@ SYSKEYUP
 syslog
 SYSMENU
 systemd
-SYSTEMASTERISK
 SYSTEMTIME
 Tadele
 tadele
@@ -1969,7 +1933,7 @@ toggleswitch
 Toolchain
 toolkitcontrols
 toolkitconverters
-toolset
+Toolset
 toolstrip
 toolwindow
 TOPDOWNDIB
@@ -2016,7 +1980,6 @@ ULARGE
 ULLONG
 ulong
 ULONGLONG
-umd
 unchecks
 uncomment
 uncompilable
@@ -2115,8 +2078,6 @@ VSC
 VSCBD
 vscode
 VSCROLL
-vse
-vsix
 vsonline
 vstemplate
 VSTHRD
@@ -2137,18 +2098,12 @@ wcscpy
 wcslen
 wcsncmp
 wcsnicmp
-WDK
-wdksetup
-wdkvsix
 wdp
 wdupenv
 weakme
 webcam
-webclient
-webpack
 webpage
 website
-We'd
 wekyb
 Wevtapi
 wgpocpl
@@ -2195,7 +2150,6 @@ winkey
 WINL
 winmd
 winmm
-WINMSAPP
 winnt
 winres
 winrt
