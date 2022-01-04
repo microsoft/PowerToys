@@ -115,6 +115,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 
 #### Video conference mute
 - Disabled by default
+- Changed (default) hotkey for mute camera & microphone from <kbd>Win</kbd>+<kbd>N</kbd> to <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd>
 
 #### Settings
 - Multiple accessibility, layout, image, string and icons fixes. Thanks @niels9001
