@@ -25,11 +25,12 @@
         <Variable Name="InstallFolder" Type="string" Value="[LocalAppDataFolder]PowerToys"/>
 
 
-      <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys. -->
+      <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys, to handle the case in which PowerToys was installed from old MSIs (before WiX bootstrapper was used) -->
+      <!-- If the previous installation is a bundle installation, just let WiX run its logic. -->
       <Variable Name="DetectedPowerToysVersion" Type="version" Value="0.0.0.0"/>
       <Variable Name="TargetPowerToysVersion" Type="version" Value="$(var.Version)"/>
       <util:ProductSearch Id="SearchInstalledPowerToysVersion" Variable="DetectedPowerToysVersion" UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708" Result="version" />
-      <bal:Condition Message="A later version of PowerToys is already installed." >TargetPowerToysVersion &gt;= DetectedPowerToysVersion</bal:Condition>
+      <bal:Condition Message="A later version of PowerToys is already installed." >TargetPowerToysVersion &gt;= DetectedPowerToysVersion OR WixBundleInstalled</bal:Condition>
 
         <Chain>
             <ExePackage
