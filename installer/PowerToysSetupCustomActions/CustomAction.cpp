@@ -747,12 +747,12 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     hr = WcaInitialize(hInstall, "DetectPrevInstallPathCA");
-
+    MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", L"");
     try
     {
         if (auto install_path = GetMsiPackageInstalledPath())
         {
-            MsiSetPropertyW(hInstall, L"INSTALLFOLDER", install_path->data());
+            MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", install_path->data());
         }
     }
     catch (...)

@@ -90,8 +90,22 @@
         <Property Id="CREATESCHEDULEDTASK" Value="1"/>
         <Property Id="WixShellExecTarget" Value="[#PowerToys_ActionRunner.exe]" />
 
+        <SetProperty Action="SetDEFAULTBOOTSTRAPPERINSTALLFOLDER" Id="DEFAULTBOOTSTRAPPERINSTALLFOLDER" Value="[ProgramFiles64Folder]PowerToys" Before="SetBOOTSTRAPPERINSTALLFOLDER" Sequence="execute">
+        </SetProperty>
+        <!-- In case we didn't receive a value from the bootstrapper. -->
+        <SetProperty Action="SetBOOTSTRAPPERINSTALLFOLDER" Id="BOOTSTRAPPERINSTALLFOLDER" Value="[DEFAULTBOOTSTRAPPERINSTALLFOLDER]" Before="DetectPrevInstallPath" Sequence="execute">
+          <![CDATA[BOOTSTRAPPERINSTALLFOLDER = ""]]>
+        </SetProperty>
+        <!-- Have to compare value sent by bootstrapper to default to avoid using it, as a check to verify it's not default. This hack can be removed if it's possible to set the bootstrapper option to the previous install folder -->
+        <SetProperty Action="SetINSTALLFOLDERTOPREVIOUSINSTALLFOLDER" Id="INSTALLFOLDER" Value="[PREVIOUSINSTALLFOLDER]" After="DetectPrevInstallPath" Sequence="execute">
+          <![CDATA[BOOTSTRAPPERINSTALLFOLDER = DEFAULTBOOTSTRAPPERINSTALLFOLDER AND PREVIOUSINSTALLFOLDER <> ""]]>
+        </SetProperty>
+        <SetProperty Action="SetINSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER" Id="INSTALLFOLDER" Value="[BOOTSTRAPPERINSTALLFOLDER]" After="DetectPrevInstallPath" Sequence="execute">
+          <![CDATA[BOOTSTRAPPERINSTALLFOLDER <> DEFAULTBOOTSTRAPPERINSTALLFOLDER OR PREVIOUSINSTALLFOLDER = ""]]>
+        </SetProperty>
+
         <InstallExecuteSequence>
-            <Custom Action="DetectPrevInstallPath" Before="CostFinalize" />
+            <Custom Action="DetectPrevInstallPath" After="AppSearch" />
             <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
             <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
             <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
