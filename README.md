@@ -68,7 +68,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 #### 0.53 - December 2021 Update
 
-We hope everyone has had a wonderful December 2021. The PowerToys community has been busy with a bunch of improvements. We're still working on improving the installer but this should drastically improve things.  3 things you will want to check out are GCode support in file explorer preview pane and thumbnails, the new web search plugin from PowerToys Run via <kbd>??</kbd> action phrase, and the new Always on Top utility via <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>.
+We hope everyone has had a wonderful December 2021. The PowerToys community has been busy with a bunch of improvements. We're still working on improving the installer but this should drastically improve things.  3 things you will want to check out are G-code support in file explorer preview pane and thumbnails, the new web search plugin from PowerToys Run via <kbd>??</kbd> action phrase, and the new Always on Top utility via <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>.
 
 [@Aaron-Junker](https://github.com/Aaron-Junker) also has done some great progress on [implementing developer file preview pane](https://github.com/microsoft/PowerToys/issues/1527) via the Monaco engine from Visual Studio Code.
 
