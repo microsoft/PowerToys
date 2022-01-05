@@ -76,7 +76,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - With a quick <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>, the window in focus is toggled to be on top.  Toggle again, and it reverts back to normal.
 
 #### ColorPicker
-- HEX input improvements for adjust color menu including support for hex code without hashtag and short hex code like #CF0.  Thanks @htcfreek
+- HEX input improvements for adjust color menu including support for hex code without hashtag and short hex code like #CF0.  Thanks @htcfreek! 
 - Better bottom right screen detection for overlay
 
 #### FancyZones
