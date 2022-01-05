@@ -72,8 +72,11 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 
 [@Aaron-Junker](https://github.com/Aaron-Junker) also has done some great progress on [implementing developer file preview pane](https://github.com/microsoft/PowerToys/issues/1527) via the Monaco engine from Visual Studio Code.
 
+#### Things to be aware of
+- The new installer currently has a visual quirk when upgrade if you have a custom install path.  It will show the default install path but it will actually overwrite the current location.  We are investigating how to fix this.
+
 #### Always on Top
-- With a quick <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>, the window in focus is toggled to be on top.  Toggle again, and it reverts back to normal.
+- Welcome to the family!  With a quick <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>, the window in focus is toggled to be on top.  Toggle again, and it reverts back to normal.
 
 #### ColorPicker
 - HEX input improvements for adjust color menu including support for hex code without hashtag and short hex code like #CF0.  Thanks @htcfreek! 
@@ -98,7 +101,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - Opens on active monitor
 
 #### PowerToys Run
-- Web searching. `?? What is the answer to life` will go to your favorite search engine via your browser.  You can change the default action key too!  Thanks @cyberrex5 for primary implementation and @franky920920 and @htcfreek for supporting
+- Web searching has been added! `?? What is the answer to life` will go to your favorite search engine via your browser.  You can change the default action key too!  Thanks @cyberrex5 for primary implementation and @franky920920 and @htcfreek for supporting
 - VS Code workspace improvements. Thanks @ricardosantos9521
 - Binary and Hex number support.  Thanks @gsuberland
 - Ability to use factorials in calculations
@@ -114,8 +117,8 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - Fixed a bug where some similar activation phrases aren't working as expected. Thanks @htcfreek and @cyberrex5.
 
 #### Video conference mute
-- Disabled by default
-- Changed (default) hotkey for mute camera & microphone from <kbd>Win</kbd>+<kbd>N</kbd> to <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd>
+- Disabled by default as this requires elevation to register the virtual camera.
+- Changed (default) hotkey for mute camera & microphone from <kbd>Win</kbd>+<kbd>N</kbd> to <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd> to not conflict with a Windows 11 keyboard shortcut
 
 #### Settings
 - Multiple accessibility, layout, image, string and icons fixes. Thanks @niels9001
@@ -124,7 +127,9 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - Improved mutex support to prevent multiple PT Run instances from running
 
 #### Installer
-- Removed bootstrapper
+- **NOTE:**  The new installer currently has a visual quirk when upgrade if you have a custom install path.  It will show the default install path but it will actually overwrite the current location.  We are investigating how to fix this.
+- Large progress toward user based installing vs machine wide. Upgrade scenario still needs additional work.
+- Removed custom bootstrapper and now are using a WiX bundle.
 - Removed unused image assets that were still being shipped. Thanks @niels9001
 
 #### ARM64 support
