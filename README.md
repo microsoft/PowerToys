@@ -86,7 +86,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - Fix to improve overlays to reduce brightness and hide numbers. Thanks @davidegiacometti
 
 #### File Explorer
-- Added GCode support for thumbnails and preview pane.  Thanks @pedrolamas 
+- Added G-code support for thumbnails and preview pane.  Thanks @pedrolamas 
 
 #### Image Resizer
 - Fixed regression from Metadata tag removal of ColorSpace.  Thanks @CleanCodeDeveloper
