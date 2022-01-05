@@ -535,9 +535,14 @@
                 "WET"
             ],
             "TimeNamesDaylight": [
-                "Western European Summer Time",
                 "British Summer Time",
-                "Irish Standard Time"
+                "Irish Standard Time",
+                "Western European Summer Time"
+            ],
+            "ShortcutsDaylight": [
+                "BST",
+                "IST",
+                "WEST"
             ],
             "CountriesStandard": [
                 "Ascension and Tristan da Cunha",
@@ -573,11 +578,26 @@
             "Offset": "01:00",
             "MilitaryName": "Alpha Time Zone",
             "TimeNamesStandard": [
-                "Central European Time"
+                "Central European Time",
+                "Middle European Time",
+                "West Africa Time"
+            ],
+            "ShortcutsStandard": [
+                "CET",
+                "MET",
+                "WAT"
             ],
             "TimeNamesDaylight": [
                 "Central European Summer Time",
-                "Central European Daylight Time"
+                "Heure Avancée d'Europe Centrale",
+                "Middle European Summer Time",
+                "West Africa Summer Time"
+            ],
+            "ShortcutsDaylight": [
+                "CEST",
+                "HAEC",
+                "MEST",
+                "WAST"
             ],
             "CountriesStandard": [
                 "Algeria",
@@ -643,11 +663,26 @@
             "Offset": "02:00",
             "MilitaryName": "Bravo Time Zone",
             "TimeNamesStandard": [
+                "Central Africa Time",
                 "Eastern European Time",
-                "Kaliningrad Time"
+                "Israel Standard Time",
+                "Kaliningrad Time",
+                "South African Standard Time"
+            ],
+            "ShortcutsStandard": [
+                "CAT",
+                "EET",
+                "IST",
+                "KALT",
+                "SAST"
             ],
             "TimeNamesDaylight": [
-                "Eastern European Summer Time"
+                "Eastern European Summer Time",
+                "Israel Daylight Time"
+            ],
+            "ShortcutsDaylight": [
+                "EEST",
+                "IDT"
             ],
             "CountriesStandard": [
                 "Botswana",
@@ -692,10 +727,22 @@
             "Offset": "03:00",
             "MilitaryName": "Charlie Time Zone",
             "TimeNamesStandard": [
+                "Arabia Standard Time",
+                "East Africa Time",
                 "Further-eastern European Time",
+                "Indian Ocean Time",
                 "Moscow Time",
-                "Turkey Time",
-                "East Africa Time"
+                "Showa Station Time",
+                "Turkey Time"
+            ],
+            "ShortcutsStandard": [
+                "AST",
+                "EAT",
+                "FET",
+                "IOT",
+                "MSK",
+                "SYOT",
+                "TRT"
             ],
             "CountriesStandard": [
                 "Abkhazia",
@@ -732,6 +779,15 @@
             "TimeNamesStandard": [
                 "Iran Standard Time"
             ],
+            "ShortcutsStandard": [
+                "IRST"
+            ],
+            "TimeNamesDaylight": [
+                "Iran Daylight Time"
+            ],
+            "ShortcutsDaylight": [
+                "IRDT"
+            ],
             "CountriesDaylight": [
                 "Iran"
             ]
@@ -740,13 +796,27 @@
             "Offset": "04:00",
             "MilitaryName": "Delta Time Zone",
             "TimeNamesDaylight": [
-                "Samara Time",
                 "Armenia Time",
                 "Azerbaijan Time",
-                "Georgia Time",
-                "United Arab Emirates Standard Time",
+                "Georgia Standard Time",
+                "Gulf Standard Time",
                 "Mauritius Time",
-                "Seychelles Time"
+                "Réunion Time",
+                "Samara Time",
+                "Seychelles Time",
+                "Volgograd Time",
+                "United Arab Emirates Standard Time"
+            ],
+            "ShortcutsStandard": [
+                "AMT",
+                "AZT",
+                "GET",
+                "GST",
+                "MUT",
+                "RET",
+                "SAMT",
+                "SCT",
+                "VOLT"
             ],
             "CountriesDaylight": [
                 "Armenia",
@@ -771,6 +841,9 @@
             "TimeNamesStandard": [
                 "Afghanistan Time"
             ],
+            "ShortcutsStandard": [
+                "AFT"
+            ],
             "CountriesStandard": [
                 "Afghanistan"
             ]
@@ -779,8 +852,30 @@
             "Offset": "05:00",
             "MilitaryName": "Echo Time Zone",
             "TimeNamesStandard": [
+                "Aqtobe Time",
+                "Heard and McDonald Islands Time",
+                "Mawson Station Time",
+                "Maldives Time",
+                "Oral Time",
                 "Pakistan Standard Time",
+                "French Southern and Antarctic Time",
+                "Tajikistan Time",
+                "Turkmenistan Time",
+                "Uzbekistan Time",
                 "Yekaterinburg Time"
+            ],
+            "ShortcutsStandard": [
+                "AQTT",
+                "HMT",
+                "MAWT",
+                "MVT",
+                "ORAT",
+                "PKT",
+                "TFT",
+                "TJT",
+                "TMT",
+                "UZT",
+                "YEKT"
             ],
             "CountriesStandard": [
                 "Amsterdam Island (French Southern and Antarctic Lands)",
@@ -815,6 +910,10 @@
                 "Indian Standard Time",
                 "Sri Lanka Standard Time"
             ],
+            "ShortcutsStandard": [
+                "IST",
+                "SLST"
+            ],
             "CountriesStandard": [
                 "India",
                 "Sri Lanka"
@@ -825,6 +924,9 @@
             "TimeNamesStandard": [
                 "Nepal Standard Time"
             ],
+            "ShortcutsStandard": [
+                "NPT"
+            ],
             "CountriesStandard": [
                 "Nepal"
             ]
@@ -833,10 +935,22 @@
             "Offset": "06:00",
             "MilitaryName": "Foxtrot Time Zone",
             "TimeNamesStandard": [
+                "Alma-Ata Time",
+                "British Indian Ocean Time",
                 "Bangladesh Standard Time",
                 "Bhutan Time",
                 "Kyrgyzstan Time",
-                "Omsk Time"
+                "Omsk Time",
+                "Vostok Station Time"
+            ],
+            "ShortcutsStandard": [
+                "ALMT",
+                "BIOT",
+                "BST",
+                "BTT",
+                "KGT",
+                "OMST",
+                "VOST"
             ],
             "CountriesStandard": [
                 "Bangladesh",
@@ -850,7 +964,14 @@
         {
             "Offset": "06:30",
             "TimeNamesStandard": [
+                "ASEAN Common Time",
+                "Cocos Islands Time",
                 "Myanmar Standard Time"
+            ],
+            "ShortcutsStandard": [
+                "ACT",
+                "CCT",
+                "MMT"
             ],
             "CountriesStandard": [
                 "Cocos Islands",
@@ -861,10 +982,24 @@
             "Offset": "07:00",
             "MilitaryName": "Golf Time Zone",
             "TimeNamesStandard": [
-                "Western Indonesian Time",
                 "Christmas Island Time",
+                "Davis Time",
+                "Hovd Time",
+                "Indochina Time",
                 "Krasnoyarsk Time",
-                "Western Indonesia Time"
+                "Novosibirsk Time",
+                "Thailand Standard Time",
+                "Western Indonesian Time"
+            ],
+            "ShortcutsStandard": [
+                "CXT",
+                "DAVT",
+                "HOVT",
+                "ICT",
+                "KRAT",
+                "NOVT",
+                "THA",
+                "WIB"
             ],
             "CountriesStandard": [
                 "Cambodia",
@@ -893,13 +1028,46 @@
             "Offset": "08:00",
             "MilitaryName": "Hotel Time Zone",
             "TimeNamesStandard": [
-                "Central Indonesian Time",
-                "Western Australia Standard Time",
+                "Australian Western Standard Time",
+                "Brunei Time",
+                "Choibalsan Standard Time",
+                "Clipperton Island Standard Time",
                 "China Standard Time",
-                "Hong Kong Standard Time",
-                "Macau Standard Time",
-                "National Standard Time",
-                "Irkutsk Time"
+                "Hong Kong Time",
+                "Irkutsk Time",
+                "Malaysia Standard Time",
+                "Malaysia Time",
+                "Philippine Time",
+                "Philippine Standard Time",
+                "Singapore Time",
+                "Singapore Standard Time",
+                "Ulaanbaatar Standard Time",
+                "Central Indonesian Time",
+                "Western Standard Time",
+                "Western Australia Standard Time"
+            ],
+            "ShortcutsStandard": [
+                "AWST",
+                "BNT",
+                "CHOT",
+                "CIST",
+                "CST",
+                "HKT",
+                "IRKT",
+                "MST",
+                "MYT",
+                "PHT",
+                "PHST",
+                "SST",
+                "ULAT",
+                "WITA",
+                "WST"
+            ],
+            "TimeNamesDaylight": [
+                "Ulaanbaatar Summer Time"
+            ],
+            "ShortcutsDaylight": [
+                "ULAST"
             ],
             "CountriesStandard": [
                 "Australia: Western Australia (most)",
@@ -926,7 +1094,12 @@
         {
             "Offset": "08:45",
             "TimeNamesStandard": [
+                "Australian Central Western Standard Time",
                 "Central Western Standard Time"
+            ],
+            "ShortcutsStandard": [
+                "ACWST",
+                "CWST"
             ],
             "CountriesStandard": [
                 "Caiguna (Australia)",
@@ -941,9 +1114,22 @@
             "Offset": "09:00",
             "MilitaryName": "India Time Zone",
             "TimeNamesStandard": [
+                "Choibalsan Summer Time",
+                "Japan Standard Time",
+                "Korea Standard Time",
+                "Palau Time",
+                "Timor Leste Time",
                 "Eastern Indonesian Time",
-                "Yakutsk Time",
-                "Japan Standard Time"
+                "Yakutsk Time"
+            ],
+            "ShortcutsStandard": [
+                "CHOST",
+                "JST",
+                "KST",
+                "PWT",
+                "TLT",
+                "WIT",
+                "YAKT"
             ],
             "CountriesStandard": [
                 "East Timor",
@@ -963,7 +1149,16 @@
         {
             "Offset": "09:30",
             "TimeNamesStandard": [
-                "Central Standard Time"
+                "Australian Central Standard Time"
+            ],
+            "ShortcutsStandard": [
+                "ACST"
+            ],
+            "TimeNamesDaylight": [
+                "Australian Central Daylight Saving Time"
+            ],
+            "ShortcutsDaylight": [
+                "ACDT"
             ],
             "CountriesStandard": [
                 "Northern Territory",
@@ -975,13 +1170,30 @@
             "Name": "Chamorro Time Zone",
             "MilitaryName": "Kilo Time Zone",
             "TimeNamesStandard": [
-                "Vladivostok Time",
-                "Eastern Standard Time",
-                "Chamorro Standard Time"
+                "Australian Eastern Standard Time",
+                "Australian Eastern Time",
+                "Chamorro Standard Time",
+                "Chuuk Time",
+                "Dumont d'Urville Time",
+                "Papua New Guinea Time",
+                "Vladivostok Time"
+            ],
+            "ShortcutsStandard": [
+                "AEST",
+                "AET",
+                "CHST",
+                "CHUT",
+                "DDUT",
+                "PGT",
+                "VLAT"
             ],
             "TimeNamesDaylight": [
-                "Central Daylight Time",
-                "Eastern Daylight Time"
+                "Australian Eastern Daylight Saving Time",
+                "Lord Howe Summer Time"
+            ],
+            "ShortcutsDaylight": [
+                "AEDT",
+                "LHST"
             ],
             "CountriesStandard": [
                 "Queensland (Australia)",
@@ -1005,6 +1217,12 @@
         },
         {
             "Offset": "10:30",
+            "TimeNamesStandard": [
+                "Lord Howe Standard Time"
+            ],
+            "ShortcutsStandard": [
+                "LHST"
+            ],
             "CountriesDaylight": [
                 "Lord Howe Island (Australia)"
             ]
@@ -1013,7 +1231,28 @@
             "Offset": "11:00",
             "MilitaryName": "Lima Time Zone",
             "TimeNamesStandard": [
-                "Magadan Time"
+                "Bougainville Standard Time",
+                "Kosrae Time",
+                "Macquarie Island Station Time",
+                "New Caledonia Time",
+                "Norfolk Island Time",
+                "Pohnpei Standard Time",
+                "Sakhalin Island Time",
+                "Solomon Islands Time",
+                "Srednekolymsk Time",
+                "Vanuatu Time"
+            ],
+            "ShortcutsStandard": [
+                "BST",
+                "KOST",
+                "MIST",
+                "NCT",
+                "NFT",
+                "PONT",
+                "SAKT",
+                "SBT",
+                "SRET",
+                "VUT"
             ],
             "CountriesStandard": [
                 "Kosrae (Micronesia)",
@@ -1034,7 +1273,26 @@
             "Offset": "12:00",
             "MilitaryName": "Mike Time Zone",
             "TimeNamesStandard": [
-                "Kamchatka Time"
+                "Anadyr Time",
+                "Fiji Time",
+                "Gilbert Island Time",
+                "Magadan Time",
+                "Marshall Islands Time",
+                "New Zealand Standard Time",
+                "Kamchatka Time",
+                "Tuvalu Time",
+                "Wake Island Time"
+            ],
+            "ShortcutsStandard": [
+                "ANAT",
+                "FJT",
+                "GILT",
+                "MAGT",
+                "MHT",
+                "NZST",
+                "PETT",
+                "TVT",
+                "WAKT"
             ],
             "CountriesStandard": [
                 "Fiji",
@@ -1047,6 +1305,12 @@
                 "Wake Island",
                 "Wallis and Futuna"
             ],
+            "TimeNamesDaylight": [
+                "New Zealand Daylight Time"
+            ],
+            "ShortcutsDaylight": [
+                "NZDT"
+            ],
             "CountriesDaylight": [
                 "New Zealand"
             ]
@@ -1055,6 +1319,15 @@
             "Offset": "12:45",
             "TimeNamesStandard": [
                 "Chatham Standard Time"
+            ],
+            "ShortcutsStandard": [
+                "CHAST"
+            ],
+            "TimeNamesDaylight": [
+                "Chatham Daylight Time"
+            ],
+            "ShortcutsDaylight": [
+                "CHADT"
             ],
             "CountriesStandard": [
                 "Chatham Islands (New Zealand)",
@@ -1069,6 +1342,16 @@
         },
         {
             "Offset": "13:00",
+            "TimeNamesStandard": [
+                "Phoenix Island Time",
+                "Tokelau Time",
+                "Tonga Time"
+            ],
+            "ShortcutsStandard": [
+                "PHOT",
+                "TKT",
+                "TOT"
+            ],
             "CountriesStandard": [
                 "Phoenix Islands (Kiribati)",
                 "Samoa",
@@ -1078,6 +1361,12 @@
         },
         {
             "Offset": "14:00",
+            "TimeNamesStandard": [
+                "Line Islands Time"
+            ],
+            "ShortcutsStandard": [
+                "LINT"
+            ],
             "CountriesStandard": [
                 "Line Islands (Kiribati)"
             ]

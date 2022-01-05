@@ -133,8 +133,7 @@ AZCLI
 azurecr
 backend
 backtracer
-BAEC
-BAF
+BADD
 bak
 bbwe
 bck
@@ -235,8 +234,8 @@ CHILDWINDOW
 chrdavis
 chromaticities
 chrono
-Chrzan
 chrzan
+Chrzan
 CHT
 cielab
 ciexyz
@@ -1068,6 +1067,7 @@ Lastdevice
 LASTEXITCODE
 Laute
 laute
+Laute
 laviusmotileng
 LAYOUTRTL
 LBUTTON
@@ -1479,6 +1479,7 @@ pcb
 pch
 PCIDLIST
 PCWSTR
+pdb
 Pdb
 pdb
 pdbonly
@@ -2009,6 +2010,7 @@ SYSTEMTIME
 systemverilog
 Tadele
 tadele
+Tadele
 talynone
 TApp
 TApplication
@@ -2064,6 +2066,7 @@ toggleswitch
 Toolchain
 toolkitcontrols
 toolkitconverters
+toolset
 Toolset
 toolset
 toolstrip
@@ -2162,8 +2165,8 @@ USESHOWWINDOW
 USESTDHANDLES
 ushort
 USRDLL
-Utc
 utc
+Utc
 utf
 utils
 uuidof

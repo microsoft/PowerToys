@@ -12,10 +12,9 @@ using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Mono.Collections.Generic;
 using Wox.Plugin;
 
-// TODO: revisit time zone names
-// TODO: revisit standard time names
-// TODO: revisit DST time names
-// TODO: add more time zone shortcuts
+// TODO: Show shortcuts in tool tips
+// TODO: revisited time zone names
+// TODO: revisited countries
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 {
     /// <summary>
