@@ -122,12 +122,16 @@ AWAYMODE
 AYUV
 backend
 backtracer
+BAEC
+BAF
 bak
 bbwe
 bck
 Bcl
+BEEE
 betadele
 betsegaw
+BFB
 BGR
 bgra
 BGSOUNDS
@@ -157,6 +161,7 @@ boolalpha
 Bools
 Boostrapper
 bootstrapper
+BOOTSTRAPPERINSTALLFOLDER
 Bopomofo
 BOTTOMALIGN
 BPBF
@@ -175,6 +180,7 @@ buf
 BUFSIZE
 bugreport
 Buid
+BUILDARCH
 buildtransitive
 BValue
 bytearray
@@ -195,6 +201,7 @@ CDeclaration
 CDEF
 cdpx
 CENTERALIGN
+CFDB
 cguid
 changecursor
 Changemove
@@ -352,6 +359,8 @@ Datavalue
 DATAW
 davidegiacometti
 Dayof
+DBCD
+DBDA
 dbg
 Dbghelp
 DBLCLKS
@@ -367,6 +376,7 @@ declspec
 decltype
 Dedup
 deduplicate
+DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
 DEFAULTFLAGS
 DEFAULTONLY
@@ -477,6 +487,9 @@ dwrite
 dxgi
 dxgiformat
 dxguid
+EAF
+EBA
+EBE
 ecount
 ededf
 EDITKEYBOARD
@@ -484,6 +497,8 @@ editkeyboardwindow
 editorconfig
 EDITSHORTCUTS
 editshortcutswindow
+EFBD
+efgh
 EFile
 egistry
 ekus
@@ -551,7 +566,10 @@ FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 Farbraum
 FARPROC
+FBF
+FCCD
 fdw
+FEEBD
 feimage
 ffaa
 fff
@@ -850,6 +868,8 @@ INPUTTYPE
 INSTALLDESKTOPSHORTCUT
 INSTALLDIR
 INSTALLFOLDER
+INSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER
+INSTALLFOLDERTOPREVIOUSINSTALLFOLDER
 INSTALLLOCATION
 INSTALLLOGATTRIBUTES
 INSTALLLOGMODE
@@ -1365,6 +1385,7 @@ outro
 outsettings
 OVERLAPPEDWINDOW
 overlaywindow
+Overridable
 OWNDC
 PACL
 PAINTSTRUCT
@@ -1463,6 +1484,7 @@ previewer
 PREVIEWHANDLERFRAMEINFO
 previewpane
 previouscamera
+PREVIOUSINSTALLFOLDER
 PREVIOUSVERSIONSINSTALLED
 prevpane
 prgms
@@ -2100,6 +2122,7 @@ wcsncmp
 wcsnicmp
 wdp
 wdupenv
+We'd
 weakme
 webcam
 webpage

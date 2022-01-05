@@ -4,6 +4,7 @@
   <Import Project="..\..\src\Version.props" />
   <PropertyGroup>
     <DefineConstants>Version=$(Version)</DefineConstants>
+    <Name>PowerToysInstaller</Name>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
@@ -20,10 +21,14 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <SuppressIces>ICE91</SuppressIces>
+    <SuppressValidation>True</SuppressValidation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <SuppressValidation>True</SuppressValidation>
+    <SuppressIces>ICE91</SuppressIces>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CustomDialogs\PTInstallDirDlg.wxs" />

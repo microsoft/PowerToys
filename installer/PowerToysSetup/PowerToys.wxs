@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?define UpgradeCode="6341382d-c0a9-4238-9188-be9607e3fab2"?>
+<?define RepoDir="$(var.ProjectDir)..\..\" ?>
+<?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+    xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+    xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+    <Bundle Name="PowerToys (Preview) $(sys.BUILDARCH)"
+            Version="$(var.Version)"
+            Manufacturer="Microsoft Corporation"
+            IconSourceFile="$(var.BinX64Dir)svgs\icon.ico"
+            UpgradeCode="$(var.UpgradeCode)">
+        <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+            <bal:WixStandardBootstrapperApplication 
+              LicenseFile="$(var.RepoDir)\installer\License.rtf"
+              LogoFile="$(var.RepoDir)\installer\MSIX\Images\logo44.png"
+              SuppressOptionsUI="no"
+              SuppressRepair="yes" />
+        </BootstrapperApplicationRef>
+
+        <util:FileSearch Variable="HasDotnet3122" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\3.1.22\System.Xaml.dll" Result="exists" />
+
+        <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles64Folder]PowerToys" bal:Overridable="yes"/>
+
+
+      <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys, to handle the case in which PowerToys was installed from old MSI (before WiX bootstrapper was used) -->
+      <!-- If the previous installation is a bundle installation, just let WiX run its logic. -->
+      <Variable Name="DetectedPowerToysVersion" Type="version" Value="0.0.0.0"/>
+      <Variable Name="TargetPowerToysVersion" Type="version" Value="$(var.Version)"/>
+      <util:ProductSearch Id="SearchInstalledPowerToysVersion" Variable="DetectedPowerToysVersion" UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708" Result="version" />
+      <bal:Condition Message="A later version of PowerToys is already installed." >TargetPowerToysVersion &gt;= DetectedPowerToysVersion OR WixBundleInstalled</bal:Condition>
+
+      <Variable Name="DetectedWindowsBuildNumber" Type="version" Value="0"/>
+      <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Format="raw" Variable="DetectedWindowsBuildNumber" />
+      <bal:Condition Message="This application is only supported on Windows 10 version 1903 (build 18362) or higher.">DetectedWindowsBuildNumber &gt;= 18362 OR WixBundleInstalled</bal:Condition>
+
+        <Chain>
+            <ExePackage
+                Name="windowsdesktop-runtime-3.1.22-win-x64.exe"
+                Compressed="no"
+                Id="DotnetRuntime"
+                DetectCondition="HasDotnet3122"
+                DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/1c14e24b-7f31-42dc-ba3c-83295a2d6f7e/41b93591162dfe556cc160ae44fbe75e/windowsdesktop-runtime-3.1.22-win-x64.exe"
+                InstallCommand="/install /quiet"
+                RepairCommand="/repair /passive"
+                Permanent="yes"
+                PerMachine="yes"
+                UninstallCommand="/uninstall /quiet">
+                <RemotePayload
+                    Description="Microsoft Windows Desktop Runtime - 3.1.22 (x64)"
+                    ProductName="Microsoft Windows Desktop Runtime - 3.1.22 (x64)"
+                    Size="54342024"
+                    Version="3.1.22.30721"
+                    Hash="08EF2F6CFDB33946061884B1CE13FA867EFBD576" />
+            </ExePackage>
+            <MsiPackage
+                SourceFile="x64\Release\PowerToysSetup-$(var.Version)-x64.msi"
+                Compressed="yes"
+                DisplayInternalUI="no">
+                <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />
+            </MsiPackage>
+        </Chain>
+    </Bundle>
+</Wix>

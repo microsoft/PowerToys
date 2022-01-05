@@ -211,7 +211,7 @@ jobs:
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
       vsVersion: 16.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: /p:CIBuild=true /target:PowerToysInstaller /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -231,7 +231,7 @@ jobs:
   - task: VSBuild@1
     displayName: Build Bootstrapper
     inputs:
-      solution: '**/installer/PowerToysBootstrapper/PowerToysBootstrapper.sln'
+      solution: '**/installer/PowerToysSetup.sln'
       vsVersion: 16.0
       msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
@@ -239,11 +239,53 @@ jobs:
       clean: true
       maximumCpuCount: true
 
+  - task: CmdLine@2
+    displayName: 'Insignia: Extract Engine from Bundle'
+    inputs:
+      script: '.\installer\packages\WiX.3.11.2\tools\insignia.exe -ib installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\engine.exe'
+
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: 'ESRP CodeSigning (Engine)'
+    inputs:
+      ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+      FolderPath: 'installer'
+      Pattern: engine.exe
+      signConfigType: inlineSignParams
+      inlineOperation: |
+       [
+           {
+               "KeyCode": "CP-230012",
+               "OperationCode": "SigntoolSign",
+               "Parameters": {
+                   "OpusName": "Microsoft",
+                   "OpusInfo": "http://www.microsoft.com",
+                   "FileDigest": "/fd \"SHA256\"",
+                   "PageHash": "/NPH",
+                   "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+               },
+               "ToolName": "sign",
+               "ToolVersion": "1.0"
+           },
+           {
+               "KeyCode": "CP-230012",
+               "OperationCode": "SigntoolVerify",
+               "Parameters": {},
+               "ToolName": "sign",
+               "ToolVersion": "1.0"
+           }
+       ]
+
+  - task: CmdLine@2
+    displayName: 'Insignia: Merge Engine into Bundle'
+    inputs:
+      script: '.\installer\packages\WiX.3.11.2\tools\insignia.exe -ab installer\engine.exe installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe'
+
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     displayName: Sign Boostrapper
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
-      FolderPath: 'installer/PowerToysBootstrapper/$(BuildPlatform)\$(BuildConfiguration)'
+      FolderPath: 'installer/PowerToysSetup/$(BuildPlatform)\$(BuildConfiguration)'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
       ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'

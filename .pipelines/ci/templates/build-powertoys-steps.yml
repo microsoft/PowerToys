@@ -93,25 +93,6 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for PowerToysBootstrapper.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: installer\PowerToysBootstrapper\PowerToysBootstrapper.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\installer\PowerToysBootstrapper\packages'
-
-- task: VSBuild@1
-  displayName: 'Build PowerToysBootstrapper.sln'
-  inputs:
-    solution: '**\installer\PowerToysBootstrapper\PowerToysBootstrapper.sln'
-    vsVersion: 16.0
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArgs: ${{ parameters.additionalBuildArguments }}
-    maximumCpuCount: true
-
 # directly not doing WinAppDriver testing
 - task: VSTest@2
   displayName: 'MS Tests'
