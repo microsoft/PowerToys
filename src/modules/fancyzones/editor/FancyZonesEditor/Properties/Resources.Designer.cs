@@ -277,20 +277,20 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit layout.
-        /// </summary>
-        public static string Edit_Layout {
-            get {
-                return ResourceManager.GetString("Edit_Layout", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to opened.
         /// </summary>
         public static string Edit_Layout_Open_Announce {
             get {
                 return ResourceManager.GetString("Edit_Layout_Open_Announce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit &apos;{0}&apos;.
+        /// </summary>
+        public static string Edit_Template {
+            get {
+                return ResourceManager.GetString("Edit_Template", resourceCulture);
             }
         }
         

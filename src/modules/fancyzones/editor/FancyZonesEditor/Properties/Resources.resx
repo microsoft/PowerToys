@@ -371,8 +371,8 @@
   <data name="QuickKey_Title" xml:space="preserve">
     <value>Layout shortcut</value>
   </data>
-  <data name="Edit_Layout" xml:space="preserve">
-    <value>Edit layout</value>
+  <data name="Edit_Template" xml:space="preserve">
+    <value>Edit '{0}'</value>
   </data>
   <data name="Edit_Layout_Open_Announce" xml:space="preserve">
     <value>opened</value>
