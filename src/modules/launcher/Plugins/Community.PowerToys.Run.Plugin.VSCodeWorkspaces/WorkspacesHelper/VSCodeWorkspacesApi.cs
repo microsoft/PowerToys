@@ -62,6 +62,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                     // storage.json contains opened Workspaces
                     var vscode_storage = Path.Combine(vscodeInstance.AppData, "storage.json");
 
+                    // Backups/workspace.json - vscode v1.64 or later
+                    var vscode_storage_workspaces = Path.Combine(vscodeInstance.AppData, "Backups/workspaces.json");
+
                     if (File.Exists(vscode_storage))
                     {
                         var fileContent = File.ReadAllText(vscode_storage);
@@ -70,7 +73,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                         {
                             VSCodeStorageFile vscodeStorageFile = JsonSerializer.Deserialize<VSCodeStorageFile>(fileContent);
 
-                            if (vscodeStorageFile != null)
+                            if (vscodeStorageFile != null && vscodeStorageFile.OpenedPathsList != null)
                             {
                                 // for previous versions of vscode
                                 if (vscodeStorageFile.OpenedPathsList.Workspaces3 != null)
@@ -89,6 +92,32 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                                 if (vscodeStorageFile.OpenedPathsList.Entries != null)
                                 {
                                     foreach (var entry in vscodeStorageFile.OpenedPathsList.Entries)
+                                    {
+                                        bool isWorkspaceFile = false;
+                                        var uri = entry.FolderUri;
+                                        if (entry.Workspace != null && entry.Workspace.ConfigPath != null)
+                                        {
+                                            isWorkspaceFile = true;
+                                            uri = entry.Workspace.ConfigPath;
+                                        }
+
+                                        var workspace = ParseVSCodeUri(uri, vscodeInstance, isWorkspaceFile);
+                                        if (workspace != null)
+                                        {
+                                            results.Add(workspace);
+                                        }
+                                    }
+                                }
+                            }
+                            else if (File.Exists(vscode_storage_workspaces))
+                            {
+                                // vscode 1.64 or later
+                                fileContent = File.ReadAllText(vscode_storage_workspaces);
+                                VSCodeStorageWorkspaceFile vscodeStorageWorkspaceFile = JsonSerializer.Deserialize<VSCodeStorageWorkspaceFile>(fileContent);
+
+                                if (vscodeStorageWorkspaceFile.FolderWorkspaceInfos != null)
+                                {
+                                    foreach (var entry in vscodeStorageWorkspaceFile.FolderWorkspaceInfos)
                                     {
                                         bool isWorkspaceFile = false;
                                         var uri = entry.FolderUri;
