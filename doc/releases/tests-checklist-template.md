@@ -319,3 +319,9 @@ Mouse Highlighter:
  - [ ] Verify that changing "toolbar position" setting works 
  - [ ] Select an overlay image and verify that muting camera now shows the image instead of black screen. (Don't forget to restart the application which uses the camera).
  - [ ] Try to select an overlay image when PT process is elevated. (Currently doesn't work)
+
+## Awake
+ - [ ] Try out the features and see if they work, no list at this time.
+
+## Always on Top
+ - [ ] Try out the features and see if they work, no list at this time.
