@@ -89,7 +89,22 @@ HRESULT CPowerRenameEnum::_ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ int d
 
         ULONG celtFetched;
         CComPtr<IShellItem> spsi;
-        while ((S_OK == pesi->Next(1, &spsi, &celtFetched)) && (SUCCEEDED(hr)))
+        std::vector<CComPtr<IShellItem>> items;
+
+        while ((S_OK == pesi->Next(1, &spsi, &celtFetched)))
+        {
+            items.push_back(spsi);
+            spsi = nullptr;
+        }
+
+        auto cmpShellItems = [](CComPtr<IShellItem> l, CComPtr<IShellItem> r) {
+            int res = 0;
+            l->Compare(r, SICHINT_DISPLAY, &res);
+            return res < 0;
+        };
+        std::sort(items.begin(), items.end(), cmpShellItems);
+
+        for (const auto& item : items)
         {
             if (m_canceled)
             {
@@ -104,7 +119,7 @@ HRESULT CPowerRenameEnum::_ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ int d
                 // Failure may be valid if we come across a shell item that does
                 // not support a file system path.  In that case we simply ignore
                 // the item.
-                if (SUCCEEDED(spFactory->Create(spsi, &spNewItem)))
+                if (SUCCEEDED(spFactory->Create(item, &spNewItem)))
                 {
                     spNewItem->PutDepth(depth);
                     hr = m_spsrm->AddItem(spNewItem);
@@ -115,7 +130,7 @@ HRESULT CPowerRenameEnum::_ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ int d
                         {
                             // Bind to the IShellItem for the IEnumShellItems interface
                             CComPtr<IEnumShellItems> spesiNext;
-                            hr = spsi->BindToHandler(nullptr, BHID_EnumItems, IID_PPV_ARGS(&spesiNext));
+                            hr = item->BindToHandler(nullptr, BHID_EnumItems, IID_PPV_ARGS(&spesiNext));
                             if (SUCCEEDED(hr))
                             {
                                 // Parse the folder contents recursively
@@ -125,8 +140,10 @@ HRESULT CPowerRenameEnum::_ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ int d
                     }
                 }
             }
-
-            spsi = nullptr;
+            if (FAILED(hr))
+            {
+                break;
+            }
         }
     }
 
