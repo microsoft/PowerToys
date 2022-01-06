@@ -7,10 +7,10 @@ using System.Text.Json.Serialization;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
-    // v1.64 uses AppData\Roaming\Code\Backups\workspaces
-    public class VSCodeStorageWorkspaceFile
+    // v1.64 uses AppData\Roaming\Code\User\globalStorage\state.vscdb - history.recentlyOpenedPathsList
+    public class VSCodeStorageEntries
     {
-        [JsonPropertyName("folderWorkspaceInfos")]
-        public List<VSCodeWorkspaceEntry> FolderWorkspaceInfos { get; set; }
+        [JsonPropertyName("entries")]
+        public List<VSCodeWorkspaceEntry> Entries { get; set; }
     }
 }
