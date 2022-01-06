@@ -250,27 +250,27 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 
 ## Shortcut Guide
  * Run PowerToys as user:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
-   - [ ] Set Shortcut Guide to start with a Windows key press and verify it works.
+   - [x] Verify `Win + Shift + /` opens the guide
+   - [x] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   - [x] Set Shortcut Guide to start with a Windows key press and verify it works.
  * Restore the `Win + Shift + /` hotkey.
-   - [ ] Open the guide and close it pressing `Esc`
-   - [ ] Open the guide and close it pressing and releasing the `Win` key
+   - [x] Open the guide and close it pressing `Esc`
+   - [x] Open the guide and close it pressing and releasing the `Win` key
  * With PowerToys running as a user, open an elevated app and keep it on foreground:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
+   - [x] Verify `Win + Shift + /` opens the guide
+   - [x] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
 
 ## OOBE
  * Quit PowerToys
  * Delete %localappdata%\Microsoft\PowerToys
- - [ ] Start PowerToys and verify OOBE opens
+ - [x] Start PowerToys and verify OOBE opens
  * Visit each OOBE section and for each section:
-   - [ ] open the Settings for that module
-   - [ ] verify the Settings work as expected (toggle some controls on/off etc.)
-   - [ ] close the Settings
-   - [ ] if it's available, test the `Launch module name` button
+   - [x] open the Settings for that module
+   - [x] verify the Settings work as expected (toggle some controls on/off etc.)
+   - [x] close the Settings
+   - [x] if it's available, test the `Launch module name` button
  * Close OOBE
- - [ ] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
+ - [x] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
 
 ## Mouse Utils
 
