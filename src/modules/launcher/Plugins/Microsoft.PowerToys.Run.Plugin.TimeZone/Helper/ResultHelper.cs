@@ -85,12 +85,16 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 return results;
             }
 
+            if (!MatchTimeZoneShortcut(oneTimeZone, query)
+            && !MatchTimeZoneNames(oneTimeZone, query)
+            && !MatchOffset(oneTimeZone, query))
+            {
+                return results;
+            }
+
             if (MatchStandardTimeShortcuts(oneTimeZone, query)
             || MatchStandardTimeNames(oneTimeZone, query)
-            || MatchStandardCountries(oneTimeZone, query)
-            || MatchTimeZoneShortcut(oneTimeZone, query)
-            || MatchTimeZoneNames(oneTimeZone, query)
-            || MatchOffset(oneTimeZone, query))
+            || MatchStandardCountries(oneTimeZone, query))
             {
                 results.Add(new Result
                 {
@@ -104,10 +108,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
             if (MatchDaylightTimeShortcuts(oneTimeZone, query)
             || MatchDaylightTimeNames(oneTimeZone, query)
-            || MatchDaylightCountries(oneTimeZone, query)
-            || MatchTimeZoneShortcut(oneTimeZone, query)
-            || MatchTimeZoneNames(oneTimeZone, query)
-            || MatchOffset(oneTimeZone, query))
+            || MatchDaylightCountries(oneTimeZone, query))
             {
                 results.Add(new Result
                 {
