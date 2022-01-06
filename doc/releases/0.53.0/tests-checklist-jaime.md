@@ -329,7 +329,7 @@ Mouse Highlighter:
  - [ ] Try to select an overlay image when PT process is elevated. (Currently doesn't work)
 
 ## Awake
- - [ ] Try out the features and see if they work, no list at this time.
+ - [x] Try out the features and see if they work, no list at this time.
 
 ## Always on Top
  - [ ] Try out the features and see if they work, no list at this time.
