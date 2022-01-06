@@ -18,16 +18,16 @@
 
 ## Localization
  Change the Winodws language to a language different than English. Then verify if the following screens change their language:
- - [ ] System tray menu items
- - [ ] Settings
- - [ ] OOBE (What's new)
- - [ ] Keyboard Manager Editor
- - [ ] Color Picker (check the tooltips)
- - [ ] FancyZones Editor
- - [ ] Power Rename (new WinUI 3 may not be localized)
- - [ ] Image Resizer
- - [ ] Shortcut Guide (Windows controls are localized)
- - [ ] File Explorer menu entries for Image Resizer and Power Rename
+ - [x] System tray menu items
+ - [x] Settings
+ - [x] OOBE (What's new)
+ - [x] Keyboard Manager Editor
+ - [x] Color Picker (check the tooltips)
+ - [x] FancyZones Editor
+ - [x] Power Rename (new WinUI 3 may not be localized)
+ - [x] Image Resizer
+ - [x] Shortcut Guide (Windows controls are localized)
+ - [x] File Explorer menu entries for Image Resizer and Power Rename
 
 ## General Settings
 
