@@ -204,6 +204,12 @@ jobs:
 #### END SIGNING 
 ## END MAIN
 
+# Did we sign all files
+  - task: PowerShell@1
+    displayName: Verifying entire build is signed and versioned
+    inputs:
+      scriptName: .pipelines/versionAndSignCheck.ps1
+
 ## INSTALLER START
 #### MSI BUILDING AND SIGNING
   - task: VSBuild@1
