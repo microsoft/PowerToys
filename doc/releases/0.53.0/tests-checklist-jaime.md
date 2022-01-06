@@ -320,13 +320,13 @@ Mouse Highlighter:
     - [x] Fade duration
 
 ## VCM
- - [ ] Check "Hide toolbar when both camera and micrphone are unmuted" and verify that it works
- - [ ] Uncheck it, mute the microphone with the hotkey and make sure the toolbar doesn't hide after a timeout
- - [ ] Go to some video conference application settings, e.g. meet.google.com, Microsoft Teams, Skype. "Select PowerToys VideoConference Mute" camera as an active device and try to mute it with a hotkey
- - [ ] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now mute the microphone with a corresponding hotkey and verify that mute icon on the right side of volume slider reflects its muted status.
- - [ ] Verify that changing "toolbar position" setting works 
- - [ ] Select an overlay image and verify that muting camera now shows the image instead of black screen. (Don't forget to restart the application which uses the camera).
- - [ ] Try to select an overlay image when PT process is elevated. (Currently doesn't work)
+ - [x] Check "Hide toolbar when both camera and micrphone are unmuted" and verify that it works
+ - [x] Uncheck it, mute the microphone with the hotkey and make sure the toolbar doesn't hide after a timeout
+ - [x] Go to some video conference application settings, e.g. meet.google.com, Microsoft Teams, Skype. "Select PowerToys VideoConference Mute" camera as an active device and try to mute it with a hotkey
+ - [x] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now mute the microphone with a corresponding hotkey and verify that mute icon on the right side of volume slider reflects its muted status.
+ - [x] Verify that changing "toolbar position" setting works 
+ - [x] Select an overlay image and verify that muting camera now shows the image instead of black screen. (Don't forget to restart the application which uses the camera).
+ - [x] Try to select an overlay image when PT process is elevated. (Currently doesn't work)
 
 ## Awake
  - [x] Try out the features and see if they work, no list at this time.
