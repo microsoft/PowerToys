@@ -148,6 +148,9 @@
   <data name="PluginTitle" xml:space="preserve">
     <value>Time zone</value>
   </data>
+  <data name="Shortcuts" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
   <data name="ShowMilitaryTimeZoneNames" xml:space="preserve">
     <value>Show military time zone names</value>
     <comment>PowerToysRun Option</comment>

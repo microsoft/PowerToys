@@ -151,6 +151,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Shortcuts.
+        /// </summary>
+        internal static string Shortcuts {
+            get {
+                return ResourceManager.GetString("Shortcuts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show military time zone names.
         /// </summary>
         internal static string ShowMilitaryTimeZoneNames {
