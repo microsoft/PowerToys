@@ -25,6 +25,7 @@
  - [ ] Color Picker (check the tooltips)
  - [ ] FancyZones Editor
  - [ ] Power Rename (new WinUI 3 may not be localized)
+ - [ ] PowerToys Run ("Start typing" string is localized, for example)
  - [ ] Image Resizer
  - [ ] Shortcut Guide (Windows controls are localized)
  - [ ] File Explorer menu entries for Image Resizer and Power Rename
