@@ -8,26 +8,27 @@
     * create a virtual desktop and apply the custom grid layout
     * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
  * install the new version (it will uninstall the old version and install the new version)
- - [ ] verify the settings are preserved and FancyZones configuration is still the same
+ - [x] verify the settings are preserved and FancyZones configuration is still the same
 
 ## Functional tests
 
  Regressions:
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
+ - [x] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
+ - [x] https://github.com/microsoft/PowerToys/issues/1524
 
 ## Localization
  Change the Winodws language to a language different than English. Then verify if the following screens change their language:
- - [ ] System tray menu items
- - [ ] Settings
- - [ ] OOBE (What's new)
- - [ ] Keyboard Manager Editor
- - [ ] Color Picker (check the tooltips)
- - [ ] FancyZones Editor
- - [ ] Power Rename (new WinUI 3 may not be localized)
- - [ ] Image Resizer
- - [ ] Shortcut Guide (Windows controls are localized)
- - [ ] File Explorer menu entries for Image Resizer and Power Rename
+ - [x] System tray menu items
+ - [x] Settings
+ - [x] OOBE (What's new)
+ - [x] Keyboard Manager Editor
+ - [x] Color Picker (check the tooltips)
+ - [x] FancyZones Editor
+ - [x] Power Rename (new WinUI 3 may not be localized)
+ - [x] PowerToys Run ("Start typing" string is localized, for example)
+ - [x] Image Resizer
+ - [x] Shortcut Guide (Windows controls are localized)
+ - [x] File Explorer menu entries for Image Resizer and Power Rename
 
 ## General Settings
 
