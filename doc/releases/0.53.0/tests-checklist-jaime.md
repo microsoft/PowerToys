@@ -332,4 +332,4 @@ Mouse Highlighter:
  - [x] Try out the features and see if they work, no list at this time.
 
 ## Always on Top
- - [ ] Try out the features and see if they work, no list at this time.
+ - [x] Try out the features and see if they work, no list at this time.
