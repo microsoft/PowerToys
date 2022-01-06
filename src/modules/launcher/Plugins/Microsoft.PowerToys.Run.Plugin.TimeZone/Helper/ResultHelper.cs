@@ -71,8 +71,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         {
             var results = new Collection<Result>();
 
-            var standardTitle = GetTitle(oneTimeZone, options, dateTime, false);
-            var daylightTitle = GetTitle(oneTimeZone, options, dateTime, true);
+            var standardTitle = GetTitle(oneTimeZone, options, query, dateTime, false);
+            var daylightTitle = GetTitle(oneTimeZone, options, query, dateTime, true);
 
             if (standardTitle.Equals(daylightTitle))
             {
@@ -154,15 +154,16 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// </summary>
         /// <param name="oneTimeZone">The time zone that contain all information.</param>
         /// <param name="timeZoneSettings">Additional options to limit the results.</param>
+        /// <param name="query">The <see cref="Query"/> that should match.</param>
         /// <param name="dateTime">The current time in UTC.</param>
         /// <param name="daylightSavingTime">indicate that the result is for a time zone that use a daylight saving time.</param>
         /// <returns>A title for a time zone.</returns>
-        private static StringBuilder GetTitle(in OneTimeZone oneTimeZone, in TimeZoneSettings timeZoneSettings, in DateTime dateTime, in bool daylightSavingTime)
+        private static StringBuilder GetTitle(in OneTimeZone oneTimeZone, in TimeZoneSettings timeZoneSettings, in Query query, in DateTime dateTime, in bool daylightSavingTime)
         {
             var stringBuilder = new StringBuilder();
 
             var timeInZoneTime = GetTimeInTimeZone(oneTimeZone, dateTime, daylightSavingTime);
-            var timeZoneNames = GetNames(oneTimeZone, timeZoneSettings, maxLength: 50);
+            var timeZoneNames = GetNames(oneTimeZone, timeZoneSettings, query, maxLength: 50);
 
             stringBuilder.AppendFormat(CultureInfo.CurrentCulture, "{0:HH:mm:ss}", timeInZoneTime);
             stringBuilder.Append(' ');
@@ -182,7 +183,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         private static StringBuilder GetStandardToolTip(in OneTimeZone oneTimeZone, in TimeZoneSettings timeZoneSettings)
         {
             var countries = GetStandardCountries(oneTimeZone, null, maxLength: int.MaxValue);
-            var names = GetNames(oneTimeZone, timeZoneSettings, maxLength: int.MaxValue);
+            var names = GetNames(oneTimeZone, timeZoneSettings, null, maxLength: int.MaxValue);
             var shortcuts = GetStandardShortcuts(oneTimeZone);
 
             if (!string.IsNullOrWhiteSpace(oneTimeZone.Shortcut))
@@ -217,7 +218,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         private static StringBuilder GetDaylightToolTip(in OneTimeZone oneTimeZone, in TimeZoneSettings timeZoneSettings)
         {
             var dstCountries = GetDaylightCountries(oneTimeZone, null, maxLength: int.MaxValue);
-            var names = GetNames(oneTimeZone, timeZoneSettings, maxLength: int.MaxValue);
+            var names = GetNames(oneTimeZone, timeZoneSettings, null, maxLength: int.MaxValue);
             var shortcuts = GetDaylightShortcuts(oneTimeZone);
 
             if (!string.IsNullOrWhiteSpace(oneTimeZone.Shortcut))
@@ -253,7 +254,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         {
             var countries = GetStandardCountries(oneTimeZone, null, maxLength: int.MaxValue);
             var dstCountries = GetDaylightCountries(oneTimeZone, null, maxLength: int.MaxValue);
-            var names = GetNames(oneTimeZone, timeZoneSettings, maxLength: int.MaxValue);
+            var names = GetNames(oneTimeZone, timeZoneSettings, null, maxLength: int.MaxValue);
             var shortcuts = GetStandardShortcuts(oneTimeZone);
             var dstShortcuts = GetDaylightShortcuts(oneTimeZone);
 
@@ -291,34 +292,46 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         }
 
         /// <summary>
-        /// Return all know names of the given time zone.
+        /// Return all names of the given time zone that match the given query.
         /// </summary>
         /// <param name="oneTimeZone">The time zone that contain a hand of names.</param>
         /// <param name="timeZoneSettings">Additional options to limit the type of the names.</param>
+        /// <param name="query">The query that should match.</param>
         /// <param name="maxLength">The maximum length of the result.</param>
         /// <returns>All know names of the given time zone.</returns>
-        private static StringBuilder GetNames(in OneTimeZone oneTimeZone, in TimeZoneSettings timeZoneSettings, in int maxLength)
+        private static StringBuilder GetNames(in OneTimeZone oneTimeZone, in TimeZoneSettings timeZoneSettings, Query? query, in int maxLength)
         {
-            var names = new List<string>();
+            var allNames = new List<string>();
 
             if (!string.IsNullOrWhiteSpace(oneTimeZone.Name) && timeZoneSettings.ShowTimeZoneNames)
             {
-                names.Add(oneTimeZone.Name);
+                allNames.Add(oneTimeZone.Name);
             }
 
             if (!string.IsNullOrWhiteSpace(oneTimeZone.MilitaryName) && timeZoneSettings.ShowMilitaryTimeZoneNames)
             {
-                names.Add(oneTimeZone.MilitaryName);
+                allNames.Add(oneTimeZone.MilitaryName);
             }
 
             if (oneTimeZone.TimeNamesStandard != null && timeZoneSettings.ShowTimeZoneNames)
             {
-                names.AddRange(oneTimeZone.TimeNamesStandard);
+                allNames.AddRange(oneTimeZone.TimeNamesStandard);
             }
 
             if (oneTimeZone.TimeNamesDaylight != null && timeZoneSettings.ShowTimeZoneNames)
             {
-                names.AddRange(oneTimeZone.TimeNamesDaylight);
+                allNames.AddRange(oneTimeZone.TimeNamesDaylight);
+            }
+
+            IEnumerable<string> names;
+
+            if (query is null || string.IsNullOrWhiteSpace(query.Search))
+            {
+                names = allNames;
+            }
+            else
+            {
+                names = allNames.Where(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase));
             }
 
             var stringBuilder = new StringBuilder();
@@ -526,7 +539,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// Return all countries that use the daylight saving time of the given time zone.
         /// </summary>
         /// <param name="oneTimeZone">The time zone that contain the countries.</param>
-        /// <param name="query">The <see cref="Query"/>v</param>
+        /// <param name="query">The <see cref="Query"/> that should match a country that use daylight time.</param>
         /// <param name="maxLength">The maximum length of the result.</param>
         /// <returns>All countries that use the daylight saving time of the given time zone.</returns>
         private static StringBuilder GetDaylightCountries(in OneTimeZone oneTimeZone, Query? query, in int maxLength)
@@ -613,7 +626,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// Return all countries of the given time zone.
         /// </summary>
         /// <param name="oneTimeZone">The time zone that contain the countries.</param>
-        /// <param name="query">The <see cref="Query"/>v</param>
+        /// <param name="query">The <see cref="Query"/> that should match a country that use standard or daylight time.</param>
         /// <param name="maxLength">The maximum length of the result.</param>
         /// <returns>All countries of the given time zone.</returns>
         private static StringBuilder GetAllCountries(in OneTimeZone oneTimeZone, Query? query, in int maxLength)
