@@ -117,9 +117,15 @@ Before testing
  * Running as user:
    * go to PowerToys repo root
    - [ ] verify the README.md Preview Pane shows the correct content
-   * go to PowerToys repo and visit src\runner\svgs
+   * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
    - [ ] verify Preview Pane works for the SVG files
    - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
+   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
+   - [ ] verify Preview Pane works for the PDF file
+   - [ ] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
+   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
+   - [ ] verify Preview Pane works for the gcode file
+   - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
  * Running as admin:
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
@@ -128,6 +134,10 @@ Before testing
    - [ ] verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
    - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
+   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
+   - [ ] verify Preview Pane doesn't show the preview for the PDF file
+   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
+   - [ ] verify Preview Pane doesn't show the preview for the gcode file
 
 ## Image Resizer
 - [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
