@@ -206,6 +206,7 @@ cguid
 changecursor
 Changemove
 charconv
+ChaseKnowlden
 chdir
 CHILDACTIVATE
 CHILDWINDOW
@@ -224,6 +225,7 @@ clangformat
 CLASSDC
 classname
 CLASSNOTAVAILABLE
+CleanCodeDeveloper
 clickable
 clickonce
 CLIENTEDGE
@@ -610,6 +612,7 @@ FPower
 FRAMECHANGED
 FRAMEDOWNLOAD
 franky
+frankychen
 Froml
 fstream
 FTYPE
@@ -647,6 +650,8 @@ globals
 GNumber
 google
 GPTR
+Grayscale
+gsuberland
 gtm
 gui
 guiddef
@@ -1003,6 +1008,7 @@ Keystool
 Keytool
 keyup
 KILLFOCUS
+Knowlden
 Knownfolders
 KSPROPERTY
 Kybd
@@ -1417,6 +1423,7 @@ pdto
 pdtobj
 pdw
 PDWORD
+pedrolamas
 PERCEIVEDFLAG
 pesi
 PEXCEPTION
@@ -1605,6 +1612,7 @@ renamable
 RENAMEONCOLLISION
 Renamer
 Reparse
+reportbug
 requery
 requerying
 rescap
@@ -1886,6 +1894,8 @@ swprintf
 SWRESTORE
 swscanf
 SYMED
+symlink
+symlinks
 SYMOPT
 SYNCMFT
 SYNCPAINT
@@ -1966,6 +1976,7 @@ Towindow
 towlower
 towupper
 tracelogging
+trackpad
 traies
 transcoded
 transparrent

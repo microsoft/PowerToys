@@ -13,7 +13,7 @@ body:
 - type: input
   attributes:
     label: Microsoft PowerToys version
-    placeholder: "0.35.0"
+    placeholder: "0.53.0"
     description: |
       Hover over system tray icon or look at Settings
   validations:
@@ -23,7 +23,8 @@ body:
     label: Utility with translation issue
     options:
       - General
-      - PowerToys Awake
+      - Always on Top
+      - Awake
       - ColorPicker
       - FancyZones
       - FancyZones Editor 
@@ -31,12 +32,17 @@ body:
       - Keyboard Manager
       - MD Preview
       - Mouse Utilities
+      - PDF Preview
+      - PDF Thumbnail
+      - G-code Preview
+      - G-code Thumbnail
       - PowerRename
       - PowerToys Run
       - Shortcut Guide
       - SVG Preview
       - SVG Thumbnail
       - Settings
+      - Video Conference Mute
       - Welcome / PowerToys Tour window
       - System tray interaction
       - Installer

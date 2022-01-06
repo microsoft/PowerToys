@@ -12,7 +12,7 @@ body:
   attributes:
     label: Microsoft PowerToys version
     placeholder: |
-      "0.33.1"
+      "0.53.0"
     description: |
       Hover over system tray icon or look at Settings
   validations:
@@ -32,6 +32,7 @@ body:
     multiple: true
     options:
       - General
+      - Always on Top
       - Awake
       - ColorPicker
       - FancyZones
@@ -77,7 +78,7 @@ body:
     label: ❌ Actual Behavior
     placeholder: What happened instead?
   validations:
-    required: true
+    required: false
 
 - type: textarea
   attributes:
