@@ -204,12 +204,6 @@ jobs:
 #### END SIGNING 
 ## END MAIN
 
-# Did we sign all files
-  - task: PowerShell@1
-    displayName: Verifying entire build is signed and version set
-    inputs:
-      scriptName: .pipelines/versionAndSignCheck.ps1
-
 ## INSTALLER START
 #### MSI BUILDING AND SIGNING
   - task: VSBuild@1
@@ -223,6 +217,17 @@ jobs:
       clean: true
       maximumCpuCount: true
 
+  - task: CmdLine@2
+    displayName: 'Extracting MSI to verify contents'
+    inputs:
+      script: 'msiexec.exe /a installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe targetdir=$(build.sourcesdirectory)\extractedMsi'
+
+# Did we sign all files
+  - task: PowerShell@1
+    displayName: Verifying entire build is signed and version set
+    inputs:
+      scriptName: .pipelines/versionAndSignCheck.ps1
+      
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     displayName: Sign MSI
     inputs:
