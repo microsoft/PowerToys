@@ -19,7 +19,7 @@ namespace ColorPicker
         public static void Main(string[] args)
         {
             _args = args;
-            Logger.LogInfo($"Color Picker started with pid={Process.GetCurrentProcess().Id}");
+            Logger.LogInfo($"Color Picker started with pid={Environment.ProcessId}");
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             try
             {
