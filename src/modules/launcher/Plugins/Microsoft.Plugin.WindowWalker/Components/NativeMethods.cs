@@ -645,8 +645,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// GetWindowLong index to retrieves the extended window styles.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Matching interop var")]
         public const int GWL_EXSTYLE = -20;
+
+        /// <summary>
+        /// A window receives this message when the user chooses a command from the Window menu (formerly known as the system or control menu)
+        /// or when the user chooses the maximize button, minimize button, restore button, or close button.
+        /// </summary>
+        public const int WM_SYSCOMMAND = 0x0112;
+
+        /// <summary>
+        /// Restores the window to its normal position and size.
+        /// </summary>
+        public const int SC_RESTORE = 0xf120;
 
         /// <summary>
         /// The following are the extended window styles
@@ -877,5 +887,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
+
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int msg, int wParam);
     }
 }
