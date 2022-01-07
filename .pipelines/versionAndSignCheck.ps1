@@ -2,7 +2,7 @@
 # todo: send in arch / conf
 Param()
 
-$DirPath = $PSScriptRoot + '/extractMsi';
+$DirPath = $PSScriptRoot + '/extractedMsi';
 $items = Get-ChildItem -Path $DirPath -File -Include *.exe,*.dll -Recurse -Force -ErrorAction SilentlyContinue
 $totalFailure = 0;
 
