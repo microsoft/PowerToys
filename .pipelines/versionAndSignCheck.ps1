@@ -2,7 +2,7 @@
 # todo: send in arch / conf
 Param()
 
-$DirPath = $PSScriptRoot + '/../x64/release';
+$DirPath = $PSScriptRoot + '/extractMsi';
 Write-Host $DirPath;
 
 $totalFailure = 0;
@@ -19,16 +19,13 @@ ForEach-Object {
 	}
 }
 
-Get-ChildItem -Path $DirPath -File -Recurse -Force -ErrorAction SilentlyContinue | 
+Get-ChildItem -Path $DirPath -File -Include *.exe,*.dll -Recurse -Force -ErrorAction SilentlyContinue | 
 ForEach-Object { 
-    if(($_.Extension -eq ".exe" -or $_.Extension -eq ".dll"))
-	{	
-		$auth = Get-AuthenticodeSignature $_.FullName
-		if($auth.SignerCertificate -eq $null)
-		{
-			Write-Host "Not Signed: " + $_.FullName
-			$totalFailure++;
-		}
+	$auth = Get-AuthenticodeSignature $_.FullName
+	if($auth.SignerCertificate -eq $null)
+	{
+		Write-Host "Not Signed: " + $_.FullName
+		$totalFailure++;
 	}
 }
 
