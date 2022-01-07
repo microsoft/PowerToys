@@ -21,10 +21,14 @@ ForEach-Object {
 
 Get-ChildItem -Path $DirPath -File -Recurse -Force -ErrorAction SilentlyContinue | 
 ForEach-Object { 
-    if($_.VersionInfo.FileVersion -eq "0.0.1.0" -or $_.VersionInfo.FileVersion -eq "1.0.0.0" )
-	{
-		Write-Host "Not Versioned: " + $_.FullName
-		$totalFailure++;
+    if(($_.Extension -eq ".exe" -or $_.Extension -eq ".dll") -and -not ($_.Name -in $ignoreList))
+	{	
+		$auth = Get-AuthenticodeSignature $_.FullName
+		if($auth.SignerCertificate -eq $null)
+		{
+			Write-Host "Not Signed: " + $_.FullName
+			$totalFailure++;
+		}
 	}
 }
 
