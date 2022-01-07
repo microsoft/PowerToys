@@ -12,7 +12,12 @@ steps:
   inputs:
     versionSpec: 5.8.0
 
-#- template: .\..\..\..\restore-dependencies.yml
+- task: UseDotNet@2
+  displayName: 'Use .NET Core sdk'
+  inputs:
+    packageType: sdk
+    version: 6.x
+    installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
