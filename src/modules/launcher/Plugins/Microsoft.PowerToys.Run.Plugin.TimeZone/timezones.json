@@ -50,10 +50,10 @@
         },
         {
             "Offset": "-10:00",
-            "Name": "Hawaii–Aleutian Time Zone",
+            "Name": "Hawaii_Aleutian Time Zone",
             "MilitaryName": "Whiskey Time Zone",
             "TimeNamesStandard": [
-                "Hawaii–Aleutian Standard Time",
+                "Hawaii_Aleutian Standard Time",
                 "Tahiti Time"
             ],
             "ShortcutsStandard": [
@@ -301,14 +301,14 @@
                 "Connecticut (United States)",
                 "Delaware (United States)",
                 "District of Columbia (United States)",
-                "Florida (most, United States))",
+                "Florida (most, United States)",
                 "Georgia (United States)",
-                "Indiana (most, United States))",
-                "Kentucky (most, United States))",
+                "Indiana (most, United States)",
+                "Kentucky (most, United States)",
                 "Maine (United States)",
                 "Maryland (United States)",
                 "Massachusetts",
-                "Michigan (most, United States))",
+                "Michigan (most, United States)",
                 "New Hampshire (United States)",
                 "New Jersey (United States)",
                 "New York (United States)",

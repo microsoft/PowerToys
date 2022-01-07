@@ -61,11 +61,866 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Abkhazia.
+        /// </summary>
+        internal static string Abkhazia {
+            get {
+                return ResourceManager.GetString("Abkhazia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Acre (Brazil).
+        /// </summary>
+        internal static string Acre__Brazil_ {
+            get {
+                return ResourceManager.GetString("Acre (Brazil)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Acre Time.
+        /// </summary>
+        internal static string Acre_Time {
+            get {
+                return ResourceManager.GetString("Acre Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Akrotiri and Dhekelia.
+        /// </summary>
+        internal static string Akrotiri_and_Dhekelia {
+            get {
+                return ResourceManager.GetString("Akrotiri and Dhekelia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alabama (United States).
+        /// </summary>
+        internal static string Alabama__United_States_ {
+            get {
+                return ResourceManager.GetString("Alabama (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alaska (most, United States).
+        /// </summary>
+        internal static string Alaska__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Alaska (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alaska Daylight Time.
+        /// </summary>
+        internal static string Alaska_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Alaska Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alaska Standard Time.
+        /// </summary>
+        internal static string Alaska_Standard_Time {
+            get {
+                return ResourceManager.GetString("Alaska Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alaska Time Zone.
+        /// </summary>
+        internal static string Alaska_Time_Zone {
+            get {
+                return ResourceManager.GetString("Alaska Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Albania.
+        /// </summary>
+        internal static string Albania {
+            get {
+                return ResourceManager.GetString("Albania", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alberta (Canada).
+        /// </summary>
+        internal static string Alberta__Canada_ {
+            get {
+                return ResourceManager.GetString("Alberta (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algeria.
+        /// </summary>
+        internal static string Algeria {
+            get {
+                return ResourceManager.GetString("Algeria", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alpha Time Zone.
+        /// </summary>
+        internal static string Alpha_Time_Zone {
+            get {
+                return ResourceManager.GetString("Alpha Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Amazon Summer Time.
+        /// </summary>
+        internal static string Amazon_Summer_Time {
+            get {
+                return ResourceManager.GetString("Amazon Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Amazon Time.
+        /// </summary>
+        internal static string Amazon_Time {
+            get {
+                return ResourceManager.GetString("Amazon Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Amazonas (most, Brazil).
+        /// </summary>
+        internal static string Amazonas__most__Brazil_ {
+            get {
+                return ResourceManager.GetString("Amazonas (most, Brazil)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to American Samoa.
+        /// </summary>
+        internal static string American_Samoa {
+            get {
+                return ResourceManager.GetString("American Samoa", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Andorra.
+        /// </summary>
+        internal static string Andorra {
+            get {
+                return ResourceManager.GetString("Andorra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Andreanof Islands (United States).
+        /// </summary>
+        internal static string Andreanof_Islands__United_States_ {
+            get {
+                return ResourceManager.GetString("Andreanof Islands (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Angola.
+        /// </summary>
+        internal static string Angola {
+            get {
+                return ResourceManager.GetString("Angola", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Anguilla.
+        /// </summary>
+        internal static string Anguilla {
+            get {
+                return ResourceManager.GetString("Anguilla", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Antigua and Barbuda.
+        /// </summary>
+        internal static string Antigua_and_Barbuda {
+            get {
+                return ResourceManager.GetString("Antigua and Barbuda", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Arabia Standard Time.
+        /// </summary>
+        internal static string Arabia_Standard_Time {
+            get {
+                return ResourceManager.GetString("Arabia Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Argentina.
+        /// </summary>
+        internal static string Argentina {
+            get {
+                return ResourceManager.GetString("Argentina", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Argentina Time.
+        /// </summary>
+        internal static string Argentina_Time {
+            get {
+                return ResourceManager.GetString("Argentina Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Arizona (most, United States).
+        /// </summary>
+        internal static string Arizona__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Arizona (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Arkansas (United States).
+        /// </summary>
+        internal static string Arkansas__United_States_ {
+            get {
+                return ResourceManager.GetString("Arkansas (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Aruba.
+        /// </summary>
+        internal static string Aruba {
+            get {
+                return ResourceManager.GetString("Aruba", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ascension and Tristan da Cunha.
+        /// </summary>
+        internal static string Ascension_and_Tristan_da_Cunha {
+            get {
+                return ResourceManager.GetString("Ascension and Tristan da Cunha", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Atikokan (Canada).
+        /// </summary>
+        internal static string Atikokan__Canada_ {
+            get {
+                return ResourceManager.GetString("Atikokan (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Atlantic Daylight Time.
+        /// </summary>
+        internal static string Atlantic_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Atlantic Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Atlantic Standard Time.
+        /// </summary>
+        internal static string Atlantic_Standard_Time {
+            get {
+                return ResourceManager.GetString("Atlantic Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Atlantic Time Zone.
+        /// </summary>
+        internal static string Atlantic_Time_Zone {
+            get {
+                return ResourceManager.GetString("Atlantic Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Austria.
+        /// </summary>
+        internal static string Austria {
+            get {
+                return ResourceManager.GetString("Austria", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Azores (Portugal).
+        /// </summary>
+        internal static string Azores__Portugal_ {
+            get {
+                return ResourceManager.GetString("Azores (Portugal)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Azores Standard Time.
+        /// </summary>
+        internal static string Azores_Standard_Time {
+            get {
+                return ResourceManager.GetString("Azores Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Azores Summer Time.
+        /// </summary>
+        internal static string Azores_Summer_Time {
+            get {
+                return ResourceManager.GetString("Azores Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bahamas.
+        /// </summary>
+        internal static string Bahamas {
+            get {
+                return ResourceManager.GetString("Bahamas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bahrain.
+        /// </summary>
+        internal static string Bahrain {
+            get {
+                return ResourceManager.GetString("Bahrain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Baja California (Mexico).
+        /// </summary>
+        internal static string Baja_California__Mexico_ {
+            get {
+                return ResourceManager.GetString("Baja California (Mexico)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Baja California Sur (Mexico).
+        /// </summary>
+        internal static string Baja_California_Sur__Mexico_ {
+            get {
+                return ResourceManager.GetString("Baja California Sur (Mexico)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Baker Island.
+        /// </summary>
+        internal static string Baker_Island {
+            get {
+                return ResourceManager.GetString("Baker Island", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Baker Island Time.
+        /// </summary>
+        internal static string Baker_Island_Time {
+            get {
+                return ResourceManager.GetString("Baker Island Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Barbados.
+        /// </summary>
+        internal static string Barbados {
+            get {
+                return ResourceManager.GetString("Barbados", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Belarus.
+        /// </summary>
+        internal static string Belarus {
+            get {
+                return ResourceManager.GetString("Belarus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Belgium.
+        /// </summary>
+        internal static string Belgium {
+            get {
+                return ResourceManager.GetString("Belgium", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Belize.
+        /// </summary>
+        internal static string Belize {
+            get {
+                return ResourceManager.GetString("Belize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Benin.
+        /// </summary>
+        internal static string Benin {
+            get {
+                return ResourceManager.GetString("Benin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bermuda.
+        /// </summary>
+        internal static string Bermuda {
+            get {
+                return ResourceManager.GetString("Bermuda", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bolivia.
+        /// </summary>
+        internal static string Bolivia {
+            get {
+                return ResourceManager.GetString("Bolivia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bolivia Time.
+        /// </summary>
+        internal static string Bolivia_Time {
+            get {
+                return ResourceManager.GetString("Bolivia Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bosnia and Herzegovina.
+        /// </summary>
+        internal static string Bosnia_and_Herzegovina {
+            get {
+                return ResourceManager.GetString("Bosnia and Herzegovina", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Botswana.
+        /// </summary>
+        internal static string Botswana {
+            get {
+                return ResourceManager.GetString("Botswana", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Brasília Summer Time.
+        /// </summary>
+        internal static string Brasília_Summer_Time {
+            get {
+                return ResourceManager.GetString("Brasília Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Brasília Time.
+        /// </summary>
+        internal static string Brasília_Time {
+            get {
+                return ResourceManager.GetString("Brasília Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bravo Time Zone.
+        /// </summary>
+        internal static string Bravo_Time_Zone {
+            get {
+                return ResourceManager.GetString("Bravo Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Brazil (most).
+        /// </summary>
+        internal static string Brazil__most_ {
+            get {
+                return ResourceManager.GetString("Brazil (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to British Columbia (most, Canada).
+        /// </summary>
+        internal static string British_Columbia__most__Canada_ {
+            get {
+                return ResourceManager.GetString("British Columbia (most, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to British Columbia (northeast, Canada).
+        /// </summary>
+        internal static string British_Columbia__northeast__Canada_ {
+            get {
+                return ResourceManager.GetString("British Columbia (northeast, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to British Columbia (southeast, Canada).
+        /// </summary>
+        internal static string British_Columbia__southeast__Canada_ {
+            get {
+                return ResourceManager.GetString("British Columbia (southeast, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to British Summer Time.
+        /// </summary>
+        internal static string British_Summer_Time {
+            get {
+                return ResourceManager.GetString("British Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to British Virgin Islands.
+        /// </summary>
+        internal static string British_Virgin_Islands {
+            get {
+                return ResourceManager.GetString("British Virgin Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bulgaria.
+        /// </summary>
+        internal static string Bulgaria {
+            get {
+                return ResourceManager.GetString("Bulgaria", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Burkina Faso.
+        /// </summary>
+        internal static string Burkina_Faso {
+            get {
+                return ResourceManager.GetString("Burkina Faso", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Burundi.
+        /// </summary>
+        internal static string Burundi {
+            get {
+                return ResourceManager.GetString("Burundi", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to California (United States).
+        /// </summary>
+        internal static string California__United_States_ {
+            get {
+                return ResourceManager.GetString("California (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cameroon.
+        /// </summary>
+        internal static string Cameroon {
+            get {
+                return ResourceManager.GetString("Cameroon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Canary Islands.
+        /// </summary>
+        internal static string Canary_Islands {
+            get {
+                return ResourceManager.GetString("Canary Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cape Verde.
+        /// </summary>
+        internal static string Cape_Verde {
+            get {
+                return ResourceManager.GetString("Cape Verde", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cape Verde Time.
+        /// </summary>
+        internal static string Cape_Verde_Time {
+            get {
+                return ResourceManager.GetString("Cape Verde Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Caribbean Netherlands.
+        /// </summary>
+        internal static string Caribbean_Netherlands {
+            get {
+                return ResourceManager.GetString("Caribbean Netherlands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cayman Islands.
+        /// </summary>
+        internal static string Cayman_Islands {
+            get {
+                return ResourceManager.GetString("Cayman Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Central Africa Time.
+        /// </summary>
+        internal static string Central_Africa_Time {
+            get {
+                return ResourceManager.GetString("Central Africa Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Central African Republic.
+        /// </summary>
+        internal static string Central_African_Republic {
+            get {
+                return ResourceManager.GetString("Central African Republic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Central Daylight Time.
+        /// </summary>
+        internal static string Central_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Central Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Central European Summer Time.
+        /// </summary>
+        internal static string Central_European_Summer_Time {
+            get {
+                return ResourceManager.GetString("Central European Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Central European Time.
+        /// </summary>
+        internal static string Central_European_Time {
+            get {
+                return ResourceManager.GetString("Central European Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Central Standard Time.
+        /// </summary>
+        internal static string Central_Standard_Time {
+            get {
+                return ResourceManager.GetString("Central Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Central Time Zone.
+        /// </summary>
+        internal static string Central_Time_Zone {
+            get {
+                return ResourceManager.GetString("Central Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chad.
+        /// </summary>
+        internal static string Chad {
+            get {
+                return ResourceManager.GetString("Chad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Charlie Time Zone.
+        /// </summary>
+        internal static string Charlie_Time_Zone {
+            get {
+                return ResourceManager.GetString("Charlie Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chihuahua (Mexico).
+        /// </summary>
+        internal static string Chihuahua__Mexico_ {
+            get {
+                return ResourceManager.GetString("Chihuahua (Mexico)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chile (most).
+        /// </summary>
+        internal static string Chile__most_ {
+            get {
+                return ResourceManager.GetString("Chile (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chile Summer Time.
+        /// </summary>
+        internal static string Chile_Summer_Time {
+            get {
+                return ResourceManager.GetString("Chile Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clipperton Island.
+        /// </summary>
+        internal static string Clipperton_Island {
+            get {
+                return ResourceManager.GetString("Clipperton Island", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Colombia.
+        /// </summary>
+        internal static string Colombia {
+            get {
+                return ResourceManager.GetString("Colombia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Colombia Summer Time.
+        /// </summary>
+        internal static string Colombia_Summer_Time {
+            get {
+                return ResourceManager.GetString("Colombia Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Colombia Time.
+        /// </summary>
+        internal static string Colombia_Time {
+            get {
+                return ResourceManager.GetString("Colombia Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Colorado (United States).
+        /// </summary>
+        internal static string Colorado__United_States_ {
+            get {
+                return ResourceManager.GetString("Colorado (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Comoros.
+        /// </summary>
+        internal static string Comoros {
+            get {
+                return ResourceManager.GetString("Comoros", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Congo.
+        /// </summary>
+        internal static string Congo {
+            get {
+                return ResourceManager.GetString("Congo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connecticut (United States).
+        /// </summary>
+        internal static string Connecticut__United_States_ {
+            get {
+                return ResourceManager.GetString("Connecticut (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cook Islands.
+        /// </summary>
+        internal static string Cook_Islands {
+            get {
+                return ResourceManager.GetString("Cook Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Coordinated Universal Time.
+        /// </summary>
+        internal static string Coordinated_Universal_Time {
+            get {
+                return ResourceManager.GetString("Coordinated Universal Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy time.
         /// </summary>
         internal static string CopyTime {
             get {
                 return ResourceManager.GetString("CopyTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Costa Rica.
+        /// </summary>
+        internal static string Costa_Rica {
+            get {
+                return ResourceManager.GetString("Costa Rica", resourceCulture);
             }
         }
         
@@ -88,6 +943,87 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Crimea.
+        /// </summary>
+        internal static string Crimea {
+            get {
+                return ResourceManager.GetString("Crimea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Croatia.
+        /// </summary>
+        internal static string Croatia {
+            get {
+                return ResourceManager.GetString("Croatia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cuba.
+        /// </summary>
+        internal static string Cuba {
+            get {
+                return ResourceManager.GetString("Cuba", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cuba Daylight Time.
+        /// </summary>
+        internal static string Cuba_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Cuba Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cuba Standard Time.
+        /// </summary>
+        internal static string Cuba_Standard_Time {
+            get {
+                return ResourceManager.GetString("Cuba Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Curaçao.
+        /// </summary>
+        internal static string Curaçao {
+            get {
+                return ResourceManager.GetString("Curaçao", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cyprus.
+        /// </summary>
+        internal static string Cyprus {
+            get {
+                return ResourceManager.GetString("Cyprus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Czech Republic.
+        /// </summary>
+        internal static string Czech_Republic {
+            get {
+                return ResourceManager.GetString("Czech Republic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Danmarkshavn.
+        /// </summary>
+        internal static string Danmarkshavn {
+            get {
+                return ResourceManager.GetString("Danmarkshavn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Daylight Time.
         /// </summary>
         internal static string DaylightTime {
@@ -106,11 +1042,1658 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delaware (United States).
+        /// </summary>
+        internal static string Delaware__United_States_ {
+            get {
+                return ResourceManager.GetString("Delaware (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Democratic Republic of the Congo (most).
+        /// </summary>
+        internal static string Democratic_Republic_of_the_Congo__most_ {
+            get {
+                return ResourceManager.GetString("Democratic Republic of the Congo (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Denmark.
+        /// </summary>
+        internal static string Denmark {
+            get {
+                return ResourceManager.GetString("Denmark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to District of Columbia (United States).
+        /// </summary>
+        internal static string District_of_Columbia__United_States_ {
+            get {
+                return ResourceManager.GetString("District of Columbia (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Djibouti.
+        /// </summary>
+        internal static string Djibouti {
+            get {
+                return ResourceManager.GetString("Djibouti", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dominica.
+        /// </summary>
+        internal static string Dominica {
+            get {
+                return ResourceManager.GetString("Dominica", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dominican Republic.
+        /// </summary>
+        internal static string Dominican_Republic {
+            get {
+                return ResourceManager.GetString("Dominican Republic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Donetsk PR.
+        /// </summary>
+        internal static string Donetsk_PR {
+            get {
+                return ResourceManager.GetString("Donetsk PR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to East Africa Time.
+        /// </summary>
+        internal static string East_Africa_Time {
+            get {
+                return ResourceManager.GetString("East Africa Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Easter Island (Chile).
+        /// </summary>
+        internal static string Easter_Island__Chile_ {
+            get {
+                return ResourceManager.GetString("Easter Island (Chile)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Easter Island Standard Time.
+        /// </summary>
+        internal static string Easter_Island_Standard_Time {
+            get {
+                return ResourceManager.GetString("Easter Island Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Easter Island Summer Time.
+        /// </summary>
+        internal static string Easter_Island_Summer_Time {
+            get {
+                return ResourceManager.GetString("Easter Island Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Eastern Caribbean Time.
+        /// </summary>
+        internal static string Eastern_Caribbean_Time {
+            get {
+                return ResourceManager.GetString("Eastern Caribbean Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Eastern Daylight Time.
+        /// </summary>
+        internal static string Eastern_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Eastern Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Eastern European Summer Time.
+        /// </summary>
+        internal static string Eastern_European_Summer_Time {
+            get {
+                return ResourceManager.GetString("Eastern European Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Eastern European Time.
+        /// </summary>
+        internal static string Eastern_European_Time {
+            get {
+                return ResourceManager.GetString("Eastern European Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Eastern Greenland Summer Time.
+        /// </summary>
+        internal static string Eastern_Greenland_Summer_Time {
+            get {
+                return ResourceManager.GetString("Eastern Greenland Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Eastern Greenland Time.
+        /// </summary>
+        internal static string Eastern_Greenland_Time {
+            get {
+                return ResourceManager.GetString("Eastern Greenland Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Eastern Standard Time.
+        /// </summary>
+        internal static string Eastern_Standard_Time {
+            get {
+                return ResourceManager.GetString("Eastern Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Eastern Time Zone.
+        /// </summary>
+        internal static string Eastern_Time_Zone {
+            get {
+                return ResourceManager.GetString("Eastern Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ecuador: Galápagos.
+        /// </summary>
+        internal static string Ecuador__Galápagos {
+            get {
+                return ResourceManager.GetString("Ecuador: Galápagos", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ecuador (most).
+        /// </summary>
+        internal static string Ecuador__most_ {
+            get {
+                return ResourceManager.GetString("Ecuador (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ecuador Time.
+        /// </summary>
+        internal static string Ecuador_Time {
+            get {
+                return ResourceManager.GetString("Ecuador Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Egypt.
+        /// </summary>
+        internal static string Egypt {
+            get {
+                return ResourceManager.GetString("Egypt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to El Salvador.
+        /// </summary>
+        internal static string El_Salvador {
+            get {
+                return ResourceManager.GetString("El Salvador", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Équateur (Democratic Republic of the Congo).
+        /// </summary>
+        internal static string Équateur__Democratic_Republic_of_the_Congo_ {
+            get {
+                return ResourceManager.GetString("Équateur (Democratic Republic of the Congo)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Equatorial Guinea.
+        /// </summary>
+        internal static string Equatorial_Guinea {
+            get {
+                return ResourceManager.GetString("Equatorial Guinea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Eritrea.
+        /// </summary>
+        internal static string Eritrea {
+            get {
+                return ResourceManager.GetString("Eritrea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Estonia.
+        /// </summary>
+        internal static string Estonia {
+            get {
+                return ResourceManager.GetString("Estonia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Eswatini.
+        /// </summary>
+        internal static string Eswatini {
+            get {
+                return ResourceManager.GetString("Eswatini", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ethiopia.
+        /// </summary>
+        internal static string Ethiopia {
+            get {
+                return ResourceManager.GetString("Ethiopia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Falkland Islands.
+        /// </summary>
+        internal static string Falkland_Islands {
+            get {
+                return ResourceManager.GetString("Falkland Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Falkland Islands Summer Time.
+        /// </summary>
+        internal static string Falkland_Islands_Summer_Time {
+            get {
+                return ResourceManager.GetString("Falkland Islands Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Falkland Islands Time.
+        /// </summary>
+        internal static string Falkland_Islands_Time {
+            get {
+                return ResourceManager.GetString("Falkland Islands Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Faroe Islands.
+        /// </summary>
+        internal static string Faroe_Islands {
+            get {
+                return ResourceManager.GetString("Faroe Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fernando de Noronha (Brazil).
+        /// </summary>
+        internal static string Fernando_de_Noronha__Brazil_ {
+            get {
+                return ResourceManager.GetString("Fernando de Noronha (Brazil)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fernando de Noronha Time.
+        /// </summary>
+        internal static string Fernando_de_Noronha_Time {
+            get {
+                return ResourceManager.GetString("Fernando de Noronha Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finland.
+        /// </summary>
+        internal static string Finland {
+            get {
+                return ResourceManager.GetString("Finland", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Florida (most, United States).
+        /// </summary>
+        internal static string Florida__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Florida (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to France (metropolitan).
+        /// </summary>
+        internal static string France__metropolitan_ {
+            get {
+                return ResourceManager.GetString("France (metropolitan)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to French Guiana.
+        /// </summary>
+        internal static string French_Guiana {
+            get {
+                return ResourceManager.GetString("French Guiana", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to French Guiana Time.
+        /// </summary>
+        internal static string French_Guiana_Time {
+            get {
+                return ResourceManager.GetString("French Guiana Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to French Polynesia (most).
+        /// </summary>
+        internal static string French_Polynesia__most_ {
+            get {
+                return ResourceManager.GetString("French Polynesia (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Further-eastern European Time.
+        /// </summary>
+        internal static string Further_eastern_European_Time {
+            get {
+                return ResourceManager.GetString("Further-eastern European Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gabon.
+        /// </summary>
+        internal static string Gabon {
+            get {
+                return ResourceManager.GetString("Gabon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Galápagos Time.
+        /// </summary>
+        internal static string Galápagos_Time {
+            get {
+                return ResourceManager.GetString("Galápagos Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gambia.
+        /// </summary>
+        internal static string Gambia {
+            get {
+                return ResourceManager.GetString("Gambia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gambier Islands (French Polynesia).
+        /// </summary>
+        internal static string Gambier_Islands__French_Polynesia_ {
+            get {
+                return ResourceManager.GetString("Gambier Islands (French Polynesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gambier Islands Time.
+        /// </summary>
+        internal static string Gambier_Islands_Time {
+            get {
+                return ResourceManager.GetString("Gambier Islands Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Georgia (United States).
+        /// </summary>
+        internal static string Georgia__United_States_ {
+            get {
+                return ResourceManager.GetString("Georgia (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Germany.
+        /// </summary>
+        internal static string Germany {
+            get {
+                return ResourceManager.GetString("Germany", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ghana.
+        /// </summary>
+        internal static string Ghana {
+            get {
+                return ResourceManager.GetString("Ghana", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gibraltar.
+        /// </summary>
+        internal static string Gibraltar {
+            get {
+                return ResourceManager.GetString("Gibraltar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Greece.
+        /// </summary>
+        internal static string Greece {
+            get {
+                return ResourceManager.GetString("Greece", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Greenland (most).
+        /// </summary>
+        internal static string Greenland__most_ {
+            get {
+                return ResourceManager.GetString("Greenland (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Greenwich Mean Time.
+        /// </summary>
+        internal static string Greenwich_Mean_Time {
+            get {
+                return ResourceManager.GetString("Greenwich Mean Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grenada.
+        /// </summary>
+        internal static string Grenada {
+            get {
+                return ResourceManager.GetString("Grenada", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Guadeloupe.
+        /// </summary>
+        internal static string Guadeloupe {
+            get {
+                return ResourceManager.GetString("Guadeloupe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Guatemala.
+        /// </summary>
+        internal static string Guatemala {
+            get {
+                return ResourceManager.GetString("Guatemala", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Guernsey.
+        /// </summary>
+        internal static string Guernsey {
+            get {
+                return ResourceManager.GetString("Guernsey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Guinea.
+        /// </summary>
+        internal static string Guinea {
+            get {
+                return ResourceManager.GetString("Guinea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Guinea-Bissau.
+        /// </summary>
+        internal static string Guinea_Bissau {
+            get {
+                return ResourceManager.GetString("Guinea-Bissau", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Guyana.
+        /// </summary>
+        internal static string Guyana {
+            get {
+                return ResourceManager.GetString("Guyana", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Guyana Time.
+        /// </summary>
+        internal static string Guyana_Time {
+            get {
+                return ResourceManager.GetString("Guyana Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Haiti.
+        /// </summary>
+        internal static string Haiti {
+            get {
+                return ResourceManager.GetString("Haiti", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hawaii (United States).
+        /// </summary>
+        internal static string Hawaii__United_States_ {
+            get {
+                return ResourceManager.GetString("Hawaii (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hawaii–Aleutian Daylight Time.
+        /// </summary>
+        internal static string Hawaii_Aleutian_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Hawaii_Aleutian Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hawaii–Aleutian Standard Time.
+        /// </summary>
+        internal static string Hawaii_Aleutian_Standard_Time {
+            get {
+                return ResourceManager.GetString("Hawaii_Aleutian Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hawaii–Aleutian Time Zone.
+        /// </summary>
+        internal static string Hawaii_Aleutian_Time_Zone {
+            get {
+                return ResourceManager.GetString("Hawaii_Aleutian Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Heure Avancée d&apos;Europe Centrale.
+        /// </summary>
+        internal static string Heure_Avancée_d_Europe_Centrale {
+            get {
+                return ResourceManager.GetString("Heure Avancée d\'Europe Centrale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Honduras.
+        /// </summary>
+        internal static string Honduras {
+            get {
+                return ResourceManager.GetString("Honduras", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Howland Island.
+        /// </summary>
+        internal static string Howland_Island {
+            get {
+                return ResourceManager.GetString("Howland Island", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hungary.
+        /// </summary>
+        internal static string Hungary {
+            get {
+                return ResourceManager.GetString("Hungary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Iceland.
+        /// </summary>
+        internal static string Iceland {
+            get {
+                return ResourceManager.GetString("Iceland", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Idaho (most, United States).
+        /// </summary>
+        internal static string Idaho__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Idaho (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Idaho (north, United States).
+        /// </summary>
+        internal static string Idaho__north__United_States_ {
+            get {
+                return ResourceManager.GetString("Idaho (north, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Illinois (United States).
+        /// </summary>
+        internal static string Illinois__United_States_ {
+            get {
+                return ResourceManager.GetString("Illinois (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indian Ocean Time.
+        /// </summary>
+        internal static string Indian_Ocean_Time {
+            get {
+                return ResourceManager.GetString("Indian Ocean Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indiana (most, United States).
+        /// </summary>
+        internal static string Indiana__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Indiana (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to International Date Line West time zone.
+        /// </summary>
+        internal static string International_Date_Line_West_time_zone {
+            get {
+                return ResourceManager.GetString("International Date Line West time zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Iowa (United States).
+        /// </summary>
+        internal static string Iowa__United_States_ {
+            get {
+                return ResourceManager.GetString("Iowa (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Iran.
+        /// </summary>
+        internal static string Iran {
+            get {
+                return ResourceManager.GetString("Iran", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Iran Daylight Time.
+        /// </summary>
+        internal static string Iran_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Iran Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Iran Standard Time.
+        /// </summary>
+        internal static string Iran_Standard_Time {
+            get {
+                return ResourceManager.GetString("Iran Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Iraq.
+        /// </summary>
+        internal static string Iraq {
+            get {
+                return ResourceManager.GetString("Iraq", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ireland.
+        /// </summary>
+        internal static string Ireland {
+            get {
+                return ResourceManager.GetString("Ireland", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Irish Standard Time.
+        /// </summary>
+        internal static string Irish_Standard_Time {
+            get {
+                return ResourceManager.GetString("Irish Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Islands of Four Mountains (United States).
+        /// </summary>
+        internal static string Islands_of_Four_Mountains__United_States_ {
+            get {
+                return ResourceManager.GetString("Islands of Four Mountains (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Isle of Man.
+        /// </summary>
+        internal static string Isle_of_Man {
+            get {
+                return ResourceManager.GetString("Isle of Man", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Israel.
+        /// </summary>
+        internal static string Israel {
+            get {
+                return ResourceManager.GetString("Israel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Israel Daylight Time.
+        /// </summary>
+        internal static string Israel_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Israel Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Israel Standard Time.
+        /// </summary>
+        internal static string Israel_Standard_Time {
+            get {
+                return ResourceManager.GetString("Israel Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Italy.
+        /// </summary>
+        internal static string Italy {
+            get {
+                return ResourceManager.GetString("Italy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ittoqqortoormiit (Greenland).
+        /// </summary>
+        internal static string Ittoqqortoormiit__Greenland_ {
+            get {
+                return ResourceManager.GetString("Ittoqqortoormiit (Greenland)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ivory Coast.
+        /// </summary>
+        internal static string Ivory_Coast {
+            get {
+                return ResourceManager.GetString("Ivory Coast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Jamaica.
+        /// </summary>
+        internal static string Jamaica {
+            get {
+                return ResourceManager.GetString("Jamaica", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Jarvis Island.
+        /// </summary>
+        internal static string Jarvis_Island {
+            get {
+                return ResourceManager.GetString("Jarvis Island", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Jersey.
+        /// </summary>
+        internal static string Jersey {
+            get {
+                return ResourceManager.GetString("Jersey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Johnston Atoll.
+        /// </summary>
+        internal static string Johnston_Atoll {
+            get {
+                return ResourceManager.GetString("Johnston Atoll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Jordan.
+        /// </summary>
+        internal static string Jordan {
+            get {
+                return ResourceManager.GetString("Jordan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kaliningrad (Russia).
+        /// </summary>
+        internal static string Kaliningrad__Russia_ {
+            get {
+                return ResourceManager.GetString("Kaliningrad (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kaliningrad Time.
+        /// </summary>
+        internal static string Kaliningrad_Time {
+            get {
+                return ResourceManager.GetString("Kaliningrad Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kansas (most, United States).
+        /// </summary>
+        internal static string Kansas__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Kansas (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kentucky (most, United States).
+        /// </summary>
+        internal static string Kentucky__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Kentucky (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kenya.
+        /// </summary>
+        internal static string Kenya {
+            get {
+                return ResourceManager.GetString("Kenya", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kingman Reef.
+        /// </summary>
+        internal static string Kingman_Reef {
+            get {
+                return ResourceManager.GetString("Kingman Reef", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kinshasa (Democratic Republic of the Congo).
+        /// </summary>
+        internal static string Kinshasa__Democratic_Republic_of_the_Congo_ {
+            get {
+                return ResourceManager.GetString("Kinshasa (Democratic Republic of the Congo)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kongo Central (Democratic Republic of the Congo).
+        /// </summary>
+        internal static string Kongo_Central__Democratic_Republic_of_the_Congo_ {
+            get {
+                return ResourceManager.GetString("Kongo Central (Democratic Republic of the Congo)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kosovo.
+        /// </summary>
+        internal static string Kosovo {
+            get {
+                return ResourceManager.GetString("Kosovo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kuwait.
+        /// </summary>
+        internal static string Kuwait {
+            get {
+                return ResourceManager.GetString("Kuwait", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kwango (Democratic Republic of the Congo).
+        /// </summary>
+        internal static string Kwango__Democratic_Republic_of_the_Congo_ {
+            get {
+                return ResourceManager.GetString("Kwango (Democratic Republic of the Congo)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kwilu (Democratic Republic of the Congo).
+        /// </summary>
+        internal static string Kwilu__Democratic_Republic_of_the_Congo_ {
+            get {
+                return ResourceManager.GetString("Kwilu (Democratic Republic of the Congo)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Labrador (most, Canada).
+        /// </summary>
+        internal static string Labrador__most__Canada_ {
+            get {
+                return ResourceManager.GetString("Labrador (most, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Labrador (southeast, Canada).
+        /// </summary>
+        internal static string Labrador__southeast__Canada_ {
+            get {
+                return ResourceManager.GetString("Labrador (southeast, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Latvia.
+        /// </summary>
+        internal static string Latvia {
+            get {
+                return ResourceManager.GetString("Latvia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lebanon.
+        /// </summary>
+        internal static string Lebanon {
+            get {
+                return ResourceManager.GetString("Lebanon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lesotho.
+        /// </summary>
+        internal static string Lesotho {
+            get {
+                return ResourceManager.GetString("Lesotho", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Liberia.
+        /// </summary>
+        internal static string Liberia {
+            get {
+                return ResourceManager.GetString("Liberia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Libya.
+        /// </summary>
+        internal static string Libya {
+            get {
+                return ResourceManager.GetString("Libya", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Liechtenstein.
+        /// </summary>
+        internal static string Liechtenstein {
+            get {
+                return ResourceManager.GetString("Liechtenstein", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lithuania.
+        /// </summary>
+        internal static string Lithuania {
+            get {
+                return ResourceManager.GetString("Lithuania", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Louisiana (United States).
+        /// </summary>
+        internal static string Louisiana__United_States_ {
+            get {
+                return ResourceManager.GetString("Louisiana (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Luhansk PR.
+        /// </summary>
+        internal static string Luhansk_PR {
+            get {
+                return ResourceManager.GetString("Luhansk PR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Luxembourg.
+        /// </summary>
+        internal static string Luxembourg {
+            get {
+                return ResourceManager.GetString("Luxembourg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Madagascar.
+        /// </summary>
+        internal static string Madagascar {
+            get {
+                return ResourceManager.GetString("Madagascar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Magallanes (Chile).
+        /// </summary>
+        internal static string Magallanes__Chile_ {
+            get {
+                return ResourceManager.GetString("Magallanes (Chile)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mai-Ndombe (Democratic Republic of the Congo).
+        /// </summary>
+        internal static string Mai_Ndombe__Democratic_Republic_of_the_Congo_ {
+            get {
+                return ResourceManager.GetString("Mai-Ndombe (Democratic Republic of the Congo)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maine (United States).
+        /// </summary>
+        internal static string Maine__United_States_ {
+            get {
+                return ResourceManager.GetString("Maine (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Malawi.
+        /// </summary>
+        internal static string Malawi {
+            get {
+                return ResourceManager.GetString("Malawi", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mali.
+        /// </summary>
+        internal static string Mali {
+            get {
+                return ResourceManager.GetString("Mali", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Malta.
+        /// </summary>
+        internal static string Malta {
+            get {
+                return ResourceManager.GetString("Malta", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manitoba (Canada).
+        /// </summary>
+        internal static string Manitoba__Canada_ {
+            get {
+                return ResourceManager.GetString("Manitoba (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Marquesas Islands (French Polynesia).
+        /// </summary>
+        internal static string Marquesas_Islands__French_Polynesia_ {
+            get {
+                return ResourceManager.GetString("Marquesas Islands (French Polynesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Marquesas Islands Time.
+        /// </summary>
+        internal static string Marquesas_Islands_Time {
+            get {
+                return ResourceManager.GetString("Marquesas Islands Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Martinique.
+        /// </summary>
+        internal static string Martinique {
+            get {
+                return ResourceManager.GetString("Martinique", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maryland (United States).
+        /// </summary>
+        internal static string Maryland__United_States_ {
+            get {
+                return ResourceManager.GetString("Maryland (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Massachusetts.
+        /// </summary>
+        internal static string Massachusetts {
+            get {
+                return ResourceManager.GetString("Massachusetts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mato Grosso (Brazil).
+        /// </summary>
+        internal static string Mato_Grosso__Brazil_ {
+            get {
+                return ResourceManager.GetString("Mato Grosso (Brazil)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mato Grosso do Sul (Brazil).
+        /// </summary>
+        internal static string Mato_Grosso_do_Sul__Brazil_ {
+            get {
+                return ResourceManager.GetString("Mato Grosso do Sul (Brazil)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mauritania.
+        /// </summary>
+        internal static string Mauritania {
+            get {
+                return ResourceManager.GetString("Mauritania", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mayotte.
+        /// </summary>
+        internal static string Mayotte {
+            get {
+                return ResourceManager.GetString("Mayotte", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mexico (most).
+        /// </summary>
+        internal static string Mexico__most_ {
+            get {
+                return ResourceManager.GetString("Mexico (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Michigan (most, United States).
+        /// </summary>
+        internal static string Michigan__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Michigan (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Middle European Summer Time.
+        /// </summary>
+        internal static string Middle_European_Summer_Time {
+            get {
+                return ResourceManager.GetString("Middle European Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Middle European Time.
+        /// </summary>
+        internal static string Middle_European_Time {
+            get {
+                return ResourceManager.GetString("Middle European Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Midway Atoll.
+        /// </summary>
+        internal static string Midway_Atoll {
+            get {
+                return ResourceManager.GetString("Midway Atoll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minnesota (United States).
+        /// </summary>
+        internal static string Minnesota__United_States_ {
+            get {
+                return ResourceManager.GetString("Minnesota (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mishkeegogamang (Canada).
+        /// </summary>
+        internal static string Mishkeegogamang__Canada_ {
+            get {
+                return ResourceManager.GetString("Mishkeegogamang (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mississippi (United States).
+        /// </summary>
+        internal static string Mississippi__United_States_ {
+            get {
+                return ResourceManager.GetString("Mississippi (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missouri (United States).
+        /// </summary>
+        internal static string Missouri__United_States_ {
+            get {
+                return ResourceManager.GetString("Missouri (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Moldova.
+        /// </summary>
+        internal static string Moldova {
+            get {
+                return ResourceManager.GetString("Moldova", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Monaco.
+        /// </summary>
+        internal static string Monaco {
+            get {
+                return ResourceManager.GetString("Monaco", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mongala (Democratic Republic of the Congo).
+        /// </summary>
+        internal static string Mongala__Democratic_Republic_of_the_Congo_ {
+            get {
+                return ResourceManager.GetString("Mongala (Democratic Republic of the Congo)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Montana (United States).
+        /// </summary>
+        internal static string Montana__United_States_ {
+            get {
+                return ResourceManager.GetString("Montana (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Montenegro.
+        /// </summary>
+        internal static string Montenegro {
+            get {
+                return ResourceManager.GetString("Montenegro", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Montserrat.
+        /// </summary>
+        internal static string Montserrat {
+            get {
+                return ResourceManager.GetString("Montserrat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Morocco.
+        /// </summary>
+        internal static string Morocco {
+            get {
+                return ResourceManager.GetString("Morocco", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Moscow Time.
+        /// </summary>
+        internal static string Moscow_Time {
+            get {
+                return ResourceManager.GetString("Moscow Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mountain Daylight Time.
+        /// </summary>
+        internal static string Mountain_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Mountain Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mountain Standard Time.
+        /// </summary>
+        internal static string Mountain_Standard_Time {
+            get {
+                return ResourceManager.GetString("Mountain Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mountain Time Zone.
+        /// </summary>
+        internal static string Mountain_Time_Zone {
+            get {
+                return ResourceManager.GetString("Mountain Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mozambique.
+        /// </summary>
+        internal static string Mozambique {
+            get {
+                return ResourceManager.GetString("Mozambique", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Names.
         /// </summary>
         internal static string Names {
             get {
                 return ResourceManager.GetString("Names", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Namibia.
+        /// </summary>
+        internal static string Namibia {
+            get {
+                return ResourceManager.GetString("Namibia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Navassa Island.
+        /// </summary>
+        internal static string Navassa_Island {
+            get {
+                return ResourceManager.GetString("Navassa Island", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nayarit (most, Mexico).
+        /// </summary>
+        internal static string Nayarit__most__Mexico_ {
+            get {
+                return ResourceManager.GetString("Nayarit (most, Mexico)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Near Islands (United States).
+        /// </summary>
+        internal static string Near_Islands__United_States_ {
+            get {
+                return ResourceManager.GetString("Near Islands (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nebraska (most, United States).
+        /// </summary>
+        internal static string Nebraska__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Nebraska (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Netherlands (European).
+        /// </summary>
+        internal static string Netherlands__European_ {
+            get {
+                return ResourceManager.GetString("Netherlands (European)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nevada (United States).
+        /// </summary>
+        internal static string Nevada__United_States_ {
+            get {
+                return ResourceManager.GetString("Nevada (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Brunswick (Canada).
+        /// </summary>
+        internal static string New_Brunswick__Canada_ {
+            get {
+                return ResourceManager.GetString("New Brunswick (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Hampshire (United States).
+        /// </summary>
+        internal static string New_Hampshire__United_States_ {
+            get {
+                return ResourceManager.GetString("New Hampshire (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Jersey (United States).
+        /// </summary>
+        internal static string New_Jersey__United_States_ {
+            get {
+                return ResourceManager.GetString("New Jersey (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Mexico (United States).
+        /// </summary>
+        internal static string New_Mexico__United_States_ {
+            get {
+                return ResourceManager.GetString("New Mexico (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New York (United States).
+        /// </summary>
+        internal static string New_York__United_States_ {
+            get {
+                return ResourceManager.GetString("New York (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Newfoundland (Canada).
+        /// </summary>
+        internal static string Newfoundland__Canada_ {
+            get {
+                return ResourceManager.GetString("Newfoundland (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Newfoundland Daylight Time.
+        /// </summary>
+        internal static string Newfoundland_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Newfoundland Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Newfoundland Standard Time.
+        /// </summary>
+        internal static string Newfoundland_Standard_Time {
+            get {
+                return ResourceManager.GetString("Newfoundland Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Newfoundland Time Zone.
+        /// </summary>
+        internal static string Newfoundland_Time_Zone {
+            get {
+                return ResourceManager.GetString("Newfoundland Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nicaragua.
+        /// </summary>
+        internal static string Nicaragua {
+            get {
+                return ResourceManager.GetString("Nicaragua", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Niger.
+        /// </summary>
+        internal static string Niger {
+            get {
+                return ResourceManager.GetString("Niger", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nigeria.
+        /// </summary>
+        internal static string Nigeria {
+            get {
+                return ResourceManager.GetString("Nigeria", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Niue.
+        /// </summary>
+        internal static string Niue {
+            get {
+                return ResourceManager.GetString("Niue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Niue Time.
+        /// </summary>
+        internal static string Niue_Time {
+            get {
+                return ResourceManager.GetString("Niue Time", resourceCulture);
             }
         }
         
@@ -124,11 +2707,299 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nord-Ubangi (Democratic Republic of the Congo).
+        /// </summary>
+        internal static string Nord_Ubangi__Democratic_Republic_of_the_Congo_ {
+            get {
+                return ResourceManager.GetString("Nord-Ubangi (Democratic Republic of the Congo)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to North Carolina (United States).
+        /// </summary>
+        internal static string North_Carolina__United_States_ {
+            get {
+                return ResourceManager.GetString("North Carolina (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to North Dakota (most, United States).
+        /// </summary>
+        internal static string North_Dakota__most__United_States_ {
+            get {
+                return ResourceManager.GetString("North Dakota (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to North Macedonia.
+        /// </summary>
+        internal static string North_Macedonia {
+            get {
+                return ResourceManager.GetString("North Macedonia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Northern Cyprus.
+        /// </summary>
+        internal static string Northern_Cyprus {
+            get {
+                return ResourceManager.GetString("Northern Cyprus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Northwest Territories (Canada).
+        /// </summary>
+        internal static string Northwest_Territories__Canada_ {
+            get {
+                return ResourceManager.GetString("Northwest Territories (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Norway.
+        /// </summary>
+        internal static string Norway {
+            get {
+                return ResourceManager.GetString("Norway", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nova Scotia (Canada).
+        /// </summary>
+        internal static string Nova_Scotia__Canada_ {
+            get {
+                return ResourceManager.GetString("Nova Scotia (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to November Time Zone.
+        /// </summary>
+        internal static string November_Time_Zone {
+            get {
+                return ResourceManager.GetString("November Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nunavut (central, Canada).
+        /// </summary>
+        internal static string Nunavut__central__Canada_ {
+            get {
+                return ResourceManager.GetString("Nunavut (central, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nunavut (east, Canada).
+        /// </summary>
+        internal static string Nunavut__east__Canada_ {
+            get {
+                return ResourceManager.GetString("Nunavut (east, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nunavut (west, Canada).
+        /// </summary>
+        internal static string Nunavut__west__Canada_ {
+            get {
+                return ResourceManager.GetString("Nunavut (west, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Offset.
         /// </summary>
         internal static string Offset {
             get {
                 return ResourceManager.GetString("Offset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ohio (United States).
+        /// </summary>
+        internal static string Ohio__United_States_ {
+            get {
+                return ResourceManager.GetString("Ohio (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Oklahoma, United States.
+        /// </summary>
+        internal static string Oklahoma__United_States {
+            get {
+                return ResourceManager.GetString("Oklahoma, United States", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ontario (most, Canada).
+        /// </summary>
+        internal static string Ontario__most__Canada_ {
+            get {
+                return ResourceManager.GetString("Ontario (most, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ontario (west, Canada).
+        /// </summary>
+        internal static string Ontario__west__Canada_ {
+            get {
+                return ResourceManager.GetString("Ontario (west, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Oregon (most, United States).
+        /// </summary>
+        internal static string Oregon__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Oregon (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Oscar Time Zone.
+        /// </summary>
+        internal static string Oscar_Time_Zone {
+            get {
+                return ResourceManager.GetString("Oscar Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pacific Daylight Time.
+        /// </summary>
+        internal static string Pacific_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Pacific Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pacific Standard Time.
+        /// </summary>
+        internal static string Pacific_Standard_Time {
+            get {
+                return ResourceManager.GetString("Pacific Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pacific Time Zone.
+        /// </summary>
+        internal static string Pacific_Time_Zonev {
+            get {
+                return ResourceManager.GetString("Pacific Time Zonev", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Palestine.
+        /// </summary>
+        internal static string Palestine {
+            get {
+                return ResourceManager.GetString("Palestine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Palmyra Atoll.
+        /// </summary>
+        internal static string Palmyra_Atoll {
+            get {
+                return ResourceManager.GetString("Palmyra Atoll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Panama.
+        /// </summary>
+        internal static string Panama {
+            get {
+                return ResourceManager.GetString("Panama", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Papa Time Zone.
+        /// </summary>
+        internal static string Papa_Time_Zone {
+            get {
+                return ResourceManager.GetString("Papa Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paraguay.
+        /// </summary>
+        internal static string Paraguay {
+            get {
+                return ResourceManager.GetString("Paraguay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paraguay Summer Time.
+        /// </summary>
+        internal static string Paraguay_Summer_Time {
+            get {
+                return ResourceManager.GetString("Paraguay Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paraguay Time.
+        /// </summary>
+        internal static string Paraguay_Time {
+            get {
+                return ResourceManager.GetString("Paraguay Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pennsylvania (United States).
+        /// </summary>
+        internal static string Pennsylvania__United_States_ {
+            get {
+                return ResourceManager.GetString("Pennsylvania (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Peru.
+        /// </summary>
+        internal static string Peru {
+            get {
+                return ResourceManager.GetString("Peru", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Peru Time.
+        /// </summary>
+        internal static string Peru_Time {
+            get {
+                return ResourceManager.GetString("Peru Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pitcairn Islands.
+        /// </summary>
+        internal static string Pitcairn_Islands {
+            get {
+                return ResourceManager.GetString("Pitcairn Islands", resourceCulture);
             }
         }
         
@@ -151,11 +3022,353 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Poland.
+        /// </summary>
+        internal static string Poland {
+            get {
+                return ResourceManager.GetString("Poland", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Portugal (most).
+        /// </summary>
+        internal static string Portugal__most_ {
+            get {
+                return ResourceManager.GetString("Portugal (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prince Edward Island (Canada).
+        /// </summary>
+        internal static string Prince_Edward_Island__Canada_ {
+            get {
+                return ResourceManager.GetString("Prince Edward Island (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prince Edward Islands (South Africa).
+        /// </summary>
+        internal static string Prince_Edward_Islands__South_Africa_ {
+            get {
+                return ResourceManager.GetString("Prince Edward Islands (South Africa)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Puerto Rico.
+        /// </summary>
+        internal static string Puerto_Rico {
+            get {
+                return ResourceManager.GetString("Puerto Rico", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Qatar.
+        /// </summary>
+        internal static string Qatar {
+            get {
+                return ResourceManager.GetString("Qatar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quebec (east, Canada).
+        /// </summary>
+        internal static string Quebec__east__Canada_ {
+            get {
+                return ResourceManager.GetString("Quebec (east, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quebec (most, Canada).
+        /// </summary>
+        internal static string Quebec__most__Canada_ {
+            get {
+                return ResourceManager.GetString("Quebec (most, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quebec Time Zone.
+        /// </summary>
+        internal static string Quebec_Time_Zone {
+            get {
+                return ResourceManager.GetString("Quebec Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quintana Roo (Mexico).
+        /// </summary>
+        internal static string Quintana_Roo__Mexico_ {
+            get {
+                return ResourceManager.GetString("Quintana Roo (Mexico)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rat Islands (Aleutian Islands, Alaska, United States).
+        /// </summary>
+        internal static string Rat_Islands__Aleutian_Islands__Alaska__United_States_ {
+            get {
+                return ResourceManager.GetString("Rat Islands (Aleutian Islands, Alaska, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rhode Island (United States).
+        /// </summary>
+        internal static string Rhode_Island__United_States_ {
+            get {
+                return ResourceManager.GetString("Rhode Island (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Romania.
+        /// </summary>
+        internal static string Romania {
+            get {
+                return ResourceManager.GetString("Romania", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Romeo Time Zone.
+        /// </summary>
+        internal static string Romeo_Time_Zone {
+            get {
+                return ResourceManager.GetString("Romeo Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rondônia (Brazil).
+        /// </summary>
+        internal static string Rondônia__Brazil_ {
+            get {
+                return ResourceManager.GetString("Rondônia (Brazil)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Roraima (Brazil).
+        /// </summary>
+        internal static string Roraima__Brazil_ {
+            get {
+                return ResourceManager.GetString("Roraima (Brazil)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rothera Research Station Time.
+        /// </summary>
+        internal static string Rothera_Research_Station_Time {
+            get {
+                return ResourceManager.GetString("Rothera Research Station Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Russia (most of European part).
+        /// </summary>
+        internal static string Russia__most_of_European_part_ {
+            get {
+                return ResourceManager.GetString("Russia (most of European part)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rwanda.
+        /// </summary>
+        internal static string Rwanda {
+            get {
+                return ResourceManager.GetString("Rwanda", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saint Barthélemy.
+        /// </summary>
+        internal static string Saint_Barthélemy {
+            get {
+                return ResourceManager.GetString("Saint Barthélemy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saint Helena.
+        /// </summary>
+        internal static string Saint_Helena {
+            get {
+                return ResourceManager.GetString("Saint Helena", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saint Kitts and Nevis.
+        /// </summary>
+        internal static string Saint_Kitts_and_Nevis {
+            get {
+                return ResourceManager.GetString("Saint Kitts and Nevis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saint Lucia.
+        /// </summary>
+        internal static string Saint_Lucia {
+            get {
+                return ResourceManager.GetString("Saint Lucia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saint Martin.
+        /// </summary>
+        internal static string Saint_Martin {
+            get {
+                return ResourceManager.GetString("Saint Martin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saint Pierre and Miquelon.
+        /// </summary>
+        internal static string Saint_Pierre_and_Miquelon {
+            get {
+                return ResourceManager.GetString("Saint Pierre and Miquelon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saint Pierre and Miquelon Daylight Time.
+        /// </summary>
+        internal static string Saint_Pierre_and_Miquelon_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Saint Pierre and Miquelon Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saint Pierre and Miquelon Standard Time.
+        /// </summary>
+        internal static string Saint_Pierre_and_Miquelon_Standard_Time {
+            get {
+                return ResourceManager.GetString("Saint Pierre and Miquelon Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saint Vincent and the Grenadines.
+        /// </summary>
+        internal static string Saint_Vincent_and_the_Grenadines {
+            get {
+                return ResourceManager.GetString("Saint Vincent and the Grenadines", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Samoa Standard Time.
+        /// </summary>
+        internal static string Samoa_Standard_Time {
+            get {
+                return ResourceManager.GetString("Samoa Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Samoa Time Zone.
+        /// </summary>
+        internal static string Samoa_Time_Zone {
+            get {
+                return ResourceManager.GetString("Samoa Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to San Marino.
+        /// </summary>
+        internal static string San_Marino {
+            get {
+                return ResourceManager.GetString("San Marino", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to São Tomé and Príncipe.
+        /// </summary>
+        internal static string São_Tomé_and_Príncipe {
+            get {
+                return ResourceManager.GetString("São Tomé and Príncipe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saskatchewan (most, Canada).
+        /// </summary>
+        internal static string Saskatchewan__most__Canada_ {
+            get {
+                return ResourceManager.GetString("Saskatchewan (most, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saudi Arabia.
+        /// </summary>
+        internal static string Saudi_Arabia {
+            get {
+                return ResourceManager.GetString("Saudi Arabia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scattered Islands (French Southern and Antarctic Lands).
+        /// </summary>
+        internal static string Scattered_Islands__French_Southern_and_Antarctic_Lands_ {
+            get {
+                return ResourceManager.GetString("Scattered Islands (French Southern and Antarctic Lands)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Senegal.
+        /// </summary>
+        internal static string Senegal {
+            get {
+                return ResourceManager.GetString("Senegal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Serbia.
+        /// </summary>
+        internal static string Serbia {
+            get {
+                return ResourceManager.GetString("Serbia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Shortcuts.
         /// </summary>
         internal static string Shortcuts {
             get {
                 return ResourceManager.GetString("Shortcuts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Showa Station Time.
+        /// </summary>
+        internal static string Showa_Station_Time {
+            get {
+                return ResourceManager.GetString("Showa Station Time", resourceCulture);
             }
         }
         
@@ -187,6 +3400,177 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sierra Leone.
+        /// </summary>
+        internal static string Sierra_Leone {
+            get {
+                return ResourceManager.GetString("Sierra Leone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sierra Time Zone.
+        /// </summary>
+        internal static string Sierra_Time_Zone {
+            get {
+                return ResourceManager.GetString("Sierra Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sinaloa (Mexico).
+        /// </summary>
+        internal static string Sinaloa__Mexico_ {
+            get {
+                return ResourceManager.GetString("Sinaloa (Mexico)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sint Maarten.
+        /// </summary>
+        internal static string Sint_Maarten {
+            get {
+                return ResourceManager.GetString("Sint Maarten", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Slovakia.
+        /// </summary>
+        internal static string Slovakia {
+            get {
+                return ResourceManager.GetString("Slovakia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Slovenia.
+        /// </summary>
+        internal static string Slovenia {
+            get {
+                return ResourceManager.GetString("Slovenia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Somalia.
+        /// </summary>
+        internal static string Somalia {
+            get {
+                return ResourceManager.GetString("Somalia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Somaliland.
+        /// </summary>
+        internal static string Somaliland {
+            get {
+                return ResourceManager.GetString("Somaliland", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sonora (Mexico).
+        /// </summary>
+        internal static string Sonora__Mexico_ {
+            get {
+                return ResourceManager.GetString("Sonora (Mexico)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to South Africa (most).
+        /// </summary>
+        internal static string South_Africa__most_ {
+            get {
+                return ResourceManager.GetString("South Africa (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to South African Standard Time.
+        /// </summary>
+        internal static string South_African_Standard_Time {
+            get {
+                return ResourceManager.GetString("South African Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to South Carolina (United States).
+        /// </summary>
+        internal static string South_Carolina__United_States_ {
+            get {
+                return ResourceManager.GetString("South Carolina (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to South Dakota (most, United States).
+        /// </summary>
+        internal static string South_Dakota__most__United_States_ {
+            get {
+                return ResourceManager.GetString("South Dakota (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to South Georgia and the South Sandwich Islands.
+        /// </summary>
+        internal static string South_Georgia_and_the_South_Sandwich_Islands {
+            get {
+                return ResourceManager.GetString("South Georgia and the South Sandwich Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to South Georgia and the South Sandwich Islands Time.
+        /// </summary>
+        internal static string South_Georgia_and_the_South_Sandwich_Islands_Time {
+            get {
+                return ResourceManager.GetString("South Georgia and the South Sandwich Islands Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to South Ossetia.
+        /// </summary>
+        internal static string South_Ossetia {
+            get {
+                return ResourceManager.GetString("South Ossetia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to South Sudan.
+        /// </summary>
+        internal static string South_Sudan {
+            get {
+                return ResourceManager.GetString("South Sudan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Southampton Island (Canada).
+        /// </summary>
+        internal static string Southampton_Island__Canada_ {
+            get {
+                return ResourceManager.GetString("Southampton Island (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Spain (most).
+        /// </summary>
+        internal static string Spain__most_ {
+            get {
+                return ResourceManager.GetString("Spain (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Standard Time.
         /// </summary>
         internal static string StandardTime {
@@ -201,6 +3585,123 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string StandardTimeShortcut {
             get {
                 return ResourceManager.GetString("StandardTimeShortcut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sud-Ubangi (Democratic Republic of the Congo).
+        /// </summary>
+        internal static string Sud_Ubangi__Democratic_Republic_of_the_Congo_ {
+            get {
+                return ResourceManager.GetString("Sud-Ubangi (Democratic Republic of the Congo)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sudan.
+        /// </summary>
+        internal static string Sudan {
+            get {
+                return ResourceManager.GetString("Sudan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SuriName.
+        /// </summary>
+        internal static string SuriName {
+            get {
+                return ResourceManager.GetString("SuriName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Suriname Time.
+        /// </summary>
+        internal static string Suriname_Time {
+            get {
+                return ResourceManager.GetString("Suriname Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sweden.
+        /// </summary>
+        internal static string Sweden {
+            get {
+                return ResourceManager.GetString("Sweden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Switzerland.
+        /// </summary>
+        internal static string Switzerland {
+            get {
+                return ResourceManager.GetString("Switzerland", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Syria.
+        /// </summary>
+        internal static string Syria {
+            get {
+                return ResourceManager.GetString("Syria", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tahiti Time.
+        /// </summary>
+        internal static string Tahiti_Time {
+            get {
+                return ResourceManager.GetString("Tahiti Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tango Time Zone.
+        /// </summary>
+        internal static string Tango_Time_Zone {
+            get {
+                return ResourceManager.GetString("Tango Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tanzania.
+        /// </summary>
+        internal static string Tanzania {
+            get {
+                return ResourceManager.GetString("Tanzania", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tennessee (most, United States).
+        /// </summary>
+        internal static string Tennessee__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Tennessee (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Texas (most, United States).
+        /// </summary>
+        internal static string Texas__most__United_States_ {
+            get {
+                return ResourceManager.GetString("Texas (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Thule Air Base (Greenland).
+        /// </summary>
+        internal static string Thule_Air_Base__Greenland_ {
+            get {
+                return ResourceManager.GetString("Thule Air Base (Greenland)", resourceCulture);
             }
         }
         
@@ -241,11 +3742,155 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Togo.
+        /// </summary>
+        internal static string Togo {
+            get {
+                return ResourceManager.GetString("Togo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transnistria.
+        /// </summary>
+        internal static string Transnistria {
+            get {
+                return ResourceManager.GetString("Transnistria", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trinidad and Tobago.
+        /// </summary>
+        internal static string Trinidad_and_Tobago {
+            get {
+                return ResourceManager.GetString("Trinidad and Tobago", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tshuapa (Democratic Republic of the Congo).
+        /// </summary>
+        internal static string Tshuapa__Democratic_Republic_of_the_Congo_ {
+            get {
+                return ResourceManager.GetString("Tshuapa (Democratic Republic of the Congo)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tunisia.
+        /// </summary>
+        internal static string Tunisia {
+            get {
+                return ResourceManager.GetString("Tunisia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turkey.
+        /// </summary>
+        internal static string Turkey {
+            get {
+                return ResourceManager.GetString("Turkey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turkey Time.
+        /// </summary>
+        internal static string Turkey_Time {
+            get {
+                return ResourceManager.GetString("Turkey Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turks and Caicos Islands.
+        /// </summary>
+        internal static string Turks_and_Caicos_Islands {
+            get {
+                return ResourceManager.GetString("Turks and Caicos Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to U.S. Virgin Islands.
+        /// </summary>
+        internal static string U_S__Virgin_Islands {
+            get {
+                return ResourceManager.GetString("U.S. Virgin Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uganda.
+        /// </summary>
+        internal static string Uganda {
+            get {
+                return ResourceManager.GetString("Uganda", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uniform Time Zone.
+        /// </summary>
+        internal static string Uniform_Time_Zone {
+            get {
+                return ResourceManager.GetString("Uniform Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to United Kingdom.
+        /// </summary>
+        internal static string United_Kingdom {
+            get {
+                return ResourceManager.GetString("United Kingdom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uruguay.
+        /// </summary>
+        internal static string Uruguay {
+            get {
+                return ResourceManager.GetString("Uruguay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uruguay Standard Time.
+        /// </summary>
+        internal static string Uruguay_Standard_Time {
+            get {
+                return ResourceManager.GetString("Uruguay Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uruguay Summer Time.
+        /// </summary>
+        internal static string Uruguay_Summer_Time {
+            get {
+                return ResourceManager.GetString("Uruguay Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use daylight saving time.
         /// </summary>
         internal static string UseDst {
             get {
                 return ResourceManager.GetString("UseDst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Utah (United States).
+        /// </summary>
+        internal static string Utah__United_States_ {
+            get {
+                return ResourceManager.GetString("Utah (United States)", resourceCulture);
             }
         }
         
@@ -259,11 +3904,236 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Vatican City.
+        /// </summary>
+        internal static string Vatican_City {
+            get {
+                return ResourceManager.GetString("Vatican City", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Venezuela.
+        /// </summary>
+        internal static string Venezuela {
+            get {
+                return ResourceManager.GetString("Venezuela", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Venezuelan Standard Time.
+        /// </summary>
+        internal static string Venezuelan_Standard_Time {
+            get {
+                return ResourceManager.GetString("Venezuelan Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vermont (United States).
+        /// </summary>
+        internal static string Vermont__United_States_ {
+            get {
+                return ResourceManager.GetString("Vermont (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Victor Time Zone.
+        /// </summary>
+        internal static string Victor_Time_Zone {
+            get {
+                return ResourceManager.GetString("Victor Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Virginia (United States).
+        /// </summary>
+        internal static string Virginia__United_States_ {
+            get {
+                return ResourceManager.GetString("Virginia (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Washington (United States).
+        /// </summary>
+        internal static string Washington__United_States_ {
+            get {
+                return ResourceManager.GetString("Washington (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to West Africa Summer Time.
+        /// </summary>
+        internal static string West_Africa_Summer_Time {
+            get {
+                return ResourceManager.GetString("West Africa Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to West Africa Time.
+        /// </summary>
+        internal static string West_Africa_Time {
+            get {
+                return ResourceManager.GetString("West Africa Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to West Greenland Summer Time.
+        /// </summary>
+        internal static string West_Greenland_Summer_Time {
+            get {
+                return ResourceManager.GetString("West Greenland Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to West Greenland Time.
+        /// </summary>
+        internal static string West_Greenland_Time {
+            get {
+                return ResourceManager.GetString("West Greenland Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to West Virginia (United States).
+        /// </summary>
+        internal static string West_Virginia__United_States_ {
+            get {
+                return ResourceManager.GetString("West Virginia (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Weste.
+        /// </summary>
+        internal static string Weste {
+            get {
+                return ResourceManager.GetString("Weste", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Western European Summer Time.
+        /// </summary>
+        internal static string Western_European_Summer_Time {
+            get {
+                return ResourceManager.GetString("Western European Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Western European Time.
+        /// </summary>
+        internal static string Western_European_Time {
+            get {
+                return ResourceManager.GetString("Western European Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Whiskey Time Zone.
+        /// </summary>
+        internal static string Whiskey_Time_Zone {
+            get {
+                return ResourceManager.GetString("Whiskey Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wisconsin (United States).
+        /// </summary>
+        internal static string Wisconsin__United_States_ {
+            get {
+                return ResourceManager.GetString("Wisconsin (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wyoming (United States).
+        /// </summary>
+        internal static string Wyoming__United_States_ {
+            get {
+                return ResourceManager.GetString("Wyoming (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X-ray Time Zone.
+        /// </summary>
+        internal static string X_ray_Time_Zone {
+            get {
+                return ResourceManager.GetString("X-ray Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yankee Time Zone.
+        /// </summary>
+        internal static string Yankee_Time_Zone {
+            get {
+                return ResourceManager.GetString("Yankee Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yemen.
+        /// </summary>
+        internal static string Yemen {
+            get {
+                return ResourceManager.GetString("Yemen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Yes.
         /// </summary>
         internal static string Yes {
             get {
                 return ResourceManager.GetString("Yes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yukon (Canada).
+        /// </summary>
+        internal static string Yukon__Canada_ {
+            get {
+                return ResourceManager.GetString("Yukon (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Zambia.
+        /// </summary>
+        internal static string Zambia {
+            get {
+                return ResourceManager.GetString("Zambia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Zimbabwe.
+        /// </summary>
+        internal static string Zimbabwe {
+            get {
+                return ResourceManager.GetString("Zimbabwe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Zulu Time Zone.
+        /// </summary>
+        internal static string Zulu_Time_Zone {
+            get {
+                return ResourceManager.GetString("Zulu Time Zone", resourceCulture);
             }
         }
     }
