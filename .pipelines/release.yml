@@ -206,7 +206,7 @@ jobs:
 
 # Did we sign all files
   - task: PowerShell@1
-    displayName: Verifying entire build is signed and versioned
+    displayName: Verifying entire build is signed and version set
     inputs:
       scriptName: .pipelines/versionAndSignCheck.ps1
 
