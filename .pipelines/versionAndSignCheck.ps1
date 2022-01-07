@@ -13,7 +13,7 @@ ForEach-Object {
 	{
 		if($_.Name -ne "Microsoft.Search.Interop.dll")
 		{
-			Write-Host "Not Versioned: " + $_.FullName
+			Write-Host "Version not set: " + $_.FullName
 			$totalFailure++;
 		}
 	}
