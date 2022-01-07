@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Plugin.Uri.Interfaces;
 
 namespace Microsoft.Plugin.Uri.UriHelper
@@ -21,10 +22,13 @@ namespace Microsoft.Plugin.Uri.UriHelper
 
             // Handling URL with only scheme, typically mailto or application uri.
             // Do nothing, return the result without urlBuilder
+            // And check if scheme match REC3986 (issue #15035)
+            const string schemeRegex = @"^([a-z][a-z0-9+\-.]*):";
             if (input.EndsWith(":", StringComparison.OrdinalIgnoreCase)
                 && !input.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                 && !input.Contains("/", StringComparison.OrdinalIgnoreCase)
-                && !input.All(char.IsDigit))
+                && !input.All(char.IsDigit)
+                && Regex.IsMatch(input, schemeRegex))
             {
                 result = new System.Uri(input);
                 isWebUri = false;
