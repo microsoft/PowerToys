@@ -50,7 +50,7 @@ namespace Microsoft.Plugin.WindowWalker
                     return true;
                 },
                 ToolTipData = new ToolTipData(x.Result.Title, $"hWnd: {x.Result.Title}\nPID: {x.Result.Hwnd}\nProcess: {x.Result.ProcessName}\nIs elevated: ?"),
-        }).ToList();
+            }).ToList();
         }
 
         public void Init(PluginInitContext context)
