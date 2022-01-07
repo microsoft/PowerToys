@@ -7,7 +7,13 @@ $items = Get-ChildItem -Path $DirPath -File -Include *.exe,*.dll -Recurse -Force
 $totalFailure = 0;
 
 Write-Host $DirPath;
-Write-Host "Total items:" $items.Count
+Write-Host "Total items: " $items.Count
+
+if($items.Count -eq 0)
+{
+	# no items means something bad happened.  We should fail ASAP
+	exit 1;
+}
 
 $items | ForEach-Object { 
     if($_.VersionInfo.FileVersion -eq "0.0.1.0" -or $_.VersionInfo.FileVersion -eq "1.0.0.0" )
