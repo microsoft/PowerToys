@@ -105,6 +105,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
                             _handlesToProcessCache.Add(Hwnd, string.Empty);
                         }
                     }
+                    else
+                    {
+                        ProcessID = GetProcessIDFromWindowHandle(hwnd);
+                        Debug.Print($"Cache contains hWnd: {hwnd}.");
+                    }
 
                     if (_handlesToProcessCache[hwnd].ToUpperInvariant() == "APPLICATIONFRAMEHOST.EXE")
                     {
@@ -126,6 +131,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                             _ = NativeMethods.EnumChildWindows(Hwnd, callbackptr, 0);
                         }).Start();
                     }
+
+                    Debug.Print($"PDI of hWnd {hwnd}: {ProcessID}");
 
                     return _handlesToProcessCache[hwnd];
                 }
@@ -318,6 +325,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             uint processId = GetProcessIDFromWindowHandle(hwnd);
             ProcessID = processId;
+            Debug.Print($"PDI of hWnd {hwnd}: {ProcessID}");
             IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)processId);
             StringBuilder processName = new StringBuilder(MaximumFileNameLength);
 
