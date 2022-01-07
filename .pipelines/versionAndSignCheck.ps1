@@ -21,7 +21,7 @@ ForEach-Object {
 
 Get-ChildItem -Path $DirPath -File -Recurse -Force -ErrorAction SilentlyContinue | 
 ForEach-Object { 
-    if(($_.Extension -eq ".exe" -or $_.Extension -eq ".dll") -and -not ($_.Name -in $ignoreList))
+    if(($_.Extension -eq ".exe" -or $_.Extension -eq ".dll"))
 	{	
 		$auth = Get-AuthenticodeSignature $_.FullName
 		if($auth.SignerCertificate -eq $null)
