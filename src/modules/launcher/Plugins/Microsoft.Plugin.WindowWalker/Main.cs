@@ -49,7 +49,7 @@ namespace Microsoft.Plugin.WindowWalker
                     x.Result.SwitchToWindow();
                     return true;
                 },
-                ToolTipData = new ToolTipData(x.Result.Title, $"hWnd: {x.Result.Title}\nPID: {x.Result.Hwnd}\nProcess: {x.Result.ProcessName}\nIs elevated: ?"),
+                ToolTipData = new ToolTipData(x.Result.Title, $"hWnd: {x.Result.Hwnd}\nPID: {x.Result.ProcessID}\nProcess: {x.Result.ProcessName}\nIs elevated: ?"),
             }).ToList();
         }
 
