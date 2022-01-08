@@ -27,12 +27,27 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// The list of owners of a window so that we don't have to
         /// constantly query for the process owning a specific window
         /// </summary>
-        private static readonly Dictionary<IntPtr, string> _handlesToProcessCache = new Dictionary<IntPtr, string>();
+        private static readonly Dictionary<IntPtr, WindowProcess> _handlesToProcessCache = new Dictionary<IntPtr, WindowProcess>();
 
         /// <summary>
         /// The handle to the window
         /// </summary>
         private readonly IntPtr hwnd;
+
+        /// <summary>
+        /// The process id of the window
+        /// </summary>
+        private readonly uint pid;
+
+        /// <summary>
+        /// The process name of the window
+        /// </summary>
+        private readonly string pname;
+
+        /// <summary>
+        /// The elevation state of the window process
+        /// </summary>
+        private readonly bool pelevated;
 
         /// <summary>
         /// Gets the title of the window (the string displayed at the top of the window)
@@ -68,63 +83,25 @@ namespace Microsoft.Plugin.WindowWalker.Components
             get { return hwnd; }
         }
 
-        public uint ProcessID { get; set; }
+        public uint ProcessID
+        {
+            get { return pid; }
+        }
 
         /// <summary>
-        /// Gets returns the name of the process
+        /// Gets the name of the process
         /// </summary>
         public string ProcessName
         {
-            get
-            {
-                lock (_handlesToProcessCache)
-                {
-                    if (_handlesToProcessCache.Count > 7000)
-                    {
-                        Debug.Print("Clearing Process Cache because it's size is " + _handlesToProcessCache.Count);
-                        _handlesToProcessCache.Clear();
-                    }
+            get { return pname; }
+        }
 
-                    if (!_handlesToProcessCache.ContainsKey(Hwnd))
-                    {
-                        var processName = GetProcessNameFromWindowHandle(Hwnd);
-
-                        if (processName.Length != 0)
-                        {
-                            _handlesToProcessCache.Add(
-                                Hwnd,
-                                processName.ToString().Split('\\').Reverse().ToArray()[0]);
-                        }
-                        else
-                        {
-                            _handlesToProcessCache.Add(Hwnd, string.Empty);
-                        }
-                    }
-
-                    if (_handlesToProcessCache[hwnd].ToUpperInvariant() == "APPLICATIONFRAMEHOST.EXE")
-                    {
-                        new Task(() =>
-                        {
-                            NativeMethods.CallBackPtr callbackptr = new NativeMethods.CallBackPtr((IntPtr hwnd, IntPtr lParam) =>
-                            {
-                                var childProcessId = GetProcessIDFromWindowHandle(hwnd);
-                                if (childProcessId != ProcessID)
-                                {
-                                    _handlesToProcessCache[Hwnd] = GetProcessNameFromWindowHandle(hwnd);
-                                    return false;
-                                }
-                                else
-                                {
-                                    return true;
-                                }
-                            });
-                            _ = NativeMethods.EnumChildWindows(Hwnd, callbackptr, 0);
-                        }).Start();
-                    }
-
-                    return _handlesToProcessCache[hwnd];
-                }
-            }
+        /// <summary>
+        /// Gets a value indicating whether the process runs elevated
+        /// </summary>
+        public bool ProcessIsElevated
+        {
+            get { return pelevated; }
         }
 
         /// <summary>
@@ -236,6 +213,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             // TODO: Add verification as to whether the window handle is valid
             this.hwnd = hwnd;
+            SetProcessPropertiesFromWindowHandle(hwnd, out pid, out pname, out pelevated);
         }
 
         /// <summary>
@@ -309,15 +287,13 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets the name of the process using the window handle
+        /// Gets the name of the process it's ID
         /// </summary>
-        /// <param name="hwnd">The handle to the window</param>
+        /// <param name="pid">The id of the process/param>
         /// <returns>A string representing the process name or an empty string if the function fails</returns>
-        private string GetProcessNameFromWindowHandle(IntPtr hwnd)
+        private static string GetProcessNameFromProcessID(uint pid)
         {
-            uint processId = GetProcessIDFromWindowHandle(hwnd);
-            ProcessID = processId;
-            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.QueryLimitedInformation, true, (int)processId);
+            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.QueryLimitedInformation, true, (int)pid);
             StringBuilder processName = new StringBuilder(MaximumFileNameLength);
 
             if (NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
@@ -339,6 +315,75 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             _ = NativeMethods.GetWindowThreadProcessId(hwnd, out uint processId);
             return processId;
+        }
+
+        /// <summary>
+        /// Gets some process properties for the Window handle
+        /// </summary>
+        /// <param name="hWindow">The handle to the window</param>
+        /// <param name="pId">The variable for the process ID of the window process.</param>
+        /// <param name="pName">The variable for the process name of the window process.</param>
+        /// <param name="pElevation">The elevation state of the window process.</param>
+        private static void SetProcessPropertiesFromWindowHandle(IntPtr hWindow, out uint pId, out string pName, out bool pElevation)
+        {
+            lock (_handlesToProcessCache)
+            {
+                if (_handlesToProcessCache.Count > 7000)
+                {
+                    Debug.Print("Clearing Process Cache because it's size is " + _handlesToProcessCache.Count);
+                    _handlesToProcessCache.Clear();
+                }
+
+                // Add window's process to cache if missing
+                if (!_handlesToProcessCache.ContainsKey(hWindow))
+                {
+                    // Get process ID and name
+                    var processID = GetProcessIDFromWindowHandle(hWindow);
+                    var processName = GetProcessNameFromProcessID(processID);
+
+                    if (processName.Length != 0)
+                    {
+                        _handlesToProcessCache.Add(
+                            hWindow,
+                            new WindowProcess(processID, processName.ToString().Split('\\').Reverse().ToArray()[0], false));
+                    }
+                    else
+                    {
+                        _handlesToProcessCache.Add(
+                            hWindow,
+                            new WindowProcess(processID, string.Empty, false));
+                    }
+                }
+
+                // Correct the process data if the window belongs to a packaged app hosted by 'ApplicationFrameHost.exe'
+                if (_handlesToProcessCache[hWindow].Name.ToUpperInvariant() == "APPLICATIONFRAMEHOST.EXE")
+                {
+                    new Task(() =>
+                    {
+                        NativeMethods.CallBackPtr callbackptr = new NativeMethods.CallBackPtr((IntPtr hwnd, IntPtr lParam) =>
+                        {
+                            var childProcessId = GetProcessIDFromWindowHandle(hwnd);
+                            if (childProcessId != _handlesToProcessCache[hWindow].ID)
+                            {
+                                _handlesToProcessCache[hWindow].Name = GetProcessNameFromProcessID(childProcessId);
+                                _handlesToProcessCache[hWindow].ID = childProcessId;
+                                _handlesToProcessCache[hWindow].IsElevated = false;
+                                return false;
+                            }
+                            else
+                            {
+                                return true;
+                            }
+                        });
+                        _ = NativeMethods.EnumChildWindows(hWindow, callbackptr, 0);
+                    }).Start();
+                }
+
+                // Output results
+                pId = _handlesToProcessCache[hWindow].ID;
+                pName = _handlesToProcessCache[hWindow].Name;
+                pElevation = _handlesToProcessCache[hWindow].IsElevated;
+            }
         }
     }
 }
