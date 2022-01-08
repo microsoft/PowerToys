@@ -122,6 +122,7 @@ steps:
       **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll     
       **\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests.dll
       !**\obj\**
+      !**\ref\**
 
 # Native dlls
 - task: VSTest@2
