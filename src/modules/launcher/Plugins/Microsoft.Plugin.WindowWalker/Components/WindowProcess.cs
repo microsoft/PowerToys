@@ -39,7 +39,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the proces runs elevated or not
+        /// Gets or sets a value indicating whether the process runs elevated or not
         /// </summary>
         public bool IsElevated { get; set; }
     }
