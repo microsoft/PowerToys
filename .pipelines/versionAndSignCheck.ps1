@@ -1,8 +1,12 @@
 [CmdletBinding()]
 # todo: send in arch / conf, could send in actual path
-Param()
+Param(
+  [Parameter(Mandatory=$True,Position=1)]
+  [AllowEmptyString()]
+  [string]$targetDir = $PSScriptRoot + '/../extractedMsi',
+)
 
-$DirPath = $PSScriptRoot + '/../extractedMsi';  #this file is in pipeline, we need root.
+$DirPath = $targetDir;  #this file is in pipeline, we need root.
 $items = Get-ChildItem -Path $DirPath -File -Include *.exe,*.dll -Recurse -Force -ErrorAction SilentlyContinue
 $totalFailure = 0;
 
