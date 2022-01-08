@@ -42,5 +42,13 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Gets or sets a value indicating whether the process runs elevated or not
         /// </summary>
         public bool IsElevated { get; set; }
+
+        /// <summary>
+        /// Returns the process id as int32 if needed.
+        /// </summary>
+        public int GetIDAsInt32()
+        {
+            return Convert.ToInt32(ID);
+        }
     }
 }
