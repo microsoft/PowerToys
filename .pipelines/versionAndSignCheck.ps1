@@ -7,6 +7,12 @@ $items = Get-ChildItem -Path $DirPath -File -Include *.exe,*.dll -Recurse -Force
 $totalFailure = 0;
 
 Write-Host $DirPath;
+
+if(-not (Test-Path $DirPath))
+{  
+    Write-Host "Folder does not exist!"
+}
+
 Write-Host "Total items: " $items.Count
 
 if($items.Count -eq 0)
