@@ -6,10 +6,10 @@
         <Copyright>Copyright (C) 2021 Microsoft Corporation</Copyright>
         <Company>Microsoft Corporation</Company>
         <Product>PowerToys</Product>
-        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
         <Platforms>AnyCPU</Platforms>
         <EnableComHosting>true</EnableComHosting>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
 
     <ItemGroup>
