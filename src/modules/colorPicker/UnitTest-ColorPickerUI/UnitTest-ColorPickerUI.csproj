@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
     <ProjectGuid>{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}</ProjectGuid>
     <RootNamespace>Microsoft.ColorPicker.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
