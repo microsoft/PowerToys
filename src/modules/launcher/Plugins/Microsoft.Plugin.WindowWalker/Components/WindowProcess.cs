@@ -46,7 +46,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Returns the process id as int32 if needed.
         /// </summary>
-        public int GetIDAsInt32()
+        public int GetIdAsInt32()
         {
             return Convert.ToInt32(ID);
         }
