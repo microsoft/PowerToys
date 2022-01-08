@@ -221,7 +221,7 @@ jobs:
     displayName: 'Extracting MSI to verify contents'
     inputs:
       script: |
-        .\installer\packages\WiX.3.11.2\tools\dark.exe installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).msi $(build.sourcesdirectory)\extractedMsi
+        .\installer\packages\WiX.3.11.2\tools\dark.exe -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).msi 
         dir $(build.sourcesdirectory)\extractedMsi
 
 # Did we sign all files
