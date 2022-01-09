@@ -8,13 +8,11 @@ using PreviewHandlerCommon;
 
 namespace MonacoPreviewHandler
 {
-
     [Guid("afbd5a44-2520-4ae0-9224-6cfce8fe4400")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
     public class MonacoPreviewHandler : FileBasedPreviewHandler, IDisposable
     {
-
         private MonacoPreviewHandlerControl _monacoPreviewHandlerControl;
         private bool _disposedValue;
 

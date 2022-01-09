@@ -38,38 +38,39 @@ namespace MonacoPreviewHandler
         /// WebView2 element
         /// </summary>
         private WebView2 _webView;
-        
+
         /// <summary>
         /// WebView2 Environment
         /// </summary>
         private CoreWebView2Environment _webView2Environment;
-        
+
         /// <summary>
         /// Loading label
         /// </summary>
         private Label _loading;
-        
+
         /// <summary>
         /// Name of the virtual host
         /// </summary>
         const string VirtualHostName = "PowerToysLocalMonaco";
-        
-        
+
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
             base.DoPreview(dataSource);
+
             // Starts loading screen
             InitializeLoadingScreen();
+
             // New webview2 element
             _webView = new Microsoft.Web.WebView2.WinForms.WebView2();
-            
+
             // Checks if dataSource is a string
             if (!(dataSource is string filePath))
             {
                 throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandler)} must be a string but was a '{typeof(T)}'");
             }
-            
+
             // Check if the file is too big.
             long fileSize = new FileInfo(filePath).Length;
 
@@ -115,18 +116,14 @@ namespace MonacoPreviewHandler
 #endif
                             });
                         });
-
                     });
-
-
-
                 }
                 catch (Exception e)
                 {
                     InvokeOnControlThread(() =>
                     {
                         Label text = new Label();
-                        text.Text = "Exception occured:\n";
+                        text.Text = Resources.Exception_Occured;
                         text.Text += e.Message;
                         text.Text += "\n" + e.Source;
                         text.Text += "\n" + e.StackTrace;
@@ -159,7 +156,7 @@ namespace MonacoPreviewHandler
             _webView.Height = this.Height;
             _webView.Width = this.Width;
         }
-        
+
         /// <summary>
         /// This event initializes the webview and sets various settings
         /// </summary>
@@ -170,7 +167,7 @@ namespace MonacoPreviewHandler
             if (!_hasNavigated)
             {
                 CoreWebView2Settings settings = (sender as WebView2).CoreWebView2.Settings;
-                
+
 #if DEBUG
                 // Enable developer tools and contextmenu for debugging
                 settings.AreDefaultContextMenusEnabled = true;
@@ -181,21 +178,26 @@ namespace MonacoPreviewHandler
                 // Disable developer tools
                 settings.AreDevToolsEnabled = false;
 #endif
+
                 // Disable script dialogs (like alert())
                 settings.AreDefaultScriptDialogsEnabled = false;
+
                 // Enables JavaScript
                 settings.IsScriptEnabled = true;
+
                 // Disable zoom with ctrl and scroll
                 settings.IsZoomControlEnabled = false;
+
                 // Disable developer menu
                 settings.IsBuiltInErrorPageEnabled = false;
+
                 // Disable status bar
                 settings.IsStatusBarEnabled = false;
-                
+
                 Controls.Remove(_loading);
             }
         }
-        
+
         /// <summary>
         /// This event cancels every navigation inside the webview
         /// </summary>
@@ -217,15 +219,13 @@ namespace MonacoPreviewHandler
                 _hasNavigated = true;
             }
         }
-        
-
 
         private void InitializeLoadingScreen()
         {
             InvokeOnControlThread(() =>
             {
                 _loading = new Label();
-                _loading.Text = "Loading...";
+                _loading.Text = Resources.Loading_Screen_Message;
                 _loading.Width = this.Width;
                 _loading.Height = this.Height;
                 _loading.Font = new Font("MS Sans Serif", 16, FontStyle.Bold);
