@@ -17,23 +17,25 @@ namespace MonacoPreviewHandler
 
         private MonacoPreviewHandlerControl _monacoPreviewHandlerControl;
         private bool _disposedValue;
-        
+
         public MonacoPreviewHandler()
         {
             Initialize();
         }
+
         [STAThread]
         public override void DoPreview()
         {
             _monacoPreviewHandlerControl.DoPreview(FilePath);
         }
-        
+
         protected override IPreviewHandlerControl CreatePreviewHandlerControl()
         {
             _monacoPreviewHandlerControl = new MonacoPreviewHandlerControl();
 
             return _monacoPreviewHandlerControl;
         }
+
         [STAThread]
         protected virtual void Dispose(bool disposing)
         {
@@ -49,6 +51,7 @@ namespace MonacoPreviewHandler
                 _disposedValue = true;
             }
         }
+
         [STAThread]
         public void Dispose()
         {
