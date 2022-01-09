@@ -1,4 +1,5 @@
 aaaa
+abap
 abcd
 abcdef
 abcdefgh
@@ -106,6 +107,7 @@ atlcom
 atleast
 atlfile
 atlstr
+atop
 Attribs
 attrs
 aumid
@@ -118,10 +120,12 @@ AUTOMATIONPROPERTIES
 Autorun
 AUTOUPDATE
 AValid
+awaitable
 awakeness
 awakeversion
 AWAYMODE
 AYUV
+AZCLI
 azurecr
 backend
 backtracer
@@ -172,6 +176,7 @@ Browsable
 bsd
 bstr
 bti
+btm
 Btn
 BTNFACE
 Bto
@@ -186,6 +191,7 @@ BValue
 bytearray
 CALG
 callbackptr
+cameligo
 Camer
 Cangjie
 CANRENAME
@@ -199,6 +205,7 @@ CDBECF
 cdecl
 CDeclaration
 CDEF
+cdxml
 cdpx
 cdpxwin
 CENTERALIGN
@@ -219,6 +226,7 @@ cielab
 ciexyz
 CImage
 cinttypes
+cjs
 cla
 clangformat
 CLASSDC
@@ -231,7 +239,9 @@ CLIENTPULL
 clientside
 CLIPCHILDREN
 CLIPSIBLINGS
+cljs
 clrcall
+cls
 Cls
 CLSCTX
 clsid
@@ -325,6 +335,7 @@ cstdint
 cstdlib
 cstring
 CStyle
+csx
 CSY
 CTAB
 CTest
@@ -598,6 +609,7 @@ flt
 flyout
 fmtlib
 FOF
+fof
 FOFX
 FOLDERID
 folderpath
@@ -979,6 +991,7 @@ JSONOf
 Jsons
 jsonval
 jsoref
+julia
 junja
 jxr
 jyuwono
@@ -1005,7 +1018,10 @@ Keytool
 keyup
 KILLFOCUS
 Knownfolders
+kotlin
 KSPROPERTY
+ktm
+kts
 Kybd
 LAlt
 Lambson
@@ -1041,6 +1057,7 @@ lhwnd
 LIBID
 LIGHTORANGE
 LIGHTTURQUOISE
+ligo
 lindex
 linkedin
 linkid
@@ -1436,6 +1453,7 @@ pguid
 phbm
 phbmp
 php
+phps
 phwnd
 pici
 pid
@@ -1455,6 +1473,7 @@ ploca
 plocm
 plugin
 pluginsmodel
+plx
 PMSIHANDLE
 policheck
 popd
@@ -1465,6 +1484,7 @@ Postion
 powercfg
 powerlauncher
 powerpreview
+powerquery
 powerrename
 POWERRENAMETEST
 POWERRENAMEUIHOST
@@ -1516,8 +1536,10 @@ propkey
 propvarutil
 prvpane
 psapi
+psc
 PSECURITY
 psfgao
+psm
 Psr
 psrm
 psrree
@@ -1541,6 +1563,11 @@ pwsh
 PWSTR
 pwsz
 pwtd
+pyc
+pyd
+pyi
+pyo
+pyz
 qianlifeng
 Qin
 qit
@@ -1573,7 +1600,10 @@ RBUTTONUP
 rclsid
 RCONTROL
 RCtrl
+rda
+rdata
 rdeveen
+rds
 readme
 READMODE
 readonly
@@ -1687,6 +1717,7 @@ SAVEFAILED
 scancode
 scanled
 schedtasks
+scm
 SCOOBE
 SCOPEID
 screenshot
@@ -1798,6 +1829,7 @@ SMALLICON
 SMTO
 snd
 snwprintf
+smallbasic
 softline
 somil
 Soref
@@ -1879,6 +1911,7 @@ strsafe
 strutil
 sttngs
 Stubless
+stx
 STYLECHANGED
 STYLECHANGING
 stylecop
@@ -1894,6 +1927,7 @@ SVE
 SVGIn
 SVGIO
 svgpreviewhandler
+svh
 SWC
 SWFO
 SWP
@@ -1917,6 +1951,7 @@ syslog
 SYSMENU
 systemd
 SYSTEMTIME
+systemverilog
 Tadele
 tadele
 talynone
@@ -1933,7 +1968,9 @@ taskbar
 taskkill
 tasklist
 taskschd
+tbc
 tchar
+tcl
 tcscpy
 TCustom
 tdbuild
@@ -2074,6 +2111,7 @@ UWPUI
 uxtheme
 UYVY
 validmodulename
+vbhtml
 vcamp
 vccorlib
 vcdl
@@ -2090,6 +2128,7 @@ vec
 VERBSONLY
 VERBW
 VERIFYCONTEXT
+verilog
 verrsrc
 VERSIONINFO
 Versioning
@@ -2149,6 +2188,7 @@ webclient
 webpack
 webpage
 website
+webview
 We'd
 wekyb
 Wevtapi
@@ -2247,6 +2287,7 @@ wstr
 wstring
 wstringstream
 wsz
+WTL
 wtoi
 WTS
 wtsapi
