@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
 
@@ -19,7 +18,7 @@ namespace ColorPicker
         public static void Main(string[] args)
         {
             _args = args;
-            Logger.LogInfo($"Color Picker started with pid={Process.GetCurrentProcess().Id}");
+            Logger.LogInfo($"Color Picker started with pid={Environment.ProcessId}");
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             try
             {
