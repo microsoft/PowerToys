@@ -26,7 +26,7 @@ if($items.Count -eq 0)
 }
 
 $items | ForEach-Object { 
-    if($_.VersionInfo.FileVersion -eq "0.0.1.0" -or $_.VersionInfo.FileVersion -eq "1.0.0.0" )
+    if($_.VersionInfo.FileVersion -eq "1.0.0.0" )
 	{
 		if(-not $_.Name.EndsWith("Microsoft.Search.Interop.dll")
 		{
