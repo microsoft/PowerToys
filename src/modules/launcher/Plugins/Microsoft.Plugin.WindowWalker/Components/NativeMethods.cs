@@ -249,7 +249,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Window attribute
+        /// DWM window attribute (Windows 7 and earlier: The values between ExcludedFromPeek and Last aren't supported.)
         /// </summary>
         [Flags]
         public enum DwmWindowAttribute
@@ -266,7 +266,30 @@ namespace Microsoft.Plugin.WindowWalker.Components
             HasIconicBitmap,
             DisallowPeek,
             ExcludedFromPeek,
+            Cloak,
+            Cloaked,
+            FreezeRepresentation,
+            PassiveUpdateMode,
+            UseHostbackdropbrush,
+            UseImmersiveDarkMode,
+            WindowCornerPreference,
+            BorderColor,
+            CaptionColor,
+            TextColor,
+            VisibelFrameBorderTickness,
             Last,
+        }
+
+        /// <summary>
+        /// Flags for describing the window cloak state (Windows 7 and earlier: This value is not supported.)
+        /// </summary>
+        [Flags]
+        public enum DwmWindowCloakState
+        {
+            None = 0,
+            CloakedApp = 1,
+            CloakedShell = 2,
+            CloakedInherited = 4,
         }
 
         /// <summary>
@@ -894,6 +917,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public static int GetLastWin32Error()
         {
             return Marshal.GetLastWin32Error();
+        }
+
+        public static int GetSizeOfUInt()
+        {
+            return Marshal.SizeOf(typeof(uint));
         }
     }
 }

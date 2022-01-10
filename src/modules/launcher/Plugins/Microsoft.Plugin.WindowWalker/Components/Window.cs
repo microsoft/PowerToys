@@ -251,6 +251,41 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
+        /// Returns if the window has cloak state in DWM
+        /// </summary>
+        /// <returns>The state (none, app, ...) of the window</returns>
+        public WindowCloakState GetWindowCloakState()
+        {
+            _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)NativeMethods.DwmWindowAttribute.Cloaked, out int isCloakedState, NativeMethods.GetSizeOfUInt());
+
+            switch (isCloakedState)
+            {
+                case (int)NativeMethods.DwmWindowCloakState.None:
+                    return WindowCloakState.None;
+                case (int)NativeMethods.DwmWindowCloakState.CloakedApp:
+                    return WindowCloakState.App;
+                case (int)NativeMethods.DwmWindowCloakState.CloakedShell:
+                    return WindowCloakState.Shell;
+                case (int)NativeMethods.DwmWindowCloakState.CloakedInherited:
+                    return WindowCloakState.Inherited;
+                default:
+                    return WindowCloakState.Unknown;
+            }
+        }
+
+        /// <summary>
+        /// Enum to simplify the cloak state of the window
+        /// </summary>
+        public enum WindowCloakState
+        {
+            None,
+            App,
+            Shell,
+            Inherited,
+            Unknown,
+        }
+
+        /// <summary>
         /// Returns the class name of a window.
         /// </summary>
         /// <param name="hwnd">Handle to the window.</param>
