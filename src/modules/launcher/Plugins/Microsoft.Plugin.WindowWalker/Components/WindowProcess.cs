@@ -99,7 +99,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             _isUwpApp = processName.ToUpperInvariant().Equals("APPLICATIONFRAMEHOST.EXE", StringComparison.Ordinal);
 
             // Process can be elevated only if process id is not 0. (Dummy value on error.) Please have in mind here that pid=0 is the idle process.
-            isElevated = (pid != 0) && GetProcessElevationStateFromProcessID(pid);
+            isElevated = (pid != 0) ? GetProcessElevationStateFromProcessID(pid) : false;
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             processName = name;
 
             // Process can be elevated only if process id is not 0 (Dummy value on error)
-            isElevated = (pid != 0) && GetProcessElevationStateFromProcessID(pid);
+            isElevated = (pid != 0) ? GetProcessElevationStateFromProcessID(pid) : false;
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>The process ID</returns>
         public static uint GetProcessIDFromWindowHandle(IntPtr hwnd)
         {
-            _ = NativeMethods.GetWindowThreadProcessId(hwnd, out _, out uint processId);
+            _ = NativeMethods.GetWindowThreadProcessId(hwnd, out uint processId);
             return processId;
         }
 
@@ -136,7 +136,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>The thread ID</returns>
         public static uint GetThreadIDFromWindowHandle(IntPtr hwnd)
         {
-            _ = NativeMethods.GetWindowThreadProcessId(hwnd, out uint threadId);
+            var threadId = NativeMethods.GetWindowThreadProcessId(hwnd, out _);
             return threadId;
         }
 
@@ -161,16 +161,23 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a boolean value indicating whether a process runs elevated. (Note: This not a nice way. But the hack works.)
+        /// Gets a boolean value indicating whether a process runs elevated. (Note: This only works if PowerToys Run doesn't run elevated.)
         /// </summary>
         /// <param name="pid">The process ID of the process</param>
         /// <returns>True if elevated and false if not.</returns>
         private static bool GetProcessElevationStateFromProcessID(uint pid)
         {
-            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)pid);
-            StringBuilder processName = new StringBuilder(1);
+            _ = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)pid);
 
-            return NativeMethods.GetProcessImageFileName(processHandle, processName, 1) == 0;
+            if (NativeMethods.GetLastWin32Error() == 5)
+            {
+                // Error 5 = ERROR_ACCESS_DENIED
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

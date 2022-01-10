@@ -30,7 +30,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private static readonly Dictionary<IntPtr, WindowProcess> _handlesToProcessCache = new Dictionary<IntPtr, WindowProcess>();
 
         /// <summary>
-        /// An instance of <see cref="WindowProcess"/> that contians the process information for the window
+        /// An instance of <see cref="WindowProcess"/> that contains the process information for the window
         /// </summary>
         private readonly WindowProcess processInfo;
 
@@ -311,8 +311,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                         {
                             if (GetWindowClassName(hwnd) == "Windows.UI.Core.CoreWindow")
                             {
-                                var childProcessId = WindowProcess.GetProcessIDFromWindowHandle(hWindow);
-                                var childThreadId = WindowProcess.GetThreadIDFromWindowHandle(hWindow);
+                                var childProcessId = WindowProcess.GetProcessIDFromWindowHandle(hwnd);
+                                var childThreadId = WindowProcess.GetThreadIDFromWindowHandle(hwnd);
                                 var childProcessName = WindowProcess.GetProcessNameFromProcessID(childProcessId);
 
                                 // Update process info in cache
