@@ -7,7 +7,6 @@
                 "*.resources.dll",
 
                 "PowerToysSetupCustomActions.dll",
-
                 
                 "PowerToys.ActionRunner.exe",
                 "PowerToys.Update.exe",
@@ -24,6 +23,9 @@
                 "PowerToys.Common.UI.dll",
                 "PowerToys.Settings.UI.Lib.dll",
 
+                "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTop.exe",
+                "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTopModuleInterface.dll",
+                
                 "modules\\ColorPicker\\ColorPicker.dll",
                 "modules\\ColorPicker\\ColorPickerUI.dll",
                 "modules\\ColorPicker\\ColorPickerUI.exe",
