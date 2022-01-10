@@ -43,13 +43,13 @@ namespace Microsoft.Plugin.WindowWalker
             {
                 Title = x.Result.Title,
                 IcoPath = IconPath,
-                SubTitle = Properties.Resources.wox_plugin_windowwalker_running + ": " + x.Result.ProcessName,
+                SubTitle = Properties.Resources.wox_plugin_windowwalker_running + ": " + x.Result.ProcessInfo.Name,
                 Action = c =>
                 {
                     x.Result.SwitchToWindow();
                     return true;
                 },
-                ToolTipData = new ToolTipData(x.Result.Title, $"hWnd: {x.Result.Hwnd}\nPID: {x.Result.ProcessID}\nProcess: {x.Result.ProcessName}\nIs elevated: {x.Result.IsProcessElevated}"),
+                ToolTipData = new ToolTipData(x.Result.Title, $"hWnd: {x.Result.Hwnd}\nPID: {x.Result.ProcessInfo.ProcessID}\nPID: {x.Result.ProcessInfo.ThreadID}\nProcess: {x.Result.ProcessInfo.Name}\nIs uwp app: {x.Result.ProcessInfo.IsUwpApp}\nIs elevated: {x.Result.ProcessInfo.IsRunningElevated}"),
             }).ToList();
         }
 

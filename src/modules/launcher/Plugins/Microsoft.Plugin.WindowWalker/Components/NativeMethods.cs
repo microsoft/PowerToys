@@ -861,7 +861,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public static extern bool FlashWindow(IntPtr hwnd, bool bInvert);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwThreadId);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwThreadId, out uint lpdwProcessId);
 
         [DllImport("psapi.dll", BestFitMapping = false)]
         public static extern uint GetProcessImageFileName(IntPtr hProcess, [Out] StringBuilder lpImageFileName, [In][MarshalAs(UnmanagedType.U4)] int nSize);
