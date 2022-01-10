@@ -3,7 +3,7 @@
 Param(
   [Parameter(Mandatory=$True,Position=1)]
   [AllowEmptyString()]
-  [string]$targetDir = $PSScriptRoot + '/../extractedMsi'
+  [string]$targetDir = $PSScriptRoot + '/../extractedMsi/File'
 )
 
 $DirPath = $targetDir;  #this file is in pipeline, we need root.
