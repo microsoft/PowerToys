@@ -13,7 +13,6 @@ using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Mono.Collections.Generic;
 using Wox.Plugin;
 
-// TODO: translate (part 2, UTC+4:00)
 // FIXME: sometimes daylight countries in tool tips are empty
 // TODO: revisited time zone names (use German Wikipedia sites as second reference)
 // TODO: revisited countries (use German Wikipedia sites as second reference)

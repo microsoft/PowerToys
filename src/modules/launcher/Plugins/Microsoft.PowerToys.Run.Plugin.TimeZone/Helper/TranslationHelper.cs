@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 // Translate MilitaryName
                 if (!string.IsNullOrWhiteSpace(timeZone.MilitaryName))
                 {
-                    var militaryName = Resources.ResourceManager.GetString(timeZone.MilitaryName, CultureInfo.CurrentCulture);
+                    var militaryName = Resources.ResourceManager.GetString(timeZone.MilitaryName, CultureInfo.InvariantCulture);
                     if (string.IsNullOrEmpty(militaryName))
                     {
                         Log.Warn($"Resource string for [{timeZone.MilitaryName}] not found", typeof(TranslationHelper));
@@ -59,7 +59,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
                     foreach (var nameDaylight in timeZone.TimeNamesDaylight)
                     {
-                        var nameDaylightT = Resources.ResourceManager.GetString(nameDaylight, CultureInfo.CurrentCulture);
+                        var nameDaylightT = Resources.ResourceManager.GetString(nameDaylight, CultureInfo.InvariantCulture);
                         if (string.IsNullOrEmpty(nameDaylightT))
                         {
                             Log.Warn($"Resource string for [{nameDaylight}] not found", typeof(TranslationHelper));
@@ -78,7 +78,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
                     foreach (var nameStandard in timeZone.TimeNamesStandard)
                     {
-                        var nameStandardT = Resources.ResourceManager.GetString(nameStandard, CultureInfo.CurrentCulture);
+                        var nameStandardT = Resources.ResourceManager.GetString(nameStandard, CultureInfo.InvariantCulture);
                         if (string.IsNullOrEmpty(nameStandardT))
                         {
                             Log.Warn($"Resource string for [{nameStandard}] not found", typeof(TranslationHelper));
@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
                     foreach (var countryDaylight in timeZone.CountriesDaylight)
                     {
-                        var countryDaylightT = Resources.ResourceManager.GetString(countryDaylight, CultureInfo.CurrentCulture);
+                        var countryDaylightT = Resources.ResourceManager.GetString(countryDaylight, CultureInfo.InvariantCulture);
                         if (string.IsNullOrEmpty(countryDaylightT))
                         {
                             Log.Warn($"Resource string for [{countryDaylight}] not found", typeof(TranslationHelper));
@@ -116,7 +116,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
                     foreach (var countryStandard in timeZone.CountriesStandard)
                     {
-                        var countryStandardT = Resources.ResourceManager.GetString(countryStandard, CultureInfo.CurrentCulture);
+                        var countryStandardT = Resources.ResourceManager.GetString(countryStandard, CultureInfo.InvariantCulture);
                         if (string.IsNullOrEmpty(countryStandardT))
                         {
                             Log.Warn($"Resource string for [{countryStandard}] not found", typeof(TranslationHelper));

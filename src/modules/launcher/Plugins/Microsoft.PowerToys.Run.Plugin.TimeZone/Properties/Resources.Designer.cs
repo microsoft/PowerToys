@@ -88,11 +88,38 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Afghanistan.
+        /// </summary>
+        internal static string Afghanistan {
+            get {
+                return ResourceManager.GetString("Afghanistan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Afghanistan Time.
+        /// </summary>
+        internal static string Afghanistan_Time {
+            get {
+                return ResourceManager.GetString("Afghanistan Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Akrotiri and Dhekelia.
         /// </summary>
         internal static string Akrotiri_and_Dhekelia {
             get {
                 return ResourceManager.GetString("Akrotiri and Dhekelia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Aktobe (Kazakhstan).
+        /// </summary>
+        internal static string Aktobe__Kazakhstan_ {
+            get {
+                return ResourceManager.GetString("Aktobe (Kazakhstan)", resourceCulture);
             }
         }
         
@@ -169,11 +196,38 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Alma-Ata Time.
+        /// </summary>
+        internal static string Alma_Ata_Time {
+            get {
+                return ResourceManager.GetString("Alma-Ata Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Alpha Time Zone.
         /// </summary>
         internal static string Alpha_Time_Zone {
             get {
                 return ResourceManager.GetString("Alpha Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Altai Krai (Russia).
+        /// </summary>
+        internal static string Altai_Krai__Russia_ {
+            get {
+                return ResourceManager.GetString("Altai Krai (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Altai Republic (Russia).
+        /// </summary>
+        internal static string Altai_Republic__Russia_ {
+            get {
+                return ResourceManager.GetString("Altai Republic (Russia)", resourceCulture);
             }
         }
         
@@ -210,6 +264,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string American_Samoa {
             get {
                 return ResourceManager.GetString("American Samoa", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Amsterdam Island (French Southern and Antarctic Lands).
+        /// </summary>
+        internal static string Amsterdam_Island__French_Southern_and_Antarctic_Lands_ {
+            get {
+                return ResourceManager.GetString("Amsterdam Island (French Southern and Antarctic Lands)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Amur (Russia).
+        /// </summary>
+        internal static string Amur__Russia_ {
+            get {
+                return ResourceManager.GetString("Amur (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Anadyr Time.
+        /// </summary>
+        internal static string Anadyr_Time {
+            get {
+                return ResourceManager.GetString("Anadyr Time", resourceCulture);
             }
         }
         
@@ -259,6 +340,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Aqtobe Time.
+        /// </summary>
+        internal static string Aqtobe_Time {
+            get {
+                return ResourceManager.GetString("Aqtobe Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Arabia Standard Time.
         /// </summary>
         internal static string Arabia_Standard_Time {
@@ -304,6 +394,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Armenia.
+        /// </summary>
+        internal static string Armenia {
+            get {
+                return ResourceManager.GetString("Armenia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Armenia Time.
+        /// </summary>
+        internal static string Armenia_Time {
+            get {
+                return ResourceManager.GetString("Armenia Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Artsakh.
+        /// </summary>
+        internal static string Artsakh {
+            get {
+                return ResourceManager.GetString("Artsakh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Aruba.
         /// </summary>
         internal static string Aruba {
@@ -318,6 +435,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Ascension_and_Tristan_da_Cunha {
             get {
                 return ResourceManager.GetString("Ascension and Tristan da Cunha", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ASEAN Common Time.
+        /// </summary>
+        internal static string ASEAN_Common_Time {
+            get {
+                return ResourceManager.GetString("ASEAN Common Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Astrakhan (Russia).
+        /// </summary>
+        internal static string Astrakhan__Russia_ {
+            get {
+                return ResourceManager.GetString("Astrakhan (Russia)", resourceCulture);
             }
         }
         
@@ -358,11 +493,119 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Atyrau (Kazakhstan).
+        /// </summary>
+        internal static string Atyrau__Kazakhstan_ {
+            get {
+                return ResourceManager.GetString("Atyrau (Kazakhstan)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Australia: Western Australia (most).
+        /// </summary>
+        internal static string Australia__Western_Australia__most_ {
+            get {
+                return ResourceManager.GetString("Australia: Western Australia (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Australian Capital Territory (Australia).
+        /// </summary>
+        internal static string Australian_Capital_Territory__Australia_ {
+            get {
+                return ResourceManager.GetString("Australian Capital Territory (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Australian Central Daylight Saving Time.
+        /// </summary>
+        internal static string Australian_Central_Daylight_Saving_Time {
+            get {
+                return ResourceManager.GetString("Australian Central Daylight Saving Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Australian Central Standard Time.
+        /// </summary>
+        internal static string Australian_Central_Standard_Time {
+            get {
+                return ResourceManager.GetString("Australian Central Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Australian Central Western Standard Time.
+        /// </summary>
+        internal static string Australian_Central_Western_Standard_Time {
+            get {
+                return ResourceManager.GetString("Australian Central Western Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Australian Eastern Daylight Saving Time.
+        /// </summary>
+        internal static string Australian_Eastern_Daylight_Saving_Time {
+            get {
+                return ResourceManager.GetString("Australian Eastern Daylight Saving Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Australian Eastern Standard Time.
+        /// </summary>
+        internal static string Australian_Eastern_Standard_Time {
+            get {
+                return ResourceManager.GetString("Australian Eastern Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Australian Eastern Time.
+        /// </summary>
+        internal static string Australian_Eastern_Time {
+            get {
+                return ResourceManager.GetString("Australian Eastern Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Australian Western Standard Time.
+        /// </summary>
+        internal static string Australian_Western_Standard_Time {
+            get {
+                return ResourceManager.GetString("Australian Western Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Austria.
         /// </summary>
         internal static string Austria {
             get {
                 return ResourceManager.GetString("Austria", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Azerbaijan.
+        /// </summary>
+        internal static string Azerbaijan {
+            get {
+                return ResourceManager.GetString("Azerbaijan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Azerbaijan Time.
+        /// </summary>
+        internal static string Azerbaijan_Time {
+            get {
+                return ResourceManager.GetString("Azerbaijan Time", resourceCulture);
             }
         }
         
@@ -412,6 +655,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Baikonur (Kazakhstan).
+        /// </summary>
+        internal static string Baikonur__Kazakhstan_ {
+            get {
+                return ResourceManager.GetString("Baikonur (Kazakhstan)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Baja California (Mexico).
         /// </summary>
         internal static string Baja_California__Mexico_ {
@@ -448,11 +700,56 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bali (Indonesia).
+        /// </summary>
+        internal static string Bali__Indonesia_ {
+            get {
+                return ResourceManager.GetString("Bali (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bangladesh.
+        /// </summary>
+        internal static string Bangladesh {
+            get {
+                return ResourceManager.GetString("Bangladesh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bangladesh Standard Time.
+        /// </summary>
+        internal static string Bangladesh_Standard_Time {
+            get {
+                return ResourceManager.GetString("Bangladesh Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Barbados.
         /// </summary>
         internal static string Barbados {
             get {
                 return ResourceManager.GetString("Barbados", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bashkortostan (Russia).
+        /// </summary>
+        internal static string Bashkortostan__Russia_ {
+            get {
+                return ResourceManager.GetString("Bashkortostan (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bayan-Ölgii (Mongolia).
+        /// </summary>
+        internal static string Bayan_Ölgii__Mongolia_ {
+            get {
+                return ResourceManager.GetString("Bayan-Ölgii (Mongolia)", resourceCulture);
             }
         }
         
@@ -502,6 +799,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bhutan.
+        /// </summary>
+        internal static string Bhutan {
+            get {
+                return ResourceManager.GetString("Bhutan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bhutan Time.
+        /// </summary>
+        internal static string Bhutan_Time {
+            get {
+                return ResourceManager.GetString("Bhutan Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Bolivia.
         /// </summary>
         internal static string Bolivia {
@@ -520,6 +835,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Border Village (Australia).
+        /// </summary>
+        internal static string Border_Village__Australia_ {
+            get {
+                return ResourceManager.GetString("Border Village (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Bosnia and Herzegovina.
         /// </summary>
         internal static string Bosnia_and_Herzegovina {
@@ -534,6 +858,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Botswana {
             get {
                 return ResourceManager.GetString("Botswana", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bougainville (Papua New Guinea).
+        /// </summary>
+        internal static string Bougainville__Papua_New_Guinea_ {
+            get {
+                return ResourceManager.GetString("Bougainville (Papua New Guinea)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bougainville Standard Time.
+        /// </summary>
+        internal static string Bougainville_Standard_Time {
+            get {
+                return ResourceManager.GetString("Bougainville Standard Time", resourceCulture);
             }
         }
         
@@ -601,6 +943,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to British Indian Ocean Territory.
+        /// </summary>
+        internal static string British_Indian_Ocean_Territory {
+            get {
+                return ResourceManager.GetString("British Indian Ocean Territory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to British Indian Ocean Time.
+        /// </summary>
+        internal static string British_Indian_Ocean_Time {
+            get {
+                return ResourceManager.GetString("British Indian Ocean Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to British Summer Time.
         /// </summary>
         internal static string British_Summer_Time {
@@ -615,6 +975,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string British_Virgin_Islands {
             get {
                 return ResourceManager.GetString("British Virgin Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Brunei.
+        /// </summary>
+        internal static string Brunei {
+            get {
+                return ResourceManager.GetString("Brunei", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Brunei Time.
+        /// </summary>
+        internal static string Brunei_Time {
+            get {
+                return ResourceManager.GetString("Brunei Time", resourceCulture);
             }
         }
         
@@ -646,11 +1024,38 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Buryatia (Russia).
+        /// </summary>
+        internal static string Buryatia__Russia_ {
+            get {
+                return ResourceManager.GetString("Buryatia (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Caiguna (Australia).
+        /// </summary>
+        internal static string Caiguna__Australia_ {
+            get {
+                return ResourceManager.GetString("Caiguna (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to California (United States).
         /// </summary>
         internal static string California__United_States_ {
             get {
                 return ResourceManager.GetString("California (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cambodia.
+        /// </summary>
+        internal static string Cambodia {
+            get {
+                return ResourceManager.GetString("Cambodia", resourceCulture);
             }
         }
         
@@ -754,6 +1159,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Central Indonesian Time.
+        /// </summary>
+        internal static string Central_Indonesian_Time {
+            get {
+                return ResourceManager.GetString("Central Indonesian Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Central Kalimantan (Indonesia).
+        /// </summary>
+        internal static string Central_Kalimantan__Indonesia_ {
+            get {
+                return ResourceManager.GetString("Central Kalimantan (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Central Standard Time.
         /// </summary>
         internal static string Central_Standard_Time {
@@ -772,6 +1195,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Central Western Standard Time.
+        /// </summary>
+        internal static string Central_Western_Standard_Time {
+            get {
+                return ResourceManager.GetString("Central Western Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Chad.
         /// </summary>
         internal static string Chad {
@@ -781,11 +1213,65 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Chamorro Standard Time.
+        /// </summary>
+        internal static string Chamorro_Standard_Time {
+            get {
+                return ResourceManager.GetString("Chamorro Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chamorro Time Zone.
+        /// </summary>
+        internal static string Chamorro_Time_Zone {
+            get {
+                return ResourceManager.GetString("Chamorro Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Charlie Time Zone.
         /// </summary>
         internal static string Charlie_Time_Zone {
             get {
                 return ResourceManager.GetString("Charlie Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chatham Daylight Time.
+        /// </summary>
+        internal static string Chatham_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Chatham Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chatham Islands (New Zealand).
+        /// </summary>
+        internal static string Chatham_Islands__New_Zealand_ {
+            get {
+                return ResourceManager.GetString("Chatham Islands (New Zealand)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chatham Standard Time.
+        /// </summary>
+        internal static string Chatham_Standard_Time {
+            get {
+                return ResourceManager.GetString("Chatham Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chelyabinsk (Russia).
+        /// </summary>
+        internal static string Chelyabinsk__Russia_ {
+            get {
+                return ResourceManager.GetString("Chelyabinsk (Russia)", resourceCulture);
             }
         }
         
@@ -817,11 +1303,128 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to China.
+        /// </summary>
+        internal static string China {
+            get {
+                return ResourceManager.GetString("China", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to China Standard Time.
+        /// </summary>
+        internal static string China_Standard_Time {
+            get {
+                return ResourceManager.GetString("China Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choibalsan Standard Time.
+        /// </summary>
+        internal static string Choibalsan_Standard_Time {
+            get {
+                return ResourceManager.GetString("Choibalsan Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choibalsan Summer Time.
+        /// </summary>
+        internal static string Choibalsan_Summer_Time {
+            get {
+                return ResourceManager.GetString("Choibalsan Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Christmas Island.
+        /// </summary>
+        internal static string Christmas_Island {
+            get {
+                return ResourceManager.GetString("Christmas Island", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Christmas Island Time.
+        /// </summary>
+        internal static string Christmas_Island_Time {
+            get {
+                return ResourceManager.GetString("Christmas Island Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chukotka (Russia).
+        /// </summary>
+        internal static string Chukotka__Russia_ {
+            get {
+                return ResourceManager.GetString("Chukotka (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chuuk (Micronesia).
+        /// </summary>
+        internal static string Chuuk__Micronesia_ {
+            get {
+                return ResourceManager.GetString("Chuuk (Micronesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chuuk Time.
+        /// </summary>
+        internal static string Chuuk_Time {
+            get {
+                return ResourceManager.GetString("Chuuk Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Clipperton Island.
         /// </summary>
         internal static string Clipperton_Island {
             get {
                 return ResourceManager.GetString("Clipperton Island", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clipperton Island Standard Time.
+        /// </summary>
+        internal static string Clipperton_Island_Standard_Time {
+            get {
+                return ResourceManager.GetString("Clipperton Island Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cocklebiddy (Australia).
+        /// </summary>
+        internal static string Cocklebiddy__Australia_ {
+            get {
+                return ResourceManager.GetString("Cocklebiddy (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cocos Islands.
+        /// </summary>
+        internal static string Cocos_Islands {
+            get {
+                return ResourceManager.GetString("Cocos Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cocos Islands Time.
+        /// </summary>
+        internal static string Cocos_Islands_Time {
+            get {
+                return ResourceManager.GetString("Cocos Islands Time", resourceCulture);
             }
         }
         
@@ -961,6 +1564,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Crozet Islands (French Southern and Antarctic Lands).
+        /// </summary>
+        internal static string Crozet_Islands__French_Southern_and_Antarctic_Lands_ {
+            get {
+                return ResourceManager.GetString("Crozet Islands (French Southern and Antarctic Lands)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cuba.
         /// </summary>
         internal static string Cuba {
@@ -1024,6 +1636,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Davis Time.
+        /// </summary>
+        internal static string Davis_Time {
+            get {
+                return ResourceManager.GetString("Davis Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Daylight Time.
         /// </summary>
         internal static string DaylightTime {
@@ -1047,6 +1668,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Delaware__United_States_ {
             get {
                 return ResourceManager.GetString("Delaware (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delta Time Zone.
+        /// </summary>
+        internal static string Delta_Time_Zone {
+            get {
+                return ResourceManager.GetString("Delta Time Zone", resourceCulture);
             }
         }
         
@@ -1114,11 +1744,47 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dumont d&apos;Urville Time.
+        /// </summary>
+        internal static string Dumont_d_Urville_Time {
+            get {
+                return ResourceManager.GetString("Dumont d\'Urville Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to East Africa Time.
         /// </summary>
         internal static string East_Africa_Time {
             get {
                 return ResourceManager.GetString("East Africa Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to East Kalimantan (Indonesia).
+        /// </summary>
+        internal static string East_Kalimantan__Indonesia_ {
+            get {
+                return ResourceManager.GetString("East Kalimantan (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to East Nusa Tenggara (Indonesia).
+        /// </summary>
+        internal static string East_Nusa_Tenggara__Indonesia_ {
+            get {
+                return ResourceManager.GetString("East Nusa Tenggara (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to East Timor.
+        /// </summary>
+        internal static string East_Timor {
+            get {
+                return ResourceManager.GetString("East Timor", resourceCulture);
             }
         }
         
@@ -1204,6 +1870,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Eastern Indonesian Time.
+        /// </summary>
+        internal static string Eastern_Indonesian_Time {
+            get {
+                return ResourceManager.GetString("Eastern Indonesian Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Eastern Standard Time.
         /// </summary>
         internal static string Eastern_Standard_Time {
@@ -1218,6 +1893,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Eastern_Time_Zone {
             get {
                 return ResourceManager.GetString("Eastern Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Echo Time Zone.
+        /// </summary>
+        internal static string Echo_Time_Zone {
+            get {
+                return ResourceManager.GetString("Echo Time Zone", resourceCulture);
             }
         }
         
@@ -1321,6 +2005,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Eucla (Australia).
+        /// </summary>
+        internal static string Eucla__Australia_ {
+            get {
+                return ResourceManager.GetString("Eucla (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Falkland Islands.
         /// </summary>
         internal static string Falkland_Islands {
@@ -1375,6 +2068,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fiji.
+        /// </summary>
+        internal static string Fiji {
+            get {
+                return ResourceManager.GetString("Fiji", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fiji Time.
+        /// </summary>
+        internal static string Fiji_Time {
+            get {
+                return ResourceManager.GetString("Fiji Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Finland.
         /// </summary>
         internal static string Finland {
@@ -1389,6 +2100,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Florida__most__United_States_ {
             get {
                 return ResourceManager.GetString("Florida (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forty-Fours (New Zealand).
+        /// </summary>
+        internal static string Forty_Fours__New_Zealand_ {
+            get {
+                return ResourceManager.GetString("Forty-Fours (New Zealand)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Foxtrot Time Zone.
+        /// </summary>
+        internal static string Foxtrot_Time_Zone {
+            get {
+                return ResourceManager.GetString("Foxtrot Time Zone", resourceCulture);
             }
         }
         
@@ -1425,6 +2154,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string French_Polynesia__most_ {
             get {
                 return ResourceManager.GetString("French Polynesia (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to French Southern and Antarctic Time.
+        /// </summary>
+        internal static string French_Southern_and_Antarctic_Time {
+            get {
+                return ResourceManager.GetString("French Southern and Antarctic Time", resourceCulture);
             }
         }
         
@@ -1483,11 +2221,29 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Georgia.
+        /// </summary>
+        internal static string Georgia {
+            get {
+                return ResourceManager.GetString("Georgia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Georgia (United States).
         /// </summary>
         internal static string Georgia__United_States_ {
             get {
                 return ResourceManager.GetString("Georgia (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Georgia Standard Time.
+        /// </summary>
+        internal static string Georgia_Standard_Time {
+            get {
+                return ResourceManager.GetString("Georgia Standard Time", resourceCulture);
             }
         }
         
@@ -1515,6 +2271,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Gibraltar {
             get {
                 return ResourceManager.GetString("Gibraltar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gilbert Island Time.
+        /// </summary>
+        internal static string Gilbert_Island_Time {
+            get {
+                return ResourceManager.GetString("Gilbert Island Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gilbert Islands (Kiribati).
+        /// </summary>
+        internal static string Gilbert_Islands__Kiribati_ {
+            get {
+                return ResourceManager.GetString("Gilbert Islands (Kiribati)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Golf Time Zone.
+        /// </summary>
+        internal static string Golf_Time_Zone {
+            get {
+                return ResourceManager.GetString("Golf Time Zone", resourceCulture);
             }
         }
         
@@ -1564,6 +2347,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Guam.
+        /// </summary>
+        internal static string Guam {
+            get {
+                return ResourceManager.GetString("Guam", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Guatemala.
         /// </summary>
         internal static string Guatemala {
@@ -1596,6 +2388,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Guinea_Bissau {
             get {
                 return ResourceManager.GetString("Guinea-Bissau", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gulf Standard Time.
+        /// </summary>
+        internal static string Gulf_Standard_Time {
+            get {
+                return ResourceManager.GetString("Gulf Standard Time", resourceCulture);
             }
         }
         
@@ -1636,29 +2437,47 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hawaii–Aleutian Daylight Time.
+        ///   Looks up a localized string similar to Hawaii-Aleutian Daylight Time.
         /// </summary>
         internal static string Hawaii_Aleutian_Daylight_Time {
             get {
-                return ResourceManager.GetString("Hawaii_Aleutian Daylight Time", resourceCulture);
+                return ResourceManager.GetString("Hawaii-Aleutian Daylight Time", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hawaii–Aleutian Standard Time.
+        ///   Looks up a localized string similar to Hawaii-Aleutian Standard Time.
         /// </summary>
         internal static string Hawaii_Aleutian_Standard_Time {
             get {
-                return ResourceManager.GetString("Hawaii_Aleutian Standard Time", resourceCulture);
+                return ResourceManager.GetString("Hawaii-Aleutian Standard Time", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hawaii–Aleutian Time Zone.
+        ///   Looks up a localized string similar to Hawaii-Aleutian Time Zone.
         /// </summary>
         internal static string Hawaii_Aleutian_Time_Zone {
             get {
-                return ResourceManager.GetString("Hawaii_Aleutian Time Zone", resourceCulture);
+                return ResourceManager.GetString("Hawaii-Aleutian Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Heard and McDonald Islands Time.
+        /// </summary>
+        internal static string Heard_and_McDonald_Islands_Time {
+            get {
+                return ResourceManager.GetString("Heard and McDonald Islands Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Heard Island and McDonald Islands.
+        /// </summary>
+        internal static string Heard_Island_and_McDonald_Islands {
+            get {
+                return ResourceManager.GetString("Heard Island and McDonald Islands", resourceCulture);
             }
         }
         
@@ -1677,6 +2496,42 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Honduras {
             get {
                 return ResourceManager.GetString("Honduras", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hong Kong.
+        /// </summary>
+        internal static string Hong_Kong {
+            get {
+                return ResourceManager.GetString("Hong Kong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hong Kong Time.
+        /// </summary>
+        internal static string Hong_Kong_Time {
+            get {
+                return ResourceManager.GetString("Hong Kong Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hotel Time Zone.
+        /// </summary>
+        internal static string Hotel_Time_Zone {
+            get {
+                return ResourceManager.GetString("Hotel Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hovd Time.
+        /// </summary>
+        internal static string Hovd_Time {
+            get {
+                return ResourceManager.GetString("Hovd Time", resourceCulture);
             }
         }
         
@@ -1735,6 +2590,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to India.
+        /// </summary>
+        internal static string India {
+            get {
+                return ResourceManager.GetString("India", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to India Time Zone.
+        /// </summary>
+        internal static string India_Time_Zone {
+            get {
+                return ResourceManager.GetString("India Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Indian Ocean Time.
         /// </summary>
         internal static string Indian_Ocean_Time {
@@ -1744,11 +2617,29 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Indian Standard Time.
+        /// </summary>
+        internal static string Indian_Standard_Time {
+            get {
+                return ResourceManager.GetString("Indian Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Indiana (most, United States).
         /// </summary>
         internal static string Indiana__most__United_States_ {
             get {
                 return ResourceManager.GetString("Indiana (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indochina Time.
+        /// </summary>
+        internal static string Indochina_Time {
+            get {
+                return ResourceManager.GetString("Indochina Time", resourceCulture);
             }
         }
         
@@ -1821,6 +2712,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Irish_Standard_Time {
             get {
                 return ResourceManager.GetString("Irish Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Irkutsk (Russia).
+        /// </summary>
+        internal static string Irkutsk__Russia_ {
+            get {
+                return ResourceManager.GetString("Irkutsk (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Irkutsk Time.
+        /// </summary>
+        internal static string Irkutsk_Time {
+            get {
+                return ResourceManager.GetString("Irkutsk Time", resourceCulture);
             }
         }
         
@@ -1906,6 +2815,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Japan.
+        /// </summary>
+        internal static string Japan {
+            get {
+                return ResourceManager.GetString("Japan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Japan Standard Time.
+        /// </summary>
+        internal static string Japan_Standard_Time {
+            get {
+                return ResourceManager.GetString("Japan Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Jarvis Island.
         /// </summary>
         internal static string Jarvis_Island {
@@ -1915,11 +2842,38 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Java (Indonesia).
+        /// </summary>
+        internal static string Java__Indonesia_ {
+            get {
+                return ResourceManager.GetString("Java (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Jersey.
         /// </summary>
         internal static string Jersey {
             get {
                 return ResourceManager.GetString("Jersey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Jervis Bay Territory (Australia).
+        /// </summary>
+        internal static string Jervis_Bay_Territory__Australia_ {
+            get {
+                return ResourceManager.GetString("Jervis Bay Territory (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Jewish (Russia).
+        /// </summary>
+        internal static string Jewish__Russia_ {
+            get {
+                return ResourceManager.GetString("Jewish (Russia)", resourceCulture);
             }
         }
         
@@ -1960,11 +2914,47 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Kamchatka (Russia).
+        /// </summary>
+        internal static string Kamchatka__Russia_ {
+            get {
+                return ResourceManager.GetString("Kamchatka (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kamchatka Time.
+        /// </summary>
+        internal static string Kamchatka_Time {
+            get {
+                return ResourceManager.GetString("Kamchatka Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Kansas (most, United States).
         /// </summary>
         internal static string Kansas__most__United_States_ {
             get {
                 return ResourceManager.GetString("Kansas (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kazakhstan (most).
+        /// </summary>
+        internal static string Kazakhstan__most_ {
+            get {
+                return ResourceManager.GetString("Kazakhstan (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kemerovo (Russia).
+        /// </summary>
+        internal static string Kemerovo__Russia_ {
+            get {
+                return ResourceManager.GetString("Kemerovo (Russia)", resourceCulture);
             }
         }
         
@@ -1983,6 +2973,60 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Kenya {
             get {
                 return ResourceManager.GetString("Kenya", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kerguelen Islands (French Southern and Antarctic Lands).
+        /// </summary>
+        internal static string Kerguelen_Islands__French_Southern_and_Antarctic_Lands_ {
+            get {
+                return ResourceManager.GetString("Kerguelen Islands (French Southern and Antarctic Lands)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Khabarovsk (Russia).
+        /// </summary>
+        internal static string Khabarovsk__Russia_ {
+            get {
+                return ResourceManager.GetString("Khabarovsk (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Khakassia (Russia).
+        /// </summary>
+        internal static string Khakassia__Russia_ {
+            get {
+                return ResourceManager.GetString("Khakassia (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Khanty-Mansi (Russia).
+        /// </summary>
+        internal static string Khanty_Mansi__Russia_ {
+            get {
+                return ResourceManager.GetString("Khanty-Mansi (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Khovd (Mongolia).
+        /// </summary>
+        internal static string Khovd__Mongolia_ {
+            get {
+                return ResourceManager.GetString("Khovd (Mongolia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kilo Time Zone.
+        /// </summary>
+        internal static string Kilo_Time_Zone {
+            get {
+                return ResourceManager.GetString("Kilo Time Zone", resourceCulture);
             }
         }
         
@@ -2014,11 +3058,65 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Korea Standard Time.
+        /// </summary>
+        internal static string Korea_Standard_Time {
+            get {
+                return ResourceManager.GetString("Korea Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Kosovo.
         /// </summary>
         internal static string Kosovo {
             get {
                 return ResourceManager.GetString("Kosovo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kosrae (Micronesia).
+        /// </summary>
+        internal static string Kosrae__Micronesia_ {
+            get {
+                return ResourceManager.GetString("Kosrae (Micronesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kosrae Time.
+        /// </summary>
+        internal static string Kosrae_Time {
+            get {
+                return ResourceManager.GetString("Kosrae Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Krasnoyarsk (Russia).
+        /// </summary>
+        internal static string Krasnoyarsk__Russia_ {
+            get {
+                return ResourceManager.GetString("Krasnoyarsk (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Krasnoyarsk Time.
+        /// </summary>
+        internal static string Krasnoyarsk_Time {
+            get {
+                return ResourceManager.GetString("Krasnoyarsk Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kurgan (Russia).
+        /// </summary>
+        internal static string Kurgan__Russia_ {
+            get {
+                return ResourceManager.GetString("Kurgan (Russia)", resourceCulture);
             }
         }
         
@@ -2050,6 +3148,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Kyrgyzstan.
+        /// </summary>
+        internal static string Kyrgyzstan {
+            get {
+                return ResourceManager.GetString("Kyrgyzstan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kyrgyzstan Time.
+        /// </summary>
+        internal static string Kyrgyzstan_Time {
+            get {
+                return ResourceManager.GetString("Kyrgyzstan Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kyzylorda (Kazakhstan).
+        /// </summary>
+        internal static string Kyzylorda__Kazakhstan_ {
+            get {
+                return ResourceManager.GetString("Kyzylorda (Kazakhstan)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Labrador (most, Canada).
         /// </summary>
         internal static string Labrador__most__Canada_ {
@@ -2064,6 +3189,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Labrador__southeast__Canada_ {
             get {
                 return ResourceManager.GetString("Labrador (southeast, Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Laos.
+        /// </summary>
+        internal static string Laos {
+            get {
+                return ResourceManager.GetString("Laos", resourceCulture);
             }
         }
         
@@ -2122,11 +3256,74 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Lima Time Zone.
+        /// </summary>
+        internal static string Lima_Time_Zone {
+            get {
+                return ResourceManager.GetString("Lima Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line Islands (Kiribati).
+        /// </summary>
+        internal static string Line_Islands__Kiribati_ {
+            get {
+                return ResourceManager.GetString("Line Islands (Kiribati)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line Islands Time.
+        /// </summary>
+        internal static string Line_Islands_Time {
+            get {
+                return ResourceManager.GetString("Line Islands Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Lithuania.
         /// </summary>
         internal static string Lithuania {
             get {
                 return ResourceManager.GetString("Lithuania", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Little Mangere Island (New Zealand).
+        /// </summary>
+        internal static string Little_Mangere_Island__New_Zealand_ {
+            get {
+                return ResourceManager.GetString("Little Mangere Island (New Zealand)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lord Howe Island (Australia).
+        /// </summary>
+        internal static string Lord_Howe_Island__Australia_ {
+            get {
+                return ResourceManager.GetString("Lord Howe Island (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lord Howe Standard Time.
+        /// </summary>
+        internal static string Lord_Howe_Standard_Time {
+            get {
+                return ResourceManager.GetString("Lord Howe Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lord Howe Summer Time.
+        /// </summary>
+        internal static string Lord_Howe_Summer_Time {
+            get {
+                return ResourceManager.GetString("Lord Howe Summer Time", resourceCulture);
             }
         }
         
@@ -2158,11 +3355,56 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Macau.
+        /// </summary>
+        internal static string Macau {
+            get {
+                return ResourceManager.GetString("Macau", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Macquarie Island Station Time.
+        /// </summary>
+        internal static string Macquarie_Island_Station_Time {
+            get {
+                return ResourceManager.GetString("Macquarie Island Station Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Madagascar.
         /// </summary>
         internal static string Madagascar {
             get {
                 return ResourceManager.GetString("Madagascar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Madura (Australia).
+        /// </summary>
+        internal static string Madura__Australia_ {
+            get {
+                return ResourceManager.GetString("Madura (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Magadan (Russia).
+        /// </summary>
+        internal static string Magadan__Russia_ {
+            get {
+                return ResourceManager.GetString("Magadan (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Magadan Time.
+        /// </summary>
+        internal static string Magadan_Time {
+            get {
+                return ResourceManager.GetString("Magadan Time", resourceCulture);
             }
         }
         
@@ -2203,6 +3445,51 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Malaysia.
+        /// </summary>
+        internal static string Malaysia {
+            get {
+                return ResourceManager.GetString("Malaysia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Malaysia Standard Time.
+        /// </summary>
+        internal static string Malaysia_Standard_Time {
+            get {
+                return ResourceManager.GetString("Malaysia Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Malaysia Time.
+        /// </summary>
+        internal static string Malaysia_Time {
+            get {
+                return ResourceManager.GetString("Malaysia Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maldives.
+        /// </summary>
+        internal static string Maldives {
+            get {
+                return ResourceManager.GetString("Maldives", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maldives Time.
+        /// </summary>
+        internal static string Maldives_Time {
+            get {
+                return ResourceManager.GetString("Maldives Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Mali.
         /// </summary>
         internal static string Mali {
@@ -2217,6 +3504,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Malta {
             get {
                 return ResourceManager.GetString("Malta", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maluku (Indonesia).
+        /// </summary>
+        internal static string Maluku__Indonesia_ {
+            get {
+                return ResourceManager.GetString("Maluku (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mangystau (Kazakhstan).
+        /// </summary>
+        internal static string Mangystau__Kazakhstan_ {
+            get {
+                return ResourceManager.GetString("Mangystau (Kazakhstan)", resourceCulture);
             }
         }
         
@@ -2244,6 +3549,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Marquesas_Islands_Time {
             get {
                 return ResourceManager.GetString("Marquesas Islands Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Marshall Islands.
+        /// </summary>
+        internal static string Marshall_Islands {
+            get {
+                return ResourceManager.GetString("Marshall Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Marshall Islands Time.
+        /// </summary>
+        internal static string Marshall_Islands_Time {
+            get {
+                return ResourceManager.GetString("Marshall Islands Time", resourceCulture);
             }
         }
         
@@ -2302,6 +3625,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Mauritius.
+        /// </summary>
+        internal static string Mauritius {
+            get {
+                return ResourceManager.GetString("Mauritius", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mauritius Time.
+        /// </summary>
+        internal static string Mauritius_Time {
+            get {
+                return ResourceManager.GetString("Mauritius Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mawson Station Time.
+        /// </summary>
+        internal static string Mawson_Station_Time {
+            get {
+                return ResourceManager.GetString("Mawson Station Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Mayotte.
         /// </summary>
         internal static string Mayotte {
@@ -2352,6 +3702,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Midway_Atoll {
             get {
                 return ResourceManager.GetString("Midway Atoll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mike Time Zone.
+        /// </summary>
+        internal static string Mike_Time_Zone {
+            get {
+                return ResourceManager.GetString("Mike Time Zone", resourceCulture);
             }
         }
         
@@ -2415,6 +3774,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Mongala__Democratic_Republic_of_the_Congo_ {
             get {
                 return ResourceManager.GetString("Mongala (Democratic Republic of the Congo)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mongolia (most).
+        /// </summary>
+        internal static string Mongolia__most_ {
+            get {
+                return ResourceManager.GetString("Mongolia (most)", resourceCulture);
             }
         }
         
@@ -2500,6 +3868,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Mundrabilla (Australia).
+        /// </summary>
+        internal static string Mundrabilla__Australia_ {
+            get {
+                return ResourceManager.GetString("Mundrabilla (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Myanmar.
+        /// </summary>
+        internal static string Myanmar {
+            get {
+                return ResourceManager.GetString("Myanmar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Myanmar Standard Time.
+        /// </summary>
+        internal static string Myanmar_Standard_Time {
+            get {
+                return ResourceManager.GetString("Myanmar Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Names.
         /// </summary>
         internal static string Names {
@@ -2514,6 +3909,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Namibia {
             get {
                 return ResourceManager.GetString("Namibia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nauru.
+        /// </summary>
+        internal static string Nauru {
+            get {
+                return ResourceManager.GetString("Nauru", resourceCulture);
             }
         }
         
@@ -2554,6 +3958,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nepal.
+        /// </summary>
+        internal static string Nepal {
+            get {
+                return ResourceManager.GetString("Nepal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nepal Standard Time.
+        /// </summary>
+        internal static string Nepal_Standard_Time {
+            get {
+                return ResourceManager.GetString("Nepal Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Netherlands (European).
         /// </summary>
         internal static string Netherlands__European_ {
@@ -2577,6 +3999,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string New_Brunswick__Canada_ {
             get {
                 return ResourceManager.GetString("New Brunswick (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Caledonia.
+        /// </summary>
+        internal static string New_Caledonia {
+            get {
+                return ResourceManager.GetString("New Caledonia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Caledonia Time.
+        /// </summary>
+        internal static string New_Caledonia_Time {
+            get {
+                return ResourceManager.GetString("New Caledonia Time", resourceCulture);
             }
         }
         
@@ -2608,11 +4048,47 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New South Wales (most, Australia).
+        /// </summary>
+        internal static string New_South_Wales__most__Australia_ {
+            get {
+                return ResourceManager.GetString("New South Wales (most, Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to New York (United States).
         /// </summary>
         internal static string New_York__United_States_ {
             get {
                 return ResourceManager.GetString("New York (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Zealand.
+        /// </summary>
+        internal static string New_Zealand {
+            get {
+                return ResourceManager.GetString("New Zealand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Zealand Daylight Time.
+        /// </summary>
+        internal static string New_Zealand_Daylight_Time {
+            get {
+                return ResourceManager.GetString("New Zealand Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Zealand Standard Time.
+        /// </summary>
+        internal static string New_Zealand_Standard_Time {
+            get {
+                return ResourceManager.GetString("New Zealand Standard Time", resourceCulture);
             }
         }
         
@@ -2716,6 +4192,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Norfolk Island.
+        /// </summary>
+        internal static string Norfolk_Island {
+            get {
+                return ResourceManager.GetString("Norfolk Island", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Norfolk Island Time.
+        /// </summary>
+        internal static string Norfolk_Island_Time {
+            get {
+                return ResourceManager.GetString("Norfolk Island Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to North Carolina (United States).
         /// </summary>
         internal static string North_Carolina__United_States_ {
@@ -2734,6 +4228,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to North Kalimantan (Indonesia).
+        /// </summary>
+        internal static string North_Kalimantan__Indonesia_ {
+            get {
+                return ResourceManager.GetString("North Kalimantan (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to North Korea.
+        /// </summary>
+        internal static string North_Korea {
+            get {
+                return ResourceManager.GetString("North Korea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to North Macedonia.
         /// </summary>
         internal static string North_Macedonia {
@@ -2743,11 +4255,38 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to North Maluku (Indonesia).
+        /// </summary>
+        internal static string North_Maluku__Indonesia_ {
+            get {
+                return ResourceManager.GetString("North Maluku (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Northern Cyprus.
         /// </summary>
         internal static string Northern_Cyprus {
             get {
                 return ResourceManager.GetString("Northern Cyprus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Northern Mariana Islands.
+        /// </summary>
+        internal static string Northern_Mariana_Islands {
+            get {
+                return ResourceManager.GetString("Northern Mariana Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Northern Territory.
+        /// </summary>
+        internal static string Northern_Territory {
+            get {
+                return ResourceManager.GetString("Northern Territory", resourceCulture);
             }
         }
         
@@ -2784,6 +4323,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string November_Time_Zone {
             get {
                 return ResourceManager.GetString("November Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Novosibirsk (Russia).
+        /// </summary>
+        internal static string Novosibirsk__Russia_ {
+            get {
+                return ResourceManager.GetString("Novosibirsk (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Novosibirsk Time.
+        /// </summary>
+        internal static string Novosibirsk_Time {
+            get {
+                return ResourceManager.GetString("Novosibirsk Time", resourceCulture);
             }
         }
         
@@ -2842,6 +4399,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Oman.
+        /// </summary>
+        internal static string Oman {
+            get {
+                return ResourceManager.GetString("Oman", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Omsk (Russia).
+        /// </summary>
+        internal static string Omsk__Russia_ {
+            get {
+                return ResourceManager.GetString("Omsk (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Omsk Time.
+        /// </summary>
+        internal static string Omsk_Time {
+            get {
+                return ResourceManager.GetString("Omsk Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ontario (most, Canada).
         /// </summary>
         internal static string Ontario__most__Canada_ {
@@ -2860,11 +4444,29 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Oral Time.
+        /// </summary>
+        internal static string Oral_Time {
+            get {
+                return ResourceManager.GetString("Oral Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Oregon (most, United States).
         /// </summary>
         internal static string Oregon__most__United_States_ {
             get {
                 return ResourceManager.GetString("Oregon (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Orenburg (Russia).
+        /// </summary>
+        internal static string Orenburg__Russia_ {
+            get {
+                return ResourceManager.GetString("Orenburg (Russia)", resourceCulture);
             }
         }
         
@@ -2898,9 +4500,54 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Pacific Time Zone.
         /// </summary>
+        internal static string Pacific_Time_Zone {
+            get {
+                return ResourceManager.GetString("Pacific Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pacific Time Zone.
+        /// </summary>
         internal static string Pacific_Time_Zonev {
             get {
                 return ResourceManager.GetString("Pacific Time Zonev", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pakistan.
+        /// </summary>
+        internal static string Pakistan {
+            get {
+                return ResourceManager.GetString("Pakistan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pakistan Standard Time.
+        /// </summary>
+        internal static string Pakistan_Standard_Time {
+            get {
+                return ResourceManager.GetString("Pakistan Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Palau.
+        /// </summary>
+        internal static string Palau {
+            get {
+                return ResourceManager.GetString("Palau", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Palau Time.
+        /// </summary>
+        internal static string Palau_Time {
+            get {
+                return ResourceManager.GetString("Palau Time", resourceCulture);
             }
         }
         
@@ -2941,6 +4588,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Papua (Indonesia).
+        /// </summary>
+        internal static string Papua__Indonesia_ {
+            get {
+                return ResourceManager.GetString("Papua (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Papua New Guinea (most).
+        /// </summary>
+        internal static string Papua_New_Guinea__most_ {
+            get {
+                return ResourceManager.GetString("Papua New Guinea (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Papua New Guinea Time.
+        /// </summary>
+        internal static string Papua_New_Guinea_Time {
+            get {
+                return ResourceManager.GetString("Papua New Guinea Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Paraguay.
         /// </summary>
         internal static string Paraguay {
@@ -2977,6 +4651,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Perm (Russia).
+        /// </summary>
+        internal static string Perm__Russia_ {
+            get {
+                return ResourceManager.GetString("Perm (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Peru.
         /// </summary>
         internal static string Peru {
@@ -2995,11 +4678,65 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Philippine Standard Time.
+        /// </summary>
+        internal static string Philippine_Standard_Time {
+            get {
+                return ResourceManager.GetString("Philippine Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Philippine Time.
+        /// </summary>
+        internal static string Philippine_Time {
+            get {
+                return ResourceManager.GetString("Philippine Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Philippines.
+        /// </summary>
+        internal static string Philippines {
+            get {
+                return ResourceManager.GetString("Philippines", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phoenix Island Time.
+        /// </summary>
+        internal static string Phoenix_Island_Time {
+            get {
+                return ResourceManager.GetString("Phoenix Island Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phoenix Islands (Kiribati).
+        /// </summary>
+        internal static string Phoenix_Islands__Kiribati_ {
+            get {
+                return ResourceManager.GetString("Phoenix Islands (Kiribati)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pitcairn Islands.
         /// </summary>
         internal static string Pitcairn_Islands {
             get {
                 return ResourceManager.GetString("Pitcairn Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pitt Islands (New Zealand).
+        /// </summary>
+        internal static string Pitt_Islands__New_Zealand_ {
+            get {
+                return ResourceManager.GetString("Pitt Islands (New Zealand)", resourceCulture);
             }
         }
         
@@ -3022,6 +4759,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pohnpei (Micronesia).
+        /// </summary>
+        internal static string Pohnpei__Micronesia_ {
+            get {
+                return ResourceManager.GetString("Pohnpei (Micronesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pohnpei Standard Time.
+        /// </summary>
+        internal static string Pohnpei_Standard_Time {
+            get {
+                return ResourceManager.GetString("Pohnpei Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Poland.
         /// </summary>
         internal static string Poland {
@@ -3036,6 +4791,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Portugal__most_ {
             get {
                 return ResourceManager.GetString("Portugal (most)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Primorsky (Russia).
+        /// </summary>
+        internal static string Primorsky__Russia_ {
+            get {
+                return ResourceManager.GetString("Primorsky (Russia)", resourceCulture);
             }
         }
         
@@ -3103,6 +4867,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Queensland (Australia).
+        /// </summary>
+        internal static string Queensland__Australia_ {
+            get {
+                return ResourceManager.GetString("Queensland (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Quintana Roo (Mexico).
         /// </summary>
         internal static string Quintana_Roo__Mexico_ {
@@ -3117,6 +4890,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Rat_Islands__Aleutian_Islands__Alaska__United_States_ {
             get {
                 return ResourceManager.GetString("Rat Islands (Aleutian Islands, Alaska, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Réunion.
+        /// </summary>
+        internal static string Réunion {
+            get {
+                return ResourceManager.GetString("Réunion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Réunion Time.
+        /// </summary>
+        internal static string Réunion_Time {
+            get {
+                return ResourceManager.GetString("Réunion Time", resourceCulture);
             }
         }
         
@@ -3238,6 +5029,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Saint Paul Island (French Southern and Antarctic Lands).
+        /// </summary>
+        internal static string Saint_Paul_Island__French_Southern_and_Antarctic_Lands_ {
+            get {
+                return ResourceManager.GetString("Saint Paul Island (French Southern and Antarctic Lands)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Saint Pierre and Miquelon.
         /// </summary>
         internal static string Saint_Pierre_and_Miquelon {
@@ -3274,6 +5074,87 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sakha (central-east, Russia).
+        /// </summary>
+        internal static string Sakha__central_east__Russia_ {
+            get {
+                return ResourceManager.GetString("Sakha (central-east, Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sakha (east, Russia).
+        /// </summary>
+        internal static string Sakha__east__Russia_ {
+            get {
+                return ResourceManager.GetString("Sakha (east, Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sakha (most, Russia).
+        /// </summary>
+        internal static string Sakha__most__Russia_ {
+            get {
+                return ResourceManager.GetString("Sakha (most, Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sakhalin (Russia).
+        /// </summary>
+        internal static string Sakhalin__Russia_ {
+            get {
+                return ResourceManager.GetString("Sakhalin (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sakhalin Island Time.
+        /// </summary>
+        internal static string Sakhalin_Island_Time {
+            get {
+                return ResourceManager.GetString("Sakhalin Island Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Samara (Russia).
+        /// </summary>
+        internal static string Samara__Russia_ {
+            get {
+                return ResourceManager.GetString("Samara (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Samara Time.
+        /// </summary>
+        internal static string Samara_Time {
+            get {
+                return ResourceManager.GetString("Samara Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Samoa.
+        /// </summary>
+        internal static string Samoa {
+            get {
+                return ResourceManager.GetString("Samoa", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Samoa Daylight Time.
+        /// </summary>
+        internal static string Samoa_Daylight_Time {
+            get {
+                return ResourceManager.GetString("Samoa Daylight Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Samoa Standard Time.
         /// </summary>
         internal static string Samoa_Standard_Time {
@@ -3306,6 +5187,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string São_Tomé_and_Príncipe {
             get {
                 return ResourceManager.GetString("São Tomé and Príncipe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saratov (Russia).
+        /// </summary>
+        internal static string Saratov__Russia_ {
+            get {
+                return ResourceManager.GetString("Saratov (Russia)", resourceCulture);
             }
         }
         
@@ -3351,6 +5241,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Serbia {
             get {
                 return ResourceManager.GetString("Serbia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Seychelles.
+        /// </summary>
+        internal static string Seychelles {
+            get {
+                return ResourceManager.GetString("Seychelles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Seychelles Time.
+        /// </summary>
+        internal static string Seychelles_Time {
+            get {
+                return ResourceManager.GetString("Seychelles Time", resourceCulture);
             }
         }
         
@@ -3427,6 +5335,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Singapore.
+        /// </summary>
+        internal static string Singapore {
+            get {
+                return ResourceManager.GetString("Singapore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Singapore Standard Time.
+        /// </summary>
+        internal static string Singapore_Standard_Time {
+            get {
+                return ResourceManager.GetString("Singapore Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Singapore Time.
+        /// </summary>
+        internal static string Singapore_Time {
+            get {
+                return ResourceManager.GetString("Singapore Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sint Maarten.
         /// </summary>
         internal static string Sint_Maarten {
@@ -3450,6 +5385,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Slovenia {
             get {
                 return ResourceManager.GetString("Slovenia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Solomon Islands.
+        /// </summary>
+        internal static string Solomon_Islands {
+            get {
+                return ResourceManager.GetString("Solomon Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Solomon Islands Time.
+        /// </summary>
+        internal static string Solomon_Islands_Time {
+            get {
+                return ResourceManager.GetString("Solomon Islands Time", resourceCulture);
             }
         }
         
@@ -3499,6 +5452,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to South Australia (Australia).
+        /// </summary>
+        internal static string South_Australia__Australia_ {
+            get {
+                return ResourceManager.GetString("South Australia (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to South Carolina (United States).
         /// </summary>
         internal static string South_Carolina__United_States_ {
@@ -3517,6 +5479,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to South East Island (New Zealand).
+        /// </summary>
+        internal static string South_East_Island__New_Zealand_ {
+            get {
+                return ResourceManager.GetString("South East Island (New Zealand)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to South Georgia and the South Sandwich Islands.
         /// </summary>
         internal static string South_Georgia_and_the_South_Sandwich_Islands {
@@ -3531,6 +5502,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string South_Georgia_and_the_South_Sandwich_Islands_Time {
             get {
                 return ResourceManager.GetString("South Georgia and the South Sandwich Islands Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to South Kalimantan (Indonesia).
+        /// </summary>
+        internal static string South_Kalimantan__Indonesia_ {
+            get {
+                return ResourceManager.GetString("South Kalimantan (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to South Korea.
+        /// </summary>
+        internal static string South_Korea {
+            get {
+                return ResourceManager.GetString("South Korea", resourceCulture);
             }
         }
         
@@ -3571,6 +5560,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Srednekolymsk Time.
+        /// </summary>
+        internal static string Srednekolymsk_Time {
+            get {
+                return ResourceManager.GetString("Srednekolymsk Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sri Lanka.
+        /// </summary>
+        internal static string Sri_Lanka {
+            get {
+                return ResourceManager.GetString("Sri Lanka", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sri Lanka Standard Time.
+        /// </summary>
+        internal static string Sri_Lanka_Standard_Time {
+            get {
+                return ResourceManager.GetString("Sri Lanka Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Standard Time.
         /// </summary>
         internal static string StandardTime {
@@ -3585,6 +5601,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string StandardTimeShortcut {
             get {
                 return ResourceManager.GetString("StandardTimeShortcut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Star Keys (New Zealand).
+        /// </summary>
+        internal static string Star_Keys__New_Zealand_ {
+            get {
+                return ResourceManager.GetString("Star Keys (New Zealand)", resourceCulture);
             }
         }
         
@@ -3607,6 +5632,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sulawesi (Indonesia).
+        /// </summary>
+        internal static string Sulawesi__Indonesia_ {
+            get {
+                return ResourceManager.GetString("Sulawesi (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sumatra (Indonesia).
+        /// </summary>
+        internal static string Sumatra__Indonesia_ {
+            get {
+                return ResourceManager.GetString("Sumatra (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SuriName.
         /// </summary>
         internal static string SuriName {
@@ -3621,6 +5664,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Suriname_Time {
             get {
                 return ResourceManager.GetString("Suriname Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sverdlovsk (Russia).
+        /// </summary>
+        internal static string Sverdlovsk__Russia_ {
+            get {
+                return ResourceManager.GetString("Sverdlovsk (Russia)", resourceCulture);
             }
         }
         
@@ -3661,6 +5713,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Taiwan.
+        /// </summary>
+        internal static string Taiwan {
+            get {
+                return ResourceManager.GetString("Taiwan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tajikistan.
+        /// </summary>
+        internal static string Tajikistan {
+            get {
+                return ResourceManager.GetString("Tajikistan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tajikistan Time.
+        /// </summary>
+        internal static string Tajikistan_Time {
+            get {
+                return ResourceManager.GetString("Tajikistan Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tango Time Zone.
         /// </summary>
         internal static string Tango_Time_Zone {
@@ -3679,6 +5758,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tasmania (Australia).
+        /// </summary>
+        internal static string Tasmania__Australia_ {
+            get {
+                return ResourceManager.GetString("Tasmania (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tennessee (most, United States).
         /// </summary>
         internal static string Tennessee__most__United_States_ {
@@ -3693,6 +5781,42 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Texas__most__United_States_ {
             get {
                 return ResourceManager.GetString("Texas (most, United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Thailand.
+        /// </summary>
+        internal static string Thailand {
+            get {
+                return ResourceManager.GetString("Thailand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Thailand Standard Time.
+        /// </summary>
+        internal static string Thailand_Standard_Time {
+            get {
+                return ResourceManager.GetString("Thailand Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Fort (New Zealand).
+        /// </summary>
+        internal static string The_Fort__New_Zealand_ {
+            get {
+                return ResourceManager.GetString("The Fort (New Zealand)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Sisters (New Zealand).
+        /// </summary>
+        internal static string The_Sisters__New_Zealand_ {
+            get {
+                return ResourceManager.GetString("The Sisters (New Zealand)", resourceCulture);
             }
         }
         
@@ -3742,11 +5866,65 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Timor Leste Time.
+        /// </summary>
+        internal static string Timor_Leste_Time {
+            get {
+                return ResourceManager.GetString("Timor Leste Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Togo.
         /// </summary>
         internal static string Togo {
             get {
                 return ResourceManager.GetString("Togo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tokelau.
+        /// </summary>
+        internal static string Tokelau {
+            get {
+                return ResourceManager.GetString("Tokelau", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tokelau Time.
+        /// </summary>
+        internal static string Tokelau_Time {
+            get {
+                return ResourceManager.GetString("Tokelau Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tomsk (Russia).
+        /// </summary>
+        internal static string Tomsk__Russia_ {
+            get {
+                return ResourceManager.GetString("Tomsk (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tonga.
+        /// </summary>
+        internal static string Tonga {
+            get {
+                return ResourceManager.GetString("Tonga", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tonga Time.
+        /// </summary>
+        internal static string Tonga_Time {
+            get {
+                return ResourceManager.GetString("Tonga Time", resourceCulture);
             }
         }
         
@@ -3805,11 +5983,65 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Turkmenistan.
+        /// </summary>
+        internal static string Turkmenistan {
+            get {
+                return ResourceManager.GetString("Turkmenistan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turkmenistan Time.
+        /// </summary>
+        internal static string Turkmenistan_Time {
+            get {
+                return ResourceManager.GetString("Turkmenistan Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Turks and Caicos Islands.
         /// </summary>
         internal static string Turks_and_Caicos_Islands {
             get {
                 return ResourceManager.GetString("Turks and Caicos Islands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tuva (Russia).
+        /// </summary>
+        internal static string Tuva__Russia_ {
+            get {
+                return ResourceManager.GetString("Tuva (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tuvalu.
+        /// </summary>
+        internal static string Tuvalu {
+            get {
+                return ResourceManager.GetString("Tuvalu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tuvalu Time.
+        /// </summary>
+        internal static string Tuvalu_Time {
+            get {
+                return ResourceManager.GetString("Tuvalu Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tyumen (Russia).
+        /// </summary>
+        internal static string Tyumen__Russia_ {
+            get {
+                return ResourceManager.GetString("Tyumen (Russia)", resourceCulture);
             }
         }
         
@@ -3823,6 +6055,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Udmurtia (Russia).
+        /// </summary>
+        internal static string Udmurtia__Russia_ {
+            get {
+                return ResourceManager.GetString("Udmurtia (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uganda.
         /// </summary>
         internal static string Uganda {
@@ -3832,11 +6073,56 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ulaanbaatar Standard Time.
+        /// </summary>
+        internal static string Ulaanbaatar_Standard_Time {
+            get {
+                return ResourceManager.GetString("Ulaanbaatar Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ulaanbaatar Summer Time.
+        /// </summary>
+        internal static string Ulaanbaatar_Summer_Time {
+            get {
+                return ResourceManager.GetString("Ulaanbaatar Summer Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ulyanovsk (Russia).
+        /// </summary>
+        internal static string Ulyanovsk__Russia_ {
+            get {
+                return ResourceManager.GetString("Ulyanovsk (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uniform Time Zone.
         /// </summary>
         internal static string Uniform_Time_Zone {
             get {
                 return ResourceManager.GetString("Uniform Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to United Arab Emirates.
+        /// </summary>
+        internal static string United_Arab_Emirates {
+            get {
+                return ResourceManager.GetString("United Arab Emirates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to United Arab Emirates Standard Time.
+        /// </summary>
+        internal static string United_Arab_Emirates_Standard_Time {
+            get {
+                return ResourceManager.GetString("United Arab Emirates Standard Time", resourceCulture);
             }
         }
         
@@ -3904,6 +6190,51 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Uvs (Mongolia).
+        /// </summary>
+        internal static string Uvs__Mongolia_ {
+            get {
+                return ResourceManager.GetString("Uvs (Mongolia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uzbekistan.
+        /// </summary>
+        internal static string Uzbekistan {
+            get {
+                return ResourceManager.GetString("Uzbekistan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uzbekistan Time.
+        /// </summary>
+        internal static string Uzbekistan_Time {
+            get {
+                return ResourceManager.GetString("Uzbekistan Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vanuatu.
+        /// </summary>
+        internal static string Vanuatu {
+            get {
+                return ResourceManager.GetString("Vanuatu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vanuatu Time.
+        /// </summary>
+        internal static string Vanuatu_Time {
+            get {
+                return ResourceManager.GetString("Vanuatu Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Vatican City.
         /// </summary>
         internal static string Vatican_City {
@@ -3949,11 +6280,83 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Victoria (Australia).
+        /// </summary>
+        internal static string Victoria__Australia_ {
+            get {
+                return ResourceManager.GetString("Victoria (Australia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vietnam.
+        /// </summary>
+        internal static string Vietnam {
+            get {
+                return ResourceManager.GetString("Vietnam", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Virginia (United States).
         /// </summary>
         internal static string Virginia__United_States_ {
             get {
                 return ResourceManager.GetString("Virginia (United States)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vladivostok Time.
+        /// </summary>
+        internal static string Vladivostok_Time {
+            get {
+                return ResourceManager.GetString("Vladivostok Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Volgograd Time.
+        /// </summary>
+        internal static string Volgograd_Time {
+            get {
+                return ResourceManager.GetString("Volgograd Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vostok Station Time.
+        /// </summary>
+        internal static string Vostok_Station_Time {
+            get {
+                return ResourceManager.GetString("Vostok Station Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wake Island.
+        /// </summary>
+        internal static string Wake_Island {
+            get {
+                return ResourceManager.GetString("Wake Island", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wake Island Time.
+        /// </summary>
+        internal static string Wake_Island_Time {
+            get {
+                return ResourceManager.GetString("Wake Island Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wallis and Futuna.
+        /// </summary>
+        internal static string Wallis_and_Futuna {
+            get {
+                return ResourceManager.GetString("Wallis and Futuna", resourceCulture);
             }
         }
         
@@ -4003,6 +6406,42 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to West Kalimantan (Indonesia).
+        /// </summary>
+        internal static string West_Kalimantan__Indonesia_ {
+            get {
+                return ResourceManager.GetString("West Kalimantan (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to West Kazakhstan (Kazakhstan).
+        /// </summary>
+        internal static string West_Kazakhstan__Kazakhstan_ {
+            get {
+                return ResourceManager.GetString("West Kazakhstan (Kazakhstan)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to West Nusa Tenggara (Indonesia).
+        /// </summary>
+        internal static string West_Nusa_Tenggara__Indonesia_ {
+            get {
+                return ResourceManager.GetString("West Nusa Tenggara (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to West Papua (Indonesia).
+        /// </summary>
+        internal static string West_Papua__Indonesia_ {
+            get {
+                return ResourceManager.GetString("West Papua (Indonesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to West Virginia (United States).
         /// </summary>
         internal static string West_Virginia__United_States_ {
@@ -4021,6 +6460,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Western Australia Standard Time.
+        /// </summary>
+        internal static string Western_Australia_Standard_Time {
+            get {
+                return ResourceManager.GetString("Western Australia Standard Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Western European Summer Time.
         /// </summary>
         internal static string Western_European_Summer_Time {
@@ -4035,6 +6483,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Western_European_Time {
             get {
                 return ResourceManager.GetString("Western European Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Western Indonesian Time.
+        /// </summary>
+        internal static string Western_Indonesian_Time {
+            get {
+                return ResourceManager.GetString("Western Indonesian Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Western Standard Time.
+        /// </summary>
+        internal static string Western_Standard_Time {
+            get {
+                return ResourceManager.GetString("Western Standard Time", resourceCulture);
             }
         }
         
@@ -4075,11 +6541,47 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Yakutsk Time.
+        /// </summary>
+        internal static string Yakutsk_Time {
+            get {
+                return ResourceManager.GetString("Yakutsk Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yamalia (Russia).
+        /// </summary>
+        internal static string Yamalia__Russia_ {
+            get {
+                return ResourceManager.GetString("Yamalia (Russia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Yankee Time Zone.
         /// </summary>
         internal static string Yankee_Time_Zone {
             get {
                 return ResourceManager.GetString("Yankee Time Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yap (Micronesia).
+        /// </summary>
+        internal static string Yap__Micronesia_ {
+            get {
+                return ResourceManager.GetString("Yap (Micronesia)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yekaterinburg Time.
+        /// </summary>
+        internal static string Yekaterinburg_Time {
+            get {
+                return ResourceManager.GetString("Yekaterinburg Time", resourceCulture);
             }
         }
         
@@ -4107,6 +6609,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string Yukon__Canada_ {
             get {
                 return ResourceManager.GetString("Yukon (Canada)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Zabaykalsky (Russia).
+        /// </summary>
+        internal static string Zabaykalsky__Russia_ {
+            get {
+                return ResourceManager.GetString("Zabaykalsky (Russia)", resourceCulture);
             }
         }
         

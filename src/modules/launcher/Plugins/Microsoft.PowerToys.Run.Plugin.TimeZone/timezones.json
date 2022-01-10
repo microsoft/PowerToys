@@ -50,10 +50,10 @@
         },
         {
             "Offset": "-10:00",
-            "Name": "Hawaii_Aleutian Time Zone",
+            "Name": "Hawaii-Aleutian Time Zone",
             "MilitaryName": "Whiskey Time Zone",
             "TimeNamesStandard": [
-                "Hawaii_Aleutian Standard Time",
+                "Hawaii-Aleutian Standard Time",
                 "Tahiti Time"
             ],
             "ShortcutsStandard": [
@@ -61,7 +61,7 @@
                 "TAHT"
             ],
             "TimeNamesDaylight": [
-                "Hawaii–Aleutian Daylight Time"
+                "Hawaii-Aleutian Daylight Time"
             ],
             "ShortcutsDaylight": [
                 "HDT"
