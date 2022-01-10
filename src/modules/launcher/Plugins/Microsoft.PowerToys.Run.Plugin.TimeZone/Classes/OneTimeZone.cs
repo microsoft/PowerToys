@@ -5,11 +5,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
 {
+    /// <summary>
+    /// A time zone
+    /// </summary>
     public sealed class OneTimeZone
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OneTimeZone"/> class with empty properties.
+        /// </summary>
+        /// <remarks>
+        /// The standard constructor is need by the <see cref="JsonSerializer.Deserialize{TValue}(string, JsonSerializerOptions?)"/>-Method.
+        /// </remarks>
         public OneTimeZone()
         {
             Offset = "00:00";

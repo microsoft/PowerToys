@@ -29,6 +29,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Extensions
             }
         }
 
+        /// <summary>
+        /// Cut too long texts to the given length and add three dots at the end of the text.
+        /// </summary>
+        /// <param name="stringBuilder">The <see cref="StringBuilder"/> that contain the text.</param>
+        /// <param name="maxLength">The maximum length for the text, inclusive the three dots.</param>
         internal static void CutTooLong(this StringBuilder stringBuilder, int maxLength)
         {
             if (stringBuilder.Length <= maxLength)

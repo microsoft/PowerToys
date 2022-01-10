@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
@@ -14,7 +12,7 @@ using Wox.Plugin.Logger;
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 {
     /// <summary>
-    /// Helper class to easier work with the JSON files
+    /// Helper class to easier work with the JSON files.
     /// </summary>
     internal static class JsonHelper
     {
