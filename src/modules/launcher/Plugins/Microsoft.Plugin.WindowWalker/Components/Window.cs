@@ -30,7 +30,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private static readonly Dictionary<IntPtr, WindowProcess> _handlesToProcessCache = new Dictionary<IntPtr, WindowProcess>();
 
         /// <summary>
-        /// An instance of the class WindowProcess with the important process informatrion for the window
+        /// An instance of <see cref="WindowProcess"/> that contians the process information for the window
         /// </summary>
         private readonly WindowProcess processInfo;
 
@@ -251,7 +251,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Rreturns the class name of a window.
+        /// Returns the class name of a window.
         /// </summary>
         /// <param name="hwnd">Handle to the window.</param>
         /// <returns>Class name</returns>
@@ -269,7 +269,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a Instance of <see cref="WindowProcess"/> form process cache or creats a new one and adds them to the cache
+        /// Gets an instance of <see cref="WindowProcess"/> form process cache or creates a new one. A new one will be added to the cache.
         /// </summary>
         /// <param name="hWindow">The handle to the window</param>
         /// <returns>A new Instance of type <see cref="WindowProcess"/></returns>
@@ -287,16 +287,17 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 if (!_handlesToProcessCache.ContainsKey(hWindow))
                 {
                     // Get process ID and name
-                    WindowProcess.GetProcessIDAndThredIDFromWindowHandle(hWindow, out uint threadID, out uint processID);
-                    var processName = WindowProcess.GetProcessNameFromProcessID(processID).ToString().Split('\\').Reverse().ToArray()[0];
+                    var processId = WindowProcess.GetProcessIDFromWindowHandle(hWindow);
+                    var threadId = WindowProcess.GetThreadIDFromWindowHandle(hWindow);
+                    var processName = WindowProcess.GetProcessNameFromProcessID(processId).ToString().Split('\\').Reverse().ToArray()[0];
 
                     if (processName.Length != 0)
                     {
-                        _handlesToProcessCache.Add(hWindow, new WindowProcess(processID, threadID, processName));
+                        _handlesToProcessCache.Add(hWindow, new WindowProcess(processId, threadId, processName));
                     }
                     else
                     {
-                        Wox.Plugin.Logger.Log.Error($"Invalid process {processID} ({processName}) for window handle {hWindow}.", typeof(Window));
+                        Wox.Plugin.Logger.Log.Error($"Invalid process {processId} ({processName}) for window handle {hWindow}.", typeof(Window));
                         _handlesToProcessCache.Add(hWindow, new WindowProcess(0, 0, string.Empty));
                     }
                 }
@@ -310,7 +311,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                         {
                             if (GetWindowClassName(hwnd) == "Windows.UI.Core.CoreWindow")
                             {
-                                WindowProcess.GetProcessIDAndThredIDFromWindowHandle(hwnd, out uint childThreadId, out uint childProcessId);
+                                var childProcessId = WindowProcess.GetProcessIDFromWindowHandle(hWindow);
+                                var childThreadId = WindowProcess.GetThreadIDFromWindowHandle(hWindow);
                                 var childProcessName = WindowProcess.GetProcessNameFromProcessID(childProcessId);
 
                                 // Update process info in cache

@@ -87,6 +87,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowProcess"/> class.
         /// </summary>
+         /// <param name="pid">New process id.</param>
+        /// <param name="tid">New thread id.</param>
+        /// <param name="name">New process name.</param>
         public WindowProcess(uint pid, uint tid, string name)
         {
             // TODO: Add verification as to wether the process id and thread id is valid
@@ -116,18 +119,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets the process ID for the Window handle
-        /// </summary>
-        /// <param name="hwnd">The handle to the window</param>
-        /// <returns>The thread ID</returns>
-        public static uint GetThreadIDFromWindowHandle(IntPtr hwnd)
-        {
-            _ = NativeMethods.GetWindowThreadProcessId(hwnd, out uint threadId);
-            return threadId;
-        }
-
-        /// <summary>
-        /// Gets the process ID for the Window handle
+        /// Gets the process ID for the window handle
         /// </summary>
         /// <param name="hwnd">The handle to the window</param>
         /// <returns>The process ID</returns>
@@ -138,20 +130,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets the process ID and thread ID for the Window handle
+        /// Gets the thread ID for the window handle
         /// </summary>
         /// <param name="hwnd">The handle to the window</param>
-        /// <param name="threadId">The thread ID</param>
-        /// <param name="processId">The process ID</param>
-        public static void GetProcessIDAndThredIDFromWindowHandle(IntPtr hwnd, out uint threadId, out uint processId)
+        /// <returns>The thread ID</returns>
+        public static uint GetThreadIDFromWindowHandle(IntPtr hwnd)
         {
-            _ = NativeMethods.GetWindowThreadProcessId(hwnd, out uint tid, out uint pid);
-            threadId = tid;
-            processId = pid;
+            _ = NativeMethods.GetWindowThreadProcessId(hwnd, out uint threadId);
+            return threadId;
         }
 
         /// <summary>
-        /// Gets the name of the process it's ID
+        /// Gets the process name for the process ID
         /// </summary>
         /// <param name="pid">The id of the process/param>
         /// <returns>A string representing the process name or an empty string if the function fails</returns>

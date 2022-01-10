@@ -1424,7 +1424,6 @@ pdtobj
 pdw
 PDWORD
 pedrolamas
-pelevated
 PERCEIVEDFLAG
 pesi
 PEXCEPTION
@@ -1454,7 +1453,6 @@ plocm
 plugin
 pluginsmodel
 PMSIHANDLE
-pname
 popup
 POPUPWINDOW
 posix
