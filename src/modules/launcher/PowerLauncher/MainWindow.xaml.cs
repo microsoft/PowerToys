@@ -52,16 +52,27 @@ namespace PowerLauncher
 
         private void SendSettingsTelemetry()
         {
-            Log.Info("Send Run settings telemetry", this.GetType());
-            var plugins = PluginManager.AllPlugins.ToDictionary(x => x.Metadata.Name, x => new PluginModel()
+            try
             {
-                Disabled = x.Metadata.Disabled,
-                ActionKeyword = x.Metadata.ActionKeyword,
-                IsGlobal = x.Metadata.IsGlobal,
-            });
+                Log.Info("Send Run settings telemetry", this.GetType());
+                var plugins = PluginManager.AllPlugins.ToDictionary(x => x.Metadata.Name + " " + x.Metadata.ID, x => new PluginModel()
+                {
+                    ID = x.Metadata.ID,
+                    Name = x.Metadata.Name,
+                    Disabled = x.Metadata.Disabled,
+                    ActionKeyword = x.Metadata.ActionKeyword,
+                    IsGlobal = x.Metadata.IsGlobal,
+                });
 
-            var telemetryEvent = new RunPluginsSettingsEvent(plugins);
-            PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+                var telemetryEvent = new RunPluginsSettingsEvent(plugins);
+                PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Log.Exception("Unhandled exception when trying to send PowerToys Run settings telemetry.", ex, GetType());
+            }
         }
 
         protected override void OnSourceInitialized(EventArgs e)
