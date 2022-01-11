@@ -13,12 +13,6 @@
 #include <winnt.h>
 #include <FancyZonesLib/JsonHelpers.h>
 
-// Non-localizable strings
-namespace NonLocalizable
-{
-    const wchar_t FancyZonesStr[] = L"FancyZones";
-}
-
 namespace FancyZonesDataTypes
 {
     struct ZoneSetData;

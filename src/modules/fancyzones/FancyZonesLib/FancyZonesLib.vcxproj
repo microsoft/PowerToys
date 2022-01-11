@@ -45,6 +45,7 @@
     <ClInclude Include="GuidUtils.h" />
     <ClInclude Include="JsonHelpers.h" />
     <ClInclude Include="KeyState.h" />
+    <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="MonitorUtils.h" />
     <ClInclude Include="MonitorWorkAreaHandler.h" />
     <ClInclude Include="pch.h" />

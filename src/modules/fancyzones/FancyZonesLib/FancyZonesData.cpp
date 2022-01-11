@@ -22,6 +22,8 @@
 #include <common/utils/process_path.h>
 #include <common/logger/logger.h>
 
+#include <FancyZonesLib/ModuleConstants.h>
+
 // Non-localizable strings
 namespace NonLocalizable
 {
@@ -149,7 +151,7 @@ FancyZonesData& FancyZonesDataInstance()
 
 FancyZonesData::FancyZonesData()
 {
-    std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::FancyZonesStr);
+    std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
 
     settingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesSettingsFile);
     zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesDataFile);
