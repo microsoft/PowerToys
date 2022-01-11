@@ -217,6 +217,20 @@ jobs:
       clean: true
       maximumCpuCount: true
 
+  - task: CmdLine@2
+    displayName: 'Extracting MSI to verify contents'
+    inputs:
+      script: |
+        .\installer\packages\WiX.3.11.2\tools\dark.exe -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).msi 
+        dir $(build.sourcesdirectory)\extractedMsi
+
+# Did we sign all files
+  - task: PowerShell@1
+    displayName: Verifying entire build is signed and version set
+    inputs:
+      scriptName: .pipelines/versionAndSignCheck.ps1
+      arguments: -targetDir '$(build.sourcesdirectory)\extractedMsi\File'
+      
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     displayName: Sign MSI
     inputs:
