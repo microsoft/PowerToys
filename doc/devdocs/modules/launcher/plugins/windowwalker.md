@@ -15,7 +15,7 @@ The window walker plugin matches the user entered query with the open windows on
 - The `Window` class holds a static cache with the process information of all windows we know so far and each window instance has a property which holds its process information (name, file, ...). The process data in the cache and the window property are of the type `WindowProcess`.
 
 ### [`WindowProcess.cs`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/WindowProcess.cs)
-- The [`WindowProcess`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/WindowProcess.cs) class represents a specific process for a window. It contains static methods to query process information from the system. And it contains instantiable methods and properties to hold/retrieve the process information we want to know about a window's process.
+- The [`WindowProcess`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/WindowProcess.cs) class represents a specific process for a window. It contains static methods to query process information from the system. And it contains instance methods and properties to hold/retrieve the process information we want to know about a window's process.
 
 ### Score
 The window walker plugin uses [`FuzzyMatching`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/FuzzyMatching.cs) to get the matching indices and calculates the score by creating a 2 dimensional array of the window and the query text.
