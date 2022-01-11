@@ -78,6 +78,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("ftp://user:password@google.com:2121", true, "ftp://user:password@google.com:2121/", false)]
         [DataRow("ftp://user:password@1.1.1.1", true, "ftp://user:password@1.1.1.1/", false)]
         [DataRow("ftp://user:password@1.1.1.1:2121", true, "ftp://user:password@1.1.1.1:2121/", false)]
+        [DataRow("^:", false, null, false)]
 
         public void TryParseCanParseHostName(string query, bool expectedSuccess, string expectedResult, bool expectedIsWebUri)
         {
