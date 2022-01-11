@@ -23,8 +23,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private readonly IntPtr hwnd;
 
         /// <summary>
-        /// The list of owners of a window so that we don't have to
-        /// constantly query for the process owning a specific window
+        /// A static cache for the process data of all known windows
+        /// that we don't have to query the data every time
         /// </summary>
         private static readonly Dictionary<IntPtr, WindowProcess> _handlesToProcessCache = new Dictionary<IntPtr, WindowProcess>();
 
