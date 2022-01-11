@@ -49,7 +49,7 @@ namespace Microsoft.Plugin.WindowWalker
                     x.Result.SwitchToWindow();
                     return true;
                 },
-                ToolTipData = new ToolTipData(x.Result.Title, $"hWnd: {x.Result.Hwnd}\nProcess ID: {x.Result.ProcessInfo.ProcessID}\nThread ID: {x.Result.ProcessInfo.ThreadID}\nProcess: {x.Result.ProcessInfo.Name}\nIs running elevated: {x.Result.ProcessInfo.IsRunningElevated}\nIs uwp app: {x.Result.ProcessInfo.IsUwpApp}\nWindow cloak state: {x.Result.GetWindowCloakState()}"),
+                ToolTipData = new ToolTipData(x.Result.Title, $"hWnd: {x.Result.Hwnd}\nProcess ID: {x.Result.ProcessInfo.ProcessID}\nThread ID: {x.Result.ProcessInfo.ThreadID}\nProcess: {x.Result.ProcessInfo.Name}\nIs running elevated: {x.Result.ProcessInfo.IsRunningElevated}\nIs uwp app: {x.Result.ProcessInfo.IsUwpApp}\nIs window cloaked: {x.Result.IsCloaked}\nWindow cloak state: {x.Result.GetWindowCloakState()}"),
             }).ToList();
         }
 
