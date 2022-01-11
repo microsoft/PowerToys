@@ -99,6 +99,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
+        /// Gets a value indicating whether the window is cloaked (true) or not (false).
+        /// (A cloaked window is not visible to the user. But the window is still composed by DWM.)
+        /// </summary>
+        public bool IsCloaked
+        {
+            get
+            {
+                return GetWindowCloakState() != WindowCloakState.None;
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether determines whether the specified window handle identifies an existing window.
         /// </summary>
         public bool IsWindow
@@ -251,12 +263,13 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Returns if the window has cloak state in DWM
+        /// Returns the window cloak state from DWM
+        /// (A cloaked window is not visible to the user. But the window is still composed by DWM.)
         /// </summary>
         /// <returns>The state (none, app, ...) of the window</returns>
         public WindowCloakState GetWindowCloakState()
         {
-            _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)NativeMethods.DwmWindowAttribute.Cloaked, out int isCloakedState, NativeMethods.GetSizeOfUInt());
+            _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)NativeMethods.DwmWindowAttribute.Cloaked, out int isCloakedState, sizeof(uint));
 
             switch (isCloakedState)
             {
@@ -324,7 +337,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     // Get process ID and name
                     var processId = WindowProcess.GetProcessIDFromWindowHandle(hWindow);
                     var threadId = WindowProcess.GetThreadIDFromWindowHandle(hWindow);
-                    var processName = WindowProcess.GetProcessNameFromProcessID(processId).ToString().Split('\\').Reverse().ToArray()[0];
+                    var processName = WindowProcess.GetProcessNameFromProcessID(processId);
 
                     if (processName.Length != 0)
                     {
@@ -337,13 +350,15 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     }
                 }
 
-                // Correct the process data if the window belongs to a packaged app hosted by 'ApplicationFrameHost.exe'
+                // Correct the process data if the window belongs to a uwp app hosted by 'ApplicationFrameHost.exe'
                 if (_handlesToProcessCache[hWindow].Name.ToUpperInvariant() == "APPLICATIONFRAMEHOST.EXE")
                 {
                     new Task(() =>
                     {
                         NativeMethods.CallBackPtr callbackptr = new NativeMethods.CallBackPtr((IntPtr hwnd, IntPtr lParam) =>
                         {
+                            // Every uwp app main window has at leaszt three childs. Only the one we are interested in has the class "Windows.UI.Core.CoreWindow" and is assigned to the real app process.
+                            // (The other ones have a class name that begins with the string "ApplicationFrame".)
                             if (GetWindowClassName(hwnd) == "Windows.UI.Core.CoreWindow")
                             {
                                 var childProcessId = WindowProcess.GetProcessIDFromWindowHandle(hwnd);

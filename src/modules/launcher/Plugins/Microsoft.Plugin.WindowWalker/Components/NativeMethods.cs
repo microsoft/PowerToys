@@ -914,14 +914,13 @@ namespace Microsoft.Plugin.WindowWalker.Components
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int msg, int wParam);
 
+        /// <summary>
+        /// Returns the last Win32 Error code thrown by a native method if enabled for this method.
+        /// </summary>
+        /// <returns>The error code as int value.</returns>
         public static int GetLastWin32Error()
         {
             return Marshal.GetLastWin32Error();
-        }
-
-        public static int GetSizeOfUInt()
-        {
-            return Marshal.SizeOf(typeof(uint));
         }
     }
 }
