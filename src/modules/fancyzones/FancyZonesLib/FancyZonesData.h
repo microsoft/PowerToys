@@ -38,6 +38,8 @@ class FancyZonesData
 public:
     FancyZonesData();
 
+    void ReplaceZoneSettingsFileFromOlderVersions();
+
     void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
 
     std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& id) const;

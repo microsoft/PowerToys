@@ -6,6 +6,8 @@
 #include "trace.h"
 #include "util.h"
 
+#include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
+
 #include <common/logger/logger.h>
 
 #include <filesystem>
@@ -760,5 +762,24 @@ namespace JSONHelpers
         }
 
         return quickKeysJSON;
+    }
+
+    void SaveLayoutHotkeys(const TLayoutQuickKeysMap& quickKeysMap)
+    {
+        json::JsonObject root{};
+        json::JsonArray keysArray{};
+
+        for (const auto& [uuid, key] : quickKeysMap)
+        {
+            json::JsonObject keyJson{};
+
+            keyJson.SetNamedValue(NonLocalizable::LayoutHotkeysIds::LayoutUuidID, json::value(uuid));
+            keyJson.SetNamedValue(NonLocalizable::LayoutHotkeysIds::KeyID, json::value(key));
+
+            keysArray.Append(keyJson);
+        }
+
+        root.SetNamedValue(NonLocalizable::LayoutHotkeysIds::LayoutHotkeysArrayID, keysArray);
+        json::to_file(LayoutHotkeys::GetDataFileName(), root);
     }
 }

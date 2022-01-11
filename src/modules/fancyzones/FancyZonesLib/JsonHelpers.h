@@ -107,4 +107,7 @@ namespace JSONHelpers
 
     TLayoutQuickKeysMap ParseQuickKeys(const json::JsonObject& fancyZonesDataJSON);
     json::JsonArray SerializeQuickKeys(const TLayoutQuickKeysMap& quickKeysMap);
+
+    // replace zone-settings
+    void SaveLayoutHotkeys(const TLayoutQuickKeysMap& quickKeysMap);
 }

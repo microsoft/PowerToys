@@ -22,6 +22,7 @@
 #include <common/utils/process_path.h>
 #include <common/logger/logger.h>
 
+#include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/ModuleConstants.h>
 
 // Non-localizable strings
@@ -157,6 +158,23 @@ FancyZonesData::FancyZonesData()
     zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesDataFile);
     appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesAppZoneHistoryFile);
     editorParametersFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesEditorParametersFile);
+}
+
+void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
+{
+    if (std::filesystem::exists(zonesSettingsFileName))
+    {
+        json::JsonObject fancyZonesDataJSON = GetPersistFancyZonesJSON();
+
+        //appZoneHistoryMap = JSONHelpers::ParseAppZoneHistory(fancyZonesDataJSON);
+        //deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
+        //customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
+
+        auto quickKeysMap = JSONHelpers::ParseQuickKeys(fancyZonesDataJSON);
+        JSONHelpers::SaveLayoutHotkeys(quickKeysMap);
+    }
+
+    //TODO: remove zone-settings.json after getting all info from it
 }
 
 void FancyZonesData::SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback)

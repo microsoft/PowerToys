@@ -69,6 +69,8 @@ public:
         })
     {
         this->disableModuleCallback = std::move(disableModuleCallback);
+
+        FancyZonesDataInstance().ReplaceZoneSettingsFileFromOlderVersions();
         LayoutHotkeys::instance().LoadData();
     }
 
