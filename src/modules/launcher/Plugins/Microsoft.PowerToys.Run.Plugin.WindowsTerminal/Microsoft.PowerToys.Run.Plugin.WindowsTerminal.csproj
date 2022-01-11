@@ -3,7 +3,7 @@
   <Import Project="..\..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.WindowsTerminal</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.WindowsTerminal</AssemblyName>
     <Version>$(Version).0</Version>
@@ -37,10 +37,6 @@
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />

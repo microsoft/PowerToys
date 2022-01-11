@@ -212,7 +212,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             get
             {
-                return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) != null;
+                return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) != IntPtr.Zero;
             }
         }
 

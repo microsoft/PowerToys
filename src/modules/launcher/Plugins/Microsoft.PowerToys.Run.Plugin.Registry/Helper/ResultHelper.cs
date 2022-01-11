@@ -94,7 +94,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 {
                     foreach (var valueName in valueNames)
                     {
-                        valueList.Add(KeyValuePair.Create(valueName, key.GetValue(valueName)));
+                        var value = key.GetValue(valueName);
+                        if (value != null)
+                        {
+                            valueList.Add(KeyValuePair.Create(valueName, value));
+                        }
                     }
                 }
                 catch (Exception valueException)

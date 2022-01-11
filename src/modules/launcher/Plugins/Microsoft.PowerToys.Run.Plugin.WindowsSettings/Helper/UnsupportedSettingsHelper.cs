@@ -64,7 +64,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// <returns>A registry value or <see cref="uint.MinValue"/> on error.</returns>
         private static uint GetNumericRegistryValue(in string registryKey, in string valueName)
         {
-            object registryValueData;
+            object? registryValueData;
 
             try
             {
