@@ -249,7 +249,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Window attribute
+        /// DWM window attribute (Windows 7 and earlier: The values between ExcludedFromPeek and Last aren't supported.)
         /// </summary>
         [Flags]
         public enum DwmWindowAttribute
@@ -266,7 +266,30 @@ namespace Microsoft.Plugin.WindowWalker.Components
             HasIconicBitmap,
             DisallowPeek,
             ExcludedFromPeek,
+            Cloak,
+            Cloaked,
+            FreezeRepresentation,
+            PassiveUpdateMode,
+            UseHostbackdropbrush,
+            UseImmersiveDarkMode,
+            WindowCornerPreference,
+            BorderColor,
+            CaptionColor,
+            TextColor,
+            VisibelFrameBorderTickness,
             Last,
+        }
+
+        /// <summary>
+        /// Flags for describing the window cloak state (Windows 7 and earlier: This value is not supported.)
+        /// </summary>
+        [Flags]
+        public enum DwmWindowCloakState
+        {
+            None = 0,
+            CloakedApp = 1,
+            CloakedShell = 2,
+            CloakedInherited = 4,
         }
 
         /// <summary>
@@ -869,7 +892,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         [DllImport("user32.dll", SetLastError = true, BestFitMapping = false)]
         public static extern IntPtr GetProp(IntPtr hWnd, string lpString);
 
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr OpenProcess(ProcessAccessFlags dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);
 
         [DllImport("dwmapi.dll", EntryPoint = "#113", CallingConvention = CallingConvention.StdCall)]
@@ -890,5 +913,15 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int msg, int wParam);
+
+        public static int GetLastWin32Error()
+        {
+            return Marshal.GetLastWin32Error();
+        }
+
+        public static int GetSizeOfUInt()
+        {
+            return Marshal.SizeOf(typeof(uint));
+        }
     }
 }
