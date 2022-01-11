@@ -95,7 +95,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&
                 newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.ProcessInfo.Name != _powerLauncherExe)
             {
-                windows.Add(newWindow);
+                // To hide (not add) preloaded uwp app windows that are invisble to the user we check thet cloak state in DWM to be "none". (Issue #13637.)
+                // (If user asking to see these windows agin we can add an optional plugin setting in the future.)
+                if (!newWindow.IsCloaked)
+                {
+                    windows.Add(newWindow);
+                }
             }
 
             return true;
