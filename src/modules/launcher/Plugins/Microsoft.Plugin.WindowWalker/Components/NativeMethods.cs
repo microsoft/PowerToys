@@ -276,7 +276,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             BorderColor,
             CaptionColor,
             TextColor,
-            VisibelFrameBorderTickness,
+            VisibleFrameBorderThickness,
             Last,
         }
 

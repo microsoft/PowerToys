@@ -351,13 +351,14 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 }
 
                 // Correct the process data if the window belongs to a uwp app hosted by 'ApplicationFrameHost.exe'
+                // (This only works if the window isn't minimized. For minimized windows the required child window isn't assigned.)
                 if (_handlesToProcessCache[hWindow].Name.ToUpperInvariant() == "APPLICATIONFRAMEHOST.EXE")
                 {
                     new Task(() =>
                     {
                         NativeMethods.CallBackPtr callbackptr = new NativeMethods.CallBackPtr((IntPtr hwnd, IntPtr lParam) =>
                         {
-                            // Every uwp app main window has at leaszt three childs. Only the one we are interested in has the class "Windows.UI.Core.CoreWindow" and is assigned to the real app process.
+                            // Every uwp app main window has at least three child windows. Only the one we are interested in has the class "Windows.UI.Core.CoreWindow" and is assigned to the real app process.
                             // (The other ones have a class name that begins with the string "ApplicationFrame".)
                             if (GetWindowClassName(hwnd) == "Windows.UI.Core.CoreWindow")
                             {
