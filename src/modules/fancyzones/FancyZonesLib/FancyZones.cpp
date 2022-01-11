@@ -767,6 +767,9 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             FancyZonesDataInstance().LoadFancyZonesData();
             UpdateZoneSets();
         }
+        else if (message == WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE)
+        {
+        }
         else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
         {
             ApplyQuickLayout(static_cast<int>(lparam));
