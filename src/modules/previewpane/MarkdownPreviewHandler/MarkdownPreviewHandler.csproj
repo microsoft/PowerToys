@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Platforms>x64</Platforms>
     <UseWindowsForms>true</UseWindowsForms>
@@ -23,7 +23,7 @@
   <PropertyGroup>
     <ProjectGuid>{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Markdown</RootNamespace>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
     <AssemblyName>PowerToys.MarkdownPreviewHandler</AssemblyName>
