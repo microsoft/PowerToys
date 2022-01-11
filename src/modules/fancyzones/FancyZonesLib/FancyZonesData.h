@@ -47,12 +47,6 @@ public:
     const JSONHelpers::TCustomZoneSetsMap& GetCustomZoneSetsMap() const;
     const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const;
 
-    inline const JSONHelpers::TLayoutQuickKeysMap& GetLayoutQuickKeys() const
-    {
-        std::scoped_lock lock{ dataLock };
-        return quickKeysMap;
-    }
-
     inline const std::wstring& GetZonesSettingsFileName() const 
     {
         return zonesSettingsFileName;
