@@ -1754,7 +1754,6 @@ namespace FancyZonesUnitTests
                 Assert::IsFalse(fancyZonesData.GetCustomZoneSetsMap().empty());
                 Assert::IsFalse(fancyZonesData.GetCustomZoneSetsMap().empty());
                 Assert::IsFalse(fancyZonesData.GetCustomZoneSetsMap().empty());
-                Assert::IsFalse(fancyZonesData.GetLayoutQuickKeys().empty());
             }
 
             TEST_METHOD (LoadFancyZonesDataFromCroppedJson)
