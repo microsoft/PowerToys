@@ -28,7 +28,7 @@ namespace Microsoft.Plugin.Uri
             _uriResolver = new UriResolver();
         }
 
-        private BrowserInfo _browser;
+        internal BrowserInfo Browser { get; private set; }
 
         public string DefaultIconPath { get; set; }
 
@@ -48,16 +48,16 @@ namespace Microsoft.Plugin.Uri
             var results = new List<Result>();
 
             if (IsActivationKeyword(query)
-                && _browser.IsDefaultBrowserSet)
+                && Browser.IsDefaultBrowserSet)
             {
                 results.Add(new Result
                 {
                     Title = Properties.Resources.Microsoft_plugin_uri_open,
-                    SubTitle = _browser.Path,
+                    SubTitle = Browser.Path,
                     IcoPath = DefaultIconPath,
                     Action = action =>
                     {
-                        if (!Helper.OpenInShell(_browser.Path))
+                        if (!Helper.OpenInShell(Browser.Path))
                         {
                             var title = $"Plugin: {Properties.Resources.Microsoft_plugin_uri_plugin_name}";
                             var message = $"{Properties.Resources.Microsoft_plugin_uri_open_failed}: ";
@@ -84,8 +84,8 @@ namespace Microsoft.Plugin.Uri
                     SubTitle = isWebUriBool
                         ? Properties.Resources.Microsoft_plugin_uri_website
                         : Properties.Resources.Microsoft_plugin_uri_open,
-                    IcoPath = isWebUriBool
-                        ? _browser.IconPath
+                    IcoPath = isWebUriBool && Browser.IconPath != null
+                        ? Browser.IconPath
                         : DefaultIconPath,
                     Action = action =>
                     {
@@ -116,7 +116,7 @@ namespace Microsoft.Plugin.Uri
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());
-            _browser = new BrowserInfo(Context.API.GetCurrentTheme());
+            Browser = new BrowserInfo(Context.API.GetCurrentTheme());
         }
 
         public string GetTranslatedPluginTitle()
@@ -137,7 +137,7 @@ namespace Microsoft.Plugin.Uri
         private void OnThemeChanged(Theme oldtheme, Theme newTheme)
         {
             UpdateIconPath(newTheme);
-            _browser.Update(newTheme);
+            Browser.Update(newTheme);
         }
 
         private void UpdateIconPath(Theme theme)
@@ -159,7 +159,7 @@ namespace Microsoft.Plugin.Uri
                 return;
             }
 
-            _browser.Update(Context.API.GetCurrentTheme());
+            Browser.Update(Context.API.GetCurrentTheme());
         }
 
         public void Dispose()
