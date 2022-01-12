@@ -211,11 +211,21 @@ namespace Microsoft.Plugin.Uri
                         : programLocation;
                     BrowserPath = BrowserIconPath;
                 }
+
+                if (string.IsNullOrEmpty(BrowserPath))
+                {
+                    throw new Exception("Browser path is null or empty.");
+                }
             }
             catch (Exception e)
             {
                 BrowserIconPath = DefaultIconPath;
-                Log.Exception("Exception when retrieving icon", e, GetType());
+                string programLocation = _registryWrapper.GetRegistryValue("HKEY_CLASSES_ROOT\\MSEdgeHTM\\Application", "ApplicationIcon");
+                int indexOfComma = programLocation.IndexOf(',', StringComparison.Ordinal);
+                BrowserPath = indexOfComma > 0
+                    ? programLocation.Substring(0, indexOfComma)
+                    : programLocation;
+                Log.Exception("Exception when retrieving icon; Icon set to default, Browser path set to microsoft edge", e, GetType());
             }
         }
 

@@ -81,9 +81,11 @@ namespace Wox.Plugin
             Metadata.ActionKeyword = setting.ActionKeyword;
             Metadata.IsGlobal = setting.IsGlobal;
 
-            if (Plugin is ISettingProvider)
+            (Plugin as ISettingProvider)?.UpdateSettings(setting);
+
+            if (IsPluginInitialized && !Metadata.Disabled)
             {
-                (Plugin as ISettingProvider).UpdateSettings(setting);
+                (Plugin as IReloadable)?.ReloadData();
             }
         }
 

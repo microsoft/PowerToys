@@ -17,11 +17,10 @@ using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.WebSearch
 {
-    public class Main : IPlugin, IPluginI18n, IContextMenu, ISettingProvider, IDisposable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISettingProvider, IReloadable, IDisposable
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
-        private static readonly IFile File = FileSystem.File;
 
         private const string NotGlobalIfUri = nameof(NotGlobalIfUri);
 
@@ -33,7 +32,6 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
         private string _searchEngineUrl;
 
         private string _browserName = Properties.Resources.plugin_browser;
-        private string _browserIconPath;
         private string _browserPath;
         private string _defaultIconPath;
 
@@ -213,7 +211,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(_context.API.GetCurrentTheme());
-            UpdateBrowserIconPath(_context.API.GetCurrentTheme());
+            UpdateBrowserPath();
         }
 
         public string GetTranslatedPluginTitle()
@@ -229,14 +227,13 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
         private void OnThemeChanged(Theme oldtheme, Theme newTheme)
         {
             UpdateIconPath(newTheme);
-            UpdateBrowserIconPath(newTheme);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
             "Design",
             "CA1031:Do not catch general exception types",
             Justification = "We want to keep the process alive but will log the exception")]
-        private void UpdateBrowserIconPath(Theme newTheme)
+        private void UpdateBrowserPath()
         {
             try
             {
@@ -346,32 +343,33 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 // Using Ordinal since this is internal and used with a symbol
                 if (programLocation.StartsWith("@", StringComparison.Ordinal))
                 {
-                    // Check if there's a postfix with contract-white/contrast-black icon is available and use that instead
                     string directProgramLocation = GetIndirectString(programLocation);
-                    var themeIcon = newTheme == Theme.Light || newTheme == Theme.HighContrastWhite
-                        ? "contrast-white"
-                        : "contrast-black";
-                    var extension = Path.GetExtension(directProgramLocation);
-                    var themedProgLocation =
-                        $"{directProgramLocation.Substring(0, directProgramLocation.Length - extension.Length)}_{themeIcon}{extension}";
-                    _browserIconPath = File.Exists(themedProgLocation)
-                        ? themedProgLocation
-                        : directProgramLocation;
+                    _browserPath = Path.GetExtension(directProgramLocation) == ".exe"
+                        ? directProgramLocation
+                        : null;
                 }
                 else
                 {
                     // Using Ordinal since this is internal and used with a symbol
                     var indexOfComma = programLocation.IndexOf(',', StringComparison.Ordinal);
-                    _browserIconPath = indexOfComma > 0
+                    _browserPath = indexOfComma > 0
                         ? programLocation.Substring(0, indexOfComma)
                         : programLocation;
-                    _browserPath = _browserIconPath;
+                }
+
+                if (string.IsNullOrEmpty(_browserPath))
+                {
+                    throw new Exception("Browser path is null or empty.");
                 }
             }
             catch (Exception e)
             {
-                _browserIconPath = _defaultIconPath;
-                Log.Exception("Exception when retrieving icon", e, GetType());
+                string programLocation = GetRegistryValue("HKEY_CLASSES_ROOT\\MSEdgeHTM\\Application", "ApplicationIcon");
+                int indexOfComma = programLocation.IndexOf(',', StringComparison.Ordinal);
+                _browserPath = indexOfComma > 0
+                    ? programLocation.Substring(0, indexOfComma)
+                    : programLocation;
+                Log.Exception("Exception when retrieving browser path; Browser path set to microsoft edge", e, GetType());
             }
 
             string GetRegistryValue(string registryLocation, string valueName)
@@ -435,6 +433,17 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
         public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
             _notGlobalIfUri = settings?.AdditionalOptions?.FirstOrDefault(x => x.Key == NotGlobalIfUri)?.Value ?? false;
+        }
+
+        public void ReloadData()
+        {
+            if (_context is null)
+            {
+                return;
+            }
+
+            UpdateIconPath(_context.API.GetCurrentTheme());
+            UpdateBrowserPath();
         }
     }
 }
