@@ -305,7 +305,7 @@
     <comment>A tooltip on a button that allows the user to delete a zone</comment>
   </data>
   <data name="Error_Parsing_Zones_Settings_Title" xml:space="preserve">
-    <value>Editor settings parsing error.</value>
+    <value>Editor data parsing error.</value>
   </data>
   <data name="Error_Parsing_Zones_Settings_Message" xml:space="preserve">
     <value>A layout that contained invalid data has been removed.</value>
@@ -382,5 +382,8 @@
   </data>
   <data name="OpenSettings" xml:space="preserve">
     <value>Open settings</value>
+  </data>
+  <data name="Error_Parsing_Layout_Hotkeys_Message" xml:space="preserve">
+    <value>An error occurred while parsing layout hotkeys.</value>
   </data>
 </root>

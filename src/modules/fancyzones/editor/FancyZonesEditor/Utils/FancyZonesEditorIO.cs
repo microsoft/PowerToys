@@ -29,6 +29,7 @@ namespace FancyZonesEditor.Utils
 
         // Non-localizable strings: Files
         private const string ZonesSettingsFile = "\\Microsoft\\PowerToys\\FancyZones\\zones-settings.json";
+        private const string LayoutHotkeysFile = "\\Microsoft\\PowerToys\\FancyZones\\layout-hotkeys.json";
         private const string ParamsFile = "\\Microsoft\\PowerToys\\FancyZones\\editor-parameters.json";
 
         // Non-localizable string: Multi-monitor id
@@ -48,6 +49,8 @@ namespace FancyZonesEditor.Utils
         private List<DeviceWrapper> _unusedDevices = new List<DeviceWrapper>();
 
         public string FancyZonesSettingsFile { get; private set; }
+
+        public string FancyZonesLayoutHotkeysFile { get; private set; }
 
         public string FancyZonesEditorParamsFile { get; private set; }
 
@@ -193,12 +196,18 @@ namespace FancyZonesEditor.Utils
             public int SensitivityRadius { get; set; }
         }
 
-        // zones-settings: quick-layout-keys-wrapper
-        private struct QuickLayoutKeysWrapper
+        // layout-hotkeys: layout-hotkeys-wrapper
+        private struct LayoutHotkeyWrapper
         {
             public int Key { get; set; }
 
-            public string Uuid { get; set; }
+            public string LayoutId { get; set; }
+        }
+
+        // layout-hotkeys: layout-hotkeys-wrapper
+        private struct LayoutHotkeysWrapper
+        {
+            public List<LayoutHotkeyWrapper> LayoutHotkeys { get; set; }
         }
 
         // zones-settings
@@ -209,8 +218,6 @@ namespace FancyZonesEditor.Utils
             public List<CustomLayoutWrapper> CustomZoneSets { get; set; }
 
             public List<TemplateLayoutWrapper> Templates { get; set; }
-
-            public List<QuickLayoutKeysWrapper> QuickLayoutKeys { get; set; }
         }
 
         private struct EditorParams
@@ -242,6 +249,7 @@ namespace FancyZonesEditor.Utils
         {
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             FancyZonesSettingsFile = localAppDataDir + ZonesSettingsFile;
+            FancyZonesLayoutHotkeysFile = localAppDataDir + LayoutHotkeysFile;
             FancyZonesEditorParamsFile = localAppDataDir + ParamsFile;
         }
 
@@ -516,7 +524,6 @@ namespace FancyZonesEditor.Utils
                     bool devicesParsingResult = SetDevices(zoneSettings.Devices);
                     bool customZonesParsingResult = SetCustomLayouts(zoneSettings.CustomZoneSets);
                     bool templatesParsingResult = SetTemplateLayouts(zoneSettings.Templates);
-                    bool quickLayoutSwitchKeysParsingResult = SetQuickLayoutSwitchKeys(zoneSettings.QuickLayoutKeys);
 
                     if (!devicesParsingResult || !customZonesParsingResult)
                     {
@@ -527,6 +534,51 @@ namespace FancyZonesEditor.Utils
                 {
                     Logger.LogError("Zone settings parsing error", ex);
                     return new ParsingResult(false, ex.Message, settingsString);
+                }
+            }
+
+            var parsingHotkeysResult = ParseLayoutHotkeys();
+            if (!parsingHotkeysResult.Result)
+            {
+                return parsingHotkeysResult;
+            }
+
+            return new ParsingResult(true);
+        }
+
+        public ParsingResult ParseLayoutHotkeys()
+        {
+            Logger.LogTrace();
+
+            if (_fileSystem.File.Exists(FancyZonesLayoutHotkeysFile))
+            {
+                LayoutHotkeysWrapper layoutHotkeys;
+                string dataString = string.Empty;
+
+                try
+                {
+                    dataString = ReadFile(FancyZonesLayoutHotkeysFile);
+                    layoutHotkeys = JsonSerializer.Deserialize<LayoutHotkeysWrapper>(dataString, _options);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Layout hotkeys parsing error", ex);
+                    return new ParsingResult(false, ex.Message, dataString);
+                }
+
+                try
+                {
+                    bool layoutHotkeysParsingResult = SetLayoutHotkeys(layoutHotkeys);
+
+                    if (!layoutHotkeysParsingResult)
+                    {
+                        return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Layout_Hotkeys_Message, dataString);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Layout hotkeys parsing error", ex);
+                    return new ParsingResult(false, ex.Message, dataString);
                 }
             }
 
@@ -541,7 +593,6 @@ namespace FancyZonesEditor.Utils
             zoneSettings.Devices = new List<DeviceWrapper>();
             zoneSettings.CustomZoneSets = new List<CustomLayoutWrapper>();
             zoneSettings.Templates = new List<TemplateLayoutWrapper>();
-            zoneSettings.QuickLayoutKeys = new List<QuickLayoutKeysWrapper>();
 
             // Serialize used devices
             foreach (var monitor in App.Overlay.Monitors)
@@ -678,20 +729,38 @@ namespace FancyZonesEditor.Utils
                 zoneSettings.Templates.Add(wrapper);
             }
 
-            // Serialize quick layout switch keys
-            foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
+            try
+            {
+                string jsonString = JsonSerializer.Serialize(zoneSettings, _options);
+                _fileSystem.File.WriteAllText(FancyZonesSettingsFile, jsonString);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Serialize zone settings error", ex);
+                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
+            }
+
+            SerializeLayoutHotkeys();
+        }
+
+        private void SerializeLayoutHotkeys()
+        {
+            LayoutHotkeysWrapper hotkeys = new LayoutHotkeysWrapper { };
+            hotkeys.LayoutHotkeys = new List<LayoutHotkeyWrapper>();
+
+            foreach (var pair in MainWindowSettingsModel.LayoutHotkeys.SelectedKeys)
             {
                 if (!string.IsNullOrEmpty(pair.Value))
                 {
                     try
                     {
-                        QuickLayoutKeysWrapper wrapper = new QuickLayoutKeysWrapper
+                        LayoutHotkeyWrapper wrapper = new LayoutHotkeyWrapper
                         {
                             Key = int.Parse(pair.Key),
-                            Uuid = pair.Value,
+                            LayoutId = pair.Value,
                         };
 
-                        zoneSettings.QuickLayoutKeys.Add(wrapper);
+                        hotkeys.LayoutHotkeys.Add(wrapper);
                     }
                     catch (Exception ex)
                     {
@@ -702,12 +771,12 @@ namespace FancyZonesEditor.Utils
 
             try
             {
-                string jsonString = JsonSerializer.Serialize(zoneSettings, _options);
-                _fileSystem.File.WriteAllText(FancyZonesSettingsFile, jsonString);
+                string jsonString = JsonSerializer.Serialize(hotkeys, _options);
+                _fileSystem.File.WriteAllText(FancyZonesLayoutHotkeysFile, jsonString);
             }
             catch (Exception ex)
             {
-                Logger.LogError("Serialize zone settings error", ex);
+                Logger.LogError("Serialize layout hotkeys error", ex);
                 App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
             }
         }
@@ -862,19 +931,14 @@ namespace FancyZonesEditor.Utils
             return true;
         }
 
-        private bool SetQuickLayoutSwitchKeys(List<QuickLayoutKeysWrapper> quickSwitchKeys)
+        private bool SetLayoutHotkeys(LayoutHotkeysWrapper layoutHotkeys)
         {
             Logger.LogTrace();
 
-            if (quickSwitchKeys == null)
+            MainWindowSettingsModel.LayoutHotkeys.CleanUp();
+            foreach (var wrapper in layoutHotkeys.LayoutHotkeys)
             {
-                return false;
-            }
-
-            MainWindowSettingsModel.QuickKeys.CleanUp();
-            foreach (var wrapper in quickSwitchKeys)
-            {
-                MainWindowSettingsModel.QuickKeys.SelectKey(wrapper.Key.ToString(), wrapper.Uuid);
+                MainWindowSettingsModel.LayoutHotkeys.SelectKey(wrapper.Key.ToString(), wrapper.LayoutId);
             }
 
             return true;
