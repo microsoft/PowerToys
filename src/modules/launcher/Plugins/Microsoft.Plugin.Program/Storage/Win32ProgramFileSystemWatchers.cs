@@ -40,9 +40,18 @@ namespace Microsoft.Plugin.Program.Storage
             var invalidPaths = new List<string>();
             foreach (var path in paths)
             {
-                if (!Directory.Exists(path))
+                try
                 {
-                    Log.Warn($"Directory {path} does not exist and will be ignored", typeof(Win32ProgramFileSystemWatchers));
+                    Directory.GetFiles(path);
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    Log.Warn($"Directory {path} cannot be found", typeof(Win32ProgramFileSystemWatchers));
+                    invalidPaths.Add(path);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Log.Warn($"Access denied to directory {path}", typeof(Win32ProgramFileSystemWatchers));
                     invalidPaths.Add(path);
                 }
             }
