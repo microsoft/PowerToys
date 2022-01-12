@@ -11,6 +11,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
 {
     public class ExtendedUriParser : IUriParser
     {
+        // When updating this method, also update the local method IsUri() in Community.PowerToys.Run.Plugin.WebSearch.Main.Query
         public bool TryParse(string input, out System.Uri result, out bool isWebUri)
         {
             if (string.IsNullOrEmpty(input))
