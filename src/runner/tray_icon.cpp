@@ -91,7 +91,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
     case ID_REPORT_BUG_COMMAND:
     {        
         std::wstring bug_report_path = get_module_folderpath();
-        bug_report_path += L"\\Tools\\BugReportTool.exe";
+        bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
         sei.lpFile = bug_report_path.c_str();
