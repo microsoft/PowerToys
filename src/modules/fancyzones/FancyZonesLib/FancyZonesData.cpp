@@ -171,7 +171,10 @@ void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
         //customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
 
         auto quickKeysMap = JSONHelpers::ParseQuickKeys(fancyZonesDataJSON);
-        JSONHelpers::SaveLayoutHotkeys(quickKeysMap);
+        if (quickKeysMap)
+        {
+            JSONHelpers::SaveLayoutHotkeys(quickKeysMap.value());
+        }
     }
 
     //TODO: remove zone-settings.json after getting all info from it
@@ -636,8 +639,7 @@ void FancyZonesData::LoadFancyZonesData()
 
         appZoneHistoryMap = JSONHelpers::ParseAppZoneHistory(fancyZonesDataJSON);
         deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
-        customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
-        quickKeysMap = JSONHelpers::ParseQuickKeys(fancyZonesDataJSON);
+        customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);    
     }
 }
 
@@ -671,11 +673,11 @@ void FancyZonesData::SaveZoneSettings() const
     
     if (dirtyFlag)
     {
-        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, updatedDeviceInfoMap, customZoneSetsMap, quickKeysMap);
+        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, updatedDeviceInfoMap, customZoneSetsMap);
     }
     else
     {
-        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap, quickKeysMap);
+        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
     }
 }
 

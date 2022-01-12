@@ -127,8 +127,6 @@ private:
     JSONHelpers::TDeviceInfoMap deviceInfoMap{};
     // Maps custom zoneset UUID to it's data
     JSONHelpers::TCustomZoneSetsMap customZoneSetsMap{};
-    // Maps zoneset UUID with quick access keys
-    JSONHelpers::TLayoutQuickKeysMap quickKeysMap{};
 
     std::wstring settingsFileName;
     std::wstring zonesSettingsFileName;

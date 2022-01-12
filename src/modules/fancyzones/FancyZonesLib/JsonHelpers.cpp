@@ -578,7 +578,7 @@ namespace JSONHelpers
         }
     }
 
-    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap, const TCustomZoneSetsMap& customZoneSetsMap, const TLayoutQuickKeysMap& quickKeysMap)
+    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap, const TCustomZoneSetsMap& customZoneSetsMap)
     {
         auto before = json::from_file(zonesSettingsFileName);
 
@@ -600,7 +600,6 @@ namespace JSONHelpers
         root.SetNamedValue(NonLocalizable::DevicesStr, JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
         root.SetNamedValue(NonLocalizable::CustomZoneSetsStr, JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
         root.SetNamedValue(NonLocalizable::Templates, templates);
-        root.SetNamedValue(NonLocalizable::QuickLayoutKeys, JSONHelpers::SerializeQuickKeys(quickKeysMap));
         
         if (!before.has_value() || before.value().Stringify() != root.Stringify())
         {
@@ -728,7 +727,7 @@ namespace JSONHelpers
         return customZoneSetsJSON;
     }
     
-    TLayoutQuickKeysMap ParseQuickKeys(const json::JsonObject& fancyZonesDataJSON)
+    std::optional<TLayoutQuickKeysMap> ParseQuickKeys(const json::JsonObject& fancyZonesDataJSON)
     {
         try
         {
@@ -748,20 +747,8 @@ namespace JSONHelpers
         catch (const winrt::hresult_error& e)
         {
             Logger::error(L"Parsing quick keys error: {}", e.message());
-            return {};
+            return std::nullopt;
         }
-    }
-
-    json::JsonArray SerializeQuickKeys(const TLayoutQuickKeysMap& quickKeysMap)
-    {
-        json::JsonArray quickKeysJSON{};
-
-        for (const auto& [uuid, key] : quickKeysMap)
-        {
-            quickKeysJSON.Append(LayoutQuickKeyJSON::ToJson(LayoutQuickKeyJSON{ uuid, key }));
-        }
-
-        return quickKeysJSON;
     }
 
     void SaveLayoutHotkeys(const TLayoutQuickKeysMap& quickKeysMap)
