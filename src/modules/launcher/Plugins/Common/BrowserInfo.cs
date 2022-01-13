@@ -38,9 +38,9 @@ public class BrowserInfo
     public string SearchEngineUrl { get; private set; }
 #pragma warning restore CA1056 // URI-like properties should not be strings
 
-    public BrowserInfo()
+    public BrowserInfo(bool defaultToEdgeOnFail = true)
     {
-        Update();
+        Update(defaultToEdgeOnFail);
     }
 
     /// <param name="defaultToEdgeOnFail">If true, If this function fails, for any reason, the browser will be set to Microsoft Edge.</param>

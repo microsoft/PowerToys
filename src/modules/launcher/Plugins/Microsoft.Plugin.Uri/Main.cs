@@ -116,7 +116,7 @@ namespace Microsoft.Plugin.Uri
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());
-            Browser = new BrowserInfo();
+            Browser = new BrowserInfo(false);
         }
 
         public string GetTranslatedPluginTitle()
@@ -158,7 +158,7 @@ namespace Microsoft.Plugin.Uri
                 return;
             }
 
-            Browser.Update();
+            Browser.Update(false);
         }
 
         public void Dispose()
