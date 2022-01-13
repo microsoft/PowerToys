@@ -40,9 +40,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private string processName;
 
         /// <summary>
-        /// An indicator if the process of the window is running elevated
+        /// An indicator whether full access to the process is denied or not
         /// </summary>
-        private bool isElevated;
+        private bool fullAccessDenied;
 
         /// <summary>
         /// Gets the id of the process
@@ -69,11 +69,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether the process runs elevated or not
+        /// Gets a value indicating whether full access to the process is denied or not
         /// </summary>
-        public bool IsRunningElevated
+        public bool IsFullAccessDenied
         {
-            get { return isElevated; }
+            get { return fullAccessDenied; }
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             _isUwpApp = processName.ToUpperInvariant().Equals("APPLICATIONFRAMEHOST.EXE", StringComparison.Ordinal);
 
             // Process can be elevated only if process id is not 0. (Dummy value on error.) Please have in mind here that pid=0 is the idle process.
-            isElevated = (pid != 0) ? GetProcessElevationStateFromProcessID(pid) : false;
+            fullAccessDenied = (pid != 0) ? TestProcessAccessUsingAllAccessFlag(pid) : false;
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             processName = name;
 
             // Process can be elevated only if process id is not 0 (Dummy value on error)
-            isElevated = (pid != 0) ? GetProcessElevationStateFromProcessID(pid) : false;
+            fullAccessDenied = (pid != 0) ? TestProcessAccessUsingAllAccessFlag(pid) : false;
         }
 
         /// <summary>
@@ -161,11 +161,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a boolean value indicating whether a process runs elevated. (Note: This only works if PowerToys Run doesn't run elevated.)
+        /// Gets a boolean value indicating whether the access to a process using the AllAccess flag is denied or not.
         /// </summary>
         /// <param name="pid">The process ID of the process</param>
-        /// <returns>True if elevated and false if not.</returns>
-        private static bool GetProcessElevationStateFromProcessID(uint pid)
+        /// <returns>True if denied and false if not.</returns>
+        private static bool TestProcessAccessUsingAllAccessFlag(uint pid)
         {
             _ = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)pid);
 
