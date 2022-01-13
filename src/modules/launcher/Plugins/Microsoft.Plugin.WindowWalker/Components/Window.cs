@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
@@ -344,7 +345,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     }
                     else
                     {
-                        Wox.Plugin.Logger.Log.Error($"Invalid process {processId} ({processName}) for window handle {hWindow}.", typeof(Window));
+                        // For the dwm process we can not receive the name. This is no problem because the window isn't part of result list.
+                        Log.Debug($"Invalid process {processId} ({processName}) for window handle {hWindow}.", typeof(Window));
                         _handlesToProcessCache.Add(hWindow, new WindowProcess(0, 0, string.Empty));
                     }
                 }
