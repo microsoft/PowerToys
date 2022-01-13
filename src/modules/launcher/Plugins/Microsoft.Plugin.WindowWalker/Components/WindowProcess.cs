@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-
-// Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -26,31 +24,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private readonly bool _isUwpApp;
 
         /// <summary>
-        /// The process Id of the window process
-        /// </summary>
-        private uint processID;
-
-        /// <summary>
-        /// The thread Id of the window within the process object
-        /// </summary>
-        private uint threadID;
-
-        /// <summary>
-        /// The process file name of the window process
-        /// </summary>
-        private string processName;
-
-        /// <summary>
-        /// An indicator whether full access to the process is denied or not
-        /// </summary>
-        private bool fullAccessDenied;
-
-        /// <summary>
         /// Gets the id of the process
         /// </summary>
         public uint ProcessID
         {
-            get { return processID; }
+            get; private set;
         }
 
         /// <summary>
@@ -58,7 +36,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         public uint ThreadID
         {
-            get { return threadID; }
+            get; private set;
         }
 
         /// <summary>
@@ -66,7 +44,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         public string Name
         {
-            get { return processName; }
+            get; private set;
         }
 
         /// <summary>
@@ -74,7 +52,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         public bool IsFullAccessDenied
         {
-            get { return fullAccessDenied; }
+            get; private set;
         }
 
         /// <summary>
@@ -88,35 +66,19 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowProcess"/> class.
         /// </summary>
-         /// <param name="pid">New process id.</param>
+        /// <param name="pid">New process id.</param>
         /// <param name="tid">New thread id.</param>
         /// <param name="name">New process name.</param>
         public WindowProcess(uint pid, uint tid, string name)
         {
             // TODO: Add verification as to wether the process id and thread id is valid
-            processID = pid;
-            threadID = tid;
-            processName = name;
-            _isUwpApp = processName.ToUpperInvariant().Equals("APPLICATIONFRAMEHOST.EXE", StringComparison.Ordinal);
-
-            // Process can be elevated only if process id is not 0. (Dummy value on error.) Please have in mind here that pid=0 is the idle process.
-            fullAccessDenied = (pid != 0) ? TestProcessAccessUsingAllAccessFlag(pid) : false;
-        }
-
-        /// <summary>
-        /// Updates the process information of the <see cref="WindowProcess"/> instance.
-        /// </summary>
-        /// <param name="pid">New process id.</param>
-        /// <param name="tid">New thread id.</param>
-        /// <param name="name">New process name.</param>
-        public void UpdateProcessInfo(uint pid, uint tid, string name)
-        {
-            processID = pid;
-            threadID = tid;
-            processName = name;
+            ProcessID = pid;
+            ThreadID = tid;
+            Name = name;
+            _isUwpApp = Name.ToUpperInvariant().Equals("APPLICATIONFRAMEHOST.EXE", StringComparison.Ordinal);
 
             // Process can be elevated only if process id is not 0 (Dummy value on error)
-            fullAccessDenied = (pid != 0) ? TestProcessAccessUsingAllAccessFlag(pid) : false;
+            IsFullAccessDenied = (pid != 0) ? TestProcessAccessUsingAllAccessFlag(pid) : false;
         }
 
         /// <summary>
@@ -163,13 +125,16 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the proces exists on the machine
+        /// </summary>
         public bool DoesExist
         {
             get
             {
                 try
                 {
-                    var p = Process.GetProcessById((int)processID);
+                    var p = Process.GetProcessById((int)ProcessID);
                     p.Dispose();
                     return true;
                 }
