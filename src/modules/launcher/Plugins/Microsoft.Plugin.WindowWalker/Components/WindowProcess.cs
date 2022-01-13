@@ -4,6 +4,7 @@
 
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -157,6 +158,29 @@ namespace Microsoft.Plugin.WindowWalker.Components
             else
             {
                 return string.Empty;
+            }
+        }
+
+        public bool DoesExist
+        {
+            get
+            {
+                try
+                {
+                    var p = Process.GetProcessById((int)processID);
+                    p.Dispose();
+                    return true;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Thrown when process not exist.
+                    return false;
+                }
+                catch (ArgumentException)
+                {
+                    // Thrown when process not exist.
+                    return false;
+                }
             }
         }
 
