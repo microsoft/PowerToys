@@ -97,11 +97,22 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="name">New process name.</param>
         public WindowProcess(uint pid, uint tid, string name)
         {
+            UpdateProcessInfo(pid, tid, name);
+            _isUwpApp = Name.ToUpperInvariant().Equals("APPLICATIONFRAMEHOST.EXE", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Updates the process information of the <see cref="WindowProcess"/> instance.
+        /// </summary>
+        /// <param name="pid">New process id.</param>
+        /// <param name="tid">New thread id.</param>
+        /// <param name="name">New process name.</param>
+        public void UpdateProcessInfo(uint pid, uint tid, string name)
+        {
             // TODO: Add verification as to wether the process id and thread id is valid
             ProcessID = pid;
             ThreadID = tid;
             Name = name;
-            _isUwpApp = Name.ToUpperInvariant().Equals("APPLICATIONFRAMEHOST.EXE", StringComparison.Ordinal);
 
             // Process can be elevated only if process id is not 0 (Dummy value on error)
             IsFullAccessDenied = (pid != 0) ? TestProcessAccessUsingAllAccessFlag(pid) : false;
