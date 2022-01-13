@@ -48,19 +48,45 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether full access to the process is denied or not
-        /// </summary>
-        public bool IsFullAccessDenied
-        {
-            get; private set;
-        }
-
-        /// <summary>
         /// Gets a value indicating whether the window belongs to an 'Universal Windows Platform (UWP)' process
         /// </summary>
         public bool IsUwpApp
         {
             get { return _isUwpApp; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the process exists on the machine
+        /// </summary>
+        public bool DoesExist
+        {
+            get
+            {
+                try
+                {
+                    var p = Process.GetProcessById((int)ProcessID);
+                    p.Dispose();
+                    return true;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Thrown when process not exist.
+                    return false;
+                }
+                catch (ArgumentException)
+                {
+                    // Thrown when process not exist.
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether full access to the process is denied or not
+        /// </summary>
+        public bool IsFullAccessDenied
+        {
+            get; private set;
         }
 
         /// <summary>
@@ -122,32 +148,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
             {
                 NativeMethods.CloseProcessHandle(processHandle);
                 return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the proces exists on the machine
-        /// </summary>
-        public bool DoesExist
-        {
-            get
-            {
-                try
-                {
-                    var p = Process.GetProcessById((int)ProcessID);
-                    p.Dispose();
-                    return true;
-                }
-                catch (InvalidOperationException)
-                {
-                    // Thrown when process not exist.
-                    return false;
-                }
-                catch (ArgumentException)
-                {
-                    // Thrown when process not exist.
-                    return false;
-                }
             }
         }
 
