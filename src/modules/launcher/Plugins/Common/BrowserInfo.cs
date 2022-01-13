@@ -21,7 +21,7 @@ public class BrowserInfo
     /// <summary>Gets the path to default browser's executable.</summary>
     public string Path { get; private set; }
 
-    /// <summary>Gets <paramref name="Path" /> since the icon is embeded in the executable.</summary>
+    /// <summary>Gets <paramref name="Path" /> since the icon is embedded in the executable.</summary>
     public string IconPath { get => Path; }
 
     public string Name { get; private set; }
