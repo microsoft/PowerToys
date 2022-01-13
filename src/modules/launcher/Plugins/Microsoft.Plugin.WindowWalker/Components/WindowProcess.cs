@@ -153,10 +153,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
             {
+                NativeMethods.CloseProcessHandle(processHandle);
                 return processName.ToString().Split('\\').Reverse().ToArray()[0];
             }
             else
             {
+                NativeMethods.CloseProcessHandle(processHandle);
                 return string.Empty;
             }
         }
@@ -191,15 +193,17 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>True if denied and false if not.</returns>
         private static bool TestProcessAccessUsingAllAccessFlag(uint pid)
         {
-            _ = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)pid);
+            var processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)pid);
 
             if (NativeMethods.GetLastWin32Error() == 5)
             {
                 // Error 5 = ERROR_ACCESS_DENIED
+                NativeMethods.CloseProcessHandle(processHandle);
                 return true;
             }
             else
             {
+                NativeMethods.CloseProcessHandle(processHandle);
                 return false;
             }
         }

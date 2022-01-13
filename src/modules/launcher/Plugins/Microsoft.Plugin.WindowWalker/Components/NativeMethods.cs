@@ -914,6 +914,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int msg, int wParam);
 
+        [DllImport("kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CloseHandle(IntPtr hObject);
+
         /// <summary>
         /// Returns the last Win32 Error code thrown by a native method if enabled for this method.
         /// </summary>
@@ -921,6 +925,22 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public static int GetLastWin32Error()
         {
             return Marshal.GetLastWin32Error();
+        }
+
+        /// <summary>
+        /// Closes a process handle if it is not null.
+        /// </summary>
+        /// <param name="pHandle">Process handle to close.</param>
+        /// <returns>Zero if native method fails and nonzero if the native method succeeds.</returns>
+        public static bool CloseProcessHandle(IntPtr pHandle)
+        {
+            if (pHandle == null)
+            {
+                // Return true if nothing to close.
+                return true;
+            }
+
+            return CloseHandle(pHandle);
         }
     }
 }
