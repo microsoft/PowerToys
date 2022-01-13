@@ -5,7 +5,10 @@
 #include <memory>
 #include <optional>
 
+#include <FancyZonesLib/ModuleConstants.h>
+
 #include <common/SettingsAPI/FileWatcher.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
 namespace NonLocalizable
 {
@@ -24,7 +27,15 @@ public:
 
     static LayoutHotkeys& instance();
 
-    static std::wstring GetDataFileName();
+    inline static std::wstring LayoutHotkeysFileName()
+    {
+        std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
+#if defined(UNIT_TESTS)
+        return saveFolderPath + L"\\test-layout-hotkeys.json";
+#endif
+        return saveFolderPath + L"\\layout-hotkeys.json";
+    }
+
     void LoadData(); 
     
     std::optional<GUID> GetLayoutId(int key) const noexcept;

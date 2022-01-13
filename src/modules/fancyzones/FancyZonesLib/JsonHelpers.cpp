@@ -767,6 +767,6 @@ namespace JSONHelpers
         }
 
         root.SetNamedValue(NonLocalizable::LayoutHotkeysIds::LayoutHotkeysArrayID, keysArray);
-        json::to_file(LayoutHotkeys::GetDataFileName(), root);
+        json::to_file(LayoutHotkeys::LayoutHotkeysFileName(), root);
     }
 }

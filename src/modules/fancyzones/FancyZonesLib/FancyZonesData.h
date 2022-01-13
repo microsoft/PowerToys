@@ -30,6 +30,7 @@ namespace FancyZonesUnitTests
     class ZoneSetCalculateZonesUnitTests;
     class WorkAreaUnitTests;
     class WorkAreaCreationUnitTests;
+    class LayoutHotkeysUnitTests;
 }
 #endif
 
@@ -88,6 +89,7 @@ private:
     friend class FancyZonesUnitTests::WorkAreaUnitTests;
     friend class FancyZonesUnitTests::WorkAreaCreationUnitTests;
     friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
+    friend class FancyZonesUnitTests::LayoutHotkeysUnitTests;
 
     inline void SetDeviceInfo(const FancyZonesDataTypes::DeviceIdData& deviceId, FancyZonesDataTypes::DeviceInfoData data)
     {
@@ -117,6 +119,12 @@ private:
         std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
         zonesSettingsFileName = result + L"\\" + std::wstring(L"zones-settings.json");
         appZoneHistoryFileName = result + L"\\" + std::wstring(L"app-zone-history.json");
+    }
+
+    inline std::wstring GetZoneSettingsPath(std::wstring_view moduleName)
+    {
+        std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
+        return result + L"\\" + std::wstring(L"zones-settings.json");
     }
 #endif
     void RemoveDesktopAppZoneHistory(GUID desktopId);

@@ -2,17 +2,10 @@
 #include "LayoutHotkeys.h"
 
 #include <common/logger/logger.h>
-#include <common/SettingsAPI/settings_helpers.h>
 
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
-#include <FancyZonesLib/ModuleConstants.h>
 #include <FancyZonesLib/util.h>
-
-namespace NonLocalizable
-{
-    const static wchar_t* DataFileName = L"layout-hotkeys.json";
-}
 
 namespace JsonUtils
 {
@@ -66,16 +59,10 @@ namespace JsonUtils
 
 LayoutHotkeys::LayoutHotkeys()
 {
-    const std::wstring& settingsFileName = GetDataFileName();
+    const std::wstring& settingsFileName = LayoutHotkeysFileName();
     m_fileWatcher = std::make_unique<FileWatcher>(settingsFileName, [&]() {
         PostMessageW(HWND_BROADCAST, WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE, NULL, NULL);
     });
-}
-
-std::wstring LayoutHotkeys::GetDataFileName()
-{
-    std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-    return saveFolderPath + L"\\" + std::wstring(NonLocalizable::DataFileName);
 }
 
 LayoutHotkeys& LayoutHotkeys::instance()
@@ -86,7 +73,7 @@ LayoutHotkeys& LayoutHotkeys::instance()
 
 void LayoutHotkeys::LoadData()
 {
-    auto data = json::from_file(GetDataFileName());
+    auto data = json::from_file(LayoutHotkeysFileName());
     if (!data)
     {
         Logger::info(L"No layout-hotkeys.json file");
