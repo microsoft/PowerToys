@@ -11,7 +11,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 {
     public class BrowserInfo
     {
-        public const string MSEdgePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
+        public static readonly string MSEdgePath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) + @"\Microsoft\Edge\Application\msedge.exe";
         public const string MSEdgeName = "Microsoft Edge";
 
         private static readonly IPath FilePath = new FileSystem().Path;

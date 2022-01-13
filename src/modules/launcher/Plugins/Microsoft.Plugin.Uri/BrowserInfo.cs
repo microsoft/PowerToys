@@ -9,9 +9,9 @@ using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Uri
 {
-    internal class BrowserInfo
+    public class BrowserInfo
     {
-        public const string MSEdgePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
+        public static readonly string MSEdgePath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) + @"\Microsoft\Edge\Application\msedge.exe";
         public const string MSEdgeName = "Microsoft Edge";
 
         private static readonly IFileSystem FileSystem = new FileSystem();

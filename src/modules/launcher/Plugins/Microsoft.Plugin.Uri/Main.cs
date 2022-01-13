@@ -28,7 +28,7 @@ namespace Microsoft.Plugin.Uri
             _uriResolver = new UriResolver();
         }
 
-        internal BrowserInfo Browser { get; private set; }
+        public BrowserInfo Browser { get; private set; }
 
         public string DefaultIconPath { get; set; }
 
