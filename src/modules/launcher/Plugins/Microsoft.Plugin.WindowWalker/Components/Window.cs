@@ -357,9 +357,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     {
                         NativeMethods.CallBackPtr callbackptr = new NativeMethods.CallBackPtr((IntPtr hwnd, IntPtr lParam) =>
                         {
-                            // Every uwp app main window has at least three child windows. Only the one we are interested in has the class "Windows.UI.Core.CoreWindow" and is assigned to the real app process.
+                            // Every uwp app main window has at least three child windows. Only the one we are interested in has a class starting with "Windows.UI.Core." and is assigned to the real app process.
                             // (The other ones have a class name that begins with the string "ApplicationFrame".)
-                            if (GetWindowClassName(hwnd) == "Windows.UI.Core.CoreWindow")
+                            if (GetWindowClassName(hwnd).StartsWith("Windows.UI.Core.", StringComparison.OrdinalIgnoreCase))
                             {
                                 var childProcessId = WindowProcess.GetProcessIDFromWindowHandle(hwnd);
                                 var childThreadId = WindowProcess.GetThreadIDFromWindowHandle(hwnd);
