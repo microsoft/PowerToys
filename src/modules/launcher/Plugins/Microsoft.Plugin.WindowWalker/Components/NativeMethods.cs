@@ -928,19 +928,19 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Closes a process handle if it is not null.
+        /// Validate that the handle is not null and close it.
         /// </summary>
-        /// <param name="pHandle">Process handle to close.</param>
+        /// <param name="handle">Handle to close.</param>
         /// <returns>Zero if native method fails and nonzero if the native method succeeds.</returns>
-        public static bool CloseProcessHandle(IntPtr pHandle)
+        public static bool CloseHandleIfNotNull(IntPtr handle)
         {
-            if (pHandle == null)
+            if (handle == null)
             {
-                // Return true if nothing to close.
+                // Return true if there is nothing to close.
                 return true;
             }
 
-            return CloseHandle(pHandle);
+            return CloseHandle(handle);
         }
     }
 }

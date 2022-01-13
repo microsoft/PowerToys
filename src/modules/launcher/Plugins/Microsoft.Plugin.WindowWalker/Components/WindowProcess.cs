@@ -152,12 +152,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
             {
-                NativeMethods.CloseProcessHandle(processHandle);
+                NativeMethods.CloseHandleIfNotNull(processHandle);
                 return processName.ToString().Split('\\').Reverse().ToArray()[0];
             }
             else
             {
-                NativeMethods.CloseProcessHandle(processHandle);
+                NativeMethods.CloseHandleIfNotNull(processHandle);
                 return string.Empty;
             }
         }
@@ -174,12 +174,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
             if (NativeMethods.GetLastWin32Error() == 5)
             {
                 // Error 5 = ERROR_ACCESS_DENIED
-                NativeMethods.CloseProcessHandle(processHandle);
+                NativeMethods.CloseHandleIfNotNull(processHandle);
                 return true;
             }
             else
             {
-                NativeMethods.CloseProcessHandle(processHandle);
+                NativeMethods.CloseHandleIfNotNull(processHandle);
                 return false;
             }
         }
