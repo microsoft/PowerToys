@@ -68,7 +68,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 results.Add(new Result
                 {
                     Title = Properties.Resources.plugin_description.Remove(Description.Length - 1, 1),
-                    SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_in_browser_name, _browser.Name),
+                    SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_in_browser_name, _browser.Name ?? Properties.Resources.plugin_browser),
                     QueryTextDisplay = string.Empty,
                     IcoPath = _iconPath,
                     ProgramArguments = arguments,
@@ -101,7 +101,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 var result = new Result
                 {
                     Title = searchTerm,
-                    SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_open, _browser.Name),
+                    SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_open, _browser.Name ?? Properties.Resources.plugin_browser),
                     QueryTextDisplay = searchTerm,
                     IcoPath = _iconPath,
                 };
@@ -191,7 +191,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
             onPluginError = () =>
             {
-                string errorMsgString = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_search_failed, _browser.Name);
+                string errorMsgString = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_search_failed, _browser.Name ?? Properties.Resources.plugin_browser);
 
                 Log.Error(errorMsgString, this.GetType());
                 _context.API.ShowMsg(
