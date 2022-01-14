@@ -1,15 +1,9 @@
 #include "pch.h"
 #include <filesystem>
-#include <fstream>
-#include <utility>
 
 #include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/util.h>
-
-#include "util.h"
-
-#include <CppUnitTestLogger.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
