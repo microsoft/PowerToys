@@ -102,8 +102,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="trace.h" />
+    <ClInclude Include="Generated Files\resource.h" />
+    <None Include="resource.base.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -111,17 +112,18 @@
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="trace.cpp" />
+    <None Include="InclusiveMouse.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="InclusiveMouse.rc" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files\InclusiveMouse.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
