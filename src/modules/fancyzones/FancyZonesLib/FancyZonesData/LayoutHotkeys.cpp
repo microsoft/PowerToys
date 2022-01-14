@@ -74,11 +74,7 @@ LayoutHotkeys& LayoutHotkeys::instance()
 void LayoutHotkeys::LoadData()
 {
     auto data = json::from_file(LayoutHotkeysFileName());
-    if (!data)
-    {
-        Logger::info(L"No layout-hotkeys.json file");
-    }
-        
+    
     try
     {
         if (data)
@@ -88,6 +84,7 @@ void LayoutHotkeys::LoadData()
         else
         {
             m_hotkeyMap.clear();
+            Logger::info(L"layout-hotkeys.json file is missing or malformed");
         }
     }
     catch (const winrt::hresult_error& e)
