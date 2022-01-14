@@ -19,46 +19,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests
 {
-    void compareJsonObjects(const json::JsonObject& expected, const json::JsonObject& actual, bool recursive = true)
-    {
-        auto iter = expected.First();
-        while (iter.HasCurrent())
-        {
-            const auto key = iter.Current().Key();
-            Assert::IsTrue(actual.HasKey(key), key.c_str());
-
-            const std::wstring expectedStringified = iter.Current().Value().Stringify().c_str();
-            const std::wstring actualStringified = actual.GetNamedValue(key).Stringify().c_str();
-
-            if (recursive)
-            {
-                json::JsonObject expectedJson;
-                if (json::JsonObject::TryParse(expectedStringified, expectedJson))
-                {
-                    json::JsonObject actualJson;
-                    if (json::JsonObject::TryParse(actualStringified, actualJson))
-                    {
-                        compareJsonObjects(expectedJson, actualJson, true);
-                    }
-                    else
-                    {
-                        Assert::IsTrue(false, key.c_str());
-                    }
-                }
-                else
-                {
-                    Assert::AreEqual(expectedStringified, actualStringified, key.c_str());
-                }
-            }
-            else
-            {
-                Assert::AreEqual(expectedStringified, actualStringified, key.c_str());
-            }
-
-            iter.MoveNext();
-        }
-    }
-
     TEST_CLASS (IdValidationUnitTest)
     {
         TEST_METHOD (GuidValid)
@@ -201,7 +161,8 @@ namespace FancyZonesUnitTests
             info.sensitivityRadius = 50;
 
             auto actual = CanvasLayoutInfoJSON::ToJson(info);
-            compareJsonObjects(m_json, actual);
+            auto res = CustomAssert::CompareJsonObjects(m_json, actual);
+            Assert::IsTrue(res.first, res.second.c_str());
         }
 
         TEST_METHOD (FromJson)
@@ -465,7 +426,8 @@ namespace FancyZonesUnitTests
                     GridLayoutInfo info = m_info;
 
                     auto actual = GridLayoutInfoJSON::ToJson(info);
-                    compareJsonObjects(expected, actual);
+                    auto res = CustomAssert::CompareJsonObjects(expected, actual);
+                    Assert::IsTrue(res.first, res.second.c_str());
                 }
 
                 
@@ -486,7 +448,8 @@ namespace FancyZonesUnitTests
                     info.m_spacing = 99;
 
                     auto actual = GridLayoutInfoJSON::ToJson(info);
-                    compareJsonObjects(expected, actual);
+                    auto res = CustomAssert::CompareJsonObjects(expected, actual);
+                    Assert::IsTrue(res.first, res.second.c_str());
                 }
 
                 TEST_METHOD (FromJson)
@@ -605,7 +568,8 @@ namespace FancyZonesUnitTests
             expected.SetNamedValue(L"info", GridLayoutInfoJSON::ToJson(std::get<GridLayoutInfo>(zoneSet.data.info)));
 
             auto actual = CustomZoneSetJSON::ToJson(zoneSet);
-            compareJsonObjects(expected, actual);
+            auto res = CustomAssert::CompareJsonObjects(expected, actual);
+            Assert::IsTrue(res.first, res.second.c_str());
         }
 
         TEST_METHOD (ToJsonCanvas)
@@ -616,7 +580,8 @@ namespace FancyZonesUnitTests
             expected.SetNamedValue(L"info", CanvasLayoutInfoJSON::ToJson(std::get<CanvasLayoutInfo>(zoneSet.data.info)));
 
             auto actual = CustomZoneSetJSON::ToJson(zoneSet);
-            compareJsonObjects(expected, actual);
+            auto res = CustomAssert::CompareJsonObjects(expected, actual);
+            Assert::IsTrue(res.first, res.second.c_str());
         }
 
         TEST_METHOD (FromJsonGrid)
@@ -718,7 +683,8 @@ namespace FancyZonesUnitTests
             json::JsonObject expected = json::JsonObject::Parse(L"{\"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"type\": \"rows\"}");
             ZoneSetData data{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Rows };
             const auto actual = ZoneSetDataJSON::ToJson(data);
-            compareJsonObjects(expected, actual);
+            auto res = CustomAssert::CompareJsonObjects(expected, actual);
+            Assert::IsTrue(res.first, res.second.c_str());
         }
 
         TEST_METHOD (FromJsonGeneral)
@@ -782,7 +748,8 @@ namespace FancyZonesUnitTests
             json::JsonObject expected = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"history\":[{\"zone-index-set\": [54321], \"device-id\": \"device-id_0_0_{00000000-0000-0000-0000-000000000000}\", \"zoneset-uuid\": \"zoneset-uuid\"}]}");
 
             auto actual = AppZoneHistoryJSON::ToJson(appZoneHistory);
-            compareJsonObjects(expected, actual);
+            auto res = CustomAssert::CompareJsonObjects(expected, actual);
+            Assert::IsTrue(res.first, res.second.c_str());
         }
 
         TEST_METHOD (FromJson)
@@ -860,7 +827,8 @@ namespace FancyZonesUnitTests
 
             auto actual = AppZoneHistoryJSON::ToJson(appZoneHistory);
             std::wstring s = actual.Stringify().c_str();
-            compareJsonObjects(expected, actual);
+            auto res = CustomAssert::CompareJsonObjects(expected, actual);
+            Assert::IsTrue(res.first, res.second.c_str());
         }
 
         TEST_METHOD (FromJsonMultipleDesktopAppHistory)
@@ -912,7 +880,8 @@ namespace FancyZonesUnitTests
             json::JsonObject expected = m_defaultJson;
 
             auto actual = DeviceInfoJSON::ToJson(deviceInfo);
-            compareJsonObjects(expected, actual);
+            auto res = CustomAssert::CompareJsonObjects(expected, actual);
+            Assert::IsTrue(res.first, res.second.c_str());
         }
 
         TEST_METHOD (FromJson)
@@ -1035,15 +1004,6 @@ namespace FancyZonesUnitTests
         
         HINSTANCE m_hInst{};
         FancyZonesData& m_fzData = FancyZonesDataInstance();
-
-        void compareJsonArrays(const json::JsonArray& expected, const json::JsonArray& actual)
-        {
-            Assert::AreEqual(expected.Size(), actual.Size());
-            for (uint32_t i = 0; i < expected.Size(); i++)
-            {
-                compareJsonObjects(expected.GetObjectAt(i), actual.GetObjectAt(i));
-            }
-        }
 
         TEST_METHOD_INITIALIZE(Init)
         {
@@ -1181,7 +1141,8 @@ namespace FancyZonesUnitTests
                 const auto& deviceInfoMap = ParseDeviceInfos(expected);
 
                 auto actual = SerializeDeviceInfos(deviceInfoMap);
-                compareJsonArrays(expectedDevices, actual);
+                auto res = CustomAssert::CompareJsonArrays(expectedDevices, actual);
+                Assert::IsTrue(res.first, res.second.c_str());
             }
 
             TEST_METHOD (AppZoneHistoryParseSingle)
@@ -1353,7 +1314,8 @@ namespace FancyZonesUnitTests
                 auto appZoneHistoryMap = ParseAppZoneHistory(json);
 
                 const auto& actual = SerializeAppZoneHistory(appZoneHistoryMap);
-                compareJsonArrays(expected, actual);
+                auto res = CustomAssert::CompareJsonArrays(expected, actual);
+                Assert::IsTrue(res.first, res.second.c_str());
             }
 
             TEST_METHOD (AppZoneHistorySerializeMany)
@@ -1393,7 +1355,8 @@ namespace FancyZonesUnitTests
                 const auto& appZoneHistoryMap = ParseAppZoneHistory(json);
 
                 const auto& actual = SerializeAppZoneHistory(appZoneHistoryMap);
-                compareJsonArrays(expected, actual);
+                auto res = CustomAssert::CompareJsonArrays(expected, actual);
+                Assert::IsTrue(res.first, res.second.c_str());
             }
 
             TEST_METHOD (AppZoneHistorySerializeEmpty)
@@ -1405,7 +1368,8 @@ namespace FancyZonesUnitTests
                 const auto& appZoneHistoryMap = ParseAppZoneHistory(json);
 
                 const auto& actual = SerializeAppZoneHistory(appZoneHistoryMap);
-                compareJsonArrays(expected, actual);
+                auto res = CustomAssert::CompareJsonArrays(expected, actual);
+                Assert::IsTrue(res.first, res.second.c_str());
             }
 
             TEST_METHOD (CustomZoneSetsParseSingle)
@@ -1519,7 +1483,8 @@ namespace FancyZonesUnitTests
                 const auto& customZoneSetsMap = ParseCustomZoneSets(json);
 
                 auto actual = SerializeCustomZoneSets(customZoneSetsMap);
-                compareJsonArrays(expected, actual);
+                auto res = CustomAssert::CompareJsonArrays(expected, actual);
+                Assert::IsTrue(res.first, res.second.c_str());
             }
 
             TEST_METHOD (CustomZoneSetsSerializeMany)
@@ -1542,7 +1507,8 @@ namespace FancyZonesUnitTests
                 const auto& customZoneSetsMap = ParseCustomZoneSets(json);
 
                 auto actual = SerializeCustomZoneSets(customZoneSetsMap);
-                compareJsonArrays(expected, actual);
+                auto res = CustomAssert::CompareJsonArrays(expected, actual);
+                Assert::IsTrue(res.first, res.second.c_str());
             }
 
             TEST_METHOD (CustomZoneSetsSerializeEmpty)
@@ -1554,7 +1520,8 @@ namespace FancyZonesUnitTests
                 const auto& customZoneSetsMap = ParseCustomZoneSets(json);
 
                 auto actual = SerializeCustomZoneSets(customZoneSetsMap);
-                compareJsonArrays(expected, actual);
+                auto res = CustomAssert::CompareJsonArrays(expected, actual);
+                Assert::IsTrue(res.first, res.second.c_str());
             }
             
             TEST_METHOD (SetActiveZoneSet)
@@ -2240,7 +2207,8 @@ namespace FancyZonesUnitTests
 
             const auto actual = MonitorInfo::ToJson(monitor);
 
-            compareJsonObjects(expected, actual);
+            auto res = CustomAssert::CompareJsonObjects(expected, actual);
+            Assert::IsTrue(res.first, res.second.c_str());
         }
 
         TEST_METHOD(EditorArgsToJson)
@@ -2258,7 +2226,8 @@ namespace FancyZonesUnitTests
             const auto expected = json::JsonObject::Parse(expectedStr);
             const auto actual = EditorArgs::ToJson(args);
 
-            compareJsonObjects(expected, actual);
+            auto res = CustomAssert::CompareJsonObjects(expected, actual);
+            Assert::IsTrue(res.first, res.second.c_str());
         }
     };
 }
