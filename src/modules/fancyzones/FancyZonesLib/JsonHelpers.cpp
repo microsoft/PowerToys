@@ -7,6 +7,7 @@
 #include "util.h"
 
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
+#include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 
 #include <common/logger/logger.h>
 
@@ -583,23 +584,9 @@ namespace JSONHelpers
         auto before = json::from_file(zonesSettingsFileName);
 
         json::JsonObject root{};
-        json::JsonArray templates{};
-
-        try
-        {
-            if (before.has_value() && before->HasKey(NonLocalizable::Templates))
-            {
-                templates = before->GetNamedArray(NonLocalizable::Templates);
-            }
-        }
-        catch (const winrt::hresult_error&)
-        {
-        
-        }
                
         root.SetNamedValue(NonLocalizable::DevicesStr, JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
         root.SetNamedValue(NonLocalizable::CustomZoneSetsStr, JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
-        root.SetNamedValue(NonLocalizable::Templates, templates);
         
         if (!before.has_value() || before.value().Stringify() != root.Stringify())
         {
@@ -768,5 +755,26 @@ namespace JSONHelpers
 
         root.SetNamedValue(NonLocalizable::LayoutHotkeysIds::LayoutHotkeysArrayID, keysArray);
         json::to_file(LayoutHotkeys::LayoutHotkeysFileName(), root);
+    }
+
+    std::optional<json::JsonArray> ParseLayoutTemplates(const json::JsonObject& fancyZonesDataJSON)
+    {
+        try
+        {
+            return fancyZonesDataJSON.GetNamedArray(NonLocalizable::Templates);
+        }
+        catch (const winrt::hresult_error& e)
+        {
+            Logger::error(L"Parsing layout templates error: {}", e.message());
+        }
+
+        return std::nullopt;
+    }
+
+    void SaveLayoutTemplates(const json::JsonArray& templates)
+    {
+        json::JsonObject root{};
+        root.SetNamedValue(NonLocalizable::LayoutTemplatesIds::LayoutTemplatesArrayID, templates);
+        json::to_file(LayoutTemplates::LayoutTemplatesFileName(), root);
     }
 }
