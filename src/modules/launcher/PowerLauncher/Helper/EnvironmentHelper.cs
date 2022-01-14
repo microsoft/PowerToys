@@ -185,7 +185,7 @@ namespace PowerLauncher.Helper
                     }
                     else
                     {
-                        // Checking if the list of (machine) variables contains a patrh variable
+                        // Checking if the list of (machine) variables contains a path variable
                         if (environment.ContainsKey(PathVariableName))
                         {
                             // When we merging the PATH variables we can't simply overwrite machine layer's value. The path variable must be joined by appending the user value to the machine value.
@@ -196,7 +196,7 @@ namespace PowerLauncher.Helper
                         else
                         {
                             // Log warning and only write user value into dictionary
-                            Log.Warn("List of machine variables doesn't contain a path variable! The merged list won't contain any machine values in the path variable.", typeof(PowerLauncher.Helper.EnvironmentHelper));
+                            Log.Warn("The List of machine variables doesn't contain a path variable! The merged list won't contain any machine paths in the path variable.", typeof(PowerLauncher.Helper.EnvironmentHelper));
                             environment[uVarKey] = uVarValue;
                         }
                     }
