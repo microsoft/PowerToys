@@ -281,6 +281,8 @@ namespace FancyZonesEditor
             CancelLayoutChanges();
 
             App.FancyZonesEditorIO.SerializeZoneSettings();
+            App.FancyZonesEditorIO.SerializeLayoutHotkeys();
+            App.FancyZonesEditorIO.SerializeLayoutTemplates();
             App.Overlay.CloseLayoutWindow();
             App.Current.Shutdown();
         }
@@ -424,6 +426,8 @@ namespace FancyZonesEditor
             }
 
             App.FancyZonesEditorIO.SerializeZoneSettings();
+            App.FancyZonesEditorIO.SerializeLayoutTemplates();
+            App.FancyZonesEditorIO.SerializeLayoutHotkeys();
 
             // reset selected model
             Select(_settings.AppliedModel);

@@ -771,11 +771,9 @@ namespace FancyZonesEditor.Utils
                 Logger.LogError("Serialize zone settings error", ex);
                 App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
             }
-
-            SerializeLayoutHotkeys();
         }
 
-        private void SerializeLayoutHotkeys()
+        public void SerializeLayoutHotkeys()
         {
             LayoutHotkeysWrapper hotkeys = new LayoutHotkeysWrapper { };
             hotkeys.LayoutHotkeys = new List<LayoutHotkeyWrapper>();
