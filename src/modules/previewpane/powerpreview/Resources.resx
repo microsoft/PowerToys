@@ -186,4 +186,7 @@
   <data name="Prevpane_Gcode_Settings_Displayname" xml:space="preserve">
     <value>G-code Previewer</value>
   </data>
+  <data name="Stl_Thumbnail_Provider_Settings_Description" xml:space="preserve">
+    <value>Stl Thumbnail Provider</value>
+  </data>
 </root>
