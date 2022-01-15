@@ -44,14 +44,11 @@ namespace Microsoft.Plugin.Program.Storage
                 {
                     Directory.GetFiles(path);
                 }
-                catch (DirectoryNotFoundException)
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
-                    Log.Warn($"Directory {path} cannot be found", typeof(Win32ProgramFileSystemWatchers));
-                    invalidPaths.Add(path);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    Log.Warn($"Access denied to directory {path}", typeof(Win32ProgramFileSystemWatchers));
+                    Log.Exception($"Failed to get files in {path}", ex, typeof(Win32ProgramFileSystemWatchers));
                     invalidPaths.Add(path);
                 }
             }
