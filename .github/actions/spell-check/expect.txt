@@ -1419,6 +1419,7 @@ pch
 PCIDLIST
 PCWSTR
 Pdb
+pdb
 pdbonly
 pdfpreviewhandler
 pdo
@@ -1970,6 +1971,7 @@ Toolchain
 toolkitcontrols
 toolkitconverters
 Toolset
+toolset
 toolstrip
 toolwindow
 TOPDOWNDIB
@@ -2069,7 +2071,6 @@ utf
 utils
 uuidof
 uwp
-UWPUI
 uxtheme
 UYVY
 validmodulename
