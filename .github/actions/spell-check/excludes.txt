@@ -26,6 +26,7 @@ ignore$
 \.pdf$
 \.PNG$
 \.png$
+\.stl$
 \.woff$
 \.zip$
 ^doc/devdocs/akaLinks\.md$
