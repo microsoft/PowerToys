@@ -123,7 +123,7 @@ namespace MonacoPreviewHandler
                     InvokeOnControlThread(() =>
                     {
                         Label text = new Label();
-                        text.Text = Resources.Exception_Occured;
+                        text.Text = Resources.Exception_Occurred;
                         text.Text += e.Message;
                         text.Text += "\n" + e.Source;
                         text.Text += "\n" + e.StackTrace;

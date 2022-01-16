@@ -23,10 +23,10 @@
 Max file size: 10KB</value>
         <comment>Error message which is shown when the file is too big.</comment>
     </data>
-    <data name="Exception_Occured" xml:space="preserve">
-        <value>Exception occured:
-</value>
-        <comment>Will be shown when an exception occured.</comment>
+    <data name="Exception_Occurred" xml:space="preserve">
+        <value>Exception occurred:
+        </value>
+        <comment>Will be shown when an exception occurred.</comment>
     </data>
     <data name="Loading_Screen_Message" xml:space="preserve">
         <value>Loading...</value>
