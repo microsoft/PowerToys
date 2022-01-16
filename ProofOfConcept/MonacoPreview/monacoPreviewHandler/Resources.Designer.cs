@@ -61,12 +61,21 @@ namespace MonacoPreviewHandler {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Exception occured:
-        ///.
+        ///   Looks up a localized string similar to Download WebView2 to display this file..
         /// </summary>
-        internal static string Exception_Occured {
+        internal static string Download_WebView2 {
             get {
-                return ResourceManager.GetString("Exception_Occured", resourceCulture);
+                return ResourceManager.GetString("Download_WebView2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Exception occurred:
+        ///        .
+        /// </summary>
+        internal static string Exception_Occurred {
+            get {
+                return ResourceManager.GetString("Exception_Occurred", resourceCulture);
             }
         }
         
@@ -86,6 +95,15 @@ namespace MonacoPreviewHandler {
         internal static string Max_File_Size_Error {
             get {
                 return ResourceManager.GetString("Max_File_Size_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WebView2 not installed or found..
+        /// </summary>
+        internal static string WebView2_Not_Installed_Message {
+            get {
+                return ResourceManager.GetString("WebView2_Not_Installed_Message", resourceCulture);
             }
         }
     }

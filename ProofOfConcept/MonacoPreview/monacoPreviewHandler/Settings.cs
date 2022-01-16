@@ -27,11 +27,6 @@ namespace MonacoPreviewHandler
         public readonly long maxFileSize = 10000;
 
         /// <summary>
-        /// String which is displayed if the file is too big.
-        /// </summary>
-        public readonly string maxFileSizeErr = Resources.Max_File_Size_Error;
-
-        /// <summary>
         /// The color of the window background.
         /// </summary>
         public Color BackgroundColor
