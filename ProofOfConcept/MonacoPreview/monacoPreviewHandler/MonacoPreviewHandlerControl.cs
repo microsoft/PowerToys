@@ -90,7 +90,7 @@ namespace MonacoPreviewHandler
                             InvokeOnControlThread(async () =>
                             {
                                 _webView2Environment = webView2EnvironmentAwaiter.GetResult();
-                                var vsCodeLangSet = _fileHandler.GetLanguage(Path.GetExtension(filePath).TrimStart('.'));
+                                var vsCodeLangSet = _fileHandler.GetLanguage(Path.GetExtension(filePath));
                                 var fileContent = File.ReadAllText(filePath);
                                 var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
 
@@ -111,9 +111,6 @@ namespace MonacoPreviewHandler
                                 _webView.Height = this.Height;
                                 _webView.Width = this.Width;
                                 Controls.Add(_webView);
-#if DEBUG
-                                _webView.CoreWebView2.OpenDevToolsWindow();
-#endif
                             });
                         });
                     });
@@ -195,6 +192,10 @@ namespace MonacoPreviewHandler
                 settings.IsStatusBarEnabled = false;
 
                 Controls.Remove(_loading);
+                
+#if DEBUG
+                _webView.CoreWebView2.OpenDevToolsWindow();
+#endif
             }
         }
 

@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
+using Windows.Data.Json;
+using MonacoPreviewHandler;
+using Newtonsoft.Json.Linq;
 
 namespace monacoPreview
 {
     class FileHandler
     {
+        private Settings _settings = new Settings();
+        
         /// <summary>
         /// Converts a file extension to a language monaco id.
         /// </summary>
@@ -13,208 +20,19 @@ namespace monacoPreview
         /// <returns>The monaco language id</returns>
         public string GetLanguage(string fileExtension)
         {
-            switch (fileExtension.ToLower())
+            JObject a = JObject.Parse(File.ReadAllText(_settings.AssemblyDirectory + "\\languages.json"));
+            for (int i = 0; i < a["list"].Count(); i++)
             {
-                case "abap":
-                    return "abap";
-                case "azcli":
-                    return "azcli";
-                case "cls":
-                    return "apex";
-                case "bat":
-                case "cmd":
-                case "btm":
-                    return "bat";
-                case "c":
-                case "h":
-                    return "c";
-                case "ligo":
-                    // TO-DO: differentiate the different ligo languages
-                    return "cameligo";
-                case "clj":
-                case "cljs":
-                case "cljc":
-                case "edn":
-                    return "clojure";
-                case "coffee":
-                case "litcoffee":
-                    return "coffeescript";
-                case "cc":
-                case "cpp":
-                case "cxx":
-                case "c++":
-                case "hh":
-                case "hpp":
-                case "hxx":
-                case "h++":
-                    return "cpp";
-                case "cs":
-                case "csx":
-                    return "csharp";
-                case "csp":
-                    return "csp";
-                case "css":
-                    return "css";
-                case "dart":
-                    return "dart";
-                case "dockerfile":
-                    return "dockerfile";
-                case "ecl":
-                    return "ecl";
-                case "fs":
-                case "fsi":
-                case "fsx":
-                case "fsscript":
-                    return "fsharp";
-                case "go":
-                    return "go";
-                case "graphql":
-                    return "graphql";
-                case "hcl":
-                    return "hcl";
-                case "html":
-                case "htm":
-                    return "html";
-                case "ini":
-                    return "ini";
-                case "java":
-                case "class":
-                case "jar":
-                    return "java";
-                case "js":
-                case "cjs":
-                case "mjs":
-                    return "javascript";
-                case "json":
-                    return "json";
-                case "jl":
-                    return "julia";
-                case "kt":
-                case "kts":
-                case "ktm":
-                    return "kotlin";
-                case "less":
-                    return "less";
-                case "lua":
-                    return "lua";
-                case "i3":
-                case "m3":
-                    return "m3";
-                case "md":
-                case "markdown":
-                    return "markdown";
-                case "s":
-                    return "mips";
-                case "sol":
-                    return "solidity";
-                case "sql":
-                    // TO-DO: differentiate the different sql languages
-                    return "sql";
-                case "twig":
-                    return "twig";
-                case "m":
-                case "mm":
-                    return "objective-c";
-                case "pp":
-                case "pas":
-                    return "pascal";
-                case "pl":
-                case "plx":
-                case "pm":
-                case "xs":
-                case "t":
-                case "pod":
-                    return "perl";
-                case "php":
-                case "phtml":
-                case "php3":
-                case "php4":
-                case "php5":
-                case "php7":
-                case "phps":
-                case "php-s":
-                case "pht":
-                case "phar":
-                    return "php";
-                case "pq":
-                    return "powerquery";
-                case "ps1":
-                case "ps1xml":
-                case "psc1":
-                case "psd1":
-                case "psm1":
-                case "pssc":
-                case "psrc":
-                case "cdxml":
-                    return "powershell";
-                case "pug":
-                    return "pug";
-                case "py":
-                case "pyi":
-                case "pyc":
-                case "pyd":
-                case "pyo":
-                case "pyw":
-                case "pyz":
-                    return "python";
-                case "r":
-                case "rdata":
-                case "rds":
-                case "rda":
-                    return "r";
-                case "razor":
-                case "cshtml":
-                case "vbhtml":
-                    return "razor";
-                case "rdb":
-                    return "redid";
-                case "rst":
-                    return "restructuredtext";
-                case "rb":
-                    return "ruby";
-                case "rs":
-                    return "rust";
-                case "sb":
-                case "smallbasic":
-                    return "sb";
-                case "sc":
-                case "scala":
-                    return "scala";
-                case "scm":
-                case "ss":
-                    return "scheme";
-                case "sass":
-                case "scss":
-                    return "scss";
-                case "sh":
-                    return "shell";
-                case "st":
-                case "stx":
-                    return "st";
-                case "swift":
-                    return "swift";
-                case "sv":
-                case "svh":
-                    return "systemverilog";
-                case "tcl":
-                case "tbc":
-                    return "tcl";
-                case "ts":
-                case "tsx":
-                    return "typescript";
-                case "vb":
-                    return "vb";
-                case "v":
-                case "vh":
-                    return "verilog";
-                case "xml":
-                    return "xml";
-                case "yaml":
-                case "yml":
-                    return "yaml";
-                default:
-                    return "plaintext";
+                for (int j = 0; j < a["list"][i]["extensions"].Count(); j++)
+                {
+                    if (a["list"][i]["extensions"][j].ToString() == fileExtension)
+                    {
+                        return a["list"][i]["aliases"][0].ToString();
+                    }
+                }
             }
+
+            return "plaintext";
         }
     }
 }
