@@ -128,7 +128,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                     {
                         if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
                         {
-                            phbmp = thumbnail.GetHbitmap();
+                            phbmp = thumbnail.GetHbitmap(System.Drawing.Color.Transparent);
                             pdwAlpha = WTS_ALPHATYPE.WTSAT_ARGB;
                         }
                     }
