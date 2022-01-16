@@ -137,7 +137,6 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
                 graphics.SmoothingMode = SmoothingMode.HighQuality;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                graphics.Clear(Color.White);
                 graphics.DrawImage(image, 0, 0, width, height);
             }
 
@@ -170,8 +169,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
                     {
                         if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
                         {
-                            phbmp = thumbnail.GetHbitmap();
-                            pdwAlpha = WTS_ALPHATYPE.WTSAT_RGB;
+                            phbmp = thumbnail.GetHbitmap(Color.Transparent);
+                            pdwAlpha = WTS_ALPHATYPE.WTSAT_ARGB;
                         }
                     }
                 }
