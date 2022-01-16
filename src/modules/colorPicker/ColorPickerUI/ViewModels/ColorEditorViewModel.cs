@@ -131,6 +131,8 @@ namespace ColorPicker.ViewModels
 
                 _userSettings.ColorHistory.ReleaseNotification();
             }
+
+            // Reset list view to top here, maybe
         }
 
         private void DeleteSelectedColor()
