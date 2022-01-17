@@ -18,7 +18,7 @@ namespace FancyZonesDataTypes
     struct ZoneSetData;
     struct DeviceIdData;
     struct DeviceInfoData;
-    struct CustomZoneSetData;
+    struct CustomLayoutData;
     struct AppZoneHistoryData;
 }
 

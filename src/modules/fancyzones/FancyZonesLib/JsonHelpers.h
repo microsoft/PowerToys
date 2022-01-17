@@ -25,7 +25,7 @@ namespace JSONHelpers
     struct CustomZoneSetJSON
     {
         std::wstring uuid;
-        FancyZonesDataTypes::CustomZoneSetData data;
+        FancyZonesDataTypes::CustomLayoutData data;
 
         static json::JsonObject ToJson(const CustomZoneSetJSON& device);
         static std::optional<CustomZoneSetJSON> FromJson(const json::JsonObject& customZoneSet);
@@ -66,7 +66,7 @@ namespace JSONHelpers
 
     using TAppZoneHistoryMap = std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>;
     using TDeviceInfoMap = std::unordered_map<FancyZonesDataTypes::DeviceIdData, FancyZonesDataTypes::DeviceInfoData>;
-    using TCustomZoneSetsMap = std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData>;
+    using TCustomZoneSetsMap = std::unordered_map<std::wstring, FancyZonesDataTypes::CustomLayoutData>;
     using TLayoutQuickKeysMap = std::unordered_map<std::wstring, int>;
 
     struct MonitorInfo

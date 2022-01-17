@@ -562,7 +562,7 @@ namespace FancyZonesUnitTests
     {
         TEST_METHOD (ToJsonGrid)
         {
-            CustomZoneSetJSON zoneSet{ L"uuid", CustomZoneSetData{ L"name", CustomLayoutType::Grid, GridLayoutInfo(GridLayoutInfo::Minimal{}) } };
+            CustomZoneSetJSON zoneSet{ L"uuid", CustomLayoutData{ L"name", CustomLayoutType::Grid, GridLayoutInfo(GridLayoutInfo::Minimal{}) } };
 
             json::JsonObject expected = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"name\": \"name\", \"type\": \"grid\"}");
             expected.SetNamedValue(L"info", GridLayoutInfoJSON::ToJson(std::get<GridLayoutInfo>(zoneSet.data.info)));
@@ -574,7 +574,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (ToJsonCanvas)
         {
-            CustomZoneSetJSON zoneSet{ L"uuid", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{} } };
+            CustomZoneSetJSON zoneSet{ L"uuid", CustomLayoutData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{} } };
 
             json::JsonObject expected = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"name\": \"name\", \"type\": \"canvas\"}");
             expected.SetNamedValue(L"info", CanvasLayoutInfoJSON::ToJson(std::get<CanvasLayoutInfo>(zoneSet.data.info)));
@@ -587,7 +587,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD (FromJsonGrid)
         {
             const auto grid = GridLayoutInfo(GridLayoutInfo::Full{ 1, 3, { 10000 }, { 2500, 5000, 2500 }, { { 0, 1, 2 } } });
-            CustomZoneSetJSON expected{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+            CustomZoneSetJSON expected{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", CustomLayoutData{ L"name", CustomLayoutType::Grid, grid } };
 
             json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"name\": \"name\", \"type\": \"grid\"}");
             json.SetNamedValue(L"info", GridLayoutInfoJSON::ToJson(std::get<GridLayoutInfo>(expected.data.info)));
@@ -607,7 +607,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJsonCanvas)
         {
-            CustomZoneSetJSON expected{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 2, 1 } } };
+            CustomZoneSetJSON expected{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", CustomLayoutData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 2, 1 } } };
 
             json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"name\": \"name\", \"type\": \"canvas\"}");
             json.SetNamedValue(L"info", CanvasLayoutInfoJSON::ToJson(std::get<CanvasLayoutInfo>(expected.data.info)));
@@ -628,7 +628,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD (FromJsonGridInvalidUuid)
         {
             const auto grid = GridLayoutInfo(GridLayoutInfo::Full{ 1, 3, { 10000 }, { 2500, 5000, 2500 }, { { 0, 1, 2 } } });
-            CustomZoneSetJSON expected{ L"uuid", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+            CustomZoneSetJSON expected{ L"uuid", CustomLayoutData{ L"name", CustomLayoutType::Grid, grid } };
 
             json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"name\": \"name\", \"type\": \"grid\"}");
             json.SetNamedValue(L"info", GridLayoutInfoJSON::ToJson(std::get<GridLayoutInfo>(expected.data.info)));
@@ -639,7 +639,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJsonCanvasInvalidUuid)
         {
-            CustomZoneSetJSON expected{ L"uuid", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 2, 1 } } };
+            CustomZoneSetJSON expected{ L"uuid", CustomLayoutData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 2, 1 } } };
 
             json::JsonObject json = json::JsonObject::Parse(L"{\"uuid\": \"uuid\", \"name\": \"name\", \"type\": \"canvas\"}");
             json.SetNamedValue(L"info", CanvasLayoutInfoJSON::ToJson(std::get<CanvasLayoutInfo>(expected.data.info)));
@@ -650,7 +650,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJsonMissingKeys)
         {
-            CustomZoneSetJSON zoneSet{ L"uuid", CustomZoneSetData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 2, 1 } } };
+            CustomZoneSetJSON zoneSet{ L"uuid", CustomLayoutData{ L"name", CustomLayoutType::Canvas, CanvasLayoutInfo{ 2, 1 } } };
             const auto json = CustomZoneSetJSON::ToJson(zoneSet);
 
             auto iter = json.First();
@@ -1620,7 +1620,7 @@ namespace FancyZonesUnitTests
                     .rowsPercents = { 10000 },
                     .columnsPercents = { 2500, 5000, 2500 },
                     .cellChildMap = { { 0, 1, 2 } } }));
-                CustomZoneSetJSON zoneSets{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                CustomZoneSetJSON zoneSets{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", CustomLayoutData{ L"name", CustomLayoutType::Grid, grid } };
                 AppZoneHistoryData data{
                     .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"device-id", .zoneIndexSet = { 54321 }
                 };

@@ -1000,7 +1000,7 @@ namespace FancyZonesUnitTests
                 {
                     const std::wstring uuid = L"uuid";
                     const CanvasLayoutInfo info{ -1, 100, { CanvasLayoutInfo::Rect{ -10, -10, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomLayoutData{ L"name", CustomLayoutType::Canvas, info } };
                     json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
 
@@ -1026,7 +1026,7 @@ namespace FancyZonesUnitTests
                         .rowsPercents = { -100 }, //rows percents are negative
                         .columnsPercents = { 2500, 2500 }, //column percents count is invalid
                         .cellChildMap = { { 0, 1, 2 } } }));
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomLayoutData{ L"name", CustomLayoutType::Grid, grid } };
                     json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
 
@@ -1105,7 +1105,7 @@ namespace FancyZonesUnitTests
                     const GridLayoutInfo grid(GridLayoutInfo(GridLayoutInfo::Minimal{
                         .rows = 1,
                         .columns = 3 }));
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomLayoutData{ L"name", CustomLayoutType::Grid, grid } };
                     json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
 
