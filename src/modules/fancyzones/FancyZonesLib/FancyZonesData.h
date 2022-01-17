@@ -32,6 +32,7 @@ namespace FancyZonesUnitTests
     class WorkAreaCreationUnitTests;
     class LayoutHotkeysUnitTests;
     class LayoutTemplatesUnitTests;
+    class CustomLayoutsUnitTests;
 }
 #endif
 
@@ -90,6 +91,7 @@ private:
     friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
     friend class FancyZonesUnitTests::LayoutHotkeysUnitTests;
     friend class FancyZonesUnitTests::LayoutTemplatesUnitTests;
+    friend class FancyZonesUnitTests::CustomLayoutsUnitTests;
 
     inline void SetDeviceInfo(const FancyZonesDataTypes::DeviceIdData& deviceId, FancyZonesDataTypes::DeviceInfoData data)
     {
