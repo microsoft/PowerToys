@@ -110,9 +110,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Common\NativeMethods.cs">
-      <Link>NativeMethods.cs</Link>
-    </Compile>
     <Compile Include="..\Common\BrowserInfo.cs">
       <Link>BrowserInfo.cs</Link>
     </Compile>

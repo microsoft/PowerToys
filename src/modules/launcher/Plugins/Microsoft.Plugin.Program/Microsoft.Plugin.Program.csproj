@@ -57,10 +57,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj">
+    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" >
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj">
+    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" >
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
@@ -142,11 +142,4 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  
-  <ItemGroup>
-    <Compile Include="..\Common\NativeMethods.cs">
-      <Link>NativeMethods.cs</Link>
-    </Compile>
-  </ItemGroup>
-
 </Project>

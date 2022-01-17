@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
+using Microsoft.PowerToys.Run.Plugin.System.Win32;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
 using Wox.Plugin;

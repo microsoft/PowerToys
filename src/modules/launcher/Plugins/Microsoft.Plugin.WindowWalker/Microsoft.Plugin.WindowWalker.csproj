@@ -113,10 +113,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\Common\NativeMethods.cs">
-      <Link>NativeMethods.cs</Link>
-    </Compile>
-  </ItemGroup>
-
 </Project>

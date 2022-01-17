@@ -20,6 +20,7 @@ using System.Windows.Media.Imaging;
 using System.Xml;
 using ManagedCommon;
 using Microsoft.Plugin.Program.Logger;
+using Microsoft.Plugin.Program.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
@@ -330,7 +331,7 @@ namespace Microsoft.Plugin.Program.Programs
                 string source = $"@{{{packageFullName}? {parsed}}}";
                 var capacity = (uint)outBuffer.Capacity;
                 var hResult = NativeMethods.SHLoadIndirectString(source, outBuffer, capacity, IntPtr.Zero);
-                if (hResult == NativeMethods.HRESULT.S_OK)
+                if (hResult == Hresult.Ok)
                 {
                     var loaded = outBuffer.ToString();
                     if (!string.IsNullOrEmpty(loaded))

@@ -8,11 +8,14 @@ using System.Text;
 using Wox.Plugin.Logger;
 
 /// <summary>
-/// REQUIRES launcher/Plugins/Common/NativeMethods.cs<br/>
 /// Contains information (e.g. path to executable, name...) about the default browser.
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1060:Move pinvokes to native methods class", Justification = "We will refactor NativeMethods files later")]
 public class BrowserInfo
 {
+    [System.Runtime.InteropServices.DllImport("shlwapi.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern uint SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, uint cchOutBuf, IntPtr ppvReserved);
+
     public static readonly string MSEdgePath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) + @"\Microsoft\Edge\Application\msedge.exe";
     public const string MSEdgeName = "Microsoft Edge";
 
@@ -196,12 +199,12 @@ public class BrowserInfo
         string GetIndirectString(string str)
         {
             var stringBuilder = new StringBuilder(128);
-            if (NativeMethods.SHLoadIndirectString(
+            if (SHLoadIndirectString(
                     str,
                     stringBuilder,
                     (uint)stringBuilder.Capacity,
                     IntPtr.Zero)
-                == NativeMethods.HRESULT.S_OK)
+                == 0)
             {
                 return stringBuilder.ToString();
             }
