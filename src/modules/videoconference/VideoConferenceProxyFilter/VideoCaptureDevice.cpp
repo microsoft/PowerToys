@@ -172,8 +172,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
             return VFW_E_NOT_CONNECTED;
         }
 
-        _captureInputPin.copy_to(pPin);
-        return S_OK;
+        return _captureInputPin.try_copy_to(pPin) ? S_OK : E_FAIL;
     }
 
     HRESULT STDMETHODCALLTYPE ConnectionMediaType(AM_MEDIA_TYPE* pmt) override
@@ -294,8 +293,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
             return VFW_E_NO_ALLOCATOR;
         }
 
-        _allocator.copy_to(allocator);
-        return S_OK;
+        return _allocator.try_copy_to(allocator) ? S_OK : E_FAIL;
     }
 
     HRESULT STDMETHODCALLTYPE NotifyAllocator(IMemAllocator* allocator, BOOL readOnly) override
