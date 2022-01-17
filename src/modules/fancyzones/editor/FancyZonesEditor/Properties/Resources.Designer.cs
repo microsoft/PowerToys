@@ -385,6 +385,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred while parsing layout hotkeys..
+        /// </summary>
+        public static string Error_Parsing_Layout_Hotkeys_Message {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Layout_Hotkeys_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A layout that contained invalid data has been removed..
         /// </summary>
         public static string Error_Parsing_Zones_Settings_Message {
@@ -394,7 +403,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Editor settings parsing error..
+        ///   Looks up a localized string similar to Editor data parsing error..
         /// </summary>
         public static string Error_Parsing_Zones_Settings_Title {
             get {
