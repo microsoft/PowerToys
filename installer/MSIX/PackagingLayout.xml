@@ -16,7 +16,6 @@
         <File DestinationPath="modules\Microsoft.Xaml.Behaviors.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Xaml.Behaviors.dll"/>
         <File DestinationPath="modules\PowerToys.PowerRenameExt.dll" SourcePath="..\..\x64\Release\modules\PowerToys.PowerRenameExt.dll"/>
         <File DestinationPath="modules\shortcut_guide.dll" SourcePath="..\..\x64\Release\modules\shortcut_guide.dll"/>
-        <File DestinationPath="modules\PowerRenameUWPUI.exe" SourcePath="..\..\x64\Release\modules\PowerRenameUWPUI.exe"/>
         <File DestinationPath="modules\PowerToys.ImageResizer.exe" SourcePath="..\..\x64\Release\modules\PowerToys.ImageResizer.exe"/>
         <File DestinationPath="modules\PowerToys.ImageResizerExt.dll" SourcePath="..\..\x64\Release\modules\PowerToys.ImageResizerExt.dll"/>
         <File DestinationPath="modules\GalaSoft.MvvmLight.dll" SourcePath="..\..\x64\Release\modules\GalaSoft.MvvmLight.dll"/>

@@ -24,14 +24,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>WebcamReportTool</TargetName>
+    <TargetName>PowerToys.WebcamReportTool</TargetName>
     <TargetExt>.exe</TargetExt>
     <IncludePath>include;$(IncludePath)</IncludePath>
     <LibraryPath>lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>WebcamReportTool</TargetName>
+    <TargetName>PowerToys.WebcamReportTool</TargetName>
     <TargetExt>.exe</TargetExt>
     <IncludePath>include;$(IncludePath)</IncludePath>
     <LibraryPath>lib;$(LibraryPath)</LibraryPath>
