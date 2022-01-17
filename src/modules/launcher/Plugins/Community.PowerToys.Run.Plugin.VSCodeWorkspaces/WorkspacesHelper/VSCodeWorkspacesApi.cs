@@ -112,7 +112,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                             }
                             else if (File.Exists(vscode_storage_db))
                             {
-                                var sqliteConnection = new SqliteConnection($"Data Source={vscode_storage_db};mode=ReadOnly");
+                                var sqliteConnection = new SqliteConnection($"Data Source={vscode_storage_db};Mode=ReadOnly;");
                                 sqliteConnection.Open();
 
                                 if (sqliteConnection.State == System.Data.ConnectionState.Open)
