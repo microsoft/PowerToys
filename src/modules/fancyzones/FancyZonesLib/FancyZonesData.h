@@ -45,10 +45,8 @@ public:
     void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
 
     std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& id) const;
-    std::optional<FancyZonesDataTypes::CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
 
     const JSONHelpers::TDeviceInfoMap& GetDeviceInfoMap() const;
-    const JSONHelpers::TCustomZoneSetsMap& GetCustomZoneSetsMap() const;
     const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const;
 
     inline const std::wstring& GetZonesSettingsFileName() const 
@@ -98,11 +96,6 @@ private:
         deviceInfoMap[deviceId] = data;
     }
 
-    inline void SetCustomZonesets(const std::wstring& uuid, FancyZonesDataTypes::CustomZoneSetData data)
-    {
-        customZoneSetsMap[uuid] = data;
-    }
-
     inline bool ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
     {
         deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
@@ -113,7 +106,6 @@ private:
     {
         appZoneHistoryMap.clear();
         deviceInfoMap.clear();
-        customZoneSetsMap.clear();
     }
 
     inline void SetSettingsModulePath(std::wstring_view moduleName)
@@ -135,8 +127,6 @@ private:
     std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> appZoneHistoryMap{};
     // Maps device unique ID to device data
     JSONHelpers::TDeviceInfoMap deviceInfoMap{};
-    // Maps custom zoneset UUID to it's data
-    JSONHelpers::TCustomZoneSetsMap customZoneSetsMap{};
 
     std::wstring settingsFileName;
     std::wstring zonesSettingsFileName;

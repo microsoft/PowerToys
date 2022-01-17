@@ -37,6 +37,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FancyZonesData\CustomLayouts.h" />
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesDataTypes.h" />
     <ClInclude Include="FancyZonesData\LayoutTemplates.h" />
@@ -67,6 +68,7 @@
     <ClInclude Include="ZonesOverlay.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FancyZonesData\CustomLayouts.cpp" />
     <ClCompile Include="FancyZones.cpp" />
     <ClCompile Include="FancyZonesDataTypes.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
