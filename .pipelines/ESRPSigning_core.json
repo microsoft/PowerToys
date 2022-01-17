@@ -166,6 +166,8 @@
                 "NLog.dll",
                 "HtmlAgilityPack.dll",
                 "Markdig.Signed.dll",
+                "HelixToolkit.dll",
+                "HelixToolkit.Core.Wpf.dll",
                 "Mages.Core.dll",
                 "JetBrains.Annotations.dll",
                 "ICSharpCode.SharpZipLib.dll",

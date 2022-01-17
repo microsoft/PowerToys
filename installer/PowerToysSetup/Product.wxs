@@ -870,6 +870,8 @@
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.StlThumbnailProvider.comhost.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.StlThumbnailProvider.runtimeconfig.json" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.StlThumbnailProvider.deps.json" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\HelixToolkit.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\HelixToolkit.Core.Wpf.dll" />
             </Component>
         </DirectoryRef>
 
