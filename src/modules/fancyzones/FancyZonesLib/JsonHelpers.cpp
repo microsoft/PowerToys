@@ -6,6 +6,8 @@
 #include "trace.h"
 #include "util.h"
 
+#include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
+
 #include <common/logger/logger.h>
 
 #include <filesystem>
@@ -576,7 +578,7 @@ namespace JSONHelpers
         }
     }
 
-    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap, const TCustomZoneSetsMap& customZoneSetsMap, const TLayoutQuickKeysMap& quickKeysMap)
+    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap, const TCustomZoneSetsMap& customZoneSetsMap)
     {
         auto before = json::from_file(zonesSettingsFileName);
 
@@ -598,7 +600,6 @@ namespace JSONHelpers
         root.SetNamedValue(NonLocalizable::DevicesStr, JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
         root.SetNamedValue(NonLocalizable::CustomZoneSetsStr, JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
         root.SetNamedValue(NonLocalizable::Templates, templates);
-        root.SetNamedValue(NonLocalizable::QuickLayoutKeys, JSONHelpers::SerializeQuickKeys(quickKeysMap));
         
         if (!before.has_value() || before.value().Stringify() != root.Stringify())
         {
@@ -726,7 +727,7 @@ namespace JSONHelpers
         return customZoneSetsJSON;
     }
     
-    TLayoutQuickKeysMap ParseQuickKeys(const json::JsonObject& fancyZonesDataJSON)
+    std::optional<TLayoutQuickKeysMap> ParseQuickKeys(const json::JsonObject& fancyZonesDataJSON)
     {
         try
         {
@@ -746,19 +747,26 @@ namespace JSONHelpers
         catch (const winrt::hresult_error& e)
         {
             Logger::error(L"Parsing quick keys error: {}", e.message());
-            return {};
+            return std::nullopt;
         }
     }
 
-    json::JsonArray SerializeQuickKeys(const TLayoutQuickKeysMap& quickKeysMap)
+    void SaveLayoutHotkeys(const TLayoutQuickKeysMap& quickKeysMap)
     {
-        json::JsonArray quickKeysJSON{};
+        json::JsonObject root{};
+        json::JsonArray keysArray{};
 
         for (const auto& [uuid, key] : quickKeysMap)
         {
-            quickKeysJSON.Append(LayoutQuickKeyJSON::ToJson(LayoutQuickKeyJSON{ uuid, key }));
+            json::JsonObject keyJson{};
+
+            keyJson.SetNamedValue(NonLocalizable::LayoutHotkeysIds::LayoutUuidID, json::value(uuid));
+            keyJson.SetNamedValue(NonLocalizable::LayoutHotkeysIds::KeyID, json::value(key));
+
+            keysArray.Append(keyJson);
         }
 
-        return quickKeysJSON;
+        root.SetNamedValue(NonLocalizable::LayoutHotkeysIds::LayoutHotkeysArrayID, keysArray);
+        json::to_file(LayoutHotkeys::LayoutHotkeysFileName(), root);
     }
 }

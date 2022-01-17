@@ -8,9 +8,9 @@
 #include <common/utils/winapi_error.h>
 
 #include <FancyZonesLib/Generated Files/resource.h>
-#include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/trace.h>
 #include <FancyZonesLib/Settings.h>
+#include <FancyZonesLib/ModuleConstants.h>
 
 #include <shellapi.h>
 
@@ -117,7 +117,7 @@ public:
     FancyZonesModuleInterface()
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
-        app_key = NonLocalizable::FancyZonesStr;
+        app_key = NonLocalizable::ModuleKey;
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModuleInterface::get_name(), FancyZonesModuleInterface::get_key());
 
         m_toggleEditorEvent = CreateDefaultEvent(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);

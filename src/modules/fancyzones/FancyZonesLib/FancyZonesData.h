@@ -13,12 +13,6 @@
 #include <winnt.h>
 #include <FancyZonesLib/JsonHelpers.h>
 
-// Non-localizable strings
-namespace NonLocalizable
-{
-    const wchar_t FancyZonesStr[] = L"FancyZones";
-}
-
 namespace FancyZonesDataTypes
 {
     struct ZoneSetData;
@@ -36,6 +30,7 @@ namespace FancyZonesUnitTests
     class ZoneSetCalculateZonesUnitTests;
     class WorkAreaUnitTests;
     class WorkAreaCreationUnitTests;
+    class LayoutHotkeysUnitTests;
 }
 #endif
 
@@ -43,6 +38,8 @@ class FancyZonesData
 {
 public:
     FancyZonesData();
+
+    void ReplaceZoneSettingsFileFromOlderVersions();
 
     void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
 
@@ -52,12 +49,6 @@ public:
     const JSONHelpers::TDeviceInfoMap& GetDeviceInfoMap() const;
     const JSONHelpers::TCustomZoneSetsMap& GetCustomZoneSetsMap() const;
     const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const;
-
-    inline const JSONHelpers::TLayoutQuickKeysMap& GetLayoutQuickKeys() const
-    {
-        std::scoped_lock lock{ dataLock };
-        return quickKeysMap;
-    }
 
     inline const std::wstring& GetZonesSettingsFileName() const 
     {
@@ -98,6 +89,7 @@ private:
     friend class FancyZonesUnitTests::WorkAreaUnitTests;
     friend class FancyZonesUnitTests::WorkAreaCreationUnitTests;
     friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
+    friend class FancyZonesUnitTests::LayoutHotkeysUnitTests;
 
     inline void SetDeviceInfo(const FancyZonesDataTypes::DeviceIdData& deviceId, FancyZonesDataTypes::DeviceInfoData data)
     {
@@ -128,6 +120,12 @@ private:
         zonesSettingsFileName = result + L"\\" + std::wstring(L"zones-settings.json");
         appZoneHistoryFileName = result + L"\\" + std::wstring(L"app-zone-history.json");
     }
+
+    inline std::wstring GetZoneSettingsPath(std::wstring_view moduleName)
+    {
+        std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
+        return result + L"\\" + std::wstring(L"zones-settings.json");
+    }
 #endif
     void RemoveDesktopAppZoneHistory(GUID desktopId);
 
@@ -137,8 +135,6 @@ private:
     JSONHelpers::TDeviceInfoMap deviceInfoMap{};
     // Maps custom zoneset UUID to it's data
     JSONHelpers::TCustomZoneSetsMap customZoneSetsMap{};
-    // Maps zoneset UUID with quick access keys
-    JSONHelpers::TLayoutQuickKeysMap quickKeysMap{};
 
     std::wstring settingsFileName;
     std::wstring zonesSettingsFileName;

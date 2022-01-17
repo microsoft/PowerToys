@@ -22,6 +22,9 @@
 #include <common/utils/process_path.h>
 #include <common/logger/logger.h>
 
+#include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
+#include <FancyZonesLib/ModuleConstants.h>
+
 // Non-localizable strings
 namespace NonLocalizable
 {
@@ -149,12 +152,32 @@ FancyZonesData& FancyZonesDataInstance()
 
 FancyZonesData::FancyZonesData()
 {
-    std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::FancyZonesStr);
+    std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
 
     settingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesSettingsFile);
     zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesDataFile);
     appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesAppZoneHistoryFile);
     editorParametersFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesEditorParametersFile);
+}
+
+void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
+{
+    if (std::filesystem::exists(zonesSettingsFileName))
+    {
+        json::JsonObject fancyZonesDataJSON = GetPersistFancyZonesJSON();
+
+        //appZoneHistoryMap = JSONHelpers::ParseAppZoneHistory(fancyZonesDataJSON);
+        //deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
+        //customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
+
+        auto quickKeysMap = JSONHelpers::ParseQuickKeys(fancyZonesDataJSON);
+        if (quickKeysMap)
+        {
+            JSONHelpers::SaveLayoutHotkeys(quickKeysMap.value());
+        }
+    }
+
+    //TODO: remove zone-settings.json after getting all info from it
 }
 
 void FancyZonesData::SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback)
@@ -616,8 +639,7 @@ void FancyZonesData::LoadFancyZonesData()
 
         appZoneHistoryMap = JSONHelpers::ParseAppZoneHistory(fancyZonesDataJSON);
         deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
-        customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
-        quickKeysMap = JSONHelpers::ParseQuickKeys(fancyZonesDataJSON);
+        customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);    
     }
 }
 
@@ -651,11 +673,11 @@ void FancyZonesData::SaveZoneSettings() const
     
     if (dirtyFlag)
     {
-        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, updatedDeviceInfoMap, customZoneSetsMap, quickKeysMap);
+        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, updatedDeviceInfoMap, customZoneSetsMap);
     }
     else
     {
-        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap, quickKeysMap);
+        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
     }
 }
 

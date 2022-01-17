@@ -143,7 +143,7 @@ namespace FancyZonesEditor
             {
                 foreach (LayoutModel model in _customModels)
                 {
-                    QuickKeys.PropertyChanged -= model.QuickSwitchKeys_PropertyChanged;
+                    LayoutHotkeys.PropertyChanged -= model.LayoutHotkeys_PropertyChanged;
                 }
 
                 _customModels.Clear();
@@ -151,7 +151,7 @@ namespace FancyZonesEditor
 
                 foreach (LayoutModel model in _customModels)
                 {
-                    QuickKeys.PropertyChanged += model.QuickSwitchKeys_PropertyChanged;
+                    LayoutHotkeys.PropertyChanged += model.LayoutHotkeys_PropertyChanged;
                 }
             }
         }
@@ -166,7 +166,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public static QuickKeysModel QuickKeys { get; } = new QuickKeysModel();
+        public static LayoutHotkeysModel LayoutHotkeys { get; } = new LayoutHotkeysModel();
 
         public LayoutModel SelectedModel
         {
