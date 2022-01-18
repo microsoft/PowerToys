@@ -1651,6 +1651,14 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Use a keyboard shortcut highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
+  <data name="Oobe_MouseUtils_InclusiveMouse.Text" xml:space="preserve">
+    <value>Inclusive Mouse</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_InclusiveMouse_Description.Text" xml:space="preserve">
+    <value>Draw a crosshair centered around the mouse pointer.</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
   <data name="Launch_Run.Content" xml:space="preserve">
     <value>Launch PowerToys Run</value>
   </data>
