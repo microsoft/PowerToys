@@ -177,7 +177,7 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MouseUtils_InclusiveMouse">
-                    <controls:Setting x:Uid="MouseUtils_Enable_InclusiveMouse">
+                    <controls:Setting x:Uid="MouseUtils_Enable_InclusiveMouse" Icon="&#xE710;">
                         <!-- TODO: Uncomment once an icon is added.
                         <controls:Setting.Icon>
                             <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsInclusiveMouse.png" ShowAsMonochrome="False" />
@@ -193,6 +193,51 @@
                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+                    <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsInclusiveMouseEnabled, Mode=OneWay}" IsExpanded="False" >
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel>
+                                <controls:Setting x:Uid="MouseUtils_InclusiveMouse_CrosshairColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsInclusiveMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.InclusiveMouseCrosshairColor, Mode=TwoWay}" />
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                <controls:Setting x:Uid="MouseUtils_InclusiveMouse_CrosshairOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsInclusiveMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <Slider Minimum="1"
+                                            Maximum="100"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.InclusiveMouseCrosshairOpacity}"
+                                            HorizontalAlignment="Right"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                <controls:Setting x:Uid="MouseUtils_InclusiveMouse_CrosshairRadius" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsInclusiveMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox Minimum="1"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.InclusiveMouseCrosshairRadius}"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    HorizontalAlignment="Left"
+                                                    SmallChange="1"
+                                                    LargeChange="10"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                <controls:Setting x:Uid="MouseUtils_InclusiveMouse_CrosshairThickness" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsInclusiveMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox Minimum="1"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.InclusiveMouseCrosshairThickness}"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    HorizontalAlignment="Left"
+                                                    SmallChange="1"
+                                                    LargeChange="10"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

@@ -25,7 +25,7 @@ struct InclusiveCrosshair
     static InclusiveCrosshair* instance;
     void Terminate();
     void SwitchActivationMode();
-    void ApplySettings(InclusiveCrosshairSettings settings);
+    void ApplySettings(InclusiveCrosshairSettings settings, bool applyToRuntimeObjects);
 
 private:
     enum class MouseButton
@@ -61,6 +61,7 @@ private:
     winrt::SpriteVisual m_bottom_crosshair{ nullptr };
 
     bool m_visible = false;
+    bool m_destroyed = false;
 
     // Configurable Settings
     winrt::Windows::UI::Color m_crosshair_color = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_COLOR;
@@ -98,22 +99,22 @@ bool InclusiveCrosshair::CreateInclusiveCrosshair()
         // Create the crosshair sprites.
         m_left_crosshair = m_compositor.CreateSpriteVisual();
         m_left_crosshair.AnchorPoint({ 1.0f, 0.5f });
-        m_left_crosshair.Brush(m_compositor.CreateColorBrush(winrt::Windows::UI::ColorHelper::FromArgb(192, 255, 0, 0)));
+        m_left_crosshair.Brush(m_compositor.CreateColorBrush(m_crosshair_color));
         m_root.Children().InsertAtTop(m_left_crosshair);
 
         m_right_crosshair = m_compositor.CreateSpriteVisual();
         m_right_crosshair.AnchorPoint({ 0.0f, 0.5f });
-        m_right_crosshair.Brush(m_compositor.CreateColorBrush(winrt::Windows::UI::ColorHelper::FromArgb(192, 255, 0, 0)));
+        m_right_crosshair.Brush(m_compositor.CreateColorBrush(m_crosshair_color));
         m_root.Children().InsertAtTop(m_right_crosshair);
 
         m_top_crosshair = m_compositor.CreateSpriteVisual();
         m_top_crosshair.AnchorPoint({ 0.5f, 1.0f });
-        m_top_crosshair.Brush(m_compositor.CreateColorBrush(winrt::Windows::UI::ColorHelper::FromArgb(192, 255, 0, 0)));
+        m_top_crosshair.Brush(m_compositor.CreateColorBrush(m_crosshair_color));
         m_root.Children().InsertAtTop(m_top_crosshair);
 
         m_bottom_crosshair = m_compositor.CreateSpriteVisual();
         m_bottom_crosshair.AnchorPoint({ 0.5f, 0.0f });
-        m_bottom_crosshair.Brush(m_compositor.CreateColorBrush(winrt::Windows::UI::ColorHelper::FromArgb(192, 255, 0, 0)));
+        m_bottom_crosshair.Brush(m_compositor.CreateColorBrush(m_crosshair_color));
         m_root.Children().InsertAtTop(m_bottom_crosshair);
 
         UpdateCrosshairPosition();
@@ -210,11 +211,32 @@ void InclusiveCrosshair::SwitchActivationMode()
     PostMessage(m_hwnd, WM_SWITCH_ACTIVATION_MODE, 0, 0);
 }
 
-void InclusiveCrosshair::ApplySettings(InclusiveCrosshairSettings settings)
+void InclusiveCrosshair::ApplySettings(InclusiveCrosshairSettings settings, bool applyToRunTimeObjects)
 {
     m_crosshair_radius = (float)settings.crosshairRadius;
     m_crosshair_thickness = (float)settings.crosshairThickness;
     m_crosshair_color = settings.crosshairColor;
+    if (applyToRunTimeObjects)
+    {
+        // Runtime objects already created. Should update in the owner thread.
+        auto dispatcherQueue = m_dispatcherQueueController.DispatcherQueue();
+        InclusiveCrosshairSettings localSettings = settings;
+        bool enqueueSucceeded = dispatcherQueue.TryEnqueue([=]() {
+            if (!m_destroyed)
+            {
+                // Apply new settings to runtime composition objects.
+                m_left_crosshair.Brush().as<winrt::CompositionColorBrush>().Color(m_crosshair_color);
+                m_right_crosshair.Brush().as<winrt::CompositionColorBrush>().Color(m_crosshair_color);
+                m_top_crosshair.Brush().as<winrt::CompositionColorBrush>().Color(m_crosshair_color);
+                m_bottom_crosshair.Brush().as<winrt::CompositionColorBrush>().Color(m_crosshair_color);
+                UpdateCrosshairPosition();
+            }
+        });
+        if (!enqueueSucceeded)
+        {
+            Logger::error("Couldn't enqueue message to update the crosshair settings.");
+        }
+    }
 }
 
 void InclusiveCrosshair::DestroyInclusiveCrosshair()
@@ -285,6 +307,7 @@ void InclusiveCrosshair::Terminate()
 {
     auto dispatcherQueue = m_dispatcherQueueController.DispatcherQueue();
     bool enqueueSucceeded = dispatcherQueue.TryEnqueue([=]() {
+        m_destroyed = true;
         DestroyWindow(m_hwndOwner);
     });
     if (!enqueueSucceeded)
@@ -300,7 +323,7 @@ void InclusiveCrosshairApplySettings(InclusiveCrosshairSettings settings)
     if (InclusiveCrosshair::instance != nullptr)
     {
         Logger::info("Applying settings.");
-        InclusiveCrosshair::instance->ApplySettings(settings);
+        InclusiveCrosshair::instance->ApplySettings(settings, true);
     }
 }
 
@@ -339,7 +362,7 @@ int InclusiveCrosshairMain(HINSTANCE hInstance, InclusiveCrosshairSettings setti
     // Perform application initialization:
     InclusiveCrosshair crosshair;
     InclusiveCrosshair::instance = &crosshair;
-    crosshair.ApplySettings(settings);
+    crosshair.ApplySettings(settings, false);
     if (!crosshair.MyRegisterClass(hInstance))
     {
         Logger::error("Couldn't initialize a crosshair instance.");

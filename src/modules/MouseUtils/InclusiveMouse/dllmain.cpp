@@ -3,12 +3,17 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
 #include "InclusiveCrosshair.h"
+#include "common/utils/color.h"
 
 namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_VALUE[] = L"value";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
+    const wchar_t JSON_KEY_CROSSHAIR_COLOR[] = L"crosshair_color";
+    const wchar_t JSON_KEY_CROSSHAIR_OPACITY[] = L"crosshair_opacity";
+    const wchar_t JSON_KEY_CROSSHAIR_RADIUS[] = L"crosshair_radius";
+    const wchar_t JSON_KEY_CROSSHAIR_THICKNESS[] = L"crosshair_thickness";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -103,6 +108,8 @@ public:
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             parse_settings(values);
+
+            InclusiveCrosshairApplySettings(m_inclusiveCrosshairSettings);
         }
         catch (std::exception&)
         {
@@ -193,6 +200,56 @@ public:
             catch (...)
             {
                 Logger::warn("Failed to initialize Inclusive Mouse activation shortcut");
+            }
+            uint8_t opacity = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_OPACITY;
+            try
+            {
+                // Parse Opacity
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_OPACITY);
+                opacity = (uint8_t)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Opacity from settings. Will use default value");
+            }
+            try
+            {
+                // Parse left button click color
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_COLOR);
+                auto crosshairColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+                uint8_t r, g, b;
+                if (!checkValidRGB(crosshairColor, &r, &g, &b))
+                {
+                    Logger::error("Crosshair color RGB value is invalid. Will use default value");
+                }
+                else
+                {
+                    inclusiveCrosshairSettings.crosshairColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity * 255 / 100, r, g, b);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize crosshair color from settings. Will use default value");
+            }
+            try
+            {
+                // Parse Radius
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_RADIUS);
+                inclusiveCrosshairSettings.crosshairRadius = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Radius from settings. Will use default value");
+            }
+            try
+            {
+                // Parse Thickness
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_THICKNESS);
+                inclusiveCrosshairSettings.crosshairThickness = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Thickness from settings. Will use default value");
             }
         }
         else

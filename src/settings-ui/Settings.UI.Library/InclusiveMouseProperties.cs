@@ -11,9 +11,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
 
+        [JsonPropertyName("crosshair_color")]
+        public StringProperty CrosshairColor { get; set; }
+
+        [JsonPropertyName("crosshair_opacity")]
+        public IntProperty CrosshairOpacity { get; set; }
+
+        [JsonPropertyName("crosshair_radius")]
+        public IntProperty CrosshairRadius { get; set; }
+
+        [JsonPropertyName("crosshair_thickness")]
+        public IntProperty CrosshairThickness { get; set; }
+
         public InclusiveMouseProperties()
         {
             ActivationShortcut = new HotkeySettings(false, true, true, false, 0x50); // Ctrl + Alt + P
+            CrosshairColor = new StringProperty("#FF0000");
+            CrosshairOpacity = new IntProperty(75);
+            CrosshairRadius = new IntProperty(20);
+            CrosshairThickness = new IntProperty(10);
         }
     }
 }
