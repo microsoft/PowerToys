@@ -21,11 +21,30 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Win32
         [DllImport("Powrprof.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         internal static extern bool SetSuspendState(bool hibernate, bool forceCritical, bool disableWakeEvent);
 
+        [DllImport("kernel32.dll")]
+        internal static extern bool GetFirmwareType(ref uint FirmwareType);
+
         // http://www.pinvoke.net/default.aspx/Enums/HRESULT.html
         public enum HRESULT : uint
         {
             S_FALSE = 0x0001,
             S_OK = 0x0000,
+        }
+
+        // https://docs.microsoft.com/en-us/windows/win32/api/winnt/ne-winnt-firmware_type
+        public enum FIRMWARE_TYPE
+        {
+            Unknown = 0,
+            Bios,
+            Uefi,
+            Max,
+        }
+
+        internal static FIRMWARE_TYPE GetSystemFirmwareType()
+        {
+            uint fwt = 0;
+            _ = GetFirmwareType(ref fwt);
+            return (FIRMWARE_TYPE)fwt;
         }
     }
 }

@@ -43,6 +43,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         private bool _confirmSystemCommands;
         private bool _localizeSystemCommands;
 
+        private bool isBootedUefiMode = NativeMethods.GetSystemFirmwareType() == NativeMethods.FIRMWARE_TYPE.Uefi;
+
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
             new PluginAdditionalOption()
@@ -64,6 +66,12 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             _context = context;
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconTheme(_context.API.GetCurrentTheme());
+
+            // Log info if the system hasn't boot in uefi mode.
+            if (!isBootedUefiMode)
+            {
+                Wox.Plugin.Logger.Log.Info($"The UEFI command will not show to the user. The system has not booted in UEFI mode or the system does not have an UEFI firmware! (Detected type: {NativeMethods.GetSystemFirmwareType()})", typeof(Main));
+            }
         }
 
         public List<Result> Query(Query query)
@@ -185,6 +193,23 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     },
                 },
             });
+
+            // UEFI command/result. It is only available on system bottetd in uefi mode.
+            if (isBootedUefiMode)
+            {
+                results.Add(new Result
+                {
+                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_uefi), culture),
+                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_uefi_description), culture),
+                    FontFamily = "Segoe MDL2 Assets",
+                    Glyph = "\xE945",           // E945 => Symbol LightningBolt
+                    Action = c =>
+                    {
+                        return ExecuteCommand(Resources.Microsoft_plugin_sys_uefi_confirmation, () => Helper.OpenInShell("shutdown", "/r /fw /t 0", null, true));
+                    },
+                });
+            }
+
             return results;
         }
 
