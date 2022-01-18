@@ -35,8 +35,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Win32
         public enum FIRMWARE_TYPE
         {
             Unknown = 0,
-            Bios,
-            Uefi,
+            BIOS,
+            UEFI,
             Max,
         }
 
