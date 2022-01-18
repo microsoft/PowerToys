@@ -190,6 +190,7 @@ LRESULT CALLBACK InclusiveCrosshair::MouseHookProc(int nCode, WPARAM wParam, LPA
 void InclusiveCrosshair::StartDrawing()
 {
     Logger::info("Start drawing crosshairs.");
+    Trace::StartDrawingCrosshair();
     m_visible = true;
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN), GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);

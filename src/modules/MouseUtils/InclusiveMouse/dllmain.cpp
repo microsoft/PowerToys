@@ -121,6 +121,7 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+        Trace::EnableInclusiveMouse(true);
         std::thread([=]() { InclusiveCrosshairMain(m_hModule, m_inclusiveCrosshairSettings); }).detach();
     }
 
@@ -128,6 +129,7 @@ public:
     virtual void disable()
     {
         m_enabled = false;
+        Trace::EnableInclusiveMouse(false);
         InclusiveCrosshairDisable();
     }
 
