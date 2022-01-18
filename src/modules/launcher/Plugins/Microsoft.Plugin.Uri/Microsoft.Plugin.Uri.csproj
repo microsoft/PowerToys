@@ -108,11 +108,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\Common\BrowserInfo.cs">
-      <Link>BrowserInfo.cs</Link>
-    </Compile>
-  </ItemGroup>
   
 </Project>

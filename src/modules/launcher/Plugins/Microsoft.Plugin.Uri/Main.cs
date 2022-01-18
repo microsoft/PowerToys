@@ -9,6 +9,7 @@ using Microsoft.Plugin.Uri.UriHelper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using BrowserInfo = Wox.Plugin.SharedCommands.BrowserInfo;
 
 namespace Microsoft.Plugin.Uri
 {

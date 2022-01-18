@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+using BrowserInfo = Wox.Plugin.SharedCommands.BrowserInfo;
 
 namespace Community.PowerToys.Run.Plugin.WebSearch
 {
