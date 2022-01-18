@@ -19,7 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private MouseHighlighterSettings MouseHighlighterSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private InclusiveMouseSettings InclusiveMouseSettingsConfig { get; set; }
+
+        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<InclusiveMouseSettings> inclusiveMouseSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -74,6 +76,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
             _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
             _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
+
+            if (inclusiveMouseSettingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(inclusiveMouseSettingsRepository));
+            }
+
+            InclusiveMouseSettingsConfig = inclusiveMouseSettingsRepository.SettingsConfig;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -415,10 +424,36 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
 
-                    // TODO: Implement when this module has properties.
-                    // NotifyInclusiveMousePropertyChanged();
+                    NotifyInclusiveMousePropertyChanged();
                 }
             }
+        }
+
+        public HotkeySettings InclusiveMouseActivationShortcut
+        {
+            get
+            {
+                return InclusiveMouseSettingsConfig.Properties.ActivationShortcut;
+            }
+
+            set
+            {
+                if (InclusiveMouseSettingsConfig.Properties.ActivationShortcut != value)
+                {
+                    InclusiveMouseSettingsConfig.Properties.ActivationShortcut = value;
+                    NotifyInclusiveMousePropertyChanged();
+                }
+            }
+        }
+
+        public void NotifyInclusiveMousePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            SndInclusiveMouseSettings outsettings = new SndInclusiveMouseSettings(InclusiveMouseSettingsConfig);
+            SndModuleSettings<SndInclusiveMouseSettings> ipcMessage = new SndModuleSettings<SndInclusiveMouseSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(InclusiveMouseSettingsConfig.ToJsonString(), InclusiveMouseSettings.ModuleName);
         }
 
         private Func<string, int> SendConfigMSG { get; }

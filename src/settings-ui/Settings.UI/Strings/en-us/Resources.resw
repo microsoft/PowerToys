@@ -1833,6 +1833,12 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Enable Inclusive Mouse</value>
     <comment>"Inclusive Mouse" is the name of the utility.</comment>
   </data>
+  <data name="MouseUtils_InclusiveMouse_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_InclusiveMouse_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to show/hide the crosshair</value>
+  </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
   </data>

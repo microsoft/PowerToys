@@ -225,17 +225,13 @@ void InclusiveCrosshair::DestroyInclusiveCrosshair()
 
 LRESULT CALLBACK InclusiveCrosshair::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept
 {
-    int ret = 0;
     switch (message)
     {
     case WM_NCCREATE:
         instance->m_hwnd = hWnd;
         return DefWindowProc(hWnd, message, wParam, lParam);
     case WM_CREATE:
-        ret = instance->CreateInclusiveCrosshair() ? 0 : -1;
-        if(ret==0) instance->StartDrawing();
-        return ret;
-        break;
+        return instance->CreateInclusiveCrosshair() ? 0 : -1;
     case WM_NCHITTEST:
         return HTTRANSPARENT;
     case WM_SWITCH_ACTIVATION_MODE:

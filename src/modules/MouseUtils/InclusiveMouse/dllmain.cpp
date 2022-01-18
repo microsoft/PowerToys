@@ -4,6 +4,13 @@
 #include "trace.h"
 #include "InclusiveCrosshair.h"
 
+namespace
+{
+    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_VALUE[] = L"value";
+    const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
+}
+
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 HMODULE m_hModule;
@@ -38,8 +45,8 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
 
-    // Load initial settings from the persisted values.
-    void init_settings();
+    // Hotkey to invoke the module
+    HotkeyEx m_hotkey;
 
     // Inclusive Mouse specific settings
     InclusiveCrosshairSettings m_inclusiveCrosshairSettings;
@@ -75,55 +82,7 @@ public:
     {
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
-        // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(MODULE_DESC);
-
-        // Show an overview link in the Settings page
-        //settings.set_overview_link(L"https://");
-
-        // Show a video link in the Settings page.
-        //settings.set_video_link(L"https://");
-
-        // A bool property with a toggle editor.
-        //settings.add_bool_toggle(
-        //  L"bool_toggle_1", // property name.
-        //  L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
-        //  g_settings.bool_prop // property value.
-        //);
-
-        // An integer property with a spinner editor.
-        //settings.add_int_spinner(
-        //  L"int_spinner_1", // property name
-        //  L"This is what a IntSpinner property looks like", // description or resource id of the localized string.
-        //  g_settings.int_prop, // property value.
-        //  0, // min value.
-        //  100, // max value.
-        //  10 // incremental step.
-        //);
-
-        // A string property with a textbox editor.
-        //settings.add_string(
-        //  L"string_text_1", // property name.
-        //  L"This is what a String property looks like", // description or resource id of the localized string.
-        //  g_settings.string_prop // property value.
-        //);
-
-        // A string property with a color picker editor.
-        //settings.add_color_picker(
-        //  L"color_picker_1", // property name.
-        //  L"This is what a ColorPicker property looks like", // description or resource id of the localized string.
-        //  g_settings.color_prop // property value.
-        //);
-
-        // A custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-        // method should be overridden as well.
-        //settings.add_custom_action(
-        //  L"custom_action_id", // action name.
-        //  L"This is what a CustomAction property looks like", // label above the field.
-        //  L"Call a custom action", // button text.
-        //  L"Press the button to call a custom action." // display values / extended info.
-        //);
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -143,35 +102,11 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            // Update a bool property.
-            //if (auto v = values.get_bool_value(L"bool_toggle_1")) {
-            //  g_settings.bool_prop = *v;
-            //}
-
-            // Update an int property.
-            //if (auto v = values.get_int_value(L"int_spinner_1")) {
-            //  g_settings.int_prop = *v;
-            //}
-
-            // Update a string property.
-            //if (auto v = values.get_string_value(L"string_text_1")) {
-            //  g_settings.string_prop = *v;
-            //}
-
-            // Update a color property.
-            //if (auto v = values.get_string_value(L"color_picker_1")) {
-            //  g_settings.color_prop = *v;
-            //}
-
-            // If you don't need to do any custom processing of the settings, proceed
-            // to persists the values calling:
-            values.save_to_settings_file();
-            // Otherwise call a custom function to process the settings before saving them to disk:
-            // save_settings();
+            parse_settings(values);
         }
         catch (std::exception&)
         {
-            // Improper JSON.
+            Logger::error("Invalid json when trying to parse Inclusive Mouse settings json.");
         }
     }
 
@@ -194,81 +129,86 @@ public:
     {
         return m_enabled;
     }
+
+    virtual std::optional<HotkeyEx> GetHotkeyEx() override
+    {
+        return m_hotkey;
+    }
+
+    virtual void OnHotkeyEx() override
+    {
+        InclusiveCrosshairSwitch();
+    }
+    // Load the settings file.
+    void init_settings()
+    {
+        try
+        {
+            // Load and parse the settings file for this PowerToy.
+            PowerToysSettings::PowerToyValues settings =
+                PowerToysSettings::PowerToyValues::load_from_settings_file(InclusiveMouse::get_key());
+            parse_settings(settings);
+        }
+        catch (std::exception&)
+        {
+            Logger::error("Invalid json when trying to load the Inclusive Mouse settings json from file.");
+        }
+    }
+
+    void parse_settings(PowerToysSettings::PowerToyValues& settings)
+    {
+        // TODO: refactor to use common/utils/json.h instead
+        auto settingsObject = settings.get_raw_json();
+        InclusiveCrosshairSettings inclusiveCrosshairSettings;
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                // Parse HotKey
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
+                auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
+                m_hotkey = HotkeyEx();
+                if (hotkey.win_pressed())
+                {
+                    m_hotkey.modifiersMask |= MOD_WIN;
+                }
+
+                if (hotkey.ctrl_pressed())
+                {
+                    m_hotkey.modifiersMask |= MOD_CONTROL;
+                }
+
+                if (hotkey.shift_pressed())
+                {
+                    m_hotkey.modifiersMask |= MOD_SHIFT;
+                }
+
+                if (hotkey.alt_pressed())
+                {
+                    m_hotkey.modifiersMask |= MOD_ALT;
+                }
+
+                m_hotkey.vkCode = hotkey.get_code();
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Inclusive Mouse activation shortcut");
+            }
+        }
+        else
+        {
+            Logger::info("Inclusive Mouse settings are empty");
+        }
+        if (!m_hotkey.modifiersMask)
+        {
+            Logger::info("Inclusive Mouse  is going to use default shortcut");
+            m_hotkey.modifiersMask = MOD_CONTROL | MOD_ALT;
+            m_hotkey.vkCode = 0x50; // P key
+        }
+        m_inclusiveCrosshairSettings = inclusiveCrosshairSettings;
+    }
+
 };
-
-// Load the settings file.
-void InclusiveMouse::init_settings()
-{
-    try
-    {
-        // Load and parse the settings file for this PowerToy.
-        PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(InclusiveMouse::get_key());
-
-        // Load a bool property.
-        //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
-        //  g_settings.bool_prop = *v;
-        //}
-
-        // Load an int property.
-        //if (auto v = settings.get_int_value(L"int_spinner_1")) {
-        //  g_settings.int_prop = *v;
-        //}
-
-        // Load a string property.
-        //if (auto v = settings.get_string_value(L"string_text_1")) {
-        //  g_settings.string_prop = *v;
-        //}
-
-        // Load a color property.
-        //if (auto v = settings.get_string_value(L"color_picker_1")) {
-        //  g_settings.color_prop = *v;
-        //}
-    }
-    catch (std::exception&)
-    {
-        // Error while loading from the settings file. Let default values stay as they are.
-    }
-}
-
-// This method of saving the module settings is only required if you need to do any
-// custom processing of the settings before saving them to disk.
-//void InclusiveMouse::save_settings() {
-//  try {
-//    // Create a PowerToyValues object for this PowerToy
-//    PowerToysSettings::PowerToyValues values(get_name());
-//
-//    // Save a bool property.
-//    //values.add_property(
-//    //  L"bool_toggle_1", // property name
-//    //  g_settings.bool_prop // property value
-//    //);
-//
-//    // Save an int property.
-//    //values.add_property(
-//    //  L"int_spinner_1", // property name
-//    //  g_settings.int_prop // property value
-//    //);
-//
-//    // Save a string property.
-//    //values.add_property(
-//    //  L"string_text_1", // property name
-//    //  g_settings.string_prop // property value
-//    );
-//
-//    // Save a color property.
-//    //values.add_property(
-//    //  L"color_picker_1", // property name
-//    //  g_settings.color_prop // property value
-//    //);
-//
-//    // Save the PowerToyValues JSON to the power toy settings file.
-//    values.save_to_settings_file();
-//  }
-//  catch (std::exception ex) {
-//    // Couldn't save the settings.
-//  }
-//}
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

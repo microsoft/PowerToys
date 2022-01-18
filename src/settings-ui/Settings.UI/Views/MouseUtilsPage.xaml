@@ -187,6 +187,12 @@
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsInclusiveMouseEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+                    <controls:Setting x:Uid="MouseUtils_InclusiveMouse_ActivationShortcut" Icon="&#xEDA7;" IsEnabled="{x:Bind ViewModel.IsInclusiveMouseEnabled, Mode=OneWay}">
+                        <controls:Setting.ActionContent>
+                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.InclusiveMouseActivationShortcut, Mode=TwoWay}"
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
