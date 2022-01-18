@@ -8,6 +8,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
+using System.Threading;
+using Windows.Foundation;
 using Windows.Management.Deployment;
 
 namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
@@ -54,7 +56,13 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
 
             foreach (var p in _packageManager.FindPackagesForUser(user.Value).Where(p => Packages.Contains(p.Id.Name)))
             {
-                var aumid = p.GetAppListEntries().Single().AppUserModelId;
+                var appListEntries = p.GetAppListEntriesAsync();
+                while (appListEntries.Status != AsyncStatus.Completed)
+                {
+                    Thread.Sleep(100);
+                }
+
+                var aumid = appListEntries.GetResults().Single().AppUserModelId;
                 var version = new Version(p.Id.Version.Major, p.Id.Version.Minor, p.Id.Version.Build, p.Id.Version.Revision);
                 var settingsPath = Path.Combine(localAppDataPath, "Packages", p.Id.FamilyName, "LocalState", "settings.json");
                 yield return new TerminalPackage(aumid, version, p.DisplayName, settingsPath, p.Logo.LocalPath);

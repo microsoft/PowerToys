@@ -22,8 +22,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
         public void GetRegistryBaseKeyTestOnlyOneBaseKey(string query, string expectedBaseKey)
         {
             var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey(query);
+            Assert.IsNotNull(baseKeyList);
             Assert.IsTrue(baseKeyList.Count() == 1);
-            Assert.AreEqual(expectedBaseKey, baseKeyList.FirstOrDefault().Name);
+            Assert.AreEqual(expectedBaseKey, baseKeyList.First().Name);
         }
 
         [TestMethod]
@@ -31,6 +32,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
         {
             var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey("HKC\\Control Panel\\Accessibility"); /* #no-spell-check-line */
 
+            Assert.IsNotNull(baseKeyList);
             Assert.IsTrue(baseKeyList.Count() > 1);
 
             var list = baseKeyList.Select(found => found.Name);

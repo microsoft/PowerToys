@@ -201,6 +201,7 @@ cdecl
 CDeclaration
 CDEF
 cdpx
+CEBB
 CENTERALIGN
 CFDB
 cguid
@@ -1914,6 +1915,7 @@ SYSICONINDEX
 SYSKEY
 syskeydown
 SYSKEYUP
+SYSLIB
 syslog
 SYSMENU
 systemd

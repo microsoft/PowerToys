@@ -51,32 +51,6 @@ namespace Awake.Core
         private static Task? _runnerThread;
         private static System.Timers.Timer _timedLoopTimer;
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetConsoleCtrlHandler(ConsoleEventHandler handler, bool add);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool AllocConsole();
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
-
-        [DllImport("kernel32.dll")]
-        private static extern uint GetCurrentThreadId();
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr CreateFile(
-            [MarshalAs(UnmanagedType.LPTStr)] string filename,
-            [MarshalAs(UnmanagedType.U4)] uint access,
-            [MarshalAs(UnmanagedType.U4)] FileShare share,
-            IntPtr securityAttributes,
-            [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-            [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
-            IntPtr templateFile);
-
         static APIHelper()
         {
             _timedLoopTimer = new System.Timers.Timer();
@@ -86,19 +60,19 @@ namespace Awake.Core
 
         public static void SetConsoleControlHandler(ConsoleEventHandler handler, bool addHandler)
         {
-            SetConsoleCtrlHandler(handler, addHandler);
+            NativeMethods.SetConsoleCtrlHandler(handler, addHandler);
         }
 
         public static void AllocateConsole()
         {
             _log.Debug("Bootstrapping the console allocation routine.");
-            AllocConsole();
+            NativeMethods.AllocConsole();
             _log.Debug($"Console allocation result: {Marshal.GetLastWin32Error()}");
 
-            var outputFilePointer = CreateFile("CONOUT$", GenericRead | GenericWrite, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
+            var outputFilePointer = NativeMethods.CreateFile("CONOUT$", GenericRead | GenericWrite, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
             _log.Debug($"CONOUT creation result: {Marshal.GetLastWin32Error()}");
 
-            SetStdHandle(StdOutputHandle, outputFilePointer);
+            NativeMethods.SetStdHandle(StdOutputHandle, outputFilePointer);
             _log.Debug($"SetStdHandle result: {Marshal.GetLastWin32Error()}");
 
             Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
@@ -115,7 +89,7 @@ namespace Awake.Core
         {
             try
             {
-                var stateResult = SetThreadExecutionState(state);
+                var stateResult = NativeMethods.SetThreadExecutionState(state);
                 return stateResult != 0;
             }
             catch
@@ -205,7 +179,7 @@ namespace Awake.Core
             {
                 if (success)
                 {
-                    _log.Info($"Initiated indefinite keep awake in background thread: {GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    _log.Info($"Initiated indefinite keep awake in background thread: {NativeMethods.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
                     WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
 
@@ -220,7 +194,7 @@ namespace Awake.Core
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                _log.Info($"Background thread termination: {GetCurrentThreadId()}. Message: {ex.Message}");
+                _log.Info($"Background thread termination: {NativeMethods.GetCurrentThreadId()}. Message: {ex.Message}");
                 return success;
             }
         }
@@ -244,7 +218,7 @@ namespace Awake.Core
 
                 if (success)
                 {
-                    _log.Info($"Initiated temporary keep awake in background thread: {GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    _log.Info($"Initiated temporary keep awake in background thread: {NativeMethods.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
                     _timedLoopTimer = new System.Timers.Timer(seconds * 1000);
                     _timedLoopTimer.Elapsed += (s, e) =>
@@ -276,7 +250,7 @@ namespace Awake.Core
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                _log.Info($"Background thread termination: {GetCurrentThreadId()}. Message: {ex.Message}");
+                _log.Info($"Background thread termination: {NativeMethods.GetCurrentThreadId()}. Message: {ex.Message}");
                 return success;
             }
         }

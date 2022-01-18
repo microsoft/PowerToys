@@ -71,7 +71,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public uint ProcessID { get; set; }
 
         /// <summary>
-        /// Gets returns the name of the process
+        /// Gets the name of the process
         /// </summary>
         public string ProcessName
         {
@@ -128,7 +128,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets returns the name of the class for the window represented
+        /// Gets the name of the class for the window represented
         /// </summary>
         public string ClassName
         {
@@ -147,7 +147,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether is the window visible (might return false if it is a hidden IE tab)
+        /// Gets a value indicating whether the window is visible (might return false if it is a hidden IE tab)
         /// </summary>
         public bool Visible
         {
@@ -158,7 +158,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether determines whether the specified window handle identifies an existing window.
+        /// Gets a value indicating whether the specified window handle identifies an existing window.
         /// </summary>
         public bool IsWindow
         {
@@ -169,7 +169,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether get a value indicating whether is the window GWL_EX_STYLE is a toolwindow
+        /// Gets a value indicating whether the window is a toolwindow
         /// </summary>
         public bool IsToolWindow
         {
@@ -182,7 +182,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether get a value indicating whether the window GWL_EX_STYLE is an appwindow
+        /// Gets a value indicating whether the window is an appwindow
         /// </summary>
         public bool IsAppWindow
         {
@@ -195,7 +195,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether get a value indicating whether the window has ITaskList_Deleted property
+        /// Gets a value indicating whether the window has ITaskList_Deleted property
         /// </summary>
         public bool TaskListDeleted
         {
@@ -206,18 +206,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether determines whether the specified windows is the owner
+        /// Gets a value indicating whether the specified windows is the owner (i.e. doesn't have an owner)
         /// </summary>
         public bool IsOwner
         {
             get
             {
-                return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) != null;
+                return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) == IntPtr.Zero;
             }
         }
 
         /// <summary>
-        /// Gets a value indicating whether returns true if the window is minimized
+        /// Gets a value indicating whether the window is minimized
         /// </summary>
         public bool Minimized
         {

@@ -21,6 +21,7 @@
         </BootstrapperApplicationRef>
 
         <util:FileSearch Variable="HasDotnet3122" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\3.1.22\System.Xaml.dll" Result="exists" />
+        <util:FileSearch Variable="HasDotnet5013" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\5.0.13\System.Xaml.dll" Result="exists" />
 
         <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles64Folder]PowerToys" bal:Overridable="yes"/>
 
@@ -54,6 +55,24 @@
                     Size="54342024"
                     Version="3.1.22.30721"
                     Hash="08EF2F6CFDB33946061884B1CE13FA867EFBD576" />
+            </ExePackage>
+            <ExePackage
+                Name="windowsdesktop-runtime-5.0.13-win-x64.exe"
+                Compressed="no"
+                Id="DotnetRuntime5"
+                DetectCondition="HasDotnet5013"
+                DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/2bfb80f2-b8f2-44b0-90c1-d3c8c1c8eac8/409dd3d3367feeeda048f4ff34b32e82/windowsdesktop-runtime-5.0.13-win-x64.exe"
+                InstallCommand="/install /quiet"
+                RepairCommand="/repair /passive"
+                Permanent="yes"
+                PerMachine="yes"
+                UninstallCommand="/uninstall /quiet">
+                <RemotePayload
+                    Description="Microsoft Windows Desktop Runtime - 5.0.13 (x64)"
+                    ProductName="Microsoft Windows Desktop Runtime - 5.0.13 (x64)"
+                    Size="54456248"
+                    Version="5.0.13.30717"
+                    Hash="EB5506CEBB3DD1CEC78F7F8131F87A2C5F665B40" />
             </ExePackage>
             <MsiPackage
                 SourceFile="x64\Release\PowerToysSetup-$(var.Version)-x64.msi"

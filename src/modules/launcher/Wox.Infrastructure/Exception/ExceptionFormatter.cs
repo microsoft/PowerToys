@@ -88,7 +88,10 @@ namespace Wox.Infrastructure.Exception
             sb.AppendLine();
             sb.AppendLine("## Assemblies - " + AppDomain.CurrentDomain.FriendlyName);
             sb.AppendLine();
-            foreach (var ass in AppDomain.CurrentDomain.GetAssemblies().OrderBy(o => o.GlobalAssemblyCache ? 50 : 0))
+
+            // GlobalAssemblyCache - .NET Core and .NET 5 and later: false in all cases.
+            // Source https://docs.microsoft.com/en-us/dotnet/api/system.reflection.assembly.globalassemblycache?view=net-6.0
+            foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
             {
                 sb.Append("* ");
                 sb.Append(ass.FullName);
