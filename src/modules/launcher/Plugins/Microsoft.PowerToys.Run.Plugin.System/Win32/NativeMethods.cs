@@ -42,9 +42,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Win32
 
         internal static FIRMWARE_TYPE GetSystemFirmwareType()
         {
-            uint fwt = 0;
-            _ = GetFirmwareType(ref fwt);
-            return (FIRMWARE_TYPE)fwt;
+            uint firmwareType = 0;
+            _ = GetFirmwareType(ref firmwareType);
+            return (FIRMWARE_TYPE)firmwareType;
         }
     }
 }

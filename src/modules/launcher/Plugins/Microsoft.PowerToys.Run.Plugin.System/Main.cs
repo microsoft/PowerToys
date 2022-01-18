@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         private bool _confirmSystemCommands;
         private bool _localizeSystemCommands;
 
-        private bool isBootedUefiMode = NativeMethods.GetSystemFirmwareType() == NativeMethods.FIRMWARE_TYPE.Uefi;
+        private bool isBootedInUefiMode = NativeMethods.GetSystemFirmwareType() == NativeMethods.FIRMWARE_TYPE.Uefi;
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
@@ -68,7 +68,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             UpdateIconTheme(_context.API.GetCurrentTheme());
 
             // Log info if the system hasn't boot in uefi mode.
-            if (!isBootedUefiMode)
+            if (!isBootedInUefiMode)
             {
                 Wox.Plugin.Logger.Log.Info($"The UEFI command will not show to the user. The system has not booted in UEFI mode or the system does not have an UEFI firmware! (Detected type: {NativeMethods.GetSystemFirmwareType()})", typeof(Main));
             }
@@ -194,8 +194,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                 },
             });
 
-            // UEFI command/result. It is only available on system bottetd in uefi mode.
-            if (isBootedUefiMode)
+            // UEFI command/result. It is only available on system booted in UEFI mode.
+            if (isBootedInUefiMode)
             {
                 results.Add(new Result
                 {
