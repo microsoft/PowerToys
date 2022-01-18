@@ -26,7 +26,7 @@ namespace Wox.Plugin.SharedCommands
         /// <summary>Gets the path to default browser's executable.</summary>
         public static string Path { get; private set; }
 
-        /// <summary>Gets <paramref name="Path" /> since the icon is embedded in the executable.</summary>
+        /// <summary>Gets <see cref="Path" /> since the icon is embedded in the executable.</summary>
         public static string IconPath { get => Path; }
 
         public static string Name { get; private set; }

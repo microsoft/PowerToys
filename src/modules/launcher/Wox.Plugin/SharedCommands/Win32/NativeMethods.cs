@@ -29,12 +29,15 @@ namespace Wox.Plugin.SharedCommands.Win32
     [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These are the names win32 api uses.")]
     public enum HRESULT : uint
     {
-        S_FALSE = 0x0001,
-
         /// <summary>
         /// Operation successful.
         /// </summary>
         S_OK = 0x00000000,
+
+        /// <summary>
+        /// Operation successful. (negative condition/no operation)
+        /// </summary>
+        S_FALSE = 0x00000001,
 
         /// <summary>
         /// Not implemented.
