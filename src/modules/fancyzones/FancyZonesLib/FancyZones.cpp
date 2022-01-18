@@ -73,6 +73,7 @@ public:
 
         FancyZonesDataInstance().ReplaceZoneSettingsFileFromOlderVersions();
         LayoutHotkeys::instance().LoadData();
+        CustomLayouts::instance().LoadData();
     }
 
     // IFancyZones
