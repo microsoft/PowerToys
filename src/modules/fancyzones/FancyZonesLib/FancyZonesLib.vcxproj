@@ -68,7 +68,12 @@
     <ClInclude Include="ZonesOverlay.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FancyZonesData\CustomLayouts.cpp" />
+    <ClCompile Include="FancyZonesData\CustomLayouts.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="FancyZonesData\Devices.cpp" />
+    <ClCompile Include="FancyZonesData\AppZoneHistory.cpp" />
     <ClCompile Include="FancyZones.cpp" />
     <ClCompile Include="FancyZonesDataTypes.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
