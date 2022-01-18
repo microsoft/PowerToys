@@ -190,14 +190,16 @@ namespace Awake
                         }
                     }).Start();
 
-                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon(Application.GetResourceStream(new Uri("/Images/Awake.ico", UriKind.Relative)).Stream));
+                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("modules/Awake/Images/Awake.ico"));
 
                     string? settingsPath = _settingsUtils.GetSettingsFilePath(InternalConstants.AppName);
                     _log.Info($"Reading configuration file: {settingsPath}");
 
                     _watcher = new FileSystemWatcher
                     {
+#pragma warning disable CS8601 // Possible null reference assignment.
                         Path = Path.GetDirectoryName(settingsPath),
+#pragma warning restore CS8601 // Possible null reference assignment.
                         EnableRaisingEvents = true,
                         NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
                         Filter = Path.GetFileName(settingsPath),

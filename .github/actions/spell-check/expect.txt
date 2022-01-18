@@ -202,6 +202,7 @@ cdecl
 CDeclaration
 CDEF
 cdpx
+CEBB
 CENTERALIGN
 CFDB
 cguid
@@ -360,6 +361,7 @@ dacl
 DARKPURPLE
 DARKTEAL
 DARKYELLOW
+datareader
 Datavalue
 DATAW
 davidegiacometti
@@ -1817,6 +1819,7 @@ spsi
 spsia
 spsrm
 spsv
+sqlite
 SRCCOPY
 sre
 sregex
@@ -1914,6 +1917,7 @@ SYSICONINDEX
 SYSKEY
 syskeydown
 SYSKEYUP
+SYSLIB
 syslog
 SYSMENU
 systemd
@@ -2116,6 +2120,7 @@ Vpn
 VREDRAW
 VSC
 VSCBD
+vscdb
 vscode
 VSCROLL
 vsonline

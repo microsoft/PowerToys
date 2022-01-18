@@ -2,7 +2,7 @@
   <Import Project="..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <IsPackable>false</IsPackable>
 
 	  <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>

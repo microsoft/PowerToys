@@ -78,7 +78,7 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 
 | Name            | Value                                                                          |
 | --------------- | ------------------------------------------------------------------------------ |
-| TargetFramework | `netcoreapp3.1` (means .NET Core 3.1)                                          |
+| TargetFramework | `net5.0-windows` (.NET 5) or `net5.0-windows10.0.18362.0` (OS version specific)|
 | LangVersion     | `8.0` (mean C# 8.0)                                                            |
 | Platforms       | `x64`                                                                          |
 | Nullable        | `true`                                                                         |

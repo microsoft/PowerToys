@@ -170,6 +170,12 @@ void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
         //deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
         //customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
 
+        auto templates = JSONHelpers::ParseLayoutTemplates(fancyZonesDataJSON);
+        if (templates)
+        {
+            JSONHelpers::SaveLayoutTemplates(templates.value());
+        }
+        
         auto quickKeysMap = JSONHelpers::ParseQuickKeys(fancyZonesDataJSON);
         if (quickKeysMap)
         {

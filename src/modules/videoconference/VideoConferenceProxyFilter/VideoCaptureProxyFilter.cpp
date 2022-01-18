@@ -117,8 +117,7 @@ HRESULT VideoCaptureProxyPin::ConnectedTo(IPin** pPin)
         return VFW_E_NOT_CONNECTED;
     }
 
-    _connectedInputPin.try_copy_to(pPin);
-    return S_OK;
+    return _connectedInputPin.try_copy_to(pPin) ? S_OK : E_FAIL;
 }
 
 HRESULT VideoCaptureProxyPin::ConnectionMediaType(AM_MEDIA_TYPE* pmt)
@@ -194,6 +193,8 @@ HRESULT VideoCaptureProxyPin::EnumMediaTypes(IEnumMediaTypes** ppEnum)
         return E_POINTER;
     }
 
+    *ppEnum = nullptr;
+
     auto enumerator = winrt::make_self<MediaTypeEnumerator>();
     enumerator->_objects.emplace_back(CopyMediaType(_mediaFormat));
     *ppEnum = enumerator.detach();
@@ -201,8 +202,12 @@ HRESULT VideoCaptureProxyPin::EnumMediaTypes(IEnumMediaTypes** ppEnum)
     return S_OK;
 }
 
-HRESULT VideoCaptureProxyPin::QueryInternalConnections(IPin**, ULONG*)
+HRESULT VideoCaptureProxyPin::QueryInternalConnections(IPin** pins, ULONG*)
 {
+    if (pins)
+    {
+        *pins = nullptr;
+    }
     return E_NOTIMPL;
 }
 
@@ -246,7 +251,6 @@ HRESULT VideoCaptureProxyPin::GetFormat(AM_MEDIA_TYPE** ppmt)
         LOG("VideoCaptureProxyPin::GetFormat FAILED ppmt");
         return E_POINTER;
     }
-
     *ppmt = CopyMediaType(_mediaFormat).release();
     return S_OK;
 }
@@ -676,8 +680,8 @@ HRESULT VideoCaptureProxyFilter::GetSyncSource(IReferenceClock** pClock)
     {
         return E_POINTER;
     }
-    _clock.try_copy_to(pClock);
-    return S_OK;
+    *pClock = nullptr;
+    return _clock.try_copy_to(pClock) ? S_OK : E_FAIL;
 }
 
 GUID MapDShowSubtypeToMFT(const GUID& dshowSubtype)
@@ -708,6 +712,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
         LOG("VideoCaptureProxyFilter::EnumPins null arg provided");
         return E_POINTER;
     }
+    *ppEnum = nullptr;
 
     std::unique_lock<std::mutex> lock{ _worker_mutex };
 
@@ -802,8 +807,12 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
     return S_OK;
 }
 
-HRESULT VideoCaptureProxyFilter::FindPin(LPCWSTR, IPin**)
+HRESULT VideoCaptureProxyFilter::FindPin(LPCWSTR, IPin** pin)
 {
+    if (pin)
+    {
+        *pin = nullptr;
+    }
     return E_NOTIMPL;
 }
 

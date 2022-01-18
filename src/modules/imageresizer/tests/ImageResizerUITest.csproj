@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Version.props" />
-  
+
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
     <ProjectGuid>{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -15,13 +15,13 @@
     <CodeAnalysisRuleSet>..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
     <Platforms>x64</Platforms>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <Platform Condition="'$(Platform)'==''">x64</Platform>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
   </PropertyGroup>
-    
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
@@ -32,7 +32,7 @@
     <None Remove="TestMetadataIssue1928.jpg" />
     <None Remove="TestMetadataIssue1928_NoMetadata.jpg" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\ui\ImageResizerUI.csproj" />
   </ItemGroup>
@@ -76,8 +76,8 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="Moq" Version="4.16.1" />
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

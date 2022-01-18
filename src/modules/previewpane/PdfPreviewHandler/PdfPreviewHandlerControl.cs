@@ -207,7 +207,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         /// <returns>An object of type <see cref="Image"/></returns>
         private Image PageToImage(PdfPage page)
         {
-            Image imageOfPage;
+            Image imageOfPage = null;
 
             using (var stream = new InMemoryRandomAccessStream())
             {

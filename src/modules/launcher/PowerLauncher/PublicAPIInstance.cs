@@ -38,15 +38,9 @@ namespace Wox
             _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
 
-            DesktopNotificationManagerCompat.RegisterActivator<LauncherNotificationActivator>();
-            try
+            ToastNotificationManagerCompat.OnActivated += args =>
             {
-                DesktopNotificationManagerCompat.RegisterAumidAndComServer<LauncherNotificationActivator>("PowerToysRun");
-            }
-            catch (System.UnauthorizedAccessException ex)
-            {
-                Log.Exception("Exception calling RegisterAumidAndComServer. Notifications not available.", ex, MethodBase.GetCurrentMethod().DeclaringType);
-            }
+            };
         }
 
         public void ChangeQuery(string query, bool requery = false)
@@ -105,7 +99,7 @@ namespace Wox
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var toast = new ToastNotification(builder.GetToastContent().GetXml());
-                DesktopNotificationManagerCompat.CreateToastNotifier().Show(toast);
+                ToastNotificationManagerCompat.CreateToastNotifier().Show(toast);
             });
         }
 
