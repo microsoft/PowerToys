@@ -175,7 +175,19 @@
             </controls:SettingExpander.Content>
             </controls:SettingExpander>
                 </controls:SettingsGroup>
-            
+
+                <controls:SettingsGroup x:Uid="MouseUtils_InclusiveMouse">
+                    <controls:Setting x:Uid="MouseUtils_Enable_InclusiveMouse">
+                        <!-- TODO: Uncomment once an icon is added.
+                        <controls:Setting.Icon>
+                            <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsInclusiveMouse.png" ShowAsMonochrome="False" />
+                        </controls:Setting.Icon>
+                        -->
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsInclusiveMouseEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>

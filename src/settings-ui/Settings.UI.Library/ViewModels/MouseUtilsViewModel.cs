@@ -35,6 +35,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             _isMouseHighlighterEnabled = GeneralSettingsConfig.Enabled.MouseHighlighter;
 
+            _isInclusiveMouseEnabled = GeneralSettingsConfig.Enabled.InclusiveMouse;
+
             // To obtain the find my mouse settings, if the file exists.
             // If not, to create a file with the default settings and to return the default configurations.
             if (findMyMouseSettingsRepository == null)
@@ -398,6 +400,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SettingsUtils.SaveSettings(MouseHighlighterSettingsConfig.ToJsonString(), MouseHighlighterSettings.ModuleName);
         }
 
+        public bool IsInclusiveMouseEnabled
+        {
+            get => _isInclusiveMouseEnabled;
+            set
+            {
+                if (_isInclusiveMouseEnabled != value)
+                {
+                    _isInclusiveMouseEnabled = value;
+
+                    GeneralSettingsConfig.Enabled.InclusiveMouse = value;
+                    OnPropertyChanged(nameof(_isInclusiveMouseEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+
+                    // TODO: Implement when this module has properties.
+                    // NotifyInclusiveMousePropertyChanged();
+                }
+            }
+        }
+
         private Func<string, int> SendConfigMSG { get; }
 
         private bool _isFindMyMouseEnabled;
@@ -416,5 +439,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private int _highlighterRadius;
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;
+
+        private bool _isInclusiveMouseEnabled;
     }
 }

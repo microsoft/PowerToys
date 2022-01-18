@@ -223,6 +223,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool inclusiveMouse = true;
+
+        [JsonPropertyName("InclusiveMouse")]
+        public bool InclusiveMouse
+        {
+            get => inclusiveMouse;
+            set
+            {
+                if (inclusiveMouse != value)
+                {
+                    LogTelemetryEvent(value);
+                    inclusiveMouse = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
