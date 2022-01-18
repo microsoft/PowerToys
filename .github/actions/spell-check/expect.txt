@@ -359,6 +359,7 @@ dacl
 DARKPURPLE
 DARKTEAL
 DARKYELLOW
+datareader
 Datavalue
 DATAW
 davidegiacometti
@@ -1815,6 +1816,7 @@ spsi
 spsia
 spsrm
 spsv
+sqlite
 SRCCOPY
 sre
 sregex
@@ -2114,6 +2116,7 @@ Vpn
 VREDRAW
 VSC
 VSCBD
+vscdb
 vscode
 VSCROLL
 vsonline
