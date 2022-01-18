@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "../pch.h"
 #include "LayoutHotkeys.h"
 
 #include <common/logger/logger.h>
