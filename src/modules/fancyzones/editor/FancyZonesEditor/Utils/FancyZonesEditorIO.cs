@@ -31,6 +31,7 @@ namespace FancyZonesEditor.Utils
         private const string ZonesSettingsFile = "\\Microsoft\\PowerToys\\FancyZones\\zones-settings.json";
         private const string LayoutHotkeysFile = "\\Microsoft\\PowerToys\\FancyZones\\layout-hotkeys.json";
         private const string LayoutTemplatesFile = "\\Microsoft\\PowerToys\\FancyZones\\layout-templates.json";
+        private const string CustomLayoutsFile = "\\Microsoft\\PowerToys\\FancyZones\\custom-layouts.json";
         private const string ParamsFile = "\\Microsoft\\PowerToys\\FancyZones\\editor-parameters.json";
 
         // Non-localizable string: Multi-monitor id
@@ -54,6 +55,8 @@ namespace FancyZonesEditor.Utils
         public string FancyZonesLayoutHotkeysFile { get; private set; }
 
         public string FancyZonesLayoutTemplatesFile { get; private set; }
+
+        public string FancyZonesCustomLayoutsFile { get; private set; }
 
         public string FancyZonesEditorParamsFile { get; private set; }
 
@@ -130,7 +133,7 @@ namespace FancyZonesEditor.Utils
             public int EditorSensitivityRadius { get; set; }
         }
 
-        // zones-settings: custom-zone-sets
+        // custom-layouts.json
         private class CanvasInfoWrapper
         {
             public struct CanvasZoneWrapper
@@ -153,7 +156,7 @@ namespace FancyZonesEditor.Utils
             public int SensitivityRadius { get; set; } = LayoutSettings.DefaultSensitivityRadius;
         }
 
-        // zones-settings: custom-zone-sets
+        // custom-layouts.json
         private class GridInfoWrapper
         {
             public int Rows { get; set; }
@@ -173,7 +176,7 @@ namespace FancyZonesEditor.Utils
             public int SensitivityRadius { get; set; } = LayoutSettings.DefaultSensitivityRadius;
         }
 
-        // zones-settings: custom-zone-sets
+        // custom-layouts.json
         private struct CustomLayoutWrapper
         {
             public string Uuid { get; set; }
@@ -185,7 +188,13 @@ namespace FancyZonesEditor.Utils
             public JsonElement Info { get; set; } // CanvasInfoWrapper or GridInfoWrapper
         }
 
-        // layout-templates: templates
+        // custom-layouts.json
+        private struct CustomLayoutListWrapper
+        {
+            public List<CustomLayoutWrapper> CustomLayouts { get; set; }
+        }
+
+        // layout-templates.json
         private struct TemplateLayoutWrapper
         {
             public string Type { get; set; }
@@ -199,13 +208,13 @@ namespace FancyZonesEditor.Utils
             public int SensitivityRadius { get; set; }
         }
 
-        // layout-templates: layout-templates-wrapper
+        // layout-templates.json
         private struct TemplateLayoutsListWrapper
         {
-            public List<TemplateLayoutWrapper> TemplatesList { get; set; }
+            public List<TemplateLayoutWrapper> LayoutTemplates { get; set; }
         }
 
-        // layout-hotkeys: layout-hotkeys-wrapper
+        // layout-hotkeys.json
         private struct LayoutHotkeyWrapper
         {
             public int Key { get; set; }
@@ -213,7 +222,7 @@ namespace FancyZonesEditor.Utils
             public string LayoutId { get; set; }
         }
 
-        // layout-hotkeys: layout-hotkeys-wrapper
+        // layout-hotkeys.json
         private struct LayoutHotkeysWrapper
         {
             public List<LayoutHotkeyWrapper> LayoutHotkeys { get; set; }
@@ -223,8 +232,6 @@ namespace FancyZonesEditor.Utils
         private struct ZoneSettingsWrapper
         {
             public List<DeviceWrapper> Devices { get; set; }
-
-            public List<CustomLayoutWrapper> CustomZoneSets { get; set; }
         }
 
         private struct EditorParams
@@ -258,6 +265,7 @@ namespace FancyZonesEditor.Utils
             FancyZonesSettingsFile = localAppDataDir + ZonesSettingsFile;
             FancyZonesLayoutHotkeysFile = localAppDataDir + LayoutHotkeysFile;
             FancyZonesLayoutTemplatesFile = localAppDataDir + LayoutTemplatesFile;
+            FancyZonesCustomLayoutsFile = localAppDataDir + CustomLayoutsFile;
             FancyZonesEditorParamsFile = localAppDataDir + ParamsFile;
         }
 
@@ -530,8 +538,7 @@ namespace FancyZonesEditor.Utils
                 try
                 {
                     bool devicesParsingResult = SetDevices(zoneSettings.Devices);
-                    bool customZonesParsingResult = SetCustomLayouts(zoneSettings.CustomZoneSets);
-                    if (!devicesParsingResult || !customZonesParsingResult)
+                    if (!devicesParsingResult)
                     {
                         return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Message, settingsString);
                     }
@@ -541,6 +548,12 @@ namespace FancyZonesEditor.Utils
                     Logger.LogError("Zone settings parsing error", ex);
                     return new ParsingResult(false, ex.Message, settingsString);
                 }
+            }
+
+            var parsingCustomLayoutsResult = ParseCustomLayouts();
+            if (!parsingCustomLayoutsResult.Result)
+            {
+                return parsingCustomLayoutsResult;
             }
 
             var parsingHotkeysResult = ParseLayoutHotkeys();
@@ -619,7 +632,7 @@ namespace FancyZonesEditor.Utils
 
                 try
                 {
-                    bool parsingResult = SetTemplateLayouts(templates.TemplatesList);
+                    bool parsingResult = SetTemplateLayouts(templates.LayoutTemplates);
                     if (parsingResult)
                     {
                         return new ParsingResult(true);
@@ -637,13 +650,52 @@ namespace FancyZonesEditor.Utils
             return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Layout_Templates_Message);
         }
 
+        public ParsingResult ParseCustomLayouts()
+        {
+            Logger.LogTrace();
+
+            if (_fileSystem.File.Exists(FancyZonesCustomLayoutsFile))
+            {
+                CustomLayoutListWrapper wrapper;
+                string dataString = string.Empty;
+
+                try
+                {
+                    dataString = ReadFile(FancyZonesCustomLayoutsFile);
+                    wrapper = JsonSerializer.Deserialize<CustomLayoutListWrapper>(dataString, _options);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Custom layouts parsing error", ex);
+                    return new ParsingResult(false, ex.Message, dataString);
+                }
+
+                try
+                {
+                    bool parsingResult = SetCustomLayouts(wrapper.CustomLayouts);
+                    if (parsingResult)
+                    {
+                        return new ParsingResult(true);
+                    }
+
+                    return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Custom_Layouts_Message, dataString);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Custom layouts parsing error", ex);
+                    return new ParsingResult(false, ex.Message, dataString);
+                }
+            }
+
+            return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Custom_Layouts_Message);
+        }
+
         public void SerializeZoneSettings()
         {
             Logger.LogTrace();
 
             ZoneSettingsWrapper zoneSettings = new ZoneSettingsWrapper { };
             zoneSettings.Devices = new List<DeviceWrapper>();
-            zoneSettings.CustomZoneSets = new List<CustomLayoutWrapper>();
 
             // Serialize used devices
             foreach (var monitor in App.Overlay.Monitors)
@@ -675,7 +727,96 @@ namespace FancyZonesEditor.Utils
                 zoneSettings.Devices.Add(device);
             }
 
-            // Serialize custom zonesets
+            try
+            {
+                string jsonString = JsonSerializer.Serialize(zoneSettings, _options);
+                _fileSystem.File.WriteAllText(FancyZonesSettingsFile, jsonString);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Serialize zone settings error", ex);
+                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
+            }
+        }
+
+        public void SerializeLayoutHotkeys()
+        {
+            LayoutHotkeysWrapper hotkeys = new LayoutHotkeysWrapper { };
+            hotkeys.LayoutHotkeys = new List<LayoutHotkeyWrapper>();
+
+            foreach (var pair in MainWindowSettingsModel.LayoutHotkeys.SelectedKeys)
+            {
+                if (!string.IsNullOrEmpty(pair.Value))
+                {
+                    try
+                    {
+                        LayoutHotkeyWrapper wrapper = new LayoutHotkeyWrapper
+                        {
+                            Key = int.Parse(pair.Key),
+                            LayoutId = pair.Value,
+                        };
+
+                        hotkeys.LayoutHotkeys.Add(wrapper);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Serialize quick layout keys error", ex);
+                    }
+                }
+            }
+
+            try
+            {
+                string jsonString = JsonSerializer.Serialize(hotkeys, _options);
+                _fileSystem.File.WriteAllText(FancyZonesLayoutHotkeysFile, jsonString);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Serialize layout hotkeys error", ex);
+                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
+            }
+        }
+
+        public void SerializeLayoutTemplates()
+        {
+            TemplateLayoutsListWrapper templates = new TemplateLayoutsListWrapper { };
+            templates.LayoutTemplates = new List<TemplateLayoutWrapper>();
+
+            foreach (LayoutModel layout in MainWindowSettingsModel.DefaultModels)
+            {
+                TemplateLayoutWrapper wrapper = new TemplateLayoutWrapper
+                {
+                    Type = LayoutTypeToJsonTag(layout.Type),
+                    SensitivityRadius = layout.SensitivityRadius,
+                    ZoneCount = layout.TemplateZoneCount,
+                };
+
+                if (layout is GridLayoutModel grid)
+                {
+                    wrapper.ShowSpacing = grid.ShowSpacing;
+                    wrapper.Spacing = grid.Spacing;
+                }
+
+                templates.LayoutTemplates.Add(wrapper);
+            }
+
+            try
+            {
+                string jsonString = JsonSerializer.Serialize(templates, _options);
+                _fileSystem.File.WriteAllText(FancyZonesLayoutTemplatesFile, jsonString);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Serialize layout templates error", ex);
+                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
+            }
+        }
+
+        public void SerializeCustomLayouts()
+        {
+            CustomLayoutListWrapper layouts = new CustomLayoutListWrapper { };
+            layouts.CustomLayouts = new List<CustomLayoutWrapper>();
+
             foreach (LayoutModel layout in MainWindowSettingsModel.CustomModels)
             {
                 JsonElement info;
@@ -758,90 +899,17 @@ namespace FancyZonesEditor.Utils
                     Info = info,
                 };
 
-                zoneSettings.CustomZoneSets.Add(customLayout);
+                layouts.CustomLayouts.Add(customLayout);
             }
 
             try
             {
-                string jsonString = JsonSerializer.Serialize(zoneSettings, _options);
-                _fileSystem.File.WriteAllText(FancyZonesSettingsFile, jsonString);
+                string jsonString = JsonSerializer.Serialize(layouts, _options);
+                _fileSystem.File.WriteAllText(FancyZonesCustomLayoutsFile, jsonString);
             }
             catch (Exception ex)
             {
-                Logger.LogError("Serialize zone settings error", ex);
-                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
-            }
-        }
-
-        public void SerializeLayoutHotkeys()
-        {
-            LayoutHotkeysWrapper hotkeys = new LayoutHotkeysWrapper { };
-            hotkeys.LayoutHotkeys = new List<LayoutHotkeyWrapper>();
-
-            foreach (var pair in MainWindowSettingsModel.LayoutHotkeys.SelectedKeys)
-            {
-                if (!string.IsNullOrEmpty(pair.Value))
-                {
-                    try
-                    {
-                        LayoutHotkeyWrapper wrapper = new LayoutHotkeyWrapper
-                        {
-                            Key = int.Parse(pair.Key),
-                            LayoutId = pair.Value,
-                        };
-
-                        hotkeys.LayoutHotkeys.Add(wrapper);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError("Serialize quick layout keys error", ex);
-                    }
-                }
-            }
-
-            try
-            {
-                string jsonString = JsonSerializer.Serialize(hotkeys, _options);
-                _fileSystem.File.WriteAllText(FancyZonesLayoutHotkeysFile, jsonString);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Serialize layout hotkeys error", ex);
-                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
-            }
-        }
-
-        public void SerializeLayoutTemplates()
-        {
-            TemplateLayoutsListWrapper templates = new TemplateLayoutsListWrapper { };
-            templates.TemplatesList = new List<TemplateLayoutWrapper>();
-
-            foreach (LayoutModel layout in MainWindowSettingsModel.DefaultModels)
-            {
-                TemplateLayoutWrapper wrapper = new TemplateLayoutWrapper
-                {
-                    Type = LayoutTypeToJsonTag(layout.Type),
-                    SensitivityRadius = layout.SensitivityRadius,
-                    ZoneCount = layout.TemplateZoneCount,
-                };
-
-                if (layout is GridLayoutModel grid)
-                {
-                    wrapper.ShowSpacing = grid.ShowSpacing;
-                    wrapper.Spacing = grid.Spacing;
-                }
-
-                templates.TemplatesList.Add(wrapper);
-            }
-
-            try
-            {
-                string jsonString = JsonSerializer.Serialize(templates, _options);
-                _fileSystem.File.WriteAllText(FancyZonesLayoutTemplatesFile, jsonString);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Serialize layout templates error", ex);
+                Logger.LogError("Serialize custom layouts error", ex);
                 App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
             }
         }
