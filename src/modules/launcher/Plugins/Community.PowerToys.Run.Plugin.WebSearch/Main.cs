@@ -12,7 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
-using BrowserInfo = Wox.Plugin.SharedCommands.BrowserInfo;
+using BrowserInfo = Wox.Plugin.SharedCommands.DefaultBrowserInfo;
 
 namespace Community.PowerToys.Run.Plugin.WebSearch
 {
@@ -27,8 +27,6 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
         private bool _notGlobalIfUri;
 
         private PluginInitContext _context;
-
-        private BrowserInfo _browser;
 
         private string _iconPath;
 
@@ -69,13 +67,13 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 results.Add(new Result
                 {
                     Title = Properties.Resources.plugin_description.Remove(Description.Length - 1, 1),
-                    SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_in_browser_name, _browser.Name ?? Properties.Resources.plugin_browser),
+                    SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_in_browser_name, BrowserInfo.Name ?? Properties.Resources.plugin_browser),
                     QueryTextDisplay = string.Empty,
                     IcoPath = _iconPath,
                     ProgramArguments = arguments,
                     Action = action =>
                     {
-                        if (!Helper.OpenInShell(_browser.Path, arguments))
+                        if (!Helper.OpenInShell(BrowserInfo.Path, arguments))
                         {
                             onPluginError();
                             return false;
@@ -102,19 +100,19 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 var result = new Result
                 {
                     Title = searchTerm,
-                    SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_open, _browser.Name ?? Properties.Resources.plugin_browser),
+                    SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_open, BrowserInfo.Name ?? Properties.Resources.plugin_browser),
                     QueryTextDisplay = searchTerm,
                     IcoPath = _iconPath,
                 };
 
-                if (_browser.UseCmdLineArgumentForWebSearch)
+                if (BrowserInfo.UseCmdLineArgumentForWebSearch)
                 {
                     string arguments = $"\"? {searchTerm}\"";
 
                     result.ProgramArguments = arguments;
                     result.Action = action =>
                     {
-                        if (!Helper.OpenInShell(_browser.Path, arguments))
+                        if (!Helper.OpenInShell(BrowserInfo.Path, arguments))
                         {
                             onPluginError();
                             return false;
@@ -125,7 +123,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 }
                 else
                 {
-                    string url = string.Format(CultureInfo.InvariantCulture, _browser.SearchEngineUrl, searchTerm);
+                    string url = string.Format(CultureInfo.InvariantCulture, BrowserInfo.SearchEngineUrl, searchTerm);
 
                     result.Action = action =>
                     {
@@ -188,11 +186,11 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(_context.API.GetCurrentTheme());
-            _browser = new BrowserInfo();
+            BrowserInfo.UpdateIfTimePassed();
 
             onPluginError = () =>
             {
-                string errorMsgString = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_search_failed, _browser.Name ?? Properties.Resources.plugin_browser);
+                string errorMsgString = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_search_failed, BrowserInfo.Name ?? Properties.Resources.plugin_browser);
 
                 Log.Error(errorMsgString, this.GetType());
                 _context.API.ShowMsg(
@@ -246,7 +244,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             }
 
             UpdateIconPath(_context.API.GetCurrentTheme());
-            _browser.Update();
+            BrowserInfo.UpdateIfTimePassed();
         }
 
         public void Dispose()

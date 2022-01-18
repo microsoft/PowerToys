@@ -9,7 +9,7 @@ using Microsoft.Plugin.Uri.UriHelper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
-using BrowserInfo = Wox.Plugin.SharedCommands.BrowserInfo;
+using BrowserInfo = Wox.Plugin.SharedCommands.DefaultBrowserInfo;
 
 namespace Microsoft.Plugin.Uri
 {
@@ -29,8 +29,6 @@ namespace Microsoft.Plugin.Uri
             _uriResolver = new UriResolver();
         }
 
-        public BrowserInfo Browser { get; private set; }
-
         public string DefaultIconPath { get; set; }
 
         public PluginInitContext Context { get; protected set; }
@@ -49,16 +47,16 @@ namespace Microsoft.Plugin.Uri
             var results = new List<Result>();
 
             if (IsActivationKeyword(query)
-                && Browser.IsDefaultBrowserSet)
+                && BrowserInfo.IsDefaultBrowserSet)
             {
                 results.Add(new Result
                 {
                     Title = Properties.Resources.Microsoft_plugin_uri_open,
-                    SubTitle = Browser.Path,
+                    SubTitle = BrowserInfo.Path,
                     IcoPath = DefaultIconPath,
                     Action = action =>
                     {
-                        if (!Helper.OpenInShell(Browser.Path))
+                        if (!Helper.OpenInShell(BrowserInfo.Path))
                         {
                             var title = $"Plugin: {Properties.Resources.Microsoft_plugin_uri_plugin_name}";
                             var message = $"{Properties.Resources.Microsoft_plugin_uri_open_failed}: ";
@@ -85,8 +83,8 @@ namespace Microsoft.Plugin.Uri
                     SubTitle = isWebUriBool
                         ? Properties.Resources.Microsoft_plugin_uri_website
                         : Properties.Resources.Microsoft_plugin_uri_open,
-                    IcoPath = isWebUriBool && Browser.IconPath != null
-                        ? Browser.IconPath
+                    IcoPath = isWebUriBool && BrowserInfo.IconPath != null
+                        ? BrowserInfo.IconPath
                         : DefaultIconPath,
                     Action = action =>
                     {
@@ -117,7 +115,7 @@ namespace Microsoft.Plugin.Uri
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());
-            Browser = new BrowserInfo(false);
+            BrowserInfo.UpdateIfTimePassed(false);
         }
 
         public string GetTranslatedPluginTitle()
@@ -159,7 +157,7 @@ namespace Microsoft.Plugin.Uri
                 return;
             }
 
-            Browser.Update(false);
+            BrowserInfo.UpdateIfTimePassed(false);
         }
 
         public void Dispose()
