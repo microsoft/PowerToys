@@ -142,7 +142,7 @@ bigbar
 bigobj
 binaryformatter
 binlog
-BIOS
+bios
 bitmapimage
 BITMAPINFO
 BITMAPINFOHEADER
@@ -2013,7 +2013,7 @@ UAL
 uap
 udit
 Udp
-UEFI
+uefi
 UIA
 Uid
 uint
