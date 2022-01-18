@@ -32,7 +32,7 @@ namespace Wox.Plugin.SharedCommands
         public static string Name { get; private set; }
 
         /// <summary>Gets a value indicating whether the browser supports querying a web search via command line argument (`? <term>`).</summary>
-        public static bool UseCmdLineArgumentForWebSearch { get => SearchEngineUrl is null; }
+        public static bool SupportsWebSearchByCmdLineArgument { get => SearchEngineUrl is null; }
 
         public static bool IsDefaultBrowserSet { get => !string.IsNullOrEmpty(Path); }
 
@@ -59,7 +59,7 @@ namespace Wox.Plugin.SharedCommands
         }
 
         /// <summary>
-        /// Consider using <see cref="UpdateIfTimePassed"/> to avoid updating multiple.
+        /// Consider using <see cref="UpdateIfTimePassed"/> to avoid updating multiple times.
         /// (because of multiple plugins calling update at the same time.)
         /// </summary>
         /// <param name="defaultToEdgeOnFail">If true, If this function fails, for any reason, the browser will be set to Microsoft Edge.</param>

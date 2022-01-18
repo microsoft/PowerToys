@@ -105,7 +105,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                     IcoPath = _iconPath,
                 };
 
-                if (BrowserInfo.UseCmdLineArgumentForWebSearch)
+                if (BrowserInfo.SupportsWebSearchByCmdLineArgument)
                 {
                     string arguments = $"\"? {searchTerm}\"";
 
