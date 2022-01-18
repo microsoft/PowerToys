@@ -2,11 +2,15 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
+#include "InclusiveCrosshair.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+HMODULE m_hModule;
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
+    m_hModule = hModule;
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
@@ -37,10 +41,14 @@ private:
     // Load initial settings from the persisted values.
     void init_settings();
 
+    // Inclusive Mouse specific settings
+    InclusiveCrosshairSettings m_inclusiveCrosshairSettings;
+
 public:
     // Constructor
     InclusiveMouse()
     {
+        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::inclusiveMouseLoggerName);
         init_settings();
     };
 
@@ -171,12 +179,14 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+        std::thread([=]() { InclusiveCrosshairMain(m_hModule, m_inclusiveCrosshairSettings); }).detach();
     }
 
     // Disable the powertoy
     virtual void disable()
     {
         m_enabled = false;
+        InclusiveCrosshairDisable();
     }
 
     // Returns if the powertoys is enabled

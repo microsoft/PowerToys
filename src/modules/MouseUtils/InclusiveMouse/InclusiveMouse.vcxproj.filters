@@ -10,6 +10,9 @@
     <ClCompile Include="trace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="InclusiveCrosshair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -20,6 +23,9 @@
     </ClInclude>
     <ClInclude Include="Generated Files\resource.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InclusiveCrosshair.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
