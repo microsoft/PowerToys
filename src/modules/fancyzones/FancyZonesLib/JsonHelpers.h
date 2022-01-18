@@ -105,7 +105,11 @@ namespace JSONHelpers
     TCustomZoneSetsMap ParseCustomZoneSets(const json::JsonObject& fancyZonesDataJSON);
     json::JsonArray SerializeCustomZoneSets(const TCustomZoneSetsMap& customZoneSetsMap);
 
-    // replace zone-settings: layout hotkeys
+    // replace zones-settings: layout hotkeys
     std::optional<TLayoutQuickKeysMap> ParseQuickKeys(const json::JsonObject& fancyZonesDataJSON);
     void SaveLayoutHotkeys(const TLayoutQuickKeysMap& quickKeysMap);
+
+    // replace zones-settings: layout templates
+    std::optional<json::JsonArray> ParseLayoutTemplates(const json::JsonObject& fancyZonesDataJSON);
+    void SaveLayoutTemplates(const json::JsonArray& templates);
 }
