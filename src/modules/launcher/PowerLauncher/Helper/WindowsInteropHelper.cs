@@ -116,7 +116,7 @@ namespace PowerLauncher.Helper
             // get current active window
             IntPtr hWnd = NativeMethods.GetForegroundWindow();
 
-            if (hWnd != null && !hWnd.Equals(IntPtr.Zero))
+            if (hWnd != IntPtr.Zero && !hWnd.Equals(IntPtr.Zero))
             {
                 // if current active window is NOT desktop or shell
                 if (!(hWnd.Equals(HWND_DESKTOP) || hWnd.Equals(HWND_SHELL)))
@@ -144,7 +144,7 @@ namespace PowerLauncher.Helper
                     {
                         IntPtr hWndDesktop = NativeMethods.FindWindowEx(hWnd, IntPtr.Zero, "SHELLDLL_DefView", null);
                         hWndDesktop = NativeMethods.FindWindowEx(hWndDesktop, IntPtr.Zero, "SysListView32", "FolderView");
-                        if (hWndDesktop != null && !hWndDesktop.Equals(IntPtr.Zero))
+                        if (hWndDesktop != IntPtr.Zero && !hWndDesktop.Equals(IntPtr.Zero))
                         {
                             return false;
                         }

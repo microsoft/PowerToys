@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 return (null, string.Empty);
             }
 
-            var baseKey = query.Split('\\').FirstOrDefault();
+            var baseKey = query.Split('\\').FirstOrDefault() ?? string.Empty;
             var subKey = query.Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase).TrimStart('\\');
 
             var baseKeyResult = _baseKeys
@@ -100,7 +100,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
             do
             {
-                result = FindSubKey(subKey, subKeysNames.ElementAtOrDefault(index));
+                result = FindSubKey(subKey, subKeysNames.ElementAtOrDefault(index) ?? string.Empty);
 
                 if (result.Count == 0)
                 {
@@ -169,13 +169,22 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
                     if (string.Equals(subKey, searchSubKey, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        list.Add(new RegistryEntry(parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree)));
+                        var key = parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree);
+                        if (key != null)
+                        {
+                            list.Add(new RegistryEntry(key));
+                        }
+
                         return list;
                     }
 
                     try
                     {
-                        list.Add(new RegistryEntry(parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree)));
+                        var key = parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree);
+                        if (key != null)
+                        {
+                            list.Add(new RegistryEntry(key));
+                        }
                     }
                     catch (Exception exception)
                     {

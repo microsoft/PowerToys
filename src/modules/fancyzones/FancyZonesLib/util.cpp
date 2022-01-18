@@ -550,6 +550,17 @@ namespace FancyZonesUtils
         return SUCCEEDED(CLSIDFromString(str.c_str(), &id));
     }
 
+    std::optional<GUID> GuidFromString(const std::wstring& str) noexcept
+    {
+        GUID id;
+        if (SUCCEEDED(CLSIDFromString(str.c_str(), &id)))
+        {
+            return id;
+        }
+
+        return std::nullopt;
+    }
+
     std::optional<std::wstring> GuidToString(const GUID& guid) noexcept
     {
         wil::unique_cotaskmem_string guidString;

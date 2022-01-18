@@ -207,6 +207,7 @@ namespace FancyZonesUtils
     void RestoreWindowOrigin(HWND window) noexcept;
 
     bool IsValidGuid(const std::wstring& str);
+    std::optional<GUID> GuidFromString(const std::wstring& str) noexcept;
     std::optional<std::wstring> GuidToString(const GUID& guid) noexcept;
 
     std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const std::wstring& virtualDesktopId);
