@@ -56,10 +56,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
             {
                 var bitmapBytes = Convert.FromBase64String(bitmapBase64);
 
-                using (var bitmapStream = new MemoryStream(bitmapBytes))
-                {
-                    thumbnail = new Bitmap(bitmapStream);
-                }
+                thumbnail = new Bitmap(new MemoryStream(bitmapBytes));
 
                 if (thumbnail.Width != cx && thumbnail.Height != cx)
                 {
