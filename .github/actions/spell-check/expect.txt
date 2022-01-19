@@ -34,6 +34,8 @@ AFX
 AGGREGATABLE
 AHybrid
 Aissue
+Akrotiri
+Aktobe
 ALarger
 alekhyareddy
 alignas
@@ -49,6 +51,7 @@ Amicrosoft
 AModifier
 AMPROPERTY
 AMPROPSETID
+Andreanof
 anges
 angularsen
 ansicolor
@@ -80,6 +83,7 @@ appx
 appxmanifest
 APSTUDIO
 AQS
+Aqtobe
 arcosh
 ARemapped
 argb
@@ -95,6 +99,7 @@ ARRAYSIZE
 arsinh
 artanh
 Artboard
+Artsakh
 asdf
 AShortcut
 ASingle
@@ -103,6 +108,7 @@ aspnet
 ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
+Atikokan
 atl
 atlbase
 atlcom
@@ -112,6 +118,7 @@ atlstr
 atop
 Attribs
 attrs
+Atyrau
 aumid
 Aut
 Authenticode
@@ -134,11 +141,16 @@ azurecr
 backend
 backtracer
 BADD
+BAEC
+BAF
 bak
+Bashkortostan
+Bayan
 bbwe
 bck
 Bcl
 BEEE
+Belarus
 betadele
 betsegaw
 BFB
@@ -197,8 +209,11 @@ BUILDARCH
 buildcommand
 buildtools
 buildtransitive
+Burkina
+Buryatia
 BValue
 bytearray
+Caiguna
 CALG
 callbackptr
 cameligo
@@ -231,12 +246,16 @@ ChaseKnowlden
 chdir
 CHILDACTIVATE
 CHILDWINDOW
+Choibalsan
 chrdavis
 chromaticities
 chrono
 chrzan
 Chrzan
+Chrzan
 CHT
+Chukotka
+Chuuk
 cielab
 ciexyz
 CImage
@@ -254,6 +273,7 @@ CLIENTEDGE
 CLIENTPULL
 clientside
 CLIPCHILDREN
+Clipperton
 CLIPSIBLINGS
 cljs
 clrcall
@@ -273,6 +293,7 @@ CMONITORS
 cmp
 cmyk
 cnt
+Cocklebiddy
 coclass
 codebase
 codecvt
@@ -296,6 +317,7 @@ comhost
 cominterop
 commandline
 commctrl
+Comoros
 companding
 Compat
 COMPOSITIONFULL
@@ -363,6 +385,7 @@ CTRLALTDEL
 Ctrls
 Ctx
 CUI
+Cunha
 currentculture
 CURSORINFO
 cursorpos
@@ -382,6 +405,7 @@ czf
 cziplib
 Dac
 dacl
+Danmarkshavn
 DARKPURPLE
 DARKTEAL
 DARKYELLOW
@@ -566,8 +590,10 @@ esize
 esrp
 estdir
 etcore
+Eswatini
 etl
 etw
+Eucla
 EUQ
 eventlog
 everytime
@@ -602,6 +628,7 @@ fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 Farbraum
+Faroe
 FARPROC
 FBF
 FCCD
@@ -631,6 +658,7 @@ findfast
 findstr
 Firefox
 FIXEDFILEINFO
+FIXME
 FLASHZONES
 FLASHZONESONQUICKSWITCH
 flt
@@ -656,6 +684,7 @@ fstream
 FTYPE
 func
 Functiondiscoverykeys
+Futuna
 fwlink
 fwrite
 fxcop
@@ -725,6 +754,7 @@ hdrop
 HEB
 Heiko
 helptext
+Heure
 HEVC
 hfile
 hglobal
@@ -765,6 +795,7 @@ hotkeycontrol
 hotkeys
 hotlight
 hotspot
+Hovd
 HPAINTBUFFER
 HRAWINPUT
 hread
@@ -993,6 +1024,7 @@ ith
 IThrottled
 ithumbnail
 ITrigger
+Ittoqqortoormiit
 IUI
 IUnknown
 IUri
@@ -1051,14 +1083,23 @@ keystokes
 Keystool
 Keytool
 keyup
+Khakassia
+Khanty
+Khovd
 KILLFOCUS
+Kitts
 Knowlden
 Knownfolders
 kotlin
 KSPROPERTY
 ktm
 kts
+Krai
+Kwango
+Kwilu
 Kybd
+Kyrgyzstan
+Kyzylorda
 LAlt
 Lambson
 lamotile
@@ -1067,6 +1108,7 @@ Lastdevice
 LASTEXITCODE
 Laute
 laute
+Laute
 Laute
 laviusmotileng
 LAYOUTRTL
@@ -1083,14 +1125,17 @@ Ldone
 ldx
 LEFTSCROLLBAR
 lego
+lemy
 len
 LEQ
 LError
 Lessthan
 LEVELID
 LExit
+lgii
 lhs
 lhwnd
+lia
 LIBID
 LIGHTORANGE
 LIGHTTURQUOISE
@@ -1159,10 +1204,14 @@ lstrcmpi
 lstrlen
 LTRB
 LTRREADING
+Luhansk
 LWA
 lwin
 LZero
 lzw
+Maarten
+Macquarie
+Magadan
 MAINICON
 Mainwindow
 majortype
@@ -1173,13 +1222,18 @@ MAKEINTRESOURCEW
 MAKELPARAM
 makepri
 malloc
+Mangere
+Mangystau
 manifestdependency
+Mansi
 MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 Markdig
+Marquesas
 martinchrzan
 martinmoene
+Mato
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
@@ -1226,6 +1280,7 @@ miniz
 minlevel
 Miracast
 mirophone
+Mishkeegogamang
 mjpg
 mkdir
 mlcfg
@@ -1238,6 +1293,8 @@ MODECHANGE
 moderncop
 modernwpf
 modulekey
+Moldova
+Mongala
 MONITORINFO
 MONITORINFOEX
 MONITORINFOEXW
@@ -1291,6 +1348,7 @@ MULTIPLEUSE
 Multiselect
 multiset
 multizone
+Mundrabilla
 mutex
 mutexes
 muxc
@@ -1302,12 +1360,14 @@ nameof
 namespace
 namings
 NATIVEFNTCTL
+Navassa
 NCACTIVATE
 ncc
 NCCALCSIZE
 NCCREATE
 NCDESTROY
 NCHITTEST
+ncipe
 NCLBUTTONDBLCLK
 NCLBUTTONDOWN
 NCLBUTTONUP
@@ -1322,6 +1382,7 @@ NCRBUTTONDBLCLK
 NCRBUTTONDOWN
 NCRBUTTONUP
 NDEBUG
+Ndombe
 ndp
 NEEDDISPATCH
 neq
@@ -1342,6 +1403,7 @@ newitem
 newpath
 newrow
 Newtonsoft
+nia
 niels
 nielslaute
 NIF
@@ -1378,6 +1440,7 @@ NOREPEAT
 NOREPOSITION
 NORMALDISPLAY
 NORMALUSER
+Noronha
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
@@ -1406,6 +1469,8 @@ nullptr
 numberbox
 NUMLOCK
 NUMPAD
+Nunavut
+Nusa
 Nvidia
 nwc
 NWSE
@@ -1458,6 +1523,7 @@ Overridable
 Oversampling
 OWNDC
 PACL
+pagos
 PAINTSTRUCT
 PAIT
 PALEBLUE
@@ -1480,8 +1546,9 @@ pch
 PCIDLIST
 PCWSTR
 pdb
-Pdb
 pdb
+Pdb
+Pdb
 pdbonly
 pdfpreviewhandler
 pdo
@@ -1511,6 +1578,7 @@ pinfo
 pinvoke
 Pipelinhttps
 pipename
+Pitcairn
 PKBDLLHOOKSTRUCT
 PKEY
 plib
@@ -1524,6 +1592,7 @@ plx
 PMSIHANDLE
 policheck
 popd
+Pohnpei
 popup
 POPUPWINDOW
 posix
@@ -1568,6 +1637,7 @@ PREVIOUSVERSIONSINSTALLED
 prevpane
 prgms
 pri
+Primorsky
 PRINTCLIENT
 printf
 prm
@@ -1622,6 +1692,7 @@ qit
 QITAB
 QITABENT
 qps
+quateur
 Queryable
 QUERYENDSESSION
 QUERYOPEN
@@ -1733,6 +1804,7 @@ roadmap
 robocopy
 Roboto
 roslyn
+Rothera
 royvou
 Rpc
 RRF
@@ -1860,6 +1932,7 @@ signtool
 SINGLEKEY
 singlekeyremapcontrol
 singletones
+Sint
 sipolicy
 SIZEBOX
 sizeg
@@ -1904,6 +1977,7 @@ spsv
 sqlite
 SRCCOPY
 sre
+Srednekolymsk
 sregex
 SResize
 SRGB
@@ -1973,7 +2047,9 @@ subkey
 SUBLANG
 subquery
 substr
+Sul
 Superbar
+Suri
 sut
 SVE
 SVGIn
@@ -2011,6 +2087,8 @@ systemverilog
 Tadele
 tadele
 Tadele
+Tadele
+Tajikistan
 talynone
 TApp
 TApplication
@@ -2037,6 +2115,7 @@ telem
 tellg
 Templated
 templatenamespace
+Tenggara
 testcase
 testhost
 testprocess
@@ -2067,8 +2146,9 @@ Toolchain
 toolkitcontrols
 toolkitconverters
 toolset
-Toolset
 toolset
+Toolset
+Toolset
 toolstrip
 toolwindow
 TOPDOWNDIB
@@ -2082,14 +2162,18 @@ tracelogging
 trackpad
 traies
 transcoded
+Transnistria
 transparrent
 TRAYMOUSEMESSAGE
 triaging
 TRK
 trl
 trunc
+Tshuapa
 tspan
 TStr
+Tuva
+TValue
 TYMED
 typedef
 TYPEKEY
@@ -2104,6 +2188,7 @@ UAC
 UAL
 uap
 udit
+Udmurtia
 Udp
 uefi
 UIA
@@ -2113,6 +2198,7 @@ uintptr
 UIPI
 UIs
 UITo
+Ulaanbaatar
 ULARGE
 ULLONG
 ulong
@@ -2154,6 +2240,7 @@ Uptool
 upvote
 uri
 URLs
+Urville
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
@@ -2167,9 +2254,11 @@ ushort
 USRDLL
 utc
 Utc
+Utc
 utf
 utils
 uuidof
+Uvs
 uwp
 UWPUI
 uxtheme
@@ -2384,6 +2473,7 @@ XResource
 xsi
 XStr
 XVIRTUALSCREEN
+Yamalia
 YIncrement
 yinwang
 YOffset
@@ -2394,6 +2484,7 @@ YUYV
 YVIRTUALSCREEN
 YVU
 YVYU
+Zabaykalsky
 ZEROINIT
 ZIndex
 zonable
@@ -2402,4 +2493,5 @@ ZONEHIGHLIGHTCOLOR
 zoneset
 ZONESETCHANGE
 Zoneszonabletester
+Zonev
 zzz
