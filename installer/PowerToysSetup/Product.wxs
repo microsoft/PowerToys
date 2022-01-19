@@ -410,6 +410,10 @@
                                 <Directory Id="SystemPluginFolder" Name="System">
                                     <Directory Id="SystemImagesFolder" Name="Images" />
                                 </Directory>
+                                <Directory Id="TimeZonePluginFolder" Name="TimeZone">
+                                    <Directory Id="TimeZoneImagesFolder" Name="Images" />
+                                    <Directory Id="TimeZoneLanguagesFolder" Name="Languages" />
+                                </Directory>
                                 <Directory Id="WindowsSettingsPluginFolder" Name="WindowsSettings">
                                     <Directory Id="WindowsSettingsImagesFolder" Name="Images" />
                                     <Directory Id="WindowsSettingsLanguagesFolder" Name="Languages" />
@@ -1108,7 +1112,7 @@
     <Fragment>
         <!-- Resource directories should be added only if the installer is built on the build farm -->
         <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
             <!-- Resource file directories -->
             <?foreach Language in $(var.LocLanguageList)?>
@@ -1348,6 +1352,12 @@
                 <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
             </Component>
             <Component
+                Id="Launcher_TimeZone_$(var.IdSafeLanguage)_Component"
+                Guid="$(var.CompGUIDPrefix)13"
+                Directory="Resource$(var.IdSafeLanguage)TimeZonePluginFolder">
+                <File Id="Launcher_TimeZone_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeZone.resources.dll" />
+            </Component>
+            <Component
                 Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)13"
                 Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
@@ -1554,6 +1564,17 @@
                 <File Id="SystemSleepLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.light.png" />
 				<File Id="SystemFirmwareSettingsDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\firmwareSettings.dark.png" />
                 <File Id="SystemFirmwareSettingsLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\firmwareSettings.light.png" />
+            </Component>
+
+            <!-- TimeZone Plugin -->
+            <Component Id="TimeZoneComponent" Directory="TimeZonePluginFolder" Guid="D1A5D772-4632-48EE-98BF-875F44F70AA5">
+                <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json;Microsoft.PowerToys.Run.Plugin.TimeZone.dll;PowerToys.ManagedTelemetry.dll?>
+                <File Id="TimeZone_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\$(var.File)" />
+                <?endforeach?>
+            </Component>
+            <Component Id="TimeZoneImagesComponent" Directory="TimeZoneImagesFolder" Guid="1D45EBBD-3AF3-473A-B019-AD6446B43506">
+                <File Id="TimeZoneDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\Images\timeZone.dark.png" />
+                <File Id="TimeZoneLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\Images\timeZone.light.png" />
             </Component>
 
             <!-- WindowsSettings Plugin -->
