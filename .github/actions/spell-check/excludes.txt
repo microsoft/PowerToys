@@ -1,6 +1,7 @@
 # See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-excludes
 (?:^|/)monacoSRC/
 (?:^|/)monacoPreviewHandler/languages.json
+(?:^|/)monacoPreviewHandler/index.html
 (?:^|/)(?i)COPYRIGHT
 (?:^|/)(?i)LICEN[CS]E
 (?:^|/)package(?:-lock)\.json$
