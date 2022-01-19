@@ -46,7 +46,7 @@ namespace PowerLauncher
         [STAThread]
         public static void Main()
         {
-            Log.Info($"Starting PowerToys Run with PID={Process.GetCurrentProcess().Id}", typeof(App));
+            Log.Info($"Starting PowerToys Run with PID={Environment.ProcessId}", typeof(App));
             int powerToysPid = GetPowerToysPId();
             if (powerToysPid != 0)
             {

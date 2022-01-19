@@ -72,7 +72,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                 new object[] { "exp(5)", 148.413159102577M },
                 new object[] { "e^5", 148.413159102577M },
                 new object[] { "e*2", 5.43656365691809M },
-                new object[] { "log(e)", 1M },
+                new object[] { "ln(3)",  1.09861228866810M },
+                new object[] { "log(3)", 0.47712125471966M },
+                new object[] { "ln(e)", 1M },
                 new object[] { "cosh(0)", 1M },
             };
 
@@ -141,6 +143,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         }
 
         [DataTestMethod]
+        [DataRow("log(3)", true)]
+        [DataRow("ln(3)", true)]
+        [DataRow("log", false)]
+        [DataRow("ln", false)]
         [DataRow("ceil(2 * (pi ^ 2))", true)]
         [DataRow("((1 * 2)", false)]
         [DataRow("(1 * 2)))", false)]
@@ -160,8 +166,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("1+1.1e3", true)]
         public void InputValid_TestValid_WhenCalled(string input, bool valid)
         {
-            // Arrange
-
             // Act
             var result = CalculateHelper.InputValid(input);
 

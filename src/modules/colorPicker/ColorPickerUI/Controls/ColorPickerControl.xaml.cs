@@ -166,7 +166,8 @@ namespace ColorPicker.Controls
         {
             if (!_ignoreHexChanges)
             {
-                HexCode.Text = ColorToHex(currentColor);
+                // Second parameter is set to keep the hashtag if typed by the user before
+                HexCode.Text = ColorToHex(currentColor, HexCode.Text);
             }
 
             if (!_ignoreRGBChanges)
@@ -290,8 +291,8 @@ namespace ColorPicker.Controls
         {
             var newValue = (sender as TextBox).Text;
 
-            // support hex with 3 and 6 characters
-            var reg = new Regex("^#([0-9A-Fa-f]{3}){1,2}$");
+            // support hex with 3 and 6 characters and optional with hashtag
+            var reg = new Regex("^#?([0-9A-Fa-f]{3}){1,2}$");
 
             if (!reg.IsMatch(newValue))
             {
@@ -302,7 +303,8 @@ namespace ColorPicker.Controls
             {
                 var converter = new System.Drawing.ColorConverter();
 
-                var color = (System.Drawing.Color)converter.ConvertFromString(HexCode.Text);
+                // "FormatHexColorString()" is needed to add hashtag if missing and to convert the hex code from three to six characters. Without this we get format exceptions and incorrect color values.
+                var color = (System.Drawing.Color)converter.ConvertFromString(FormatHexColorString(HexCode.Text));
                 _ignoreHexChanges = true;
                 SetColorFromTextBoxes(color);
                 _ignoreHexChanges = false;
@@ -326,9 +328,36 @@ namespace ColorPicker.Controls
             UpdateTextBoxesAndCurrentColor(Color.FromRgb(color.R, color.G, color.B));
         }
 
-        private static string ColorToHex(Color color)
+        private static string ColorToHex(Color color, string oldValue = "")
         {
-            return "#" + BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty, StringComparison.InvariantCulture);
+            string newHexString = BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty, StringComparison.InvariantCulture);
+
+#pragma warning disable CA1308 // Normalize strings to uppercase - Supressed because we want to show hex value in lower case on all places
+            newHexString = newHexString.ToLowerInvariant();
+#pragma warning restore CA1308 // Normalize strings to uppercase
+
+            // Return only with hashtag if user typed it before
+            bool addHashtag = oldValue.StartsWith("#", StringComparison.InvariantCulture);
+            return addHashtag ? "#" + newHexString : newHexString;
+        }
+
+        /// <summary>
+        /// Formats the hex code string to be accepted by <see cref="ConvertFromString()"/> of <see cref="ColorConverter.ColorConverter"/>. We are adding hashtag at the beginning if needed and convert from three characters to six characters code.
+        /// </summary>
+        /// <param name="hexCodeText">The string we read from the hex text box.</param>
+        /// <returns>Formatted string with hashtag and six characters of hex code.</returns>
+        private static string FormatHexColorString(string hexCodeText)
+        {
+            if (hexCodeText.Length == 3 || hexCodeText.Length == 4)
+            {
+                // Hex with or without hashtag and three characters
+                return Regex.Replace(hexCodeText, "^#?([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$", "#$1$1$2$2$3$3");
+            }
+            else
+            {
+                // Hex with or without hashtag and six characters
+                return hexCodeText.StartsWith("#", StringComparison.InvariantCulture) ? hexCodeText : "#" + hexCodeText;
+            }
         }
 
         private void HexCode_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)

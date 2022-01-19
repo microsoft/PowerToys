@@ -83,9 +83,12 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                     {
                         if (!Helper.OpenInShell(_browserPath, arguments))
                         {
+                            string errorMsgString = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_search_failed, _browserName);
+
+                            Log.Error(errorMsgString, GetType());
                             _context.API.ShowMsg(
                                 $"Plugin: {Properties.Resources.plugin_name}",
-                                $"{Properties.Resources.plugin_search_failed}: ");
+                                errorMsgString);
                             return false;
                         }
 
@@ -124,9 +127,12 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                     {
                         if (!Helper.OpenInShell(_browserPath, arguments))
                         {
+                            string errorMsgString = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_search_failed, _browserName);
+
+                            Log.Error(errorMsgString, GetType());
                             _context.API.ShowMsg(
                                 $"Plugin: {Properties.Resources.plugin_name}",
-                                $"{Properties.Resources.plugin_search_failed}: ");
+                                errorMsgString);
                             return false;
                         }
 
@@ -141,9 +147,12 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                     {
                         if (!Helper.OpenInShell(url))
                         {
+                            string errorMsgString = string.Format(CultureInfo.CurrentCulture, Properties.Resources.plugin_search_failed, _browserName);
+
+                            Log.Error(errorMsgString, GetType());
                             _context.API.ShowMsg(
                                 $"Plugin: {Properties.Resources.plugin_name}",
-                                $"{Properties.Resources.plugin_search_failed}: ");
+                                errorMsgString);
                             return false;
                         }
 

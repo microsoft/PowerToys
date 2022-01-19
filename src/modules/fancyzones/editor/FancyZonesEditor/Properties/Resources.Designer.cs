@@ -277,20 +277,20 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit layout.
-        /// </summary>
-        public static string Edit_Layout {
-            get {
-                return ResourceManager.GetString("Edit_Layout", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to opened.
         /// </summary>
         public static string Edit_Layout_Open_Announce {
             get {
                 return ResourceManager.GetString("Edit_Layout_Open_Announce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit &apos;{0}&apos;.
+        /// </summary>
+        public static string Edit_Template {
+            get {
+                return ResourceManager.GetString("Edit_Template", resourceCulture);
             }
         }
         
@@ -385,6 +385,24 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred while parsing layout hotkeys..
+        /// </summary>
+        public static string Error_Parsing_Layout_Hotkeys_Message {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Layout_Hotkeys_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while parsing template layouts..
+        /// </summary>
+        public static string Error_Parsing_Layout_Templates_Message {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Layout_Templates_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A layout that contained invalid data has been removed..
         /// </summary>
         public static string Error_Parsing_Zones_Settings_Message {
@@ -394,7 +412,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Editor settings parsing error..
+        ///   Looks up a localized string similar to Editor data parsing error..
         /// </summary>
         public static string Error_Parsing_Zones_Settings_Title {
             get {

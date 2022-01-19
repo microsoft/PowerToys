@@ -121,7 +121,7 @@
     <value>the default browser</value>
   </data>
   <data name="plugin_description" xml:space="preserve">
-    <value>Search the web.</value>
+    <value>Search the web in your default browser using your default search engine.</value>
   </data>
   <data name="plugin_global_if_uri" xml:space="preserve">
     <value>Don't include in global results on queries that are URIs</value>
@@ -140,6 +140,6 @@
     <value>Search the web in {0}</value>
   </data>
   <data name="plugin_search_failed" xml:space="preserve">
-    <value>Failed to open the default browser</value>
+    <value>Failed to open {0}.</value>
   </data>
 </root>

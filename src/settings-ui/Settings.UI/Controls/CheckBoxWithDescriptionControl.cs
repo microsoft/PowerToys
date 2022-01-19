@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             StackPanel panel = new StackPanel() { Orientation = Orientation.Vertical };
             panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 10, 0, 0), Text = Header });
-            panel.Children.Add(new IsEnabledTextBlock() { FontSize = (double)App.Current.Resources["SecondaryTextFontSize"], Foreground = (SolidColorBrush)App.Current.Resources["TextFillColorSecondaryBrush"], Text = Description });
+            panel.Children.Add(new IsEnabledTextBlock() { Style = (Style)App.Current.Resources["SecondaryIsEnabledTextBlockStyle"], Text = Description });
             _checkBoxSubTextControl.Content = panel;
         }
 

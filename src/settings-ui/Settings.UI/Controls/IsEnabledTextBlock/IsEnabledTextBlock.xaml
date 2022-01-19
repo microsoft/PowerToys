@@ -32,4 +32,8 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <Style TargetType="local:IsEnabledTextBlock" x:Key="SecondaryIsEnabledTextBlockStyle">
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        <Setter Property="FontSize" Value="{StaticResource SecondaryTextFontSize}"/>
+    </Style>
 </ResourceDictionary>

@@ -1,5 +1,8 @@
 # Localization
 
+> **NOTE**: THIS DOCUMENT IS OUTDATED.
+> Follow [issue 15243](https://github.com/microsoft/PowerToys/issues/15243) for updates.
+
 ## Table of Contents
 1. [Localization on the pipeline (CDPX)](#localization-on-the-pipeline-cdpx)
     1. [UWP Special case](#uwp-special-case)

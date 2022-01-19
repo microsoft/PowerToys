@@ -6,11 +6,20 @@ Names are in alphabetical order based on first name.
 
 ## High impact community members
 
+### [@Aaron-Junker](https://github.com/Aaron-Junker) - [Aaron Junker](https://aaron-junker.github.io)
+Aaron has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes as well as work on an upcoming utility.
+
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
 Davide has helped fix multiple bugs, added new features, as well as help us with the ARM64 effort by porting applications to .NET Core.
 
+### [@franky920920](https://github.com/franky920920) - [Franky Chen](https://frankychen.net)
+Franky has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys.
+
 ### [@htcfreek](https://github.com/htcfreek) - Heiko
-Heiko has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys Run.
+Heiko has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys.
+
+### [@Jay-o-Way](https://github.com/Jay-o-Way) - Jay
+Jay has helped triaging, discussing, creating a substantial number of issues and PRs.
 
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
 Helping keep our spelling correct :)

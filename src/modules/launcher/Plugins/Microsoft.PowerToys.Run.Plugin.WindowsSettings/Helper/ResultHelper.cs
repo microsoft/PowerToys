@@ -107,7 +107,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             if (command.Contains(' '))
             {
                 var commandSplit = command.Split(' ');
-                var file = commandSplit.FirstOrDefault();
+                var file = commandSplit.FirstOrDefault() ?? string.Empty;
                 var arguments = command[file.Length..].TrimStart();
 
                 processStartInfo = new ProcessStartInfo(file, arguments)

@@ -12,8 +12,8 @@
 #include <common/utils/resources.h>
 
 #include <FancyZonesLib/FancyZones.h>
-#include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
+#include <FancyZonesLib/ModuleConstants.h>
 
 #include <FancyZonesApp.h>
 
@@ -61,7 +61,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     Trace::RegisterProvider();
 
-    FancyZonesApp app(GET_RESOURCE_STRING(IDS_FANCYZONES), NonLocalizable::FancyZonesStr);
+    FancyZonesApp app(GET_RESOURCE_STRING(IDS_FANCYZONES), NonLocalizable::ModuleKey);
     app.Run();
 
     run_message_loop();

@@ -4,10 +4,9 @@
     "SignBatches": [
         {
             "MatchedPath": [
-                "!(ModernWpf)*.resources.dll",
+                "*.resources.dll",
 
                 "PowerToysSetupCustomActions.dll",
-
                 
                 "PowerToys.ActionRunner.exe",
                 "PowerToys.Update.exe",
@@ -16,14 +15,17 @@
                 "os-detection.dll",
                 "PowerToys.exe",
                 "PowerToys.Interop.dll",
-                "BugReportTool\\BugReportTool.exe",
-                "WebcamReportTool\\WebcamReportTool.exe",
+                "BugReportTool\\PowerToys.BugReportTool.exe",
+                "WebcamReportTool\\PowerToys.WebcamReportTool.exe",
                 "Telemetry.dll",
                 "PowerToys.ManagedTelemetry.dll",
                 "PowerToys.ManagedCommon.dll",
                 "PowerToys.Common.UI.dll",
                 "PowerToys.Settings.UI.Lib.dll",
 
+                "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTop.exe",
+                "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTopModuleInterface.dll",
+                
                 "modules\\ColorPicker\\ColorPicker.dll",
                 "modules\\ColorPicker\\ColorPickerUI.dll",
                 "modules\\ColorPicker\\ColorPickerUI.exe",

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Platforms>x64</Platforms>
     <UseWindowsForms>true</UseWindowsForms>
@@ -10,7 +10,7 @@
     <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Company>Microsoft Corporation</Company>
@@ -46,7 +46,6 @@
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Runtime.WindowsRuntime" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
@@ -59,13 +58,6 @@
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Windows">
-      <HintPath>$(MSBuildProgramFiles32)\Windows Kits\10\UnionMetadata\10.0.18362.0\Windows.winmd</HintPath>
-      <IsWinMDFile>true</IsWinMDFile>
-    </Reference>
   </ItemGroup>
   
 </Project>

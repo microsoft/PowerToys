@@ -165,7 +165,7 @@ namespace FancyZonesEditor.Models
             get
             {
                 List<string> result = new List<string>();
-                foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
+                foreach (var pair in MainWindowSettingsModel.LayoutHotkeys.SelectedKeys)
                 {
                     if (string.IsNullOrEmpty(pair.Value) || pair.Value == Uuid)
                     {
@@ -195,11 +195,11 @@ namespace FancyZonesEditor.Models
 
                     if (intValue != -1)
                     {
-                        MainWindowSettingsModel.QuickKeys.SelectKey(value, Uuid);
+                        MainWindowSettingsModel.LayoutHotkeys.SelectKey(value, Uuid);
                     }
                     else
                     {
-                        MainWindowSettingsModel.QuickKeys.FreeKey(prev);
+                        MainWindowSettingsModel.LayoutHotkeys.FreeKey(prev);
                     }
 
                     FirePropertyChanged(nameof(QuickKey));
@@ -253,7 +253,7 @@ namespace FancyZonesEditor.Models
         {
             if (_quickKey != -1)
             {
-                MainWindowSettingsModel.QuickKeys.FreeKey(QuickKey);
+                MainWindowSettingsModel.LayoutHotkeys.FreeKey(QuickKey);
             }
 
             var customModels = MainWindowSettingsModel.CustomModels;
@@ -298,9 +298,9 @@ namespace FancyZonesEditor.Models
             PersistData();
         }
 
-        public void QuickSwitchKeys_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        public void LayoutHotkeys_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
+            foreach (var pair in MainWindowSettingsModel.LayoutHotkeys.SelectedKeys)
             {
                 if (pair.Value == Uuid)
                 {

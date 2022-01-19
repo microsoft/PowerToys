@@ -162,7 +162,7 @@
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
   <data name="AddRemovePrograms" xml:space="preserve">
-    <value>Add/Remove Programs</value>
+    <value>Add or remove programs</value>
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
   <data name="AddYourPhone" xml:space="preserve">
@@ -218,7 +218,7 @@
     <comment>Short/modern name for application</comment>
   </data>
   <data name="AppsAndFeatures" xml:space="preserve">
-    <value>Apps and Features</value>
+    <value>Apps &amp; Features</value>
     <comment>Area Apps</comment>
   </data>
   <data name="AppSettingsApp" xml:space="preserve">
@@ -432,6 +432,9 @@
   <data name="CellularAndSim" xml:space="preserve">
     <value>Cellular and SIM</value>
     <comment>Area NetworkAndInternet</comment>
+  </data>
+  <data name="ChangePrograms" xml:space="preserve">
+    <value>Change programs</value>
   </data>
   <data name="ChangeUACSettings" xml:space="preserve">
     <value>Change User Account Control settings</value>
@@ -1357,6 +1360,12 @@
     <value>Remote Desktop</value>
     <comment>Area System</comment>
   </data>
+  <data name="RemovePrograms" xml:space="preserve">
+    <value>Remove programs</value>
+  </data>
+  <data name="RepairPrograms" xml:space="preserve">
+    <value>Repair programs</value>
+  </data>
   <data name="ScannersAndCameras" xml:space="preserve">
     <value>Scanners and cameras</value>
     <comment>Area Control Panel (legacy settings)</comment>
@@ -1598,6 +1607,9 @@
   <data name="Uninstall" xml:space="preserve">
     <value>Uninstall</value>
     <comment>Area MixedReality, only available if the Mixed Reality Portal app is installed.</comment>
+  </data>
+  <data name="UninstallPrograms" xml:space="preserve">
+    <value>Uninstall programs</value>
   </data>
   <data name="Usb" xml:space="preserve">
     <value>USB</value>

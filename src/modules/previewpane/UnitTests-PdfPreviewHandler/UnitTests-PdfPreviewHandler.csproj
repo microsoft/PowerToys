@@ -13,11 +13,11 @@
     <Description>PowerToys UnitTests-PdfPreviewHandler</Description>
     <Copyright>Copyright (C) 2020 Microsoft Corp.</Copyright>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <ProjectGuid>{ECC20689-002A-4354-95A6-B58DF089C6FF}</ProjectGuid>
     <RootNamespace>PdfPreviewHandlerUnitTests</RootNamespace>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
@@ -31,7 +31,7 @@
     <None Remove="HelperFiles\dummy.pdf" />
     <None Remove="HelperFiles\sample.pdf" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
   </ItemGroup>
@@ -40,8 +40,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Moq" Version="4.16.1" />
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />

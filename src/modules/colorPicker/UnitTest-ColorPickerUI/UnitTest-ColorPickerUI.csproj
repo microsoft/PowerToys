@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
     <ProjectGuid>{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}</ProjectGuid>
     <RootNamespace>Microsoft.ColorPicker.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
@@ -11,6 +12,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>x64</Platforms>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Version>$(Version).0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -33,8 +35,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

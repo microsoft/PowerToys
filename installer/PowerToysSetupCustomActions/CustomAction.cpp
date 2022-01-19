@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "resource.h"
+#include "RcResource.h"
 #include <ProjectTelemetry.h>
 
 #include <spdlog/sinks/base_sink.h>
@@ -9,8 +10,6 @@
 #include "../../src/common/utils/modulesRegistry.h"
 #include "../../src/common/updating/installer.h"
 #include "../../src/common/version/version.h"
-
-#include "../../installer/PowerToysBootstrapper/bootstrapper/RcResource.h"
 
 using namespace std;
 
@@ -76,7 +75,7 @@ UINT __stdcall ApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get installFolder.");
 
-    for (const auto& changeSet : getAllModulesChangeSets(installationFolder, false))
+    for (const auto& changeSet : getAllModulesChangeSets(installationFolder))
     {
         if (!changeSet.apply())
         {
@@ -105,7 +104,7 @@ UINT __stdcall UnApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Failed to initialize");
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get installFolder.");
-    for (const auto& changeSet : getAllModulesChangeSets(installationFolder, false))
+    for (const auto& changeSet : getAllModulesChangeSets(installationFolder))
     {
         changeSet.unApply();
     }
@@ -748,12 +747,12 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     hr = WcaInitialize(hInstall, "DetectPrevInstallPathCA");
-
+    MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", L"");
     try
     {
         if (auto install_path = GetMsiPackageInstalledPath())
         {
-            MsiSetPropertyW(hInstall, L"INSTALLFOLDER", install_path->data());
+            MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", install_path->data());
         }
     }
     catch (...)
@@ -938,7 +937,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 8> processesToTerminate = {
+    std::array<std::wstring_view, 9> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.Awake.exe",
@@ -946,6 +945,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.Settings.UI.exe",
         L"PowerToys.FancyZonesEditor.exe",
         L"PowerToys.ColorPickerUI.exe",
+        L"PowerToys.AlwaysOnTop.exe",
         L"PowerToys.exe"
     };
 

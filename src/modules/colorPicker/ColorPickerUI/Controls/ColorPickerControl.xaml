@@ -436,7 +436,9 @@
                                              AutomationProperties.Name="{x:Static p:Resources.Hex_value}"
                                              GotKeyboardFocus="HexCode_GotKeyboardFocus"
                                              TextChanged="HexCode_TextChanged"
-                                             TextWrapping="Wrap" />
+                                             TextWrapping="Wrap"
+                                             MaxLength="7"
+                                             CharacterCasing="Lower" />
                                 </StackPanel>
 
                                 <Button Margin="0,32,0,0"

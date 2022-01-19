@@ -34,6 +34,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
+        private void FancyZonesPreviewControl_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            SetEnabledState();
+        }
+
         public bool IsSystemTheme
         {
             get { return (bool)GetValue(IsSystemThemeProperty); }
@@ -48,7 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(WallpaperPathProperty, value); }
         }
 
-        public static readonly DependencyProperty WallpaperPathProperty = DependencyProperty.Register("WallpaperPath", typeof(string), typeof(FancyZonesPreviewControl), new PropertyMetadata("ms-appx:///Assets/wallpaper_placeholder.png"));
+        public static readonly DependencyProperty WallpaperPathProperty = DependencyProperty.Register("WallpaperPath", typeof(string), typeof(FancyZonesPreviewControl), new PropertyMetadata("ms-appx:///Assets/Modules/Wallpaper.png"));
 
         public Color CustomBorderColor
         {
@@ -138,6 +143,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             Zone1Number.Foreground = numberBrush;
             Zone2Number.Foreground = numberBrush;
             Zone3Number.Foreground = numberBrush;
+        }
+
+        private void SetEnabledState()
+        {
+            VisualStateManager.GoToState(this, IsEnabled ? "Normal" : "Disabled", true);
+        }
+
+        private void FancyZonesPreviewControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            IsEnabledChanged -= FancyZonesPreviewControl_IsEnabledChanged;
+            SetEnabledState();
+            IsEnabledChanged += FancyZonesPreviewControl_IsEnabledChanged;
         }
     }
 }

@@ -3,13 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PowerToysSetup", "PowerToysSetup\PowerToysSetup.wixproj", "{022A9D30-7C4F-416D-A9DF-5FF2661CC0AD}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PowerToysInstaller", "PowerToysSetup\PowerToysInstaller.wixproj", "{022A9D30-7C4F-416D-A9DF-5FF2661CC0AD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToysSetupCustomActions", "PowerToysSetupCustomActions\PowerToysSetupCustomActions.vcxproj", "{32F3882B-F2D6-4586-B5ED-11E39E522BD3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spdlog", "..\src\logging\logging.vcxproj", "{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "..\src\common\logger\logger.vcxproj", "{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD}"
+EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PowerToysBootstrapper", "PowerToysSetup\PowerToysBootstrapper.wixproj", "{31D72625-43C1-41B1-B784-BCE4A8DC5543}"
+	ProjectSection(ProjectDependencies) = postProject
+		{022A9D30-7C4F-416D-A9DF-5FF2661CC0AD} = {022A9D30-7C4F-416D-A9DF-5FF2661CC0AD}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +38,10 @@ Global
 		{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD}.Debug|x64.Build.0 = Debug|x64
 		{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD}.Release|x64.ActiveCfg = Release|x64
 		{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD}.Release|x64.Build.0 = Release|x64
+		{31D72625-43C1-41B1-B784-BCE4A8DC5543}.Debug|x64.ActiveCfg = Debug|x64
+		{31D72625-43C1-41B1-B784-BCE4A8DC5543}.Debug|x64.Build.0 = Debug|x64
+		{31D72625-43C1-41B1-B784-BCE4A8DC5543}.Release|x64.ActiveCfg = Release|x64
+		{31D72625-43C1-41B1-B784-BCE4A8DC5543}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

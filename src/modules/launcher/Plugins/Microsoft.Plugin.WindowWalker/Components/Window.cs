@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,15 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
@@ -76,7 +71,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public uint ProcessID { get; set; }
 
         /// <summary>
-        /// Gets returns the name of the process
+        /// Gets the name of the process
         /// </summary>
         public string ProcessName
         {
@@ -133,7 +128,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets returns the name of the class for the window represented
+        /// Gets the name of the class for the window represented
         /// </summary>
         public string ClassName
         {
@@ -152,7 +147,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether is the window visible (might return false if it is a hidden IE tab)
+        /// Gets a value indicating whether the window is visible (might return false if it is a hidden IE tab)
         /// </summary>
         public bool Visible
         {
@@ -163,7 +158,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether determines whether the specified window handle identifies an existing window.
+        /// Gets a value indicating whether the specified window handle identifies an existing window.
         /// </summary>
         public bool IsWindow
         {
@@ -174,7 +169,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether get a value indicating whether is the window GWL_EX_STYLE is a toolwindow
+        /// Gets a value indicating whether the window is a toolwindow
         /// </summary>
         public bool IsToolWindow
         {
@@ -187,7 +182,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether get a value indicating whether the window GWL_EX_STYLE is an appwindow
+        /// Gets a value indicating whether the window is an appwindow
         /// </summary>
         public bool IsAppWindow
         {
@@ -200,7 +195,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether get a value indicating whether the window has ITaskList_Deleted property
+        /// Gets a value indicating whether the window has ITaskList_Deleted property
         /// </summary>
         public bool TaskListDeleted
         {
@@ -211,18 +206,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether determines whether the specified windows is the owner
+        /// Gets a value indicating whether the specified windows is the owner (i.e. doesn't have an owner)
         /// </summary>
         public bool IsOwner
         {
             get
             {
-                return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) != null;
+                return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) == IntPtr.Zero;
             }
         }
 
         /// <summary>
-        /// Gets a value indicating whether returns true if the window is minimized
+        /// Gets a value indicating whether the window is minimized
         /// </summary>
         public bool Minimized
         {
@@ -259,7 +254,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
             else
             {
-                NativeMethods.ShowWindow(Hwnd, NativeMethods.ShowWindowCommands.Restore);
+                if (!NativeMethods.ShowWindow(Hwnd, NativeMethods.ShowWindowCommands.Restore))
+                {
+                    // ShowWindow doesn't work if the process is running elevated: fallback to SendMessage
+                    _ = NativeMethods.SendMessage(Hwnd, NativeMethods.WM_SYSCOMMAND, NativeMethods.SC_RESTORE);
+                }
             }
 
             NativeMethods.FlashWindow(Hwnd, true);
@@ -318,7 +317,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             uint processId = GetProcessIDFromWindowHandle(hwnd);
             ProcessID = processId;
-            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)processId);
+            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.QueryLimitedInformation, true, (int)processId);
             StringBuilder processName = new StringBuilder(MaximumFileNameLength);
 
             if (NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
