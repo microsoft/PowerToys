@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CrosshairColor = new StringProperty("#FF0000");
             CrosshairOpacity = new IntProperty(75);
             CrosshairRadius = new IntProperty(20);
-            CrosshairThickness = new IntProperty(10);
+            CrosshairThickness = new IntProperty(5);
             CrosshairBorderColor = new StringProperty("#FFFFFF");
             CrosshairBorderSize = new IntProperty(1);
         }

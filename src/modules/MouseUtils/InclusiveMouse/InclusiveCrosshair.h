@@ -5,7 +5,7 @@ constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_OPACITY = 75;
 const winrt::Windows::UI::Color INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_COLOR = winrt::Windows::UI::ColorHelper::FromArgb(255, 255, 0, 0);
 const winrt::Windows::UI::Color INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_BORDER_COLOR = winrt::Windows::UI::ColorHelper::FromArgb(255, 255, 255, 255);
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_RADIUS = 20;
-constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_THICKNESS = 10;
+constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_THICKNESS = 5;
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_BORDER_SIZE = 1;
 
 struct InclusiveCrosshairSettings
