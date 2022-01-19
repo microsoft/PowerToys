@@ -1833,27 +1833,6 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Inclusive Mouse</value>
     <comment>Refers to the utility name</comment>
   </data>
-  <data name="MouseUtils_InclusiveMouse_CrosshairColor.Header" xml:space="preserve">
-    <value>Crosshair color</value>
-  </data>
-  <data name="MouseUtils_InclusiveMouse_CrosshairOpacity.Header" xml:space="preserve">
-    <value>Crosshair Opacity (%)</value>
-  </data>
-  <data name="MouseUtils_InclusiveMouse_CrosshairRadius.Header" xml:space="preserve">
-    <value>Crosshair Center Radius (px)</value>
-	  <comment>px = pixels</comment>
-  </data>
-  <data name="MouseUtils_InclusiveMouse_CrosshairThickness.Header" xml:space="preserve">
-    <value>Crosshair Thickness (px)</value>
-	  <comment>px = pixels</comment>
-  </data>
-  <data name="MouseUtils_InclusiveMouse_CrosshairBorderColor.Header" xml:space="preserve">
-    <value>Crosshair border color</value>
-  </data>
-  <data name="MouseUtils_InclusiveMouse_CrosshairBorderSize.Header" xml:space="preserve">
-    <value>Crosshair Border Size (px)</value>
-	  <comment>px = pixels</comment>
-  </data>
   <data name="MouseUtils_InclusiveMouse.Description" xml:space="preserve">
     <value>Inclusive Mouse draws a crosshair centered on the mouse pointer.</value>
     <comment>"Inclusive Mouse" is the name of the utility. Mouse is the hardware mouse.</comment>
@@ -1867,6 +1846,27 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="MouseUtils_InclusiveMouse_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to show/hide the crosshair</value>
+  </data>
+  <data name="MouseUtils_InclusiveMouse_CrosshairColor.Header" xml:space="preserve">
+    <value>Crosshair color</value>
+  </data>
+  <data name="MouseUtils_InclusiveMouse_CrosshairOpacity.Header" xml:space="preserve">
+    <value>Crosshair opacity (%)</value>
+  </data>
+  <data name="MouseUtils_InclusiveMouse_CrosshairRadius.Header" xml:space="preserve">
+    <value>Crosshair center radius (px)</value>
+	  <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_InclusiveMouse_CrosshairThickness.Header" xml:space="preserve">
+    <value>Crosshair thickness (px)</value>
+	  <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_InclusiveMouse_CrosshairBorderColor.Header" xml:space="preserve">
+    <value>Crosshair border color</value>
+  </data>
+  <data name="MouseUtils_InclusiveMouse_CrosshairBorderSize.Header" xml:space="preserve">
+    <value>Crosshair border size (px)</value>
+	  <comment>px = pixels</comment>
   </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
