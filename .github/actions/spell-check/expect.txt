@@ -250,8 +250,6 @@ Choibalsan
 chrdavis
 chromaticities
 chrono
-chrzan
-Chrzan
 Chrzan
 CHT
 Chukotka
@@ -1107,9 +1105,6 @@ langword
 Lastdevice
 LASTEXITCODE
 Laute
-laute
-Laute
-Laute
 laviusmotileng
 LAYOUTRTL
 LBUTTON
@@ -1547,8 +1542,6 @@ PCIDLIST
 PCWSTR
 pdb
 pdb
-Pdb
-Pdb
 pdbonly
 pdfpreviewhandler
 pdo
@@ -2085,9 +2078,6 @@ systemd
 SYSTEMTIME
 systemverilog
 Tadele
-tadele
-Tadele
-Tadele
 Tajikistan
 talynone
 TApp
@@ -2146,9 +2136,6 @@ Toolchain
 toolkitcontrols
 toolkitconverters
 toolset
-toolset
-Toolset
-Toolset
 toolstrip
 toolwindow
 TOPDOWNDIB
@@ -2253,8 +2240,7 @@ USESTDHANDLES
 ushort
 USRDLL
 utc
-Utc
-Utc
+UTC
 utf
 utils
 uuidof
