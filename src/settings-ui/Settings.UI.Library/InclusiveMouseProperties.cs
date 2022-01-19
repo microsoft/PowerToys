@@ -23,6 +23,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("crosshair_thickness")]
         public IntProperty CrosshairThickness { get; set; }
 
+        [JsonPropertyName("crosshair_border_color")]
+        public StringProperty CrosshairBorderColor { get; set; }
+
+        [JsonPropertyName("crosshair_border_size")]
+        public IntProperty CrosshairBorderSize { get; set; }
+
         public InclusiveMouseProperties()
         {
             ActivationShortcut = new HotkeySettings(false, true, true, false, 0x50); // Ctrl + Alt + P
@@ -30,6 +36,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CrosshairOpacity = new IntProperty(75);
             CrosshairRadius = new IntProperty(20);
             CrosshairThickness = new IntProperty(10);
+            CrosshairBorderColor = new StringProperty("#FFFFFF");
+            CrosshairBorderSize = new IntProperty(1);
         }
     }
 }

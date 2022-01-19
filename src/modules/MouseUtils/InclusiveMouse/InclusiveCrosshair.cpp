@@ -54,19 +54,27 @@ private:
     winrt::Compositor m_compositor{ nullptr };
     winrt::Desktop::DesktopWindowTarget m_target{ nullptr };
     winrt::ContainerVisual m_root{ nullptr };
-    winrt::LayerVisual m_layer{ nullptr };
+    winrt::LayerVisual m_crosshair_border_layer{ nullptr };
+    winrt::LayerVisual m_crosshair_layer{ nullptr };
+    winrt::SpriteVisual m_left_crosshair_border{ nullptr };
     winrt::SpriteVisual m_left_crosshair{ nullptr };
+    winrt::SpriteVisual m_right_crosshair_border{ nullptr };
     winrt::SpriteVisual m_right_crosshair{ nullptr };
+    winrt::SpriteVisual m_top_crosshair_border{ nullptr };
     winrt::SpriteVisual m_top_crosshair{ nullptr };
+    winrt::SpriteVisual m_bottom_crosshair_border{ nullptr };
     winrt::SpriteVisual m_bottom_crosshair{ nullptr };
 
     bool m_visible = false;
     bool m_destroyed = false;
 
     // Configurable Settings
+    winrt::Windows::UI::Color m_crosshair_border_color = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_BORDER_COLOR;
     winrt::Windows::UI::Color m_crosshair_color = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_COLOR;
     float m_crosshair_radius = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_RADIUS;
     float m_crosshair_thickness = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_THICKNESS;
+    float m_crosshair_border_size = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_BORDER_SIZE;
+    float m_crosshair_opacity = max(0.f, min(1.f, (float)INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_OPACITY / 100.0f));
 };
 
 InclusiveCrosshair* InclusiveCrosshair::instance = nullptr;
@@ -91,31 +99,67 @@ bool InclusiveCrosshair::CreateInclusiveCrosshair()
         winrt::check_hresult(m_compositor.as<ABI::ICompositorDesktopInterop>()->CreateDesktopWindowTarget(m_hwnd, false, &target));
         *winrt::put_abi(m_target) = target;
 
-        // Create visual root
+        // Our composition tree:
+        //
+        // [root] ContainerVisual
+        // \ [crosshair border layer] LayerVisual
+        //   \ [crosshair border sprites]
+        //     [crosshair border layer] LayerVisual
+        //     \ [crosshair sprites]
+
         m_root = m_compositor.CreateContainerVisual();
         m_root.RelativeSizeAdjustment({ 1.0f, 1.0f });
         m_target.Root(m_root);
 
+        m_root.Opacity(m_crosshair_opacity);
+
+        m_crosshair_border_layer = m_compositor.CreateLayerVisual();
+        m_crosshair_border_layer.RelativeSizeAdjustment({ 1.0f, 1.0f });
+        m_root.Children().InsertAtTop(m_crosshair_border_layer);
+        m_crosshair_border_layer.Opacity(1.0f);
+
+        m_crosshair_layer = m_compositor.CreateLayerVisual();
+        m_crosshair_layer.RelativeSizeAdjustment({ 1.0f, 1.0f });
+
         // Create the crosshair sprites.
+        m_left_crosshair_border = m_compositor.CreateSpriteVisual();
+        m_left_crosshair_border.AnchorPoint({ 1.0f, 0.5f });
+        m_left_crosshair_border.Brush(m_compositor.CreateColorBrush(m_crosshair_border_color));
+        m_crosshair_border_layer.Children().InsertAtTop(m_left_crosshair_border);
         m_left_crosshair = m_compositor.CreateSpriteVisual();
         m_left_crosshair.AnchorPoint({ 1.0f, 0.5f });
         m_left_crosshair.Brush(m_compositor.CreateColorBrush(m_crosshair_color));
-        m_root.Children().InsertAtTop(m_left_crosshair);
+        m_crosshair_layer.Children().InsertAtTop(m_left_crosshair);
 
+        m_right_crosshair_border = m_compositor.CreateSpriteVisual();
+        m_right_crosshair_border.AnchorPoint({ 0.0f, 0.5f });
+        m_right_crosshair_border.Brush(m_compositor.CreateColorBrush(m_crosshair_border_color));
+        m_crosshair_border_layer.Children().InsertAtTop(m_right_crosshair_border);
         m_right_crosshair = m_compositor.CreateSpriteVisual();
         m_right_crosshair.AnchorPoint({ 0.0f, 0.5f });
         m_right_crosshair.Brush(m_compositor.CreateColorBrush(m_crosshair_color));
-        m_root.Children().InsertAtTop(m_right_crosshair);
+        m_crosshair_layer.Children().InsertAtTop(m_right_crosshair);
 
+        m_top_crosshair_border = m_compositor.CreateSpriteVisual();
+        m_top_crosshair_border.AnchorPoint({ 0.5f, 1.0f });
+        m_top_crosshair_border.Brush(m_compositor.CreateColorBrush(m_crosshair_border_color));
+        m_crosshair_border_layer.Children().InsertAtTop(m_top_crosshair_border);
         m_top_crosshair = m_compositor.CreateSpriteVisual();
         m_top_crosshair.AnchorPoint({ 0.5f, 1.0f });
         m_top_crosshair.Brush(m_compositor.CreateColorBrush(m_crosshair_color));
-        m_root.Children().InsertAtTop(m_top_crosshair);
+        m_crosshair_layer.Children().InsertAtTop(m_top_crosshair);
 
+        m_bottom_crosshair_border = m_compositor.CreateSpriteVisual();
+        m_bottom_crosshair_border.AnchorPoint({ 0.5f, 0.0f });
+        m_bottom_crosshair_border.Brush(m_compositor.CreateColorBrush(m_crosshair_border_color));
+        m_crosshair_border_layer.Children().InsertAtTop(m_bottom_crosshair_border);
         m_bottom_crosshair = m_compositor.CreateSpriteVisual();
         m_bottom_crosshair.AnchorPoint({ 0.5f, 0.0f });
         m_bottom_crosshair.Brush(m_compositor.CreateColorBrush(m_crosshair_color));
-        m_root.Children().InsertAtTop(m_bottom_crosshair);
+        m_crosshair_layer.Children().InsertAtTop(m_bottom_crosshair);
+
+        m_crosshair_border_layer.Children().InsertAtTop(m_crosshair_layer);
+        m_crosshair_layer.Opacity(1.0f);
 
         UpdateCrosshairPosition();
 
@@ -161,15 +205,24 @@ void InclusiveCrosshair::UpdateCrosshairPosition()
     ScreenToClient(m_hwnd, &ptMonitorUpperLeft);
     ScreenToClient(m_hwnd, &ptMonitorBottomRight);
 
+    // Position crosshair components around the mouse pointer.
+    m_left_crosshair_border.Offset({ (float)ptCursor.x - m_crosshair_radius + m_crosshair_border_size, (float)ptCursor.y, .0f });
+    m_left_crosshair_border.Size({ (float)ptCursor.x - (float)ptMonitorUpperLeft.x - m_crosshair_radius + m_crosshair_border_size, m_crosshair_thickness + m_crosshair_border_size * 2 });
     m_left_crosshair.Offset({ (float)ptCursor.x - m_crosshair_radius, (float)ptCursor.y, .0f });
     m_left_crosshair.Size({ (float)ptCursor.x - (float)ptMonitorUpperLeft.x - m_crosshair_radius, m_crosshair_thickness });
 
+    m_right_crosshair_border.Offset({ (float)ptCursor.x + m_crosshair_radius - m_crosshair_border_size, (float)ptCursor.y, .0f });
+    m_right_crosshair_border.Size({ (float)ptMonitorBottomRight.x - (float)ptCursor.x - m_crosshair_radius + m_crosshair_border_size, m_crosshair_thickness + m_crosshair_border_size * 2 });
     m_right_crosshair.Offset({ (float)ptCursor.x + m_crosshair_radius, (float)ptCursor.y, .0f });
     m_right_crosshair.Size({ (float)ptMonitorBottomRight.x - (float)ptCursor.x - m_crosshair_radius, m_crosshair_thickness });
 
+    m_top_crosshair_border.Offset({ (float)ptCursor.x, (float)ptCursor.y - m_crosshair_radius + m_crosshair_border_size, .0f });
+    m_top_crosshair_border.Size({ m_crosshair_thickness + m_crosshair_border_size * 2, (float)ptCursor.y - (float)ptMonitorUpperLeft.y - m_crosshair_radius + m_crosshair_border_size });
     m_top_crosshair.Offset({ (float)ptCursor.x, (float)ptCursor.y - m_crosshair_radius, .0f });
     m_top_crosshair.Size({ m_crosshair_thickness, (float)ptCursor.y - (float)ptMonitorUpperLeft.y - m_crosshair_radius });
 
+    m_bottom_crosshair_border.Offset({ (float)ptCursor.x, (float)ptCursor.y + m_crosshair_radius - m_crosshair_border_size, .0f });
+    m_bottom_crosshair_border.Size({ m_crosshair_thickness + m_crosshair_border_size * 2, (float)ptMonitorBottomRight.y - (float)ptCursor.y - m_crosshair_radius + m_crosshair_border_size });
     m_bottom_crosshair.Offset({ (float)ptCursor.x, (float)ptCursor.y + m_crosshair_radius, .0f });
     m_bottom_crosshair.Size({ m_crosshair_thickness, (float)ptMonitorBottomRight.y - (float)ptCursor.y - m_crosshair_radius });
 
@@ -217,6 +270,10 @@ void InclusiveCrosshair::ApplySettings(InclusiveCrosshairSettings settings, bool
     m_crosshair_radius = (float)settings.crosshairRadius;
     m_crosshair_thickness = (float)settings.crosshairThickness;
     m_crosshair_color = settings.crosshairColor;
+    m_crosshair_opacity = max(0.f, min(1.f, (float)settings.crosshairOpacity / 100.0f));
+    m_crosshair_border_color = settings.crosshairBorderColor;
+    m_crosshair_border_size = (float)settings.crosshairBorderSize;
+
     if (applyToRunTimeObjects)
     {
         // Runtime objects already created. Should update in the owner thread.
@@ -230,6 +287,11 @@ void InclusiveCrosshair::ApplySettings(InclusiveCrosshairSettings settings, bool
                 m_right_crosshair.Brush().as<winrt::CompositionColorBrush>().Color(m_crosshair_color);
                 m_top_crosshair.Brush().as<winrt::CompositionColorBrush>().Color(m_crosshair_color);
                 m_bottom_crosshair.Brush().as<winrt::CompositionColorBrush>().Color(m_crosshair_color);
+                m_left_crosshair_border.Brush().as<winrt::CompositionColorBrush>().Color(m_crosshair_border_color);
+                m_right_crosshair_border.Brush().as<winrt::CompositionColorBrush>().Color(m_crosshair_border_color);
+                m_top_crosshair_border.Brush().as<winrt::CompositionColorBrush>().Color(m_crosshair_border_color);
+                m_bottom_crosshair_border.Brush().as<winrt::CompositionColorBrush>().Color(m_crosshair_border_color);
+                m_root.Opacity(m_crosshair_opacity);
                 UpdateCrosshairPosition();
             }
         });

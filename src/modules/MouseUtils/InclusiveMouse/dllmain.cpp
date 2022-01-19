@@ -14,6 +14,8 @@ namespace
     const wchar_t JSON_KEY_CROSSHAIR_OPACITY[] = L"crosshair_opacity";
     const wchar_t JSON_KEY_CROSSHAIR_RADIUS[] = L"crosshair_radius";
     const wchar_t JSON_KEY_CROSSHAIR_THICKNESS[] = L"crosshair_thickness";
+    const wchar_t JSON_KEY_CROSSHAIR_BORDER_COLOR[] = L"crosshair_border_color";
+    const wchar_t JSON_KEY_CROSSHAIR_BORDER_SIZE[] = L"crosshair_border_size";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -203,12 +205,11 @@ public:
             {
                 Logger::warn("Failed to initialize Inclusive Mouse activation shortcut");
             }
-            uint8_t opacity = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_OPACITY;
             try
             {
                 // Parse Opacity
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_OPACITY);
-                opacity = (uint8_t)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                inclusiveCrosshairSettings.crosshairOpacity = (uint8_t)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
             }
             catch (...)
             {
@@ -216,7 +217,7 @@ public:
             }
             try
             {
-                // Parse left button click color
+                // Parse crosshair color
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_COLOR);
                 auto crosshairColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
                 uint8_t r, g, b;
@@ -226,7 +227,7 @@ public:
                 }
                 else
                 {
-                    inclusiveCrosshairSettings.crosshairColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity * 255 / 100, r, g, b);
+                    inclusiveCrosshairSettings.crosshairColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
                 }
             }
             catch (...)
@@ -252,6 +253,35 @@ public:
             catch (...)
             {
                 Logger::warn("Failed to initialize Thickness from settings. Will use default value");
+            }
+            try
+            {
+                // Parse crosshair border color
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_BORDER_COLOR);
+                auto crosshairBorderColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+                uint8_t r, g, b;
+                if (!checkValidRGB(crosshairBorderColor, &r, &g, &b))
+                {
+                    Logger::error("Crosshair border color RGB value is invalid. Will use default value");
+                }
+                else
+                {
+                    inclusiveCrosshairSettings.crosshairBorderColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize crosshair border color from settings. Will use default value");
+            }
+            try
+            {
+                // Parse border size
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_BORDER_SIZE);
+                inclusiveCrosshairSettings.crosshairBorderSize = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize border color from settings. Will use default value");
             }
         }
         else

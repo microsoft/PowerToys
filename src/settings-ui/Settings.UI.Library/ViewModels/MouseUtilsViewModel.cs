@@ -85,11 +85,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             InclusiveMouseSettingsConfig = inclusiveMouseSettingsRepository.SettingsConfig;
 
             string crosshairColor = InclusiveMouseSettingsConfig.Properties.CrosshairColor.Value;
-            _inclusiveMouseCrosshairColor = !string.IsNullOrEmpty(crosshairColor) ? crosshairColor : "#0000FF";
+            _inclusiveMouseCrosshairColor = !string.IsNullOrEmpty(crosshairColor) ? crosshairColor : "#FF0000";
+
+            string crosshairBorderColor = InclusiveMouseSettingsConfig.Properties.CrosshairBorderColor.Value;
+            _inclusiveMouseCrosshairBorderColor = !string.IsNullOrEmpty(crosshairBorderColor) ? crosshairBorderColor : "#FFFFFF";
 
             _inclusiveMouseCrosshairOpacity = InclusiveMouseSettingsConfig.Properties.CrosshairOpacity.Value;
             _inclusiveMouseCrosshairRadius = InclusiveMouseSettingsConfig.Properties.CrosshairRadius.Value;
             _inclusiveMouseCrosshairThickness = InclusiveMouseSettingsConfig.Properties.CrosshairThickness.Value;
+            _inclusiveMouseCrosshairBorderSize = InclusiveMouseSettingsConfig.Properties.CrosshairBorderSize.Value;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -529,6 +533,46 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public string InclusiveMouseCrosshairBorderColor
+        {
+            get
+            {
+                return _inclusiveMouseCrosshairBorderColor;
+            }
+
+            set
+            {
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                if (!value.Equals(_inclusiveMouseCrosshairBorderColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _inclusiveMouseCrosshairBorderColor = value;
+                    InclusiveMouseSettingsConfig.Properties.CrosshairBorderColor.Value = value;
+                    NotifyInclusiveMousePropertyChanged();
+                }
+            }
+        }
+
+        public int InclusiveMouseCrosshairBorderSize
+        {
+            get
+            {
+                return _inclusiveMouseCrosshairBorderSize;
+            }
+
+            set
+            {
+                if (value != _inclusiveMouseCrosshairBorderSize)
+                {
+                    _inclusiveMouseCrosshairBorderSize = value;
+                    InclusiveMouseSettingsConfig.Properties.CrosshairBorderSize.Value = value;
+                    NotifyInclusiveMousePropertyChanged();
+                }
+            }
+        }
+
         public void NotifyInclusiveMousePropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -563,5 +607,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private int _inclusiveMouseCrosshairOpacity;
         private int _inclusiveMouseCrosshairRadius;
         private int _inclusiveMouseCrosshairThickness;
+        private string _inclusiveMouseCrosshairBorderColor;
+        private int _inclusiveMouseCrosshairBorderSize;
     }
 }

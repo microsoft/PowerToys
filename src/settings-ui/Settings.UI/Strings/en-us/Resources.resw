@@ -1847,6 +1847,13 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Crosshair Thickness (px)</value>
 	  <comment>px = pixels</comment>
   </data>
+  <data name="MouseUtils_InclusiveMouse_CrosshairBorderColor.Header" xml:space="preserve">
+    <value>Crosshair border color</value>
+  </data>
+  <data name="MouseUtils_InclusiveMouse_CrosshairBorderSize.Header" xml:space="preserve">
+    <value>Crosshair Border Size (px)</value>
+	  <comment>px = pixels</comment>
+  </data>
   <data name="MouseUtils_InclusiveMouse.Description" xml:space="preserve">
     <value>Inclusive Mouse draws a crosshair centered on the mouse pointer.</value>
     <comment>"Inclusive Mouse" is the name of the utility. Mouse is the hardware mouse.</comment>
