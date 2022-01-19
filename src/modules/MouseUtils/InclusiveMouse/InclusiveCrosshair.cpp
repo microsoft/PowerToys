@@ -200,7 +200,7 @@ void InclusiveCrosshair::UpdateCrosshairPosition()
     ptMonitorBottomRight.x = monitorInfo.rcMonitor.right;
     ptMonitorBottomRight.y = monitorInfo.rcMonitor.bottom;
 
-    // Convert everything to client coords.
+    // Convert everything to client coordinates.
     ScreenToClient(m_hwnd, &ptCursor);
     ScreenToClient(m_hwnd, &ptMonitorUpperLeft);
     ScreenToClient(m_hwnd, &ptMonitorBottomRight);
