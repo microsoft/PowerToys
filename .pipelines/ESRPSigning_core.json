@@ -177,6 +177,10 @@
                 "vcomp140_app.dll",
                 "vcruntime140_1_app.dll",
                 "vcruntime140_app.dll", 
+                "modules\\launcher\\e_sqlite3.dll",
+                "modules\\launcher\\SQLitePCLRaw.batteries_v2.dll",
+                "modules\\launcher\\SQLitePCLRaw.core.dll",
+                "modules\\launcher\\SQLitePCLRaw.provider.e_sqlite3.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll"
