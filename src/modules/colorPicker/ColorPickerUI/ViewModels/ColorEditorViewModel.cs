@@ -34,7 +34,6 @@ namespace ColorPicker.ViewModels
             OpenColorPickerCommand = new RelayCommand(() => OpenColorPickerRequested?.Invoke(this, EventArgs.Empty));
             OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
             RemoveColorCommand = new RelayCommand(DeleteSelectedColor);
-
             SelectedColorChangedCommand = new RelayCommand((newColor) =>
             {
                 ColorsHistory.Insert(0, (Color)newColor);
@@ -131,8 +130,6 @@ namespace ColorPicker.ViewModels
 
                 _userSettings.ColorHistory.ReleaseNotification();
             }
-
-            // Reset list view to top here, maybe
         }
 
         private void DeleteSelectedColor()
