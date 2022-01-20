@@ -7,8 +7,7 @@
 
 #define FILE_DESCRIPTION "PowerToys InclusiveMouse"
 #define INTERNAL_NAME "InclusiveMouse"
-#define ORIGINAL_FILENAME "InclusiveMouse.dll"
-#define IDS_KEYBOARDMANAGER_ICON 1001
+#define ORIGINAL_FILENAME "PowerToys.InclusiveMouse.dll"
 
 // Non-localizable
 //////////////////////////////
