@@ -227,6 +227,7 @@
                                 <controls:Setting x:Uid="MouseUtils_InclusiveMouse_CrosshairThickness" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsInclusiveMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <muxc:NumberBox Minimum="1"
+                                                    Maximum="50"
                                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.InclusiveMouseCrosshairThickness}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
@@ -243,6 +244,7 @@
                                 <controls:Setting x:Uid="MouseUtils_InclusiveMouse_CrosshairBorderSize" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsInclusiveMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <muxc:NumberBox Minimum="1"
+                                                    Maximum="50"
                                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.InclusiveMouseCrosshairBorderSize}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
