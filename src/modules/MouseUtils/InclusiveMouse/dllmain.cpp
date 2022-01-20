@@ -141,6 +141,12 @@ public:
         return m_enabled;
     }
 
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
+    }
+
     virtual std::optional<HotkeyEx> GetHotkeyEx() override
     {
         return m_hotkey;
