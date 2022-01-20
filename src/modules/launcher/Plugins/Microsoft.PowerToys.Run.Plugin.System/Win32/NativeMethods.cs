@@ -40,11 +40,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Win32
             Max,
         }
 
+        /// <summary>
+        /// Detects the type of system firmware which is equal to the boot type by calling the method <see cref="NativeMethods.GetFirmwareType(ref uint)"/>.
+        /// </summary>
+        /// <returns>Firmware type like Uefi or Bios.</returns>
         internal static FirmwareTypes GetSystemFirmwareType()
         {
-            uint fwt = 0;
-            _ = GetFirmwareType(ref fwt);
-            return (FirmwareTypes)fwt;
+            uint firmwareType = 0;
+            _ = GetFirmwareType(ref firmwareType);
+            return (FirmwareTypes)firmwareType;
         }
     }
 }
