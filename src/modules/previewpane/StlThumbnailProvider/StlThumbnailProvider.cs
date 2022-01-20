@@ -88,12 +88,13 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                 OversamplingMultiplier = 1,
             };
 
-            using (var bitmapStream = new MemoryStream())
-            {
-                bitmapExporter.Export(viewport, bitmapStream);
+            var bitmapStream = new MemoryStream();
 
-                thumbnail = new Bitmap(bitmapStream);
-            }
+            bitmapExporter.Export(viewport, bitmapStream);
+
+            bitmapStream.Position = 0;
+
+            thumbnail = new Bitmap(bitmapStream);
 
             return thumbnail;
         }

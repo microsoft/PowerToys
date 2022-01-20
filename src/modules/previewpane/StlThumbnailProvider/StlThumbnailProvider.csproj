@@ -29,8 +29,8 @@
   <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
-    <PackageReference Include="HelixToolkit" Version="2.20.0" />
-    <PackageReference Include="HelixToolkit.Core.Wpf" Version="2.20.0" />
+    <PackageReference Include="HelixToolkit" Version="2.20.1" />
+    <PackageReference Include="HelixToolkit.Core.Wpf" Version="2.20.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
