@@ -55,6 +55,11 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
 
             var model = stlReader.Read(stream);
 
+            if (model.Bounds == Rect3D.Empty)
+            {
+                return null;
+            }
+
             var viewport = new System.Windows.Controls.Viewport3D();
 
             viewport.Measure(new Size(cx, cx));
