@@ -104,7 +104,7 @@ bool InclusiveCrosshair::CreateInclusiveCrosshair()
         // [root] ContainerVisual
         // \ [crosshair border layer] LayerVisual
         //   \ [crosshair border sprites]
-        //     [crosshair border layer] LayerVisual
+        //     [crosshair layer] LayerVisual
         //     \ [crosshair sprites]
 
         m_root = m_compositor.CreateContainerVisual();
