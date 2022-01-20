@@ -18,8 +18,8 @@ struct InclusiveCrosshairSettings
     int crosshairBorderSize = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIR_BORDER_SIZE;
 };
 
-int InclusiveCrosshairMain(HINSTANCE hinst, InclusiveCrosshairSettings settings);
+int InclusiveCrosshairMain(HINSTANCE hinst, InclusiveCrosshairSettings& settings);
 void InclusiveCrosshairDisable();
 bool InclusiveCrosshairIsEnabled();
 void InclusiveCrosshairSwitch();
-void InclusiveCrosshairApplySettings(InclusiveCrosshairSettings settings);
+void InclusiveCrosshairApplySettings(InclusiveCrosshairSettings& settings);

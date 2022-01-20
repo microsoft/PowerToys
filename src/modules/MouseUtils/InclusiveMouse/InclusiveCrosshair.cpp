@@ -25,7 +25,7 @@ struct InclusiveCrosshair
     static InclusiveCrosshair* instance;
     void Terminate();
     void SwitchActivationMode();
-    void ApplySettings(InclusiveCrosshairSettings settings, bool applyToRuntimeObjects);
+    void ApplySettings(InclusiveCrosshairSettings& settings, bool applyToRuntimeObjects);
 
 private:
     enum class MouseButton
@@ -265,7 +265,7 @@ void InclusiveCrosshair::SwitchActivationMode()
     PostMessage(m_hwnd, WM_SWITCH_ACTIVATION_MODE, 0, 0);
 }
 
-void InclusiveCrosshair::ApplySettings(InclusiveCrosshairSettings settings, bool applyToRunTimeObjects)
+void InclusiveCrosshair::ApplySettings(InclusiveCrosshairSettings& settings, bool applyToRunTimeObjects)
 {
     m_crosshair_radius = (float)settings.crosshairRadius;
     m_crosshair_thickness = (float)settings.crosshairThickness;
@@ -381,7 +381,7 @@ void InclusiveCrosshair::Terminate()
 
 #pragma region InclusiveCrosshair_API
 
-void InclusiveCrosshairApplySettings(InclusiveCrosshairSettings settings)
+void InclusiveCrosshairApplySettings(InclusiveCrosshairSettings& settings)
 {
     if (InclusiveCrosshair::instance != nullptr)
     {
@@ -413,7 +413,7 @@ bool InclusiveCrosshairIsEnabled()
     return (InclusiveCrosshair::instance != nullptr);
 }
 
-int InclusiveCrosshairMain(HINSTANCE hInstance, InclusiveCrosshairSettings settings)
+int InclusiveCrosshairMain(HINSTANCE hInstance, InclusiveCrosshairSettings& settings)
 {
     Logger::info("Starting a crosshair instance.");
     if (InclusiveCrosshair::instance != nullptr)
