@@ -32,19 +32,19 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Win32
         }
 
         // https://docs.microsoft.com/en-us/windows/win32/api/winnt/ne-winnt-firmware_type
-        public enum FIRMWARE_TYPE
+        public enum FirmwareTypes
         {
             Unknown = 0,
-            BIOS,
-            UEFI,
+            Bios,
+            Uefi,
             Max,
         }
 
-        internal static FIRMWARE_TYPE GetSystemFirmwareType()
+        internal static FirmwareTypes GetSystemFirmwareType()
         {
-            uint firmwareType = 0;
-            _ = GetFirmwareType(ref firmwareType);
-            return (FIRMWARE_TYPE)firmwareType;
+            uint fwt = 0;
+            _ = GetFirmwareType(ref fwt);
+            return (FirmwareTypes)fwt;
         }
     }
 }
