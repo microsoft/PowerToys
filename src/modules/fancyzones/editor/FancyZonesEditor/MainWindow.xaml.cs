@@ -251,6 +251,7 @@ namespace FancyZonesEditor
 
             App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
             App.FancyZonesEditorIO.SerializeZoneSettings();
+            App.FancyZonesEditorIO.SerializeCustomLayouts();
         }
 
         private void Announce(string name, string message)
@@ -272,6 +273,7 @@ namespace FancyZonesEditor
                 _settings.SetAppliedModel(model);
                 App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
                 App.FancyZonesEditorIO.SerializeZoneSettings();
+                App.FancyZonesEditorIO.SerializeCustomLayouts();
             }
         }
 
@@ -281,6 +283,7 @@ namespace FancyZonesEditor
             CancelLayoutChanges();
 
             App.FancyZonesEditorIO.SerializeZoneSettings();
+            App.FancyZonesEditorIO.SerializeCustomLayouts();
             App.FancyZonesEditorIO.SerializeLayoutHotkeys();
             App.FancyZonesEditorIO.SerializeLayoutTemplates();
             App.Overlay.CloseLayoutWindow();
@@ -426,6 +429,7 @@ namespace FancyZonesEditor
             }
 
             App.FancyZonesEditorIO.SerializeZoneSettings();
+            App.FancyZonesEditorIO.SerializeCustomLayouts();
             App.FancyZonesEditorIO.SerializeLayoutTemplates();
             App.FancyZonesEditorIO.SerializeLayoutHotkeys();
 
@@ -472,6 +476,7 @@ namespace FancyZonesEditor
                 }
 
                 App.FancyZonesEditorIO.SerializeZoneSettings();
+                App.FancyZonesEditorIO.SerializeCustomLayouts();
                 model.Delete();
             }
         }

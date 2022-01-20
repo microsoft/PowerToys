@@ -3,8 +3,10 @@
 #include "FancyZonesLib/ZoneSet.h"
 #include "FancyZonesLib/Settings.h"
 #include "FancyZonesLib/FancyZonesData.h"
+#include "FancyZonesLib/FancyZonesData/CustomLayouts.h"
 #include "FancyZonesLib/FancyZonesData/LayoutHotkeys.h"
 #include "FancyZonesLib/FancyZonesDataTypes.h"
+#include "FancyZonesLib/util.h"
 
 // Telemetry strings should not be localized.
 #define LoggingProviderKey "Microsoft.PowerToys"
@@ -144,7 +146,7 @@ void Trace::FancyZones::DataChanged() noexcept
 {
     const FancyZonesData& data = FancyZonesDataInstance();
     int appsHistorySize = static_cast<int>(data.GetAppZoneHistoryMap().size());
-    const auto& customZones = data.GetCustomZoneSetsMap();
+    const auto& customZones = CustomLayouts::instance().GetAllLayouts();
     const auto& devices = data.GetDeviceInfoMap();
     auto quickKeysCount = LayoutHotkeys::instance().GetHotkeysCount();
 
@@ -190,11 +192,15 @@ void Trace::FancyZones::DataChanged() noexcept
         int zoneCount = -1;
         if (type == FancyZonesDataTypes::ZoneSetLayoutType::Custom)
         {
-            const auto& activeCustomZone = customZones.find(device.activeZoneSet.uuid);
-            if (activeCustomZone != customZones.end())
+            auto guid = FancyZonesUtils::GuidFromString(device.activeZoneSet.uuid);
+            if (guid)
             {
-                zoneCount = getCustomZoneCount(activeCustomZone->second.info);
-            }
+                const auto& activeCustomZone = customZones.find(guid.value());
+                if (activeCustomZone != customZones.end())
+                {
+                    zoneCount = getCustomZoneCount(activeCustomZone->second.info);
+                }
+            }   
         }
         else
         {

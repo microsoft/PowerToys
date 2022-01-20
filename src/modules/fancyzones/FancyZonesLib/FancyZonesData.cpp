@@ -22,6 +22,7 @@
 #include <common/utils/process_path.h>
 #include <common/logger/logger.h>
 
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/ModuleConstants.h>
 
@@ -170,6 +171,12 @@ void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
         //deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
         //customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
 
+        auto customLayouts = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
+        if (customLayouts)
+        {
+            JSONHelpers::SaveCustomLayouts(customLayouts.value());
+        }
+
         auto templates = JSONHelpers::ParseLayoutTemplates(fancyZonesDataJSON);
         if (templates)
         {
@@ -197,12 +204,6 @@ const JSONHelpers::TDeviceInfoMap& FancyZonesData::GetDeviceInfoMap() const
     return deviceInfoMap;
 }
 
-const JSONHelpers::TCustomZoneSetsMap& FancyZonesData::GetCustomZoneSetsMap() const
-{
-    std::scoped_lock lock{ dataLock };
-    return customZoneSetsMap;
-}
-
 const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& FancyZonesData::GetAppZoneHistoryMap() const
 {
     std::scoped_lock lock{ dataLock };
@@ -221,13 +222,6 @@ std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInf
     }
 
     return std::nullopt;
-}
-
-std::optional<FancyZonesDataTypes::CustomZoneSetData> FancyZonesData::FindCustomZoneSet(const std::wstring& guid) const
-{
-    std::scoped_lock lock{ dataLock };
-    auto it = customZoneSetsMap.find(guid);
-    return it != end(customZoneSetsMap) ? std::optional{ it->second } : std::nullopt;
 }
 
 bool FancyZonesData::AddDevice(const FancyZonesDataTypes::DeviceIdData& deviceId)
@@ -604,25 +598,29 @@ void FancyZonesData::SetActiveZoneSet(const FancyZonesDataTypes::DeviceIdData& d
             deviceInfo.activeZoneSet = data;
 
             // If the zone set is custom, we need to copy its properties to the device
-            auto zonesetIt = customZoneSetsMap.find(data.uuid);
-            if (zonesetIt != customZoneSetsMap.end())
+            auto id = FancyZonesUtils::GuidFromString(data.uuid);
+            if (id.has_value())
             {
-                if (zonesetIt->second.type == FancyZonesDataTypes::CustomLayoutType::Grid)
+                auto layout = CustomLayouts::instance().GetLayout(id.value());
+                if (layout)
                 {
-                    auto layoutInfo = std::get<FancyZonesDataTypes::GridLayoutInfo>(zonesetIt->second.info);
-                    deviceInfo.sensitivityRadius = layoutInfo.sensitivityRadius();
-                    deviceInfo.showSpacing = layoutInfo.showSpacing();
-                    deviceInfo.spacing = layoutInfo.spacing();
-                    deviceInfo.zoneCount = layoutInfo.zoneCount();
-                }
-                else if (zonesetIt->second.type == FancyZonesDataTypes::CustomLayoutType::Canvas)
-                {
-                    auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(zonesetIt->second.info);
-                    deviceInfo.sensitivityRadius = layoutInfo.sensitivityRadius;
-                    deviceInfo.zoneCount = (int)layoutInfo.zones.size();
+                    if (layout.value().type == FancyZonesDataTypes::CustomLayoutType::Grid)
+                    {
+                        auto layoutInfo = std::get<FancyZonesDataTypes::GridLayoutInfo>(layout.value().info);
+                        deviceInfo.sensitivityRadius = layoutInfo.sensitivityRadius();
+                        deviceInfo.showSpacing = layoutInfo.showSpacing();
+                        deviceInfo.spacing = layoutInfo.spacing();
+                        deviceInfo.zoneCount = layoutInfo.zoneCount();
+                    }
+                    else if (layout.value().type == FancyZonesDataTypes::CustomLayoutType::Canvas)
+                    {
+                        auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(layout.value().info);
+                        deviceInfo.sensitivityRadius = layoutInfo.sensitivityRadius;
+                        deviceInfo.zoneCount = (int)layoutInfo.zones.size();
+                    }
                 }
             }
-
+            
             break;
         }
     }
@@ -644,8 +642,7 @@ void FancyZonesData::LoadFancyZonesData()
         json::JsonObject fancyZonesDataJSON = GetPersistFancyZonesJSON();
 
         appZoneHistoryMap = JSONHelpers::ParseAppZoneHistory(fancyZonesDataJSON);
-        deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
-        customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);    
+        deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON); 
     }
 }
 
@@ -679,11 +676,11 @@ void FancyZonesData::SaveZoneSettings() const
     
     if (dirtyFlag)
     {
-        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, updatedDeviceInfoMap, customZoneSetsMap);
+        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, updatedDeviceInfoMap);
     }
     else
     {
-        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
+        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap);
     }
 }
 
