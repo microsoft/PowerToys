@@ -195,7 +195,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                 },
             });
 
-            // UEFI command/result. It is only available on system booted in UEFI mode.
+            // UEFI command/result. It is only available on systems booted in UEFI mode.
             if (isBootedInUefiMode)
             {
                 results.Add(new Result
