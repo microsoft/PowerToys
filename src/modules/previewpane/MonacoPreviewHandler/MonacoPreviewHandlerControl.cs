@@ -83,27 +83,27 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                         {
                             InvokeOnControlThread(async () =>
                             {
-                                _webView2Environment = webView2EnvironmentAwaiter.GetResult();
-                                var vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
-                                var fileContent = File.ReadAllText(filePath);
-                                var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
-
-                                // prepping index html to load in
-                                var html = File.ReadAllText(Settings.AssemblyDirectory + "\\index.html").Replace("\t", string.Empty, StringComparison.InvariantCulture);
-
-                                html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
-                                html = html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
-                                html = html.Replace("[[PT_THEME]]", _settings.GetTheme(ThemeListener.AppMode), StringComparison.InvariantCulture);
-                                html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
-                                html = html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
-
-                                // Initialize WebView
                                 try
                                 {
                                     if (CoreWebView2Environment.GetAvailableBrowserVersionString() == null)
                                     {
                                         throw new WebView2RuntimeNotFoundException();
                                     }
+                                    _webView2Environment = webView2EnvironmentAwaiter.GetResult();
+                                    var vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
+                                    var fileContent = File.ReadAllText(filePath);
+                                    var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
+
+                                    // prepping index html to load in
+                                    var html = File.ReadAllText(Settings.AssemblyDirectory + "\\index.html").Replace("\t", string.Empty, StringComparison.InvariantCulture);
+
+                                    html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
+                                    html = html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
+                                    html = html.Replace("[[PT_THEME]]", _settings.GetTheme(ThemeListener.AppMode), StringComparison.InvariantCulture);
+                                    html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
+                                    html = html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
+
+                                    // Initialize WebView
 
                                     await _webView.EnsureCoreWebView2Async(_webView2Environment);
                                     _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
