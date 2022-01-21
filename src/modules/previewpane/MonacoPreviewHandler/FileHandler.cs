@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
@@ -17,19 +18,26 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <returns>The monaco language id</returns>
         public static string GetLanguage(string fileExtension)
         {
-            JObject a = JObject.Parse(File.ReadAllText(Settings.AssemblyDirectory + "\\languages.json"));
-            for (int i = 0; i < a["list"].Count(); i++)
+            try
             {
-                for (int j = 0; j < a["list"][i]["extensions"].Count(); j++)
+                JObject a = JObject.Parse(File.ReadAllText(Settings.AssemblyDirectory + "\\languages.json"));
+                for (int i = 0; i < a["list"].Count(); i++)
                 {
-                    if (a["list"][i]["extensions"][j].ToString() == fileExtension)
+                    for (int j = 0; j < a["list"][i]["extensions"].Count(); j++)
                     {
-                        return a["list"][i]["aliases"][0].ToString();
+                        if (a["list"][i]["extensions"][j].ToString() == fileExtension)
+                        {
+                            return a["list"][i]["id"].ToString();
+                        }
                     }
                 }
-            }
 
-            return "plaintext";
+                return "plaintext";
+            }
+            catch (Exception)
+            {
+                return "plaintext";
+            }
         }
     }
 }
