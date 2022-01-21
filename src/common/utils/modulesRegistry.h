@@ -14,6 +14,7 @@ namespace NonLocalizable
     const static wchar_t* ListID = L"list";
     const static wchar_t* ExtensionsID = L"extensions";
     const static wchar_t* MDExtension = L".md";
+    const static wchar_t* SVGExtension = L".svg";
 }
 
 inline registry::ChangeSet getSvgPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
@@ -67,7 +68,10 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
                 for (uint32_t j = 0; j < extensionsList.Size(); ++j)
                 {
                     auto extension = extensionsList.GetStringAt(j);
-                    if (std::wstring{ extension } == std::wstring{ NonLocalizable::MDExtension })
+
+                    // Ignore extensions we already have dedicated handlers for
+                    if (std::wstring{ extension } == std::wstring{ NonLocalizable::MDExtension } ||
+                        std::wstring{ extension } == std::wstring{ NonLocalizable::SVGExtension })
                     {
                         continue;
                     }
