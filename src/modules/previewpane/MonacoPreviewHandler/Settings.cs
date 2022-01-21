@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <summary>
         /// Max file size for displaying (in bytes).
         /// </summary>
-        private readonly long _maxFileSize = 10000;
+        private readonly long _maxFileSize = 50000;
 
         public long MaxFileSize => _maxFileSize;
 

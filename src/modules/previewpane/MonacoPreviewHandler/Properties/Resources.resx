@@ -20,7 +20,7 @@
     </resheader>
     <data name="Max_File_Size_Error" xml:space="preserve">
         <value>This file is too big to display.
-Max file size: 10KB</value>
+Max file size: 50KB</value>
         <comment>Error message which is shown when the file is too big.</comment>
     </data>
     <data name="Exception_Occurred" xml:space="preserve">
