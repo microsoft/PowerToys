@@ -112,7 +112,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - Fix for trackpad scrolling being too fast
 - Removed unneeded nuget package.  Thanks @ChaseKnowlden
 - Better detection for if a packaged app can be elevated
-- Improve crash resiliency for Program plugin.  Thanks @davidegiacometti
+- Improve crash resiliency for the Program plugin.  Thanks @davidegiacometti
 - Improved Windows setting results.  Thanks @htcfreek
 - Fixed a bug where some similar activation phrases aren't working as expected. Thanks @htcfreek and @cyberrex5.
 
