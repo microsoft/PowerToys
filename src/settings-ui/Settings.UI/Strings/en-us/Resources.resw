@@ -620,6 +620,10 @@
     <value>Enable Markdown (.md) preview</value>
     <comment>Do not loc "Markdown".  Do you want this feature on / off</comment>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
+    <value>Enable Monaco (source code) preview</value>
+    <comment>Do you want this feature on / off</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Enable SVG (.svg) preview</value>
     <comment>Do you want this feature on / off</comment>

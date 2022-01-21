@@ -1,15 +1,20 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
 using WK.Libraries.WTL;
 
-namespace MonacoPreviewHandler
+namespace Microsoft.PowerToys.PreviewHandler.Monaco
 {
     /// <summary>
     /// This class defines all the variables used for Monaco
     /// </summary>
-    class Settings
+    public class Settings
     {
         /// <summary>
         /// Theme: dark, light or system.
@@ -19,15 +24,26 @@ namespace MonacoPreviewHandler
         /// <summary>
         /// Word warping. Set by PT settings.
         /// </summary>
-        public readonly bool wrap = false;
+        private bool _wrap;
+
+        public bool Wrap
+        {
+            get => _wrap;
+            set
+            {
+                _wrap = value;
+            }
+        }
 
         /// <summary>
         /// Max file size for displaying (in bytes).
         /// </summary>
-        public readonly long maxFileSize = 10000;
+        private readonly long _maxFileSize = 10000;
+
+        public long MaxFileSize => _maxFileSize;
 
         /// <summary>
-        /// The color of the window background.
+        /// Gets the color of the window background.
         /// </summary>
         public Color BackgroundColor
         {
@@ -45,7 +61,7 @@ namespace MonacoPreviewHandler
         }
 
         /// <summary>
-        /// The color of text labels.
+        /// Gets the color of text labels.
         /// </summary>
         public Color TextColor
         {
@@ -68,7 +84,7 @@ namespace MonacoPreviewHandler
         /// <remarks>
         /// Source: https://stackoverflow.com/a/283917/14774889
         /// </remarks>
-        public string AssemblyDirectory
+        public static string AssemblyDirectory
         {
             get
             {
@@ -84,9 +100,8 @@ namespace MonacoPreviewHandler
         /// </summary>
         /// <param name="systemTheme">theme to use when it's set theme is set to system theme.</param>
         /// <returns>Theme that should be used.</returns>
-        public String GetTheme(ThemeListener.ThemeModes systemTheme)
+        public string GetTheme(ThemeListener.ThemeModes systemTheme)
         {
-
             if (this.theme == "system")
             {
                 if (systemTheme == ThemeListener.ThemeModes.Light)

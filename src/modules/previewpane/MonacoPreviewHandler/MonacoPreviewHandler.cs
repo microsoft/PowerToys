@@ -1,13 +1,16 @@
-﻿using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading;
-using Common;
-using PreviewHandlerCommon;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
-
-namespace MonacoPreviewHandler
+namespace Microsoft.PowerToys.PreviewHandler.Monaco
 {
+    using System;
+    using System.Runtime.InteropServices;
+    using Common;
+
+    /// <summary>
+    /// Implementation of preview handler for files with source code.
+    /// </summary>
     [Guid("afbd5a44-2520-4ae0-9224-6cfce8fe4400")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
@@ -16,11 +19,15 @@ namespace MonacoPreviewHandler
         private MonacoPreviewHandlerControl _monacoPreviewHandlerControl;
         private bool _disposedValue;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MonacoPreviewHandler"/> class.
+        /// </summary>
         public MonacoPreviewHandler()
         {
-            Initialize();
+            this.Initialize();
         }
 
+        /// <inheritdoc />
         [STAThread]
         public override void DoPreview()
         {
@@ -34,6 +41,10 @@ namespace MonacoPreviewHandler
             return _monacoPreviewHandlerControl;
         }
 
+        /// <summary>
+        /// Disposes objects
+        /// </summary>
+        /// <param name="disposing">Is Disposing</param>
         [STAThread]
         protected virtual void Dispose(bool disposing)
         {
@@ -50,6 +61,7 @@ namespace MonacoPreviewHandler
             }
         }
 
+        /// <inheritdoc />
         [STAThread]
         public void Dispose()
         {

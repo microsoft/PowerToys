@@ -388,6 +388,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AlwaysOnTopModuleInterface"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.WebSearch", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.WebSearch\Community.PowerToys.Run.Plugin.WebSearch.csproj", "{9F94B303-5E21-4364-9362-64426F8DB932}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonacoPreviewHandler", "src\modules\previewpane\MonacoPreviewHandler\MonacoPreviewHandler.csproj", "{04B193D7-3E21-46B8-A958-89B63A8A69DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -1045,6 +1047,12 @@ Global
 		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x64.ActiveCfg = Release|x64
 		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x64.Build.0 = Release|x64
 		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x86.ActiveCfg = Release|x64
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Debug|x64.ActiveCfg = Debug|x64
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Debug|x64.Build.0 = Debug|x64
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Release|x64.ActiveCfg = Release|x64
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Release|x64.Build.0 = Release|x64
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1172,6 +1180,7 @@ Global
 		{1DC3BE92-CE89-43FB-8110-9C043A2FE7A2} = {60CD2D4F-C3B9-4897-9821-FCA5098B41CE}
 		{48A0A19E-A0BE-4256-ACF8-CC3B80291AF9} = {60CD2D4F-C3B9-4897-9821-FCA5098B41CE}
 		{9F94B303-5E21-4364-9362-64426F8DB932} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

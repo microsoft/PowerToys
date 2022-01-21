@@ -54,6 +54,7 @@
             <ComponentGroupRef Id="ResourcesComponents" />
             <ComponentGroupRef Id="LauncherComponents" />
             <ComponentGroupRef Id="ToolComponents" />
+            <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
         </Feature>
         <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
 
@@ -127,7 +128,7 @@
             <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize">
                 Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
             </Custom>
-            <Custom Action="UnApplyModulesRegistryChangeSets" Before="InstallFinalize">
+            <Custom Action="UnApplyModulesRegistryChangeSets" Before="RemoveFiles">
                 Installed AND (REMOVE="ALL")
             </Custom>
 
@@ -308,7 +309,14 @@
                         <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)">
                             <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
                         </Directory>
-                        <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
+                        <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview">
+                            <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
+                            <Directory Id="MonacoPreviewHandlerRuntimesFolder" Name="runtimes">
+                                <Directory Id="MonacoPreviewHandlerRuntimesWinX64Folder" Name="win-x64">
+                                    <Directory Id="MonacoPreviewHandlerRuntimesWinX64NativeFolder" Name="native" />
+                                </Directory>
+                            </Directory>
+                        </Directory>
                         <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
                         <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
                             <Directory Id="AwakeImagesFolder" Name="Images" />
@@ -852,6 +860,19 @@
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Markdig.Signed.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\HtmlAgilityPack.dll" />
                 <File Id="FileExplorerPreview_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.IO.Abstractions.dll" />
+                <!-- Files to include dll's for Monaco Preview Handler and it's dependencies -->
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\languages.json" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.comhost.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.runtimeconfig.json" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.deps.json" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Microsoft.Web.WebView2.Core.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Microsoft.Web.WebView2.WinForms.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Microsoft.Web.WebView2.Wpf.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Newtonsoft.Json.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.Personalization.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.Runtime.WindowsRuntime.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\index.html" />
                 <!-- File to include dll for Pdf Preview Handler -->
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PdfPreviewHandler.comhost.dll" />
@@ -874,6 +895,11 @@
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.comhost.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.runtimeconfig.json" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.deps.json" />
+            </Component>
+        </DirectoryRef>
+        <DirectoryRef Id="MonacoPreviewHandlerRuntimesWinX64NativeFolder" FileSource="$(var.BinX64Dir)modules\FileExplorerPreview\runtimes\win-x64\native">
+            <Component Id="MonacoPreviewHandlerRuntimesWinX64NativeLibs" Guid="A867098B-5F8B-491B-A7DC-51F0907B570F" Win64="yes">
+                <File Id="MonacoPreviewHandler_WebView2Loader" Source="$(var.BinX64Dir)modules\FileExplorerPreview\runtimes\win-x64\native\WebView2Loader.dll" />
             </Component>
         </DirectoryRef>
 
@@ -1032,6 +1058,7 @@
             <ComponentRef Id="Module_ImageResizer" />
             <ComponentRef Id="Module_ImageResizer_Registry" />
             <ComponentRef Id="Module_PowerPreview" />
+            <ComponentRef Id="MonacoPreviewHandlerRuntimesWinX64NativeLibs" />
             <ComponentRef Id="Module_PowerPreview_Registry" />
             <ComponentRef Id="Module_KeyboardManager" />
             <ComponentRef Id="Module_KeyboardManager_Editor" />
