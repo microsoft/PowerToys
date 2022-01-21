@@ -51,6 +51,8 @@
                 "modules\\FileExplorerPreview\\PowerToys.ManagedTelemetry.dll",
                 "modules\\FileExplorerPreview\\PowerToys.MarkdownPreviewHandler.dll",
                 "modules\\FileExplorerPreview\\PowerToys.MarkdownPreviewHandler.comhost.dll",
+                "modules\\FileExplorerPreview\\PowerToys.MonacoPreviewHandler.dll",
+                "modules\\FileExplorerPreview\\PowerToys.MonacoPreviewHandler.comhost.dll",
                 "modules\\FileExplorerPreview\\PowerToys.PdfPreviewHandler.dll",
                 "modules\\FileExplorerPreview\\PowerToys.PdfPreviewHandler.comhost.dll",
                 "modules\\FileExplorerPreview\\PowerToys.PdfThumbnailProvider.dll",
