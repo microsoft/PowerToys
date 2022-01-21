@@ -216,6 +216,7 @@
                                 <controls:Setting x:Uid="MouseUtils_InclusiveMouse_CrosshairRadius" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsInclusiveMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <muxc:NumberBox Minimum="1"
+                                                    Maximum="500"
                                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.InclusiveMouseCrosshairRadius}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
