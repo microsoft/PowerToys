@@ -24,11 +24,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private readonly Settings _settings = new Settings();
 
         /// <summary>
-        /// File system library.
-        /// </summary>
-        // private static readonly IFileSystem FileSystem = new FileSystem();
-
-        /// <summary>
         /// Saves if the user already navigated to the index page
         /// </summary>
         private bool _hasNavigated;
@@ -105,6 +100,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                 // Initialize WebView
                                 try
                                 {
+                                    if (CoreWebView2Environment.GetAvailableBrowserVersionString() == null)
+                                    {
+                                        throw new WebView2RuntimeNotFoundException();
+                                    }
+
                                     await _webView.EnsureCoreWebView2Async(_webView2Environment);
                                     _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
                                     _webView.NavigateToString(html);
