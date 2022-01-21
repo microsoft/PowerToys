@@ -54,7 +54,7 @@ There are [community driven install methods](./doc/unofficialInstallMethods.md) 
 
 This project welcomes contributions of all types. Help spec'ing, design, documentation, finding bugs are ways everyone can help on top of coding features / bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
 
-We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We will be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
+We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We will be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicated effort.
 
 Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to, and actually do, grant us the rights to use your contribution.
 
@@ -73,13 +73,13 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 [@Aaron-Junker](https://github.com/Aaron-Junker) also has done some great progress on [implementing developer file preview pane](https://github.com/microsoft/PowerToys/issues/1527) via the Monaco engine from Visual Studio Code.
 
 #### Things to be aware of
-- The new installer currently has a visual quirk when upgrade if you have a custom install path.  It will show the default install path but it will actually overwrite the current location.  We are investigating how to fix this.
+- The new installer currently has a visual quirk when upgrading if you have a custom install path.  It will show the default install path but it will actually overwrite the current location.  We are investigating how to fix this.
 
 #### Always on Top
 - Welcome to the family!  With a quick <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd>, the window in focus is toggled to be on top.  Toggle again, and it reverts back to normal.
 
 #### ColorPicker
-- HEX input improvements for adjust color menu including support for hex code without hashtag and short hex code like #CF0.  Thanks @htcfreek! 
+- HEX input improvements for adjusting color menu including support for hex code without hashtag and short hex code like #CF0.  Thanks @htcfreek! 
 - Better bottom right screen detection for overlay
 
 #### FancyZones
@@ -98,7 +98,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - Row highlighting + preview support now implemented. Thanks @niels9001
 - Fixed AltGR input issue
 - Improved folder renaming support
-- Opens on active monitor
+- Opens on the active monitor
 
 #### PowerToys Run
 - Web searching has been added! `?? What is the answer to life` will go to your favorite search engine via your browser.  You can change the default action key too!  Thanks @cyberrex5 for primary implementation and @franky920920 and @htcfreek for supporting
@@ -121,14 +121,14 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - Changed (default) hotkey for mute camera & microphone from <kbd>Win</kbd>+<kbd>N</kbd> to <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd> to not conflict with a Windows 11 keyboard shortcut
 
 #### Settings
-- Multiple accessibility, layout, image, string and icons fixes. Thanks @niels9001
+- Multiple accessibilities, layout, image, string, and icon fixes. Thanks @niels9001
 
 #### Runner
 - Improved mutex support to prevent multiple PT Run instances from running
 
 #### Installer
-- **NOTE:**  The new installer currently has a visual quirk when upgrade if you have a custom install path.  It will show the default install path but it will actually overwrite the current location.  We are investigating how to fix this.
-- Large progress toward user based installing vs machine wide. Upgrade scenario still needs additional work.
+- **NOTE:**  The new installer currently has a visual quirk when upgrading if you have a custom install path.  It will show the default install path but it will actually overwrite the current location.  We are investigating how to fix this.
+- Large progress toward user-based installing vs machine-wide. The Upgrade scenario still needs additional work.
 - Removed custom bootstrapper and now are using a WiX bundle.
 - Removed unused image assets that were still being shipped. Thanks @niels9001
 
@@ -136,7 +136,7 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 - Setting WinUI3 proof-of-concept and validate we do need at least one more feature, elevation support from WinUI 3 unpackaged applications.
 
 #### Dev improvements
-- New YAML based pipeline for building our signed installer. This will allow us to consolidate our CI to use same file. This was critical for us to unblock ARM64 and .NET 6 migration.
+- New YAML-based pipeline for building our signed installer. This will allow us to consolidate our CI to use the same file. This was critical for us to unblock ARM64 and .NET 6 migration.
 - Our submodules will no longer auto fetch to prevent locking issues. If you want a refresher on how to do this, head to [our dev docs](https://github.com/microsoft/PowerToys/tree/main/doc/devdocs#get-submodules-to-compile)
 - Localization system shifted to Touchdown from CDPx.  This should remove many of the loc issues.
 - Consolidated a lot of the naming of EXEs and DLLs along with projects
@@ -146,13 +146,13 @@ We hope everyone has had a wonderful December 2021. The PowerToys community has 
 
 #### Community contributions
 
-We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software. 
+We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and for helping directly make PowerToys a better piece of software. 
 
 [@Aaron-Junker](https://github.com/Aaron-Junker), [@ChaseKnowlden](https://github.com/ChaseKnowlden), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@cyberrex5](https://github.com/cyberrex5), [@davidegiacometti](https://github.com/davidegiacometti), [@franky920920](https://github.com/franky920920), [@gsuberland](https://github.com/gsuberland),  [@jay-o-way](https://github.com/jay-o-way), [@jsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), and [@ricardosantos9521](https://github.com/ricardosantos9521)
 
 #### What is being planned for v0.55
 
-For [v0.55][github-next-release-work], we'll work on adding more stability in with VCM and getting dev file preview pane added in so we get 150 file types :)
+For [v0.55][github-next-release-work], we'll work on adding more stability with VCM and getting dev file preview pane added in so we get 150 file types :)
 
 - We are working to heavily reduce / remove the UAC prompt over the next few releases on install. This is a big shift so it is spanning multiple releases so we can isolate issues if they do occur. Work is tracked in [#10126](https://github.com/microsoft/PowerToys/issues/10126)
 - Getting the dev file preview pane work integrated. (Monaco Editor)
