@@ -3,6 +3,7 @@
 #include "FancyZonesLib/ZoneSet.h"
 #include "FancyZonesLib/Settings.h"
 #include "FancyZonesLib/FancyZonesData.h"
+#include "FancyZonesData/AppZoneHistory.h"
 #include "FancyZonesLib/FancyZonesData/CustomLayouts.h"
 #include "FancyZonesLib/FancyZonesData/LayoutHotkeys.h"
 #include "FancyZonesLib/FancyZonesDataTypes.h"
@@ -145,7 +146,7 @@ void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inM
 void Trace::FancyZones::DataChanged() noexcept
 {
     const FancyZonesData& data = FancyZonesDataInstance();
-    int appsHistorySize = static_cast<int>(data.GetAppZoneHistoryMap().size());
+    int appsHistorySize = static_cast<int>(AppZoneHistory::instance().GetFullAppZoneHistory().size());
     const auto& customZones = CustomLayouts::instance().GetAllLayouts();
     const auto& devices = data.GetDeviceInfoMap();
     auto quickKeysCount = LayoutHotkeys::instance().GetHotkeysCount();
