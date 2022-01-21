@@ -12,6 +12,7 @@
 #include <common/SettingsAPI/FileWatcher.h>
 
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
@@ -72,6 +73,7 @@ public:
 
         FancyZonesDataInstance().ReplaceZoneSettingsFileFromOlderVersions();
         LayoutHotkeys::instance().LoadData();
+        CustomLayouts::instance().LoadData();
     }
 
     // IFancyZones
@@ -775,6 +777,10 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             LayoutHotkeys::instance().LoadData();
         }
+        else if (message == WM_PRIV_CUSTOM_LAYOUTS_FILE_UPDATE)
+        {
+            CustomLayouts::instance().LoadData();
+        }
         else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
         {
             ApplyQuickLayout(static_cast<int>(lparam));
@@ -1307,23 +1313,22 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
         return;
     }
 
+    // Find a custom zone set with this uuid and apply it
+    auto layout = CustomLayouts::instance().GetLayout(layoutId.value());
+    if (!layout)
+    {
+        return;
+    }
+
     auto uuidStr = FancyZonesUtils::GuidToString(layoutId.value());
     if (!uuidStr)
     {
         return;
     }
 
-    auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(m_currentDesktopId);
-
-    // Find a custom zone set with this uuid and apply it
-    auto customZoneSets = FancyZonesDataInstance().GetCustomZoneSetsMap();
-
-    if (!customZoneSets.contains(uuidStr.value()))
-    {
-        return;
-    }
-
     FancyZonesDataTypes::ZoneSetData data{ .uuid = uuidStr.value(), .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom };
+    
+    auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(m_currentDesktopId);
     FancyZonesDataInstance().SetActiveZoneSet(workArea->UniqueId(), data);
     FancyZonesDataInstance().SaveZoneSettings();
     UpdateZoneSets();

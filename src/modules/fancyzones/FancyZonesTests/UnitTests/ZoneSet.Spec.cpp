@@ -1000,7 +1000,7 @@ namespace FancyZonesUnitTests
                 {
                     const std::wstring uuid = L"uuid";
                     const CanvasLayoutInfo info{ -1, 100, { CanvasLayoutInfo::Rect{ -10, -10, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomLayoutData{ L"name", CustomLayoutType::Canvas, info } };
                     json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
 
@@ -1026,7 +1026,7 @@ namespace FancyZonesUnitTests
                         .rowsPercents = { -100 }, //rows percents are negative
                         .columnsPercents = { 2500, 2500 }, //column percents count is invalid
                         .cellChildMap = { { 0, 1, 2 } } }));
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomLayoutData{ L"name", CustomLayoutType::Grid, grid } };
                     json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
 
@@ -1043,69 +1043,13 @@ namespace FancyZonesUnitTests
                     }
                 }
 
-                TEST_METHOD (CustomZoneFromValidCanvasLayoutInfo)
-                {
-                    //prepare device data
-                    FancyZonesDataInstance().SetDeviceInfo(FancyZonesDataTypes::DeviceIdData{ L"default_device_id" }, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 });
-
-                    //prepare expected data
-                    wil::unique_cotaskmem_string uuid;
-                    Assert::AreEqual(S_OK, StringFromCLSID(m_id, &uuid));
-                    const CanvasLayoutInfo info{ 123, 321, { CanvasLayoutInfo::Rect{ 0, 0, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
-                    CustomZoneSetData zoneSetData{ L"name", CustomLayoutType::Canvas, info };
-                    FancyZonesDataInstance().SetCustomZonesets(uuid.get(), zoneSetData);
-                    
-                    //test
-                    const int spacing = 10;
-                    const int zoneCount = static_cast<int>(info.zones.size());
-                    ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-                    for (const auto& monitorInfo : m_popularMonitors)
-                    {
-                        auto set = MakeZoneSet(m_config);
-                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
-                        Assert::IsTrue(result);
-                        checkZones(set, ZoneSetLayoutType::Custom, zoneCount, monitorInfo);
-                    }
-                }
-
-                TEST_METHOD (CustomZoneFromValidGridFullLayoutInfo)
-                {
-                    //prepare device data
-                    FancyZonesDataInstance().SetDeviceInfo(FancyZonesDataTypes::DeviceIdData{ L"default_device_id" }, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 });
-
-                    //prepare expected data
-                    wil::unique_cotaskmem_string uuid;
-                    Assert::AreEqual(S_OK, StringFromCLSID(m_id, &uuid));
-                    const GridLayoutInfo grid(GridLayoutInfo(GridLayoutInfo::Full{
-                        .rows = 1,
-                        .columns = 3,
-                        .rowsPercents = { 10000 },
-                        .columnsPercents = { 2500, 5000, 2500 },
-                        .cellChildMap = { { 0, 1, 2 } } }));
-                    CustomZoneSetData zoneSetData{ L"name", CustomLayoutType::Grid, grid };
-                    FancyZonesDataInstance().SetCustomZonesets(uuid.get(), zoneSetData);
-
-                    const int spacing = 10;
-                    const int zoneCount = grid.rows() * grid.columns();
-
-                    ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-
-                    for (const auto& monitorInfo : m_popularMonitors)
-                    {
-                        auto set = MakeZoneSet(m_config);
-                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
-                        Assert::IsTrue(result);
-                        checkZones(set, ZoneSetLayoutType::Custom, zoneCount, monitorInfo);
-                    }
-                }
-
                 TEST_METHOD (CustomZoneFromValidGridMinimalLayoutInfo)
                 {
                     const std::wstring uuid = L"uuid";
                     const GridLayoutInfo grid(GridLayoutInfo(GridLayoutInfo::Minimal{
                         .rows = 1,
                         .columns = 3 }));
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomLayoutData{ L"name", CustomLayoutType::Grid, grid } };
                     json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
 

@@ -376,6 +376,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred while parsing custom layouts..
+        /// </summary>
+        public static string Error_Parsing_Custom_Layouts_Message {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Custom_Layouts_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error parsing device info data..
         /// </summary>
         public static string Error_Parsing_Device_Info {

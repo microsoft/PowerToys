@@ -6,6 +6,7 @@
 #include "trace.h"
 #include "util.h"
 
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 
@@ -579,14 +580,13 @@ namespace JSONHelpers
         }
     }
 
-    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap, const TCustomZoneSetsMap& customZoneSetsMap)
+    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap)
     {
         auto before = json::from_file(zonesSettingsFileName);
 
         json::JsonObject root{};
                
         root.SetNamedValue(NonLocalizable::DevicesStr, JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
-        root.SetNamedValue(NonLocalizable::CustomZoneSetsStr, JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
         
         if (!before.has_value() || before.value().Stringify() != root.Stringify())
         {
@@ -679,29 +679,6 @@ namespace JSONHelpers
         return DeviceInfosJSON;
     }
 
-    TCustomZoneSetsMap ParseCustomZoneSets(const json::JsonObject& fancyZonesDataJSON)
-    {
-        try
-        {
-            TCustomZoneSetsMap customZoneSetsMap{};
-            auto customZoneSets = fancyZonesDataJSON.GetNamedArray(NonLocalizable::CustomZoneSetsStr);
-
-            for (uint32_t i = 0; i < customZoneSets.Size(); ++i)
-            {
-                if (auto zoneSet = CustomZoneSetJSON::FromJson(customZoneSets.GetObjectAt(i)); zoneSet.has_value())
-                {
-                    customZoneSetsMap[zoneSet->uuid] = std::move(zoneSet->data);
-                }
-            }
-
-            return std::move(customZoneSetsMap);
-        }
-        catch (const winrt::hresult_error&)
-        {
-            return {};
-        }
-    }
-
     json::JsonArray SerializeCustomZoneSets(const TCustomZoneSetsMap& customZoneSetsMap)
     {
         json::JsonArray customZoneSetsJSON{};
@@ -776,5 +753,44 @@ namespace JSONHelpers
         json::JsonObject root{};
         root.SetNamedValue(NonLocalizable::LayoutTemplatesIds::LayoutTemplatesArrayID, templates);
         json::to_file(LayoutTemplates::LayoutTemplatesFileName(), root);
+    }
+
+    std::optional<TCustomZoneSetsMap> ParseCustomZoneSets(const json::JsonObject& fancyZonesDataJSON)
+    {
+        try
+        {
+            TCustomZoneSetsMap customZoneSetsMap{};
+            auto customZoneSets = fancyZonesDataJSON.GetNamedArray(NonLocalizable::CustomZoneSetsStr);
+
+            for (uint32_t i = 0; i < customZoneSets.Size(); ++i)
+            {
+                if (auto zoneSet = CustomZoneSetJSON::FromJson(customZoneSets.GetObjectAt(i)); zoneSet.has_value())
+                {
+                    customZoneSetsMap[zoneSet->uuid] = std::move(zoneSet->data);
+                }
+            }
+
+            return std::move(customZoneSetsMap);
+        }
+        catch (const winrt::hresult_error& e)
+        {
+            Logger::error(L"Parsing custom layouts error: {}", e.message());
+            return std::nullopt;
+        }
+    }
+
+    void SaveCustomLayouts(const TCustomZoneSetsMap& map)
+    {
+        json::JsonObject root{};
+        json::JsonArray layoutsArray{};
+
+        for (const auto& [uuid, data] : map)
+        {
+            json::JsonObject layoutJson{};
+            layoutsArray.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ uuid, data }));
+        }
+
+        root.SetNamedValue(NonLocalizable::CustomLayoutsIds::CustomLayoutsArrayID, layoutsArray);
+        json::to_file(CustomLayouts::CustomLayoutsFileName(), root);
     }
 }
