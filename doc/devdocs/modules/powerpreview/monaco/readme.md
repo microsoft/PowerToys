@@ -11,5 +11,5 @@
 After you updated monaco editor or adding a new language you should update the [`languages.json`](/src/modules/previewpane/MonacoPreviewHandler/languages.json) file.
 
 1. Build monaco in debug mode.
-2. Open [generateLanguagesJson.html](https://github.com/microsoft/PowerToys/blob/feature/monacoPreviewPane/src/modules/previewpane/MonacoPreviewHandler/generateLanguagesJson.html) in a browser.
+2. Open [generateLanguagesJson.html](/src/modules/previewpane/MonacoPreviewHandler/generateLanguagesJson.html) in a browser.
 3. Replace the JSON file.
