@@ -37,7 +37,7 @@ namespace Microsoft.Plugin.WindowWalker
             }
 
             OpenWindows.Instance.UpdateOpenWindowsList();
-            SearchController.Instance.UpdateSearchText(query.Search).Wait();
+            SearchController.Instance.UpdateSearchText(query.Search);
 
             return _results.Select(x => new Result()
             {

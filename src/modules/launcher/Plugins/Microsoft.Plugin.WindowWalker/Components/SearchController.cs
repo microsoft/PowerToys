@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
@@ -24,7 +23,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
         /// <summary>
         /// Open window search results
-        /// </summary
+        /// </summary>
         private List<SearchResult> searchMatches;
 
         /// <summary>
@@ -95,16 +94,16 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Event handler for when the search text has been updated
         /// </summary>
-        public async Task UpdateSearchText(string searchText)
+        public void UpdateSearchText(string searchText)
         {
             SearchText = searchText;
-            await SyncOpenWindowsWithModelAsync().ConfigureAwait(false);
+            SyncOpenWindowsWithModel();
         }
 
         /// <summary>
         /// Syncs the open windows with the OpenWindows Model
         /// </summary>
-        public async Task SyncOpenWindowsWithModelAsync()
+        public void SyncOpenWindowsWithModel()
         {
             System.Diagnostics.Debug.Print("Syncing WindowSearch result with OpenWindows Model");
 
@@ -116,22 +115,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
             else
             {
-                searchMatches = await FuzzySearchOpenWindowsAsync(snapshotOfOpenWindows).ConfigureAwait(false);
+                searchMatches = FuzzySearchOpenWindows(snapshotOfOpenWindows);
             }
 
             OnSearchResultUpdateEventHandler?.Invoke(this, new SearchResultUpdateEventArgs());
-        }
-
-        /// <summary>
-        /// Redirecting method for Fuzzy searching
-        /// </summary>
-        /// <param name="openWindows">what windows are open</param>
-        /// <returns>Returns search results</returns>
-        private Task<List<SearchResult>> FuzzySearchOpenWindowsAsync(List<Window> openWindows)
-        {
-            return Task.Run(
-                () =>
-                    FuzzySearchOpenWindows(openWindows));
         }
 
         /// <summary>
