@@ -136,7 +136,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>The thread ID</returns>
         public static uint GetThreadIDFromWindowHandle(IntPtr hwnd)
         {
-            var threadId = NativeMethods.GetWindowThreadProcessId(hwnd, out _);
+            uint threadId = NativeMethods.GetWindowThreadProcessId(hwnd, out _);
             return threadId;
         }
 
@@ -152,12 +152,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
             {
-                NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
                 return processName.ToString().Split('\\').Reverse().ToArray()[0];
             }
             else
             {
-                NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
                 return string.Empty;
             }
         }
@@ -169,17 +169,17 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>True if denied and false if not.</returns>
         private static bool TestProcessAccessUsingAllAccessFlag(uint pid)
         {
-            var processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)pid);
+            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)pid);
 
             if (NativeMethods.GetLastWin32Error() == 5)
             {
                 // Error 5 = ERROR_ACCESS_DENIED
-                NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
                 return true;
             }
             else
             {
-                NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
                 return false;
             }
         }

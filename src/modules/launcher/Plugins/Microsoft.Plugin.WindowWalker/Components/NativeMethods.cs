@@ -934,7 +934,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>Zero if native method fails and nonzero if the native method succeeds.</returns>
         public static bool CloseHandleIfNotNull(IntPtr handle)
         {
-            if (handle == null)
+            if (handle == IntPtr.Zero)
             {
                 // Return true if there is nothing to close.
                 return true;
