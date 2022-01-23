@@ -111,7 +111,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether determines whether the specified window handle identifies an existing window.
+        /// Gets a value indicating whether the specified window handle identifies an existing window.
         /// </summary>
         public bool IsWindow
         {
