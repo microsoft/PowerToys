@@ -56,6 +56,19 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
+        /// Gets a value indicating whether this is the shell process or not
+        /// The shell process (like explorer.exe) hosts parts of the user interface (like taskbar, start menu, ...)
+        /// </summary>
+        public bool IsShellProcess
+        {
+            get
+            {
+                IntPtr hShellWindow = NativeMethods.GetShellWindow();
+                return GetProcessIDFromWindowHandle(hShellWindow) == ProcessID;
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the process exists on the machine
         /// </summary>
         public bool DoesExist
@@ -87,19 +100,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public bool IsFullAccessDenied
         {
             get; private set;
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this is the shell process or not
-        /// The shell process (like explorer.exe) hosts parts of the user interface (like taskbar, start menu, ...)
-        /// </summary>
-        public bool IsShellProcess
-        {
-            get
-            {
-                    IntPtr hShellWindow = NativeMethods.GetShellWindow();
-                    return GetProcessIDFromWindowHandle(hShellWindow) == ProcessID;
-            }
         }
 
         /// <summary>
