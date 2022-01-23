@@ -8,7 +8,7 @@ The window walker plugin matches the user entered query with the open windows on
 
 ### [`SearchController.cs`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/SearchController.cs)
 - The [`SearchController`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/SearchController.cs) encapsulates the functions needed to search and find matches.
-- It is responsible for updating the search text and performing a fuzzy search on all the open windows in an asynchronous manner.
+- It is responsible for updating the search text and performing a fuzzy search on all the open windows.
 
 ### [`Window.cs`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/Window.cs)
 - The [`Window`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/Window.cs) class represents a specific window and has functions to get the name of the window, the state of the window (whether it is visible or not), and the `SwitchTowindow` function which switches the desktop focus to the selected window. This action is performed when the user clicks on a window walker plugin result.
