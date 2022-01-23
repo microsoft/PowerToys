@@ -21,6 +21,11 @@ namespace ImageResizer.Properties
     public sealed partial class Settings : IDataErrorInfo, INotifyPropertyChanged
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+        {
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            WriteIndented = true,
+        };
 
         // Used to synchronize access to the settings.json file
         private static Mutex _jsonMutex = new Mutex();
@@ -409,7 +414,7 @@ namespace ImageResizer.Properties
         public void Save()
         {
             _jsonMutex.WaitOne();
-            string jsonData = JsonSerializer.Serialize(new SettingsWrapper() { Properties = this });
+            string jsonData = JsonSerializer.Serialize(new SettingsWrapper() { Properties = this }, _jsonSerializerOptions);
 
             // Create directory if it doesn't exist
             IFileInfo file = _fileSystem.FileInfo.FromFileName(SettingsPath);
@@ -442,7 +447,7 @@ namespace ImageResizer.Properties
             var jsonSettings = new Settings();
             try
             {
-                jsonSettings = JsonSerializer.Deserialize<SettingsWrapper>(jsonData)?.Properties;
+                jsonSettings = JsonSerializer.Deserialize<SettingsWrapper>(jsonData, _jsonSerializerOptions)?.Properties;
             }
             catch (JsonException)
             {

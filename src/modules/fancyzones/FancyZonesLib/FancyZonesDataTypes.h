@@ -100,7 +100,7 @@ namespace FancyZonesDataTypes
         int m_sensitivityRadius;
     };
 
-    struct CustomZoneSetData
+    struct CustomLayoutData
     {
         std::wstring name;
         CustomLayoutType type;

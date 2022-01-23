@@ -28,6 +28,76 @@ namespace CustomAssert
             Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(a1[i].first == a2[i].first);
         }
     }
+
+    static std::pair<bool, std::wstring> CompareJsonObjects(const json::JsonObject& expected, const json::JsonObject& actual, bool recursive = true)
+    {
+        auto iter = expected.First();
+        while (iter.HasCurrent())
+        {
+            const auto key = iter.Current().Key();
+            if (!actual.HasKey(key))
+            {
+                return std::make_pair(false, key.c_str());
+            }
+
+            const std::wstring expectedStringified = iter.Current().Value().Stringify().c_str();
+            const std::wstring actualStringified = actual.GetNamedValue(key).Stringify().c_str();
+
+            if (recursive)
+            {
+                json::JsonObject expectedJson;
+                if (json::JsonObject::TryParse(expectedStringified, expectedJson))
+                {
+                    json::JsonObject actualJson;
+                    if (json::JsonObject::TryParse(actualStringified, actualJson))
+                    {
+                        CompareJsonObjects(expectedJson, actualJson, true);
+                    }
+                    else
+                    {
+                        return std::make_pair(false, key.c_str());
+                    }
+                }
+                else
+                {
+                    if (expectedStringified != actualStringified)
+                    {
+                        return std::make_pair(false, key.c_str());
+                    }
+                }
+            }
+            else
+            {
+                if (expectedStringified != actualStringified)
+                {
+                    return std::make_pair(false, key.c_str());
+                }
+            }
+
+            iter.MoveNext();
+        }
+
+        return std::make_pair(true, L"");
+    }
+
+    static std::pair<bool, std::wstring> CompareJsonArrays(const json::JsonArray& expected, const json::JsonArray& actual)
+    {
+        if (expected.Size() != actual.Size())
+        {
+            return std::make_pair(false, L"Array sizes don't match");
+        }
+
+        for (uint32_t i = 0; i < expected.Size(); i++)
+        {
+            auto res = CustomAssert::CompareJsonObjects(expected.GetObjectAt(i), actual.GetObjectAt(i));
+            if (!res.first)
+            {
+                return res;
+            }
+        }
+
+        return std::make_pair(true, L"");
+    }
 }
 
 namespace Mocks

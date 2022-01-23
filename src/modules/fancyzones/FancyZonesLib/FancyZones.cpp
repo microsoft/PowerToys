@@ -12,6 +12,8 @@
 #include <common/SettingsAPI/FileWatcher.h>
 
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/MonitorUtils.h>
@@ -68,6 +70,10 @@ public:
         })
     {
         this->disableModuleCallback = std::move(disableModuleCallback);
+
+        FancyZonesDataInstance().ReplaceZoneSettingsFileFromOlderVersions();
+        LayoutHotkeys::instance().LoadData();
+        CustomLayouts::instance().LoadData();
     }
 
     // IFancyZones
@@ -486,8 +492,8 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 
         if (changeLayoutWhileNotDragging || changeLayoutWhileDragging)
         {
-            auto quickKeysMap = FancyZonesDataInstance().GetLayoutQuickKeys();
-            if (std::any_of(quickKeysMap.begin(), quickKeysMap.end(), [=](auto item) { return item.second == digitPressed; }))
+            auto layoutId = LayoutHotkeys::instance().GetLayoutId(digitPressed);
+            if (layoutId.has_value())
             {
                 PostMessageW(m_window, WM_PRIV_QUICK_LAYOUT_KEY, 0, static_cast<LPARAM>(digitPressed));
                 Trace::FancyZones::QuickLayoutSwitched(changeLayoutWhileNotDragging);
@@ -766,6 +772,14 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             FancyZonesDataInstance().LoadFancyZonesData();
             UpdateZoneSets();
+        }
+        else if (message == WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE)
+        {
+            LayoutHotkeys::instance().LoadData();
+        }
+        else if (message == WM_PRIV_CUSTOM_LAYOUTS_FILE_UPDATE)
+        {
+            CustomLayouts::instance().LoadData();
         }
         else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
         {
@@ -1293,26 +1307,28 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
 
 void FancyZones::ApplyQuickLayout(int key) noexcept
 {
-    std::wstring uuid;
-    for (auto [layoutUuid, hotkey] : FancyZonesDataInstance().GetLayoutQuickKeys())
-    {
-        if (hotkey == key)
-        {
-            uuid = layoutUuid;
-        }
-    }
-
-    auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(m_currentDesktopId);
-
-    // Find a custom zone set with this uuid and apply it
-    auto customZoneSets = FancyZonesDataInstance().GetCustomZoneSetsMap();
-
-    if (!customZoneSets.contains(uuid))
+    auto layoutId = LayoutHotkeys::instance().GetLayoutId(key);
+    if (!layoutId)
     {
         return;
     }
 
-    FancyZonesDataTypes::ZoneSetData data{ .uuid = uuid, .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom };
+    // Find a custom zone set with this uuid and apply it
+    auto layout = CustomLayouts::instance().GetLayout(layoutId.value());
+    if (!layout)
+    {
+        return;
+    }
+
+    auto uuidStr = FancyZonesUtils::GuidToString(layoutId.value());
+    if (!uuidStr)
+    {
+        return;
+    }
+
+    FancyZonesDataTypes::ZoneSetData data{ .uuid = uuidStr.value(), .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom };
+    
+    auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(m_currentDesktopId);
     FancyZonesDataInstance().SetActiveZoneSet(workArea->UniqueId(), data);
     FancyZonesDataInstance().SaveZoneSettings();
     UpdateZoneSets();

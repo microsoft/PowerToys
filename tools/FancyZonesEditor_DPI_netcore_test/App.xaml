@@ -1,9 +1,0 @@
-﻿<Application x:Class="FancyZonesEditor_DPI_netcore_test.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:FancyZonesEditor_DPI_netcore_test"
-             StartupUri="MainWindow.xaml">
-    <Application.Resources>
-         
-    </Application.Resources>
-</Application>

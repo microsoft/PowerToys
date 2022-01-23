@@ -25,11 +25,18 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         {
             var unformattedValue = key.GetValue(valueName);
 
+            if (unformattedValue == null)
+            {
+                throw new NullReferenceException(nameof(unformattedValue));
+            }
+
             var valueData = key.GetValueKind(valueName) switch
             {
                 RegistryValueKind.DWord => $"0x{unformattedValue:X8} ({(uint)(int)unformattedValue})",
                 RegistryValueKind.QWord => $"0x{unformattedValue:X16} ({(ulong)(long)unformattedValue})",
+#pragma warning disable CS8604 // Possible null reference argument.
                 RegistryValueKind.Binary => (unformattedValue as byte[]).Aggregate(string.Empty, (current, singleByte) => $"{current} {singleByte:X2}"),
+#pragma warning restore CS8604 // Possible null reference argument.
                 _ => $"{unformattedValue}",
             };
 

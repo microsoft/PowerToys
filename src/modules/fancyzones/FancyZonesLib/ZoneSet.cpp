@@ -3,6 +3,7 @@
 #include "ZoneSet.h"
 
 #include "FancyZonesData.h"
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include "FancyZonesDataTypes.h"
 #include "FancyZonesWindowProperties.h"
 #include "Settings.h"
@@ -880,52 +881,45 @@ bool ZoneSet::CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, in
 
 bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 {
-    wil::unique_cotaskmem_string guidStr;
-    if (SUCCEEDED(StringFromCLSID(m_config.Id, &guidStr)))
+    const auto zoneSetSearchResult = CustomLayouts::instance().GetLayout(m_config.Id);
+    if (!zoneSetSearchResult.has_value())
     {
-        const std::wstring guid = guidStr.get();
+        return false;
+    }
 
-        const auto zoneSetSearchResult = FancyZonesDataInstance().FindCustomZoneSet(guid);
-
-        if (!zoneSetSearchResult.has_value())
+    const auto& zoneSet = *zoneSetSearchResult;
+    if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Canvas && std::holds_alternative<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info))
+    {
+        const auto& zoneSetInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info);
+        for (const auto& zone : zoneSetInfo.zones)
         {
-            return false;
-        }
+            int x = zone.x;
+            int y = zone.y;
+            int width = zone.width;
+            int height = zone.height;
 
-        const auto& zoneSet = *zoneSetSearchResult;
-        if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Canvas && std::holds_alternative<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info))
-        {
-            const auto& zoneSetInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info);
-            for (const auto& zone : zoneSetInfo.zones)
+            DPIAware::Convert(m_config.Monitor, x, y);
+            DPIAware::Convert(m_config.Monitor, width, height);
+
+            auto zone = MakeZone(RECT{ x, y, x + width, y + height }, m_zones.size());
+            if (zone)
             {
-                int x = zone.x;
-                int y = zone.y;
-                int width = zone.width;
-                int height = zone.height;
-
-                DPIAware::Convert(m_config.Monitor, x, y);
-                DPIAware::Convert(m_config.Monitor, width, height);
-
-                auto zone = MakeZone(RECT{ x, y, x + width, y + height }, m_zones.size());
-                if (zone)
-                {
-                    AddZone(zone);
-                }
-                else
-                {
-                    // All zones within zone set should be valid in order to use its functionality.
-                    m_zones.clear();
-                    return false;
-                }
+                AddZone(zone);
             }
+            else
+            {
+                // All zones within zone set should be valid in order to use its functionality.
+                m_zones.clear();
+                return false;
+            }
+        }
 
-            return true;
-        }
-        else if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Grid && std::holds_alternative<FancyZonesDataTypes::GridLayoutInfo>(zoneSet.info))
-        {
-            const auto& info = std::get<FancyZonesDataTypes::GridLayoutInfo>(zoneSet.info);
-            return CalculateGridZones(workArea, info, spacing);
-        }
+        return true;
+    }
+    else if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Grid && std::holds_alternative<FancyZonesDataTypes::GridLayoutInfo>(zoneSet.info))
+    {
+        const auto& info = std::get<FancyZonesDataTypes::GridLayoutInfo>(zoneSet.info);
+        return CalculateGridZones(workArea, info, spacing);
     }
 
     return false;

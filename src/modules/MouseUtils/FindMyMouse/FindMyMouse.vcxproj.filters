@@ -41,22 +41,16 @@
     <ClInclude Include="FindMyMouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Generated Files\resource.h">
-      <Filter>Generated Files</Filter>
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="resource.base.h">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="FindMyMouse.base.rc">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Generated Files\FindMyMouse.rc">
-      <Filter>Generated Files</Filter>
+    <ResourceCompile Include="FindMyMouse.rc">
+      <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
 </Project>

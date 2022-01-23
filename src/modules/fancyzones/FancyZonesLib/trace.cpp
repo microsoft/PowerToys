@@ -3,7 +3,10 @@
 #include "FancyZonesLib/ZoneSet.h"
 #include "FancyZonesLib/Settings.h"
 #include "FancyZonesLib/FancyZonesData.h"
+#include "FancyZonesLib/FancyZonesData/CustomLayouts.h"
+#include "FancyZonesLib/FancyZonesData/LayoutHotkeys.h"
 #include "FancyZonesLib/FancyZonesDataTypes.h"
+#include "FancyZonesLib/util.h"
 
 // Telemetry strings should not be localized.
 #define LoggingProviderKey "Microsoft.PowerToys"
@@ -143,9 +146,9 @@ void Trace::FancyZones::DataChanged() noexcept
 {
     const FancyZonesData& data = FancyZonesDataInstance();
     int appsHistorySize = static_cast<int>(data.GetAppZoneHistoryMap().size());
-    const auto& customZones = data.GetCustomZoneSetsMap();
+    const auto& customZones = CustomLayouts::instance().GetAllLayouts();
     const auto& devices = data.GetDeviceInfoMap();
-    const auto& quickKeys = data.GetLayoutQuickKeys();
+    auto quickKeysCount = LayoutHotkeys::instance().GetHotkeysCount();
 
     std::unique_ptr<INT32[]> customZonesArray(new (std::nothrow) INT32[customZones.size()]);
     if (!customZonesArray)
@@ -189,11 +192,15 @@ void Trace::FancyZones::DataChanged() noexcept
         int zoneCount = -1;
         if (type == FancyZonesDataTypes::ZoneSetLayoutType::Custom)
         {
-            const auto& activeCustomZone = customZones.find(device.activeZoneSet.uuid);
-            if (activeCustomZone != customZones.end())
+            auto guid = FancyZonesUtils::GuidFromString(device.activeZoneSet.uuid);
+            if (guid)
             {
-                zoneCount = getCustomZoneCount(activeCustomZone->second.info);
-            }
+                const auto& activeCustomZone = customZones.find(guid.value());
+                if (activeCustomZone != customZones.end())
+                {
+                    zoneCount = getCustomZoneCount(activeCustomZone->second.info);
+                }
+            }   
         }
         else
         {
@@ -220,7 +227,7 @@ void Trace::FancyZones::DataChanged() noexcept
         TraceLoggingInt32Array(customZonesArray.get(), static_cast<int>(customZones.size()), NumberOfZonesForEachCustomZoneSetKey),
         TraceLoggingInt32(static_cast<int>(devices.size()), ActiveZoneSetsCountKey),
         TraceLoggingWideString(activeZoneSetInfo.c_str(), ActiveZoneSetsListKey),
-        TraceLoggingInt32(static_cast<int>(quickKeys.size()), LayoutUsingQuickKeyCountKey));
+        TraceLoggingInt32(static_cast<int>(quickKeysCount), LayoutUsingQuickKeyCountKey));
 }
 
 void Trace::FancyZones::EditorLaunched(int value) noexcept

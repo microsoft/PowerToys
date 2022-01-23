@@ -20,7 +20,7 @@ namespace PowerLauncher.Helper
     public static class EnvironmentHelper
     {
         // The HashSet will contain the list of environment variables that will be skipped on update.
-        private const string PathVariable = "Path";
+        private const string PathVariableName = "Path";
         private static readonly HashSet<string> _protectedProcessVariables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
@@ -179,16 +179,26 @@ namespace PowerLauncher.Helper
                     string uVarValue = (string)uVar.Value;
 
                     // The variable name of the path variable can be upper case, lower case ore mixed case. So we have to compare case insensitive.
-                    if (!uVarKey.Equals(PathVariable, StringComparison.OrdinalIgnoreCase))
+                    if (!uVarKey.Equals(PathVariableName, StringComparison.OrdinalIgnoreCase))
                     {
                         environment[uVarKey] = uVarValue;
                     }
                     else
                     {
-                        // When we merging the PATH variables we can't simply overwrite machine layer's value. The path variable must be joined by appending the user value to the machine value.
-                        // This is the official behavior and checked by trying it out on the physical machine.
-                        string newPathValue = environment[uVarKey].EndsWith(';') ? environment[uVarKey] + uVarValue : environment[uVarKey] + ';' + uVarValue;
-                        environment[uVarKey] = newPathValue;
+                        // Checking if the list of (machine) variables contains a path variable
+                        if (environment.ContainsKey(PathVariableName))
+                        {
+                            // When we merging the PATH variables we can't simply overwrite machine layer's value. The path variable must be joined by appending the user value to the machine value.
+                            // This is the official behavior and checked by trying it out on the physical machine.
+                            string newPathValue = environment[uVarKey].EndsWith(';') ? environment[uVarKey] + uVarValue : environment[uVarKey] + ';' + uVarValue;
+                            environment[uVarKey] = newPathValue;
+                        }
+                        else
+                        {
+                            // Log warning and only write user value into dictionary
+                            Log.Warn("The List of machine variables doesn't contain a path variable! The merged list won't contain any machine paths in the path variable.", typeof(PowerLauncher.Helper.EnvironmentHelper));
+                            environment[uVarKey] = uVarValue;
+                        }
                     }
                 }
             }

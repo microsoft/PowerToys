@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace FancyZonesEditor.Models
 {
-    public class QuickKeysModel : INotifyPropertyChanged
+    public class LayoutHotkeysModel : INotifyPropertyChanged
     {
         public SortedDictionary<string, string> SelectedKeys { get; } = new SortedDictionary<string, string>()
         {
@@ -26,7 +26,7 @@ namespace FancyZonesEditor.Models
             { "9", string.Empty },
         };
 
-        public QuickKeysModel()
+        public LayoutHotkeysModel()
         {
         }
 
