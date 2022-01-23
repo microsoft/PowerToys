@@ -3,7 +3,7 @@
 
 1. Download Monaco editor with npm: `npm i monaco-editor`.
 2. Delete everything except the `min` folder (the minimised code).
-3. Copy the `min` folder inside the [`monacoSRC`](https://github.com/microsoft/PowerToys/tree/main/src/modules/previewpane/MonacoPreviewHandler/monacoSRC) folder.
+3. Copy the `min` folder inside the [`monacoSRC`](/src/modules/previewpane/MonacoPreviewHandler/monacoSRC) folder.
 4. Generate the JSON file (see section below)
 
 ## Generate JSON file
