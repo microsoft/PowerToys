@@ -72,5 +72,6 @@ jobs:
     - name: comment
       uses: check-spelling/check-spelling@v0.0.20-alpha3
       with:
+        config: .github/actions/spell-check
         custom_task: comment
         internal_state_directory: /tmp/data
