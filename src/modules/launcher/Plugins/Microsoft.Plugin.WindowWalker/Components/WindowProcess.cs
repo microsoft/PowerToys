@@ -90,6 +90,19 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
+        /// Gets a value indicating whether this is the shell process or not
+        /// The shell process (like explorer.exe) hosts parts of the user interface (like taskbar, start menu, ...)
+        /// </summary>
+        public bool IsShellProcess
+        {
+            get
+            {
+                    IntPtr hShellWindow = NativeMethods.GetShellWindow();
+                    return GetProcessIDFromWindowHandle(hShellWindow) == ProcessID;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="WindowProcess"/> class.
         /// </summary>
         /// <param name="pid">New process id.</param>

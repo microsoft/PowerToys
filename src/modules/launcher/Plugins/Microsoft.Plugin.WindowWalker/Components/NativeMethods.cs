@@ -918,6 +918,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
 
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetShellWindow();
+
         /// <summary>
         /// Returns the last Win32 Error code thrown by a native method if enabled for this method.
         /// </summary>
