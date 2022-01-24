@@ -1517,6 +1517,8 @@
                 <File Id="SystemShutdownLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\shutdown.light.png" />
                 <File Id="SystemSleepDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.dark.png" />
                 <File Id="SystemSleepLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.light.png" />
+				<File Id="SystemFirmwareSettingsDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\firmwareSettings.dark.png" />
+                <File Id="SystemFirmwareSettingsLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\firmwareSettings.light.png" />
             </Component>
 
             <!-- WindowsSettings Plugin -->
