@@ -12,6 +12,8 @@
 #include <common/SettingsAPI/FileWatcher.h>
 
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
@@ -72,6 +74,8 @@ public:
 
         FancyZonesDataInstance().ReplaceZoneSettingsFileFromOlderVersions();
         LayoutHotkeys::instance().LoadData();
+        CustomLayouts::instance().LoadData();
+        AppZoneHistory::instance().LoadData();
     }
 
     // IFancyZones
@@ -273,6 +277,7 @@ FancyZones::Run() noexcept
     });
 
     FancyZonesDataInstance().SetVirtualDesktopCheckCallback(std::bind(&VirtualDesktop::IsVirtualDesktopIdSavedInRegistry, &m_virtualDesktop, std::placeholders::_1));
+    AppZoneHistory::instance().SetVirtualDesktopCheckCallback(std::bind(&VirtualDesktop::IsVirtualDesktopIdSavedInRegistry, &m_virtualDesktop, std::placeholders::_1));
 }
 
 // IFancyZones
@@ -332,14 +337,14 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> workA
 {
     _TRACER_;
     auto& fancyZonesData = FancyZonesDataInstance();
-    if (!fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window, workArea->UniqueId()))
+    if (!AppZoneHistory::instance().IsAnotherWindowOfApplicationInstanceZoned(window, workArea->UniqueId()))
     {
         if (workArea)
         {
             Trace::FancyZones::SnapNewWindowIntoZone(workArea->ZoneSet());
         }
         m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, workArea);
-        fancyZonesData.UpdateProcessIdToHandleMap(window, workArea->UniqueId());
+        AppZoneHistory::instance().UpdateProcessIdToHandleMap(window, workArea->UniqueId());
     }
 }
 
@@ -774,6 +779,10 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE)
         {
             LayoutHotkeys::instance().LoadData();
+        }
+        else if (message == WM_PRIV_CUSTOM_LAYOUTS_FILE_UPDATE)
+        {
+            CustomLayouts::instance().LoadData();
         }
         else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
         {
@@ -1307,23 +1316,22 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
         return;
     }
 
+    // Find a custom zone set with this uuid and apply it
+    auto layout = CustomLayouts::instance().GetLayout(layoutId.value());
+    if (!layout)
+    {
+        return;
+    }
+
     auto uuidStr = FancyZonesUtils::GuidToString(layoutId.value());
     if (!uuidStr)
     {
         return;
     }
 
-    auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(m_currentDesktopId);
-
-    // Find a custom zone set with this uuid and apply it
-    auto customZoneSets = FancyZonesDataInstance().GetCustomZoneSetsMap();
-
-    if (!customZoneSets.contains(uuidStr.value()))
-    {
-        return;
-    }
-
     FancyZonesDataTypes::ZoneSetData data{ .uuid = uuidStr.value(), .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom };
+    
+    auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(m_currentDesktopId);
     FancyZonesDataInstance().SetActiveZoneSet(workArea->UniqueId(), data);
     FancyZonesDataInstance().SaveZoneSettings();
     UpdateZoneSets();

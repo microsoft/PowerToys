@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -388,5 +388,8 @@
   </data>
   <data name="Error_Parsing_Layout_Templates_Message" xml:space="preserve">
     <value>An error occurred while parsing template layouts.</value>
+  </data>
+  <data name="Error_Parsing_Custom_Layouts_Message" xml:space="preserve">
+    <value>An error occurred while parsing custom layouts.</value>
   </data>
 </root>

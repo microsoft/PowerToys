@@ -1651,6 +1651,14 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Use a keyboard shortcut highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
+  <data name="Oobe_MouseUtils_MousePointerCrosshair.Text" xml:space="preserve">
+    <value>Mouse Pointer Crosshair</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_MousePointerCrosshair_Description.Text" xml:space="preserve">
+    <value>Draw a crosshair centered around the mouse pointer.</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
   <data name="Launch_Run.Content" xml:space="preserve">
     <value>Launch PowerToys Run</value>
   </data>
@@ -1757,7 +1765,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightRadius.Header" xml:space="preserve">
     <value>Spotlight radius (px)</value>
-	<comment>px = pixels</comment>
+    <comment>px = pixels</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Header" xml:space="preserve">
     <value>Spotlight initial zoom</value>
@@ -1767,11 +1775,11 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Header" xml:space="preserve">
     <value>Animation duration (ms)</value>
-	<comment>ms = milliseconds</comment>
+    <comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Description" xml:space="preserve">
     <value>Time before the spotlight appears (ms)</value>
-	<comment>ms = milliseconds</comment>
+    <comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
     <value>Mouse Highlighter</value>
@@ -1803,23 +1811,62 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="MouseUtils_MouseHighlighter_HighlightRadius.Header" xml:space="preserve">
     <value>Radius (px)</value>
-	<comment>px = pixels</comment>  
+    <comment>px = pixels</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Header" xml:space="preserve">
     <value>Fade delay (ms)</value>
-	<comment>ms = milliseconds</comment>
+    <comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Description" xml:space="preserve">
     <value>Time before a highlight appears (ms)</value>
-	<comment>ms = milliseconds</comment>
+    <comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Header" xml:space="preserve">
     <value>Fade duration (ms)</value>
-	<comment>ms = milliseconds</comment>
+    <comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Description" xml:space="preserve">
     <value>Duration of the disappear animation (ms)</value>
-	<comment>ms = milliseconds</comment>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshair.Header" xml:space="preserve">
+    <value>Mouse Pointer Crosshair</value>
+    <comment>Refers to the utility name</comment>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshair.Description" xml:space="preserve">
+    <value>Mouse Pointer Crosshair draws a crosshair centered on the mouse pointer.</value>
+    <comment>"Mouse Pointer Crosshair" is the name of the utility. Mouse is the hardware mouse.</comment>
+  </data>
+  <data name="MouseUtils_Enable_MousePointerCrosshair.Header" xml:space="preserve">
+    <value>Enable Mouse Pointer Crosshair</value>
+    <comment>"Mouse Pointer Crosshair" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshair_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshair_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to show/hide the crosshair</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshair_CrosshairColor.Header" xml:space="preserve">
+    <value>Crosshair color</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshair_CrosshairOpacity.Header" xml:space="preserve">
+    <value>Crosshair opacity (%)</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshair_CrosshairRadius.Header" xml:space="preserve">
+    <value>Crosshair center radius (px)</value>
+	  <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshair_CrosshairThickness.Header" xml:space="preserve">
+    <value>Crosshair thickness (px)</value>
+	  <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshair_CrosshairBorderColor.Header" xml:space="preserve">
+    <value>Crosshair border color</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshair_CrosshairBorderSize.Header" xml:space="preserve">
+    <value>Crosshair border size (px)</value>
+	  <comment>px = pixels</comment>
   </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
@@ -1869,11 +1916,11 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
-      <comment>"Always On Top" is the name of the utility</comment>
+    <comment>"Always On Top" is the name of the utility</comment>
   </data>
   <data name="AlwaysOnTop.ModuleTitle" xml:space="preserve">
     <value>Always On Top </value>
-      <comment>"Always On Top" is the name of the utility</comment>
+    <comment>"Always On Top" is the name of the utility</comment>
   </data>
   <data name="AlwaysOnTop_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
@@ -1902,48 +1949,57 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>px = pixels</comment>
   </data>
   <data name="AlwaysOnTop_Behavior_GroupSettings.Header" xml:space="preserve">
-   <value>Appearance &amp; behavior</value>
+    <value>Appearance &amp; behavior</value>
   </data>
   <data name="Shell_AlwaysOnTop.Content" xml:space="preserve">
     <value>Always On Top</value>
-      <comment>"Always On Top" is the name of the utility</comment>
+    <comment>"Always On Top" is the name of the utility</comment>
   </data>
   <data name="AlwaysOnTop_GameMode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
-	  <comment>Game Mode is a Windows feature</comment>
+    <comment>Game Mode is a Windows feature</comment>
   </data>
-	  <data name="AlwaysOnTop_SoundTitle.Header" xml:space="preserve">
+  <data name="AlwaysOnTop_SoundTitle.Header" xml:space="preserve">
     <value>Sound</value>
   </data>
   <data name="AlwaysOnTop_Sound.Content" xml:space="preserve">
     <value>Play a sound when pinning a window</value>
   </data>
-	<data name="AlwaysOnTop_Behavior.Header" xml:space="preserve">
+  <data name="AlwaysOnTop_Behavior.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
-	<data name="LearnMore_AlwaysOnTop.Text" xml:space="preserve">
+  <data name="LearnMore_AlwaysOnTop.Text" xml:space="preserve">
     <value>Learn more about Always On Top</value>
-	    <comment>"Always On Top" is the name of the utility</comment>
+    <comment>"Always On Top" is the name of the utility</comment>
   </data>
-	<data name="AlwaysOnTop_ActivationShortcut.Header" xml:space="preserve">
+  <data name="AlwaysOnTop_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-	<data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
+  <data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to pin or unpin an app window</value>
     <comment>"Always On Top" is the name of the utility</comment>
   </data>
   <data name="Oobe_AlwaysOnTop" xml:space="preserve">
     <value>Always On Top</value>
-      <comment>"Always On Top" is the name of the utility</comment>
+    <comment>"Always On Top" is the name of the utility</comment>
   </data>
   <data name="Oobe_AlwaysOnTop_Description" xml:space="preserve">
     <value>Always On Top improves your multitasking workflow by pinning an application window so it's always in front - even when focus changes to another window after that.</value>
-      <comment>"Always On Top" is the name of the utility</comment>
+    <comment>"Always On Top" is the name of the utility</comment>
   </data>
   <data name="Oobe_AlwaysOnTop_HowToUse.Text" xml:space="preserve">
     <value>to pin or unpin the selected window so it's always on top of all other windows.</value>
   </data>
   <data name="Oobe_AlwaysOnTop_TipsAndTricks.Text" xml:space="preserve">
     <value>You can tweak the visual outline of the pinned windows in PowerToys settings.</value>
+  </data>
+  <data name="AlwaysOnTop_FrameColor_Mode.Header" xml:space="preserve">
+    <value>Color mode</value>
+  </data>
+  <data name="AlwaysOnTop_Radio_Custom_Color.Content" xml:space="preserve">
+    <value>Custom color</value>
+  </data>
+  <data name="AlwaysOnTop_Radio_Windows_Default.Content" xml:space="preserve">
+    <value>Window default</value>
   </data>
 </root>
