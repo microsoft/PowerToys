@@ -186,7 +186,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 CoreWebView2Settings settings = (sender as WebView2).CoreWebView2.Settings;
 
 #if DEBUG
-                // Enable developer tools and contextmenu for debugging
+                // Enable developer tools and context menu for debugging
                 settings.AreDefaultContextMenusEnabled = true;
                 settings.AreDevToolsEnabled = true;
 #else
