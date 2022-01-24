@@ -35,9 +35,9 @@ namespace Microsoft.Plugin.WindowWalker
 
             OpenWindows.Instance.UpdateOpenWindowsList();
             SearchController.Instance.UpdateSearchText(query.Search);
-            List<SearchResult> results = SearchController.Instance.SearchMatches;
+            List<SearchResult> searchControllerResults = SearchController.Instance.SearchMatches;
 
-            return results.Select(x => new Result()
+            return searchControllerResults.Select(x => new Result()
             {
                 Title = x.Result.Title,
                 IcoPath = IconPath,
