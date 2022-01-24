@@ -622,7 +622,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
     <value>Enable source code preview (Monaco)</value>
-    <comment>Do you want this feature on / off</comment>
+    <comment>Do not loc "Monaco". Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Enable SVG (.svg) preview</value>
