@@ -4,6 +4,7 @@
 #include <utility>
 
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/util.h>
@@ -1499,7 +1500,6 @@ namespace FancyZonesUnitTests
                     std::filesystem::remove(jsonPath);
                 }
 
-                Assert::IsFalse(fancyZonesData.GetAppZoneHistoryMap().empty());
                 Assert::IsFalse(fancyZonesData.GetDeviceInfoMap().empty());
             }
 
@@ -1509,11 +1509,10 @@ namespace FancyZonesUnitTests
                 data.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = data.zonesSettingsFileName;
 
-                std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"app-zone-history\": [], \"devices\": [{\"device-id\": \"";
+                std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"devices\": [{\"device-id\": \"";
 
                 data.LoadFancyZonesData();
 
-                Assert::IsTrue(data.GetAppZoneHistoryMap().empty());
                 Assert::IsTrue(data.GetDeviceInfoMap().empty());
             }
 
@@ -1523,10 +1522,9 @@ namespace FancyZonesUnitTests
                 data.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = data.zonesSettingsFileName;
 
-                std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"app-zone-history\": [], \"devices\": [{\"device-id\": \"кириллица\"}], \"custom-zone-sets\": []}";
+                std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"devices\": [{\"device-id\": \"кириллица\"}], \"custom-zone-sets\": []}";
                 data.LoadFancyZonesData();
 
-                Assert::IsTrue(data.GetAppZoneHistoryMap().empty());
                 Assert::IsTrue(data.GetDeviceInfoMap().empty());
             }
 
@@ -1536,10 +1534,9 @@ namespace FancyZonesUnitTests
                 data.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = data.zonesSettingsFileName;
 
-                std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"app-zone-history\": null, \"devices\": [{\"device-id\":\"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"active-zoneset\":{\"uuid\":\"{568EBC3A-C09C-483E-A64D-6F1F2AF4E48D}\",\"type\":\"columns\"},\"editor-show-spacing\":true,\"editor-spacing\":16,\"editor-zone-count\":3}], \"custom-zone-sets\": []}";
+                std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"devices\": [{\"device-id\":\"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"active-zoneset\":{\"uuid\":\"{568EBC3A-C09C-483E-A64D-6F1F2AF4E48D}\",\"type\":\"columns\"},\"editor-show-spacing\":true,\"editor-spacing\":16,\"editor-zone-count\":3}], \"custom-zone-sets\": null}";
                 data.LoadFancyZonesData();
 
-                Assert::IsTrue(data.GetAppZoneHistoryMap().empty());
                 Assert::IsFalse(data.GetDeviceInfoMap().empty());
             }
 
@@ -1561,199 +1558,10 @@ namespace FancyZonesUnitTests
                 data.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = data.zonesSettingsFileName;
 
-                data.SaveAppZoneHistoryAndZoneSettings();
+                data.SaveZoneSettings();
                 bool actual = std::filesystem::exists(jsonPath);
 
                 Assert::IsTrue(actual);
-            }
-
-            TEST_METHOD (AppLastZoneIndex)
-            {
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
-
-                const int expectedZoneIndex = 10;
-                Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex } ));
-                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
-            }
-
-            TEST_METHOD (AppLastZoneIndexZero)
-            {
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                const int expectedZoneIndex = 0;
-                Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
-            }
-
-            TEST_METHOD (AppLastZoneIndexNegative)
-            {
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                const ZoneIndex expectedZoneIndex = -1;
-                Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
-            }
-
-            TEST_METHOD (AppLastZoneIndexOverflow)
-            {
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                const ZoneIndex expectedZoneIndex = ULLONG_MAX;
-                Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
-            }
-
-            TEST_METHOD (AppLastZoneIndexOverride)
-            {
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                const int expectedZoneIndex = 3;
-                Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { 1 }));
-                Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { 2 }));
-                Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
-            }
-
-            TEST_METHOD (AppLastZoneInvalidWindow)
-            {
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const auto window = Mocks::Window();
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
-
-                const int expectedZoneIndex = 1;
-                Assert::IsFalse(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex }));
-            }
-
-            TEST_METHOD (AppLastZoneNullWindow)
-            {
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const auto window = nullptr;
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                const int expectedZoneIndex = 1;
-                Assert::IsFalse(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex }));
-            }
-
-            TEST_METHOD (AppLastdeviceIdTest)
-            {
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const FancyZonesDataTypes::DeviceIdData deviceId1{ L"device-id-1" };
-                const FancyZonesDataTypes::DeviceIdData deviceId2{ L"device-id-2" };
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                const int expectedZoneIndex = 10;
-                Assert::IsTrue(data.SetAppLastZones(window, deviceId1, zoneSetId, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId1, zoneSetId));
-                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId2, zoneSetId));
-            }
-
-            TEST_METHOD (AppLastZoneSetIdTest)
-            {
-                const std::wstring zoneSetId1 = L"zoneset-uuid-1";
-                const std::wstring zoneSetId2 = L"zoneset-uuid-2";
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                const int expectedZoneIndex = 10;
-                Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId1, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId1));
-                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId2));
-            }
-
-            TEST_METHOD (AppLastZoneRemoveWindow)
-            {
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { 1 }));
-                Assert::IsTrue(data.RemoveAppLastZone(window, deviceId, zoneSetId));
-                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
-            }
-
-            TEST_METHOD (AppLastZoneRemoveUnknownWindow)
-            {
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                Assert::IsFalse(data.RemoveAppLastZone(window, deviceId, zoneSetId));
-                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
-            }
-
-            TEST_METHOD (AppLastZoneRemoveUnknownZoneSetId)
-            {
-                const std::wstring zoneSetIdToInsert = L"zoneset-uuid-to-insert";
-                const std::wstring zoneSetIdToRemove = L"zoneset-uuid-to-remove";
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetIdToInsert, { 1 }));
-                Assert::IsFalse(data.RemoveAppLastZone(window, deviceId, zoneSetIdToRemove));
-                Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetIdToInsert));
-            }
-
-            TEST_METHOD (AppLastZoneRemoveUnknownWindowId)
-            {
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const FancyZonesDataTypes::DeviceIdData deviceIdToInsert{ L"device-id-insert" };
-                const FancyZonesDataTypes::DeviceIdData deviceIdToRemove{ L"device-id-remove" };
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                Assert::IsTrue(data.SetAppLastZones(window, deviceIdToInsert, zoneSetId, { 1 }));
-                Assert::IsFalse(data.RemoveAppLastZone(window, deviceIdToRemove, zoneSetId));
-                Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == data.GetAppLastZoneIndexSet(window, deviceIdToInsert, zoneSetId));
-            }
-
-            TEST_METHOD (AppLastZoneRemoveNullWindow)
-            {
-                const std::wstring zoneSetId = L"zoneset-uuid";
-                const FancyZonesDataTypes::DeviceIdData deviceId{ L"device-id" };
-                const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                Assert::IsFalse(data.RemoveAppLastZone(nullptr, deviceId, zoneSetId));
             }
 
             TEST_METHOD (AddDevice)

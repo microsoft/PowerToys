@@ -48,7 +48,6 @@ public:
     std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& id) const;
 
     const JSONHelpers::TDeviceInfoMap& GetDeviceInfoMap() const;
-    const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const;
 
     inline const std::wstring& GetZonesSettingsFileName() const 
     {
@@ -65,20 +64,12 @@ public:
     void SyncVirtualDesktops(GUID desktopId);
     void RemoveDeletedDesktops(const std::vector<GUID>& activeDesktops);
 
-    bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId) const;
-    void UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId);
-    ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId) const;
-    bool RemoveAppLastZone(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId);
-    bool SetAppLastZones(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet);
-
     void SetActiveZoneSet(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
 
     json::JsonObject GetPersistFancyZonesJSON();
 
     void LoadFancyZonesData();
-    void SaveAppZoneHistoryAndZoneSettings() const;
     void SaveZoneSettings() const;
-    void SaveAppZoneHistory() const;
 
     void SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor, const std::vector<std::pair<HMONITOR, MONITORINFOEX>>& allMonitors) const;
 
@@ -123,8 +114,6 @@ private:
         return result + L"\\" + std::wstring(L"zones-settings.json");
     }
 #endif
-    void RemoveDesktopAppZoneHistory(GUID desktopId);
-
     // Maps app path to app's zone history data
     std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> appZoneHistoryMap{};
     // Maps device unique ID to device data

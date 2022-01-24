@@ -7,7 +7,7 @@
 #include <common/utils/elevation.h>
 #include <common/utils/resources.h>
 
-#include "FancyZonesData.h"
+#include "FancyZonesData/AppZoneHistory.h"
 #include "Settings.h"
 #include "WorkArea.h"
 #include "util.h"
@@ -261,7 +261,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
                     wil::unique_cotaskmem_string guidString;
                     if (SUCCEEDED_LOG(StringFromCLSID(zoneSet->Id(), &guidString)))
                     {
-                        FancyZonesDataInstance().RemoveAppLastZone(window, workAreaPtr->UniqueId(), guidString.get());
+                        AppZoneHistory::instance().RemoveAppLastZone(window, workAreaPtr->UniqueId(), guidString.get());
                     }
                 }
             }

@@ -106,8 +106,7 @@
   <ItemGroup>
     <ClInclude Include="FindMyMouse.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Generated Files\resource.h" />
-    <None Include="resource.base.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
@@ -117,7 +116,6 @@
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="trace.cpp" />
-    <None Include="FindMyMouse.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
@@ -128,7 +126,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Generated Files\FindMyMouse.rc" />
+    <ResourceCompile Include="FindMyMouse.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
