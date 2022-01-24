@@ -1855,18 +1855,18 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="MouseUtils_MousePointerCrosshair_CrosshairRadius.Header" xml:space="preserve">
     <value>Crosshair center radius (px)</value>
-	  <comment>px = pixels</comment>
+    <comment>px = pixels</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshair_CrosshairThickness.Header" xml:space="preserve">
     <value>Crosshair thickness (px)</value>
-	  <comment>px = pixels</comment>
+    <comment>px = pixels</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshair_CrosshairBorderColor.Header" xml:space="preserve">
     <value>Crosshair border color</value>
   </data>
   <data name="MouseUtils_MousePointerCrosshair_CrosshairBorderSize.Header" xml:space="preserve">
     <value>Crosshair border size (px)</value>
-	  <comment>px = pixels</comment>
+    <comment>px = pixels</comment>
   </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
@@ -2000,6 +2000,6 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Custom color</value>
   </data>
   <data name="AlwaysOnTop_Radio_Windows_Default.Content" xml:space="preserve">
-    <value>Window default</value>
+    <value>Windows default</value>
   </data>
 </root>

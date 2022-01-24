@@ -38,7 +38,7 @@ bool isExcluded(HWND window)
 }
 
 AlwaysOnTop::AlwaysOnTop() :
-    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps, SettingId::FrameAccentColor}),
+    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps}),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase))
 {
     s_instance = this;
