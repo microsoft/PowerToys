@@ -10,6 +10,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
@@ -550,24 +551,6 @@ namespace FancyZonesEditor.Utils
                 }
             }
 
-            var parsingCustomLayoutsResult = ParseCustomLayouts();
-            if (!parsingCustomLayoutsResult.Result)
-            {
-                return parsingCustomLayoutsResult;
-            }
-
-            var parsingHotkeysResult = ParseLayoutHotkeys();
-            if (!parsingHotkeysResult.Result)
-            {
-                return parsingHotkeysResult;
-            }
-
-            var parsingTemplatesResult = ParseLayoutTemplates();
-            if (!parsingTemplatesResult.Result)
-            {
-                return parsingTemplatesResult;
-            }
-
             return new ParsingResult(true);
         }
 
@@ -918,13 +901,29 @@ namespace FancyZonesEditor.Utils
         {
             Logger.LogTrace();
 
-            Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open);
-            using (StreamReader reader = new StreamReader(inputStream))
+            var attempts = 0;
+            while (attempts < 10)
             {
-                string data = reader.ReadToEnd();
-                inputStream.Close();
-                return data;
+                try
+                {
+                    Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open);
+                    using (StreamReader reader = new StreamReader(inputStream))
+                    {
+                        string data = reader.ReadToEnd();
+                        inputStream.Close();
+                        return data;
+                    }
+                }
+                catch (Exception)
+                {
+                    Logger.LogError("File reading error, retry");
+                    Task.Delay(10).Wait();
+                }
+
+                attempts++;
             }
+
+            return string.Empty;
         }
 
         private bool SetDevices(List<DeviceWrapper> devices)

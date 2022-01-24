@@ -385,6 +385,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Editor data parsing error..
+        /// </summary>
+        public static string Error_Parsing_Data_Title {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Data_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error parsing device info data..
         /// </summary>
         public static string Error_Parsing_Device_Info {
@@ -417,15 +426,6 @@ namespace FancyZonesEditor.Properties {
         public static string Error_Parsing_Zones_Settings_Message {
             get {
                 return ResourceManager.GetString("Error_Parsing_Zones_Settings_Message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Editor data parsing error..
-        /// </summary>
-        public static string Error_Parsing_Zones_Settings_Title {
-            get {
-                return ResourceManager.GetString("Error_Parsing_Zones_Settings_Title", resourceCulture);
             }
         }
         
