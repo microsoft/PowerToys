@@ -27,7 +27,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         [DataRow("sleep", "Put computer to sleep")]
         [DataRow("hibernate", "Hibernate computer")]
         [DataRow("empty recycle", "Empty Recycle Bin")]
-        [DataRow("uefi firmware", "Reboot computer into UEFI Firmware Settings (Requires administrative permissions.)")]
         public void QueryResults(string typedString, string expectedResult)
         {
             // Setup
