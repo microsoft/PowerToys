@@ -95,6 +95,7 @@
                 
                 "modules\\MouseUtils\\PowerToys.FindMyMouse.dll",
                 "modules\\MouseUtils\\PowerToys.MouseHighlighter.dll",
+                "modules\\MouseUtils\\PowerToys.MousePointerCrosshair.dll",
 
                 "modules\\PowerRename\\PowerToys.PowerRenameExt.dll",
                 "modules\\PowerRename\\PowerToys.PowerRenameUILib.dll",
