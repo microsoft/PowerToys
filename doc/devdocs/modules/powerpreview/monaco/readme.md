@@ -11,7 +11,7 @@ Developer preview is based on [Microsofts Monaco Editor](https://microsoft.githu
 
 ## languages.json
 
-[`languages.json`](/src/modules/previewpane/MonacoPreviewHandler/languages.json) contains all extensions and Id's for the supported languages of Monaco. The [`FileHandler`](/src/modules/previewpane/MonacoPreviewHandler/FileHandler.cs) class and the installer.
+[`languages.json`](/src/modules/previewpane/MonacoPreviewHandler/languages.json) contains all extensions and Id's for the supported languages of Monaco. The [`FileHandler`](/src/modules/previewpane/MonacoPreviewHandler/FileHandler.cs) class and the installer are using this file.
 
 ### Generate languages.json file
 
