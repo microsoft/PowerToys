@@ -172,7 +172,6 @@ Bools
 Boostrapper
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
-BUILDARCH
 Bopomofo
 BOTTOMALIGN
 BPBF
@@ -214,9 +213,9 @@ CDBECF
 cdecl
 CDeclaration
 CDEF
-cdxml
 cdpx
 cdpxwin
+cdxml
 CEBB
 CENTERALIGN
 CFDB
@@ -225,11 +224,6 @@ changecursor
 Changemove
 charconv
 ChaseKnowlden
-CENTERALIGN
-cguid
-changecursor
-Changemove
-charconv
 chdir
 CHILDACTIVATE
 CHILDWINDOW
@@ -259,8 +253,8 @@ CLIPCHILDREN
 CLIPSIBLINGS
 cljs
 clrcall
-cls
 Cls
+cls
 CLSCTX
 clsid
 cmder
@@ -1449,8 +1443,8 @@ outputtype
 outro
 outsettings
 OVERLAPPEDWINDOW
-Overridable
 overlaywindow
+Overridable
 OWNDC
 PACL
 PAINTSTRUCT
@@ -1869,11 +1863,11 @@ SKIPOWNPROCESS
 sku
 SLGP
 sln
+smallbasic
 SMALLICON
 SMTO
 snd
 snwprintf
-smallbasic
 softline
 somil
 Soref
@@ -1886,8 +1880,8 @@ spdisp
 spdlog
 spdo
 spdth
-specialfolder
 spec'ing
+specialfolder
 spesi
 splitwstring
 sprintf
@@ -2038,8 +2032,8 @@ textblock
 TEXTINCLUDE
 THICKFRAME
 THISCOMPONENT
-thre
 THotkey
+thre
 TILEDWINDOW
 timedate
 timediff
@@ -2243,7 +2237,6 @@ webpack
 webpage
 website
 webview
-We'd
 wekyb
 Wevtapi
 wgpocpl
