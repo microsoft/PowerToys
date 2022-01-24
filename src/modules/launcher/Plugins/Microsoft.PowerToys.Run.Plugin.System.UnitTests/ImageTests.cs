@@ -27,6 +27,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         [DataRow("sleep", "Images\\sleep.dark.png")]
         [DataRow("hibernate", "Images\\sleep.dark.png")]
         [DataRow("empty recycle", "Images\\recyclebin.dark.png")]
+        [DataRow("uefi firmware settings", "Images\\firmwareSettings.dark.png")]
         public void IconThemeDarkTest(string typedString, string expectedResult)
         {
             // Setup
@@ -49,6 +50,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         [DataRow("sleep", "Images\\sleep.light.png")]
         [DataRow("hibernate", "Images\\sleep.light.png")]
         [DataRow("empty recycle", "Images\\recyclebin.light.png")]
+        [DataRow("uefi firmware settings", "Images\\firmwareSettings.light.png")]
         public void IconThemeLightTest(string typedString, string expectedResult)
         {
             // Setup
