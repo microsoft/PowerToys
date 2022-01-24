@@ -190,7 +190,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 settings.AreDefaultContextMenusEnabled = true;
                 settings.AreDevToolsEnabled = true;
 #else
-                // Disable contextmenu
+                // Disable context menu
                 settings.AreDefaultContextMenusEnabled = false;
                 // Disable developer tools
                 settings.AreDevToolsEnabled = false;
