@@ -707,6 +707,9 @@
             <Component Id="Module_MouseHighlighter" Guid="3BAEA39F-A73D-48D2-9616-BBED5B8C86D3" Win64="yes">
                 <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.MouseHighlighter.dll" KeyPath="yes" />
             </Component>
+            <Component Id="Module_MousePointerCrosshair" Guid="157F664C-E993-49AC-B9E1-EBF73080D072" Win64="yes">
+                <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.MousePointerCrosshair.dll" KeyPath="yes" />
+            </Component>
         </DirectoryRef>
 
         <!-- Shortcut guide -->
@@ -1045,6 +1048,7 @@
             <ComponentRef Id="Module_Awake_runtime_netcoreapp21"/>
             <ComponentRef Id="Module_FindMyMouse"/>
             <ComponentRef Id="Module_MouseHighlighter"/>
+            <ComponentRef Id="Module_MousePointerCrosshair" />
             <ComponentRef Id="Module_AlwaysOnTop"/>
             <ComponentRef Id="SettingsV2" />
             <ComponentRef Id="SettingsV2Assets" />

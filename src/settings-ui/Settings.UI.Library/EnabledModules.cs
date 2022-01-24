@@ -223,6 +223,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool mousePointerCrosshair = true;
+
+        [JsonPropertyName("MousePointerCrosshair")]
+        public bool MousePointerCrosshair
+        {
+            get => mousePointerCrosshair;
+            set
+            {
+                if (mousePointerCrosshair != value)
+                {
+                    LogTelemetryEvent(value);
+                    mousePointerCrosshair = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

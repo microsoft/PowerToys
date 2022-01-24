@@ -5,6 +5,7 @@
 
 #include <FrameDrawer.h>
 #include <Settings.h>
+#include "winrt/Windows.Foundation.h"
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -30,7 +31,7 @@ std::optional<RECT> GetFrameRect(HWND window)
 }
 
 WindowBorder::WindowBorder(HWND window) :
-    SettingsObserver({SettingId::FrameColor, SettingId::FrameThickness}),
+    SettingsObserver({SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor }),
     m_window(nullptr), 
     m_trackingWindow(window), 
     m_frameDrawer(nullptr)
@@ -38,7 +39,7 @@ WindowBorder::WindowBorder(HWND window) :
 }
 
 WindowBorder::WindowBorder(WindowBorder&& other) :
-    SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness }),
+    SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor }),
     m_window(other.m_window), 
     m_trackingWindow(other.m_trackingWindow), 
     m_frameDrawer(std::move(other.m_frameDrawer))
@@ -152,7 +153,20 @@ void WindowBorder::UpdateBorderProperties() const
 
     RECT windowRect = windowRectOpt.value();
     RECT frameRect{ 0, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top };
-    m_frameDrawer->SetBorderRect(frameRect, AlwaysOnTopSettings::settings().frameColor, AlwaysOnTopSettings::settings().frameThickness);
+
+    COLORREF color;
+    if (AlwaysOnTopSettings::settings().frameAccentColor)
+    {
+        winrt::Windows::UI::ViewManagement::UISettings settings;
+        auto accentValue = settings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Accent);
+        color = RGB(accentValue.R, accentValue.G, accentValue.B);
+    }
+    else
+    {
+        color = AlwaysOnTopSettings::settings().frameColor;
+    }
+
+    m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness);
 }
 
 void WindowBorder::Show() const
@@ -216,6 +230,11 @@ void WindowBorder::SettingsUpdate(SettingId id)
     }
     break;
 
+    case SettingId::FrameAccentColor:
+    {
+        UpdateBorderProperties();
+    }
+    break;
     default:
         break;
     }
