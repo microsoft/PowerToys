@@ -5,6 +5,7 @@
 #include "InclusiveCrosshair.h"
 #include "common/utils/color.h"
 
+// Non-Localizable strings
 namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
