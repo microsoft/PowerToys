@@ -22,6 +22,10 @@
                            Style="{ThemeResource OobeSubtitleStyle}" />
                 <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_MouseUtils_MouseHighlighter_Description" />
 
+                <TextBlock x:Uid="Oobe_MouseUtils_MousePointerCrosshair"
+                           Style="{ThemeResource OobeSubtitleStyle}" />
+                <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_MouseUtils_MousePointerCrosshair_Description" />
+
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                     <Button x:Uid="OOBE_Settings"
                             Click="SettingsLaunchButton_Click"/>
