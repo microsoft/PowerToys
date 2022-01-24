@@ -16,6 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const string DefaultFrameColor = "#0099cc";
         public const bool DefaultSoundEnabled = true;
         public const bool DefaultDoNotActivateOnGameMode = true;
+        public const bool DefaultFrameAccentColor = true;
 
         public AlwaysOnTopProperties()
         {
@@ -26,6 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SoundEnabled = new BoolProperty(DefaultSoundEnabled);
             DoNotActivateOnGameMode = new BoolProperty(DefaultDoNotActivateOnGameMode);
             ExcludedApps = new StringProperty();
+            FrameAccentColor = new BoolProperty(DefaultFrameAccentColor);
         }
 
         [JsonPropertyName("hotkey")]
@@ -48,6 +50,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("excluded-apps")]
         public StringProperty ExcludedApps { get; set; }
+
+        [JsonPropertyName("frame-accent-color")]
+        public BoolProperty FrameAccentColor { get; set; }
 
         public string ToJsonString()
         {
