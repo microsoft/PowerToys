@@ -18,12 +18,12 @@ void Trace::UnregisterProvider() noexcept
     TraceLoggingUnregister(g_hProvider);
 }
 
-// Log if the user has InclusiveMouse enabled or disabled
-void Trace::EnableInclusiveMouse(const bool enabled) noexcept
+// Log if the user has MousePointerCrosshair enabled or disabled
+void Trace::EnableMousePointerCrosshair(const bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "InclusiveMouse_EnableInclusiveMouse",
+        "MousePointerCrosshair_EnableMousePointerCrosshair",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));
@@ -34,7 +34,7 @@ void Trace::StartDrawingCrosshair() noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "InclusiveMouse_StartDrawingCrosshair",
+        "MousePointerCrosshair_StartDrawingCrosshair",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }

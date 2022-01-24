@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class InclusiveMouseProperties
+    public class MousePointerCrosshairProperties
     {
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("crosshair_border_size")]
         public IntProperty CrosshairBorderSize { get; set; }
 
-        public InclusiveMouseProperties()
+        public MousePointerCrosshairProperties()
         {
             ActivationShortcut = new HotkeySettings(false, true, true, false, 0x50); // Ctrl + Alt + P
             CrosshairColor = new StringProperty("#FF0000");

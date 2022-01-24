@@ -15,9 +15,9 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{eae14c0e-7a6b-45da-9080-a7d8c077ba6e}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>InclusiveMouse</RootNamespace>
+    <RootNamespace>MousePointerCrosshair</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
-    <ProjectName>InclusiveMouse</ProjectName>
+    <ProjectName>MousePointerCrosshair</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
@@ -49,12 +49,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\MouseUtils\</OutDir>
-    <TargetName>PowerToys.InclusiveMouse</TargetName>
+    <TargetName>PowerToys.MousePointerCrosshair</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\MouseUtils\</OutDir>
-    <TargetName>PowerToys.InclusiveMouse</TargetName>
+    <TargetName>PowerToys.MousePointerCrosshair</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -121,7 +121,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="InclusiveMouse.rc" />
+    <ResourceCompile Include="MousePointerCrosshair.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">

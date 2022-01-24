@@ -49,7 +49,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="InclusiveMouse.rc">
+    <ResourceCompile Include="MousePointerCrosshair.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

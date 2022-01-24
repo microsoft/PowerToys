@@ -42,12 +42,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"InclusiveMouse";
+const static wchar_t* MODULE_NAME = L"MousePointerCrosshair";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"<no description>";
 
 // Implement the PowerToy Module Interface and all the required methods.
-class InclusiveMouse : public PowertoyModuleIface
+class MousePointerCrosshair : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
@@ -56,14 +56,14 @@ private:
     // Hotkey to invoke the module
     HotkeyEx m_hotkey;
 
-    // Inclusive Mouse specific settings
+    // Mouse Pointer Crosshair specific settings
     InclusiveCrosshairSettings m_inclusiveCrosshairSettings;
 
 public:
     // Constructor
-    InclusiveMouse()
+    MousePointerCrosshair()
     {
-        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::inclusiveMouseLoggerName);
+        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mousePointerCrosshairLoggerName);
         init_settings();
     };
 
@@ -116,7 +116,7 @@ public:
         }
         catch (std::exception&)
         {
-            Logger::error("Invalid json when trying to parse Inclusive Mouse settings json.");
+            Logger::error("Invalid json when trying to parse Mouse Pointer Crosshair settings json.");
         }
     }
 
@@ -124,7 +124,7 @@ public:
     virtual void enable()
     {
         m_enabled = true;
-        Trace::EnableInclusiveMouse(true);
+        Trace::EnableMousePointerCrosshair(true);
         std::thread([=]() { InclusiveCrosshairMain(m_hModule, m_inclusiveCrosshairSettings); }).detach();
     }
 
@@ -132,7 +132,7 @@ public:
     virtual void disable()
     {
         m_enabled = false;
-        Trace::EnableInclusiveMouse(false);
+        Trace::EnableMousePointerCrosshair(false);
         InclusiveCrosshairDisable();
     }
 
@@ -164,12 +164,12 @@ public:
         {
             // Load and parse the settings file for this PowerToy.
             PowerToysSettings::PowerToyValues settings =
-                PowerToysSettings::PowerToyValues::load_from_settings_file(InclusiveMouse::get_key());
+                PowerToysSettings::PowerToyValues::load_from_settings_file(MousePointerCrosshair::get_key());
             parse_settings(settings);
         }
         catch (std::exception&)
         {
-            Logger::error("Invalid json when trying to load the Inclusive Mouse settings json from file.");
+            Logger::error("Invalid json when trying to load the Mouse Pointer Crosshair settings json from file.");
         }
     }
 
@@ -210,7 +210,7 @@ public:
             }
             catch (...)
             {
-                Logger::warn("Failed to initialize Inclusive Mouse activation shortcut");
+                Logger::warn("Failed to initialize Mouse Pointer Crosshair activation shortcut");
             }
             try
             {
@@ -293,11 +293,11 @@ public:
         }
         else
         {
-            Logger::info("Inclusive Mouse settings are empty");
+            Logger::info("Mouse Pointer Crosshair settings are empty");
         }
         if (!m_hotkey.modifiersMask)
         {
-            Logger::info("Inclusive Mouse  is going to use default shortcut");
+            Logger::info("Mouse Pointer Crosshair  is going to use default shortcut");
             m_hotkey.modifiersMask = MOD_CONTROL | MOD_ALT;
             m_hotkey.vkCode = 0x50; // P key
         }
@@ -308,5 +308,5 @@ public:
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new InclusiveMouse();
+    return new MousePointerCrosshair();
 }

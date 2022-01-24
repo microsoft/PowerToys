@@ -43,8 +43,8 @@ private:
     HHOOK m_mouseHook = NULL;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
 
-    static constexpr auto m_className = L"InclusiveCrosshair";
-    static constexpr auto m_windowTitle = L"PowerToys Inclusive Mouse";
+    static constexpr auto m_className = L"MousePointerCrosshair";
+    static constexpr auto m_windowTitle = L"PowerToys Mouse Pointer Crosshair";
     HWND m_hwndOwner = NULL;
     HWND m_hwnd = NULL;
     HINSTANCE m_hinstance = NULL;

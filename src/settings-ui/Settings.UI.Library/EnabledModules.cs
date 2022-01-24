@@ -223,18 +223,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool inclusiveMouse = true;
+        private bool mousePointerCrosshair = true;
 
-        [JsonPropertyName("InclusiveMouse")]
-        public bool InclusiveMouse
+        [JsonPropertyName("MousePointerCrosshair")]
+        public bool MousePointerCrosshair
         {
-            get => inclusiveMouse;
+            get => mousePointerCrosshair;
             set
             {
-                if (inclusiveMouse != value)
+                if (mousePointerCrosshair != value)
                 {
                     LogTelemetryEvent(value);
-                    inclusiveMouse = value;
+                    mousePointerCrosshair = value;
                 }
             }
         }

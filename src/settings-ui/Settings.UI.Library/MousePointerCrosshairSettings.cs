@@ -7,17 +7,17 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class InclusiveMouseSettings : BasePTModuleSettings, ISettingsConfig
+    public class MousePointerCrosshairSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "InclusiveMouse";
+        public const string ModuleName = "MousePointerCrosshair";
 
         [JsonPropertyName("properties")]
-        public InclusiveMouseProperties Properties { get; set; }
+        public MousePointerCrosshairProperties Properties { get; set; }
 
-        public InclusiveMouseSettings()
+        public MousePointerCrosshairSettings()
         {
             Name = ModuleName;
-            Properties = new InclusiveMouseProperties();
+            Properties = new MousePointerCrosshairProperties();
             Version = "1.0";
         }
 
