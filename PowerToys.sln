@@ -394,6 +394,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StlThumbnailProvider", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-StlThumbnailProvider", "src\modules\previewpane\UnitTests-StlThumbnailProvider\UnitTests-StlThumbnailProvider.csproj", "{F1F6B6B6-9F18-4A17-8B5C-97DF552C53DC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonacoPreviewHandler", "src\modules\previewpane\MonacoPreviewHandler\MonacoPreviewHandler.csproj", "{04B193D7-3E21-46B8-A958-89B63A8A69DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -1069,6 +1071,12 @@ Global
 		{F1F6B6B6-9F18-4A17-8B5C-97DF552C53DC}.Release|x64.ActiveCfg = Release|x64
 		{F1F6B6B6-9F18-4A17-8B5C-97DF552C53DC}.Release|x64.Build.0 = Release|x64
 		{F1F6B6B6-9F18-4A17-8B5C-97DF552C53DC}.Release|x86.ActiveCfg = Release|x64
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Debug|x64.ActiveCfg = Debug|x64
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Debug|x64.Build.0 = Debug|x64
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Release|x64.ActiveCfg = Release|x64
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Release|x64.Build.0 = Release|x64
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1199,6 +1207,7 @@ Global
 		{EAE14C0E-7A6B-45DA-9080-A7D8C077BA6E} = {322566EF-20DC-43A6-B9F8-616AF942579A}
 		{F7C8C0F1-5431-4347-89D0-8E5354F93CF2} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{F1F6B6B6-9F18-4A17-8B5C-97DF552C53DC} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{04B193D7-3E21-46B8-A958-89B63A8A69DE} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

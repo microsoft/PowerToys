@@ -1,4 +1,8 @@
 # See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-excludes
+(?:^|/)monacoSRC/
+(?:^|/)MonacoPreviewHandler/languages.json
+(?:^|/)MonacoPreviewHandler/index.html
+(?:^|/)MonacoPreviewHandler/generateLanguagesJson.html
 (?:^|/)(?i)COPYRIGHT
 (?:^|/)(?i)LICEN[CS]E
 (?:^|/)package(?:-lock)\.json$

@@ -3,7 +3,7 @@
   <Import Project="..\packages\WiX.3.11.2\build\wix.props" Condition="Exists('..\packages\WiX.3.11.2\build\wix.props')" />
   <Import Project="..\..\src\Version.props" />
   <PropertyGroup>
-    <DefineConstants>Version=$(Version)</DefineConstants>
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\modules\FileExplorerPreview\monacoSRC</DefineConstants>
     <Name>PowerToysInstaller</Name>
   </PropertyGroup>
   <PropertyGroup>
@@ -35,6 +35,7 @@
     <Compile Include="CustomDialogs\PTLicenseDlg.wxs" />
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
     <Compile Include="Product.wxs" />
+    <Compile Include="MonacoSRC.wxs" />
   </ItemGroup>
   <ItemGroup>
     <WixExtension Include="WixUtilExtension">
@@ -96,4 +97,16 @@ call "..\..\publish.cmd"
 	<Target Name="AfterBuild">
 	</Target>
 	-->
+  <Target Name="BeforeBuild">
+    <HeatDirectory Directory="..\..\src\modules\previewpane\MonacoPreviewHandler\monacoSRC" 
+      PreprocessorVariable="var.MonacoSRCHarvestPath" 
+      OutputFile="MonacoSRC.wxs" 
+      ComponentGroupName="MonacoSRCHeatGenerated" 
+      DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" 
+      AutogenerateGuids="true" 
+      ToolPath="$(WixToolPath)" 
+      SuppressFragments="true" 
+      SuppressRegistry="true" 
+      SuppressRootDirectory="true" />  
+  </Target>
 </Project>
