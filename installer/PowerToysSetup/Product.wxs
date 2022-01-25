@@ -877,6 +877,13 @@
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.comhost.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.runtimeconfig.json" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.GcodeThumbnailProvider.deps.json" />
+                <!-- File to include dll for Stl Thumbnail Provider -->
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.StlThumbnailProvider.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.StlThumbnailProvider.comhost.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.StlThumbnailProvider.runtimeconfig.json" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.StlThumbnailProvider.deps.json" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\HelixToolkit.dll" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\HelixToolkit.Core.Wpf.dll" />
             </Component>
         </DirectoryRef>
 

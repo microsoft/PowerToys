@@ -1103,6 +1103,7 @@ LPVOID
 LPW
 lpwndpl
 LPWSTR
+LReader
 LRESULT
 lshift
 lstrcmp
@@ -1397,6 +1398,7 @@ outsettings
 OVERLAPPEDWINDOW
 overlaywindow
 Overridable
+Oversampling
 OWNDC
 PACL
 PAINTSTRUCT
@@ -1861,6 +1863,7 @@ STEPIT
 stgm
 STGMEDIUM
 sticpl
+stl
 stoi
 stol
 stoll

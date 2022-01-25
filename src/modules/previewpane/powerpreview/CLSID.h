@@ -39,6 +39,9 @@ const CLSID CLSID_GcodePreviewHandler = { 0xec52dea8, 0x7c9f, 0x4130, { 0xa7, 0x
 
 // BFEE99B4-B74D-4348-BCA5-E757029647FF
 const GUID CLSID_GcodeThumbnailProvider = { 0xbfee99b4, 0xb74d, 0x4348, { 0xbc, 0xa5, 0xe7, 0x57, 0x02, 0x96, 0x47, 0xff } };
+
+// 8BC8AFC2-4E7C-4695-818E-8C1FFDCEA2AF
+const GUID CLSID_StlThumbnailProvider = { 0x8bc8afc2, 0x4e7c, 0x4695, { 0x81, 0x8e, 0x8c, 0x1f, 0xfd, 0xce, 0xa2, 0xaf } };
  
 // Pairs of NativeClsid vs ManagedClsid used for preview handlers.
 const std::vector<std::pair<CLSID, CLSID>> NativeToManagedClsid({ 

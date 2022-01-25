@@ -54,6 +54,10 @@ PowerPreviewModule::PowerPreviewModule() :
                                       .settingDescription = GET_RESOURCE_STRING(IDS_GCODE_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                                       .registryChanges = getGcodeThumbnailHandlerChangeSet(installationDir, installPerUser) });
 
+    m_fileExplorerModules.push_back({ .settingName = L"stl-thumbnail-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_STL_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
+                                      .registryChanges = getStlThumbnailHandlerChangeSet(installationDir, installPerUser) });
+
     try
     {
         PowerToysSettings::PowerToyValues settings =

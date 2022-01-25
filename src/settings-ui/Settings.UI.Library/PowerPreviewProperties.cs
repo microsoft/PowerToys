@@ -131,6 +131,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool enableStlThumbnail = true;
+
+        [JsonPropertyName("stl-thumbnail-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableStlThumbnail
+        {
+            get => enableStlThumbnail;
+            set
+            {
+                if (value != enableStlThumbnail)
+                {
+                    LogTelemetryEvent(value);
+                    enableStlThumbnail = value;
+                }
+            }
+        }
+
         public PowerPreviewProperties()
         {
         }
