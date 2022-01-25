@@ -63,9 +63,6 @@ public:
 
     json::JsonObject GetPersistFancyZonesJSON();
 
-    void LoadFancyZonesData();
-    void SaveZoneSettings() const;
-
     void SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor, const std::vector<std::pair<HMONITOR, MONITORINFOEX>>& allMonitors) const;
 
 private:

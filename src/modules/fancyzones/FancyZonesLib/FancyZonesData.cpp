@@ -314,53 +314,6 @@ json::JsonObject FancyZonesData::GetPersistFancyZonesJSON()
     return JSONHelpers::GetPersistFancyZonesJSON(zonesSettingsFileName, appZoneHistoryFileName);
 }
 
-void FancyZonesData::LoadFancyZonesData()
-{
-    if (!std::filesystem::exists(zonesSettingsFileName))
-    {
-        SaveZoneSettings();
-        AppZoneHistory::instance().SaveData();
-    }
-    else
-    {
-        json::JsonObject fancyZonesDataJSON = GetPersistFancyZonesJSON();
-
-        deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON); 
-    }
-}
-
-void FancyZonesData::SaveZoneSettings() const
-{
-    _TRACER_;
-    std::scoped_lock lock{ dataLock };
-
-    bool dirtyFlag = false;
-    JSONHelpers::TDeviceInfoMap updatedDeviceInfoMap;
-    if (m_virtualDesktopCheckCallback)
-    {
-        for (const auto& [id, data] : deviceInfoMap)
-        {
-            auto updatedId = id;
-            if (!m_virtualDesktopCheckCallback(id.virtualDesktopId))
-            {
-                updatedId.virtualDesktopId = GUID_NULL;
-                dirtyFlag = true;
-            }
-
-            updatedDeviceInfoMap.insert({ updatedId, data });
-        }
-    }
-    
-    if (dirtyFlag)
-    {
-        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, updatedDeviceInfoMap);
-    }
-    else
-    {
-        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap);
-    }
-}
-
 void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor, const std::vector<std::pair<HMONITOR, MONITORINFOEX>>& allMonitors) const
 {
     JSONHelpers::EditorArgs argsJson; /* json arguments */

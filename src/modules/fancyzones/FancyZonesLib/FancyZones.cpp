@@ -58,9 +58,6 @@ public:
         m_windowMoveHandler(settings, [this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
         }),
-        m_zonesSettingsFileWatcher(FancyZonesDataInstance().GetZonesSettingsFileName(), [this]() {
-            PostMessageW(m_window, WM_PRIV_FILE_UPDATE, NULL, NULL);
-        }),
         m_settingsFileWatcher(FancyZonesDataInstance().GetSettingsFileName(), [this]() {
             PostMessageW(m_window, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
         }),
@@ -201,7 +198,6 @@ private:
     MonitorWorkAreaHandler m_workAreaHandler;
     VirtualDesktop m_virtualDesktop;
 
-    FileWatcher m_zonesSettingsFileWatcher;
     FileWatcher m_settingsFileWatcher;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
@@ -773,11 +769,6 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             auto hwnd = reinterpret_cast<HWND>(wparam);
             WindowCreated(hwnd);
         }
-        else if (message == WM_PRIV_FILE_UPDATE)
-        {
-            FancyZonesDataInstance().LoadFancyZonesData();
-            UpdateZoneSets();
-        }
         else if (message == WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE)
         {
             LayoutHotkeys::instance().LoadData();
@@ -789,6 +780,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_APPLIED_LAYOUTS_FILE_UPDATE)
         {
             AppliedLayouts::instance().LoadData();
+            UpdateZoneSets();
         }
         else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
         {
@@ -901,7 +893,7 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noe
         if (workArea)
         {
             m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
-            FancyZonesDataInstance().SaveZoneSettings();
+            AppliedLayouts::instance().SaveData();
         }
     }
 }
@@ -1277,7 +1269,6 @@ void FancyZones::OnSettingsChanged() noexcept
 void FancyZones::OnEditorExitEvent() noexcept
 {
     // Collect information about changes in zone layout after editor exited.
-    FancyZonesDataInstance().LoadFancyZonesData();
     AppZoneHistory::instance().SyncVirtualDesktops(m_currentDesktopId);
     AppliedLayouts::instance().SyncVirtualDesktops(m_currentDesktopId);
     UpdateZoneSets();
@@ -1342,7 +1333,7 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
     
     auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(m_currentDesktopId);
     FancyZonesDataInstance().SetActiveZoneSet(workArea->UniqueId(), data);
-    FancyZonesDataInstance().SaveZoneSettings();
+    AppliedLayouts::instance().SaveData();
     UpdateZoneSets();
     FlashZones();
 }

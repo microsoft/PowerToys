@@ -581,21 +581,6 @@ namespace JSONHelpers
         }
     }
 
-    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap)
-    {
-        auto before = json::from_file(zonesSettingsFileName);
-
-        json::JsonObject root{};
-               
-        root.SetNamedValue(NonLocalizable::DevicesStr, JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
-        
-        if (!before.has_value() || before.value().Stringify() != root.Stringify())
-        {
-            Trace::FancyZones::DataChanged();
-            json::to_file(zonesSettingsFileName, root);
-        }
-    }
-
     void SaveAppZoneHistory(const std::wstring& appZoneHistoryFileName, const TAppZoneHistoryMap& appZoneHistoryMap)
     {
         json::JsonObject root{};
