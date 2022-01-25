@@ -53,33 +53,16 @@ jobs:
       scriptName: .pipelines/versionSetting.ps1
       arguments: -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
 
-  - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
-    displayName: 'Download Localization Files -- PowerToys 37400'
+  - task: UseDotNet@2
+    displayName: 'Use .NET 6 SDK'
     inputs:
-      teamId: 37400
-      authId: '$(TouchdownApplicationID)'
-      authKey: '$(TouchdownApplicationKey)'
-      resourceFilePath: |
-       **\Resources.resx
-       **\Resource.resx
-       **\Resources.resw
-      appendRelativeDir: true
-      localizationTarget: false
-      pseudoSetting: Included
-  - task: PowerShell@2
-    displayName: Move Loc files into correct locations
-    inputs:
-      targetType: inline
-      script: >-
-        $VerbosePreference = "Continue"
+      packageType: sdk
+      version: '6.x'
 
-        ./tools/build/move-and-rename-resx.ps1
-
-        ./tools/build/move-uwp-resw.ps1
-      pwsh: true
   - task: NuGetAuthenticate@0
     inputs:
       nuGetServiceConnections: PowerToysCDPxFeed
+      
   - task: NuGetToolInstaller@1
     displayName: Use NuGet 5.10
     inputs:
@@ -97,6 +80,32 @@ jobs:
       restoreSolution: '**/*.sln'
       selectOrConfig: config
       nugetConfigPath: .pipelines/release-nuget.config
+      
+  - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
+    displayName: 'Download Localization Files -- PowerToys 37400'
+    inputs:
+      teamId: 37400
+      authId: '$(TouchdownApplicationID)'
+      authKey: '$(TouchdownApplicationKey)'
+      resourceFilePath: |
+       **\Resources.resx
+       **\Resource.resx
+       **\Resources.resw
+      appendRelativeDir: true
+      localizationTarget: false
+      pseudoSetting: Included
+
+- task: PowerShell@2
+    displayName: Move Loc files into correct locations
+    inputs:
+      targetType: inline
+      script: >-
+        $VerbosePreference = "Continue"
+
+        ./tools/build/move-and-rename-resx.ps1
+
+        ./tools/build/move-uwp-resw.ps1
+      pwsh: true
       
   - task: CmdLine@2
     displayName: Moving telem files
