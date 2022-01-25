@@ -278,7 +278,7 @@ FancyZones::Run() noexcept
         }
     });
 
-    FancyZonesDataInstance().SetVirtualDesktopCheckCallback(std::bind(&VirtualDesktop::IsVirtualDesktopIdSavedInRegistry, &m_virtualDesktop, std::placeholders::_1));
+    AppliedLayouts::instance().SetVirtualDesktopCheckCallback(std::bind(&VirtualDesktop::IsVirtualDesktopIdSavedInRegistry, &m_virtualDesktop, std::placeholders::_1));
     AppZoneHistory::instance().SetVirtualDesktopCheckCallback(std::bind(&VirtualDesktop::IsVirtualDesktopIdSavedInRegistry, &m_virtualDesktop, std::placeholders::_1));
 }
 
@@ -1223,11 +1223,12 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
     if (guids.has_value())
     {
         m_workAreaHandler.RegisterUpdates(*guids);
-        FancyZonesDataInstance().RemoveDeletedDesktops(*guids);
+        AppZoneHistory::instance().RemoveDeletedVirtualDesktops(*guids);
+        AppliedLayouts::instance().RemoveDeletedVirtualDesktops(*guids);
     }
 
     AppZoneHistory::instance().SyncVirtualDesktops(m_currentDesktopId);
-    FancyZonesDataInstance().SyncVirtualDesktops(m_currentDesktopId);
+    AppliedLayouts::instance().SyncVirtualDesktops(m_currentDesktopId);
 }
 
 void FancyZones::UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept
@@ -1278,7 +1279,7 @@ void FancyZones::OnEditorExitEvent() noexcept
     // Collect information about changes in zone layout after editor exited.
     FancyZonesDataInstance().LoadFancyZonesData();
     AppZoneHistory::instance().SyncVirtualDesktops(m_currentDesktopId);
-    FancyZonesDataInstance().SyncVirtualDesktops(m_currentDesktopId);
+    AppliedLayouts::instance().SyncVirtualDesktops(m_currentDesktopId);
     UpdateZoneSets();
 }
 

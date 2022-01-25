@@ -56,10 +56,15 @@ public:
     void LoadData();
     void SaveData();
 
+    void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
+    void SyncVirtualDesktops(GUID currentVirtualDesktopId);
+    void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
+
 private:
     AppliedLayouts();
     ~AppliedLayouts() = default;
 
     std::unique_ptr<FileWatcher> m_fileWatcher;
     TAppliedLayoutsMap m_layouts;
+    std::function<bool(GUID)> m_virtualDesktopCheckCallback;
 };

@@ -5,8 +5,10 @@
 #include <common/logger/logger.h>
 #include <common/utils/process_path.h>
 
+#include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/util.h>
 
 AppZoneHistory::AppZoneHistory()
 {
@@ -298,34 +300,6 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
     return {};
 }
 
-void AppZoneHistory::RemoveDesktopAppZoneHistory(GUID desktopId)
-{
-    for (auto it = std::begin(m_history); it != std::end(m_history);)
-    {
-        auto& perDesktopData = it->second;
-        for (auto desktopIt = std::begin(perDesktopData); desktopIt != std::end(perDesktopData);)
-        {
-            if (desktopIt->deviceId.virtualDesktopId == desktopId)
-            {
-                desktopIt = perDesktopData.erase(desktopIt);
-            }
-            else
-            {
-                ++desktopIt;
-            }
-        }
-
-        if (perDesktopData.empty())
-        {
-            it = m_history.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
-}
-
 void AppZoneHistory::SyncVirtualDesktops(GUID currentVirtualDesktopId)
 {
     _TRACER_;
@@ -364,6 +338,49 @@ void AppZoneHistory::SyncVirtualDesktops(GUID currentVirtualDesktopId)
             Logger::info(L"Update Virtual Desktop id to {}", virtualDesktopIdStr.get());
         }
 
+        SaveData();
+    }
+}
+
+void AppZoneHistory::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops)
+{
+    std::unordered_set<GUID> active(std::begin(activeDesktops), std::end(activeDesktops));
+    bool dirtyFlag = false;
+
+    for (auto it = std::begin(m_history); it != std::end(m_history);)
+    {
+        auto& perDesktopData = it->second;
+        for (auto desktopIt = std::begin(perDesktopData); desktopIt != std::end(perDesktopData);)
+        {
+            if (desktopIt->deviceId.virtualDesktopId != GUID_NULL && !active.contains(desktopIt->deviceId.virtualDesktopId))
+            {
+                auto virtualDesktopIdStr = FancyZonesUtils::GuidToString(desktopIt->deviceId.virtualDesktopId);
+                if (virtualDesktopIdStr)
+                {
+                    Logger::info(L"Remove Virtual Desktop id {} from app-zone-history", virtualDesktopIdStr.value());
+                }
+
+                desktopIt = perDesktopData.erase(desktopIt);
+                dirtyFlag = true;
+            }
+            else
+            {
+                ++desktopIt;
+            }
+        }
+
+        if (perDesktopData.empty())
+        {
+            it = m_history.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    if (dirtyFlag)
+    {
         SaveData();
     }
 }

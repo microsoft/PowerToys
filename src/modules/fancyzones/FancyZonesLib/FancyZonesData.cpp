@@ -196,11 +196,6 @@ void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
     }
 }
 
-void FancyZonesData::SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback)
-{
-    m_virtualDesktopCheckCallback = callback;
-}
-
 const JSONHelpers::TDeviceInfoMap& FancyZonesData::GetDeviceInfoMap() const
 {
     std::scoped_lock lock{ dataLock };
@@ -273,101 +268,6 @@ void FancyZonesData::CloneDeviceInfo(const FancyZonesDataTypes::DeviceIdData& so
     }
 
     deviceInfoMap[destination] = deviceInfoMap[source];
-}
-
-void FancyZonesData::SyncVirtualDesktops(GUID currentVirtualDesktopId)
-{
-    _TRACER_;
-    // Explorer persists current virtual desktop identifier to registry on a per session basis,
-    // but only after first virtual desktop switch happens. If the user hasn't switched virtual
-    // desktops in this session value in registry will be empty and we will use default GUID in
-    // that case (00000000-0000-0000-0000-000000000000).
-    // This method will go through all our persisted data with default GUID and update it with
-    // valid one.
-
-    bool dirtyFlag = false;   
-    
-    std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithCurrentId{};
-    std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithNullId{};
-
-    for (const auto& [desktopId, data] : deviceInfoMap)
-    {
-        if (desktopId.virtualDesktopId == GUID_NULL)
-        {
-            replaceWithCurrentId.push_back(desktopId);
-            dirtyFlag = true;
-        }
-        else
-        {
-            if (m_virtualDesktopCheckCallback && !m_virtualDesktopCheckCallback(desktopId.virtualDesktopId))
-            {
-                replaceWithNullId.push_back(desktopId);
-                dirtyFlag = true;
-            }
-        }
-    }
-    
-    for (const auto& id : replaceWithCurrentId)
-    {
-        auto mapEntry = deviceInfoMap.extract(id);
-        mapEntry.key().virtualDesktopId = currentVirtualDesktopId;
-        deviceInfoMap.insert(std::move(mapEntry));
-    }
-
-    for (const auto& id : replaceWithNullId)
-    {
-        auto mapEntry = deviceInfoMap.extract(id);
-        mapEntry.key().virtualDesktopId = GUID_NULL;
-        deviceInfoMap.insert(std::move(mapEntry));
-    }
-    
-    if (dirtyFlag)
-    {
-        wil::unique_cotaskmem_string virtualDesktopIdStr;
-        if (SUCCEEDED(StringFromCLSID(currentVirtualDesktopId, &virtualDesktopIdStr)))
-        {
-            Logger::info(L"Update Virtual Desktop id to {}", virtualDesktopIdStr.get()); 
-        }
-
-        SaveZoneSettings();
-    }
-}
-
-void FancyZonesData::RemoveDeletedDesktops(const std::vector<GUID>& activeDesktops)
-{
-    std::unordered_set<GUID> active(std::begin(activeDesktops), std::end(activeDesktops));
-    std::scoped_lock lock{ dataLock };
-    bool dirtyFlag = false;
-
-    for (auto it = std::begin(deviceInfoMap); it != std::end(deviceInfoMap);)
-    {
-        GUID desktopId = it->first.virtualDesktopId;
-
-        if (desktopId != GUID_NULL)
-        {
-            auto foundId = active.find(desktopId);
-            if (foundId == std::end(active))
-            {
-                wil::unique_cotaskmem_string virtualDesktopIdStr;
-                if (SUCCEEDED(StringFromCLSID(desktopId, &virtualDesktopIdStr)))
-                {
-                    Logger::info(L"Remove Virtual Desktop id {}", virtualDesktopIdStr.get());
-                }
-
-                AppZoneHistory::instance().RemoveDesktopAppZoneHistory(desktopId);
-                it = deviceInfoMap.erase(it);
-                dirtyFlag = true;
-                continue;
-            }
-        }
-        ++it;
-    }
-
-    if (dirtyFlag)
-    {
-        SaveZoneSettings();
-        AppZoneHistory::instance().SaveData();
-    }
 }
 
 void FancyZonesData::SetActiveZoneSet(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& data)

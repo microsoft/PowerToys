@@ -43,8 +43,6 @@ public:
 
     void ReplaceZoneSettingsFileFromOlderVersions();
 
-    void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
-
     std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& id) const;
 
     const JSONHelpers::TDeviceInfoMap& GetDeviceInfoMap() const;
@@ -61,9 +59,6 @@ public:
 
     bool AddDevice(const FancyZonesDataTypes::DeviceIdData& deviceId);
     void CloneDeviceInfo(const FancyZonesDataTypes::DeviceIdData& source, const FancyZonesDataTypes::DeviceIdData& destination);
-    void SyncVirtualDesktops(GUID desktopId);
-    void RemoveDeletedDesktops(const std::vector<GUID>& activeDesktops);
-
     void SetActiveZoneSet(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
 
     json::JsonObject GetPersistFancyZonesJSON();
@@ -120,8 +115,6 @@ private:
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;
     std::wstring editorParametersFileName;
-
-    std::function<bool(GUID)> m_virtualDesktopCheckCallback;
 
     mutable std::recursive_mutex dataLock;
 };

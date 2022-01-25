@@ -200,3 +200,98 @@ void AppliedLayouts::SaveData()
         json::to_file(AppliedLayoutsFileName(), JsonUtils::SerializeJson(m_layouts));
     }
 }
+
+void AppliedLayouts::SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback)
+{
+    m_virtualDesktopCheckCallback = callback;
+}
+
+void AppliedLayouts::SyncVirtualDesktops(GUID currentVirtualDesktopId)
+{
+    _TRACER_;
+    // Explorer persists current virtual desktop identifier to registry on a per session basis,
+    // but only after first virtual desktop switch happens. If the user hasn't switched virtual
+    // desktops in this session value in registry will be empty and we will use default GUID in
+    // that case (00000000-0000-0000-0000-000000000000).
+
+    bool dirtyFlag = false;
+
+    std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithCurrentId{};
+    std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithNullId{};
+
+    for (const auto& [id, data] : m_layouts)
+    {
+        if (id.virtualDesktopId == GUID_NULL)
+        {
+            replaceWithCurrentId.push_back(id);
+            dirtyFlag = true;
+        }
+        else
+        {
+            if (m_virtualDesktopCheckCallback && !m_virtualDesktopCheckCallback(id.virtualDesktopId))
+            {
+                replaceWithNullId.push_back(id);
+                dirtyFlag = true;
+            }
+        }
+    }
+
+    for (const auto& id : replaceWithCurrentId)
+    {
+        auto mapEntry = m_layouts.extract(id);
+        mapEntry.key().virtualDesktopId = currentVirtualDesktopId;
+        m_layouts.insert(std::move(mapEntry));
+    }
+
+    for (const auto& id : replaceWithNullId)
+    {
+        auto mapEntry = m_layouts.extract(id);
+        mapEntry.key().virtualDesktopId = GUID_NULL;
+        m_layouts.insert(std::move(mapEntry));
+    }
+
+    if (dirtyFlag)
+    {
+        wil::unique_cotaskmem_string virtualDesktopIdStr;
+        if (SUCCEEDED(StringFromCLSID(currentVirtualDesktopId, &virtualDesktopIdStr)))
+        {
+            Logger::info(L"Update Virtual Desktop id to {}", virtualDesktopIdStr.get());
+        }
+
+        SaveData();
+    }
+}
+
+void AppliedLayouts::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops)
+{
+    std::unordered_set<GUID> active(std::begin(activeDesktops), std::end(activeDesktops));
+    bool dirtyFlag = false;
+
+    for (auto it = std::begin(m_layouts); it != std::end(m_layouts);)
+    {
+        GUID desktopId = it->first.virtualDesktopId;
+
+        if (desktopId != GUID_NULL)
+        {
+            auto foundId = active.find(desktopId);
+            if (foundId == std::end(active))
+            {
+                wil::unique_cotaskmem_string virtualDesktopIdStr;
+                if (SUCCEEDED(StringFromCLSID(desktopId, &virtualDesktopIdStr)))
+                {
+                    Logger::info(L"Remove Virtual Desktop id {}", virtualDesktopIdStr.get());
+                }
+
+                it = m_layouts.erase(it);
+                dirtyFlag = true;
+                continue;
+            }
+        }
+        ++it;
+    }
+
+    if (dirtyFlag)
+    {
+        SaveData();
+    }
+}
