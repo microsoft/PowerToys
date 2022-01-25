@@ -107,6 +107,11 @@ namespace Common.UI
             ChangeTheme(_settingsTheme == Theme.System ? Theme.System : _currentTheme);
         }
 
+        public static string GetWindowsBaseColor()
+        {
+            return ControlzEx.Theming.WindowsThemeHelper.GetWindowsBaseColor();
+        }
+
         public void ChangeTheme(Theme theme, bool fromSettings = false)
         {
             if (fromSettings)

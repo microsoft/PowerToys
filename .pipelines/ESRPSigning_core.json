@@ -184,7 +184,6 @@
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.WinForms.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Wpf.dll",
                 "modules\\FileExplorerPreview\\Newtonsoft.Json.dll",
-                "modules\\FileExplorerPreview\\System.Personalization.dll",
                 "modules\\FileExplorerPreview\\runtimes\\win-x64\\native\\WebView2Loader.dll",
                 "modules\\launcher\\e_sqlite3.dll",
                 "modules\\launcher\\SQLitePCLRaw.batteries_v2.dll",

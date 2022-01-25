@@ -6,8 +6,6 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
-using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
-using WK.Libraries.WTL;
 
 namespace Microsoft.PowerToys.PreviewHandler.Monaco
 {
@@ -16,11 +14,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
     /// </summary>
     public class Settings
     {
-        /// <summary>
-        /// Theme: dark, light or system.
-        /// </summary>
-        private readonly string theme = "system";
-
         /// <summary>
         /// Word warping. Set by PT settings.
         /// </summary>
@@ -45,11 +38,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <summary>
         /// Gets the color of the window background.
         /// </summary>
-        public Color BackgroundColor
+        public static Color BackgroundColor
         {
             get
             {
-                if (this.GetTheme(ThemeListener.AppMode) == "dark")
+                if (GetTheme() == "dark")
                 {
                     return Color.DimGray;
                 }
@@ -63,11 +56,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <summary>
         /// Gets the color of text labels.
         /// </summary>
-        public Color TextColor
+        public static Color TextColor
         {
             get
             {
-                if (this.GetTheme(ThemeListener.AppMode) == "dark")
+                if (GetTheme() == "dark")
                 {
                     return Color.White;
                 }
@@ -88,7 +81,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         {
             get
             {
-                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                string codeBase = Assembly.GetExecutingAssembly().Location;
                 UriBuilder uri = new UriBuilder(codeBase);
                 string path = Uri.UnescapeDataString(uri.Path);
                 return Path.GetDirectoryName(path);
@@ -96,32 +89,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         }
 
         /// <summary>
-        /// Returns the the theme.
+        /// Returns the theme.
         /// </summary>
-        /// <param name="systemTheme">theme to use when it's set theme is set to system theme.</param>
         /// <returns>Theme that should be used.</returns>
-        public string GetTheme(ThemeListener.ThemeModes systemTheme)
+        public static string GetTheme()
         {
-            if (this.theme == "system")
-            {
-                if (systemTheme == ThemeListener.ThemeModes.Light)
-                {
-                    return "light";
-                }
-                else if (systemTheme == ThemeListener.ThemeModes.Dark)
-                {
-                    return "dark";
-                }
-                else
-                {
-                    Console.WriteLine("Unknown theme.");
-                    return "light";
-                }
-            }
-            else
-            {
-                return this.theme;
-            }
+            return Common.UI.ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
         }
     }
 }

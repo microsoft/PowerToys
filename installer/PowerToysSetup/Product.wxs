@@ -844,6 +844,7 @@
                 <!-- File to include common library used by preview handlers -->
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PreviewHandlerCommon.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.PreviewHandlerCommon.deps.json" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.ManagedCommon.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.ManagedTelemetry.dll" />
                 <!-- File to include dll for Svg Preview Handler -->
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.SvgPreviewHandler.dll" />
@@ -865,15 +866,16 @@
                 <File Id="FileExplorerPreview_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.IO.Abstractions.dll" />
                 <!-- Files to include dll's for Monaco Preview Handler and it's dependencies -->
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\languages.json" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.Common.UI.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.comhost.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.runtimeconfig.json" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.deps.json" />
+                <File Id="FileExplorerPreview_ControlzEx.dll" Source="$(var.BinX64Dir)modules\FileExplorerPreview\ControlzEx.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Microsoft.Web.WebView2.Core.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Microsoft.Web.WebView2.WinForms.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Microsoft.Web.WebView2.Wpf.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Newtonsoft.Json.dll" />
-                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.Personalization.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.Runtime.WindowsRuntime.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\index.html" />
                 <!-- File to include dll for Pdf Preview Handler -->

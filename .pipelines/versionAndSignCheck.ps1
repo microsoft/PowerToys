@@ -28,11 +28,7 @@ if($items.Count -eq 0)
 $items | ForEach-Object { 
     if($_.VersionInfo.FileVersion -eq "1.0.0.0" )
 	{
-		if(-not (
-			$_.Name.EndsWith("Microsoft.Search.Interop.dll") -or
-			$_.Name.EndsWith("System.Personalization.dll")
-			)
-		)
+		if(-not $_.Name.EndsWith("Microsoft.Search.Interop.dll"))
 		{
 			Write-Host "Version not set: " + $_.FullName
 			$totalFailure++;

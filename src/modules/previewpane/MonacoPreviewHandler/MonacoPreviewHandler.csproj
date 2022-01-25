@@ -44,7 +44,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.IO.Abstractions" Version="13.2.47" />
-    <PackageReference Include="WindowsThemeListener" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,6 +56,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
   </ItemGroup>
 
