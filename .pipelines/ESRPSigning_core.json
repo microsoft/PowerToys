@@ -186,7 +186,6 @@
                 "modules\\FileExplorerPreview\\Newtonsoft.Json.dll",
                 "modules\\FileExplorerPreview\\System.Personalization.dll",
                 "modules\\FileExplorerPreview\\runtimes\\win-x64\\native\\WebView2Loader.dll",
-                "modules\\FileExplorerPreview\\monacoSRC\\min\\vs\\base\\browser\\ui\\codicons\\codicon\\codicon.ttf",
                 "modules\\launcher\\e_sqlite3.dll",
                 "modules\\launcher\\SQLitePCLRaw.batteries_v2.dll",
                 "modules\\launcher\\SQLitePCLRaw.core.dll",
