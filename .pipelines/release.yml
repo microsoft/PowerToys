@@ -95,7 +95,7 @@ jobs:
       localizationTarget: false
       pseudoSetting: Included
 
-- task: PowerShell@2
+  - task: PowerShell@2
     displayName: Move Loc files into correct locations
     inputs:
       targetType: inline
