@@ -176,7 +176,7 @@ inline registry::ChangeSet getStlThumbnailHandlerChangeSet(const std::wstring in
                                   registry::DOTNET_COMPONENT_CATEGORY_CLSID,
                                   L"Microsoft.PowerToys.ThumbnailHandler.Stl.StlThumbnailProvider",
                                   L"Stl Thumbnail Provider",
-                                  L".stl");
+                                  { L".stl" });
 }
 
 inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstring installationDir)
