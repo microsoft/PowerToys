@@ -43,6 +43,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         private bool _confirmSystemCommands;
         private bool _localizeSystemCommands;
 
+        private bool isBootedInUefiMode = NativeMethods.GetSystemFirmwareType() == NativeMethods.FirmwareTypes.Uefi;
+
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
             new PluginAdditionalOption()
@@ -64,6 +66,13 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             _context = context;
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconTheme(_context.API.GetCurrentTheme());
+
+            // Log info if the system hasn't boot in uefi mode.
+            // (Because this is only going into the log we can ignore the fact that normally UEFI and BIOS are written upper case. No need to convert the enumeration value to upper case.)
+            if (!isBootedInUefiMode)
+            {
+                Wox.Plugin.Logger.Log.Info($"The UEFI command will not show to the user. The system has not booted in UEFI mode or the system does not have an UEFI firmware! (Detected type: {NativeMethods.GetSystemFirmwareType()})", typeof(Main));
+            }
         }
 
         public List<Result> Query(Query query)
@@ -185,6 +194,22 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     },
                 },
             });
+
+            // UEFI command/result. It is only available on systems booted in UEFI mode.
+            if (isBootedInUefiMode)
+            {
+                results.Add(new Result
+                {
+                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_uefi), culture),
+                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_uefi_description), culture),
+                    IcoPath = $"Images\\firmwareSettings.{IconTheme}.png",
+                    Action = c =>
+                    {
+                        return ExecuteCommand(Resources.Microsoft_plugin_sys_uefi_confirmation, () => Helper.OpenInShell("shutdown", "/r /fw /t 0", null, true));
+                    },
+                });
+            }
+
             return results;
         }
 

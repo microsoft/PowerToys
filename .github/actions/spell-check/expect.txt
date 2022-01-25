@@ -152,6 +152,7 @@ bigobj
 binaryformatter
 binlog
 binskim
+bios
 bitmapimage
 BITMAPINFO
 BITMAPINFOHEADER
@@ -2096,6 +2097,7 @@ UAL
 uap
 udit
 Udp
+uefi
 UIA
 Uid
 uint
