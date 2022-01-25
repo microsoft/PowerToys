@@ -621,8 +621,8 @@
     <comment>Do not loc "Markdown".  Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
-    <value>Enable source code preview (Monaco)</value>
-    <comment>Do not loc "Monaco". Do you want this feature on / off</comment>
+    <value>Enable developer files preview (Example: .cpp, .py, ...)</value>
+    <comment>Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Enable SVG (.svg) preview</value>
