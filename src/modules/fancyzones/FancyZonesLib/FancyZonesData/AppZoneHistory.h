@@ -40,6 +40,8 @@ public:
 
     void RemoveDesktopAppZoneHistory(GUID desktopId);
 
+    void SyncVirtualDesktops(GUID currentVirtualDesktopId);
+
 private:
     AppZoneHistory();
     ~AppZoneHistory() = default;

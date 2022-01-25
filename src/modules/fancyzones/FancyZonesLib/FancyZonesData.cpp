@@ -158,7 +158,6 @@ FancyZonesData::FancyZonesData()
 
     settingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesSettingsFile);
     zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesDataFile);
-    appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesAppZoneHistoryFile);
     editorParametersFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesEditorParametersFile);
 }
 
@@ -281,28 +280,7 @@ void FancyZonesData::SyncVirtualDesktops(GUID currentVirtualDesktopId)
     // This method will go through all our persisted data with default GUID and update it with
     // valid one.
 
-    std::scoped_lock lock{ dataLock };
-    bool dirtyFlag = false;
-
-    for (auto& [path, perDesktopData] : appZoneHistoryMap)
-    {
-        for (auto& data : perDesktopData)
-        {
-            if (data.deviceId.virtualDesktopId == GUID_NULL)
-            {
-                data.deviceId.virtualDesktopId = currentVirtualDesktopId;
-                dirtyFlag = true;
-            }
-            else
-            {
-                if (m_virtualDesktopCheckCallback && !m_virtualDesktopCheckCallback(data.deviceId.virtualDesktopId))
-                {
-                    data.deviceId.virtualDesktopId = GUID_NULL;
-                    dirtyFlag = true;
-                }
-            }
-        }
-    }
+    bool dirtyFlag = false;   
     
     std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithCurrentId{};
     std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithNullId{};
@@ -347,7 +325,6 @@ void FancyZonesData::SyncVirtualDesktops(GUID currentVirtualDesktopId)
         }
 
         SaveZoneSettings();
-        AppZoneHistory::instance().SaveData();
     }
 }
 

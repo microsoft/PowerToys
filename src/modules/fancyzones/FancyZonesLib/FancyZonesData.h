@@ -97,7 +97,6 @@ private:
 
     inline void clear_data()
     {
-        appZoneHistoryMap.clear();
         deviceInfoMap.clear();
     }
 
@@ -114,8 +113,6 @@ private:
         return result + L"\\" + std::wstring(L"zones-settings.json");
     }
 #endif
-    // Maps app path to app's zone history data
-    std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> appZoneHistoryMap{};
     // Maps device unique ID to device data
     JSONHelpers::TDeviceInfoMap deviceInfoMap{};
 

@@ -1220,6 +1220,7 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
         FancyZonesDataInstance().RemoveDeletedDesktops(*guids);
     }
 
+    AppZoneHistory::instance().SyncVirtualDesktops(m_currentDesktopId);
     FancyZonesDataInstance().SyncVirtualDesktops(m_currentDesktopId);
 }
 
@@ -1270,6 +1271,7 @@ void FancyZones::OnEditorExitEvent() noexcept
 {
     // Collect information about changes in zone layout after editor exited.
     FancyZonesDataInstance().LoadFancyZonesData();
+    AppZoneHistory::instance().SyncVirtualDesktops(m_currentDesktopId);
     FancyZonesDataInstance().SyncVirtualDesktops(m_currentDesktopId);
     UpdateZoneSets();
 }

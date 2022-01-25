@@ -325,3 +325,45 @@ void AppZoneHistory::RemoveDesktopAppZoneHistory(GUID desktopId)
         }
     }
 }
+
+void AppZoneHistory::SyncVirtualDesktops(GUID currentVirtualDesktopId)
+{
+    _TRACER_;
+    // Explorer persists current virtual desktop identifier to registry on a per session basis,
+    // but only after first virtual desktop switch happens. If the user hasn't switched virtual
+    // desktops in this session value in registry will be empty and we will use default GUID in
+    // that case (00000000-0000-0000-0000-000000000000).
+    
+    bool dirtyFlag = false;
+
+    for (auto& [path, perDesktopData] : m_history)
+    {
+        for (auto& data : perDesktopData)
+        {
+            if (data.deviceId.virtualDesktopId == GUID_NULL)
+            {
+                data.deviceId.virtualDesktopId = currentVirtualDesktopId;
+                dirtyFlag = true;
+            }
+            else
+            {
+                if (m_virtualDesktopCheckCallback && !m_virtualDesktopCheckCallback(data.deviceId.virtualDesktopId))
+                {
+                    data.deviceId.virtualDesktopId = GUID_NULL;
+                    dirtyFlag = true;
+                }
+            }
+        }
+    }
+
+    if (dirtyFlag)
+    {
+        wil::unique_cotaskmem_string virtualDesktopIdStr;
+        if (SUCCEEDED(StringFromCLSID(currentVirtualDesktopId, &virtualDesktopIdStr)))
+        {
+            Logger::info(L"Update Virtual Desktop id to {}", virtualDesktopIdStr.get());
+        }
+
+        SaveData();
+    }
+}
