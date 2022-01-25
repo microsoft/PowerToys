@@ -1169,6 +1169,8 @@ mimetype
 mindaro
 Minimatch
 MINIMIZEBOX
+MINIMIZEEND
+MINIMIZESTART
 miniz
 minlevel
 Miracast
