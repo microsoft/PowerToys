@@ -12,7 +12,6 @@ using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Windows.System;
-using WK.Libraries.WTL;
 
 namespace Microsoft.PowerToys.PreviewHandler.Monaco
 {
@@ -89,6 +88,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                     {
                                         throw new WebView2RuntimeNotFoundException();
                                     }
+
                                     _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                                     var vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
                                     var fileContent = File.ReadAllText(filePath);
@@ -99,12 +99,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
                                     html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
                                     html = html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
-                                    html = html.Replace("[[PT_THEME]]", _settings.GetTheme(ThemeListener.AppMode), StringComparison.InvariantCulture);
+                                    html = html.Replace("[[PT_THEME]]", Settings.GetTheme(), StringComparison.InvariantCulture);
                                     html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
                                     html = html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
 
                                     // Initialize WebView
-
                                     await _webView.EnsureCoreWebView2Async(_webView2Environment);
                                     _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
                                     _webView.NavigateToString(html);
@@ -186,12 +185,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 CoreWebView2Settings settings = (sender as WebView2).CoreWebView2.Settings;
 
 #if DEBUG
-                // Enable developer tools and contextmenu for debugging
+                // Enable developer tools and context menu for debugging
                 settings.AreDefaultContextMenusEnabled = true;
                 settings.AreDevToolsEnabled = true;
 #else
-                // Disable contextmenu
+                // Disable context menu
                 settings.AreDefaultContextMenusEnabled = false;
+
                 // Disable developer tools
                 settings.AreDevToolsEnabled = false;
 #endif
@@ -246,8 +246,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 _loading.Width = this.Width;
                 _loading.Height = this.Height;
                 _loading.Font = new Font("MS Sans Serif", 16, FontStyle.Bold);
-                _loading.ForeColor = _settings.TextColor;
-                _loading.BackColor = _settings.BackgroundColor;
+                _loading.ForeColor = Settings.TextColor;
+                _loading.BackColor = Settings.BackgroundColor;
                 Controls.Add(_loading);
             });
         }

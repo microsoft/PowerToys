@@ -41,6 +41,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AppZoneHistoryTests.Spec.cpp" />
     <ClCompile Include="CustomLayoutsTests.Spec.cpp" />
     <ClCompile Include="FancyZones.Spec.cpp" />
     <ClCompile Include="FancyZonesSettings.Spec.cpp" />

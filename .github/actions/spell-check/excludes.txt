@@ -2,6 +2,7 @@
 (?:^|/)monacoSRC/
 (?:^|/)MonacoPreviewHandler/languages.json
 (?:^|/)MonacoPreviewHandler/index.html
+(?:^|/)MonacoPreviewHandler/generateLanguagesJson.html
 (?:^|/)(?i)COPYRIGHT
 (?:^|/)(?i)LICEN[CS]E
 (?:^|/)package(?:-lock)\.json$
@@ -29,6 +30,7 @@ ignore$
 \.pdf$
 \.PNG$
 \.png$
+\.stl$
 \.woff$
 \.zip$
 ^doc/devdocs/akaLinks\.md$

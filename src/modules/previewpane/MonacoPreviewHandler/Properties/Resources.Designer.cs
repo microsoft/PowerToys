@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to This file is too big to display.
-        ///Max file size: 10KB.
+        ///Max file size: 50KB.
         /// </summary>
         internal static string Max_File_Size_Error {
             get {

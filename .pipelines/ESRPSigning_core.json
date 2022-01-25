@@ -59,6 +59,8 @@
                 "modules\\FileExplorerPreview\\PowerToys.PdfThumbnailProvider.comhost.dll",
                 "modules\\FileExplorerPreview\\PowerToys.powerpreview.dll",
                 "modules\\FileExplorerPreview\\PowerToys.PreviewHandlerCommon.dll",
+                "modules\\FileExplorerPreview\\PowerToys.StlThumbnailProvider.dll",
+                "modules\\FileExplorerPreview\\PowerToys.StlThumbnailProvider.comhost.dll",
                 "modules\\FileExplorerPreview\\PowerToys.SvgPreviewHandler.dll",
                 "modules\\FileExplorerPreview\\PowerToys.SvgPreviewHandler.comhost.dll",
                 "modules\\FileExplorerPreview\\PowerToys.SvgThumbnailProvider.dll",
@@ -97,6 +99,7 @@
                 
                 "modules\\MouseUtils\\PowerToys.FindMyMouse.dll",
                 "modules\\MouseUtils\\PowerToys.MouseHighlighter.dll",
+                "modules\\MouseUtils\\PowerToys.MousePointerCrosshair.dll",
 
                 "modules\\PowerRename\\PowerToys.PowerRenameExt.dll",
                 "modules\\PowerRename\\PowerToys.PowerRenameUILib.dll",
@@ -166,6 +169,8 @@
                 "NLog.dll",
                 "HtmlAgilityPack.dll",
                 "Markdig.Signed.dll",
+                "HelixToolkit.dll",
+                "HelixToolkit.Core.Wpf.dll",
                 "Mages.Core.dll",
                 "JetBrains.Annotations.dll",
                 "ICSharpCode.SharpZipLib.dll",
@@ -183,7 +188,6 @@
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.WinForms.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Wpf.dll",
                 "modules\\FileExplorerPreview\\Newtonsoft.Json.dll",
-                "modules\\FileExplorerPreview\\System.Personalization.dll",
                 "modules\\FileExplorerPreview\\runtimes\\win-x64\\native\\WebView2Loader.dll",
                 "modules\\launcher\\e_sqlite3.dll",
                 "modules\\launcher\\SQLitePCLRaw.batteries_v2.dll",

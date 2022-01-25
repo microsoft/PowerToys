@@ -7,6 +7,7 @@
 #include <FancyZonesLib/WorkArea.h>
 #include <FancyZonesLib/FancyZones.h>
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/ZoneColors.h>
@@ -211,31 +212,33 @@ namespace FancyZonesUnitTests
         OverlappingZonesAlgorithm m_overlappingAlgorithm = OverlappingZonesAlgorithm::Positional;
         bool m_showZoneText = true;
 
-        FancyZonesData& m_fancyZonesData = FancyZonesDataInstance();
-
         TEST_METHOD_INITIALIZE(Init)
-            {
-                m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
+        {
+            m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
+            
+            m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
+            m_monitorInfo.cbSize = sizeof(m_monitorInfo);
+            Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
 
-                m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
-                m_monitorInfo.cbSize = sizeof(m_monitorInfo);
-                Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
-
-                m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
-                m_uniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
-                m_uniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top;
-                CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
+            m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
+            m_uniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
+            m_uniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top;
+            CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
                 
-                m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
-                m_fancyZonesData.clear_data();
+            m_zoneColors = ZoneColors{
+                .primaryColor = FancyZonesUtils::HexToRGB(L"#4287f5"),
+                .borderColor = FancyZonesUtils::HexToRGB(L"#FFFFFF"),
+                .highlightColor = FancyZonesUtils::HexToRGB(L"#42eff5"),
+                .highlightOpacity = 50,
+            };
 
-                m_zoneColors = ZoneColors{
-                    .primaryColor = FancyZonesUtils::HexToRGB(L"#4287f5"),
-                    .borderColor = FancyZonesUtils::HexToRGB(L"#FFFFFF"),
-                    .highlightColor = FancyZonesUtils::HexToRGB(L"#42eff5"),
-                    .highlightOpacity = 50,
-                };
-            }
+            AppZoneHistory::instance().LoadData();
+        }
+
+        TEST_METHOD_CLEANUP(CleanUp)
+        {
+            std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
+        }
 
         public:
             TEST_METHOD (MoveSizeEnter)
@@ -381,7 +384,7 @@ namespace FancyZonesUnitTests
                 const auto window = Mocks::WindowCreate(m_hInst);
                 workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true);
 
-                const auto& actualAppZoneHistory = m_fancyZonesData.GetAppZoneHistoryMap();
+                const auto& actualAppZoneHistory = AppZoneHistory::instance().GetFullAppZoneHistory();
                 Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
                 const auto& appHistoryArray = actualAppZoneHistory.begin()->second;
                 Assert::AreEqual((size_t)1, appHistoryArray.size());
@@ -398,7 +401,7 @@ namespace FancyZonesUnitTests
                 workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true);
                 workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true);
 
-                const auto& actualAppZoneHistory = m_fancyZonesData.GetAppZoneHistoryMap();
+                const auto& actualAppZoneHistory = AppZoneHistory::instance().GetFullAppZoneHistory();
                 Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
                 const auto& appHistoryArray = actualAppZoneHistory.begin()->second;
                 Assert::AreEqual((size_t)1, appHistoryArray.size());
@@ -412,7 +415,7 @@ namespace FancyZonesUnitTests
 
                 workArea->SaveWindowProcessToZoneIndex(nullptr);
 
-                const auto actualAppZoneHistory = m_fancyZonesData.GetAppZoneHistoryMap();
+                const auto actualAppZoneHistory = AppZoneHistory::instance().GetFullAppZoneHistory();
                 Assert::IsTrue(actualAppZoneHistory.empty());
             }
 
@@ -427,7 +430,7 @@ namespace FancyZonesUnitTests
 
                 workArea->SaveWindowProcessToZoneIndex(window);
 
-                const auto actualAppZoneHistory = m_fancyZonesData.GetAppZoneHistoryMap();
+                const auto actualAppZoneHistory = AppZoneHistory::instance().GetFullAppZoneHistory();
                 Assert::IsTrue(actualAppZoneHistory.empty());
             }
 
@@ -442,9 +445,9 @@ namespace FancyZonesUnitTests
                 const auto zoneSetId = workArea->ZoneSet()->Id();
 
                 // fill app zone history map
-                Assert::IsTrue(m_fancyZonesData.SetAppLastZones(window, deviceId, Helpers::GuidToString(zoneSetId), { 0 }));
-                Assert::AreEqual((size_t)1, m_fancyZonesData.GetAppZoneHistoryMap().size());
-                const auto& appHistoryArray1 = m_fancyZonesData.GetAppZoneHistoryMap().at(processPath);
+                Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, deviceId, Helpers::GuidToString(zoneSetId), { 0 }));
+                Assert::AreEqual((size_t)1, AppZoneHistory::instance().GetFullAppZoneHistory().size());
+                const auto& appHistoryArray1 = AppZoneHistory::instance().GetFullAppZoneHistory().at(processPath);
                 Assert::AreEqual((size_t)1, appHistoryArray1.size());
                 Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == appHistoryArray1[0].zoneIndexSet);
 
@@ -453,8 +456,8 @@ namespace FancyZonesUnitTests
                 workArea->ZoneSet()->AddZone(zone);
 
                 workArea->SaveWindowProcessToZoneIndex(window);
-                Assert::AreEqual((size_t)1, m_fancyZonesData.GetAppZoneHistoryMap().size());
-                const auto& appHistoryArray2 = m_fancyZonesData.GetAppZoneHistoryMap().at(processPath);
+                Assert::AreEqual((size_t)1, AppZoneHistory::instance().GetFullAppZoneHistory().size());
+                const auto& appHistoryArray2 = AppZoneHistory::instance().GetFullAppZoneHistory().at(processPath);
                 Assert::AreEqual((size_t)1, appHistoryArray2.size());
                 Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == appHistoryArray2[0].zoneIndexSet);
             }
@@ -474,15 +477,15 @@ namespace FancyZonesUnitTests
                 workArea->MoveWindowIntoZoneByIndex(window, 0);
 
                 //fill app zone history map
-                Assert::IsTrue(m_fancyZonesData.SetAppLastZones(window, deviceId, Helpers::GuidToString(zoneSetId), { 2 }));
-                Assert::AreEqual((size_t)1, m_fancyZonesData.GetAppZoneHistoryMap().size());
-                const auto& appHistoryArray = m_fancyZonesData.GetAppZoneHistoryMap().at(processPath);
+                Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, deviceId, Helpers::GuidToString(zoneSetId), { 2 }));
+                Assert::AreEqual((size_t)1, AppZoneHistory::instance().GetFullAppZoneHistory().size());
+                const auto& appHistoryArray = AppZoneHistory::instance().GetFullAppZoneHistory().at(processPath);
                 Assert::AreEqual((size_t)1, appHistoryArray.size());
                 Assert::IsTrue(std::vector<ZoneIndex>{ 2 } == appHistoryArray[0].zoneIndexSet);
 
                 workArea->SaveWindowProcessToZoneIndex(window);
 
-                const auto& actualAppZoneHistory = m_fancyZonesData.GetAppZoneHistoryMap();
+                const auto& actualAppZoneHistory = AppZoneHistory::instance().GetFullAppZoneHistory();
                 Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
                 const auto& expected = workArea->ZoneSet()->GetZoneIndexSetFromWindow(window);
                 const auto& actual = appHistoryArray[0].zoneIndexSet;

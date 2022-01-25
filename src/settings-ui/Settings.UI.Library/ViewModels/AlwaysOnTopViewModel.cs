@@ -52,6 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _soundEnabled = Settings.Properties.SoundEnabled.Value;
             _doNotActivateOnGameMode = Settings.Properties.DoNotActivateOnGameMode.Value;
             _excludedApps = Settings.Properties.ExcludedApps.Value;
+            _frameAccentColor = Settings.Properties.FrameAccentColor.Value;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -190,6 +191,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool FrameAccentColor
+        {
+            get => _frameAccentColor;
+
+            set
+            {
+                if (value != _frameAccentColor)
+                {
+                    _frameAccentColor = value;
+                    Settings.Properties.FrameAccentColor.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -204,5 +220,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _soundEnabled;
         private bool _doNotActivateOnGameMode;
         private string _excludedApps;
+        private bool _frameAccentColor;
     }
 }

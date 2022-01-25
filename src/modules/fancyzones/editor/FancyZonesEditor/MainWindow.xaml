@@ -120,10 +120,9 @@
 
         <DataTemplate x:Key="LayoutItemTemplate">
             <Grid Background="Transparent">
-                <Grid
-                      Width="180"
+                <Grid Width="180"
                       Height="140"
-                      Margin="16">
+                      Margin="16,12,16,16">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="24" />
                         <RowDefinition Height="124" />
@@ -134,7 +133,7 @@
                                Text="{Binding Name}"
                                FontSize="15"
                                FontWeight="SemiBold"
-                               Margin="0,-4,24,0"
+                               Margin="0,0,24,0"
                                ToolTip="{Binding Name}"
                                Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
                     <local:LayoutPreview Grid.Row="1"

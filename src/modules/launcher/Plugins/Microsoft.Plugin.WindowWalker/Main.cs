@@ -13,8 +13,6 @@ namespace Microsoft.Plugin.WindowWalker
 {
     public class Main : IPlugin, IPluginI18n
     {
-        private static List<SearchResult> _results = new List<SearchResult>();
-
         private string IconPath { get; set; }
 
         private PluginInitContext Context { get; set; }
@@ -25,7 +23,6 @@ namespace Microsoft.Plugin.WindowWalker
 
         static Main()
         {
-            SearchController.Instance.OnSearchResultUpdateEventHandler += SearchResultUpdated;
             OpenWindows.Instance.UpdateOpenWindowsList();
         }
 
@@ -37,18 +34,22 @@ namespace Microsoft.Plugin.WindowWalker
             }
 
             OpenWindows.Instance.UpdateOpenWindowsList();
-            SearchController.Instance.UpdateSearchText(query.Search).Wait();
+            SearchController.Instance.UpdateSearchText(query.Search);
+            List<SearchResult> searchControllerResults = SearchController.Instance.SearchMatches;
 
-            return _results.Select(x => new Result()
+            return searchControllerResults.Select(x => new Result()
             {
                 Title = x.Result.Title,
                 IcoPath = IconPath,
-                SubTitle = Properties.Resources.wox_plugin_windowwalker_running + ": " + x.Result.ProcessName,
+                SubTitle = Properties.Resources.wox_plugin_windowwalker_running + ": " + x.Result.ProcessInfo.Name,
                 Action = c =>
                 {
                     x.Result.SwitchToWindow();
                     return true;
                 },
+
+                // For debugging you can remove the comment sign in the next line.
+                // ToolTipData = new ToolTipData(x.Result.Title, $"hWnd: {x.Result.Hwnd}\nWindow class: {x.Result.ClassName}\nProcess ID: {x.Result.ProcessInfo.ProcessID}\nThread ID: {x.Result.ProcessInfo.ThreadID}\nProcess: {x.Result.ProcessInfo.Name}\nProcess exists: {x.Result.ProcessInfo.DoesExist}\nIs full access denied: {x.Result.ProcessInfo.IsFullAccessDenied}\nIs uwp app: {x.Result.ProcessInfo.IsUwpApp}\nIs ShellProcess: {x.Result.ProcessInfo.IsShellProcess}\nIs window cloaked: {x.Result.IsCloaked}\nWindow cloak state: {x.Result.GetWindowCloakState()}"),
             }).ToList();
         }
 
@@ -85,11 +86,6 @@ namespace Microsoft.Plugin.WindowWalker
         public string GetTranslatedPluginDescription()
         {
             return Properties.Resources.wox_plugin_windowwalker_plugin_description;
-        }
-
-        private static void SearchResultUpdated(object sender, SearchController.SearchResultUpdateEventArgs e)
-        {
-            _results = SearchController.Instance.SearchMatches;
         }
     }
 }

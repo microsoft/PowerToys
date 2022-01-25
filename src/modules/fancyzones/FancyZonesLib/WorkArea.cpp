@@ -5,6 +5,7 @@
 #include <common/logger/logger.h>
 
 #include "FancyZonesData.h"
+#include "FancyZonesData/AppZoneHistory.h"
 #include "FancyZonesDataTypes.h"
 #include "ZonesOverlay.h"
 #include "trace.h"
@@ -379,7 +380,7 @@ WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
             OLECHAR* guidString;
             if (StringFromCLSID(m_zoneSet->Id(), &guidString) == S_OK)
             {
-                FancyZonesDataInstance().SetAppLastZones(window, m_uniqueId, guidString, zoneIndexSet);
+                AppZoneHistory::instance().SetAppLastZones(window, m_uniqueId, guidString, zoneIndexSet);
             }
 
             CoTaskMemFree(guidString);
@@ -395,7 +396,7 @@ WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
         wil::unique_cotaskmem_string zoneSetId;
         if (SUCCEEDED(StringFromCLSID(m_zoneSet->Id(), &zoneSetId)))
         {
-            return FancyZonesDataInstance().GetAppLastZoneIndexSet(window, m_uniqueId, zoneSetId.get());
+            return AppZoneHistory::instance().GetAppLastZoneIndexSet(window, m_uniqueId, zoneSetId.get());
         }
     }
     return {};
