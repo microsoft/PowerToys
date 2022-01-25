@@ -8,12 +8,6 @@ steps:
   clean: true
 
 - task: UseDotNet@2
-  displayName: 'Use .NET 5 SDK - unit tests'
-  inputs:
-    packageType: sdk
-    version: '5.x'
-
-- task: UseDotNet@2
   displayName: 'Use .NET 6 SDK'
   inputs:
     packageType: sdk
