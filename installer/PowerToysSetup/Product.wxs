@@ -775,7 +775,7 @@
         <!-- Color Picker -->
         <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
             <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
-                <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;System.Text.Json.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll?>
+                <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll?>
                 <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
                 <?endforeach?>
             </Component>
