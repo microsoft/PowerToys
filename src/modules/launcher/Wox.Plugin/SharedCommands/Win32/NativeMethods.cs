@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
 
-namespace Wox.Plugin.SharedCommands.Win32
+namespace Wox.Plugin.Common.Win32
 {
     [SuppressMessage("Interoperability", "CA1401:P/Invokes should not be visible", Justification = "We want plugins to share this NativeMethods class, instead of each one creating its own.")]
     public static class NativeMethods

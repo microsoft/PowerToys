@@ -15,8 +15,8 @@ using System.Windows.Input;
 using ManagedCommon;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Wox.Plugin.Common;
 using Wox.Plugin.Logger;
-using Wox.Plugin.SharedCommands;
 using Control = System.Windows.Controls.Control;
 
 namespace Microsoft.Plugin.Shell

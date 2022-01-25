@@ -9,7 +9,7 @@ using Microsoft.Plugin.Uri.UriHelper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
-using BrowserInfo = Wox.Plugin.SharedCommands.DefaultBrowserInfo;
+using BrowserInfo = Wox.Plugin.Common.DefaultBrowserInfo;
 
 namespace Microsoft.Plugin.Uri
 {
@@ -115,7 +115,7 @@ namespace Microsoft.Plugin.Uri
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());
-            BrowserInfo.UpdateIfTimePassed(false);
+            BrowserInfo.UpdateIfTimePassed();
         }
 
         public string GetTranslatedPluginTitle()
@@ -157,7 +157,7 @@ namespace Microsoft.Plugin.Uri
                 return;
             }
 
-            BrowserInfo.UpdateIfTimePassed(false);
+            BrowserInfo.UpdateIfTimePassed();
         }
 
         public void Dispose()

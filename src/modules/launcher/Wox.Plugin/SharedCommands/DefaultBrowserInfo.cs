@@ -5,10 +5,10 @@
 using System;
 using System.IO.Abstractions;
 using System.Text;
+using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
-using Wox.Plugin.SharedCommands.Win32;
 
-namespace Wox.Plugin.SharedCommands
+namespace Wox.Plugin.Common
 {
     /// <summary>
     /// Contains information (e.g. path to executable, name...) about the default browser.
@@ -48,13 +48,13 @@ namespace Wox.Plugin.SharedCommands
         /// (because of multiple plugins calling update at the same time.)
         /// </summary>
         /// <param name="defaultToEdgeOnFail">If true, If <see cref="Update"/> fails, for any reason, the browser will be set to Microsoft Edge.</param>
-        public static void UpdateIfTimePassed(bool defaultToEdgeOnFail = true)
+        public static void UpdateIfTimePassed()
         {
             int curTickCount = Environment.TickCount;
             if (curTickCount - _lastUpdateTickCount > 300)
             {
                 _lastUpdateTickCount = curTickCount;
-                Update(defaultToEdgeOnFail);
+                Update();
             }
         }
 
@@ -62,9 +62,8 @@ namespace Wox.Plugin.SharedCommands
         /// Consider using <see cref="UpdateIfTimePassed"/> to avoid updating multiple times.
         /// (because of multiple plugins calling update at the same time.)
         /// </summary>
-        /// <param name="defaultToEdgeOnFail">If true, If this function fails, for any reason, the browser will be set to Microsoft Edge.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive but will log the exception")]
-        public static void Update(bool defaultToEdgeOnFail = true)
+        public static void Update()
         {
             lock (_updateLock)
             {
@@ -193,20 +192,11 @@ namespace Wox.Plugin.SharedCommands
                 }
                 catch (Exception e)
                 {
-                    if (defaultToEdgeOnFail)
-                    {
-                        Path = MSEdgePath;
-                        Name = MSEdgeName;
-                    }
-                    else
-                    {
-                        Path = null;
-                        Name = null;
-                    }
-
+                    Path = null;
+                    Name = null;
                     SearchEngineUrl = null;
 
-                    Log.Exception("Exception when retrieving browser path/name" + (defaultToEdgeOnFail ? "; Browser set to microsoft edge" : null), e, typeof(DefaultBrowserInfo));
+                    Log.Exception("Exception when retrieving browser path/name. Path and Name are null.", e, typeof(DefaultBrowserInfo));
                 }
 
                 string GetRegistryValue(string registryLocation, string valueName)
