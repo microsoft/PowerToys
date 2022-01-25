@@ -7,6 +7,8 @@
 
 #include <SettingsConstants.h>
 
+#include <winrt/Windows.UI.ViewManagement.h>
+
 class SettingsObserver;
 
 // Needs to be kept in sync with src\settings-ui\Settings.UI.Library\AlwaysOnTopProperties.cs
@@ -16,6 +18,7 @@ struct Settings
     bool enableFrame = true;
     bool enableSound = true;
     bool blockInGameMode = true;
+    bool frameAccentColor = true;
     float frameThickness = 15.0f;
     COLORREF frameColor = RGB(0, 173, 239);
     std::vector<std::wstring> excludedApps{};
@@ -42,6 +45,7 @@ private:
     AlwaysOnTopSettings();
     ~AlwaysOnTopSettings() = default;
 
+    winrt::Windows::UI::ViewManagement::UISettings m_uiSettings;
     Settings m_settings;
     std::unique_ptr<FileWatcher> m_settingsFileWatcher;
     std::unordered_set<SettingsObserver*> m_observers;

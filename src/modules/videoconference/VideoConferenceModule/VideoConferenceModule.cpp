@@ -289,7 +289,6 @@ VideoConferenceModule::VideoConferenceModule() :
 
 inline VideoConferenceModule::~VideoConferenceModule()
 {
-    instance->unmuteAll();
     toolbar.hide();
 }
 

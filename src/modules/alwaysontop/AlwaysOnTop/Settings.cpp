@@ -19,6 +19,7 @@ namespace NonLocalizable
     const static wchar_t* FrameColorID = L"frame-color";
     const static wchar_t* BlockInGameModeID = L"do-not-activate-on-game-mode";
     const static wchar_t* ExcludedAppsID = L"excluded-apps";
+    const static wchar_t* FrameAccentColor = L"frame-accent-color";
 }
 
 // TODO: move to common utils
@@ -42,6 +43,14 @@ inline COLORREF HexToRGB(std::wstring_view hex, const COLORREF fallbackColor = R
 
 AlwaysOnTopSettings::AlwaysOnTopSettings()
 {
+    m_uiSettings.ColorValuesChanged([&](winrt::Windows::UI::ViewManagement::UISettings const& settings,
+                                        winrt::Windows::Foundation::IInspectable const& args)
+    {
+        if (m_settings.frameAccentColor)
+        {
+            NotifyObservers(SettingId::FrameAccentColor);
+        }
+    });
 }
 
 AlwaysOnTopSettings& AlwaysOnTopSettings::instance()
@@ -165,6 +174,16 @@ void AlwaysOnTopSettings::LoadSettings()
             {
                 m_settings.excludedApps = excludedApps;
                 NotifyObservers(SettingId::ExcludeApps);
+            }
+        }
+
+        if (const auto jsonVal = values.get_bool_value(NonLocalizable::FrameAccentColor))
+        {
+            auto val = *jsonVal;
+            if (m_settings.frameAccentColor != val)
+            {
+                m_settings.frameAccentColor = val;
+                NotifyObservers(SettingId::FrameAccentColor);
             }
         }
     }

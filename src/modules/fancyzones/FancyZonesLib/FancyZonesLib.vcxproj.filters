@@ -90,6 +90,12 @@
     <ClInclude Include="GuidUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FancyZonesData\AppZoneHistory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FancyZonesData\CustomLayouts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="FancyZonesData\LayoutHotkeys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -158,7 +164,13 @@
     <ClCompile Include="MonitorUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FancyZonesData\CustomLayouts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="FancyZonesData\LayoutHotkeys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FancyZonesData\AppZoneHistory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
