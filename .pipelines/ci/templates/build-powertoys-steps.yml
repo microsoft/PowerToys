@@ -13,7 +13,7 @@ steps:
     packageType: sdk
     version: '6.x'
 
-- task: NuGetToolInstaller@0
+- task: NuGetToolInstaller@1
   displayName: Ensure NuGet Installer
 
 - task: VisualStudioTestPlatformInstaller@1
