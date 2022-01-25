@@ -16,7 +16,7 @@
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
                     <controls:Setting x:Uid="MouseUtils_Enable_FindMyMouse">
                         <controls:Setting.Icon>
-                            <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFindMyMouse.png" ShowAsMonochrome="False" />
+                            <BitmapIcon Height="24" Width="24" Margin="-4,0,0,0" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFindMyMouse.png" ShowAsMonochrome="False" />
                         </controls:Setting.Icon>
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
@@ -90,7 +90,7 @@
                 <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
                     <controls:Setting x:Uid="MouseUtils_Enable_MouseHighlighter">
                         <controls:Setting.Icon>
-                            <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseHighlighter.png" ShowAsMonochrome="False" />
+                            <BitmapIcon Height="28" Width="28" Margin="-4,2,0,0" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseHighlighter.png" ShowAsMonochrome="False" />
                         </controls:Setting.Icon>
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
@@ -179,7 +179,7 @@
                 <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshair">
                     <controls:Setting x:Uid="MouseUtils_Enable_MousePointerCrosshair">
                         <controls:Setting.Icon>
-                            <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseCrosshair.png" ShowAsMonochrome="False" />
+                            <BitmapIcon Height="28" Width="28" Margin="-6,2,0,0" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseCrosshair.png" ShowAsMonochrome="False" />
                         </controls:Setting.Icon>
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsMousePointerCrosshairEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
