@@ -21,11 +21,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private static readonly string _powerLauncherExe = Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName);
 
         /// <summary>
-        /// Delegate handler for open windows updates
-        /// </summary>
-        public delegate void OpenWindowsUpdateEventHandler(object sender, SearchController.SearchResultUpdateEventArgs e);
-
-        /// <summary>
         /// List of all the open windows
         /// </summary>
         private readonly List<Window> windows = new List<Window>();
@@ -93,9 +88,14 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
                 (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&
-                newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.ProcessName != _powerLauncherExe)
+                newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.ProcessInfo.Name != _powerLauncherExe)
             {
-                windows.Add(newWindow);
+                // To hide (not add) preloaded uwp app windows that are invisible to the user we check the cloak state in DWM to be "none". (Issue #13637.)
+                // (If user asking to see these windows again we can add an optional plugin setting in the future.)
+                if (!newWindow.IsCloaked)
+                {
+                    windows.Add(newWindow);
+                }
             }
 
             return true;

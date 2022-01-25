@@ -8,5 +8,6 @@ enum class SettingId
     FrameThickness,
     FrameColor,
     BlockInGameMode,
-    ExcludeApps
+    ExcludeApps,
+    FrameAccentColor
 };

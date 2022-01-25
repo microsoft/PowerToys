@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
@@ -24,23 +23,13 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
         /// <summary>
         /// Open window search results
-        /// </summary
+        /// </summary>
         private List<SearchResult> searchMatches;
 
         /// <summary>
         /// Singleton pattern
         /// </summary>
         private static SearchController instance;
-
-        /// <summary>
-        /// Delegate handler for open windows updates
-        /// </summary>
-        public delegate void SearchResultUpdateEventHandler(object sender, SearchResultUpdateEventArgs e);
-
-        /// <summary>
-        /// Event raised when there is an update to the list of open windows
-        /// </summary>
-        public event SearchResultUpdateEventHandler OnSearchResultUpdateEventHandler;
 
         /// <summary>
         /// Gets or sets the current search text
@@ -95,16 +84,16 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Event handler for when the search text has been updated
         /// </summary>
-        public async Task UpdateSearchText(string searchText)
+        public void UpdateSearchText(string searchText)
         {
             SearchText = searchText;
-            await SyncOpenWindowsWithModelAsync().ConfigureAwait(false);
+            SyncOpenWindowsWithModel();
         }
 
         /// <summary>
         /// Syncs the open windows with the OpenWindows Model
         /// </summary>
-        public async Task SyncOpenWindowsWithModelAsync()
+        public void SyncOpenWindowsWithModel()
         {
             System.Diagnostics.Debug.Print("Syncing WindowSearch result with OpenWindows Model");
 
@@ -116,22 +105,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
             else
             {
-                searchMatches = await FuzzySearchOpenWindowsAsync(snapshotOfOpenWindows).ConfigureAwait(false);
+                searchMatches = FuzzySearchOpenWindows(snapshotOfOpenWindows);
             }
-
-            OnSearchResultUpdateEventHandler?.Invoke(this, new SearchResultUpdateEventArgs());
-        }
-
-        /// <summary>
-        /// Redirecting method for Fuzzy searching
-        /// </summary>
-        /// <param name="openWindows">what windows are open</param>
-        /// <returns>Returns search results</returns>
-        private Task<List<SearchResult>> FuzzySearchOpenWindowsAsync(List<Window> openWindows)
-        {
-            return Task.Run(
-                () =>
-                    FuzzySearchOpenWindows(openWindows));
         }
 
         /// <summary>
@@ -151,7 +126,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 foreach (var window in openWindows)
                 {
                     var titleMatch = FuzzyMatching.FindBestFuzzyMatch(window.Title, searchString.SearchText);
-                    var processMatch = FuzzyMatching.FindBestFuzzyMatch(window.ProcessName, searchString.SearchText);
+                    var processMatch = FuzzyMatching.FindBestFuzzyMatch(window.ProcessInfo.Name, searchString.SearchText);
 
                     if ((titleMatch.Count != 0 || processMatch.Count != 0) &&
                                 window.Title.Length != 0)
