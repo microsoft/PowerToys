@@ -5,7 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.PowerToys.PreviewHandler.Monaco
 {
@@ -20,14 +20,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         {
             try
             {
-                JObject a = JObject.Parse(File.ReadAllText(Settings.AssemblyDirectory + "\\languages.json"));
-                for (int i = 0; i < a["list"].Count(); i++)
+                JsonDocument a = JsonDocument.Parse(File.ReadAllText(Settings.AssemblyDirectory + "\\languages.json"));
+                JsonElement list = a.RootElement.GetProperty("list");
+                for (int i = 0; i < list.GetArrayLength(); i++)
                 {
-                    for (int j = 0; j < a["list"][i]["extensions"].Count(); j++)
+                    for (int j = 0; j < list[i].GetProperty("extensions").GetArrayLength(); j++)
                     {
-                        if (a["list"][i]["extensions"][j].ToString() == fileExtension)
+                        if (list[i].GetProperty("extensions")[j].ToString() == fileExtension)
                         {
-                            return a["list"][i]["id"].ToString();
+                            return list[i].GetProperty("id").ToString();
                         }
                     }
                 }
