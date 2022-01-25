@@ -2,7 +2,7 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
-#include "InclusiveCrosshair.h"
+#include "InclusiveCrosshairs.h"
 #include "common/utils/color.h"
 
 // Non-Localizable strings
@@ -11,12 +11,12 @@ namespace
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_VALUE[] = L"value";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
-    const wchar_t JSON_KEY_CROSSHAIR_COLOR[] = L"crosshair_color";
-    const wchar_t JSON_KEY_CROSSHAIR_OPACITY[] = L"crosshair_opacity";
-    const wchar_t JSON_KEY_CROSSHAIR_RADIUS[] = L"crosshair_radius";
-    const wchar_t JSON_KEY_CROSSHAIR_THICKNESS[] = L"crosshair_thickness";
-    const wchar_t JSON_KEY_CROSSHAIR_BORDER_COLOR[] = L"crosshair_border_color";
-    const wchar_t JSON_KEY_CROSSHAIR_BORDER_SIZE[] = L"crosshair_border_size";
+    const wchar_t JSON_KEY_CROSSHAIRS_COLOR[] = L"crosshairs_color";
+    const wchar_t JSON_KEY_CROSSHAIRS_OPACITY[] = L"crosshairs_opacity";
+    const wchar_t JSON_KEY_CROSSHAIRS_RADIUS[] = L"crosshairs_radius";
+    const wchar_t JSON_KEY_CROSSHAIRS_THICKNESS[] = L"crosshairs_thickness";
+    const wchar_t JSON_KEY_CROSSHAIRS_BORDER_COLOR[] = L"crosshairs_border_color";
+    const wchar_t JSON_KEY_CROSSHAIRS_BORDER_SIZE[] = L"crosshairs_border_size";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -42,12 +42,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"MousePointerCrosshair";
+const static wchar_t* MODULE_NAME = L"MousePointerCrosshairs";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"<no description>";
 
 // Implement the PowerToy Module Interface and all the required methods.
-class MousePointerCrosshair : public PowertoyModuleIface
+class MousePointerCrosshairs : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
@@ -56,14 +56,14 @@ private:
     // Hotkey to invoke the module
     HotkeyEx m_hotkey;
 
-    // Mouse Pointer Crosshair specific settings
-    InclusiveCrosshairSettings m_inclusiveCrosshairSettings;
+    // Mouse Pointer Crosshairs specific settings
+    InclusiveCrosshairsSettings m_inclusiveCrosshairsSettings;
 
 public:
     // Constructor
-    MousePointerCrosshair()
+    MousePointerCrosshairs()
     {
-        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mousePointerCrosshairLoggerName);
+        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mousePointerCrosshairsLoggerName);
         init_settings();
     };
 
@@ -112,11 +112,11 @@ public:
 
             parse_settings(values);
 
-            InclusiveCrosshairApplySettings(m_inclusiveCrosshairSettings);
+            InclusiveCrosshairsApplySettings(m_inclusiveCrosshairsSettings);
         }
         catch (std::exception&)
         {
-            Logger::error("Invalid json when trying to parse Mouse Pointer Crosshair settings json.");
+            Logger::error("Invalid json when trying to parse Mouse Pointer Crosshairs settings json.");
         }
     }
 
@@ -124,16 +124,16 @@ public:
     virtual void enable()
     {
         m_enabled = true;
-        Trace::EnableMousePointerCrosshair(true);
-        std::thread([=]() { InclusiveCrosshairMain(m_hModule, m_inclusiveCrosshairSettings); }).detach();
+        Trace::EnableMousePointerCrosshairs(true);
+        std::thread([=]() { InclusiveCrosshairsMain(m_hModule, m_inclusiveCrosshairsSettings); }).detach();
     }
 
     // Disable the powertoy
     virtual void disable()
     {
         m_enabled = false;
-        Trace::EnableMousePointerCrosshair(false);
-        InclusiveCrosshairDisable();
+        Trace::EnableMousePointerCrosshairs(false);
+        InclusiveCrosshairsDisable();
     }
 
     // Returns if the powertoys is enabled
@@ -155,7 +155,7 @@ public:
 
     virtual void OnHotkeyEx() override
     {
-        InclusiveCrosshairSwitch();
+        InclusiveCrosshairsSwitch();
     }
     // Load the settings file.
     void init_settings()
@@ -164,12 +164,12 @@ public:
         {
             // Load and parse the settings file for this PowerToy.
             PowerToysSettings::PowerToyValues settings =
-                PowerToysSettings::PowerToyValues::load_from_settings_file(MousePointerCrosshair::get_key());
+                PowerToysSettings::PowerToyValues::load_from_settings_file(MousePointerCrosshairs::get_key());
             parse_settings(settings);
         }
         catch (std::exception&)
         {
-            Logger::error("Invalid json when trying to load the Mouse Pointer Crosshair settings json from file.");
+            Logger::error("Invalid json when trying to load the Mouse Pointer Crosshairs settings json from file.");
         }
     }
 
@@ -177,7 +177,7 @@ public:
     {
         // TODO: refactor to use common/utils/json.h instead
         auto settingsObject = settings.get_raw_json();
-        InclusiveCrosshairSettings inclusiveCrosshairSettings;
+        InclusiveCrosshairsSettings inclusiveCrosshairsSettings;
         if (settingsObject.GetView().Size())
         {
             try
@@ -210,13 +210,13 @@ public:
             }
             catch (...)
             {
-                Logger::warn("Failed to initialize Mouse Pointer Crosshair activation shortcut");
+                Logger::warn("Failed to initialize Mouse Pointer Crosshairs activation shortcut");
             }
             try
             {
                 // Parse Opacity
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_OPACITY);
-                inclusiveCrosshairSettings.crosshairOpacity = (uint8_t)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_OPACITY);
+                inclusiveCrosshairsSettings.crosshairsOpacity = (uint8_t)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
             }
             catch (...)
             {
@@ -224,28 +224,28 @@ public:
             }
             try
             {
-                // Parse crosshair color
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_COLOR);
-                auto crosshairColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+                // Parse crosshairs color
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_COLOR);
+                auto crosshairsColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
                 uint8_t r, g, b;
-                if (!checkValidRGB(crosshairColor, &r, &g, &b))
+                if (!checkValidRGB(crosshairsColor, &r, &g, &b))
                 {
-                    Logger::error("Crosshair color RGB value is invalid. Will use default value");
+                    Logger::error("Crosshairs color RGB value is invalid. Will use default value");
                 }
                 else
                 {
-                    inclusiveCrosshairSettings.crosshairColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
+                    inclusiveCrosshairsSettings.crosshairsColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
                 }
             }
             catch (...)
             {
-                Logger::warn("Failed to initialize crosshair color from settings. Will use default value");
+                Logger::warn("Failed to initialize crosshairs color from settings. Will use default value");
             }
             try
             {
                 // Parse Radius
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_RADIUS);
-                inclusiveCrosshairSettings.crosshairRadius = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_RADIUS);
+                inclusiveCrosshairsSettings.crosshairsRadius = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
             }
             catch (...)
             {
@@ -254,8 +254,8 @@ public:
             try
             {
                 // Parse Thickness
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_THICKNESS);
-                inclusiveCrosshairSettings.crosshairThickness = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_THICKNESS);
+                inclusiveCrosshairsSettings.crosshairsThickness = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
             }
             catch (...)
             {
@@ -263,28 +263,28 @@ public:
             }
             try
             {
-                // Parse crosshair border color
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_BORDER_COLOR);
-                auto crosshairBorderColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+                // Parse crosshairs border color
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_BORDER_COLOR);
+                auto crosshairsBorderColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
                 uint8_t r, g, b;
-                if (!checkValidRGB(crosshairBorderColor, &r, &g, &b))
+                if (!checkValidRGB(crosshairsBorderColor, &r, &g, &b))
                 {
-                    Logger::error("Crosshair border color RGB value is invalid. Will use default value");
+                    Logger::error("Crosshairs border color RGB value is invalid. Will use default value");
                 }
                 else
                 {
-                    inclusiveCrosshairSettings.crosshairBorderColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
+                    inclusiveCrosshairsSettings.crosshairsBorderColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
                 }
             }
             catch (...)
             {
-                Logger::warn("Failed to initialize crosshair border color from settings. Will use default value");
+                Logger::warn("Failed to initialize crosshairs border color from settings. Will use default value");
             }
             try
             {
                 // Parse border size
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIR_BORDER_SIZE);
-                inclusiveCrosshairSettings.crosshairBorderSize = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_BORDER_SIZE);
+                inclusiveCrosshairsSettings.crosshairsBorderSize = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
             }
             catch (...)
             {
@@ -293,20 +293,20 @@ public:
         }
         else
         {
-            Logger::info("Mouse Pointer Crosshair settings are empty");
+            Logger::info("Mouse Pointer Crosshairs settings are empty");
         }
         if (!m_hotkey.modifiersMask)
         {
-            Logger::info("Mouse Pointer Crosshair  is going to use default shortcut");
+            Logger::info("Mouse Pointer Crosshairs  is going to use default shortcut");
             m_hotkey.modifiersMask = MOD_CONTROL | MOD_ALT;
             m_hotkey.vkCode = 0x50; // P key
         }
-        m_inclusiveCrosshairSettings = inclusiveCrosshairSettings;
+        m_inclusiveCrosshairsSettings = inclusiveCrosshairsSettings;
     }
 
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new MousePointerCrosshair();
+    return new MousePointerCrosshairs();
 }

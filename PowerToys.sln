@@ -388,7 +388,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AlwaysOnTopModuleInterface"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.WebSearch", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.WebSearch\Community.PowerToys.Run.Plugin.WebSearch.csproj", "{9F94B303-5E21-4364-9362-64426F8DB932}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MousePointerCrosshair", "src\modules\MouseUtils\MousePointerCrosshair\MousePointerCrosshair.vcxproj", "{EAE14C0E-7A6B-45DA-9080-A7D8C077BA6E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MousePointerCrosshairs", "src\modules\MouseUtils\MousePointerCrosshairs\MousePointerCrosshairs.vcxproj", "{EAE14C0E-7A6B-45DA-9080-A7D8C077BA6E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StlThumbnailProvider", "src\modules\previewpane\StlThumbnailProvider\StlThumbnailProvider.csproj", "{F7C8C0F1-5431-4347-89D0-8E5354F93CF2}"
 EndProject

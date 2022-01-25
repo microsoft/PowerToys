@@ -715,8 +715,8 @@
             <Component Id="Module_MouseHighlighter" Guid="3BAEA39F-A73D-48D2-9616-BBED5B8C86D3" Win64="yes">
                 <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.MouseHighlighter.dll" KeyPath="yes" />
             </Component>
-            <Component Id="Module_MousePointerCrosshair" Guid="157F664C-E993-49AC-B9E1-EBF73080D072" Win64="yes">
-                <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.MousePointerCrosshair.dll" KeyPath="yes" />
+            <Component Id="Module_MousePointerCrosshairs" Guid="157F664C-E993-49AC-B9E1-EBF73080D072" Win64="yes">
+                <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.MousePointerCrosshairs.dll" KeyPath="yes" />
             </Component>
         </DirectoryRef>
 
@@ -983,7 +983,7 @@
         </DirectoryRef>
         <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\FluentIcons">
             <Component Id="SettingsV2OOBEAssetsFluentIcons" Guid="6A380D5A-DA63-45B5-B68F-06D57CDD1B9C" Win64="yes">
-                <?foreach File in ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshair.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png ?>
+                <?foreach File in ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png ?>
                 <File Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
                 <?endforeach?>
             </Component>
@@ -1083,7 +1083,7 @@
             <ComponentRef Id="Module_Awake_runtime_netcoreapp21"/>
             <ComponentRef Id="Module_FindMyMouse"/>
             <ComponentRef Id="Module_MouseHighlighter"/>
-            <ComponentRef Id="Module_MousePointerCrosshair" />
+            <ComponentRef Id="Module_MousePointerCrosshairs" />
             <ComponentRef Id="Module_AlwaysOnTop"/>
             <ComponentRef Id="SettingsV2" />
             <ComponentRef Id="SettingsV2Assets" />

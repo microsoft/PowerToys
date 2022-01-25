@@ -7,18 +7,18 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class SndMousePointerCrosshairSettings
+    public class SndMousePointerCrosshairsSettings
     {
-        [JsonPropertyName("MousePointerCrosshair")]
-        public MousePointerCrosshairSettings MousePointerCrosshair { get; set; }
+        [JsonPropertyName("MousePointerCrosshairs")]
+        public MousePointerCrosshairsSettings MousePointerCrosshairs { get; set; }
 
-        public SndMousePointerCrosshairSettings()
+        public SndMousePointerCrosshairsSettings()
         {
         }
 
-        public SndMousePointerCrosshairSettings(MousePointerCrosshairSettings settings)
+        public SndMousePointerCrosshairsSettings(MousePointerCrosshairsSettings settings)
         {
-            MousePointerCrosshair = settings;
+            MousePointerCrosshairs = settings;
         }
 
         public string ToJsonString()

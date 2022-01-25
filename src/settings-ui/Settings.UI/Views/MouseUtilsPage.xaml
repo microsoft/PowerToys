@@ -176,46 +176,46 @@
             </controls:SettingExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshair">
-                    <controls:Setting x:Uid="MouseUtils_Enable_MousePointerCrosshair">
+                <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
+                    <controls:Setting x:Uid="MouseUtils_Enable_MousePointerCrosshairs">
                         <controls:Setting.Icon>
-                            <BitmapIcon Height="28" Width="28" Margin="-6,2,0,0" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseCrosshair.png" ShowAsMonochrome="False" />
+                            <BitmapIcon Height="28" Width="28" Margin="-6,2,0,0" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseCrosshairs.png" ShowAsMonochrome="False" />
                         </controls:Setting.Icon>
                         <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsMousePointerCrosshairEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    <controls:Setting x:Uid="MouseUtils_MousePointerCrosshair_ActivationShortcut" Icon="&#xEDA7;" IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairEnabled, Mode=OneWay}">
+                    <controls:Setting x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut" Icon="&#xEDA7;" IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
                         <controls:Setting.ActionContent>
-                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairActivationShortcut, Mode=TwoWay}"
+                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}"
                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairEnabled, Mode=OneWay}" IsExpanded="False" >
+                    <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
-                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshair_CrosshairColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairColor, Mode=TwoWay}" />
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
-                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshair_CrosshairOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <Slider Minimum="1"
                                             Maximum="100"
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairOpacity}"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsOpacity}"
                                             HorizontalAlignment="Right"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
-                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshair_CrosshairRadius" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <muxc:NumberBox Minimum="1"
                                                     Maximum="500"
-                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairRadius}"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsRadius}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
                                                     HorizontalAlignment="Left"
@@ -223,11 +223,11 @@
                                                     LargeChange="10"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
-                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshair_CrosshairThickness" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <muxc:NumberBox Minimum="1"
                                                     Maximum="50"
-                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairThickness}"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsThickness}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
                                                     HorizontalAlignment="Left"
@@ -235,16 +235,16 @@
                                                     LargeChange="10"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
-                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshair_CrosshairBorderColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairBorderColor, Mode=TwoWay}" />
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsBorderColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
-                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshair_CrosshairBorderSize" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <muxc:NumberBox Minimum="0"
                                                     Maximum="50"
-                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairBorderSize}"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsBorderSize}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
                                                     HorizontalAlignment="Left"

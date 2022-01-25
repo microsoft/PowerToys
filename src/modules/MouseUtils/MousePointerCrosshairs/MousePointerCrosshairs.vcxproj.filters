@@ -10,7 +10,7 @@
     <ClCompile Include="trace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="InclusiveCrosshair.cpp">
+    <ClCompile Include="InclusiveCrosshairs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -24,7 +24,7 @@
     <ClInclude Include="resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="InclusiveCrosshair.h">
+    <ClInclude Include="InclusiveCrosshairs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -49,7 +49,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="MousePointerCrosshair.rc">
+    <ResourceCompile Include="MousePointerCrosshairs.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

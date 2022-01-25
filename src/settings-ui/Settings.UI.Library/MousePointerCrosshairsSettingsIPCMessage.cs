@@ -7,16 +7,16 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class MousePointerCrosshairSettingsIPCMessage
+    public class MousePointerCrosshairsSettingsIPCMessage
     {
         [JsonPropertyName("powertoys")]
-        public SndMousePointerCrosshairSettings Powertoys { get; set; }
+        public SndMousePointerCrosshairsSettings Powertoys { get; set; }
 
-        public MousePointerCrosshairSettingsIPCMessage()
+        public MousePointerCrosshairsSettingsIPCMessage()
         {
         }
 
-        public MousePointerCrosshairSettingsIPCMessage(SndMousePointerCrosshairSettings settings)
+        public MousePointerCrosshairsSettingsIPCMessage(SndMousePointerCrosshairsSettings settings)
         {
             this.Powertoys = settings;
         }
