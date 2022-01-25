@@ -103,6 +103,7 @@ steps:
     testAssemblyVer2: |
       **\UnitTests-GcodeThumbnailProvider.dll
       **\UnitTests-SvgThumbnailProvider.dll
+      **\UnitTests-StlThumbnailProvider.dll
       **\UnitTests-PdfThumbnailProvider.dll
       **\Settings.UI.UnitTests.dll
       **\UnitTests-MarkdownPreviewHandler.dll

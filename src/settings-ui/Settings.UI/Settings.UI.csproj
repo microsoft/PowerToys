@@ -247,6 +247,7 @@
     <Content Include="Assets\FluentIcons\FluentIconsFindMyMouse.png" />
     <Content Include="Assets\FluentIcons\FluentIconsImageResizer.png" />
     <Content Include="Assets\FluentIcons\FluentIconsKeyboardManager.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsMouseCrosshair.png" />
     <Content Include="Assets\FluentIcons\FluentIconsMouseHighlighter.png" />
     <Content Include="Assets\FluentIcons\FluentIconsMouseHighlighter.png" />
     <Content Include="Assets\FluentIcons\FluentIconsMouseUtils.png" />
@@ -301,19 +302,19 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.12</Version>
+      <Version>6.2.13</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI">
-      <Version>7.0.2</Version>
+      <Version>7.1.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
-      <Version>7.0.2</Version>
+      <Version>7.1.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Win32.UI.XamlApplication">
       <Version>6.1.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.7.0-prerelease.210913003</Version>
+      <Version>2.8.0-prerelease.220118001</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>

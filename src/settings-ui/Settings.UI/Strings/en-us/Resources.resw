@@ -636,6 +636,10 @@
     <value>Enable SVG (.svg) thumbnails</value>
     <comment>Do you want this feature on / off</comment>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_STL_Thumbnail.Header" xml:space="preserve">
+    <value>Enable STL (.stl) thumbnails</value>
+    <comment>Do you want this feature on / off</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_PDF_Thumbnail.Header" xml:space="preserve">
     <value>Enable PDF (.pdf) thumbnails</value>
     <comment>Do you want this feature on / off</comment>
