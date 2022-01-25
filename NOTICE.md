@@ -40,6 +40,7 @@ SOFTWARE.
 ### Monaco Editor
 
 **Source**: https://github.com/Microsoft/monaco-editor
+
 **Additional third party notifications:** https://github.com/microsoft/monaco-editor/blob/main/ThirdPartyNotices.txt
 
 The MIT License (MIT)
