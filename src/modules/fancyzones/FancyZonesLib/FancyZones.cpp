@@ -12,6 +12,7 @@
 #include <common/SettingsAPI/FileWatcher.h>
 
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
@@ -73,6 +74,7 @@ public:
         this->disableModuleCallback = std::move(disableModuleCallback);
 
         FancyZonesDataInstance().ReplaceZoneSettingsFileFromOlderVersions();
+        AppliedLayouts::instance().LoadData();
         LayoutHotkeys::instance().LoadData();
         CustomLayouts::instance().LoadData();
         AppZoneHistory::instance().LoadData();
@@ -783,6 +785,10 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_CUSTOM_LAYOUTS_FILE_UPDATE)
         {
             CustomLayouts::instance().LoadData();
+        }
+        else if (message == WM_PRIV_APPLIED_LAYOUTS_FILE_UPDATE)
+        {
+            AppliedLayouts::instance().LoadData();
         }
         else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
         {

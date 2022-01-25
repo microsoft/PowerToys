@@ -1,0 +1,65 @@
+#pragma once
+
+#include <guiddef.h>
+#include <map>
+#include <memory>
+#include <optional>
+
+#include <FancyZonesLib/FancyZonesDataTypes.h>
+#include <FancyZonesLib/ModuleConstants.h>
+
+#include <common/SettingsAPI/FileWatcher.h>
+#include <common/SettingsAPI/settings_helpers.h>
+
+namespace NonLocalizable
+{
+    namespace AppliedLayoutsIds
+    {
+        const static wchar_t* AppliedLayoutsArrayID = L"applied-layouts";
+        const static wchar_t* DeviceIdID = L"device-id";
+        const static wchar_t* AppliedLayoutID = L"applied-layout";
+        const static wchar_t* UuidID = L"uuid";
+        const static wchar_t* TypeID = L"type";
+        const static wchar_t* ShowSpacingID = L"show-spacing";
+        const static wchar_t* SpacingID = L"spacing";
+        const static wchar_t* ZoneCountID = L"zone-count";
+        const static wchar_t* SensitivityRadiusID = L"sensitivity-radius";
+    }
+}
+
+class AppliedLayouts
+{
+public:
+    struct Layout
+    {
+        GUID uuid;
+        FancyZonesDataTypes::ZoneSetLayoutType type;
+        bool showSpacing;
+        int spacing;
+        int zoneCount;
+        int sensitivityRadius;
+    };
+
+    using TAppliedLayoutsMap = std::unordered_map<FancyZonesDataTypes::DeviceIdData, Layout>;
+    
+    static AppliedLayouts& instance();
+
+    inline static std::wstring AppliedLayoutsFileName()
+    {
+        std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
+#if defined(UNIT_TESTS)
+        return saveFolderPath + L"\\test-applied-layouts.json";
+#endif
+        return saveFolderPath + L"\\applied-layouts.json";
+    }
+
+    void LoadData();
+    void SaveData();
+
+private:
+    AppliedLayouts();
+    ~AppliedLayouts() = default;
+
+    std::unique_ptr<FileWatcher> m_fileWatcher;
+    TAppliedLayoutsMap m_layouts;
+};

@@ -22,6 +22,7 @@
 #include <common/utils/process_path.h>
 #include <common/logger/logger.h>
 
+#include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
@@ -167,7 +168,11 @@ void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
     {
         json::JsonObject fancyZonesDataJSON = GetPersistFancyZonesJSON();
 
-        //deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
+        auto deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
+        if (deviceInfoMap)
+        {
+            JSONHelpers::SaveAppliedLayouts(deviceInfoMap.value());
+        }
 
         auto customLayouts = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
         if (customLayouts)
@@ -186,9 +191,9 @@ void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
         {
             JSONHelpers::SaveLayoutHotkeys(quickKeysMap.value());
         }
-    }
 
-    //TODO: remove zone-settings.json after getting all info from it
+        std::filesystem::remove(zonesSettingsFileName);
+    }
 }
 
 void FancyZonesData::SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback)

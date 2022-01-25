@@ -93,6 +93,9 @@
     <ClInclude Include="FancyZonesData\AppZoneHistory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FancyZonesData\AppliedLayouts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="FancyZonesData\CustomLayouts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -171,6 +174,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FancyZonesData\AppZoneHistory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FancyZonesData\AppliedLayouts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
