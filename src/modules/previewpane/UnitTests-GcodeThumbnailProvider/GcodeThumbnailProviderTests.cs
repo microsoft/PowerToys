@@ -31,7 +31,7 @@ namespace GcodeThumbnailProviderUnitTests
             provider.GetThumbnail(256, out IntPtr bitmap, out WTS_ALPHATYPE alphaType);
 
             Assert.IsTrue(bitmap != IntPtr.Zero);
-            Assert.IsTrue(alphaType == WTS_ALPHATYPE.WTSAT_RGB);
+            Assert.IsTrue(alphaType == WTS_ALPHATYPE.WTSAT_ARGB);
         }
 
         [TestMethod]

@@ -106,8 +106,7 @@
     <ClInclude Include="MouseHighlighter.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />
-    <ClInclude Include="Generated Files\resource.h" />
-    <None Include="resource.base.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -116,13 +115,12 @@
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="trace.cpp" />
-    <None Include="MouseHighlighter.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Generated Files\MouseHighlighter.rc" />
+    <ResourceCompile Include="MouseHighlighter.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
