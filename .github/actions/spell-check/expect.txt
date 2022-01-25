@@ -9,6 +9,7 @@ Abug
 accctrl
 Acceleratorkeys
 ACCEPTFILES
+ACCESSDENIED
 accessibile
 accessibilityinsights
 Acl
@@ -894,6 +895,7 @@ Intelli
 interactable
 Interlop
 interop
+Interoperability
 intptr
 INTRESOURCE
 INVALIDARG

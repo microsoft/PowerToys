@@ -24,8 +24,8 @@ using Microsoft.Plugin.Program.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
+using Wox.Plugin.Common;
 using Wox.Plugin.Logger;
-using Wox.Plugin.SharedCommands;
 using static Microsoft.Plugin.Program.Programs.UWP;
 
 namespace Microsoft.Plugin.Program.Programs
