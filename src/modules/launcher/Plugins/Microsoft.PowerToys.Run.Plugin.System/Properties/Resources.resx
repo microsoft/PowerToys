@@ -121,7 +121,7 @@
     <value>Show a dialog to confirm system commands</value>
   </data>
   <data name="Microsoft_plugin_sys_confirmation" xml:space="preserve">
-    <value>Please Confirm</value>
+    <value>Please confirm.</value>
     <comment>Request confirmation</comment>
   </data>
   <data name="Microsoft_plugin_sys_emptyrecyclebin" xml:space="preserve">
@@ -211,6 +211,18 @@
   <data name="Microsoft_plugin_sys_sleep_description" xml:space="preserve">
     <value>Put computer to sleep</value>
     <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_uefi" xml:space="preserve">
+    <value>UEFI Firmware Settings</value>
+    <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_uefi_confirmation" xml:space="preserve">
+    <value>You are about to reboot this computer into UEFI Firmware Settings menu, are you sure?</value>
+    <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_uefi_description" xml:space="preserve">
+    <value>Reboot computer into UEFI Firmware Settings (Requires administrative permissions.)</value>
+    <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
   </data>
   <data name="Use_localized_system_commands" xml:space="preserve">
     <value>Use localized system commands instead of English ones</value>
