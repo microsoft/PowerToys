@@ -119,7 +119,7 @@ jobs:
     displayName: Build PowerToys main project
     inputs:
       solution: '**\PowerToys.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -141,7 +141,7 @@ jobs:
     displayName: Build WebcamReportTool
     inputs:
       solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -152,7 +152,7 @@ jobs:
     displayName: Build PowerToysSetupCustomActions
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /target:PowerToysSetupCustomActions /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -163,7 +163,7 @@ jobs:
     displayName: Publish Settings for Packaging
     inputs:
       solution: 'src/settings-ui/PowerToys.Settings/PowerToys.Settings.csproj'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: >-
         /target:Publish
         /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
@@ -178,7 +178,7 @@ jobs:
     displayName: Publish Launcher for Packaging
     inputs:
       solution: 'src/modules/launcher/PowerLauncher/PowerLauncher.csproj'
-      vsVersion: 16.0
+      vsVersion: 17.0
       # The arguments should be the same as the ones for Settings; make sure they are.
       msbuildArgs: >-
         /target:Publish
@@ -218,7 +218,7 @@ jobs:
     displayName: Build MSI
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true /target:PowerToysInstaller /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -254,7 +254,7 @@ jobs:
     displayName: Build Bootstrapper
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
