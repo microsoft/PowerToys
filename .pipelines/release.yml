@@ -53,6 +53,13 @@ jobs:
       scriptName: .pipelines/versionSetting.ps1
       arguments: -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
 
+# Guardian tool needs 'Microsoft.NETCore.App', version '2.1.0' (x64)
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core 2.1 SDK'
+    inputs:
+      packageType: sdk
+      version: '2.1.x'
+
   - task: UseDotNet@2
     displayName: 'Use .NET 6 SDK'
     inputs:
@@ -193,12 +200,6 @@ jobs:
 #### MAIN SIGNING AREA
 # reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
 # https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
-# Guardian tool needs 'Microsoft.NETCore.App', version '2.1.0' (x64)
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core 2.1 SDK'
-    inputs:
-      packageType: sdk
-      version: '2.1.0'
 
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     displayName: Sign Core PT
