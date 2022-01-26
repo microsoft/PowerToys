@@ -334,7 +334,7 @@ std::pair<winrt::com_ptr<IWorkArea>, ZoneIndexSet> FancyZones::GetAppZoneHistory
 void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> workArea, const ZoneIndexSet& zoneIndexSet) noexcept
 {
     _TRACER_;
-    auto& fancyZonesData = FancyZonesDataInstance();
+
     if (!AppZoneHistory::instance().IsAnotherWindowOfApplicationInstanceZoned(window, workArea->UniqueId()))
     {
         if (workArea)

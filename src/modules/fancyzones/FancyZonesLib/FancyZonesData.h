@@ -7,11 +7,6 @@
 #if defined(UNIT_TESTS)
 namespace FancyZonesUnitTests
 {
-    class FancyZonesDataUnitTests;
-    class FancyZonesIFancyZonesCallbackUnitTests;
-    class ZoneSetCalculateZonesUnitTests;
-    class WorkAreaUnitTests;
-    class WorkAreaCreationUnitTests;
     class LayoutHotkeysUnitTests;
     class LayoutTemplatesUnitTests;
     class CustomLayoutsUnitTests;
@@ -34,11 +29,6 @@ public:
 
 private:
 #if defined(UNIT_TESTS)
-    friend class FancyZonesUnitTests::FancyZonesDataUnitTests;
-    friend class FancyZonesUnitTests::FancyZonesIFancyZonesCallbackUnitTests;
-    friend class FancyZonesUnitTests::WorkAreaUnitTests;
-    friend class FancyZonesUnitTests::WorkAreaCreationUnitTests;
-    friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
     friend class FancyZonesUnitTests::LayoutHotkeysUnitTests;
     friend class FancyZonesUnitTests::LayoutTemplatesUnitTests;
     friend class FancyZonesUnitTests::CustomLayoutsUnitTests;
