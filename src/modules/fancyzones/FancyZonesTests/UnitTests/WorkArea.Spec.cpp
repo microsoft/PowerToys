@@ -6,7 +6,7 @@
 #include <FancyZonesLib/ZoneSet.h>
 #include <FancyZonesLib/WorkArea.h>
 #include <FancyZonesLib/FancyZones.h>
-#include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/JsonHelpers.h>
@@ -35,8 +35,6 @@ namespace FancyZonesUnitTests
         OverlappingZonesAlgorithm m_overlappingAlgorithm = OverlappingZonesAlgorithm::Positional;
         bool m_showZoneText = true;
 
-        FancyZonesData& m_fancyZonesData = FancyZonesDataInstance();
-
         void testWorkArea(winrt::com_ptr<IWorkArea> workArea)
         {
             const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
@@ -46,37 +44,43 @@ namespace FancyZonesUnitTests
         }
 
         TEST_METHOD_INITIALIZE(Init)
-            {
-                m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
+        {
+            m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
 
-                m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
-                m_monitorInfo.cbSize = sizeof(m_monitorInfo);
-                Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
+            m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
+            m_monitorInfo.cbSize = sizeof(m_monitorInfo);
+            Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
 
-                m_parentUniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
-                m_parentUniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
-                m_parentUniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top; 
-                CLSIDFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}", &m_parentUniqueId.virtualDesktopId);
+            m_parentUniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
+            m_parentUniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
+            m_parentUniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top; 
+            CLSIDFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}", &m_parentUniqueId.virtualDesktopId);
                 
-                m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
-                m_uniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
-                m_uniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top;
-                CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
-                
-                m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
-                m_fancyZonesData.clear_data();
+            m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
+            m_uniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
+            m_uniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top;
+            CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
+                                
+            auto guid = Helpers::StringToGuid(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
+            Assert::IsTrue(guid.has_value());
+            m_virtualDesktopGuid = *guid;
 
-                auto guid = Helpers::StringToGuid(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
-                Assert::IsTrue(guid.has_value());
-                m_virtualDesktopGuid = *guid;
+            m_zoneColors = ZoneColors{
+                .primaryColor = FancyZonesUtils::HexToRGB(L"#4287f5"),
+                .borderColor = FancyZonesUtils::HexToRGB(L"#FFFFFF"),
+                .highlightColor = FancyZonesUtils::HexToRGB(L"#42eff5"),
+                .highlightOpacity = 50,
+            };
 
-                m_zoneColors = ZoneColors{
-                    .primaryColor = FancyZonesUtils::HexToRGB(L"#4287f5"),
-                    .borderColor = FancyZonesUtils::HexToRGB(L"#FFFFFF"),
-                    .highlightColor = FancyZonesUtils::HexToRGB(L"#42eff5"),
-                    .highlightOpacity = 50,
-                };
-            }
+            AppZoneHistory::instance().LoadData();
+            AppliedLayouts::instance().LoadData();
+        }
+
+        TEST_METHOD_CLEANUP(CleanUp)
+        {
+            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
+            std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
+        }
 
             TEST_METHOD (CreateWorkArea)
             {
@@ -176,29 +180,26 @@ namespace FancyZonesUnitTests
         {
             using namespace FancyZonesDataTypes;
 
-                const ZoneSetLayoutType type = ZoneSetLayoutType::PriorityGrid;
-                const int spacing = 10;
-                const int zoneCount = 5;
-                const auto customSetGuid = Helpers::CreateGuidString();
-                const auto parentZoneSet = ZoneSetData{ customSetGuid, type };
-                const auto parentDeviceInfo = DeviceInfoData{ parentZoneSet, true, spacing, zoneCount };
-                m_fancyZonesData.SetDeviceInfo(m_parentUniqueId, parentDeviceInfo);
+            const ZoneSetLayoutType type = ZoneSetLayoutType::PriorityGrid;
+            const int spacing = 10;
+            const int zoneCount = 5;
+            const auto customSetGuid = Helpers::CreateGuidString();
 
-                auto parentWorkArea = MakeWorkArea(m_hInst, m_monitor, m_parentUniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+            auto parentWorkArea = MakeWorkArea(m_hInst, m_monitor, m_parentUniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
                 
-                // newWorkArea = false - workArea won't be cloned from parent
-                auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+            // newWorkArea = false - workArea won't be cloned from parent
+            auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
 
-                Assert::IsNotNull(actualWorkArea->ZoneSet());
+            Assert::IsNotNull(actualWorkArea->ZoneSet());
 
-                Assert::IsTrue(m_fancyZonesData.GetDeviceInfoMap().contains(m_uniqueId));
-                auto currentDeviceInfo = m_fancyZonesData.GetDeviceInfoMap().at(m_uniqueId);
-                // default values
-                Assert::AreEqual(true, currentDeviceInfo.showSpacing);
-                Assert::AreEqual(3, currentDeviceInfo.zoneCount);
-                Assert::AreEqual(16, currentDeviceInfo.spacing);
-                Assert::AreEqual(static_cast<int>(ZoneSetLayoutType::PriorityGrid), static_cast<int>(currentDeviceInfo.activeZoneSet.type));
-            }
+            Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().contains(m_uniqueId));
+            auto currentDeviceInfo = AppliedLayouts::instance().GetAppliedLayoutMap().at(m_uniqueId);
+            // default values
+            Assert::AreEqual(true, currentDeviceInfo.showSpacing);
+            Assert::AreEqual(3, currentDeviceInfo.zoneCount);
+            Assert::AreEqual(16, currentDeviceInfo.spacing);
+            Assert::AreEqual(static_cast<int>(ZoneSetLayoutType::PriorityGrid), static_cast<int>(currentDeviceInfo.type));
+        }
     };
 
     TEST_CLASS (WorkAreaUnitTests)
@@ -233,11 +234,13 @@ namespace FancyZonesUnitTests
             };
 
             AppZoneHistory::instance().LoadData();
+            AppliedLayouts::instance().LoadData();
         }
 
         TEST_METHOD_CLEANUP(CleanUp)
         {
             std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
+            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
         }
 
         public:

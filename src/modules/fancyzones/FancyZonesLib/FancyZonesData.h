@@ -10,6 +10,7 @@ namespace FancyZonesUnitTests
     class LayoutHotkeysUnitTests;
     class LayoutTemplatesUnitTests;
     class CustomLayoutsUnitTests;
+    class AppliedLayoutsUnitTests;
 }
 #endif
 
@@ -32,6 +33,7 @@ private:
     friend class FancyZonesUnitTests::LayoutHotkeysUnitTests;
     friend class FancyZonesUnitTests::LayoutTemplatesUnitTests;
     friend class FancyZonesUnitTests::CustomLayoutsUnitTests;
+    friend class FancyZonesUnitTests::AppliedLayoutsUnitTests;
 
     inline void SetSettingsModulePath(std::wstring_view moduleName)
     {
