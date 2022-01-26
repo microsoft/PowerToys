@@ -4,7 +4,6 @@
 #include <common/logger/call_tracer.h>
 #include <common/logger/logger.h>
 
-#include "FancyZonesData.h"
 #include "FancyZonesData/AppliedLayouts.h"
 #include "FancyZonesData/AppZoneHistory.h"
 #include "FancyZonesDataTypes.h"

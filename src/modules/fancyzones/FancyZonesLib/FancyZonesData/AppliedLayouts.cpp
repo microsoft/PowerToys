@@ -5,8 +5,8 @@
 #include <common/logger/logger.h>
 
 #include <FancyZonesLib/GuidUtils.h>
-#include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/util.h>

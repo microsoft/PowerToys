@@ -2,7 +2,6 @@
 #include "trace.h"
 #include "FancyZonesLib/ZoneSet.h"
 #include "FancyZonesLib/Settings.h"
-#include "FancyZonesLib/FancyZonesData.h"
 #include "FancyZonesData/AppZoneHistory.h"
 #include "FancyZonesLib/FancyZonesData/AppliedLayouts.h"
 #include "FancyZonesLib/FancyZonesData/CustomLayouts.h"
@@ -146,7 +145,6 @@ void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inM
 
 void Trace::FancyZones::DataChanged() noexcept
 {
-    const FancyZonesData& data = FancyZonesDataInstance();
     int appsHistorySize = static_cast<int>(AppZoneHistory::instance().GetFullAppZoneHistory().size());
     const auto& customZones = CustomLayouts::instance().GetAllLayouts();
     const auto& layouts = AppliedLayouts::instance().GetAppliedLayoutMap();
@@ -158,7 +156,7 @@ void Trace::FancyZones::DataChanged() noexcept
         return;
     }
 
-    auto getCustomZoneCount = [&data](const std::variant<FancyZonesDataTypes::CanvasLayoutInfo, FancyZonesDataTypes::GridLayoutInfo>& layoutInfo) -> int {
+    auto getCustomZoneCount = [](const std::variant<FancyZonesDataTypes::CanvasLayoutInfo, FancyZonesDataTypes::GridLayoutInfo>& layoutInfo) -> int {
         if (std::holds_alternative<FancyZonesDataTypes::GridLayoutInfo>(layoutInfo))
         {
             const auto& info = std::get<FancyZonesDataTypes::GridLayoutInfo>(layoutInfo);
