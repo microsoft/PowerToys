@@ -1,150 +1,23 @@
 #include "pch.h"
 #include "FancyZonesData.h"
-#include "FancyZonesDataTypes.h"
-#include "JsonHelpers.h"
-#include "ZoneSet.h"
-#include "Settings.h"
-#include "GuidUtils.h"
+
+#include <filesystem>
 
 #include <common/Display/dpi_aware.h>
-#include <common/logger/call_tracer.h>
-#include <common/utils/json.h>
-#include <FancyZonesLib/util.h>
-#include <FancyZonesLib/FancyZonesWindowProperties.h>
-
-#include <shlwapi.h>
-#include <filesystem>
-#include <fstream>
-#include <optional>
-#include <regex>
-#include <sstream>
-#include <unordered_set>
-#include <common/utils/process_path.h>
 #include <common/logger/logger.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
-#include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
-#include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
-#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
-#include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
+#include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/ModuleConstants.h>
+#include <FancyZonesLib/util.h>
 
 // Non-localizable strings
 namespace NonLocalizable
 {
-    const wchar_t NullStr[] = L"null";
-
     const wchar_t FancyZonesSettingsFile[] = L"settings.json";
     const wchar_t FancyZonesDataFile[] = L"zones-settings.json";
     const wchar_t FancyZonesAppZoneHistoryFile[] = L"app-zone-history.json";
     const wchar_t FancyZonesEditorParametersFile[] = L"editor-parameters.json";
-    const wchar_t RegistryPath[] = L"Software\\SuperFancyZones";
-}
-
-namespace
-{
-    std::wstring ExtractVirtualDesktopId(const std::wstring& deviceId)
-    {
-        // Format: <device-id>_<resolution>_<virtual-desktop-id>
-        return deviceId.substr(deviceId.rfind('_') + 1);
-    }
-
-    const std::wstring& GetTempDirPath()
-    {
-        static std::wstring tmpDirPath;
-        static std::once_flag flag;
-
-        std::call_once(flag, []() {
-            wchar_t buffer[MAX_PATH];
-
-            auto charsWritten = GetTempPath(MAX_PATH, buffer);
-            if (charsWritten > MAX_PATH || (charsWritten == 0))
-            {
-                abort();
-            }
-
-            tmpDirPath = std::wstring{ buffer };
-        });
-
-        return tmpDirPath;
-    }
-
-    bool DeleteRegistryKey(HKEY hKeyRoot, LPTSTR lpSubKey)
-    {
-        // First, see if we can delete the key without having to recurse.
-        if (ERROR_SUCCESS == RegDeleteKey(hKeyRoot, lpSubKey))
-        {
-            return true;
-        }
-
-        HKEY hKey;
-        if (ERROR_SUCCESS != RegOpenKeyEx(hKeyRoot, lpSubKey, 0, KEY_READ, &hKey))
-        {
-            return false;
-        }
-
-        // Check for an ending slash and add one if it is missing.
-        LPTSTR lpEnd = lpSubKey + lstrlen(lpSubKey);
-
-        if (*(lpEnd - 1) != TEXT('\\'))
-        {
-            *lpEnd = TEXT('\\');
-            lpEnd++;
-            *lpEnd = TEXT('\0');
-        }
-
-        // Enumerate the keys
-
-        DWORD dwSize = MAX_PATH;
-        TCHAR szName[MAX_PATH];
-        FILETIME ftWrite;
-        auto result = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, &ftWrite);
-
-        if (result == ERROR_SUCCESS)
-        {
-            do
-            {
-                *lpEnd = TEXT('\0');
-                StringCchCat(lpSubKey, MAX_PATH * 2, szName);
-
-                if (!DeleteRegistryKey(hKeyRoot, lpSubKey))
-                {
-                    break;
-                }
-
-                dwSize = MAX_PATH;
-                result = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, &ftWrite);
-            } while (result == ERROR_SUCCESS);
-        }
-
-        lpEnd--;
-        *lpEnd = TEXT('\0');
-
-        RegCloseKey(hKey);
-
-        // Try again to delete the root key.
-        if (ERROR_SUCCESS == RegDeleteKey(hKeyRoot, lpSubKey))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    bool DeleteFancyZonesRegistryData()
-    {
-        wchar_t key[256];
-        StringCchPrintf(key, ARRAYSIZE(key), L"%s", NonLocalizable::RegistryPath);
-
-        HKEY hKey;
-        if (ERROR_FILE_NOT_FOUND == RegOpenKeyEx(HKEY_CURRENT_USER, key, 0, KEY_READ, &hKey))
-        {
-            return true;
-        }
-        else
-        {
-            return DeleteRegistryKey(HKEY_CURRENT_USER, key);
-        }
-    }
 }
 
 FancyZonesData& FancyZonesDataInstance()
@@ -158,6 +31,7 @@ FancyZonesData::FancyZonesData()
     std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
 
     settingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesSettingsFile);
+    appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesAppZoneHistoryFile);
     zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesDataFile);
     editorParametersFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesEditorParametersFile);
 }
@@ -166,8 +40,10 @@ void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
 {
     if (std::filesystem::exists(zonesSettingsFileName))
     {
-        json::JsonObject fancyZonesDataJSON = GetPersistFancyZonesJSON();
+        Logger::info("Replace zones-settings file");
 
+        json::JsonObject fancyZonesDataJSON = JSONHelpers::GetPersistFancyZonesJSON(zonesSettingsFileName, appZoneHistoryFileName);
+        
         auto deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
         if (deviceInfoMap)
         {
@@ -194,12 +70,6 @@ void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
 
         std::filesystem::remove(zonesSettingsFileName);
     }
-}
-
-
-json::JsonObject FancyZonesData::GetPersistFancyZonesJSON()
-{
-    return JSONHelpers::GetPersistFancyZonesJSON(zonesSettingsFileName, appZoneHistoryFileName);
 }
 
 void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor, const std::vector<std::pair<HMONITOR, MONITORINFOEX>>& allMonitors) const

@@ -1,26 +1,8 @@
 #pragma once
 
-#include "JsonHelpers.h"
-
+#if defined(UNIT_TESTS)
 #include <common/SettingsAPI/settings_helpers.h>
-#include <common/utils/json.h>
-#include <mutex>
-
-#include <string>
-#include <unordered_map>
-#include <optional>
-#include <vector>
-#include <winnt.h>
-#include <FancyZonesLib/JsonHelpers.h>
-
-namespace FancyZonesDataTypes
-{
-    struct ZoneSetData;
-    struct DeviceIdData;
-    struct DeviceInfoData;
-    struct CustomLayoutData;
-    struct AppZoneHistoryData;
-}
+#endif
 
 #if defined(UNIT_TESTS)
 namespace FancyZonesUnitTests
@@ -43,17 +25,10 @@ public:
 
     void ReplaceZoneSettingsFileFromOlderVersions();
 
-    inline const std::wstring& GetZonesSettingsFileName() const 
-    {
-        return zonesSettingsFileName;
-    }
-
     inline const std::wstring& GetSettingsFileName() const
     {
         return settingsFileName;
     }
-
-    json::JsonObject GetPersistFancyZonesJSON();
 
     void SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor, const std::vector<std::pair<HMONITOR, MONITORINFOEX>>& allMonitors) const;
 
@@ -67,22 +42,6 @@ private:
     friend class FancyZonesUnitTests::LayoutHotkeysUnitTests;
     friend class FancyZonesUnitTests::LayoutTemplatesUnitTests;
     friend class FancyZonesUnitTests::CustomLayoutsUnitTests;
-
-    inline void SetDeviceInfo(const FancyZonesDataTypes::DeviceIdData& deviceId, FancyZonesDataTypes::DeviceInfoData data)
-    {
-        deviceInfoMap[deviceId] = data;
-    }
-
-    inline bool ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
-    {
-        deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
-        return !deviceInfoMap.empty();
-    }
-
-    inline void clear_data()
-    {
-        deviceInfoMap.clear();
-    }
 
     inline void SetSettingsModulePath(std::wstring_view moduleName)
     {
@@ -101,8 +60,6 @@ private:
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;
     std::wstring editorParametersFileName;
-
-    mutable std::recursive_mutex dataLock;
 };
 
 FancyZonesData& FancyZonesDataInstance();
