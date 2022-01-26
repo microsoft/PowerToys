@@ -6,6 +6,7 @@
 
 #include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/util.h>
@@ -310,4 +311,89 @@ std::optional<AppliedLayouts::Layout> AppliedLayouts::GetDeviceLayout(const Fanc
 const AppliedLayouts::TAppliedLayoutsMap& AppliedLayouts::GetAppliedLayoutMap() const noexcept
 {
     return m_layouts;
+}
+
+bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::DeviceIdData& id) const noexcept
+{
+    auto iter = m_layouts.find(id);
+    return iter != m_layouts.end();
+}
+
+bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& layout)
+{
+    auto iter = m_layouts.find(deviceId);
+
+    auto uuid = FancyZonesUtils::GuidFromString(layout.uuid);
+    if (!uuid)
+    {
+        return false;
+    }
+
+    iter->second.uuid = uuid.value();
+    iter->second.type = layout.type;
+
+    // copy layouts properties to the applied-layout
+    auto customLayout = CustomLayouts::instance().GetLayout(iter->second.uuid);
+    if (customLayout)
+    {
+        if (customLayout.value().type == FancyZonesDataTypes::CustomLayoutType::Grid)
+        {
+            auto layoutInfo = std::get<FancyZonesDataTypes::GridLayoutInfo>(customLayout.value().info);
+            iter->second.sensitivityRadius = layoutInfo.sensitivityRadius();
+            iter->second.showSpacing = layoutInfo.showSpacing();
+            iter->second.spacing = layoutInfo.spacing();
+            iter->second.zoneCount = layoutInfo.zoneCount();
+        }
+        else if (customLayout.value().type == FancyZonesDataTypes::CustomLayoutType::Canvas)
+        {
+            auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(customLayout.value().info);
+            iter->second.sensitivityRadius = layoutInfo.sensitivityRadius;
+            iter->second.zoneCount = (int)layoutInfo.zones.size();
+        }
+    }
+
+    return true;
+}
+
+bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::DeviceIdData& deviceId)
+{
+    Logger::info(L"Set default layout on {}", deviceId.toString());
+
+    GUID guid;
+    auto result{ CoCreateGuid(&guid) };
+    if (!SUCCEEDED(result))
+    {
+        Logger::error("Failed to create an ID for the new layout");
+        return false;
+    }
+
+    Layout layout{
+        .uuid = guid,
+        .type = FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid,
+        .showSpacing = DefaultValues::ShowSpacing,
+        .spacing = DefaultValues::Spacing,
+        .zoneCount = DefaultValues::ZoneCount,
+        .sensitivityRadius = DefaultValues::SensitivityRadius
+    };
+
+    m_layouts[deviceId] = std::move(layout);
+    
+    SaveData();
+
+    return true;
+}
+
+bool AppliedLayouts::CloneLayout(const FancyZonesDataTypes::DeviceIdData& srcId, const FancyZonesDataTypes::DeviceIdData& dstId)
+{
+    if (srcId == dstId || m_layouts.find(srcId) == m_layouts.end())
+    {
+        return false;
+    }
+
+    Logger::info(L"Clone layout from {} to {}", dstId.toString(), srcId.toString());
+    m_layouts[dstId] = m_layouts[srcId];
+
+    SaveData();
+
+    return true;
 }

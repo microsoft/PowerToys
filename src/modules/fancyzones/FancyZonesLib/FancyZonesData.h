@@ -53,10 +53,6 @@ public:
         return settingsFileName;
     }
 
-    bool AddDevice(const FancyZonesDataTypes::DeviceIdData& deviceId);
-    void CloneDeviceInfo(const FancyZonesDataTypes::DeviceIdData& source, const FancyZonesDataTypes::DeviceIdData& destination);
-    void SetActiveZoneSet(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
-
     json::JsonObject GetPersistFancyZonesJSON();
 
     void SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor, const std::vector<std::pair<HMONITOR, MONITORINFOEX>>& allMonitors) const;
@@ -101,9 +97,6 @@ private:
         return result + L"\\" + std::wstring(L"zones-settings.json");
     }
 #endif
-    // Maps device unique ID to device data
-    JSONHelpers::TDeviceInfoMap deviceInfoMap{};
-
     std::wstring settingsFileName;
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;

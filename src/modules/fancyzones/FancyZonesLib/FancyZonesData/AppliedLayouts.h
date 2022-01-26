@@ -61,8 +61,13 @@ public:
     void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
 
     std::optional<Layout> GetDeviceLayout(const FancyZonesDataTypes::DeviceIdData& id) const noexcept;
-
     const TAppliedLayoutsMap& GetAppliedLayoutMap() const noexcept;
+
+    bool IsLayoutApplied(const FancyZonesDataTypes::DeviceIdData& id) const noexcept;
+
+    bool ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& layout);
+    bool ApplyDefaultLayout(const FancyZonesDataTypes::DeviceIdData& deviceId);
+    bool CloneLayout(const FancyZonesDataTypes::DeviceIdData& srcId, const FancyZonesDataTypes::DeviceIdData& dstId);
 
 private:
     AppliedLayouts();

@@ -1332,7 +1332,7 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
     FancyZonesDataTypes::ZoneSetData data{ .uuid = uuidStr.value(), .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom };
     
     auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(m_currentDesktopId);
-    FancyZonesDataInstance().SetActiveZoneSet(workArea->UniqueId(), data);
+    AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), data);
     AppliedLayouts::instance().SaveData();
     UpdateZoneSets();
     FlashZones();
