@@ -659,13 +659,25 @@ namespace JSONHelpers
         json::JsonObject root{};
         json::JsonArray layoutsArray{};
 
-        for (const auto& [deviceID, deviceData] : deviceInfoMap)
+        for (const auto& [deviceID, data] : deviceInfoMap)
         {
-            layoutsArray.Append(DeviceInfoJSON::DeviceInfoJSON::ToJson(DeviceInfoJSON{ deviceID, deviceData }));
+            json::JsonObject layout{};
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::UuidID, json::value(data.activeZoneSet.uuid));
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::TypeID, json::value(FancyZonesDataTypes::TypeToString(data.activeZoneSet.type)));
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::ShowSpacingID, json::value(data.showSpacing));
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::SpacingID, json::value(data.spacing));
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::ZoneCountID, json::value(data.zoneCount));
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::SensitivityRadiusID, json::value(data.sensitivityRadius));
+
+            json::JsonObject obj{};
+            obj.SetNamedValue(NonLocalizable::AppliedLayoutsIds::DeviceIdID, json::value(deviceID.toString()));
+            obj.SetNamedValue(NonLocalizable::AppliedLayoutsIds::AppliedLayoutID, layout);
+
+            layoutsArray.Append(obj);
         }
 
         root.SetNamedValue(NonLocalizable::AppliedLayoutsIds::AppliedLayoutsArrayID, layoutsArray);
-        json::to_file(CustomLayouts::CustomLayoutsFileName(), root);
+        json::to_file(AppliedLayouts::AppliedLayoutsFileName(), root);
     }
 
     json::JsonArray SerializeCustomZoneSets(const TCustomZoneSetsMap& customZoneSetsMap)
