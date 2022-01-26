@@ -321,40 +321,42 @@ bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::DeviceIdData& id
 
 bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& layout)
 {
-    auto iter = m_layouts.find(deviceId);
-    if (iter == m_layouts.end())
-    {
-        return false;
-    }
-
     auto uuid = FancyZonesUtils::GuidFromString(layout.uuid);
     if (!uuid)
     {
         return false;
     }
 
-    iter->second.uuid = uuid.value();
-    iter->second.type = layout.type;
+    Layout layoutToApply {
+        .uuid = uuid.value(),
+        .type = layout.type,
+        .showSpacing = DefaultValues::ShowSpacing,
+        .spacing = DefaultValues::Spacing,
+        .zoneCount = DefaultValues::ZoneCount,
+        .sensitivityRadius = DefaultValues::SensitivityRadius,
+    };
 
     // copy layouts properties to the applied-layout
-    auto customLayout = CustomLayouts::instance().GetLayout(iter->second.uuid);
+    auto customLayout = CustomLayouts::instance().GetLayout(layoutToApply.uuid);
     if (customLayout)
     {
         if (customLayout.value().type == FancyZonesDataTypes::CustomLayoutType::Grid)
         {
             auto layoutInfo = std::get<FancyZonesDataTypes::GridLayoutInfo>(customLayout.value().info);
-            iter->second.sensitivityRadius = layoutInfo.sensitivityRadius();
-            iter->second.showSpacing = layoutInfo.showSpacing();
-            iter->second.spacing = layoutInfo.spacing();
-            iter->second.zoneCount = layoutInfo.zoneCount();
+            layoutToApply.sensitivityRadius = layoutInfo.sensitivityRadius();
+            layoutToApply.showSpacing = layoutInfo.showSpacing();
+            layoutToApply.spacing = layoutInfo.spacing();
+            layoutToApply.zoneCount = layoutInfo.zoneCount();
         }
         else if (customLayout.value().type == FancyZonesDataTypes::CustomLayoutType::Canvas)
         {
             auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(customLayout.value().info);
-            iter->second.sensitivityRadius = layoutInfo.sensitivityRadius;
-            iter->second.zoneCount = (int)layoutInfo.zones.size();
+            layoutToApply.sensitivityRadius = layoutInfo.sensitivityRadius;
+            layoutToApply.zoneCount = (int)layoutInfo.zones.size();
         }
     }
+
+    m_layouts[deviceId] = std::move(layoutToApply);
 
     return true;
 }
