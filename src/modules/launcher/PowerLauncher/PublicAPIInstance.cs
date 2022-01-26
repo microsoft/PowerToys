@@ -36,7 +36,6 @@ namespace Wox
             _mainVM = mainVM ?? throw new ArgumentNullException(nameof(mainVM));
             _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
             _themeManager.ThemeChanged += OnThemeChanged;
-            WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
 
             ToastNotificationManagerCompat.OnActivated += args =>
             {
