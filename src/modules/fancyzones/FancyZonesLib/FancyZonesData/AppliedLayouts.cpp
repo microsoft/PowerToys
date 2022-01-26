@@ -322,6 +322,10 @@ bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::DeviceIdData& id
 bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& layout)
 {
     auto iter = m_layouts.find(deviceId);
+    if (iter == m_layouts.end())
+    {
+        return false;
+    }
 
     auto uuid = FancyZonesUtils::GuidFromString(layout.uuid);
     if (!uuid)
