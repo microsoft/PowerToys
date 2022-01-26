@@ -2012,6 +2012,7 @@ tadele
 talynone
 TApp
 TApplication
+TApplied
 targ
 TARGETAPPHEADER
 TARGETDIR
