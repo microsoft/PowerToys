@@ -295,3 +295,19 @@ void AppliedLayouts::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activ
         SaveData();
     }
 }
+
+std::optional<AppliedLayouts::Layout> AppliedLayouts::GetDeviceLayout(const FancyZonesDataTypes::DeviceIdData& id) const noexcept
+{
+    auto iter = m_layouts.find(id);
+    if (iter != m_layouts.end())
+    {
+        return iter->second;
+    }
+
+    return std::nullopt;
+}
+
+const AppliedLayouts::TAppliedLayoutsMap& AppliedLayouts::GetAppliedLayoutMap() const noexcept
+{
+    return m_layouts;
+}

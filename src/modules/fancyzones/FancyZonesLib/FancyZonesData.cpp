@@ -196,32 +196,12 @@ void FancyZonesData::ReplaceZoneSettingsFileFromOlderVersions()
     }
 }
 
-const JSONHelpers::TDeviceInfoMap& FancyZonesData::GetDeviceInfoMap() const
-{
-    std::scoped_lock lock{ dataLock };
-    return deviceInfoMap;
-}
-
-std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& id) const
-{
-    std::scoped_lock lock{ dataLock };
-    for (const auto& [deviceId, deviceInfo] : deviceInfoMap)
-    {
-        if (id.isEqualWithNullVirtualDesktopId(deviceId))
-        {
-            return deviceInfo;
-        }
-    }
-
-    return std::nullopt;
-}
-
 bool FancyZonesData::AddDevice(const FancyZonesDataTypes::DeviceIdData& deviceId)
 {
     _TRACER_;
     using namespace FancyZonesDataTypes;
 
-    auto deviceInfo = FindDeviceInfo(deviceId);
+    auto deviceInfo = AppliedLayouts::instance().GetDeviceLayout(deviceId);
 
     std::scoped_lock lock{ dataLock };
 
@@ -262,7 +242,7 @@ void FancyZonesData::CloneDeviceInfo(const FancyZonesDataTypes::DeviceIdData& so
     std::scoped_lock lock{ dataLock };
 
     // The source virtual desktop is deleted, simply ignore it.
-    if (!FindDeviceInfo(source).has_value())
+    if (!AppliedLayouts::instance().GetDeviceLayout(source).has_value())
     {
         return;
     }

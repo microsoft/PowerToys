@@ -60,6 +60,10 @@ public:
     void SyncVirtualDesktops(GUID currentVirtualDesktopId);
     void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
 
+    std::optional<Layout> GetDeviceLayout(const FancyZonesDataTypes::DeviceIdData& id) const noexcept;
+
+    const TAppliedLayoutsMap& GetAppliedLayoutMap() const noexcept;
+
 private:
     AppliedLayouts();
     ~AppliedLayouts() = default;

@@ -43,10 +43,6 @@ public:
 
     void ReplaceZoneSettingsFileFromOlderVersions();
 
-    std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& id) const;
-
-    const JSONHelpers::TDeviceInfoMap& GetDeviceInfoMap() const;
-
     inline const std::wstring& GetZonesSettingsFileName() const 
     {
         return zonesSettingsFileName;
