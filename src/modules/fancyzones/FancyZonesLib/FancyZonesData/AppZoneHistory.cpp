@@ -106,7 +106,7 @@ bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::Dev
         auto& perDesktopData = history->second;
         for (auto& data : perDesktopData)
         {
-            if (data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
+            if (data.deviceId == deviceId)
             {
                 // application already has history on this work area, update it with new window position
                 data.processIdToHandleMap[processId] = window;
@@ -153,7 +153,7 @@ bool AppZoneHistory::RemoveAppLastZone(HWND window, const FancyZonesDataTypes::D
             auto& perDesktopData = history->second;
             for (auto data = std::begin(perDesktopData); data != std::end(perDesktopData);)
             {
-                if (data->deviceId.isEqualWithNullVirtualDesktopId(deviceId) && data->zoneSetUuid == zoneSetId)
+                if (data->deviceId == deviceId && data->zoneSetUuid == zoneSetId)
                 {
                     if (!IsAnotherWindowOfApplicationInstanceZoned(window, deviceId))
                     {
@@ -211,7 +211,7 @@ std::optional<FancyZonesDataTypes::AppZoneHistoryData> AppZoneHistory::GetZoneHi
         auto historyVector = iter->second;
         for (const auto& history : historyVector)
         {
-            if (history.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
+            if (history.deviceId == deviceId)
             {
                 return history;
             }
@@ -232,7 +232,7 @@ bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, cons
             auto& perDesktopData = history->second;
             for (auto& data : perDesktopData)
             {
-                if (data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
+                if (data.deviceId == deviceId)
                 {
                     DWORD processId = 0;
                     GetWindowThreadProcessId(window, &processId);
@@ -266,7 +266,7 @@ void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDat
             auto& perDesktopData = history->second;
             for (auto& data : perDesktopData)
             {
-                if (data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
+                if (data.deviceId == deviceId)
                 {
                     DWORD processId = 0;
                     GetWindowThreadProcessId(window, &processId);
@@ -289,7 +289,7 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
             const auto& perDesktopData = history->second;
             for (const auto& data : perDesktopData)
             {
-                if (data.zoneSetUuid == zoneSetId && data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
+                if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
                 {
                     return data.zoneIndexSet;
                 }
