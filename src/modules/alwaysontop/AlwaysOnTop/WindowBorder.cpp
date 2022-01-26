@@ -61,6 +61,17 @@ WindowBorder::~WindowBorder()
     }
 }
 
+std::unique_ptr<WindowBorder> WindowBorder::Create(HWND window, HINSTANCE hinstance)
+{
+    auto self = std::unique_ptr<WindowBorder>(new WindowBorder(window));
+    if (self->Init(hinstance))
+    {
+        return self;
+    }
+
+    return nullptr;
+}
+
 bool WindowBorder::Init(HINSTANCE hinstance)
 {
     if (!m_trackingWindow)
@@ -118,7 +129,14 @@ bool WindowBorder::Init(HINSTANCE hinstance)
         , SWP_NOMOVE | SWP_NOSIZE);
 
     m_frameDrawer = FrameDrawer::Create(m_window);
-    return m_frameDrawer != nullptr;
+    if (!m_frameDrawer)
+    {
+        return false;
+    }
+
+    UpdateBorderProperties();
+    m_frameDrawer->Show();
+    return true;
 }
 
 void WindowBorder::UpdateBorderPosition() const
@@ -131,6 +149,7 @@ void WindowBorder::UpdateBorderPosition() const
     auto rectOpt = GetFrameRect(m_trackingWindow);
     if (!rectOpt.has_value())
     {
+        m_frameDrawer->Hide();
         return;
     }
 
@@ -167,17 +186,6 @@ void WindowBorder::UpdateBorderProperties() const
     }
 
     m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness);
-}
-
-void WindowBorder::Show() const
-{
-    UpdateBorderProperties();
-    m_frameDrawer->Show();
-}
-
-void WindowBorder::Hide() const
-{
-    m_frameDrawer->Hide();
 }
 
 LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept

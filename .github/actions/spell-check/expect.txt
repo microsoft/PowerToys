@@ -1220,6 +1220,8 @@ mindaro
 Minimatch
 Minimizeallwindows
 MINIMIZEBOX
+MINIMIZEEND
+MINIMIZESTART
 miniz
 minlevel
 Miracast
