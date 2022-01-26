@@ -19,9 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private MouseHighlighterSettings MouseHighlighterSettingsConfig { get; set; }
 
-        private MousePointerCrosshairSettings MousePointerCrosshairSettingsConfig { get; set; }
+        private MousePointerCrosshairsSettings MousePointerCrosshairsSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MousePointerCrosshairSettings> mousePointerCrosshairSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             _isMouseHighlighterEnabled = GeneralSettingsConfig.Enabled.MouseHighlighter;
 
-            _isMousePointerCrosshairEnabled = GeneralSettingsConfig.Enabled.MousePointerCrosshair;
+            _isMousePointerCrosshairsEnabled = GeneralSettingsConfig.Enabled.MousePointerCrosshairs;
 
             // To obtain the find my mouse settings, if the file exists.
             // If not, to create a file with the default settings and to return the default configurations.
@@ -77,23 +77,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
             _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
 
-            if (mousePointerCrosshairSettingsRepository == null)
+            if (mousePointerCrosshairsSettingsRepository == null)
             {
-                throw new ArgumentNullException(nameof(mousePointerCrosshairSettingsRepository));
+                throw new ArgumentNullException(nameof(mousePointerCrosshairsSettingsRepository));
             }
 
-            MousePointerCrosshairSettingsConfig = mousePointerCrosshairSettingsRepository.SettingsConfig;
+            MousePointerCrosshairsSettingsConfig = mousePointerCrosshairsSettingsRepository.SettingsConfig;
 
-            string crosshairColor = MousePointerCrosshairSettingsConfig.Properties.CrosshairColor.Value;
-            _mousePointerCrosshairColor = !string.IsNullOrEmpty(crosshairColor) ? crosshairColor : "#FF0000";
+            string crosshairsColor = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsColor.Value;
+            _mousePointerCrosshairsColor = !string.IsNullOrEmpty(crosshairsColor) ? crosshairsColor : "#FF0000";
 
-            string crosshairBorderColor = MousePointerCrosshairSettingsConfig.Properties.CrosshairBorderColor.Value;
-            _mousePointerCrosshairBorderColor = !string.IsNullOrEmpty(crosshairBorderColor) ? crosshairBorderColor : "#FFFFFF";
+            string crosshairsBorderColor = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsBorderColor.Value;
+            _mousePointerCrosshairsBorderColor = !string.IsNullOrEmpty(crosshairsBorderColor) ? crosshairsBorderColor : "#FFFFFF";
 
-            _mousePointerCrosshairOpacity = MousePointerCrosshairSettingsConfig.Properties.CrosshairOpacity.Value;
-            _mousePointerCrosshairRadius = MousePointerCrosshairSettingsConfig.Properties.CrosshairRadius.Value;
-            _mousePointerCrosshairThickness = MousePointerCrosshairSettingsConfig.Properties.CrosshairThickness.Value;
-            _mousePointerCrosshairBorderSize = MousePointerCrosshairSettingsConfig.Properties.CrosshairBorderSize.Value;
+            _mousePointerCrosshairsOpacity = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsOpacity.Value;
+            _mousePointerCrosshairsRadius = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsRadius.Value;
+            _mousePointerCrosshairsThickness = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsThickness.Value;
+            _mousePointerCrosshairsBorderSize = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsBorderSize.Value;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -420,124 +420,48 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SettingsUtils.SaveSettings(MouseHighlighterSettingsConfig.ToJsonString(), MouseHighlighterSettings.ModuleName);
         }
 
-        public bool IsMousePointerCrosshairEnabled
+        public bool IsMousePointerCrosshairsEnabled
         {
-            get => _isMousePointerCrosshairEnabled;
+            get => _isMousePointerCrosshairsEnabled;
             set
             {
-                if (_isMousePointerCrosshairEnabled != value)
+                if (_isMousePointerCrosshairsEnabled != value)
                 {
-                    _isMousePointerCrosshairEnabled = value;
+                    _isMousePointerCrosshairsEnabled = value;
 
-                    GeneralSettingsConfig.Enabled.MousePointerCrosshair = value;
-                    OnPropertyChanged(nameof(_isMousePointerCrosshairEnabled));
+                    GeneralSettingsConfig.Enabled.MousePointerCrosshairs = value;
+                    OnPropertyChanged(nameof(_isMousePointerCrosshairsEnabled));
 
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
 
-                    NotifyMousePointerCrosshairPropertyChanged();
+                    NotifyMousePointerCrosshairsPropertyChanged();
                 }
             }
         }
 
-        public HotkeySettings MousePointerCrosshairActivationShortcut
+        public HotkeySettings MousePointerCrosshairsActivationShortcut
         {
             get
             {
-                return MousePointerCrosshairSettingsConfig.Properties.ActivationShortcut;
+                return MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut;
             }
 
             set
             {
-                if (MousePointerCrosshairSettingsConfig.Properties.ActivationShortcut != value)
+                if (MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut != value)
                 {
-                    MousePointerCrosshairSettingsConfig.Properties.ActivationShortcut = value;
-                    NotifyMousePointerCrosshairPropertyChanged();
+                    MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
                 }
             }
         }
 
-        public string MousePointerCrosshairColor
+        public string MousePointerCrosshairsColor
         {
             get
             {
-                return _mousePointerCrosshairColor;
-            }
-
-            set
-            {
-                // The fallback value is based on ToRGBHex's behavior, which returns
-                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
-                // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
-                if (!value.Equals(_mousePointerCrosshairColor, StringComparison.OrdinalIgnoreCase))
-                {
-                    _mousePointerCrosshairColor = value;
-                    MousePointerCrosshairSettingsConfig.Properties.CrosshairColor.Value = value;
-                    NotifyMousePointerCrosshairPropertyChanged();
-                }
-            }
-        }
-
-        public int MousePointerCrosshairOpacity
-        {
-            get
-            {
-                return _mousePointerCrosshairOpacity;
-            }
-
-            set
-            {
-                if (value != _mousePointerCrosshairOpacity)
-                {
-                    _mousePointerCrosshairOpacity = value;
-                    MousePointerCrosshairSettingsConfig.Properties.CrosshairOpacity.Value = value;
-                    NotifyMousePointerCrosshairPropertyChanged();
-                }
-            }
-        }
-
-        public int MousePointerCrosshairRadius
-        {
-            get
-            {
-                return _mousePointerCrosshairRadius;
-            }
-
-            set
-            {
-                if (value != _mousePointerCrosshairRadius)
-                {
-                    _mousePointerCrosshairRadius = value;
-                    MousePointerCrosshairSettingsConfig.Properties.CrosshairRadius.Value = value;
-                    NotifyMousePointerCrosshairPropertyChanged();
-                }
-            }
-        }
-
-        public int MousePointerCrosshairThickness
-        {
-            get
-            {
-                return _mousePointerCrosshairThickness;
-            }
-
-            set
-            {
-                if (value != _mousePointerCrosshairThickness)
-                {
-                    _mousePointerCrosshairThickness = value;
-                    MousePointerCrosshairSettingsConfig.Properties.CrosshairThickness.Value = value;
-                    NotifyMousePointerCrosshairPropertyChanged();
-                }
-            }
-        }
-
-        public string MousePointerCrosshairBorderColor
-        {
-            get
-            {
-                return _mousePointerCrosshairBorderColor;
+                return _mousePointerCrosshairsColor;
             }
 
             set
@@ -546,41 +470,117 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
                 // This extra handling is added here to deal with FxCop warnings.
                 value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
-                if (!value.Equals(_mousePointerCrosshairBorderColor, StringComparison.OrdinalIgnoreCase))
+                if (!value.Equals(_mousePointerCrosshairsColor, StringComparison.OrdinalIgnoreCase))
                 {
-                    _mousePointerCrosshairBorderColor = value;
-                    MousePointerCrosshairSettingsConfig.Properties.CrosshairBorderColor.Value = value;
-                    NotifyMousePointerCrosshairPropertyChanged();
+                    _mousePointerCrosshairsColor = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsColor.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
                 }
             }
         }
 
-        public int MousePointerCrosshairBorderSize
+        public int MousePointerCrosshairsOpacity
         {
             get
             {
-                return _mousePointerCrosshairBorderSize;
+                return _mousePointerCrosshairsOpacity;
             }
 
             set
             {
-                if (value != _mousePointerCrosshairBorderSize)
+                if (value != _mousePointerCrosshairsOpacity)
                 {
-                    _mousePointerCrosshairBorderSize = value;
-                    MousePointerCrosshairSettingsConfig.Properties.CrosshairBorderSize.Value = value;
-                    NotifyMousePointerCrosshairPropertyChanged();
+                    _mousePointerCrosshairsOpacity = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsOpacity.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
                 }
             }
         }
 
-        public void NotifyMousePointerCrosshairPropertyChanged([CallerMemberName] string propertyName = null)
+        public int MousePointerCrosshairsRadius
+        {
+            get
+            {
+                return _mousePointerCrosshairsRadius;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsRadius)
+                {
+                    _mousePointerCrosshairsRadius = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsRadius.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
+        public int MousePointerCrosshairsThickness
+        {
+            get
+            {
+                return _mousePointerCrosshairsThickness;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsThickness)
+                {
+                    _mousePointerCrosshairsThickness = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsThickness.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
+        public string MousePointerCrosshairsBorderColor
+        {
+            get
+            {
+                return _mousePointerCrosshairsBorderColor;
+            }
+
+            set
+            {
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                if (!value.Equals(_mousePointerCrosshairsBorderColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _mousePointerCrosshairsBorderColor = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsBorderColor.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
+        public int MousePointerCrosshairsBorderSize
+        {
+            get
+            {
+                return _mousePointerCrosshairsBorderSize;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsBorderSize)
+                {
+                    _mousePointerCrosshairsBorderSize = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsBorderSize.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
+        public void NotifyMousePointerCrosshairsPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
 
-            SndMousePointerCrosshairSettings outsettings = new SndMousePointerCrosshairSettings(MousePointerCrosshairSettingsConfig);
-            SndModuleSettings<SndMousePointerCrosshairSettings> ipcMessage = new SndModuleSettings<SndMousePointerCrosshairSettings>(outsettings);
+            SndMousePointerCrosshairsSettings outsettings = new SndMousePointerCrosshairsSettings(MousePointerCrosshairsSettingsConfig);
+            SndModuleSettings<SndMousePointerCrosshairsSettings> ipcMessage = new SndModuleSettings<SndMousePointerCrosshairsSettings>(outsettings);
             SendConfigMSG(ipcMessage.ToJsonString());
-            SettingsUtils.SaveSettings(MousePointerCrosshairSettingsConfig.ToJsonString(), MousePointerCrosshairSettings.ModuleName);
+            SettingsUtils.SaveSettings(MousePointerCrosshairsSettingsConfig.ToJsonString(), MousePointerCrosshairsSettings.ModuleName);
         }
 
         private Func<string, int> SendConfigMSG { get; }
@@ -602,12 +602,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;
 
-        private bool _isMousePointerCrosshairEnabled;
-        private string _mousePointerCrosshairColor;
-        private int _mousePointerCrosshairOpacity;
-        private int _mousePointerCrosshairRadius;
-        private int _mousePointerCrosshairThickness;
-        private string _mousePointerCrosshairBorderColor;
-        private int _mousePointerCrosshairBorderSize;
+        private bool _isMousePointerCrosshairsEnabled;
+        private string _mousePointerCrosshairsColor;
+        private int _mousePointerCrosshairsOpacity;
+        private int _mousePointerCrosshairsRadius;
+        private int _mousePointerCrosshairsThickness;
+        private string _mousePointerCrosshairsBorderColor;
+        private int _mousePointerCrosshairsBorderSize;
     }
 }

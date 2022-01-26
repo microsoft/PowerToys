@@ -18,23 +18,23 @@ void Trace::UnregisterProvider() noexcept
     TraceLoggingUnregister(g_hProvider);
 }
 
-// Log if the user has MousePointerCrosshair enabled or disabled
-void Trace::EnableMousePointerCrosshair(const bool enabled) noexcept
+// Log if the user has MousePointerCrosshairs enabled or disabled
+void Trace::EnableMousePointerCrosshairs(const bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "MousePointerCrosshair_EnableMousePointerCrosshair",
+        "MousePointerCrosshairs_EnableMousePointerCrosshairs",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
-// Log that the user activated the module by having the crosshair be drawn
-void Trace::StartDrawingCrosshair() noexcept
+// Log that the user activated the module by having the crosshairs be drawn
+void Trace::StartDrawingCrosshairs() noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "MousePointerCrosshair_StartDrawingCrosshair",
+        "MousePointerCrosshairs_StartDrawingCrosshairs",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
