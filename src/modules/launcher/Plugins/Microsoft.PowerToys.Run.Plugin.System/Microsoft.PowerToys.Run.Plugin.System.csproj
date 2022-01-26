@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.System</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.System</AssemblyName>
