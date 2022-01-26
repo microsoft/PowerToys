@@ -2298,6 +2298,7 @@ WINL
 winmd
 winmm
 WINMSAPP
+WINNT
 winnt
 winres
 winrt
