@@ -84,7 +84,7 @@ namespace FancyZonesEditor
                 FancyZonesEditorIO.ParseCommandLineArguments();
             }
 
-            var parseResult = FancyZonesEditorIO.ParseZoneSettings();
+            var parseResult = FancyZonesEditorIO.ParseAppliedLayouts();
             if (!parseResult.Result)
             {
                 Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);

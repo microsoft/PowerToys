@@ -376,6 +376,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred while parsing applied layouts..
+        /// </summary>
+        public static string Error_Parsing_Applied_Layouts_Message {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Applied_Layouts_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred while parsing custom layouts..
         /// </summary>
         public static string Error_Parsing_Custom_Layouts_Message {
@@ -417,15 +426,6 @@ namespace FancyZonesEditor.Properties {
         public static string Error_Parsing_Layout_Templates_Message {
             get {
                 return ResourceManager.GetString("Error_Parsing_Layout_Templates_Message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A layout that contained invalid data has been removed..
-        /// </summary>
-        public static string Error_Parsing_Zones_Settings_Message {
-            get {
-                return ResourceManager.GetString("Error_Parsing_Zones_Settings_Message", resourceCulture);
             }
         }
         
