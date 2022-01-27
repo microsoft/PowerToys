@@ -7,6 +7,7 @@
 #include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
+#include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/util.h>
@@ -355,7 +356,21 @@ bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::DeviceIdData& device
             layoutToApply.zoneCount = (int)layoutInfo.zones.size();
         }
     }
-
+    else
+    {
+        // check templates only if it wasn't a custom layout, since templates don't have uuids yet
+        auto templateLayout = LayoutTemplates::instance().GetLayout(layout.type);
+        if (templateLayout)
+        {
+            auto layoutInfo = templateLayout.value();
+            layoutToApply.sensitivityRadius = layoutInfo.sensitivityRadius;
+            layoutToApply.showSpacing = layoutInfo.showSpacing;
+            layoutToApply.spacing = layoutInfo.spacing;
+            layoutToApply.zoneCount = layoutInfo.zoneCount;
+        }
+    
+    }
+    
     m_layouts[deviceId] = std::move(layoutToApply);
 
     return true;
