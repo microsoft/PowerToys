@@ -1,11 +1,10 @@
 #pragma once
 
-#include <guiddef.h>
 #include <map>
 #include <memory>
 #include <optional>
 
-#include <FancyZonesLib/FancyZonesDataTypes.h>
+#include <FancyZonesLib/FancyZonesData/Layout.h>
 #include <FancyZonesLib/ModuleConstants.h>
 
 #include <common/SettingsAPI/FileWatcher.h>
@@ -30,16 +29,6 @@ namespace NonLocalizable
 class AppliedLayouts
 {
 public:
-    struct Layout
-    {
-        GUID uuid;
-        FancyZonesDataTypes::ZoneSetLayoutType type;
-        bool showSpacing;
-        int spacing;
-        int zoneCount;
-        int sensitivityRadius;
-    };
-
     using TAppliedLayoutsMap = std::unordered_map<FancyZonesDataTypes::DeviceIdData, Layout>;
     
     static AppliedLayouts& instance();

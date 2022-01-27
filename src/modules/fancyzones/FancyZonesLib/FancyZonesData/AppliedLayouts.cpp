@@ -15,11 +15,11 @@ namespace JsonUtils
 {
     struct LayoutJSON
     {
-        static std::optional<AppliedLayouts::Layout> FromJson(const json::JsonObject& json)
+        static std::optional<Layout> FromJson(const json::JsonObject& json)
         {
             try
             {
-                AppliedLayouts::Layout data;
+                Layout data;
                 auto idStr = json.GetNamedString(NonLocalizable::AppliedLayoutsIds::UuidID);
                 auto id = FancyZonesUtils::GuidFromString(idStr.c_str());
                 if (!id.has_value())
@@ -42,7 +42,7 @@ namespace JsonUtils
             }
         }
 
-        static json::JsonObject ToJson(const AppliedLayouts::Layout& data)
+        static json::JsonObject ToJson(const Layout& data)
         {
             json::JsonObject result{};
             result.SetNamedValue(NonLocalizable::AppliedLayoutsIds::UuidID, json::value(FancyZonesUtils::GuidToString(data.uuid).value()));
@@ -58,7 +58,7 @@ namespace JsonUtils
     struct AppliedLayoutsJSON
     {
         FancyZonesDataTypes::DeviceIdData deviceId;
-        AppliedLayouts::Layout data;
+        Layout data;
 
         static std::optional<AppliedLayoutsJSON> FromJson(const json::JsonObject& json)
         {
@@ -297,7 +297,7 @@ void AppliedLayouts::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activ
     }
 }
 
-std::optional<AppliedLayouts::Layout> AppliedLayouts::GetDeviceLayout(const FancyZonesDataTypes::DeviceIdData& id) const noexcept
+std::optional<Layout> AppliedLayouts::GetDeviceLayout(const FancyZonesDataTypes::DeviceIdData& id) const noexcept
 {
     auto iter = m_layouts.find(id);
     if (iter != m_layouts.end())

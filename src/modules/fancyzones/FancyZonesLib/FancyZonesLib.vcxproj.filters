@@ -111,6 +111,9 @@
     <ClInclude Include="FancyZonesData\LayoutDefaults.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FancyZonesData\Layout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
