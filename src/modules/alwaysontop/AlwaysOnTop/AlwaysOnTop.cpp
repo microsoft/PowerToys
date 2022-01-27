@@ -12,6 +12,7 @@
 namespace NonLocalizable
 {
     const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
+    const static wchar_t* WINDOW_PROP = L"AlwaysOnTop_Pinned";
 }
 
 // TODO: move to common utils
@@ -227,7 +228,7 @@ void AlwaysOnTop::StartTrackingTopmostWindows()
 
     for (HWND window : result)
     {
-        if (IsTopmost(window))
+        if (IsPinned(window))
         {
             AssignBorder(window);
         }
@@ -315,13 +316,21 @@ bool AlwaysOnTop::IsTopmost(HWND window) const noexcept
     return (exStyle & WS_EX_TOPMOST) == WS_EX_TOPMOST;
 }
 
+bool AlwaysOnTop::IsPinned(HWND window) const noexcept
+{
+    auto handle = GetProp(window, NonLocalizable::WINDOW_PROP);
+    return (handle != NULL);
+}
+
 bool AlwaysOnTop::PinTopmostWindow(HWND window) const noexcept
 {
+    SetProp(window, NonLocalizable::WINDOW_PROP, (HANDLE)1);
     return SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
 
 bool AlwaysOnTop::UnpinTopmostWindow(HWND window) const noexcept
 {
+    RemoveProp(window, NonLocalizable::WINDOW_PROP);
     return SetWindowPos(window, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
 
