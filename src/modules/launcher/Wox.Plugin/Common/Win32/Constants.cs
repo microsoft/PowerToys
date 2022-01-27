@@ -4,7 +4,7 @@
 
 namespace Wox.Plugin.Common.Win32
 {
-#pragma warning disable CA1707 // same resason:
+#pragma warning disable CA1707 // same reason:
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "These are the names used by win32.")]
     public static class Constants
     {
