@@ -322,6 +322,20 @@ Mouse Highlighter:
     - [ ] Fade delay
     - [ ] Fade duration
 
+Mouse Pointer Crosshairs:
+  * Enable Mouse Pointer Crosshairs. Then:
+    - [ ] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
+    - [ ] Press the activation shortcut again and verify the crosshairs disappear.
+    - [ ] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
+  * Test the different settings and verify they apply:
+    - [ ] Change activation shortcut and test it
+    - [ ] Crosshairs color
+    - [ ] Crosshairs opacity
+    - [ ] Crosshairs center radius
+    - [ ] Crosshairs thickness
+    - [ ] Crosshairs border color
+    - [ ] Crosshairs border size
+
 ## VCM
  - [ ] Check "Hide toolbar when both camera and micrphone are unmuted" and verify that it works
  - [ ] Uncheck it, mute the microphone with the hotkey and make sure the toolbar doesn't hide after a timeout
