@@ -131,6 +131,7 @@ AUTOMATIONPROPERTIES
 Autorun
 AUTOUPDATE
 AValid
+Avanc
 Awaitable
 awakeness
 awakeversion
@@ -275,8 +276,8 @@ Clipperton
 CLIPSIBLINGS
 cljs
 clrcall
-Cls
 cls
+Cls
 CLSCTX
 clsid
 cmder
@@ -587,8 +588,8 @@ ESettings
 esize
 esrp
 estdir
-etcore
 Eswatini
+etcore
 etl
 etw
 Eucla
@@ -662,8 +663,8 @@ FLASHZONESONQUICKSWITCH
 flt
 flyout
 fmtlib
-FOF
 fof
+FOF
 FOFX
 FOLDERID
 folderpath
@@ -1089,10 +1090,10 @@ Kitts
 Knowlden
 Knownfolders
 kotlin
+Krai
 KSPROPERTY
 ktm
 kts
-Krai
 Kwango
 Kwilu
 Kybd
@@ -1544,7 +1545,7 @@ pch
 PCIDLIST
 PCWSTR
 pdb
-pdb
+Pdb
 pdbonly
 pdfpreviewhandler
 pdo
@@ -1586,9 +1587,9 @@ plugin
 pluginsmodel
 plx
 PMSIHANDLE
+Pohnpei
 policheck
 popd
-Pohnpei
 popup
 POPUPWINDOW
 posix
@@ -2127,6 +2128,7 @@ timediff
 Timeline
 timeunion
 timeutil
+timezone
 Titlecase
 TLayout
 tlb
@@ -2139,6 +2141,7 @@ Toolchain
 toolkitcontrols
 toolkitconverters
 toolset
+Toolset
 toolstrip
 toolwindow
 TOPDOWNDIB
@@ -2243,6 +2246,7 @@ USESTDHANDLES
 ushort
 USRDLL
 utc
+Utc
 UTC
 utf
 utils

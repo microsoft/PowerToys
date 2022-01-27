@@ -94,8 +94,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             || MatchStandardTimeNames(oneTimeZone, query)
             || MatchStandardCountries(oneTimeZone, query))
             {
-                var hasCountires = GetStandardCountries(oneTimeZone, null, int.MaxValue).Length > 0;
-                if (!hasCountires)
+                var hasCountries = GetStandardCountries(oneTimeZone, null, int.MaxValue).Length > 0;
+                if (!hasCountries)
                 {
                     return results;
                 }
@@ -114,8 +114,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             || MatchDaylightTimeNames(oneTimeZone, query)
             || MatchDaylightCountries(oneTimeZone, query))
             {
-                var hasCountires = GetDaylightCountries(oneTimeZone, null, int.MaxValue).Length > 0;
-                if (!hasCountires)
+                var hasCountries = GetDaylightCountries(oneTimeZone, null, int.MaxValue).Length > 0;
+                if (!hasCountries)
                 {
                     return results;
                 }
