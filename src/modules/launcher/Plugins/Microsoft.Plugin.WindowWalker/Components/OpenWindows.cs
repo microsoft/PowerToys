@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
@@ -71,7 +72,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public void UpdateOpenWindowsList()
         {
             windows.Clear();
-            NativeMethods.CallBackPtr callbackptr = new NativeMethods.CallBackPtr(WindowEnumerationCallBack);
+            EnumWindowsProc callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
             _ = NativeMethods.EnumWindows(callbackptr, 0);
         }
 
