@@ -358,7 +358,7 @@ bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::DeviceIdData& device
     }
     else
     {
-        // check templates only if it wasn't a custom layout, since templates don't have uuids yet
+        // check templates only if it wasn't a custom layout, since templates don't have ids yet
         auto templateLayout = LayoutTemplates::instance().GetLayout(layout.type);
         if (templateLayout)
         {
