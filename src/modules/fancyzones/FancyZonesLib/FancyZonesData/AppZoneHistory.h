@@ -21,8 +21,6 @@ public:
         return saveFolderPath + L"\\app-zone-history.json";
     }
 
-    void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
-
     void LoadData();
     void SaveData();
 
@@ -38,7 +36,9 @@ public:
     void UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId);
     ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId) const;
 
-    void RemoveDesktopAppZoneHistory(GUID desktopId);
+    void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
+    void SyncVirtualDesktops(GUID currentVirtualDesktopId);
+    void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
 
 private:
     AppZoneHistory();

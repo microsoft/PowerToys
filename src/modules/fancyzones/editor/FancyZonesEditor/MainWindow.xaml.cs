@@ -250,7 +250,7 @@ namespace FancyZonesEditor
             model.Persist();
 
             App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
-            App.FancyZonesEditorIO.SerializeZoneSettings();
+            App.FancyZonesEditorIO.SerializeAppliedLayouts();
             App.FancyZonesEditorIO.SerializeCustomLayouts();
         }
 
@@ -272,7 +272,7 @@ namespace FancyZonesEditor
             {
                 _settings.SetAppliedModel(model);
                 App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
-                App.FancyZonesEditorIO.SerializeZoneSettings();
+                App.FancyZonesEditorIO.SerializeAppliedLayouts();
                 App.FancyZonesEditorIO.SerializeCustomLayouts();
             }
         }
@@ -282,7 +282,7 @@ namespace FancyZonesEditor
             Logger.LogTrace();
             CancelLayoutChanges();
 
-            App.FancyZonesEditorIO.SerializeZoneSettings();
+            App.FancyZonesEditorIO.SerializeAppliedLayouts();
             App.FancyZonesEditorIO.SerializeCustomLayouts();
             App.FancyZonesEditorIO.SerializeLayoutHotkeys();
             App.FancyZonesEditorIO.SerializeLayoutTemplates();
@@ -428,7 +428,7 @@ namespace FancyZonesEditor
                 App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
             }
 
-            App.FancyZonesEditorIO.SerializeZoneSettings();
+            App.FancyZonesEditorIO.SerializeAppliedLayouts();
             App.FancyZonesEditorIO.SerializeCustomLayouts();
             App.FancyZonesEditorIO.SerializeLayoutTemplates();
             App.FancyZonesEditorIO.SerializeLayoutHotkeys();
@@ -475,7 +475,7 @@ namespace FancyZonesEditor
                     }
                 }
 
-                App.FancyZonesEditorIO.SerializeZoneSettings();
+                App.FancyZonesEditorIO.SerializeAppliedLayouts();
                 App.FancyZonesEditorIO.SerializeCustomLayouts();
                 model.Delete();
             }

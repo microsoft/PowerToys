@@ -3,8 +3,9 @@
 #include <filesystem>
 
 #include <FancyZonesLib/FancyZones.h>
-#include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/Settings.h>
+
+#include <common/SettingsAPI/settings_helpers.h>
 
 #include "util.h"
 
@@ -63,8 +64,6 @@ namespace FancyZonesUnitTests
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         winrt::com_ptr<IFancyZonesCallback> m_fzCallback = nullptr;
 
-        FancyZonesData& m_fancyZonesData = FancyZonesDataInstance();
-
         std::wstring serializedPowerToySettings(const Settings& settings)
         {
             PowerToysSettings::Settings ptSettings(HINSTANCE{}, L"FancyZonesUnitTests");
@@ -111,31 +110,27 @@ namespace FancyZonesUnitTests
         }
 
         TEST_METHOD_INITIALIZE(Init)
-            {
-                m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-                m_settings = MakeFancyZonesSettings(m_hInst, m_moduleName.c_str(), m_moduleKey.c_str());
-                Assert::IsTrue(m_settings != nullptr);
+        {
+            m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
+            m_settings = MakeFancyZonesSettings(m_hInst, m_moduleName.c_str(), m_moduleKey.c_str());
+            Assert::IsTrue(m_settings != nullptr);
 
-                auto fancyZones = MakeFancyZones(m_hInst, m_settings, nullptr);
-                Assert::IsTrue(fancyZones != nullptr);
+            auto fancyZones = MakeFancyZones(m_hInst, m_settings, nullptr);
+            Assert::IsTrue(fancyZones != nullptr);
 
-                m_fzCallback = fancyZones.as<IFancyZonesCallback>();
-                Assert::IsTrue(m_fzCallback != nullptr);
+            m_fzCallback = fancyZones.as<IFancyZonesCallback>();
+            Assert::IsTrue(m_fzCallback != nullptr);
+        }
 
-                m_fancyZonesData.clear_data();
-            }
+        TEST_METHOD_CLEANUP(Cleanup)
+        {
+            sendKeyboardInput(VK_SHIFT, true);
+            sendKeyboardInput(VK_LWIN, true);
+            sendKeyboardInput(VK_CONTROL, true);
 
-            TEST_METHOD_CLEANUP(Cleanup)
-                {
-                    sendKeyboardInput(VK_SHIFT, true);
-                    sendKeyboardInput(VK_LWIN, true);
-                    sendKeyboardInput(VK_CONTROL, true);
-
-                    auto settingsFolder = PTSettingsHelper::get_module_save_folder_location(m_moduleName);
-                    const auto settingsFile = settingsFolder + L"\\settings.json";
-                    std::filesystem::remove(settingsFile);
-                    std::filesystem::remove(settingsFolder);
-                }
+            auto settingsFolder = PTSettingsHelper::get_module_save_folder_location(m_moduleName);
+            std::filesystem::remove_all(settingsFolder);
+        }
 
                 TEST_METHOD (OnKeyDownNothingPressed)
                 {

@@ -54,6 +54,9 @@
     <ClCompile Include="AppZoneHistoryTests.Spec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AppliedLayoutsTests.Spec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">

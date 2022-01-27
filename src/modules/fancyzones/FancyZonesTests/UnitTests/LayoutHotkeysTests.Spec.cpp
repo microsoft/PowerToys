@@ -16,8 +16,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_INITIALIZE(Init)
         {
-            m_fzData.clear_data();
-            m_fzData.SetSettingsModulePath(L"FancyZonesUnitTests");
+            m_fzData.SetSettingsModulePath(m_testFolder);
         }
 
         TEST_METHOD_CLEANUP(CleanUp)

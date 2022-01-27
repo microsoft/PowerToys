@@ -33,6 +33,7 @@ namespace FancyZonesEditor
 
             App.FancyZonesEditorIO.SerializeLayoutTemplates();
             App.FancyZonesEditorIO.SerializeCustomLayouts();
+            App.FancyZonesEditorIO.SerializeAppliedLayouts();
 
             Close();
         }

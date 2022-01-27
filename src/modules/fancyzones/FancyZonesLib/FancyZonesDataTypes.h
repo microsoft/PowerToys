@@ -125,7 +125,6 @@ namespace FancyZonesDataTypes
         static bool IsValidDeviceId(const std::wstring& str);
         
         std::wstring toString() const;
-        bool isEqualWithNullVirtualDesktopId(const DeviceIdData& other) const;
     };
 
     struct AppZoneHistoryData
@@ -153,7 +152,7 @@ namespace FancyZonesDataTypes
 
     inline bool operator==(const DeviceIdData& lhs, const DeviceIdData& rhs)
     {
-        return lhs.deviceName.compare(rhs.deviceName) == 0 && lhs.width == rhs.width && lhs.height == rhs.height && lhs.virtualDesktopId == rhs.virtualDesktopId && lhs.monitorId.compare(rhs.monitorId) == 0;
+        return lhs.deviceName.compare(rhs.deviceName) == 0 && lhs.width == rhs.width && lhs.height == rhs.height && (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL) && lhs.monitorId.compare(rhs.monitorId) == 0;
     }
 
     inline bool operator!=(const DeviceIdData& lhs, const DeviceIdData& rhs)
