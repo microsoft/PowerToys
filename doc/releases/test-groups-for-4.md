@@ -17,6 +17,7 @@ All:
 - OOBE
 - Mouse Utils
 - VCM
+- AlwaysOnTop
 ```
 
 ```
@@ -41,6 +42,7 @@ Group 2:
 - OOBE
 - Mouse Utils
 - Awake
+- AlwaysOnTop
 ```
 ```
 Group 3:
@@ -52,6 +54,7 @@ Group 3:
 - Keyboard Manager
 - Mouse Utils
 - Awake
+- AlwaysOnTop
 ```
 ```
 Group 4:
