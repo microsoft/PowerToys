@@ -16,6 +16,7 @@
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
+#include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/MonitorUtils.h>
@@ -71,9 +72,10 @@ public:
         this->disableModuleCallback = std::move(disableModuleCallback);
 
         FancyZonesDataInstance().ReplaceZoneSettingsFileFromOlderVersions();
-        AppliedLayouts::instance().LoadData();
-        LayoutHotkeys::instance().LoadData();
+        LayoutTemplates::instance().LoadData();
         CustomLayouts::instance().LoadData();
+        LayoutHotkeys::instance().LoadData();
+        AppliedLayouts::instance().LoadData();
         AppZoneHistory::instance().LoadData();
     }
 
@@ -772,6 +774,10 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE)
         {
             LayoutHotkeys::instance().LoadData();
+        }
+        else if (message == WM_PRIV_LAYOUT_TEMPLATES_FILE_UPDATE)
+        {
+            LayoutTemplates::instance().LoadData();
         }
         else if (message == WM_PRIV_CUSTOM_LAYOUTS_FILE_UPDATE)
         {

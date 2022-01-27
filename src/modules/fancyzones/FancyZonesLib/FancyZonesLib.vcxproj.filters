@@ -185,6 +185,9 @@
     <ClCompile Include="FancyZonesData\AppliedLayouts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FancyZonesData\LayoutTemplates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
