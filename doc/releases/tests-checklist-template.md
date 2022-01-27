@@ -127,7 +127,11 @@ Before testing
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
    - [ ] verify Preview Pane works for the gcode file
    - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
- * Running as admin:
+   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
+   - [ ] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
+   * go to PowerToys repo and visit src\runner
+   - [ ] verify Preview Pane works for source files (shows syntax highlighting)
+ * Running as admin (or user since recently):
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
    - [ ] verify the README.md Preview Pane doesn't show any content
@@ -139,6 +143,10 @@ Before testing
    - [ ] verify Preview Pane doesn't show the preview for the PDF file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
    - [ ] verify Preview Pane doesn't show the preview for the gcode file
+   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
+   - [ ] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
+   * go to PowerToys repo and visit src\runner
+   - [ ] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
 
 ## Image Resizer
 - [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
