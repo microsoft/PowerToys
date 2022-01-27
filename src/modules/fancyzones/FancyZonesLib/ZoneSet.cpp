@@ -2,7 +2,6 @@
 
 #include "ZoneSet.h"
 
-#include "FancyZonesData.h"
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include "FancyZonesDataTypes.h"
 #include "FancyZonesWindowProperties.h"

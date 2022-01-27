@@ -96,7 +96,6 @@ namespace FancyZonesUnitTests
         
         TEST_METHOD_INITIALIZE(Init)
         {
-            m_fzData.clear_data();
             m_fzData.SetSettingsModulePath(L"FancyZonesUnitTests");
         }
 

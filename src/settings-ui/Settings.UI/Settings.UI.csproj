@@ -247,6 +247,7 @@
     <Content Include="Assets\FluentIcons\FluentIconsFindMyMouse.png" />
     <Content Include="Assets\FluentIcons\FluentIconsImageResizer.png" />
     <Content Include="Assets\FluentIcons\FluentIconsKeyboardManager.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsMouseCrosshairs.png" />
     <Content Include="Assets\FluentIcons\FluentIconsMouseHighlighter.png" />
     <Content Include="Assets\FluentIcons\FluentIconsMouseHighlighter.png" />
     <Content Include="Assets\FluentIcons\FluentIconsMouseUtils.png" />

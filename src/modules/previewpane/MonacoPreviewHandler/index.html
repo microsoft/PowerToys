@@ -1,0 +1,84 @@
+﻿<!doctype HTML>
+<html>
+<head>
+	<script>
+		// Set variables
+
+		// Get URL parameters:
+		// `code` contains the code of the file in base64 encoded
+		// `theme` can be "light" or "dark"
+		// `lang` is the language of the file
+		// `wrap` if the editor is wrapping or not
+		var theme = ("[[PT_THEME]]" == "dark") ? "vs-dark" : "vs";
+		var lang = "[[PT_LANG]]";
+		var wrap = ([[PT_WRAP]] == 1) ? true : false;
+
+		var base64code = "[[PT_CODE]]";
+		var code = [atob(base64code)].join('\n');
+	</script>
+	<!-- Set browser to Edge-->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<!-- Set charset -->
+	<meta charset="utf-8" />
+	<!-- Title (normally not diaplayd)-->
+	<title>Previewer for developer Files</title>
+	<style>
+		/* Fits content to window size */
+		html, body{
+			padding:0;
+		}
+		#container,.monaco-editor {
+			position:fixed;
+			height:100%;
+			left:0;
+			top:0;
+			right:0;
+			bottom:0;
+		}
+		.overflowingContentWidgets{
+			/*Hides alert box */
+			display:none!important
+		} 
+	</style>
+</head>
+<!-- This oncontextmenu disables the browser context menu -->
+<body oncontextmenu="return false;">
+<!-- Container for the editor -->
+<div id="container"></div>
+<!-- Script -->
+<script src="http://[[PT_URL]]/monacoSRC/min/vs/loader.js"></script>
+<script>
+	require.config({ paths: { vs: 'http://[[PT_URL]]/monacoSRC/min/vs' } });
+	require(['vs/editor/editor.main'], function () {
+		// Creates the editor
+		// For all parameters: https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.istandaloneeditorconstructionoptions.html
+		var editor = monaco.editor.create(document.getElementById('container'), {
+			value: code, // Sets content of the editor
+			language: lang, // Sets language fof the code
+			readOnly: true, // Sets to readonly
+			contextmenu: false, // Disable context menu
+			theme: theme, // Sets editor theme
+			minimap: {enabled: false}, // Disables minimap
+			lineNumbersMinChars: "3", //Width of the line numbers
+			scrollbar: {
+				// Deactivate shadows
+				shadows: false,
+
+				// Render scrollbar automatically
+				vertical: 'auto',
+				horizontal: 'auto',
+
+			},
+			wordWrap: (wrap?"on":"off") // Word wraps
+		});
+		window.onresize = function (){
+			editor.layout();
+		};
+
+		// Disable command palette
+		editor.addAction({id: 'disable-F1',label: '',keybindings: [monaco.KeyCode.F1,],precondition: null,keybindingContext: null,contextMenuGroupId: 'navigation',contextMenuOrder: 1.5,run: function(ed) {return null;}});
+	});
+
+</script>
+</body>
+</html>

@@ -317,7 +317,7 @@ namespace registry
                                                           std::wstring handlerCategory,
                                                           std::wstring className,
                                                           std::wstring displayName,
-                                                          std::wstring fileType)
+                                                          std::vector<std::wstring> fileTypes)
         {
             const HKEY scope = perUser ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
 
@@ -350,11 +350,6 @@ namespace registry
             versionPath += L'\\';
             versionPath += powertoysVersion;
 
-            std::wstring fileAssociationPath = L"Software\\Classes\\";
-            fileAssociationPath += fileType;
-            fileAssociationPath += L"\\shellex\\";
-            fileAssociationPath += handlerType == PreviewHandlerType::preview ? IPREVIEW_HANDLER_CLSID : ITHUMBNAIL_PROVIDER_CLSID;
-
             using vec_t = std::vector<registry::ValueChange>;
             // TODO: verify that we actually need all of those
             vec_t changes = { { scope, clsidPath, L"DisplayName", displayName },
@@ -365,8 +360,17 @@ namespace registry
                               { scope, inprocServerPath, L"Class", className },
                               { scope, inprocServerPath, L"ThreadingModel", L"Both" },
                               { scope, versionPath, L"Assembly", assemblyKeyValue },
-                              { scope, versionPath, L"Class", className },
-                              { scope, fileAssociationPath, std::nullopt, handlerClsid } };
+                              { scope, versionPath, L"Class", className } };
+
+            for (const auto& fileType : fileTypes)
+            {
+                std::wstring fileAssociationPath = L"Software\\Classes\\";
+                fileAssociationPath += fileType;
+                fileAssociationPath += L"\\shellex\\";
+                fileAssociationPath += handlerType == PreviewHandlerType::preview ? IPREVIEW_HANDLER_CLSID : ITHUMBNAIL_PROVIDER_CLSID;
+                changes.push_back({ scope, fileAssociationPath, std::nullopt, handlerClsid });
+            }
+
             if (handlerType == PreviewHandlerType::preview)
             {
                 const std::wstring previewHostClsid = L"{6d2b5079-2f0b-48dd-ab7f-97cec514d30b}";

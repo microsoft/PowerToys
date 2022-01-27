@@ -64,10 +64,11 @@ private:
 
     bool IsTracked(HWND window) const noexcept;
     bool IsTopmost(HWND window) const noexcept;
+    bool IsPinned(HWND window) const noexcept;
 
     bool PinTopmostWindow(HWND window) const noexcept;
     bool UnpinTopmostWindow(HWND window) const noexcept;
-    bool AssignBorderTracker(HWND window);
+    bool AssignBorder(HWND window);
 
     virtual void SettingsUpdate(SettingId type) override;
 

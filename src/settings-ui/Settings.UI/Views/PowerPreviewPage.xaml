@@ -35,6 +35,13 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Monaco" Icon="&#xE99A;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoRenderIsEnabled}"
+                                          x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF" Icon="&#xEA90;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}"
@@ -77,6 +84,13 @@
                                           x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+
+                  <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_STL_Thumbnail" Icon="&#xF158;">
+                      <controls:Setting.ActionContent>
+                          <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.STLThumbnailIsEnabled}"
+                                        x:Uid="ToggleSwitch"/>
+                      </controls:Setting.ActionContent>
+                  </controls:Setting>
                 </controls:SettingsGroup>
                 
             </StackPanel>

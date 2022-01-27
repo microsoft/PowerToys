@@ -305,9 +305,4 @@ namespace FancyZonesDataTypes
 
         return result;
     }
-
-    bool DeviceIdData::isEqualWithNullVirtualDesktopId(const DeviceIdData& other) const
-    {
-        return deviceName.compare(other.deviceName) == 0 && width == other.width && height == other.height && (virtualDesktopId == other.virtualDesktopId || virtualDesktopId == GUID_NULL || other.virtualDesktopId == GUID_NULL) && monitorId.compare(other.monitorId) == 0;
-    }
 }

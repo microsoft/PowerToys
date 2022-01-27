@@ -620,6 +620,10 @@
     <value>Enable Markdown (.md) preview</value>
     <comment>Do not loc "Markdown".  Do you want this feature on / off</comment>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
+    <value>Enable developer files preview (Example: .cpp, .py, ...)</value>
+    <comment>Do you want this feature on / off</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Enable SVG (.svg) preview</value>
     <comment>Do you want this feature on / off</comment>
@@ -630,6 +634,10 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail.Header" xml:space="preserve">
     <value>Enable SVG (.svg) thumbnails</value>
+    <comment>Do you want this feature on / off</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_STL_Thumbnail.Header" xml:space="preserve">
+    <value>Enable STL (.stl) thumbnails</value>
     <comment>Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_PDF_Thumbnail.Header" xml:space="preserve">
@@ -1651,12 +1659,12 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Use a keyboard shortcut highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
-  <data name="Oobe_MouseUtils_MousePointerCrosshair.Text" xml:space="preserve">
-    <value>Mouse Pointer Crosshair</value>
+  <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
+    <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
-  <data name="Oobe_MouseUtils_MousePointerCrosshair_Description.Text" xml:space="preserve">
-    <value>Draw a crosshair centered around the mouse pointer.</value>
+  <data name="Oobe_MouseUtils_MousePointerCrosshairs_Description.Text" xml:space="preserve">
+    <value>Draw crosshairs centered around the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
@@ -1829,44 +1837,44 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Duration of the disappear animation (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_MousePointerCrosshair.Header" xml:space="preserve">
-    <value>Mouse Pointer Crosshair</value>
+  <data name="MouseUtils_MousePointerCrosshairs.Header" xml:space="preserve">
+    <value>Mouse Pointer Crosshairs</value>
     <comment>Refers to the utility name</comment>
   </data>
-  <data name="MouseUtils_MousePointerCrosshair.Description" xml:space="preserve">
-    <value>Mouse Pointer Crosshair draws a crosshair centered on the mouse pointer.</value>
-    <comment>"Mouse Pointer Crosshair" is the name of the utility. Mouse is the hardware mouse.</comment>
+  <data name="MouseUtils_MousePointerCrosshairs.Description" xml:space="preserve">
+    <value>Mouse Pointer Crosshairs draws crosshairs centered on the mouse pointer.</value>
+    <comment>"Mouse Pointer Crosshairs" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
-  <data name="MouseUtils_Enable_MousePointerCrosshair.Header" xml:space="preserve">
-    <value>Enable Mouse Pointer Crosshair</value>
-    <comment>"Mouse Pointer Crosshair" is the name of the utility.</comment>
+  <data name="MouseUtils_Enable_MousePointerCrosshairs.Header" xml:space="preserve">
+    <value>Enable Mouse Pointer Crosshairs</value>
+    <comment>"Mouse Pointer Crosshairs" is the name of the utility.</comment>
   </data>
-  <data name="MouseUtils_MousePointerCrosshair_ActivationShortcut.Header" xml:space="preserve">
+  <data name="MouseUtils_MousePointerCrosshairs_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="MouseUtils_MousePointerCrosshair_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to show/hide the crosshair</value>
+  <data name="MouseUtils_MousePointerCrosshairs_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to show/hide the crosshairs</value>
   </data>
-  <data name="MouseUtils_MousePointerCrosshair_CrosshairColor.Header" xml:space="preserve">
-    <value>Crosshair color</value>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsColor.Header" xml:space="preserve">
+    <value>Crosshairs color</value>
   </data>
-  <data name="MouseUtils_MousePointerCrosshair_CrosshairOpacity.Header" xml:space="preserve">
-    <value>Crosshair opacity (%)</value>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity.Header" xml:space="preserve">
+    <value>Crosshairs opacity (%)</value>
   </data>
-  <data name="MouseUtils_MousePointerCrosshair_CrosshairRadius.Header" xml:space="preserve">
-    <value>Crosshair center radius (px)</value>
-	  <comment>px = pixels</comment>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsRadius.Header" xml:space="preserve">
+    <value>Crosshairs center radius (px)</value>
+    <comment>px = pixels</comment>
   </data>
-  <data name="MouseUtils_MousePointerCrosshair_CrosshairThickness.Header" xml:space="preserve">
-    <value>Crosshair thickness (px)</value>
-	  <comment>px = pixels</comment>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsThickness.Header" xml:space="preserve">
+    <value>Crosshairs thickness (px)</value>
+    <comment>px = pixels</comment>
   </data>
-  <data name="MouseUtils_MousePointerCrosshair_CrosshairBorderColor.Header" xml:space="preserve">
-    <value>Crosshair border color</value>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor.Header" xml:space="preserve">
+    <value>Crosshairs border color</value>
   </data>
-  <data name="MouseUtils_MousePointerCrosshair_CrosshairBorderSize.Header" xml:space="preserve">
-    <value>Crosshair border size (px)</value>
-	  <comment>px = pixels</comment>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize.Header" xml:space="preserve">
+    <value>Crosshairs border size (px)</value>
+    <comment>px = pixels</comment>
   </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
@@ -2000,6 +2008,6 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Custom color</value>
   </data>
   <data name="AlwaysOnTop_Radio_Windows_Default.Content" xml:space="preserve">
-    <value>Window default</value>
+    <value>Windows default</value>
   </data>
 </root>

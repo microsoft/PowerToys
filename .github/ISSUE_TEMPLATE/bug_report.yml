@@ -35,6 +35,7 @@ body:
       - Always on Top
       - Awake
       - ColorPicker
+      - Developer file preview
       - FancyZones
       - FancyZones Editor 
       - Image Resizer
@@ -48,6 +49,7 @@ body:
       - PowerRename
       - PowerToys Run
       - Shortcut Guide
+      - STL Thumbnail
       - SVG Preview
       - SVG Thumbnail
       - Settings

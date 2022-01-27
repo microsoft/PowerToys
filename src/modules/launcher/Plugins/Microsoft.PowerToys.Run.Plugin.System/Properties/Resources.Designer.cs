@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please Confirm.
+        ///   Looks up a localized string similar to Please confirm..
         /// </summary>
         internal static string Microsoft_plugin_sys_confirmation {
             get {
@@ -273,6 +273,33 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         internal static string Microsoft_plugin_sys_sleep_description {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_sleep_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UEFI Firmware Settings.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_uefi {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_uefi", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are about to reboot this computer into UEFI Firmware Settings menu, are you sure?.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_uefi_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_uefi_confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reboot computer into UEFI Firmware Settings (Requires administrative permissions.).
+        /// </summary>
+        internal static string Microsoft_plugin_sys_uefi_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_uefi_description", resourceCulture);
             }
         }
         

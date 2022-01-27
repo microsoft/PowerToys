@@ -34,6 +34,10 @@ PowerPreviewModule::PowerPreviewModule() :
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
                                       .registryChanges = getMdPreviewHandlerChangeSet(installationDir, installPerUser) });
 
+    m_fileExplorerModules.push_back({ .settingName = L"monaco-previewer-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_MONACO_SETTINGS_DESCRIPTION),
+                                      .registryChanges = getMonacoPreviewHandlerChangeSet(installationDir, installPerUser) });
+
     m_fileExplorerModules.push_back({ .settingName = L"pdf-previewer-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_PDF_SETTINGS_DESCRIPTION),
                                       .registryChanges = getPdfPreviewHandlerChangeSet(installationDir, installPerUser) });
@@ -53,6 +57,10 @@ PowerPreviewModule::PowerPreviewModule() :
     m_fileExplorerModules.push_back({ .settingName = L"gcode-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_GCODE_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                                       .registryChanges = getGcodeThumbnailHandlerChangeSet(installationDir, installPerUser) });
+
+    m_fileExplorerModules.push_back({ .settingName = L"stl-thumbnail-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_STL_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
+                                      .registryChanges = getStlThumbnailHandlerChangeSet(installationDir, installPerUser) });
 
     try
     {

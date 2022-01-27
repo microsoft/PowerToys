@@ -22,6 +22,7 @@
 
         <util:FileSearch Variable="HasDotnet3122" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\3.1.22\System.Xaml.dll" Result="exists" />
         <util:FileSearch Variable="HasDotnet5013" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\5.0.13\System.Xaml.dll" Result="exists" />
+        <util:RegistrySearch Variable="HasWebView2" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
         <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles64Folder]PowerToys" bal:Overridable="yes"/>
 
@@ -73,6 +74,24 @@
                     Size="54456248"
                     Version="5.0.13.30717"
                     Hash="EB5506CEBB3DD1CEC78F7F8131F87A2C5F665B40" />
+            </ExePackage>
+            <ExePackage
+                Name="MicrosoftEdgeWebview2Setup.exe"
+                Compressed="no"
+                Id="WebView2"
+                DetectCondition="HasWebView2"
+                DownloadUrl="https://go.microsoft.com/fwlink/p/?LinkId=2124703"
+                InstallCommand="/silent /install"
+                RepairCommand="/repair /passive"
+                Permanent="yes"
+                PerMachine="yes"
+                UninstallCommand="/silent /uninstall">
+                <RemotePayload
+                    Description="Microsoft Edge WebView2"
+                    ProductName="Microsoft Edge WebView2"
+                    Size="1839936"
+                    Version="1.3.153.57"
+                    Hash="425CFFDAFADA1CCB9CE0825B43CD69C163C1400E" />
             </ExePackage>
             <MsiPackage
                 SourceFile="x64\Release\PowerToysSetup-$(var.Version)-x64.msi"

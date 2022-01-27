@@ -6,8 +6,9 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+using Wox.Plugin.Common.Win32;
 
-namespace Wox.Plugin.SharedCommands
+namespace Wox.Plugin.Common
 {
     public static class ShellCommand
     {

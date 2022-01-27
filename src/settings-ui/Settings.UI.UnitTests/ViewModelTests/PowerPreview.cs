@@ -57,12 +57,14 @@ namespace ViewModelTests
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.IsElevated, viewModel.IsElevated);
             Assert.AreEqual(originalSettings.Properties.EnableMdPreview, viewModel.MDRenderIsEnabled);
+            Assert.AreEqual(originalSettings.Properties.EnableMonacoPreview, viewModel.MonacoRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnablePdfPreview, viewModel.PDFRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableGcodePreview, viewModel.GCODERenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgPreview, viewModel.SVGRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgThumbnail, viewModel.SVGThumbnailIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnablePdfThumbnail, viewModel.PDFThumbnailIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableGcodeThumbnail, viewModel.GCODEThumbnailIsEnabled);
+            Assert.AreEqual(originalSettings.Properties.EnableStlThumbnail, viewModel.STLThumbnailIsEnabled);
 
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
@@ -142,6 +144,24 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void STLThumbnailIsEnabledShouldPrevHandlerWhenSuccessful()
+        {
+            // Assert
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
+                Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnableStlThumbnail);
+                return 0;
+            };
+
+            // arrange
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
+
+            // act
+            viewModel.STLThumbnailIsEnabled = true;
+        }
+
+        [TestMethod]
         public void MDRenderIsEnabledShouldPrevHandlerWhenSuccessful()
         {
             // Assert
@@ -157,6 +177,24 @@ namespace ViewModelTests
 
             // act
             viewModel.MDRenderIsEnabled = true;
+        }
+
+        [TestMethod]
+        public void MonacoRenderIsEnabledShouldPrevHandlerWhenSuccessful()
+        {
+            // Assert
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
+                Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnableMonacoPreview);
+                return 0;
+            };
+
+            // arrange
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
+
+            // act
+            viewModel.MonacoRenderIsEnabled = true;
         }
 
         [TestMethod]

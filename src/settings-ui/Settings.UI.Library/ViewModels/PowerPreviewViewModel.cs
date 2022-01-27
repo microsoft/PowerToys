@@ -49,19 +49,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _svgRenderIsEnabled = Settings.Properties.EnableSvgPreview;
             _svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
             _mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
+            _monacoRenderIsEnabled = Settings.Properties.EnableMonacoPreview;
             _pdfRenderIsEnabled = Settings.Properties.EnablePdfPreview;
             _gcodeRenderIsEnabled = Settings.Properties.EnableGcodePreview;
             _pdfThumbnailIsEnabled = Settings.Properties.EnablePdfThumbnail;
             _gcodeThumbnailIsEnabled = Settings.Properties.EnableGcodeThumbnail;
+            _stlThumbnailIsEnabled = Settings.Properties.EnableStlThumbnail;
         }
 
         private bool _svgRenderIsEnabled;
         private bool _mdRenderIsEnabled;
+        private bool _monacoRenderIsEnabled;
         private bool _pdfRenderIsEnabled;
         private bool _gcodeRenderIsEnabled;
         private bool _svgThumbnailIsEnabled;
         private bool _pdfThumbnailIsEnabled;
         private bool _gcodeThumbnailIsEnabled;
+        private bool _stlThumbnailIsEnabled;
 
         public bool SVGRenderIsEnabled
         {
@@ -112,6 +116,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _mdRenderIsEnabled = value;
                     Settings.Properties.EnableMdPreview = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool MonacoRenderIsEnabled
+        {
+            get
+            {
+                return _monacoRenderIsEnabled;
+            }
+
+            set
+            {
+                if (value != _monacoRenderIsEnabled)
+                {
+                    _monacoRenderIsEnabled = value;
+                    Settings.Properties.EnableMonacoPreview = value;
                     RaisePropertyChanged();
                 }
             }
@@ -184,6 +206,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _gcodeThumbnailIsEnabled = value;
                     Settings.Properties.EnableGcodeThumbnail = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool STLThumbnailIsEnabled
+        {
+            get
+            {
+                return _stlThumbnailIsEnabled;
+            }
+
+            set
+            {
+                if (value != _stlThumbnailIsEnabled)
+                {
+                    _stlThumbnailIsEnabled = value;
+                    Settings.Properties.EnableStlThumbnail = value;
                     RaisePropertyChanged();
                 }
             }
