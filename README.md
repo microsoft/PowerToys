@@ -121,8 +121,8 @@ TODO
 
 #### Video Conference Mute
 - Fixed crashing bug with Zoom and other clients. We found someone we could remotely debug with and identify the actual crashing part.
-- When leaving a meeting, VCM will now leave your microphone in the state it was.  This mimics behavior of applications if VCM was not present.
-- When you exit PowerToys your microphone isn't enable anymore. It will now leave in the state you choosen the last time.
+- Change of behavior: When leaving a meeting, VCM will now leave your microphone in the state it was.  This mimics behavior of applications if VCM was not present.
+- Change of behavior: When you exit PowerToys, your current microphone state will remain.
 
 #### Community contributions
 
