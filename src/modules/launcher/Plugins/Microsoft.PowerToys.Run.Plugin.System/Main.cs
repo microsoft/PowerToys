@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         private bool _confirmSystemCommands;
         private bool _localizeSystemCommands;
 
-        private bool isBootedInUefiMode = NativeMethods.Helpers.GetSystemFirmwareType() == FirmwareType.Uefi;
+        private bool isBootedInUefiMode = Win32Helpers.GetSystemFirmwareType() == FirmwareType.Uefi;
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
@@ -71,7 +71,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             // (Because this is only going into the log we can ignore the fact that normally UEFI and BIOS are written upper case. No need to convert the enumeration value to upper case.)
             if (!isBootedInUefiMode)
             {
-                Wox.Plugin.Logger.Log.Info($"The UEFI command will not show to the user. The system has not booted in UEFI mode or the system does not have an UEFI firmware! (Detected type: {NativeMethods.Helpers.GetSystemFirmwareType()})", typeof(Main));
+                Wox.Plugin.Logger.Log.Info($"The UEFI command will not show to the user. The system has not booted in UEFI mode or the system does not have an UEFI firmware! (Detected type: {Win32Helpers.GetSystemFirmwareType()})", typeof(Main));
             }
         }
 

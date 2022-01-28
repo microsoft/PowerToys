@@ -114,48 +114,6 @@ namespace Wox.Plugin.Common.Win32
 
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
         public static extern HRESULT SHCreateStreamOnFileEx(string fileName, STGM grfMode, uint attributes, bool create, System.Runtime.InteropServices.ComTypes.IStream reserved, out System.Runtime.InteropServices.ComTypes.IStream stream);
-
-#pragma warning disable CA1034 // Justification: To not confuse with Wox.Infrastructure.Helper (which a lot of plugins might use)
-        public static class Helpers
-#pragma warning restore CA1034 // Nested types should not be visible
-        {
-            /// <summary>
-            /// Detects the type of system firmware which is equal to the boot type by calling the method <see cref="NativeMethods.GetFirmwareType"/>.
-            /// </summary>
-            /// <returns>Firmware type like Uefi or Bios.</returns>
-            public static FirmwareType GetSystemFirmwareType()
-            {
-                FirmwareType firmwareType = default;
-                _ = GetFirmwareType(ref firmwareType);
-                return firmwareType;
-            }
-
-            /// <summary>
-            /// Returns the last Win32 Error code thrown by a native method if enabled for this method.
-            /// </summary>
-            /// <returns>The error code as int value.</returns>
-            public static int GetLastWin32Error()
-            {
-                // should be changed to Marshal.GetLastPInvokeError() in .NET 6
-                return Marshal.GetLastWin32Error();
-            }
-
-            /// <summary>
-            /// Validate that the handle is not null and close it.
-            /// </summary>
-            /// <param name="handle">Handle to close.</param>
-            /// <returns>Zero if native method fails and nonzero if the native method succeeds.</returns>
-            public static bool CloseHandleIfNotNull(IntPtr handle)
-            {
-                if (handle == IntPtr.Zero)
-                {
-                    // Return true if there is nothing to close.
-                    return true;
-                }
-
-                return CloseHandle(handle);
-            }
-        }
     }
 
     public enum HRESULT : uint
