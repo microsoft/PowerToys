@@ -31,6 +31,7 @@ Group 1:
 - FZ
 - Shortcut Guide
 - VCM
+- AlwaysOnTop
 ```
 ```
 Group 2:
@@ -42,7 +43,6 @@ Group 2:
 - OOBE
 - Mouse Utils
 - Awake
-- AlwaysOnTop
 ```
 ```
 Group 3:
@@ -54,7 +54,6 @@ Group 3:
 - Keyboard Manager
 - Mouse Utils
 - Awake
-- AlwaysOnTop
 ```
 ```
 Group 4:
@@ -67,4 +66,5 @@ Group 4:
 - Shortcut Guide
 - OOBE
 - VCM
+- AlwaysOnTop
 ```
