@@ -135,7 +135,7 @@ Before testing
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
    - [ ] verify the README.md Preview Pane doesn't show any content
-   * go to PowerToys repo and visit src\runner\svgs
+   * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
    - [ ] verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
    - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
