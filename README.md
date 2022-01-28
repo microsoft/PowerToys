@@ -109,7 +109,7 @@ TODO
 #### PowerToys Run
 - Improved speed and bugs with Window walker plugin.  Thanks [@htcfreek](https://github.com/htcfreek)
 - Window Walker will now show path of elevated apps.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)
-- Added UEFI command for system commands. Thanks [@htcfreek](https://github.com/htcfreek)
+- Added UEFI command to system commands. Thanks [@htcfreek](https://github.com/htcfreek)
 - Fixed crashing bug in EnvironmentHelper class.  Thanks [@htcfreek](https://github.com/htcfreek)
 - Fix URI plugin bug with `^:`.  Thanks [@franky920920](https://github.com/franky920920) and [@htcfreek](https://github.com/htcfreek)
 - Fix Registry plugin crashing bug.  Thanks [@htcfreek](https://github.com/htcfreek)
