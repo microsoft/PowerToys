@@ -107,7 +107,7 @@ TODO
 - Files are sorted now how File Explorer sorts.
 
 #### PowerToys Run
-- Improved speed and bugs with Window walker plugin.  Thanks [@htcfreek](https://github.com/htcfreek)
+- Improved speed and fixed bugs with Window walker plugin.  Thanks [@htcfreek](https://github.com/htcfreek)
 - Window Walker will now show path of elevated apps.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)
 - Added UEFI command to system commands. Thanks [@htcfreek](https://github.com/htcfreek)
 - Fixed crashing bug in EnvironmentHelper class.  Thanks [@htcfreek](https://github.com/htcfreek)
