@@ -111,7 +111,7 @@ TODO
 - Window Walker will now show path of elevated apps.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)
 - Added UEFI command to system commands. Thanks [@htcfreek](https://github.com/htcfreek)
 - Fixed crashing bug in EnvironmentHelper class.  Thanks [@htcfreek](https://github.com/htcfreek)
-- Fix URI plugin bug with `^:`.  Thanks [@franky920920](https://github.com/franky920920) and [@htcfreek](https://github.com/htcfreek)
+- Fix URI plugin bug with `^:`.  Thanks [@franky920920](https://github.com/franky920920)
 - Fix Registry plugin crashing bug.  Thanks [@htcfreek](https://github.com/htcfreek)
 - VS Code plugin not showing workspaces with latest Code version was corrected.  Thanks [@ricardosantos9521](https://github.com/ricardosantos9521)
 - Fixed bug that caused plugins to not load. Thanks [@davidegiacometti](https://github.com/davidegiacometti)
