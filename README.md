@@ -115,7 +115,7 @@ TODO
 - Fix Registry plugin crashing bug.  Thanks [@htcfreek](https://github.com/htcfreek)
 - VS Code plugin not showing workspaces with latest Code version was corrected.  Thanks [@ricardosantos9521](https://github.com/ricardosantos9521)
 - Fixed bug that caused plugins to not load. Thanks [@davidegiacometti](https://github.com/davidegiacometti)
-- Crashing bug with Uri/Web search plugins. Thanks [@cyberrex5](https://github.com/cyberrex5)!
+- Fixed crash in Uri plugin and Web search plugin. Thanks [@cyberrex5](https://github.com/cyberrex5)!
 
 #### Settings
 - Fixed a regression with settings being reset when moving from admin to non-admin
