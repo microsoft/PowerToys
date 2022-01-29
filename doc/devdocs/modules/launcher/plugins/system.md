@@ -25,11 +25,11 @@ We have the following settings that the user can configure to change the behavio
 | `ConfirmSystemCommands` | `false` | Show a dialog to confirm system commands |
 | `LocalizeSystemCommands` | `true` | Use localized system commands instead of English ones |
 
-The optional plugin settings are implemented via the [`ISettingProvider`](/src/modules/launcher/Wox.Plugin/ISettingProvider.cs) interface from `Wox.Plugin` project. All available settings for the plugin are defined in the [`Main`](/src/modules/launcher/Plugins/Microsoft.Plugin.System/Main.cs) class of the plugin.
+The optional plugin settings are implemented via the [`ISettingProvider`](/src/modules/launcher/Wox.Plugin/ISettingProvider.cs) interface from `Wox.Plugin` project. All available settings for the plugin are defined in the [`Main`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Main.cs) class of the plugin.
 
 ## Technical details
 
-### [`Main`](/src/modules/launcher/Plugins/Microsoft.Plugin.System/Main.cs)
+### [`Main`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Main.cs)
 
 * Tries to parse the user input and returns a specific Windows system command by using a [`Result`](/src/modules/launcher/Wox.Plugin/Result.cs) list.
 
