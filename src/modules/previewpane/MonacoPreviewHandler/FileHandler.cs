@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         {
             try
             {
-                JsonDocument a = JsonDocument.Parse(File.ReadAllText(Settings.AssemblyDirectory + "\\languages.json"));
+                JsonDocument a = JsonDocument.Parse(File.ReadAllText(Settings.AssemblyDirectory + "\\monaco_languages.json"));
                 JsonElement list = a.RootElement.GetProperty("list");
                 for (int i = 0; i < list.GetArrayLength(); i++)
                 {

@@ -19,7 +19,7 @@
             }
             require.config({ paths: { vs: 'monacoSRC/min/vs' } });
             require(['vs/editor/editor.main'], function () {
-                download("languages.json", "{\"list\":"+ JSON.stringify(monaco.languages.getLanguages())+"}");
+                download("monaco_languages.json", "{\"list\":"+ JSON.stringify(monaco.languages.getLanguages())+"}");
             });
 
         </script>
