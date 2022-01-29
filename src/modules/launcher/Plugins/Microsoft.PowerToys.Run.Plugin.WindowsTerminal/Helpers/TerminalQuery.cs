@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
@@ -23,6 +24,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
             "Microsoft.WindowsTerminal",
             "Microsoft.WindowsTerminalPreview",
         }.AsReadOnly();
+
+        // Cache for the AUMID that we don't have to query the AUMID every time.
+        private static readonly Dictionary<string, string> _PackageAumidCache = new Dictionary<string, string>();
 
         private IEnumerable<TerminalPackage> Terminals => GetTerminals();
 
@@ -56,13 +60,20 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
 
             foreach (var p in _packageManager.FindPackagesForUser(user.Value).Where(p => Packages.Contains(p.Id.Name)))
             {
-                var appListEntries = p.GetAppListEntriesAsync();
-                while (appListEntries.Status != AsyncStatus.Completed)
+                if (!_PackageAumidCache.ContainsKey(p.Id.Name))
                 {
-                    Thread.Sleep(100);
+                    // When changing the target release to 19041 in the future, we can use  <GetAppListEntries()> instead of <GetAppListEntriesAsync()>!
+                    var appListEntries = p.GetAppListEntriesAsync();
+                    while (appListEntries.Status != AsyncStatus.Completed)
+                    {
+                        Thread.Sleep(10);
+                        Debug.Print($"Sleep 10 sec for AUMID for {p.Id.Name}>");
+                    }
+
+                    _PackageAumidCache.Add(p.Id.Name, appListEntries.GetResults().Single().AppUserModelId);
                 }
 
-                var aumid = appListEntries.GetResults().Single().AppUserModelId;
+                var aumid = _PackageAumidCache[p.Id.Name];
                 var version = new Version(p.Id.Version.Major, p.Id.Version.Minor, p.Id.Version.Build, p.Id.Version.Revision);
                 var settingsPath = Path.Combine(localAppDataPath, "Packages", p.Id.FamilyName, "LocalState", "settings.json");
                 yield return new TerminalPackage(aumid, version, p.DisplayName, settingsPath, p.Logo.LocalPath);
