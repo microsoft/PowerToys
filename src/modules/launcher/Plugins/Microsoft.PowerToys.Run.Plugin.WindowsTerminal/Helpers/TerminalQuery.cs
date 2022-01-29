@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
             "Microsoft.WindowsTerminalPreview",
         }.AsReadOnly();
 
-        // Cache for the AUMID that we don't have to query the AUMID every time.
+        // Cache for the package AUMID that we don't have to query the AUMID every time. (On slow systems, each query costs up to 50 ms.)
         private static readonly Dictionary<string, string> _PackageAumidCache = new Dictionary<string, string>();
 
         private IEnumerable<TerminalPackage> Terminals => GetTerminals();
@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
             {
                 if (!_PackageAumidCache.ContainsKey(p.Id.Name))
                 {
-                    // When changing the target release to 19041 in the future, we can use  <GetAppListEntries()> instead of <GetAppListEntriesAsync()>!
+                    // When changing the target release to 19041 in the future, we can use <GetAppListEntries()> instead of <GetAppListEntriesAsync()>!
                     var appListEntries = p.GetAppListEntriesAsync();
                     while (appListEntries.Status != AsyncStatus.Completed)
                     {
