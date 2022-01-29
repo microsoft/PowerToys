@@ -1,6 +1,8 @@
 # Windows System Commands Plugin
 
-As the name suggests, the Windows System Commands Plugin is used to directly run Windows system commands that have been entered by the user as a query. This is done by parsing the entry and validating the command, followed by executing it. The user can change the behavior of the plugin (language, confirmation dialog, ...) with optional plugin settings.
+As the name suggests, the Windows System Commands Plugin is used to directly run Windows system commands that have been entered by the user as a query. This is done by parsing the entry and validating the command, followed by executing it.
+
+The user can change the behavior of the plugin (language, confirmation dialog, ...) with optional plugin settings.
 
 ![Image of System Commands plugin](/doc/images/launcher/plugins/sys.gif)
 
@@ -16,7 +18,7 @@ Available commands:
 
 ## Optional plugin settings
 
-We have the following settings that the user can configure to cahnge the behavior o fthe plugin:
+We have the following settings that the user can configure to change the behavior of the plugin:
 
 | Key | Default value | Name/Description |
 |--------------|-----------|------------|
