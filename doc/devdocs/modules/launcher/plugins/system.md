@@ -19,10 +19,11 @@ Available commands:
 ## Optional plugin settings
 
 * We have the following settings that the user can configure to change the behavior of the plugin:
-| Key | Default value | Name/Description |
-|--------------|-----------|------------|
-| `ConfirmSystemCommands` | `false` | Show a dialog to confirm system commands |
-| `LocalizeSystemCommands` | `true` | Use localized system commands instead of English ones |
+
+	| Key | Default value | Name/Description |
+	|--------------|-----------|------------|
+	| `ConfirmSystemCommands` | `false` | Show a dialog to confirm system commands |
+	| `LocalizeSystemCommands` | `true` | Use localized system commands instead of English ones |
 
 * The optional plugin settings are implemented via the [`ISettingProvider`](/src/modules/launcher/Wox.Plugin/ISettingProvider.cs) interface from `Wox.Plugin` project. All available settings for the plugin are defined in the [`Main`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Main.cs) class of the plugin.
 
