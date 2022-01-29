@@ -1,6 +1,6 @@
 # Sys Plugin
 
-As the name suggests, the Sys Plugin is used to directly run Windows system commands that have been entered by the user as a query. This is done by parsing the entry and validating the command, followed by executing it.
+As the name suggests, the Sys Plugin is used to directly run Windows system commands that have been entered by the user as a query. This is done by parsing the entry and validating the command, followed by executing it. The user can change the behavior of the plugin (language, confirmation dialog, ...) with optional plugin settings.
 
 * Shutdown
 * Restart
@@ -9,14 +9,32 @@ As the name suggests, the Sys Plugin is used to directly run Windows system comm
 * Sleep
 * Hibernate
 * Empty Recycle Bin
+* UEFI Firmware Settings (Only available on systems, that boot in UEFI mode.)
 
 ![Image of Sys plugin](/doc/images/launcher/plugins/sys.gif)
 
-## [`Sys`](/src/modules/launcher/Plugins/Microsoft.Plugin.Sys/Main.cs)
+## Optional plugin settings
+
+We have the following settings that the user can configure to cahnge the behavior o fthe plugin:
+
+| Key | Default value | Name/Description |
+|--------------|-----------|------------|
+| `ConfirmSystemCommands` | `false` | Show a dialog to confirm system commands |
+| `LocalizeSystemCommands` | `true` | Use localized system commands instead of English ones |
+
+The optional plugin settings are implemented via the [`ISettingProvider`](/src/modules/launcher/Wox.Plugin) interface from `Wox.Plugin` project. All available settings for the plugin are defined in the [`Main`](/src/modules/launcher/Plugins/Microsoft.Plugin.Sys/Main.cs) class of the plugin.
+
+## Technical details
+
+### [`Main`](/src/modules/launcher/Plugins/Microsoft.Plugin.Sys/Main.cs)
 
 * Tries to parse the user input and returns a specific Windows system command by using a [`Result`](/src/modules/launcher/Wox.Plugin/Result.cs) list.
 
 * While parsing, the Sys plugin uses [`FuzzyMatch`](/src/modules/launcher/Wox.Infrastructure/StringMatcher.cs) to get characters matching a result in the list.
+
+### UEFI command
+
+* The UEFI command is only available on systems, that boot in UEFI mode. This is validated by checking the result of the method [`GetSystemFirmwareType`](/src/modules/launcher/Wox.Plugin/Common/Win32/Win32Helpers.cs), which uses the native method [`GetFirmwareType`](/src/modules/launcher/Wox.Plugin/Common/Win32/NativeMethods.cs) in `kernel32.dll`.
 
 ### Score
 
