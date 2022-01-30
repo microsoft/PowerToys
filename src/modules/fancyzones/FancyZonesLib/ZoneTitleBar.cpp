@@ -412,7 +412,7 @@ protected:
         }
     }
 
-    BOOL WindowPosChanging(HWND hwnd, LPWINDOWPOS pos)
+    BOOL WindowPosChanging(HWND hwnd, WINDOWPOS* pos)
     {
         if (m_zoneCurrentWindow != NULL)
         {
