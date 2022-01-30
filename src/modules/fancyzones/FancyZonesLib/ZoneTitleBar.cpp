@@ -64,8 +64,8 @@ static HWND GetWindowAboveAllOthers(const std::vector<HWND>& windows)
 
 static void DrawWindowIcon(Drawing& drawing, const D2D1_RECT_F& rect, HWND window)
 {
-    auto icon = (HICON)SendMessageW(window, WM_GETICON, ICON_BIG, 0);
-    if (icon == nullptr)
+    HICON icon = nullptr;
+    if (!SendMessageTimeout(window, WM_GETICON, ICON_BIG, 0, 0, 100, (PDWORD_PTR)&icon) || icon == nullptr)
     {
         icon = (HICON)GetClassLongPtrW(window, GCLP_HICON);
     }
