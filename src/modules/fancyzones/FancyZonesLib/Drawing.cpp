@@ -93,7 +93,7 @@ void Drawing::BeginDraw(const D2D1_COLOR_F& backColor)
     m_renderTarget->Clear(backColor);
 }
 
-winrt::com_ptr<IDWriteTextFormat> Drawing::CreateTextFormat(LPCWSTR fontFamilyName, FLOAT fontSize, DWRITE_FONT_WEIGHT fontWeight)
+winrt::com_ptr<IDWriteTextFormat> Drawing::CreateTextFormat(LPCWSTR fontFamilyName, FLOAT fontSize, DWRITE_FONT_WEIGHT fontWeight) const
 {
     winrt::com_ptr<IDWriteTextFormat> textFormat = nullptr;
 
@@ -107,7 +107,7 @@ winrt::com_ptr<IDWriteTextFormat> Drawing::CreateTextFormat(LPCWSTR fontFamilyNa
     return textFormat;
 }
 
-winrt::com_ptr<ID2D1SolidColorBrush> Drawing::CreateBrush(D2D1_COLOR_F color)
+winrt::com_ptr<ID2D1SolidColorBrush> Drawing::CreateBrush(D2D1_COLOR_F color) const
 {
     winrt::com_ptr<ID2D1SolidColorBrush> brush = nullptr;
 
@@ -116,7 +116,7 @@ winrt::com_ptr<ID2D1SolidColorBrush> Drawing::CreateBrush(D2D1_COLOR_F color)
     return brush;
 }
 
-winrt::com_ptr<ID2D1Bitmap> Drawing::CreateIcon(HICON icon)
+winrt::com_ptr<ID2D1Bitmap> Drawing::CreateIcon(HICON icon) const
 {
     winrt::com_ptr<ID2D1Bitmap> bitmap = nullptr;
 

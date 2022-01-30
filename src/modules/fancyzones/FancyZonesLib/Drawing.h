@@ -17,9 +17,9 @@ public:
     operator bool() const;
     void BeginDraw(const D2D1_COLOR_F& backColor);
 
-    winrt::com_ptr<IDWriteTextFormat> CreateTextFormat(LPCWSTR fontFamilyName, FLOAT fontSize, DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT_NORMAL);
-    winrt::com_ptr<ID2D1SolidColorBrush> CreateBrush(D2D1_COLOR_F color);
-    winrt::com_ptr<ID2D1Bitmap> CreateIcon(HICON icon);
+    winrt::com_ptr<IDWriteTextFormat> CreateTextFormat(LPCWSTR fontFamilyName, FLOAT fontSize, DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT_NORMAL) const;
+    winrt::com_ptr<ID2D1SolidColorBrush> CreateBrush(D2D1_COLOR_F color) const;
+    winrt::com_ptr<ID2D1Bitmap> CreateIcon(HICON icon) const;
 
     void FillRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color);
     void FillRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color);
