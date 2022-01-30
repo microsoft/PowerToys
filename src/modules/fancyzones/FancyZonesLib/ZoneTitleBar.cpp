@@ -452,12 +452,12 @@ protected:
         {
             m_drawing.BeginDraw();
 
-            auto textFormat = m_drawing.CreateTextFormat(
-                metrics.lfCaptionFont.lfFaceName,
-                float(-metrics.lfCaptionFont.lfHeight),
-                (DWRITE_FONT_WEIGHT)metrics.lfCaptionFont.lfWeight);
-
             {
+                auto textFormat = m_drawing.CreateTextFormat(
+                    metrics.lfCaptionFont.lfFaceName,
+                    float(-metrics.lfCaptionFont.lfHeight),
+                    (DWRITE_FONT_WEIGHT)metrics.lfCaptionFont.lfWeight);
+
                 for (auto i = 0; i < m_zoneWindows.size(); ++i)
                 {
                     auto xOffset = m_height * (1 + c_widthFactor * i);
