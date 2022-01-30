@@ -150,6 +150,7 @@ void CompositionDrawing::Init(HWND window)
 void CompositionDrawing::BeginDraw()
 {
     m_renderTarget->BeginDraw();
+    m_renderTarget->Clear();
 }
 
 void CompositionDrawing::EndDraw()

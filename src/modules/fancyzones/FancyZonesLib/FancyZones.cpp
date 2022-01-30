@@ -139,6 +139,7 @@ public:
         case EVENT_OBJECT_UNCLOAKED:
         case EVENT_OBJECT_SHOW:
         case EVENT_OBJECT_CREATE:
+        case EVENT_SYSTEM_MINIMIZEEND:
             if (data->idObject == OBJID_WINDOW)
             {
                 PostMessageW(m_window, WM_PRIV_WINDOWCREATED, wparam, lparam);
@@ -148,6 +149,7 @@ public:
         case EVENT_OBJECT_CLOAKED:
         case EVENT_OBJECT_HIDE:
         case EVENT_OBJECT_DESTROY:
+        case EVENT_SYSTEM_MINIMIZESTART:
             if (data->idObject == OBJID_WINDOW)
             {
                 PostMessageW(m_window, WM_PRIV_WINDOWCLOSED, wparam, lparam);
