@@ -295,6 +295,29 @@ ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND workAreaWindow, ZoneIndex i
     MoveWindowIntoZoneByIndexSet(window, workAreaWindow, { index });
 }
 
+static bool ShouldSuppressMove(HWND window, RECT zoneRect, bool suppressMove)
+{
+    if (!suppressMove)
+    {
+        return false;
+    }
+
+    RECT windowRect{};
+    if (GetWindowRect(window, &windowRect))
+    {
+        // Check if window is already in rect except for the zone title bar
+        if (zoneRect.left == windowRect.left &&
+            zoneRect.right == windowRect.right &&
+            zoneRect.bottom == windowRect.bottom &&
+            zoneRect.top <= windowRect.top)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 IFACEMETHODIMP_(void)
 ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const ZoneIndexSet& zoneIds, bool suppressMove) noexcept
 {
@@ -349,6 +372,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
     if (!sizeEmpty)
     {
         auto zoneTitleBar = m_zoneTitleBarByIndexSets.find(indexSet);
+        auto zoneTitleBarHeight = 0;
 
         // Are we are not alone?
         if (!m_windowsByIndexSets[indexSet].empty())
@@ -363,30 +387,36 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
 
                 zoneTitleBar = m_zoneTitleBarByIndexSets.emplace(indexSet, MakeZoneTitleBar(m_config.ZoneTitleBarStyle, m_hinstance, zone)).first;
 
-                // Adjust the rect
-                size.top += zoneTitleBar->second->GetHeight();
-
-                // Adjust the other window
+                // Get the other window
                 auto hwnd = m_windowsByIndexSets[indexSet].front();
 
-                if (!suppressMove)
+                // Adjust the other window
+                auto rect = AdjustRectForSizeWindowToRect(hwnd, size, workAreaWindow);
+
+                // Adjust the rect
+                if (!ShouldSuppressMove(hwnd, rect, suppressMove))
                 {
-                    auto rect = AdjustRectForSizeWindowToRect(hwnd, size, workAreaWindow);
+                    zoneTitleBarHeight = zoneTitleBar->second->GetHeight();
+                    rect.top += zoneTitleBarHeight;
                     SizeWindowToRect(hwnd, rect);
                 }
             }
             else
             {
                 // Adjust the rect
-                size.top += zoneTitleBar->second->GetHeight();
+                zoneTitleBarHeight = zoneTitleBar->second->GetHeight();
             }
         }
 
         if (!suppressMove)
         {
             SaveWindowSizeAndOrigin(window);
+        }
 
-            auto rect = AdjustRectForSizeWindowToRect(window, size, workAreaWindow);
+        auto rect = AdjustRectForSizeWindowToRect(window, size, workAreaWindow);
+        if (!ShouldSuppressMove(window, rect, suppressMove))
+        {
+            rect.top += zoneTitleBarHeight;
             SizeWindowToRect(window, rect);
         }
 
