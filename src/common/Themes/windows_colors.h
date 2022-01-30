@@ -9,6 +9,7 @@ struct WindowsColors
 
     static DWORD rgb_color(DWORD abgr_color);
     static DWORD rgb_color(Color color);
+    static Color get_gray_text_color();
     static Color get_button_face_color();
     static Color get_button_text_color();
     static Color get_highlight_color();

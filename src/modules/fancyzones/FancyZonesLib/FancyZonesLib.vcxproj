@@ -133,6 +133,9 @@
     <ProjectReference Include="..\..\..\common\notifications\notifications.vcxproj">
       <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
+      <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
+    </ProjectReference>
     <ResourceCompile Include="Generated Files/fancyzones.rc" />
     <None Include="packages.config" />
     <None Include="Resources.resx" />

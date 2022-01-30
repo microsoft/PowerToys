@@ -5,11 +5,13 @@
 #include <d2d1_1.h>
 #include <dwrite.h>
 #include <wincodec.h>
+#include <winrt/Windows.UI.ViewManagement.h>
 
 class Drawing
 {
 public:
     static D2D1_COLOR_F ConvertColor(COLORREF color);
+    static D2D1_COLOR_F ConvertColor(winrt::Windows::UI::Color color);
 
     Drawing();
     void Init(HWND window);

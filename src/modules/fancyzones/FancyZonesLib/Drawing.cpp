@@ -11,6 +11,14 @@ D2D1_COLOR_F Drawing::ConvertColor(COLORREF color)
                         1.f);
 }
 
+D2D1_COLOR_F Drawing::ConvertColor(winrt::Windows::UI::Color color)
+{
+    return D2D1::ColorF(color.R / 255.f,
+                        color.G / 255.f,
+                        color.B / 255.f,
+                        color.A / 255.f);
+}
+
 ID2D1Factory* Drawing::GetD2DFactory()
 {
     static auto pD2DFactory = [] {

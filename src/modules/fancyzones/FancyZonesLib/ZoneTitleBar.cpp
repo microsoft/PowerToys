@@ -2,6 +2,7 @@
 #include "ZoneTitleBar.h"
 #include "Drawing.h"
 #include "CompositionDrawing.h"
+#include <common/Themes/windows_colors.h>
 #include <set>
 #include <windowsx.h>
 
@@ -9,9 +10,33 @@
 #define HANDLE_WM_DWMNCRENDERINGCHANGED(hwnd, wParam, lParam, fn) \
     ((fn)((hwnd), (BOOL)(wParam)), 0L)
 
+/* void Cls_OnDwmColorizationColorChanged(HWND hwnd, DWORD dwNewColorizationColor, BOOL fIsBlendedWithOpacity) */
+#define HANDLE_WM_DWMCOLORIZATIONCOLORCHANGED(hwnd, wParam, lParam, fn) \
+    ((fn)((hwnd), (DWORD)(wParam), (BOOL)lParam), 0L)
+
 
 using namespace FancyZonesUtils;
 
+class ZoneTitleBarColors
+{
+public:
+    ZoneTitleBarColors(bool isDarkMode)
+    {
+        backColor = Drawing::ConvertColor(WindowsColors::get_background_color());
+
+        frameColor = Drawing::ConvertColor(isDarkMode ? WindowsColors::get_gray_text_color() : WindowsColors::get_button_face_color());
+        textColor = Drawing::ConvertColor(WindowsColors::get_button_text_color());
+
+        highlightFrameColor = Drawing::ConvertColor(WindowsColors::get_accent_color());
+        highlightTextColor = Drawing::ConvertColor(WindowsColors::get_highlight_text_color());
+    }
+
+    D2D1_COLOR_F backColor;
+    D2D1_COLOR_F frameColor;
+    D2D1_COLOR_F textColor;
+    D2D1_COLOR_F highlightFrameColor;
+    D2D1_COLOR_F highlightTextColor;
+};
 
 static HWND GetWindowAboveAllOthers(const std::vector<HWND>& windows)
 {
@@ -114,6 +139,7 @@ protected:
         switch (message)
         {
             HANDLE_MSG(window, WM_CREATE, Init);
+            HANDLE_MSG(window, WM_DWMCOLORIZATIONCOLORCHANGED, DwmColorizationColorChanged);
             HANDLE_MSG(window, WM_PAINT, Render);
             HANDLE_MSG(window, WM_LBUTTONDOWN, Click);
         default:
@@ -126,6 +152,11 @@ protected:
         m_drawing.Init(hwnd);
 
         return true;
+    }
+
+    void DwmColorizationColorChanged(HWND hwnd, DWORD newColorizationColor, BOOL isBlendedWithOpacity)
+    {
+        Render(hwnd);
     }
 
     void Click(HWND hwnd, BOOL doubleClick, int x, int y, UINT keyFlags)
@@ -174,21 +205,16 @@ public:
 
     void Render(HWND hwnd) override
     {
+        ZoneTitleBarColors colors(WindowsColors::is_dark_mode());
+
         PAINTSTRUCT paint;
         BeginPaint(m_window, &paint);
-
-        auto backColor = Drawing::ConvertColor(GetSysColor(COLOR_WINDOW));
-        auto frameColor = Drawing::ConvertColor(GetSysColor(COLOR_3DFACE));
-        auto textColor = Drawing::ConvertColor(GetSysColor(COLOR_BTNTEXT));
-
-        auto highlightFrameColor = Drawing::ConvertColor(GetSysColor(COLOR_HIGHLIGHT));
-        auto highlightTextColor = Drawing::ConvertColor(GetSysColor(COLOR_HIGHLIGHTTEXT));
 
         auto zoneCurrentWindow = GetZoneCurrentWindow();
 
         if (m_drawing)
         {
-            m_drawing.BeginDraw(backColor);
+            m_drawing.BeginDraw(colors.backColor);
 
             {
                 auto len = (FLOAT)m_height;
@@ -200,13 +226,13 @@ public:
 
                     if (m_zoneWindows[i] == zoneCurrentWindow)
                     {
-                        m_drawing.FillRectangle(rect, highlightFrameColor);
-                        m_drawing.DrawTextW(std::to_wstring(i + 1), textFormat.get(), rect, highlightTextColor);
+                        m_drawing.FillRectangle(rect, colors.highlightFrameColor);
+                        m_drawing.DrawTextW(std::to_wstring(i + 1), textFormat.get(), rect, colors.highlightTextColor);
                     }
                     else
                     {
-                        m_drawing.FillRectangle(rect, frameColor);
-                        m_drawing.DrawTextW(std::to_wstring(i + 1), textFormat.get(), rect, textColor);
+                        m_drawing.FillRectangle(rect, colors.frameColor);
+                        m_drawing.DrawTextW(std::to_wstring(i + 1), textFormat.get(), rect, colors.textColor);
                     }
                 }
             }
@@ -228,21 +254,16 @@ public:
 
     void Render(HWND hwnd) override
     {
+        ZoneTitleBarColors colors(WindowsColors::is_dark_mode());
+
         PAINTSTRUCT paint;
         BeginPaint(m_window, &paint);
-
-        auto backColor = Drawing::ConvertColor(GetSysColor(COLOR_WINDOW));
-        auto frameColor = Drawing::ConvertColor(GetSysColor(COLOR_3DFACE));
-        auto textColor = Drawing::ConvertColor(GetSysColor(COLOR_BTNTEXT));
-
-        auto highlightFrameColor = Drawing::ConvertColor(GetSysColor(COLOR_HIGHLIGHT));
-        auto highlightTextColor = Drawing::ConvertColor(GetSysColor(COLOR_HIGHLIGHTTEXT));
 
         auto zoneCurrentWindow = GetZoneCurrentWindow();
 
         if (m_drawing)
         {
-            m_drawing.BeginDraw(backColor);
+            m_drawing.BeginDraw(colors.backColor);
 
             {
                 auto len = (FLOAT)m_height;
@@ -255,7 +276,7 @@ public:
 
                     constexpr float s = p * .7f;
                     auto strokeRect = D2D1::Rect(len * (i + .5f * s), len * .5f * s, len * (i + 1 - .5f * s), len * (1 - .5f * s));
-                    m_drawing.DrawRoundedRectangle(strokeRect, m_zoneWindows[i] == zoneCurrentWindow ? highlightFrameColor : frameColor, len * s);
+                    m_drawing.DrawRoundedRectangle(strokeRect, m_zoneWindows[i] == zoneCurrentWindow ? colors.highlightFrameColor : colors.frameColor, len * s);
                 }
             }
 
@@ -345,6 +366,7 @@ protected:
             HANDLE_MSG(window, WM_NCCALCSIZE, CalcNonClientSize);
             HANDLE_MSG(window, WM_WINDOWPOSCHANGING, WindowPosChanging);
             HANDLE_MSG(window, WM_DWMNCRENDERINGCHANGED, DwmNonClientRenderingChanged);
+            HANDLE_MSG(window, WM_DWMCOLORIZATIONCOLORCHANGED, DwmColorizationColorChanged);
             HANDLE_MSG(window, WM_PAINT, Render);
             HANDLE_MSG(window, WM_LBUTTONDOWN, Click);
         default:
@@ -415,6 +437,11 @@ protected:
         }
     }
 
+    void DwmColorizationColorChanged(HWND hwnd, DWORD newColorizationColor, BOOL isBlendedWithOpacity)
+    {
+        Render(hwnd);
+    }
+
     BOOL WindowPosChanging(HWND hwnd, WINDOWPOS* pos)
     {
         if (m_zoneCurrentWindow != NULL)
@@ -432,15 +459,18 @@ protected:
 
     void Render(HWND hwnd)
     {
+        constexpr DWORD DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+
+        BOOL isDarkMode = WindowsColors::is_dark_mode();
+        if (FAILED(DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &isDarkMode, sizeof(isDarkMode))))
+        {
+            isDarkMode = false;
+        }
+
+        ZoneTitleBarColors colors(isDarkMode);
+
         PAINTSTRUCT paint;
         BeginPaint(m_window, &paint);
-
-        auto backColor = Drawing::ConvertColor(GetSysColor(COLOR_WINDOW));
-        auto frameColor = Drawing::ConvertColor(GetSysColor(COLOR_3DFACE));
-        auto textColor = Drawing::ConvertColor(GetSysColor(COLOR_BTNTEXT));
-
-        auto highlightFrameColor = Drawing::ConvertColor(GetSysColor(COLOR_HIGHLIGHT));
-        auto highlightTextColor = Drawing::ConvertColor(GetSysColor(COLOR_HIGHLIGHTTEXT));
 
         auto captionHeight = GetSystemMetricsForDpi(SM_CYCAPTION, m_dpi);
 
@@ -474,7 +504,7 @@ protected:
                         float(yOffset + backMargin),
                         float(xOffset + backMargin + backWidth),
                         float(yOffset + backMargin + backHeight));
-                    m_drawing.FillRoundedRectangle(backRect, m_zoneWindows[i] == zoneCurrentWindow ? highlightFrameColor : frameColor);
+                    m_drawing.FillRoundedRectangle(backRect, m_zoneWindows[i] == zoneCurrentWindow ? colors.highlightFrameColor : colors.frameColor);
 
                     auto iconMargin = (m_height - captionHeight) * .5f;
                     auto iconRect = D2D1::Rect(
@@ -495,7 +525,7 @@ protected:
 
                         text[0] = TEXT('\0');
                         GetWindowText(m_zoneWindows[i], text, ARRAYSIZE(text));
-                        m_drawing.DrawTextTrim(text, textFormat.get(), textRect, m_zoneWindows[i] == zoneCurrentWindow ? highlightTextColor : textColor);
+                        m_drawing.DrawTextTrim(text, textFormat.get(), textRect, m_zoneWindows[i] == zoneCurrentWindow ? colors.highlightTextColor : colors.textColor);
                     }
                 }
             }
