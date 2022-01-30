@@ -4,42 +4,24 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
-using System.Threading;
-using Windows.ApplicationModel;
-using Windows.Foundation;
 using Windows.Management.Deployment;
 
 namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
 {
     public class TerminalQuery : ITerminalQuery
     {
-        // Cache for the package AUMID that we don't have to query the AUMID every time. (On slow systems, each query costs up to 50 ms.)
-        private static readonly Dictionary<string, AumidCacheData> _PackageAumidCache = new Dictionary<string, AumidCacheData>();
-
-        private static ReadOnlyCollection<string> Packages => new List<string>
-        {
-            "Microsoft.WindowsTerminal",
-            "Microsoft.WindowsTerminalPreview",
-        }.AsReadOnly();
-
-        // Struct for value data in AUMID cache
-        private struct AumidCacheData
-        {
-            public PackageVersion CachedPackageVersion { get; private set; }
-
-            public string PackageAumid { get; private set; }
-
-            public AumidCacheData(PackageVersion v, string id)
+        /// Static list of all Windows Terminal packages. As key we use the app name and in the value we save the AUMID of each package.
+        /// AUMID = ApplicationUserModelId: This is an identifier id for the app. The syntax is '<PackageFamilyName>!App'.
+        /// The AUMID of an AppX package will never change. (https://github.com/microsoft/PowerToys/pull/15836#issuecomment-1025204301)
+        private static readonly IReadOnlyDictionary<string, string> Packages =
+            new Dictionary<string, string>()
             {
-                CachedPackageVersion = v;
-                PackageAumid = id;
-            }
-        }
+                { "Microsoft.WindowsTerminal", "Microsoft.WindowsTerminal_8wekyb3d8bbwe!App" },
+                { "Microsoft.WindowsTerminalPreview", "Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe!App" },
+            };
 
         private readonly PackageManager _packageManager;
 
@@ -73,26 +55,13 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
             var user = WindowsIdentity.GetCurrent().User;
             var localAppDataPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
 
-            foreach (var p in _packageManager.FindPackagesForUser(user.Value).Where(p => Packages.Contains(p.Id.Name)))
+            foreach (var p in _packageManager.FindPackagesForUser(user.Value).Where(p => Packages.Keys.Contains(p.Id.Name)))
             {
-                if (!_PackageAumidCache.ContainsKey(p.Id.Name) || !_PackageAumidCache[p.Id.Name].CachedPackageVersion.Equals(p.Id.Version))
-                {
-                    // When changing the target release to 19041 in the future, we can use <GetAppListEntries()> instead of <GetAppListEntriesAsync()>!
-                    var appListEntries = p.GetAppListEntriesAsync();
-                    while (appListEntries.Status != AsyncStatus.Completed)
-                    {
-                        Thread.Sleep(10);
-                        Debug.Print($"Sleep 10 sec for AUMID for {p.Id.Name}>");
-                    }
-
-                    _PackageAumidCache[p.Id.Name] = new AumidCacheData(p.Id.Version, appListEntries.GetResults().Single().AppUserModelId);
-                }
-
-                var aumid = _PackageAumidCache[p.Id.Name].PackageAumid;
+                var aumid = Packages[p.Id.Name];
                 var version = new Version(p.Id.Version.Major, p.Id.Version.Minor, p.Id.Version.Build, p.Id.Version.Revision);
                 var settingsPath = Path.Combine(localAppDataPath, "Packages", p.Id.FamilyName, "LocalState", "settings.json");
                 yield return new TerminalPackage(aumid, version, p.DisplayName, settingsPath, p.Logo.LocalPath);
             }
-        }
+       }
     }
 }
