@@ -385,9 +385,6 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
                 RECT zone = size;
                 MapWindowRect(workAreaWindow, nullptr, &zone);
 
-                auto dpi = GetDpiForMonitor(MonitorFromWindow(workAreaWindow, MONITOR_DEFAULTTOPRIMARY));
-                zoneTitleBar = m_zoneTitleBarByIndexSets.emplace(indexSet, MakeZoneTitleBar(m_config.ZoneTitleBarStyle, m_hinstance, zone, dpi)).first;
-
                 // Get the other window
                 auto hwnd = m_windowsByIndexSets[indexSet].front();
 
@@ -397,6 +394,9 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
                 // Adjust the rect and create zone title bar
                 if (!ShouldSuppressMove(hwnd, rect, suppressMove))
                 {
+                    auto dpi = GetDpiForMonitor(MonitorFromWindow(workAreaWindow, MONITOR_DEFAULTTOPRIMARY));
+                    zoneTitleBar = m_zoneTitleBarByIndexSets.emplace(indexSet, MakeZoneTitleBar(m_config.ZoneTitleBarStyle, m_hinstance, zone, dpi)).first;
+
                     zoneTitleBarHeight = zoneTitleBar->second->GetHeight();
                     rect.top += zoneTitleBarHeight;
                     SizeWindowToRect(hwnd, rect);
@@ -415,7 +415,8 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
         }
 
         auto rect = AdjustRectForSizeWindowToRect(window, size, workAreaWindow);
-        if (!ShouldSuppressMove(window, rect, suppressMove))
+        auto shouldSuppressMove = ShouldSuppressMove(window, rect, suppressMove);
+        if (!shouldSuppressMove)
         {
             rect.top += zoneTitleBarHeight;
             SizeWindowToRect(window, rect);
@@ -430,11 +431,14 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
             tabSortKeyWithinZone = std::nullopt;
         }
 
-        InsertTabIntoZone(window, tabSortKeyWithinZone, indexSet);
-
-        if (zoneTitleBar != m_zoneTitleBarByIndexSets.end())
+        if (!shouldSuppressMove)
         {
-            zoneTitleBar->second->UpdateZoneWindows(m_windowsByIndexSets[indexSet]);
+            InsertTabIntoZone(window, tabSortKeyWithinZone, indexSet);
+
+            if (zoneTitleBar != m_zoneTitleBarByIndexSets.end())
+            {
+                zoneTitleBar->second->UpdateZoneWindows(m_windowsByIndexSets[indexSet]);
+            }
         }
     }
 }
@@ -654,8 +658,18 @@ void ZoneSet::DismissWindow(HWND window, HWND workAreaWindow, bool suppressMove)
     auto& indexSet = m_windowIndexSet[window];
 
     // Remove from m_windowsByIndexSets
+    if (!m_windowsByIndexSets.contains(indexSet))
+    {
+        return;
+    }
+
     auto& windows = m_windowsByIndexSets[indexSet];
-    windows.erase(find(begin(windows), end(windows), window));
+
+    auto windowPtr = find(begin(windows), end(windows), window);
+    if (windowPtr != end(windows))
+    {
+        windows.erase(windowPtr);
+    }
 
     auto numberOfWindowsInZone = windows.size();
     if (numberOfWindowsInZone == 0)

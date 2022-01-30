@@ -307,7 +307,21 @@ class TabsZoneTitleBar : public IZoneTitleBar
 private:
     static constexpr int c_style = WS_OVERLAPPED | WS_CAPTION | WS_THICKFRAME;
     static constexpr int c_exStyle = WS_EX_NOREDIRECTIONBITMAP;
-    static constexpr int c_widthFactor = 4;
+    float GetWidthFactor() const
+    {
+        constexpr int c_widthFactor = 4;
+
+        auto left = float(m_zone.width() - 2 * m_height);
+        auto amount = m_zoneWindows.size();
+
+        if (amount == 0 || left <= 0)
+        {
+            return 0;
+        }
+
+        auto factor = (left / amount) / m_height;
+        return min(factor, c_widthFactor);
+    }
 
 public:
     TabsZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi) noexcept :
@@ -486,6 +500,7 @@ protected:
             m_drawing.BeginDraw();
 
             {
+                auto widthFactor = GetWidthFactor();
                 auto textFormat = m_drawing.CreateTextFormat(
                     metrics.lfCaptionFont.lfFaceName,
                     float(-metrics.lfCaptionFont.lfHeight),
@@ -493,12 +508,12 @@ protected:
 
                 for (auto i = 0; i < m_zoneWindows.size(); ++i)
                 {
-                    auto xOffset = m_height * (1 + c_widthFactor * i);
+                    auto xOffset = m_height * (1 + widthFactor * i);
                     auto yOffset = 0;
 
                     auto backMargin = (m_height - captionHeight) * .4f;
                     auto backHeight = m_height - 2 * backMargin;
-                    auto backWidth = c_widthFactor * m_height - 2 * backMargin;
+                    auto backWidth = widthFactor * m_height - 2 * backMargin;
                     auto backRect = D2D1::RectF(
                         float(xOffset + backMargin),
                         float(yOffset + backMargin),
@@ -520,7 +535,7 @@ protected:
                         auto textRect = D2D1::Rect(
                             float(xOffset + m_height),
                             float(yOffset + textMargin),
-                            float(xOffset + c_widthFactor * m_height - textMargin),
+                            float(xOffset + widthFactor * m_height - textMargin),
                             float(yOffset + iconMargin + captionHeight));
 
                         text[0] = TEXT('\0');
@@ -544,7 +559,7 @@ protected:
             return;
         }
 
-        auto i = (x - len) / (len * c_widthFactor);
+        auto i = int((x - len) / (len * GetWidthFactor()));
 
         if (i < m_zoneWindows.size())
         {
