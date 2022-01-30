@@ -16,6 +16,7 @@ class CompositionDrawing : public Drawing
 {
 public:
     void Init(HWND window);
+    operator bool() const;
     void BeginDraw();
     void EndDraw();
 

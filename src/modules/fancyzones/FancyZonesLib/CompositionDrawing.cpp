@@ -147,18 +147,26 @@ void CompositionDrawing::Init(HWND window)
     device_context->SetTarget(m_d2dBitmap.get());
 }
 
+CompositionDrawing::operator bool() const
+{
+    return Drawing::operator bool() && bool(m_dxgiSwapChain) && bool(m_compositionDevice);
+}
+
 void CompositionDrawing::BeginDraw()
 {
-    m_renderTarget->BeginDraw();
-    m_renderTarget->Clear();
+    if (*this)
+    {
+        m_renderTarget->BeginDraw();
+        m_renderTarget->Clear();
+    }
 }
 
 void CompositionDrawing::EndDraw()
 {
-    m_renderTarget->EndDraw();
-
-    if (m_dxgiSwapChain && m_compositionDevice)
+    if (*this)
     {
+        m_renderTarget->EndDraw();
+
         m_dxgiSwapChain->Present(1, 0);
         m_compositionDevice->Commit();
     }

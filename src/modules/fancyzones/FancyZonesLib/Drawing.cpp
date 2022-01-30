@@ -69,8 +69,14 @@ void Drawing::Init(HWND window)
     auto renderTargetSize = D2D1::SizeU(m_renderRect.width(), m_renderRect.height());
     auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(window, renderTargetSize);
 
+    auto d2dFactory = GetD2DFactory();
+    if (!d2dFactory)
+    {
+        return;
+    }
+
     winrt::com_ptr<ID2D1HwndRenderTarget> renderTarget = nullptr;
-    auto hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, renderTarget.put());
+    auto hr = d2dFactory->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, renderTarget.put());
     if (!SUCCEEDED(hr))
     {
         Logger::error("couldn't initialize Drawing: CreateHwndRenderTarget failed with {}", hr);
@@ -82,11 +88,16 @@ void Drawing::Init(HWND window)
 
 Drawing::operator bool() const
 {
-    return m_renderTarget != nullptr;
+    return bool(m_renderTarget);
 }
 
 void Drawing::BeginDraw(const D2D1_COLOR_F& backColor)
 {
+    if (!*this)
+    {
+        return;
+    }
+
     m_renderTarget->BeginDraw();
 
     // Draw backdrop
@@ -109,6 +120,11 @@ winrt::com_ptr<IDWriteTextFormat> Drawing::CreateTextFormat(LPCWSTR fontFamilyNa
 
 winrt::com_ptr<ID2D1SolidColorBrush> Drawing::CreateBrush(D2D1_COLOR_F color) const
 {
+    if (!*this)
+    {
+        return nullptr;
+    }
+
     winrt::com_ptr<ID2D1SolidColorBrush> brush = nullptr;
 
     m_renderTarget->CreateSolidColorBrush(color, brush.put());
@@ -118,6 +134,11 @@ winrt::com_ptr<ID2D1SolidColorBrush> Drawing::CreateBrush(D2D1_COLOR_F color) co
 
 winrt::com_ptr<ID2D1Bitmap> Drawing::CreateIcon(HICON icon) const
 {
+    if (!*this)
+    {
+        return nullptr;
+    }
+
     winrt::com_ptr<ID2D1Bitmap> bitmap = nullptr;
 
     auto imageFactory = GetImageFactory();
@@ -152,6 +173,11 @@ winrt::com_ptr<ID2D1Bitmap> Drawing::CreateIcon(HICON icon) const
 
 void Drawing::FillRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color)
 {
+    if (!*this)
+    {
+        return;
+    }
+
     auto brush = CreateBrush(color);
     if (brush)
     {
@@ -161,6 +187,11 @@ void Drawing::FillRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color)
 
 void Drawing::FillRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color)
 {
+    if (!*this)
+    {
+        return;
+    }
+
     auto brush = CreateBrush(color);
     if (brush)
     {
@@ -179,6 +210,11 @@ void Drawing::FillRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color)
 
 void Drawing::DrawRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color, float strokeWidth)
 {
+    if (!*this)
+    {
+        return;
+    }
+
     auto brush = CreateBrush(color);
     if (brush)
     {
@@ -188,6 +224,11 @@ void Drawing::DrawRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color, float s
 
 void Drawing::DrawRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color, float strokeWidth)
 {
+    if (!*this)
+    {
+        return;
+    }
+
     auto brush = CreateBrush(color);
     if (brush)
     {
@@ -201,6 +242,11 @@ void Drawing::DrawRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color, 
 
 void Drawing::DrawTextW(std::wstring text, IDWriteTextFormat* textFormat, const D2D1_RECT_F& rect, D2D1_COLOR_F color)
 {
+    if (!*this || !textFormat)
+    {
+        return;
+    }
+
     auto brush = CreateBrush(color);
     if (brush)
     {
@@ -212,10 +258,21 @@ void Drawing::DrawTextW(std::wstring text, IDWriteTextFormat* textFormat, const 
 
 void Drawing::DrawTextTrim(std::wstring text, IDWriteTextFormat* textFormat, const D2D1_RECT_F& rect, D2D1_COLOR_F color)
 {
+    if (!*this || !textFormat)
+    {
+        return;
+    }
+
     auto brush = CreateBrush(color);
 
+    auto writeFactory = GetWriteFactory();
+    if (!writeFactory)
+    {
+        return;
+    }
+
     winrt::com_ptr<IDWriteInlineObject> ellipsis;
-    GetWriteFactory()->CreateEllipsisTrimmingSign(textFormat, ellipsis.put());
+    writeFactory->CreateEllipsisTrimmingSign(textFormat, ellipsis.put());
 
     if (brush && ellipsis)
     {
@@ -231,10 +288,20 @@ void Drawing::DrawTextTrim(std::wstring text, IDWriteTextFormat* textFormat, con
 
 void Drawing::DrawBitmap(const D2D1_RECT_F& rect, ID2D1Bitmap* bitmap)
 {
+    if (!*this)
+    {
+        return;
+    }
+
     m_renderTarget->DrawBitmap(bitmap, rect);
 }
 
 void Drawing::EndDraw()
 {
+    if (!*this)
+    {
+        return;
+    }
+
     m_renderTarget->EndDraw();
 }
