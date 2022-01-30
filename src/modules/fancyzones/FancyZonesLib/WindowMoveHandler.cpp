@@ -61,6 +61,13 @@ WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& 
 
 void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept
 {
+    auto workArea = workAreaMap.find(monitor);
+    if (workArea != end(workAreaMap))
+    {
+        const auto workAreaPtr = workArea->second;
+        workAreaPtr->DismissWindow(window);
+    }
+
     if (!FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
     {
         return;
@@ -70,8 +77,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     m_draggedWindowInfo.isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
     m_inDragging = true;
 
-    auto iter = workAreaMap.find(monitor);
-    if (iter == end(workAreaMap))
+    if (workArea == end(workAreaMap))
     {
         return;
     }
@@ -94,7 +100,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
 
     if (m_dragEnabled)
     {
-        m_draggedWindowWorkArea = iter->second;
+        m_draggedWindowWorkArea = workArea->second;
         SetWindowTransparency(m_draggedWindow);
         m_draggedWindowWorkArea->MoveSizeEnter(m_draggedWindow);
         if (m_settings->GetSettings()->showZonesOnAllMonitors)
@@ -122,13 +128,6 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
                 workArea->HideZonesOverlay();
             }
         }
-    }
-
-    auto workArea = workAreaMap.find(monitor);
-    if (workArea != workAreaMap.end())
-    {
-        const auto workAreaPtr = workArea->second;
-        workAreaPtr->DismissWindow(window);
     }
 }
 
