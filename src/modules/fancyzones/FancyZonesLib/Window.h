@@ -7,7 +7,7 @@ using WndProc = std::function<LRESULT(HWND window, UINT message, WPARAM wparam, 
 class Window
 {
 public:
-    Window(HINSTANCE hinstance, WndProc proc, DWORD style, DWORD extendedStyle, FancyZonesUtils::Rect position, LPCWSTR windowName = NULL, HWND parent = NULL, HMENU menu = NULL) noexcept;
+    Window(HINSTANCE hinstance, WndProc proc, DWORD style, DWORD extendedStyle, FancyZonesUtils::Rect position, LPCWSTR windowName = NULL, HWND parent = NULL, HMENU menu = NULL, int show = SW_SHOWNOACTIVATE) noexcept;
     ~Window();
 
     Window(const Window&) = delete;

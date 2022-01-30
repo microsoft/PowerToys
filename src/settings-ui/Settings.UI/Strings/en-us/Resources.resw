@@ -1186,6 +1186,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_ZoneTitleBarStyle_Icons.Content" xml:space="preserve">
     <value>Icons</value>
   </data>
+  <data name="FancyZones_ZoneTitleBarStyle_Tabs.Content" xml:space="preserve">
+    <value>Tabs</value>
+  </data>
   <data name="PowerLauncher_Plugins.Header" xml:space="preserve">
     <value>Plugins</value>
   </data>

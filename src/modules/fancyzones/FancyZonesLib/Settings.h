@@ -16,7 +16,8 @@ enum struct ZoneTitleBarStyle : int
     None = 0,
     Numbers = 1,
     Icons = 2,
-    EnumElements = 3, // number of elements in the enum, not counting this
+    Tabs = 3,
+    EnumElements = 4, // number of elements in the enum, not counting this
 };
 
 // in reality, this file needs to be kept in sync currently with src/settings-ui/Settings.UI.Library/FZConfigProperties.cs
@@ -48,7 +49,7 @@ struct Settings
     std::wstring zoneNumberColor = L"#000000";
     int zoneHighlightOpacity = 50;
     OverlappingZonesAlgorithm overlappingZonesAlgorithm = OverlappingZonesAlgorithm::Smallest;
-    ZoneTitleBarStyle zoneTitleBarStyle = ZoneTitleBarStyle::Icons;
+    ZoneTitleBarStyle zoneTitleBarStyle = ZoneTitleBarStyle::Tabs;
     PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, VK_OEM_3);
     bool windowSwitching = true;
     PowerToysSettings::HotkeyObject nextTabHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_NEXT);

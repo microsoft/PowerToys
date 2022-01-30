@@ -7,7 +7,7 @@ namespace NonLocalizable
     const wchar_t WindowClassName[] = L"FancyZones_Window";
 }
 
-Window::Window(HINSTANCE hinstance, WndProc proc, DWORD style, DWORD extendedStyle, FancyZonesUtils::Rect position, LPCWSTR windowName, HWND parent, HMENU menu) noexcept :
+Window::Window(HINSTANCE hinstance, WndProc proc, DWORD style, DWORD extendedStyle, FancyZonesUtils::Rect position, LPCWSTR windowName, HWND parent, HMENU menu, int showCommand) noexcept :
     m_window(NULL),
     m_proc(proc)
 {
@@ -17,6 +17,7 @@ Window::Window(HINSTANCE hinstance, WndProc proc, DWORD style, DWORD extendedSty
         WNDCLASSEXW wcex{};
         wcex.cbSize = sizeof(WNDCLASSEX);
         wcex.lpfnWndProc = s_WndProc;
+        wcex.style = CS_HREDRAW | CS_VREDRAW;
         wcex.hInstance = hinstance;
         wcex.lpszClassName = reinterpret_cast<LPCWSTR>(NonLocalizable::WindowClassName);
         wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
@@ -37,13 +38,16 @@ Window::Window(HINSTANCE hinstance, WndProc proc, DWORD style, DWORD extendedSty
         hinstance,
         this);
 
-    ShowWindow(m_window, SW_SHOWNOACTIVATE);
+    if (showCommand != SW_HIDE)
+    {
+        ShowWindow(m_window, showCommand);
+    }
 }
 
 LRESULT CALLBACK Window::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
     auto thisRef = reinterpret_cast<Window*>(GetWindowLongPtrW(window, GWLP_USERDATA));
-    if (!thisRef && (message == WM_CREATE))
+    if (!thisRef && (message == WM_NCCREATE))
     {
         const auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
         thisRef = reinterpret_cast<Window*>(createStruct->lpCreateParams);
@@ -55,8 +59,9 @@ LRESULT CALLBACK Window::s_WndProc(HWND window, UINT message, WPARAM wparam, LPA
         SetWindowLongPtrW(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
     }
 
-    return thisRef ? thisRef->m_proc(window, message, wparam, lparam) :
-                     DefWindowProcW(window, message, wparam, lparam);
+    return (thisRef && thisRef->m_proc) ?
+        thisRef->m_proc(window, message, wparam, lparam) :
+        DefWindowProcW(window, message, wparam, lparam);
 }
 
 Window::~Window()

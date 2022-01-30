@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             None = 0,
             Numbers = 1,
             Icons = 2,
+            Tabs = 3,
         }
 
         public FancyZonesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")

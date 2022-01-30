@@ -35,11 +35,15 @@
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\;..\..\..\common\inc;..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Lib>
+      <AdditionalDependencies>Dcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="FancyZonesData\CustomLayouts.h" />
     <ClInclude Include="FancyZonesData\AppliedLayouts.h" />
     <ClInclude Include="FancyZonesData\AppZoneHistory.h" />
+    <ClInclude Include="CompositionDrawing.h" />
     <ClInclude Include="Drawing.h" />
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesDataTypes.h" />
@@ -83,6 +87,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="CompositionDrawing.cpp" />
     <ClCompile Include="Drawing.cpp" />
     <ClCompile Include="FancyZones.cpp" />
     <ClCompile Include="FancyZonesDataTypes.cpp" />

@@ -41,10 +41,15 @@ IWICImagingFactory2* Drawing::GetImageFactory()
     return pImageFactory;
 }
 
-Drawing::Drawing(HWND window)
+Drawing::Drawing()
+{
+    m_window = nullptr;
+    m_renderTarget = nullptr;
+}
+
+void Drawing::Init(HWND window)
 {
     m_window = window;
-    m_renderTarget = nullptr;
 
     // Obtain the size of the drawing area.
     if (!GetClientRect(window, m_renderRect.get()))
@@ -64,12 +69,15 @@ Drawing::Drawing(HWND window)
     auto renderTargetSize = D2D1::SizeU(m_renderRect.width(), m_renderRect.height());
     auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(window, renderTargetSize);
 
-    auto hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, m_renderTarget.put());
+    winrt::com_ptr<ID2D1HwndRenderTarget> renderTarget = nullptr;
+    auto hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, renderTarget.put());
     if (!SUCCEEDED(hr))
     {
         Logger::error("couldn't initialize Drawing: CreateHwndRenderTarget failed with {}", hr);
         return;
     }
+
+    m_renderTarget = renderTarget;
 }
 
 Drawing::operator bool() const
@@ -85,7 +93,7 @@ void Drawing::BeginDraw(const D2D1_COLOR_F& backColor)
     m_renderTarget->Clear(backColor);
 }
 
-winrt::com_ptr<IDWriteTextFormat> Drawing::CreateTextFormat(LPCWSTR fontFamilyName, FLOAT fontSize)
+winrt::com_ptr<IDWriteTextFormat> Drawing::CreateTextFormat(LPCWSTR fontFamilyName, FLOAT fontSize, DWRITE_FONT_WEIGHT fontWeight)
 {
     winrt::com_ptr<IDWriteTextFormat> textFormat = nullptr;
 
@@ -93,7 +101,7 @@ winrt::com_ptr<IDWriteTextFormat> Drawing::CreateTextFormat(LPCWSTR fontFamilyNa
 
     if (writeFactory)
     {
-        writeFactory->CreateTextFormat(fontFamilyName, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"en-US", textFormat.put());
+        writeFactory->CreateTextFormat(fontFamilyName, nullptr, fontWeight, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"en-US", textFormat.put());
     }
 
     return textFormat;
@@ -151,6 +159,24 @@ void Drawing::FillRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color)
     }
 }
 
+void Drawing::FillRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color)
+{
+    auto brush = CreateBrush(color);
+    if (brush)
+    {
+        D2D1_ROUNDED_RECT roundedRect;
+        roundedRect.rect = rect;
+        roundedRect.radiusX = (rect.right - rect.left) * .1f;
+        roundedRect.radiusY = (rect.bottom - rect.top) * .1f;
+
+        auto radius = min(roundedRect.radiusX, roundedRect.radiusY);
+        roundedRect.radiusX = radius;
+        roundedRect.radiusY = radius;
+
+        m_renderTarget->FillRoundedRectangle(roundedRect, brush.get());
+    }
+}
+
 void Drawing::DrawRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color, float strokeWidth)
 {
     auto brush = CreateBrush(color);
@@ -179,6 +205,25 @@ void Drawing::DrawTextW(std::wstring text, IDWriteTextFormat* textFormat, const 
     if (brush)
     {
         textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+        textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+        m_renderTarget->DrawTextW(text.c_str(), (UINT32)text.size(), textFormat, rect, brush.get());
+    }
+}
+
+void Drawing::DrawTextTrim(std::wstring text, IDWriteTextFormat* textFormat, const D2D1_RECT_F& rect, D2D1_COLOR_F color)
+{
+    auto brush = CreateBrush(color);
+
+    winrt::com_ptr<IDWriteInlineObject> ellipsis;
+    GetWriteFactory()->CreateEllipsisTrimmingSign(textFormat, ellipsis.put());
+
+    if (brush && ellipsis)
+    {
+        DWRITE_TRIMMING trimming{};
+        trimming.granularity = DWRITE_TRIMMING_GRANULARITY_CHARACTER;
+        textFormat->SetTrimming(&trimming, ellipsis.get());
+        textFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
+        textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
         textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
         m_renderTarget->DrawTextW(text.c_str(), (UINT32)text.size(), textFormat, rect, brush.get());
     }

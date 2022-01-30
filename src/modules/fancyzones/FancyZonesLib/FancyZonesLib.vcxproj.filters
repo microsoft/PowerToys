@@ -123,6 +123,9 @@
     <ClInclude Include="Drawing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CompositionDrawing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -204,6 +207,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Drawing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CompositionDrawing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
