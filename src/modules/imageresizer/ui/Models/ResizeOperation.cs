@@ -216,7 +216,7 @@ namespace ImageResizer.Models
                 return null;
             }
 
-            // Check if the origial metadata is valid
+            // Check if the original metadata is valid
             var frameWithOriginalMetadata = CreateBitmapFrame(transformedBitmap, originalMetadata);
             if (EnsureFrameIsValid(frameWithOriginalMetadata))
             {
