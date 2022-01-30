@@ -518,6 +518,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     {
         if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT) || (info->vkCode == VK_UP) || (info->vkCode == VK_DOWN))
         {
+            PostMessageW(m_window, WM_PRIV_WINDOWCLOSED, (WPARAM)GetForegroundWindow(), 0);
             if (ShouldProcessSnapHotkey(info->vkCode))
             {
                 Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
@@ -525,6 +526,14 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
                 PostMessageW(m_window, WM_PRIV_SNAP_HOTKEY, 0, info->vkCode);
                 return true;
             }
+        }
+    }
+
+    if (win && shift && !ctrl && !alt)
+    {
+        if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT) || (info->vkCode == VK_UP) || (info->vkCode == VK_DOWN))
+        {
+            PostMessageW(m_window, WM_PRIV_WINDOWCLOSED, (WPARAM)GetForegroundWindow(), 0);
         }
     }
 
