@@ -441,8 +441,24 @@ namespace FancyZonesUtils
         return true;
     }
 
+    bool IsWindowCloaked(HWND window) noexcept
+    {
+        DWORD cloaked = 0;
+        if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_CLOAKED, &cloaked, sizeof(cloaked))) &&
+            cloaked != 0)
+        {
+            return true;
+        }
+        return false;
+    }
+
     bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
     {
+        if (IsWindowCloaked(window))
+        {
+            return false;
+        }
+
         auto zonable = IsStandardWindow(window) && HasNoVisibleOwner(window);
         if (!zonable)
         {

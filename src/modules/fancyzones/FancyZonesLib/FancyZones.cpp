@@ -407,12 +407,54 @@ bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR active, HMONITOR primar
 
 void FancyZones::WindowCreated(HWND window) noexcept
 {
+    auto windowZones = GetZoneIndexSet(window);
+
+    const bool isZoned = !windowZones.empty();
     const bool moveToAppLastZone = m_settings->GetSettings()->appLastZone_moveWindows;
     const bool openOnActiveMonitor = m_settings->GetSettings()->openWindowOnActiveMonitor;
-    if (!moveToAppLastZone && !openOnActiveMonitor)
+    if (!isZoned && !moveToAppLastZone && !openOnActiveMonitor)
     {
         // Nothing to do here then.
         return;
+    }
+
+    // Avoid processing splash screens
+    const bool isSplashScreen = FancyZonesUtils::IsSplashScreen(window);
+    if (isSplashScreen)
+    {
+        return;
+    }
+
+    // Avoid processing minimized windows
+    const bool windowMinimized = IsIconic(window);
+    if (windowMinimized)
+    {
+        return;
+    }
+
+    // Avoid processing hidden windows, cloaked windows and windows that belong to excluded applications list
+    const bool isCandidateForZoning = FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray);
+    if (!isCandidateForZoning)
+    {
+        return;
+    }
+    
+    if (isZoned)
+    {
+        // The window was probably cloaked or minimized so just put it back in its place
+
+        HMONITOR current = WorkAreaKeyFromWindow(window);
+
+        auto desktopId = m_virtualDesktop.GetDesktopId(window);
+        if (desktopId)
+        {
+            auto workArea = m_workAreaHandler.GetWorkArea(*desktopId, current);
+            if (workArea)
+            {
+                workArea->MoveWindowIntoZoneByIndexSet(window, windowZones, true);
+                return;
+            }
+        }
     }
 
     auto desktopId = m_virtualDesktop.GetDesktopId(window);
@@ -422,33 +464,6 @@ void FancyZones::WindowCreated(HWND window) noexcept
         // creation of new window. We need to check if window being processed is on currently active desktop.
         return;
     }
-
-    // Avoid processing splash screens, already stamped (zoned) windows, or those windows
-    // that belong to excluded applications list.
-    const bool isSplashScreen = FancyZonesUtils::IsSplashScreen(window);
-    if (isSplashScreen)
-    {
-        return;
-    }
-
-    const bool windowMinimized = IsIconic(window);
-    if (windowMinimized)
-    {
-        return;
-    }
-
-    const bool isZoned = reinterpret_cast<ZoneIndex>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0;
-    if (isZoned)
-    {
-        return;
-    }
-
-    const bool isCandidateForLastKnownZone = FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray);
-    if (!isCandidateForLastKnownZone)
-    {
-        return;
-    }
-    
 
     HMONITOR primary = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
     HMONITOR active = primary;
