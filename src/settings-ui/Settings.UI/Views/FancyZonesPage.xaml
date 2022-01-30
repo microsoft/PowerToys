@@ -93,7 +93,17 @@
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
-                  
+
+                    <controls:Setting x:Uid="FancyZones_ZoneTitleBarStyle" Icon="&#xE620;">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Path=ViewModel.ZoneTitleBarStyleIndex, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_None" />
+                                <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Numbers" />
+                                <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Icons" />
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
 

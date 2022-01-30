@@ -16,6 +16,7 @@ namespace NonLocalizable
     const wchar_t MoveWindowAcrossMonitorsID[] = L"fancyzones_moveWindowAcrossMonitors";
     const wchar_t MoveWindowsBasedOnPositionID[] = L"fancyzones_moveWindowsBasedOnPosition";
     const wchar_t OverlappingZonesAlgorithmID[] = L"fancyzones_overlappingZonesAlgorithm";
+    const wchar_t ZoneTitleBarStyleID[] = L"fancyzones_zoneTitleBarStyle";
     const wchar_t DisplayChangeMoveWindowsID[] = L"fancyzones_displayChange_moveWindows";
     const wchar_t ZoneSetChangeMoveWindowsID[] = L"fancyzones_zoneSetChange_moveWindows";
     const wchar_t AppLastZoneMoveWindowsID[] = L"fancyzones_appLastZone_moveWindows";
@@ -244,6 +245,15 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept
                 m_settings.overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)*val;
             }
         }
+
+        if (auto val = values.get_int_value(NonLocalizable::ZoneTitleBarStyleID))
+        {
+            // Avoid undefined behavior
+            if (*val >= 0 || *val < (int)ZoneTitleBarStyle::EnumElements)
+            {
+                m_settings.zoneTitleBarStyle = (ZoneTitleBarStyle)*val;
+            }
+        }
     }
     catch (...)
     {
@@ -272,6 +282,7 @@ void FancyZonesSettings::SaveSettings() noexcept
         values.add_property(NonLocalizable::ZoneNumberColorID, m_settings.zoneNumberColor);
         values.add_property(NonLocalizable::ZoneHighlightOpacityID, m_settings.zoneHighlightOpacity);
         values.add_property(NonLocalizable::OverlappingZonesAlgorithmID, (int)m_settings.overlappingZonesAlgorithm);
+        values.add_property(NonLocalizable::ZoneTitleBarStyleID, (int)m_settings.zoneTitleBarStyle);
         values.add_property(NonLocalizable::EditorHotkeyID, m_settings.editorHotkey.get_json());
         values.add_property(NonLocalizable::NextTabHotkeyID, m_settings.nextTabHotkey.get_json());
         values.add_property(NonLocalizable::PrevTabHotkeyID, m_settings.prevTabHotkey.get_json());

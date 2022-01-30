@@ -144,6 +144,20 @@ public:
                 PostMessageW(m_window, WM_PRIV_WINDOWCREATED, wparam, lparam);
             }
             break;
+
+        case EVENT_OBJECT_CLOAKED:
+        case EVENT_OBJECT_HIDE:
+        case EVENT_OBJECT_DESTROY:
+            if (data->idObject == OBJID_WINDOW)
+            {
+                PostMessageW(m_window, WM_PRIV_WINDOWCLOSED, wparam, lparam);
+            }
+            break;
+
+        case EVENT_SYSTEM_FOREGROUND:
+        case EVENT_OBJECT_FOCUS:
+            PostMessageW(m_window, WM_PRIV_WINDOWREORDER, wparam, lparam);
+            break;
         }
     }
 
@@ -153,6 +167,8 @@ public:
     OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
 
     void WindowCreated(HWND window) noexcept;
+    void WindowClosed(HWND window) noexcept;
+    void WindowReorder(HWND window) noexcept;
     void ToggleEditor() noexcept;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -451,6 +467,24 @@ void FancyZones::WindowCreated(HWND window) noexcept
     if (openOnActiveMonitor && !movedToAppLastZone)
     {
         m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { MonitorUtils::OpenWindowOnActiveMonitor(window, active); } }).wait();
+    }
+}
+
+void FancyZones::WindowClosed(HWND window) noexcept
+{
+    // Try to dismiss window from all work areas (if it is not there, it will be silently ignored)
+    for (auto workArea : m_workAreaHandler.GetAllWorkAreas())
+    {
+        workArea->DismissWindow(window);
+    }
+}
+
+void FancyZones::WindowReorder(HWND window) noexcept
+{
+    // Notify all work areas
+    for (auto workArea : m_workAreaHandler.GetAllWorkAreas())
+    {
+        workArea->WindowReorder(window);
     }
 }
 
@@ -771,6 +805,16 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             auto hwnd = reinterpret_cast<HWND>(wparam);
             WindowCreated(hwnd);
         }
+        else if (message == WM_PRIV_WINDOWCLOSED)
+        {
+            auto hwnd = reinterpret_cast<HWND>(wparam);
+            WindowClosed(hwnd);
+        }
+        else if (message == WM_PRIV_WINDOWREORDER)
+        {
+            auto hwnd = reinterpret_cast<HWND>(wparam);
+            WindowReorder(hwnd);
+        }
         else if (message == WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE)
         {
             LayoutHotkeys::instance().LoadData();
@@ -895,7 +939,7 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noe
             parentId = parentArea->UniqueId();
         }
 
-        auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId, GetZoneColors(), m_settings->GetSettings()->overlappingZonesAlgorithm, m_settings->GetSettings()->showZoneNumber);
+        auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId, GetZoneColors(), m_settings->GetSettings()->overlappingZonesAlgorithm, m_settings->GetSettings()->showZoneNumber, m_settings->GetSettings()->zoneTitleBarStyle);
         if (workArea)
         {
             m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);

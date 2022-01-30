@@ -189,6 +189,7 @@ bti
 btm
 Btn
 BTNFACE
+BTNTEXT
 Bto
 buf
 BUFSIZE
@@ -377,6 +378,7 @@ CXSMICON
 CXVIRTUALSCREEN
 cxxopts
 cyberrex
+CYHSCROLL
 CYSMICON
 CYVIRTUALSCREEN
 czf
@@ -447,6 +449,7 @@ devenum
 DEVMON
 devpkey
 DEVSOURCE
+DFACE
 DFactory
 dhcp
 diffing
@@ -734,8 +737,10 @@ HHmmss
 HHOOK
 hhx
 HICON
+HICONSM
 HIDEWINDOW
 highlighter
+HIGHLIGHTTEXT
 HIMAGELIST
 himl
 hinst
@@ -1168,6 +1173,7 @@ Mainwindow
 majortype
 makeappx
 makecab
+MAKEINTATOM
 MAKEINTRESOURCE
 MAKEINTRESOURCEW
 MAKELPARAM
@@ -1474,7 +1480,7 @@ pathcch
 Pathto
 PAUDIO
 pbc
-Pbgra
+pbgra
 pcb
 pch
 PCIDLIST
@@ -2256,7 +2262,7 @@ Wevtapi
 wgpocpl
 Whichdoes
 whitespaces
-WIC
+wic
 wifi
 wifstream
 wih
@@ -2272,12 +2278,14 @@ wincolor
 windef
 windir
 Windowcontrols
+WINDOWCLOSED
 WINDOWCREATED
 WINDOWEDGE
 WINDOWNAME
 WINDOWPLACEMENT
 WINDOWPOSCHANGED
 WINDOWPOSCHANGING
+WINDOWREORDER
 Windowsapp
 WINDOWSBUILDNUMBER
 Windowscodecs

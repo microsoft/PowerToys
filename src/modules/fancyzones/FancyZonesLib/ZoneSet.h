@@ -124,17 +124,31 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * Dismiss window from zone.
      *
      * @param   window         Handle of window which should be dismissed from zone.
+     * @param   workAreaWindow The m_window of a WorkArea, it's a hidden window representing the
+     *                         current monitor desktop work area.
+     * @param   suppressMove   Whether we should just update the records or move window to the zone.
      */
     IFACEMETHOD_(void, DismissWindow)
-    (HWND window) = 0;
+    (HWND window, HWND workAreaWindow, bool suppressMove = false) = 0;
+    /**
+     * Notify of a reordering of a window.
+     *
+     * @param   window         Handle of window which reordered.
+     * @param   workAreaWindow The m_window of a WorkArea, it's a hidden window representing the
+     *                         current monitor desktop work area.
+     */
+    IFACEMETHOD_(void, WindowReorder)
+    (HWND window, HWND workAreaWindow) = 0;
     /**
      * Cycle through tabs in the zone that the window is in.
      *
-     * @param   window       Handle of window which is cycled from (the current tab).
-     * @param   reverse      Whether to cycle in reverse order (to the previous tab) or to move to the next tab.
+     * @param   window         Handle of window which is cycled from (the current tab).
+     * @param   reverse        Whether to cycle in reverse order (to the previous tab) or to move to the next tab.
+     * @param   workAreaWindow The m_window of a WorkArea, it's a hidden window representing the
+     *                         current monitor desktop work area.
      */
     IFACEMETHOD_(void, CycleTabs)
-    (HWND window, bool reverse) = 0;
+    (HWND window, bool reverse, HWND workAreaWindow) = 0;
     /**
      * Calculate zone coordinates within zone layout based on number of zones and spacing.
      *
@@ -171,12 +185,14 @@ struct ZoneSetConfig
         FancyZonesDataTypes::ZoneSetLayoutType layoutType,
         HMONITOR monitor,
         int sensitivityRadius,
-        OverlappingZonesAlgorithm selectionAlgorithm = {}) noexcept :
+        OverlappingZonesAlgorithm selectionAlgorithm = {},
+        ZoneTitleBarStyle zoneTitleBarStyle = ZoneTitleBarStyle::None) noexcept :
             Id(id),
             LayoutType(layoutType),
             Monitor(monitor),
             SensitivityRadius(sensitivityRadius),
-            SelectionAlgorithm(selectionAlgorithm)
+            SelectionAlgorithm(selectionAlgorithm),
+            ZoneTitleBarStyle(zoneTitleBarStyle)
     {
     }
 
@@ -185,6 +201,7 @@ struct ZoneSetConfig
     HMONITOR Monitor{};
     int SensitivityRadius;
     OverlappingZonesAlgorithm SelectionAlgorithm = OverlappingZonesAlgorithm::Smallest;
+    ZoneTitleBarStyle ZoneTitleBarStyle = ZoneTitleBarStyle::Numbers;
 };
 
-winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept;
+winrt::com_ptr<IZoneSet> MakeZoneSet(HINSTANCE hinstance, ZoneSetConfig const& config) noexcept;

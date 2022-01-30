@@ -39,6 +39,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             Positional = 2,
         }
 
+        private enum ZoneTitleBarStyle
+        {
+            None = 0,
+            Numbers = 1,
+            Icons = 2,
+        }
+
         public FancyZonesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             if (settingsUtils == null)
@@ -73,6 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
             _moveWindowBehaviour = Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value ? MoveWindowBehaviour.MoveWindowBasedOnPosition : MoveWindowBehaviour.MoveWindowBasedOnZoneIndex;
             _overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value;
+            _zoneTitleBarStyle = (ZoneTitleBarStyle)Settings.Properties.FancyzonesZoneTitleBarStyle.Value;
             _displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
             _zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
             _appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
@@ -118,6 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _moveWindowsAcrossMonitors;
         private MoveWindowBehaviour _moveWindowBehaviour;
         private OverlappingZonesAlgorithm _overlappingZonesAlgorithm;
+        private ZoneTitleBarStyle _zoneTitleBarStyle;
         private bool _displayChangemoveWindows;
         private bool _zoneSetChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
@@ -322,6 +331,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)value;
                     Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int ZoneTitleBarStyleIndex
+        {
+            get
+            {
+                return (int)_zoneTitleBarStyle;
+            }
+
+            set
+            {
+                if (value != (int)_zoneTitleBarStyle)
+                {
+                    _zoneTitleBarStyle = (ZoneTitleBarStyle)value;
+                    Settings.Properties.FancyzonesZoneTitleBarStyle.Value = value;
                     NotifyPropertyChanged();
                 }
             }

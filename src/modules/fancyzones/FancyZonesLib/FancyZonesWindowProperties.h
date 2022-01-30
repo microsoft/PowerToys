@@ -16,14 +16,21 @@ namespace ZonedWindowProperties
     const wchar_t MultiMonitorDeviceID[] = L"FancyZones#MultiMonitorDevice";
 }
 
-inline ZoneIndexSet GetZoneIndexSet(HWND window)
+inline Bitmask GetWindowStamp(HWND window)
 {
     HANDLE handle = ::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID);
-    ZoneIndexSet zoneIndexSet;
 
     std::array<int, 2> data;
     memcpy(data.data(), &handle, sizeof data);
     uint64_t bitmask = ((uint64_t)data[1] << 32) + data[0];
+
+    return bitmask;
+}
+
+inline ZoneIndexSet GetZoneIndexSet(HWND window)
+{
+    ZoneIndexSet zoneIndexSet;
+    Bitmask bitmask = GetWindowStamp(window);
     
     if (bitmask != 0)
     {

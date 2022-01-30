@@ -26,6 +26,22 @@ namespace FancyZonesUtils
             m_rect.bottom = m_rect.top + MulDiv(m_rect.bottom - m_rect.top, dpi, 96);
         }
 
+        Rect(POINT position, int width, int height)
+        {
+            m_rect.left = position.x;
+            m_rect.top = position.y;
+            m_rect.right = position.x + width;
+            m_rect.bottom = position.y + height;
+        }
+
+        Rect(int left, int top, int right, int bottom)
+        {
+            m_rect.left = left;
+            m_rect.top = top;
+            m_rect.right = right;
+            m_rect.bottom = bottom;
+        }
+
         int x() const { return m_rect.left; }
         int y() const { return m_rect.top; }
         int width() const { return m_rect.right - m_rect.left; }
@@ -35,6 +51,8 @@ namespace FancyZonesUtils
         int right() const { return m_rect.right; }
         int bottom() const { return m_rect.bottom; }
         int aspectRatio() const { return MulDiv(m_rect.bottom - m_rect.top, 100, m_rect.right - m_rect.left); }
+        POINT position() const { return POINT{ x(), y() }; }
+        RECT* get() { return &m_rect; }
 
     private:
         RECT m_rect{};

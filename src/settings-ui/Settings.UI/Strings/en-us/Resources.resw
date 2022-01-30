@@ -1171,6 +1171,21 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_OverlappingZones.Header" xml:space="preserve">
     <value>When multiple zones overlap</value>
   </data>
+  <data name="FancyZones_ZoneTitleBarStyle.Header" xml:space="preserve">
+    <value>Zone title bar</value>
+  </data>
+  <data name="FancyZones_ZoneTitleBarStyle.Description" xml:space="preserve">
+    <value>Shown when a zone contains multiple windows</value>
+  </data>
+  <data name="FancyZones_ZoneTitleBarStyle_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="FancyZones_ZoneTitleBarStyle_Numbers.Content" xml:space="preserve">
+    <value>Numbers</value>
+  </data>
+  <data name="FancyZones_ZoneTitleBarStyle_Icons.Content" xml:space="preserve">
+    <value>Icons</value>
+  </data>
   <data name="PowerLauncher_Plugins.Header" xml:space="preserve">
     <value>Plugins</value>
   </data>

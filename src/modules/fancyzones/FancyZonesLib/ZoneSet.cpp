@@ -8,6 +8,7 @@
 #include "Settings.h"
 #include "Zone.h"
 #include "util.h"
+#include "ZoneTitleBar.h"
 
 #include <common/logger/logger.h>
 #include <common/display/dpi_aware.h>
@@ -108,14 +109,9 @@ namespace
 struct ZoneSet : winrt::implements<ZoneSet, IZoneSet>
 {
 public:
-    ZoneSet(ZoneSetConfig const& config) :
+    ZoneSet(HINSTANCE hinstance, ZoneSetConfig const& config) :
+        m_hinstance(hinstance),
         m_config(config)
-    {
-    }
-
-    ZoneSet(ZoneSetConfig const& config, ZonesMap zones) :
-        m_config(config),
-        m_zones(zones)
     {
     }
 
@@ -140,9 +136,11 @@ public:
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByPoint(HWND window, HWND workAreaWindow, POINT ptClient) noexcept;
     IFACEMETHODIMP_(void)
-    DismissWindow(HWND window) noexcept;
+    DismissWindow(HWND window, HWND workAreaWindow, bool suppressMove = false) noexcept;
     IFACEMETHODIMP_(void)
-    CycleTabs(HWND window, bool reverse) noexcept;
+    WindowReorder(HWND window, HWND workAreaWindow) noexcept;
+    IFACEMETHODIMP_(void)
+    CycleTabs(HWND window, bool reverse, HWND workAreaWindow) noexcept;
     IFACEMETHODIMP_(bool)
     CalculateZones(RECT workArea, int zoneCount, int spacing) noexcept;
     IFACEMETHODIMP_(bool) IsZoneEmpty(ZoneIndex zoneIndex) const noexcept;
@@ -167,12 +165,14 @@ private:
     ZonesMap m_zones;
     std::map<HWND, ZoneIndexSet> m_windowIndexSet;
     std::map<ZoneIndexSet, std::vector<HWND>> m_windowsByIndexSets;
+    std::map<ZoneIndexSet, std::unique_ptr<IZoneTitleBar>> m_zoneTitleBarByIndexSets;
 
     // Needed for ExtendWindowByDirectionAndPosition
     std::map<HWND, ZoneIndexSet> m_windowInitialIndexSet;
     std::map<HWND, ZoneIndex> m_windowFinalIndex;
     bool m_inExtendWindow = false;
 
+    HINSTANCE m_hinstance;
     ZoneSetConfig m_config;
 };
 
@@ -311,7 +311,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
     }
 
     auto tabSortKeyWithinZone = GetTabSortKeyWithinZone(window);
-    DismissWindow(window);
+    DismissWindow(window, workAreaWindow, suppressMove);
 
     RECT size;
     bool sizeEmpty = true;
@@ -348,6 +348,40 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
 
     if (!sizeEmpty)
     {
+        auto zoneTitleBar = m_zoneTitleBarByIndexSets.find(indexSet);
+
+        // Are we are not alone?
+        if (!m_windowsByIndexSets[indexSet].empty())
+        {
+            if (zoneTitleBar == m_zoneTitleBarByIndexSets.end())
+            {
+                // Create a new zone title bar
+
+                // Convert to screen coordinates
+                RECT zone = size;
+                MapWindowRect(workAreaWindow, nullptr, &zone);
+
+                zoneTitleBar = m_zoneTitleBarByIndexSets.emplace(indexSet, MakeZoneTitleBar(m_config.ZoneTitleBarStyle, m_hinstance, zone)).first;
+
+                // Adjust the rect
+                size.top += zoneTitleBar->second->GetHeight();
+
+                // Adjust the other window
+                auto hwnd = m_windowsByIndexSets[indexSet].front();
+
+                if (!suppressMove)
+                {
+                    auto rect = AdjustRectForSizeWindowToRect(hwnd, size, workAreaWindow);
+                    SizeWindowToRect(hwnd, rect);
+                }
+            }
+            else
+            {
+                // Adjust the rect
+                size.top += zoneTitleBar->second->GetHeight();
+            }
+        }
+
         if (!suppressMove)
         {
             SaveWindowSizeAndOrigin(window);
@@ -356,8 +390,21 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
             SizeWindowToRect(window, rect);
         }
 
+        auto oldBitmask = GetWindowStamp(window);
         StampWindow(window, bitmask);
+
+        // Use the current sort key only if we are reloading (otherwise, start fresh)
+        if (bitmask != oldBitmask)
+        {
+            tabSortKeyWithinZone = std::nullopt;
+        }
+
         InsertTabIntoZone(window, tabSortKeyWithinZone, indexSet);
+
+        if (zoneTitleBar != m_zoneTitleBarByIndexSets.end())
+        {
+            zoneTitleBar->second->UpdateZoneWindows(m_windowsByIndexSets[indexSet]);
+        }
     }
 }
 
@@ -562,26 +609,65 @@ ZoneSet::MoveWindowIntoZoneByPoint(HWND window, HWND workAreaWindow, POINT ptCli
     MoveWindowIntoZoneByIndexSet(window, workAreaWindow, zones);
 }
 
-void ZoneSet::DismissWindow(HWND window) noexcept
+void ZoneSet::DismissWindow(HWND window, HWND workAreaWindow, bool suppressMove) noexcept
 {
-    auto& indexSet = m_windowIndexSet[window];
-    if (!indexSet.empty())
-    {
-        auto& windows = m_windowsByIndexSets[indexSet];
-        windows.erase(find(begin(windows), end(windows), window));
-        if (windows.empty())
-        {
-            m_windowsByIndexSets.erase(indexSet);
-        }
+    SetTabSortKeyWithinZone(window, std::nullopt);
 
-        indexSet.clear();
+    // Is this window in a zone
+    auto indexSetPtr = m_windowIndexSet.find(window);
+    if (indexSetPtr == m_windowIndexSet.end() || indexSetPtr->second.empty())
+    {
+        return;
     }
 
-    SetTabSortKeyWithinZone(window, std::nullopt);
+    auto& indexSet = m_windowIndexSet[window];
+
+    // Remove from m_windowsByIndexSets
+    auto& windows = m_windowsByIndexSets[indexSet];
+    windows.erase(find(begin(windows), end(windows), window));
+
+    auto numberOfWindowsInZone = windows.size();
+    if (numberOfWindowsInZone == 0)
+    {
+        m_windowsByIndexSets.erase(indexSet);
+    }
+
+    // Remove from m_zoneTitleBarByIndexSets
+    auto zoneTitleBar = m_zoneTitleBarByIndexSets.find(indexSet);
+    if (zoneTitleBar != m_zoneTitleBarByIndexSets.end())
+    {
+        if (numberOfWindowsInZone > 1)
+        {
+            zoneTitleBar->second->UpdateZoneWindows(windows);
+        }
+        else
+        {
+            m_zoneTitleBarByIndexSets.erase(zoneTitleBar);
+        }
+    }
+
+    // Remove from m_windowIndexSet
+    m_windowIndexSet.erase(window);
+
+    // Move remaining window in zone in case there is only one
+    if (!suppressMove && numberOfWindowsInZone == 1)
+    {
+        auto remainingWindow = windows.front();
+        auto remainingWindowIndexSet = m_windowIndexSet[remainingWindow];
+        MoveWindowIntoZoneByIndexSet(remainingWindow, workAreaWindow, remainingWindowIndexSet);
+    }
+}
+
+void ZoneSet::WindowReorder(HWND window, HWND workAreaWindow) noexcept
+{
+    for (auto& [indexSet, zoneTitleBar] : m_zoneTitleBarByIndexSets)
+    {
+        zoneTitleBar->ReadjustPos();
+    }
 }
 
 IFACEMETHODIMP_(void)
-ZoneSet::CycleTabs(HWND window, bool reverse) noexcept
+ZoneSet::CycleTabs(HWND window, bool reverse, HWND workAreaWindow) noexcept
 {
     auto indexSet = GetZoneIndexSetFromWindow(window);
 
@@ -599,7 +685,7 @@ ZoneSet::CycleTabs(HWND window, bool reverse) noexcept
         if (!IsWindow(next))
         {
             // Dismiss the encountered window since it was probably closed
-            DismissWindow(next);
+            DismissWindow(next, workAreaWindow);
             continue;
         }
 
@@ -1136,8 +1222,8 @@ ZoneIndexSet ZoneSet::ZoneSelectPriority(const ZoneIndexSet& capturedZones, Comp
     return { capturedZones[chosen] };
 }
 
-winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept
+winrt::com_ptr<IZoneSet> MakeZoneSet(HINSTANCE hinstance, ZoneSetConfig const& config) noexcept
 {
-    return winrt::make_self<ZoneSet>(config);
+    return winrt::make_self<ZoneSet>(hinstance, config);
 }
 

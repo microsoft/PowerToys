@@ -26,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
             FancyzonesMoveWindowsBasedOnPosition = new BoolProperty();
             FancyzonesOverlappingZonesAlgorithm = new IntProperty();
+            FancyzonesZoneTitleBarStyle = new IntProperty(ConfigDefaults.DefaultFancyzonesZoneTitleBarStyle);
             FancyzonesDisplayChangeMoveWindows = new BoolProperty();
             FancyzonesZoneSetChangeMoveWindows = new BoolProperty();
             FancyzonesAppLastZoneMoveWindows = new BoolProperty();
@@ -68,6 +69,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("fancyzones_overlappingZonesAlgorithm")]
         public IntProperty FancyzonesOverlappingZonesAlgorithm { get; set; }
+
+        [JsonPropertyName("fancyzones_zoneTitleBarStyle")]
+        public IntProperty FancyzonesZoneTitleBarStyle { get; set; }
 
         [JsonPropertyName("fancyzones_displayChange_moveWindows")]
         public BoolProperty FancyzonesDisplayChangeMoveWindows { get; set; }

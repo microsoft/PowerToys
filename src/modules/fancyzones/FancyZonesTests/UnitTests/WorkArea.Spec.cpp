@@ -34,6 +34,7 @@ namespace FancyZonesUnitTests
         ZoneColors m_zoneColors{};
         OverlappingZonesAlgorithm m_overlappingAlgorithm = OverlappingZonesAlgorithm::Positional;
         bool m_showZoneText = true;
+        ZoneTitleBarStyle m_zoneTitleBarStyle = ZoneTitleBarStyle::None;
 
         void testWorkArea(winrt::com_ptr<IWorkArea> workArea)
         {
@@ -84,7 +85,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CreateWorkArea)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 testWorkArea(workArea);
 
                 auto* zoneSet{ workArea->ZoneSet() };
@@ -95,7 +96,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CreateWorkAreaNoHinst)
             {
-                auto workArea = MakeWorkArea({}, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea({}, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 testWorkArea(workArea);
 
                 auto* zoneSet{ workArea->ZoneSet() };
@@ -106,7 +107,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CreateWorkAreaNoHinstFlashZones)
             {
-                auto workArea = MakeWorkArea({}, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea({}, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 testWorkArea(workArea);
 
                 auto* zoneSet{ workArea->ZoneSet() };
@@ -117,7 +118,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CreateWorkAreaNoMonitor)
             {
-                auto workArea = MakeWorkArea(m_hInst, {}, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, {}, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 testWorkArea(workArea);
             }
 
@@ -136,7 +137,7 @@ namespace FancyZonesUnitTests
                     uniqueIdData.height = monitorRect.height();
                 }
 
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, uniqueIdData, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, uniqueIdData, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
                 const FancyZonesDataTypes::DeviceIdData expectedUniqueId{ L"FallbackDevice", m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left, m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top, m_virtualDesktopGuid };
@@ -165,7 +166,7 @@ namespace FancyZonesUnitTests
                     uniqueId.height = monitorRect.height();
                 }
 
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
                 Assert::IsNotNull(workArea.get());
@@ -185,10 +186,10 @@ namespace FancyZonesUnitTests
             const int zoneCount = 5;
             const auto customSetGuid = Helpers::CreateGuidString();
 
-            auto parentWorkArea = MakeWorkArea(m_hInst, m_monitor, m_parentUniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+            auto parentWorkArea = MakeWorkArea(m_hInst, m_monitor, m_parentUniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 
             // newWorkArea = false - workArea won't be cloned from parent
-            auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+            auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
             Assert::IsNotNull(actualWorkArea->ZoneSet());
 
@@ -212,6 +213,7 @@ namespace FancyZonesUnitTests
         ZoneColors m_zoneColors{};
         OverlappingZonesAlgorithm m_overlappingAlgorithm = OverlappingZonesAlgorithm::Positional;
         bool m_showZoneText = true;
+        ZoneTitleBarStyle m_zoneTitleBarStyle = ZoneTitleBarStyle::None;
 
         TEST_METHOD_INITIALIZE(Init)
         {
@@ -246,7 +248,7 @@ namespace FancyZonesUnitTests
         public:
             TEST_METHOD (MoveSizeEnter)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const auto expected = S_OK;
                 const auto actual = workArea->MoveSizeEnter(Mocks::Window());
@@ -256,7 +258,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEnterTwice)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const auto expected = S_OK;
 
@@ -268,7 +270,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdate)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const auto expected = S_OK;
                 const auto actual = workArea->MoveSizeUpdate(POINT{ 0, 0 }, true, false);
@@ -278,7 +280,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdatePointNegativeCoordinates)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const auto expected = S_OK;
                 const auto actual = workArea->MoveSizeUpdate(POINT{ -10, -10 }, true, false);
@@ -288,7 +290,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdatePointBigCoordinates)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const auto expected = S_OK;
                 const auto actual = workArea->MoveSizeUpdate(POINT{ m_monitorInfo.rcMonitor.right + 1, m_monitorInfo.rcMonitor.bottom + 1 }, true, false);
@@ -298,7 +300,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEnd)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const auto window = Mocks::Window();
                 workArea->MoveSizeEnter(window);
@@ -315,7 +317,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndWindowNotAdded)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const auto window = Mocks::Window();
                 workArea->MoveSizeEnter(window);
@@ -331,7 +333,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndDifferentWindows)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const auto window = Mocks::Window();
                 workArea->MoveSizeEnter(window);
@@ -344,7 +346,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndWindowNotSet)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const auto expected = E_INVALIDARG;
                 const auto actual = workArea->MoveSizeEnd(Mocks::Window(), POINT{ 0, 0 });
@@ -354,7 +356,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndInvalidPoint)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
 
                 const auto window = Mocks::Window();
                 workArea->MoveSizeEnter(window);
@@ -371,7 +373,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByIndex)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 workArea->MoveWindowIntoZoneByIndex(Mocks::Window(), 0);
@@ -381,7 +383,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionAndIndex)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -396,7 +398,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionManyTimes)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -413,7 +415,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNullptrWindow)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 workArea->SaveWindowProcessToZoneIndex(nullptr);
@@ -424,7 +426,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAdded)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
@@ -439,7 +441,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAddedWithFilledAppZoneHistory)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -467,7 +469,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexWindowAdded)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
@@ -497,7 +499,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (WhenWindowIsNotResizablePlacingItIntoTheZoneShouldNotResizeIt)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText);
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm, m_showZoneText, m_zoneTitleBarStyle);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);

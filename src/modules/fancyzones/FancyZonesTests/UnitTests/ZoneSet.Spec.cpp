@@ -28,7 +28,7 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual(S_OK, hres);
 
                 ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius, OverlappingZonesAlgorithm::Smallest);
-                m_set = MakeZoneSet(m_config);
+                m_set = MakeZoneSet(NULL, m_config);
             }
 
             void compareZones(const winrt::com_ptr<IZone>& expected, const winrt::com_ptr<IZone>& actual)
@@ -52,7 +52,7 @@ namespace FancyZonesUnitTests
             {
                 GUID zoneSetId{};
                 ZoneSetConfig config(zoneSetId, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius);
-                winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
+                winrt::com_ptr<IZoneSet> set = MakeZoneSet(NULL, config);
 
                 Assert::IsNotNull(&set);
                 CustomAssert::AreEqual(set->Id(), zoneSetId);
@@ -62,7 +62,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (TestCreateZoneSetMonitorEmpty)
             {
                 ZoneSetConfig config(m_id, m_layoutType, nullptr, DefaultValues::SensitivityRadius);
-                winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
+                winrt::com_ptr<IZoneSet> set = MakeZoneSet(NULL, config);
                 Assert::IsNotNull(&set);
                 CustomAssert::AreEqual(set->Id(), m_id);
                 CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
@@ -71,7 +71,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (TestCreateZoneSetKeyEmpty)
             {
                 ZoneSetConfig config(m_id, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius);
-                winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
+                winrt::com_ptr<IZoneSet> set = MakeZoneSet(NULL, config);
                 Assert::IsNotNull(&set);
                 CustomAssert::AreEqual(set->Id(), m_id);
                 CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
@@ -497,7 +497,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD_INITIALIZE(Initialize)
             {
                 ZoneSetConfig config({}, ZoneSetLayoutType::Custom, Mocks::Monitor(), DefaultValues::SensitivityRadius);
-                m_set = MakeZoneSet(config);
+                m_set = MakeZoneSet(NULL, config);
 
                 // Add a couple of zones.
                 m_zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
@@ -511,7 +511,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (EmptyZonesLeft)
             {
                 ZoneSetConfig config({}, ZoneSetLayoutType::Custom, Mocks::Monitor(), DefaultValues::SensitivityRadius);
-                auto set = MakeZoneSet(config);
+                auto set = MakeZoneSet(NULL, config);
 
                 set->MoveWindowIntoZoneByDirectionAndIndex(Mocks::Window(), Mocks::Window(), VK_LEFT, true);
             }
@@ -519,7 +519,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (EmptyZonesRight)
             {
                 ZoneSetConfig config({}, ZoneSetLayoutType::Custom, Mocks::Monitor(), DefaultValues::SensitivityRadius);
-                auto set = MakeZoneSet(config);
+                auto set = MakeZoneSet(NULL, config);
 
                 set->MoveWindowIntoZoneByDirectionAndIndex(Mocks::Window(), Mocks::Window(), VK_RIGHT, true);
             }
@@ -751,7 +751,7 @@ namespace FancyZonesUnitTests
                 m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
 
                 ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, m_monitor, DefaultValues::SensitivityRadius);
-                m_set = MakeZoneSet(m_config);
+                m_set = MakeZoneSet(NULL, m_config);
             }
 
             TEST_METHOD_CLEANUP(Cleanup)
@@ -798,7 +798,7 @@ namespace FancyZonesUnitTests
 
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
-                            auto set = MakeZoneSet(m_config);
+                            auto set = MakeZoneSet(NULL, m_config);
                             auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             Assert::IsTrue(result);
                             checkZones(set, static_cast<ZoneSetLayoutType>(type), zoneCount, monitorInfo);
@@ -813,7 +813,7 @@ namespace FancyZonesUnitTests
                     for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
                     {
                         ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<ZoneSetLayoutType>(type), m_monitor, DefaultValues::SensitivityRadius);
-                        auto set = MakeZoneSet(m_config);
+                        auto set = MakeZoneSet(NULL, m_config);
 
                         MONITORINFO info{};
                         auto result = set->CalculateZones(info.rcWork, zoneCount, spacing);
@@ -832,7 +832,7 @@ namespace FancyZonesUnitTests
 
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
-                            auto set = MakeZoneSet(m_config);
+                            auto set = MakeZoneSet(NULL, m_config);
                             auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             Assert::IsTrue(result);
                             checkZones(set, static_cast<ZoneSetLayoutType>(type), zoneCount, monitorInfo);
@@ -848,7 +848,7 @@ namespace FancyZonesUnitTests
                     for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
                     {
                         ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<ZoneSetLayoutType>(type), m_monitor, DefaultValues::SensitivityRadius);
-                        auto set = MakeZoneSet(m_config);
+                        auto set = MakeZoneSet(NULL, m_config);
 
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
@@ -873,7 +873,7 @@ namespace FancyZonesUnitTests
                     for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
                     {
                         ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<ZoneSetLayoutType>(type), m_monitor, DefaultValues::SensitivityRadius);
-                        auto set = MakeZoneSet(m_config);
+                        auto set = MakeZoneSet(NULL, m_config);
 
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
@@ -899,7 +899,7 @@ namespace FancyZonesUnitTests
                     for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
                     {
                         ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<ZoneSetLayoutType>(type), m_monitor, DefaultValues::SensitivityRadius);
-                        auto set = MakeZoneSet(m_config);
+                        auto set = MakeZoneSet(NULL, m_config);
 
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
@@ -926,7 +926,7 @@ namespace FancyZonesUnitTests
                     for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
                     {
                         ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<ZoneSetLayoutType>(type), m_monitor, DefaultValues::SensitivityRadius);
-                        auto set = MakeZoneSet(m_config);
+                        auto set = MakeZoneSet(NULL, m_config);
 
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
@@ -949,7 +949,7 @@ namespace FancyZonesUnitTests
 
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
-                            auto set = MakeZoneSet(m_config);
+                            auto set = MakeZoneSet(NULL, m_config);
                             auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             Assert::IsTrue(result);
                             checkZones(set, static_cast<ZoneSetLayoutType>(type), zoneCount, monitorInfo);
@@ -969,7 +969,7 @@ namespace FancyZonesUnitTests
                     }
 
                     ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-                    auto set = MakeZoneSet(m_config);
+                    auto set = MakeZoneSet(NULL, m_config);
 
                     for (const auto& monitorInfo : m_popularMonitors)
                     {
@@ -987,7 +987,7 @@ namespace FancyZonesUnitTests
                     Assert::IsTrue(std::filesystem::exists(m_path));
 
                     ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-                    auto set = MakeZoneSet(m_config);
+                    auto set = MakeZoneSet(NULL, m_config);
 
                     for (const auto& monitorInfo : m_popularMonitors)
                     {
@@ -1008,7 +1008,7 @@ namespace FancyZonesUnitTests
                     const int zoneCount = static_cast<int>(info.zones.size());
 
                     ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-                    auto set = MakeZoneSet(m_config);
+                    auto set = MakeZoneSet(NULL, m_config);
 
                     for (const auto& monitorInfo : m_popularMonitors)
                     {
@@ -1034,7 +1034,7 @@ namespace FancyZonesUnitTests
                     const int zoneCount = grid.rows() * grid.columns();
 
                     ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-                    auto set = MakeZoneSet(m_config);
+                    auto set = MakeZoneSet(NULL, m_config);
 
                     for (const auto& monitorInfo : m_popularMonitors)
                     {
@@ -1057,7 +1057,7 @@ namespace FancyZonesUnitTests
                     const int zoneCount = grid.rows() * grid.columns();
 
                     ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-                    auto set = MakeZoneSet(m_config);
+                    auto set = MakeZoneSet(NULL, m_config);
 
                     for (const auto& monitorInfo : m_popularMonitors)
                     {

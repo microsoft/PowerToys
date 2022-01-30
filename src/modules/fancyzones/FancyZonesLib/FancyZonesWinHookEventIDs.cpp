@@ -7,6 +7,8 @@ UINT WM_PRIV_MOVESIZEEND;
 UINT WM_PRIV_LOCATIONCHANGE;
 UINT WM_PRIV_NAMECHANGE;
 UINT WM_PRIV_WINDOWCREATED;
+UINT WM_PRIV_WINDOWCLOSED;
+UINT WM_PRIV_WINDOWREORDER;
 UINT WM_PRIV_VD_INIT;
 UINT WM_PRIV_VD_SWITCH;
 UINT WM_PRIV_VD_UPDATE;
@@ -29,6 +31,8 @@ void InitializeWinhookEventIds()
         WM_PRIV_LOCATIONCHANGE = RegisterWindowMessage(L"{d56c5ee7-58e5-481c-8c4f-8844cf4d0347}");
         WM_PRIV_NAMECHANGE = RegisterWindowMessage(L"{b7b30c61-bfa0-4d95-bcde-fc4f2cbf6d76}");
         WM_PRIV_WINDOWCREATED = RegisterWindowMessage(L"{bdb10669-75da-480a-9ec4-eeebf09a02d7}");
+        WM_PRIV_WINDOWCLOSED = RegisterWindowMessage(L"{872BCB13-FDA7-490D-9C34-B3FF8838D391}");
+        WM_PRIV_WINDOWREORDER = RegisterWindowMessage(L"{5eed1a55-ceb6-40c8-b162-01e9bb45fd24}");
         WM_PRIV_VD_INIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b867-a1da484fcd9a}");
         WM_PRIV_VD_SWITCH = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
         WM_PRIV_VD_UPDATE = RegisterWindowMessage(L"{b8b72b46-f42f-4c26-9e20-29336cf2f22e}");

@@ -40,6 +40,7 @@
     <ClInclude Include="FancyZonesData\CustomLayouts.h" />
     <ClInclude Include="FancyZonesData\AppliedLayouts.h" />
     <ClInclude Include="FancyZonesData\AppZoneHistory.h" />
+    <ClInclude Include="Drawing.h" />
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesDataTypes.h" />
     <ClInclude Include="FancyZonesData\Layout.h" />
@@ -63,6 +64,7 @@
     <ClInclude Include="trace.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="VirtualDesktop.h" />
+    <ClInclude Include="Window.h" />
     <ClInclude Include="WindowMoveHandler.h" />
     <ClInclude Include="FancyZonesWindowProperties.h" />
     <ClInclude Include="Zone.h" />
@@ -70,6 +72,7 @@
     <ClInclude Include="ZoneSet.h" />
     <ClInclude Include="WorkArea.h" />
     <ClInclude Include="ZonesOverlay.h" />
+    <ClInclude Include="ZoneTitleBar.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FancyZonesData\AppZoneHistory.cpp">
@@ -80,6 +83,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Drawing.cpp" />
     <ClCompile Include="FancyZones.cpp" />
     <ClCompile Include="FancyZonesDataTypes.cpp" />
     <ClCompile Include="FancyZonesData\AppliedLayouts.cpp">
@@ -108,11 +112,13 @@
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VirtualDesktop.cpp" />
+    <ClCompile Include="Window.cpp" />
     <ClCompile Include="WindowMoveHandler.cpp" />
     <ClCompile Include="Zone.cpp" />
     <ClCompile Include="ZoneSet.cpp" />
     <ClCompile Include="WorkArea.cpp" />
     <ClCompile Include="ZonesOverlay.cpp" />
+    <ClCompile Include="ZoneTitleBar.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fancyzones.base.rc" />
