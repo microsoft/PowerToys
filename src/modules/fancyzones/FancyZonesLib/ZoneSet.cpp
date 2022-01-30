@@ -385,7 +385,8 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
                 RECT zone = size;
                 MapWindowRect(workAreaWindow, nullptr, &zone);
 
-                zoneTitleBar = m_zoneTitleBarByIndexSets.emplace(indexSet, MakeZoneTitleBar(m_config.ZoneTitleBarStyle, m_hinstance, zone)).first;
+                auto dpi = GetDpiForMonitor(MonitorFromWindow(workAreaWindow, MONITOR_DEFAULTTOPRIMARY));
+                zoneTitleBar = m_zoneTitleBarByIndexSets.emplace(indexSet, MakeZoneTitleBar(m_config.ZoneTitleBarStyle, m_hinstance, zone, dpi)).first;
 
                 // Get the other window
                 auto hwnd = m_windowsByIndexSets[indexSet].front();
@@ -393,7 +394,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
                 // Adjust the other window
                 auto rect = AdjustRectForSizeWindowToRect(hwnd, size, workAreaWindow);
 
-                // Adjust the rect
+                // Adjust the rect and create zone title bar
                 if (!ShouldSuppressMove(hwnd, rect, suppressMove))
                 {
                     zoneTitleBarHeight = zoneTitleBar->second->GetHeight();

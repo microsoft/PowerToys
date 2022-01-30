@@ -67,7 +67,8 @@ public:
 class SlimZoneTitleBar : public IZoneTitleBar
 {
 public:
-    SlimZoneTitleBar(HINSTANCE hinstance, Rect zone) noexcept :
+    SlimZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi) noexcept :
+        m_dpi(dpi),
         m_window(
             hinstance,
             [this](HWND window, UINT message, WPARAM wParam, LPARAM lParam) { return WndProc(window, message, wParam, lParam); },
@@ -150,12 +151,13 @@ protected:
 
     Rect ResetRect(Rect zone)
     {
-        int height = GetSystemMetrics(SM_CYHSCROLL);
+        int height = GetSystemMetricsForDpi(SM_CYHSCROLL, m_dpi);
         m_height = height > zone.height() ? 0 : height;
         return Rect(zone.position(), zone.width(), m_height);
     }
 
 protected:
+    UINT m_dpi;
     int m_height;
     std::vector<HWND> m_zoneWindows;
     Drawing m_drawing;
@@ -165,8 +167,8 @@ protected:
 class NumbersZoneTitleBar : public SlimZoneTitleBar
 {
 public:
-    NumbersZoneTitleBar(HINSTANCE hinstance, Rect zone) noexcept :
-        SlimZoneTitleBar(hinstance, zone)
+    NumbersZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi) noexcept :
+        SlimZoneTitleBar(hinstance, zone, dpi)
     {
     }
 
@@ -219,8 +221,8 @@ public:
 class IconsZoneTitleBar : public SlimZoneTitleBar
 {
 public:
-    IconsZoneTitleBar(HINSTANCE hinstance, Rect zone) noexcept :
-        SlimZoneTitleBar(hinstance, zone)
+    IconsZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi) noexcept :
+        SlimZoneTitleBar(hinstance, zone, dpi)
     {
     }
 
@@ -287,9 +289,10 @@ private:
     static constexpr int c_widthFactor = 4;
 
 public:
-    TabsZoneTitleBar(HINSTANCE hinstance, Rect zone) noexcept :
+    TabsZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi) noexcept :
         m_hiddenWindow(hinstance),
         m_zoneCurrentWindow(NULL),
+        m_dpi(dpi),
         m_window(
             hinstance,
             [this](HWND window, UINT message, WPARAM wParam, LPARAM lParam) { return WndProc(window, message, wParam, lParam); },
@@ -378,8 +381,8 @@ protected:
             return FORWARD_WM_NCCALCSIZE(hwnd, calc, info, DefWindowProcW);
         }
 
-        auto xBorder = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
-        auto yBorder = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYEDGE);
+        auto xBorder = GetSystemMetricsForDpi(SM_CXFRAME, m_dpi) + GetSystemMetricsForDpi(SM_CXPADDEDBORDER, m_dpi);
+        auto yBorder = GetSystemMetricsForDpi(SM_CYFRAME, m_dpi) + GetSystemMetricsForDpi(SM_CYEDGE, m_dpi);
 
         auto& coordinates = info->rgrc[0];
         coordinates.left += xBorder;
@@ -439,13 +442,13 @@ protected:
         auto highlightFrameColor = Drawing::ConvertColor(GetSysColor(COLOR_HIGHLIGHT));
         auto highlightTextColor = Drawing::ConvertColor(GetSysColor(COLOR_HIGHLIGHTTEXT));
 
-        auto captionHeight = GetSystemMetrics(SM_CYCAPTION);
+        auto captionHeight = GetSystemMetricsForDpi(SM_CYCAPTION, m_dpi);
 
         auto zoneCurrentWindow = GetZoneCurrentWindow();
 
         NONCLIENTMETRICS metrics{};
         metrics.cbSize = sizeof(metrics);
-        SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &metrics, 0);
+        SystemParametersInfoForDpi(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &metrics, 0, m_dpi);
         TCHAR text[100]{};
 
         if (m_drawing)
@@ -529,7 +532,7 @@ protected:
         m_zone = zone;
 
         RECT rect{};
-        AdjustWindowRectEx(&rect, c_style, FALSE, c_exStyle);
+        AdjustWindowRectExForDpi(&rect, c_style, FALSE, c_exStyle, m_dpi);
 
         auto height = -rect.top;
         m_height = height > zone.height() ? 0 : height;
@@ -540,6 +543,7 @@ protected:
 protected:
     HiddenWindow m_hiddenWindow;
     HWND m_zoneCurrentWindow;
+    UINT m_dpi;
     Rect m_zone;
     int m_height;
     std::vector<HWND> m_zoneWindows;
@@ -547,18 +551,18 @@ protected:
     Window m_window;
 };
 
-std::unique_ptr<IZoneTitleBar> MakeZoneTitleBar(ZoneTitleBarStyle style, HINSTANCE hinstance, Rect zone)
+std::unique_ptr<IZoneTitleBar> MakeZoneTitleBar(ZoneTitleBarStyle style, HINSTANCE hinstance, Rect zone, UINT dpi)
 {
     switch (style)
     {
     case ZoneTitleBarStyle::Numbers:
-        return std::make_unique<NumbersZoneTitleBar>(hinstance, zone);
+        return std::make_unique<NumbersZoneTitleBar>(hinstance, zone, dpi);
 
     case ZoneTitleBarStyle::Icons:
-        return std::make_unique<IconsZoneTitleBar>(hinstance, zone);
+        return std::make_unique<IconsZoneTitleBar>(hinstance, zone, dpi);
 
     case ZoneTitleBarStyle::Tabs:
-        return std::make_unique<TabsZoneTitleBar>(hinstance, zone);
+        return std::make_unique<TabsZoneTitleBar>(hinstance, zone, dpi);
 
     case ZoneTitleBarStyle::None:
     default:

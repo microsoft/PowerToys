@@ -12,4 +12,4 @@ public:
     virtual int GetHeight() const = 0;
 };
 
-std::unique_ptr<IZoneTitleBar> MakeZoneTitleBar(ZoneTitleBarStyle style, HINSTANCE hinstance, FancyZonesUtils::Rect zone);
+std::unique_ptr<IZoneTitleBar> MakeZoneTitleBar(ZoneTitleBarStyle style, HINSTANCE hinstance, FancyZonesUtils::Rect zone, UINT dpi);
