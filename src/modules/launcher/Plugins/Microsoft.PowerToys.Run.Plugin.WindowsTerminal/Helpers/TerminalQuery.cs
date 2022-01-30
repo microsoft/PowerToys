@@ -16,12 +16,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
         /// Static list of all Windows Terminal packages. As key we use the app name and in the value we save the AUMID of each package.
         /// AUMID = ApplicationUserModelId: This is an identifier id for the app. The syntax is '<PackageFamilyName>!App'.
         /// The AUMID of an AppX package will never change. (https://github.com/microsoft/PowerToys/pull/15836#issuecomment-1025204301)
-        private static readonly IReadOnlyDictionary<string, string> Packages =
-            new Dictionary<string, string>()
-            {
-                { "Microsoft.WindowsTerminal", "Microsoft.WindowsTerminal_8wekyb3d8bbwe!App" },
-                { "Microsoft.WindowsTerminalPreview", "Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe!App" },
-            };
+        private static readonly IReadOnlyDictionary<string, string> Packages = new Dictionary<string, string>()
+        {
+            { "Microsoft.WindowsTerminal", "Microsoft.WindowsTerminal_8wekyb3d8bbwe!App" },
+            { "Microsoft.WindowsTerminalPreview", "Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe!App" },
+        };
 
         private readonly PackageManager _packageManager;
 
