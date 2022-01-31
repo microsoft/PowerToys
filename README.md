@@ -73,7 +73,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 In this release, we are continuing our progress toward getting PowerToys ARM64 ready, fix some top issues and new utilities.  Work from last month helped us enable us to upgrade the code base to .NET 5 and next month onward to .NET 6. This will provide stability and speed improvements.
 
-We're also extremely existed to bring on 3 new PowerToy utilities.
+We're also extremely excited to bring on 3 new PowerToy utilities.
 
 - File Explorer add-on: Developer files for preview pane. This should add about 150 file extensions total. We are using the [Monaco Editor](https://github.com/Microsoft/monaco-editor) to power this experience.  Thanks [@aaron-junker](https://github.com/aaron-junker)!
 - File Explorer add-on: STL file format thumbnail and preview pane generation!  Since STL is a common 3D file format, this allows a quick visual check. Thanks [@pedrolamas](https://github.com/pedrolamas)!
