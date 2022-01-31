@@ -6,6 +6,7 @@ trigger:
       - stable
   paths:
     exclude:
+      - **/*.md
       - doc/*
       - temp/*
       - tools/*
