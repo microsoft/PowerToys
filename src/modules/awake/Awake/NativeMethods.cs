@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Awake.Core.Models;
 
 namespace Awake.Core
 {
@@ -14,7 +15,7 @@ namespace Awake.Core
         internal static extern bool SetConsoleCtrlHandler(ConsoleEventHandler handler, bool add);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        internal static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
+        internal static extern ExecutionState SetThreadExecutionState(ExecutionState esFlags);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
