@@ -80,7 +80,7 @@ TODO
 
 #### General
 - .NET runtime is now on 5, our next release will be upgraded to .NET 6. Moving to .NET 5 and then 6 helped reduce our moving parts in a single release so we went this route.  Why this is important is this is one of the major work items needed for ARM64 support. In addition, this should help provide a speed boosts once we are on .NET 6.
-- @jsoref's spelling plugin help
+- [@jsoref's](https://github.com/jsoref) spelling plugin help
 
 #### Always on Top
 - Fixed one of two borders showing incorrectly bugs.
