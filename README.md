@@ -79,7 +79,7 @@ We're also extremely existed to bring on 3 new PowerToy utilities.
 - File Explorer add-on: STL file format thumbnail and preview pane generation!  Since STL is a common 3D file format, this allows a quick visual check. Thanks [@pedrolamas](https://github.com/pedrolamas)!
 - Mouse Utility: Crosshair over pointer via <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd>. This feature was co-developed with the accessibility team at Microsoft. When the team told us about the idea and described trying to find your cursor by looking through a straw, we knew we could leverage code from the other mouse utilities to quickly enable this feature. Below is a quote from one of the testers with a rough validation build:
 
-> "This will change my life and allow me to use any PC without constantly losing the pointer. This is huge! I will be able to work at my normal speed again. It is a total gamechanger for people with visual field impairments!" – Joanna A.
+> "This will change my life and allow me to use any PC without constantly losing the pointer. This is huge! I will be able to work at my normal speed again. It is a total game changer for people with visual field impairments!" – Joanna A.
 
 #### Community
 - We would love to directly say THANK YOU. Filing issues and feature requests takes time and we greatly appreciate it. You help us quickly diagnose, spot trends, and prioritize. We love when people fix bugs and develop new PowerToys every little bit does really help.
