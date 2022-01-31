@@ -28,7 +28,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 - Windows 11 or Windows 10 v1903 (18362) or newer.
 - Our installer will install the following items:
-   - [.NET Core 3.1.22 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.22-windows-x64-installer) or a newer 3.1.x runtime. This is needed currently for the Settings application
+   - [.NET Core 3.1.22 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.22-windows-x64-installer) or a newer 3.1.x runtime. This is needed currently for the Settings application.
    - [.NET 5.0.13 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-5.0.13-windows-x64-installer) or a newer 5.0.x runtime. 
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version. 
 
@@ -69,12 +69,20 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-#### 0.55 - January 2022 Update
+### 0.55 - January 2022 Update
 
-TODO
+In this release, we are continuing our progress toward getting PowerToys ARM64 ready, fix some top issues and new utiltiies.  Work from last month helped us enable us to upgrade the code base to .NET 5 and next month onward to .NET 6. This will provide stability and speed improvements.
 
-### Community
-- We would love to directly say THANK YOU. Filing issues and feature requests takes time and we greatly appreciate it. They help us quickly diagnose, spot trends, and prioritize. We love when people fix bugs and develop new PowerToys every little bit does really help.
+We're also extremely existed to bring on 3 new PowerToy utilties.
+
+- File Explorer add-on: Developer files for preview pane. This should add about 150 file extensions total. We are using the [Monaco Editor](https://github.com/Microsoft/monaco-editor) to power this experience.  Thanks [@aaron-junker](https://github.com/aaron-junker)!
+- File Explorer add-on: STL file format thumbnail and preview pane generation!  Since STL is a common 3D file format, this allows a quick visual check. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+- Mouse Utility: Crosshair over pointer via <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd>. This feature was co-developed with the accessibility team at Microsoft. When the team told us about the idea and described trying to find your cursor by looking through a straw, we knew we could leverage code from the other mouse utitilies to quickly enable this feature. Below is a quote from one of the testers with a rough validation build:
+
+> "This will change my life and allow me to use any PC without constantly losing the pointer. This is huge! I will be able to work at my normal speed again. It is a total gamechanger for people with visual field impairments!" – Joanna A.
+
+#### Community
+- We would love to directly say THANK YOU. Filing issues and feature requests takes time and we greatly appreciate it. You help us quickly diagnose, spot trends, and prioritize. We love when people fix bugs and develop new PowerToys every little bit does really help.
 - [@edwinzap](https://github.com/edwinzap) really helped us validate translation issues when our localization system was in transition.
 - [@bdoserror](https://github.com/bdoserror) quickly pointed out a release note error
 
@@ -101,7 +109,7 @@ TODO
 - Fixed bug resizing bug for constant height while maintaining aspect ratio.  Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)
 
 #### Mouse utilities
-- New Utility - Crosshair over pointer via <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd>. This feature was co-developed with the accessibility team at Microsoft.  Thanks [@niels9001](https://github.com/niels9001) for helping with the icon!
+- New Utility - Crosshair over pointer via <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd>. This feature was co-developed with the accessibility team at Microsoft. Thanks [@niels9001](https://github.com/niels9001) for helping with the icon!
 
 #### PowerRename
 - Files are sorted now how File Explorer sorts.
@@ -127,15 +135,17 @@ TODO
 #### Community contributions
 
 We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software. 
-
 [@Aaron-Junker](https://github.com/Aaron-Junker), [@bdoserror](https://github.com/bdoserror), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@cyberrex5](https://github.com/cyberrex5), [@davidegiacometti](https://github.com/davidegiacometti), [@edwinzap](https://github.com/edwinzap), [@franky920920](https://github.com/franky920920),  [@jay-o-way](https://github.com/jay-o-way), [@jsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), and [@ricardosantos9521](https://github.com/ricardosantos9521)
 
 
 #### What is being planned for v0.56
 
-For [v0.56][github-next-release-work], TODO
+For [v0.56][github-next-release-work], we plan on finishing up the .NET upgrade path to 6.  This will require development to migrate to Visual Studio 2022. We are also shifting back to a continuous number system versus Odd for main and Even for experiemental releases.
 
 - .NET 6 upgrade to all available surfaces
+- A Dialog on update making you aware of what has changed.  You may hear us refer to this as 'scoobe'.
+- 'Shake to activate' find my mouse
+- PowerToy Run plugin improvements
 
 ## PowerToys Community
 
