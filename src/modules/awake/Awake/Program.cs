@@ -13,11 +13,12 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Windows;
 using Awake.Core;
+using Awake.Core.Models;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Newtonsoft.Json;
 using NLog;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -37,6 +38,7 @@ namespace Awake
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private static ConsoleEventHandler _handler;
+        private static SystemPowerCapabilities _powerCapabilities;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         private static ManualResetEvent _exitSignal = new ManualResetEvent(false);
@@ -60,6 +62,11 @@ namespace Awake
             _log.Info(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
             _log.Info($"OS: {Environment.OSVersion}");
             _log.Info($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
+
+            // To make it easier to diagnose future issues, let's get the
+            // system power capabilties and aggregate them in the log.
+            NativeMethods.GetPwrCapabilities(out _powerCapabilities);
+            _log.Info(JsonConvert.SerializeObject(_powerCapabilities));
 
             _log.Info("Parsing parameters...");
 
@@ -251,6 +258,7 @@ namespace Awake
             {
                 RunnerHelper.WaitForPowerToysRunner(pid, () =>
                 {
+                    _log.Info("Triggered PID-based exit handler.");
                     Exit("Terminating from PowerToys binding hook.", 0, true);
                 });
             }

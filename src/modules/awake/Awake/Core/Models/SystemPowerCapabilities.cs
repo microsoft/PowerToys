@@ -60,7 +60,7 @@ namespace Awake.Core.Models
         [MarshalAs(UnmanagedType.U1)]
         public bool BatteriesAreShortTerm;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-        public BATTERY_REPORTING_SCALE[] BatteryScale;
+        public BatteryReportingScale[] BatteryScale;
         public SystemPowerState AcOnLineWake;
         public SystemPowerState SoftLidWake;
         public SystemPowerState RtcWake;
