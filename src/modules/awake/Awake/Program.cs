@@ -32,7 +32,7 @@ namespace Awake
         // that does not map to PowerToys broad versioning to pinpoint
         // internal issues easier.
         // Format of the build ID is: CODENAME_MMDDYYYY, where MMDDYYYY
-        // is represenative of the date when the last change was made before
+        // is representative of the date when the last change was made before
         // the pull request is issued.
         private static readonly string BuildId = "ARBITER_01312022";
 
@@ -73,7 +73,7 @@ namespace Awake
             _log.Info($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
 
             // To make it easier to diagnose future issues, let's get the
-            // system power capabilties and aggregate them in the log.
+            // system power capabilities and aggregate them in the log.
             NativeMethods.GetPwrCapabilities(out _powerCapabilities);
             _log.Info(JsonConvert.SerializeObject(_powerCapabilities));
 
