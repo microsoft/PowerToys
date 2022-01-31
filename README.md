@@ -140,7 +140,7 @@ We'd like to directly mention certain contributors (in alphabetical order) for t
 
 #### What is being planned for v0.56
 
-For [v0.56][github-next-release-work], we plan on finishing up the .NET upgrade path to 6.  This will require development to migrate to Visual Studio 2022. We are also shifting back to a continuous number system versus Odd for main and Even for experimental releases.
+For [v0.56][github-next-release-work], we plan on finishing up the .NET upgrade path to 6.  This will require development to migrate to Visual Studio 2022. We are also shifting back to a continuous version number system versus Odd for main and Even for experimental releases.
 
 - .NET 6 upgrade to all available surfaces
 - A Dialog on update making you aware of what has changed. 
