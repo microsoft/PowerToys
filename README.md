@@ -74,7 +74,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 TODO
 
 ### Community
-- We would love to directly say THANK YOU. Filing issues and feature requests takes time and we greatly appreciate it. They help us quickly diagnosis, spot trends, and prioritize. We love when people fix bugs and develop new PowerToys every little bit does really help.
+- We would love to directly say THANK YOU. Filing issues and feature requests takes time and we greatly appreciate it. They help us quickly diagnose, spot trends, and prioritize. We love when people fix bugs and develop new PowerToys every little bit does really help.
 - [@edwinzap](https://github.com/edwinzap) really helped us validate translation issues when our localization system was in transition.
 - [@bdoserror](https://github.com/bdoserror) quickly pointed out a release note error
 
