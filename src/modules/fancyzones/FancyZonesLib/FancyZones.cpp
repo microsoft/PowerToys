@@ -419,7 +419,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    const bool isZoned = reinterpret_cast<ZoneIndex>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0;
+    const bool isZoned = !GetZoneIndexSet(window).empty();
     if (isZoned)
     {
         return;
