@@ -103,7 +103,7 @@
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.19" />
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />
-    <PackageReference Include="SharpZipLib" Version="1.2.0" />
+    <PackageReference Include="SharpZipLib" Version="1.3.3" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />    
     <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />
     <PackageReference Include="System.Data.OleDb" Version="4.7.1" />
