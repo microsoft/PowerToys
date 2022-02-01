@@ -102,7 +102,7 @@ We're also extremely excited to bring on 3 new PowerToy utilities.
 #### File explorer add-ons
 - GCode thumbnails now have transparency. Thanks [@pedrolamas](https://github.com/pedrolamas)
 - New Utility - Developer files for File Explorer preview pane. This should add about 150 file extensions total. We are using the [Monaco Editor](https://github.com/Microsoft/monaco-editor) to power this experience.  Thanks [@aaron-junker](https://github.com/aaron-junker)!
-- New Utility - STL thumbnail and preview panes added!  Thanks [@pedrolamas](https://github.com/pedrolamas)!
+- New Utility - STL thumbnails added! Preview pane support is already in Windows. Thanks [@pedrolamas](https://github.com/pedrolamas)!
 
 #### Image Resizer
 - Fixed bug with too much meta data.  Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)
