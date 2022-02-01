@@ -315,7 +315,6 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
 
     RECT size;
     bool sizeEmpty = true;
-    Bitmask bitmask = 0;
     auto& indexSet = m_windowIndexSet[window];
 
     for (ZoneIndex id : zoneIds)
@@ -339,11 +338,6 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
 
             indexSet.push_back(id);
         }
-
-        if (id < std::numeric_limits<ZoneIndex>::digits)
-        {
-            bitmask |= 1ull << id;
-        }
     }
 
     if (!sizeEmpty)
@@ -356,7 +350,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
             SizeWindowToRect(window, rect);
         }
 
-        StampWindow(window, bitmask);
+        StampWindow(window, Bitmask::FromIndexSet(indexSet));
         InsertTabIntoZone(window, tabSortKeyWithinZone, indexSet);
     }
 }

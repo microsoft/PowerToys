@@ -3,6 +3,9 @@
 #include <vector>
 #include <optional>
 
+#include <common/logger/logger.h>
+#include <common/utils/winapi_error.h>
+
 #include <FancyZonesLib/Zone.h>
 
 // Zoned window properties are not localized.
@@ -19,32 +22,31 @@ namespace ZonedWindowProperties
 inline ZoneIndexSet GetZoneIndexSet(HWND window)
 {
     HANDLE handle = ::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID);
-    ZoneIndexSet zoneIndexSet;
-
-    std::array<int, 2> data;
-    memcpy(data.data(), &handle, sizeof data);
-    uint64_t bitmask = ((uint64_t)data[1] << 32) + data[0];
     
-    if (bitmask != 0)
-    {
-        for (int i = 0; i < std::numeric_limits<ZoneIndex>::digits; i++)
-        {
-            if ((1ull << i) & bitmask)
-            {
-                zoneIndexSet.push_back(i);
-            }
-        }
-    }
+    std::array<int, 4> data;
+    memcpy(data.data(), &handle, sizeof data);
 
-    return zoneIndexSet;
+    Bitmask bitmask{
+        .part1 = (static_cast<decltype(bitmask.part1)>(data[1]) << 32) + data[0],
+        .part2 = (static_cast<decltype(bitmask.part1)>(data[3]) << 32) + data[2]
+    };
+    
+    return bitmask.ToIndexSet();
 }
 
 inline void StampWindow(HWND window, Bitmask bitmask) noexcept
 {
-    std::array<int, 2> data = { static_cast<int>(bitmask), (bitmask >> 32) };
-    HANDLE rawData;
-    memcpy(&rawData, data.data(), sizeof data);
-    SetProp(window, ZonedWindowProperties::PropertyMultipleZoneID, rawData);
+    std::array<int, 4> data = { 
+        static_cast<int>(bitmask.part1), 
+        static_cast<int>(bitmask.part1 >> 32),
+        static_cast<int>(bitmask.part2),
+        static_cast<int>(bitmask.part2 >> 32)
+    };
+
+    if (!SetProp(window, ZonedWindowProperties::PropertyMultipleZoneID, (HANDLE)data.data()))
+    {
+        Logger::error(L"Failed to stamp window {}", get_last_error_or_default(GetLastError()));
+    }
 }
 
 inline std::optional<size_t> GetTabSortKeyWithinZone(HWND window)

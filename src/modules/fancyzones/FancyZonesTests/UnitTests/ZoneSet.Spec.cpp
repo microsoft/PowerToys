@@ -1066,4 +1066,33 @@ namespace FancyZonesUnitTests
                     }
                 }
     };
+
+    TEST_CLASS(ZoneIndexSetUnitTests)
+    {
+        TEST_METHOD (BitmaskFromIndexSetTest)
+        {
+            // prepare
+            ZoneIndexSet set {0, 64};
+            
+            // test
+            Bitmask bitmask = Bitmask::FromIndexSet(set);
+            Assert::AreEqual(static_cast<uint64_t>(1), bitmask.part1);
+            Assert::AreEqual(static_cast<uint64_t>(1), bitmask.part2);
+        }
+
+        TEST_METHOD(BitmaskToIndexSet)
+        {
+            // prepare
+            Bitmask bitmask{
+                .part1 = 32768, //1000 0000 0000 0000
+                .part2 = 1, // 0000 0000 0000 0001
+            };
+
+            // test
+            ZoneIndexSet set = bitmask.ToIndexSet();
+            Assert::AreEqual(static_cast<size_t>(2), set.size());
+            Assert::AreEqual(static_cast<ZoneIndex>(0), set[0]);
+            Assert::AreEqual(static_cast<ZoneIndex>(78), set[1]);
+        }
+    };
 }

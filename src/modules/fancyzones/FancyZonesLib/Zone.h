@@ -1,13 +1,11 @@
 #pragma once
 
+#include <FancyZonesLib/ZoneIndexTypedef.h>
+
 namespace ZoneConstants
 {
     constexpr int MAX_NEGATIVE_SPACING = -20;
 }
-
-using ZoneIndex = int64_t;
-using ZoneIndexSet = std::vector<ZoneIndex>;
-using Bitmask = ZoneIndex;
 
 /**
  * Class representing one zone inside applied zone layout, which is basically wrapper around rectangle structure.
