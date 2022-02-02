@@ -391,6 +391,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
              cmdLine.find("--dont-elevate") != std::string::npos))
         {
             result = runner(elevated, open_settings, settings_window, openOobe);
+
+            // Save settings on closing
+            auto general_settings = get_general_settings();
+            PTSettingsHelper::save_general_settings(general_settings.to_json());
         }
         else
         {
@@ -404,10 +408,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         MessageBoxW(nullptr, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
         result = -1;
     }
-
-    // Save settings on closing
-    auto general_settings = get_general_settings();
-    PTSettingsHelper::save_general_settings(general_settings.to_json());
 
     // We need to release the mutexes to be able to restart the application
     if (msi_mutex)
