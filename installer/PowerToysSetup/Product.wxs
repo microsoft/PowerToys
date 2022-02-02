@@ -148,7 +148,7 @@
           Impersonate="yes"
           Return="asyncNoWait"
           FileKey="PowerToys.exe"
-          ExeCommand="" />
+          ExeCommand="--dont-elevate" />
 
         <CustomAction
           Id="TerminateProcesses"

@@ -386,7 +386,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         apply_general_settings(general_settings, false);
         int rvalue = 0;
         const bool elevated = is_process_elevated();
-        if ((elevated ||
+
+        if (elevated && cmdLine.find("--dont-elevate") != std::string::npos &&
+            general_settings.GetNamedBoolean(L"run_elevated", false) == false) {
+            schedule_restart_as_non_elevated();
+            result = 0;
+        }
+        else if ((elevated ||
              general_settings.GetNamedBoolean(L"run_elevated", false) == false ||
              cmdLine.find("--dont-elevate") != std::string::npos))
         {
