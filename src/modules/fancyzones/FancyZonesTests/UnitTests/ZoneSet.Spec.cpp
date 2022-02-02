@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include "FancyZonesLib\FancyZonesDataTypes.h"
+#include "FancyZonesLib\ZoneIndexSetBitmask.h"
 #include "FancyZonesLib\JsonHelpers.h"
 #include "FancyZonesLib\VirtualDesktop.h"
 #include "FancyZonesLib\ZoneSet.h"
