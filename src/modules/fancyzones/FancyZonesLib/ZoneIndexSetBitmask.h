@@ -1,10 +1,6 @@
 #pragma once
 
-#include <cstdint>
-#include <set>
-
-using ZoneIndex = int64_t;
-using ZoneIndexSet = std::vector<ZoneIndex>;
+#include <FancyZonesLib/Zone.h>
 
 struct ZoneIndexSetBitmask
 {
@@ -30,7 +26,7 @@ struct ZoneIndexSetBitmask
 
         return bitmask;
     }
-    
+
     ZoneIndexSet ToIndexSet() const noexcept
     {
         ZoneIndexSet zoneIndexSet;

@@ -164,10 +164,10 @@ bool AppZoneHistory::RemoveAppLastZone(HWND window, const FancyZonesDataTypes::D
                     }
 
                     // if there is another instance of same application placed in the same zone don't erase history
-                    auto windowZoneStamps = GetZoneIndexSet(window);
+                    auto windowZoneStamps = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
                     for (auto placedWindow : data->processIdToHandleMap)
                     {
-                        auto placedWindowZoneStamps = GetZoneIndexSet(placedWindow.second);
+                        auto placedWindowZoneStamps = FancyZonesWindowProperties::RetrieveZoneIndexProperty(placedWindow.second);
                         if (IsWindow(placedWindow.second) && (windowZoneStamps == placedWindowZoneStamps))
                         {
                             return false;

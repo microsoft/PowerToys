@@ -267,7 +267,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
             }
         }
         
-        RemoveStampProperty(window);
+        FancyZonesWindowProperties::RemoveZoneIndexProperty(window);
     }
 
     m_inDragging = false;

@@ -310,7 +310,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
         m_windowInitialIndexSet.erase(window);
     }
 
-    auto tabSortKeyWithinZone = GetTabSortKeyWithinZone(window);
+    auto tabSortKeyWithinZone = FancyZonesWindowProperties::GetTabSortKeyWithinZone(window);
     DismissWindow(window);
 
     RECT size;
@@ -350,7 +350,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
             SizeWindowToRect(window, rect);
         }
 
-        StampWindow(window, ZoneIndexSetBitmask::FromIndexSet(indexSet));
+        FancyZonesWindowProperties::StampZoneIndexProperty(window, indexSet);
         InsertTabIntoZone(window, tabSortKeyWithinZone, indexSet);
     }
 }
@@ -571,7 +571,7 @@ void ZoneSet::DismissWindow(HWND window) noexcept
         indexSet.clear();
     }
 
-    SetTabSortKeyWithinZone(window, std::nullopt);
+    FancyZonesWindowProperties::SetTabSortKeyWithinZone(window, std::nullopt);
 }
 
 IFACEMETHODIMP_(void)
@@ -624,7 +624,7 @@ void ZoneSet::InsertTabIntoZone(HWND window, std::optional<size_t> tabSortKeyWit
     {
         // Insert the tab using the provided sort key
         auto predicate = [tabSortKeyWithinZone](HWND tab) {
-            auto currentTabSortKeyWithinZone = GetTabSortKeyWithinZone(tab);
+            auto currentTabSortKeyWithinZone = FancyZonesWindowProperties::GetTabSortKeyWithinZone(tab);
             if (currentTabSortKeyWithinZone.has_value())
             {
                 return currentTabSortKeyWithinZone.value() > tabSortKeyWithinZone;
@@ -645,7 +645,7 @@ void ZoneSet::InsertTabIntoZone(HWND window, std::optional<size_t> tabSortKeyWit
         if (!m_windowsByIndexSets[indexSet].empty())
         {
             auto prevTab = m_windowsByIndexSets[indexSet].back();
-            auto prevTabSortKeyWithinZone = GetTabSortKeyWithinZone(prevTab);
+            auto prevTabSortKeyWithinZone = FancyZonesWindowProperties::GetTabSortKeyWithinZone(prevTab);
             if (prevTabSortKeyWithinZone.has_value())
             {
                 tabSortKeyWithinZone = prevTabSortKeyWithinZone.value() + 1;
@@ -655,7 +655,7 @@ void ZoneSet::InsertTabIntoZone(HWND window, std::optional<size_t> tabSortKeyWit
         m_windowsByIndexSets[indexSet].push_back(window);
     }
 
-    SetTabSortKeyWithinZone(window, tabSortKeyWithinZone);
+    FancyZonesWindowProperties::SetTabSortKeyWithinZone(window, tabSortKeyWithinZone);
 }
 
 IFACEMETHODIMP_(bool)
