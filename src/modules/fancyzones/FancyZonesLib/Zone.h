@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FancyZonesLib/ZoneIndexTypedef.h>
+#include <FancyZonesLib/ZoneIndexSet.h>
 
 namespace ZoneConstants
 {

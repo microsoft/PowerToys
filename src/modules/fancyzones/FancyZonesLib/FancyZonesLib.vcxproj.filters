@@ -114,7 +114,7 @@
     <ClInclude Include="FancyZonesData\Layout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ZoneIndexTypedef.h">
+    <ClInclude Include="ZoneIndexSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

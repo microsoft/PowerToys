@@ -266,7 +266,8 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
                 }
             }
         }
-        ::RemoveProp(window, ZonedWindowProperties::PropertyMultipleZoneID);
+        
+        RemoveStampProperty(window);
     }
 
     m_inDragging = false;

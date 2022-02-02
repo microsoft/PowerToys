@@ -1075,7 +1075,7 @@ namespace FancyZonesUnitTests
             ZoneIndexSet set {0, 64};
             
             // test
-            Bitmask bitmask = Bitmask::FromIndexSet(set);
+            ZoneIndexSetBitmask bitmask = ZoneIndexSetBitmask::FromIndexSet(set);
             Assert::AreEqual(static_cast<uint64_t>(1), bitmask.part1);
             Assert::AreEqual(static_cast<uint64_t>(1), bitmask.part2);
         }
@@ -1083,16 +1083,16 @@ namespace FancyZonesUnitTests
         TEST_METHOD(BitmaskToIndexSet)
         {
             // prepare
-            Bitmask bitmask{
-                .part1 = 32768, //1000 0000 0000 0000
-                .part2 = 1, // 0000 0000 0000 0001
+            ZoneIndexSetBitmask bitmask{
+                .part1 = 1,
+                .part2 = 1,
             };
 
             // test
             ZoneIndexSet set = bitmask.ToIndexSet();
             Assert::AreEqual(static_cast<size_t>(2), set.size());
             Assert::AreEqual(static_cast<ZoneIndex>(0), set[0]);
-            Assert::AreEqual(static_cast<ZoneIndex>(78), set[1]);
+            Assert::AreEqual(static_cast<ZoneIndex>(64), set[1]);
         }
     };
 }

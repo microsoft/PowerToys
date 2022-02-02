@@ -350,7 +350,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
             SizeWindowToRect(window, rect);
         }
 
-        StampWindow(window, Bitmask::FromIndexSet(indexSet));
+        StampWindow(window, ZoneIndexSetBitmask::FromIndexSet(indexSet));
         InsertTabIntoZone(window, tabSortKeyWithinZone, indexSet);
     }
 }

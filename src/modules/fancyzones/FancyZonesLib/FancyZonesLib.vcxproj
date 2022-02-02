@@ -67,7 +67,7 @@
     <ClInclude Include="FancyZonesWindowProperties.h" />
     <ClInclude Include="Zone.h" />
     <ClInclude Include="ZoneColors.h" />
-    <ClInclude Include="ZoneIndexTypedef.h" />
+    <ClInclude Include="ZoneIndexSet.h" />
     <ClInclude Include="ZoneSet.h" />
     <ClInclude Include="WorkArea.h" />
     <ClInclude Include="ZonesOverlay.h" />
