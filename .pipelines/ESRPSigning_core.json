@@ -173,7 +173,6 @@
                 "HelixToolkit.Core.Wpf.dll",
                 "Mages.Core.dll",
                 "JetBrains.Annotations.dll",
-                "ICSharpCode.SharpZipLib.dll",
                 "NLog.Extensions.Logging.dll", 
                 "concrt140_app.dll",
                 "msvcp140_1_app.dll",
