@@ -927,7 +927,9 @@
         ".svg",
         ".svgz",
         ".opf",
-        ".xsl"
+        ".xsl",
+        ".xsd",
+        ".wsdl"
       ],
       "firstLine": "(\\<\\?xml.*)|(\\<svg)|(\\<\\!doctype\\s+svg)",
       "aliases": [
