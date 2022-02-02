@@ -1094,5 +1094,42 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(static_cast<ZoneIndex>(0), set[0]);
             Assert::AreEqual(static_cast<ZoneIndex>(64), set[1]);
         }
+
+        TEST_METHOD (BitmaskConvertTest)
+        {
+            // prepare
+            ZoneIndexSet set{ 53, 54, 55, 65, 66, 67 };
+            
+            ZoneIndexSetBitmask bitmask = ZoneIndexSetBitmask::FromIndexSet(set);
+
+            // test
+            ZoneIndexSet actual = bitmask.ToIndexSet();
+            Assert::AreEqual(set.size(), actual.size());
+            for (int i = 0; i < set.size(); i++)
+            {
+                Assert::AreEqual(set[i], actual[i]);
+            }
+        }
+
+        TEST_METHOD (BitmaskConvert2Test)
+        {
+            // prepare
+            ZoneIndexSet set;
+            for (int i = 0; i < 128; i++)
+            {
+                set.push_back(i);
+            }
+
+            ZoneIndexSetBitmask bitmask = ZoneIndexSetBitmask::FromIndexSet(set);
+            
+            // test
+            ZoneIndexSet actual = bitmask.ToIndexSet();
+
+            Assert::AreEqual(set.size(), actual.size());
+            for (int i = 0; i < set.size(); i++)
+            {
+                Assert::AreEqual(set[i], actual[i]);
+            }
+        }
     };
 }

@@ -17,13 +17,14 @@ struct ZoneIndexSetBitmask
 
         for (const auto zoneIndex : set)
         {
-            if (zoneIndex < std::numeric_limits<ZoneIndex>::digits)
+            if (zoneIndex <= std::numeric_limits<ZoneIndex>::digits)
             {
                 bitmask.part1 |= 1ull << zoneIndex;
             }
             else
             {
-                bitmask.part2 = 1ull << zoneIndex;
+                ZoneIndex index = zoneIndex - std::numeric_limits<ZoneIndex>::digits - 1;
+                bitmask.part2 |= 1ull << index;
             }
         }
 
@@ -36,7 +37,7 @@ struct ZoneIndexSetBitmask
 
         if (part1 != 0)
         {
-            for (ZoneIndex i = 0; i < std::numeric_limits<ZoneIndex>::digits; i++)
+            for (ZoneIndex i = 0; i <= std::numeric_limits<ZoneIndex>::digits; i++)
             {
                 if ((1ull << i) & part1)
                 {
@@ -47,7 +48,7 @@ struct ZoneIndexSetBitmask
 
         if (part2 != 0)
         {
-            for (ZoneIndex i = 0; i < std::numeric_limits<ZoneIndex>::digits; i++)
+            for (ZoneIndex i = 0; i <= std::numeric_limits<ZoneIndex>::digits; i++)
             {
                 if ((1ull << i) & part2)
                 {
