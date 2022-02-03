@@ -14,10 +14,12 @@ namespace PowerLauncher.Helper
         {
             private readonly Uri _uri;
 
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
             public DataWebRequest(Uri uri)
             {
                 _uri = uri;
             }
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
             public override WebResponse GetResponse()
             {
