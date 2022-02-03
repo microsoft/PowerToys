@@ -53,6 +53,8 @@ namespace Wox.Infrastructure.Http
             }
 
 #pragma warning disable SYSLIB0014 // Type or member is obsolete
+
+            // TODO: Verify if it's dead code or replace with HttpClient
             var client = new WebClient { Proxy = WebProxy() };
 #pragma warning restore SYSLIB0014 // Type or member is obsolete
             client.Headers.Add("user-agent", UserAgent);
