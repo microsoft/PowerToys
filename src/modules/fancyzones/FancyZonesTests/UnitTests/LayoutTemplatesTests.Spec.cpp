@@ -13,7 +13,7 @@ namespace FancyZonesUnitTests
     TEST_CLASS (LayoutTemplatesUnitTests)
     {
         FancyZonesData& m_fzData = FancyZonesDataInstance();
-        std::wstring m_testFolder = L"FancyZonesUnitTests";
+        std::wstring m_testFolder = L"FancyZones_LayoutTemplatesUnitTests";
 
         TEST_METHOD_INITIALIZE(Init)
         {
