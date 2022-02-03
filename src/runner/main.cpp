@@ -386,11 +386,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         apply_general_settings(general_settings, false);
         int rvalue = 0;
         const bool elevated = is_process_elevated();
-        if ((elevated ||
+
+        if (elevated && cmdLine.find("--dont-elevate") != std::string::npos &&
+            general_settings.GetNamedBoolean(L"run_elevated", false) == false) {
+            schedule_restart_as_non_elevated();
+            result = 0;
+        }
+        else if ((elevated ||
              general_settings.GetNamedBoolean(L"run_elevated", false) == false ||
              cmdLine.find("--dont-elevate") != std::string::npos))
         {
             result = runner(elevated, open_settings, settings_window, openOobe);
+
+            // Save settings on closing
+            auto general_settings = get_general_settings();
+            PTSettingsHelper::save_general_settings(general_settings.to_json());
         }
         else
         {
@@ -404,10 +414,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         MessageBoxW(nullptr, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR);
         result = -1;
     }
-
-    // Save settings on closing
-    auto general_settings = load_general_settings();
-    apply_general_settings(general_settings);
 
     // We need to release the mutexes to be able to restart the application
     if (msi_mutex)

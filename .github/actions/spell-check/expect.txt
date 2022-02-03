@@ -2013,6 +2013,7 @@ tadele
 talynone
 TApp
 TApplication
+TApplied
 targ
 TARGETAPPHEADER
 TARGETDIR
@@ -2299,7 +2300,7 @@ WINL
 winmd
 winmm
 WINMSAPP
-winnt
+WINNT
 winres
 winrt
 winsdk

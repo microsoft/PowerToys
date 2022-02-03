@@ -84,37 +84,32 @@ namespace FancyZonesEditor
                 FancyZonesEditorIO.ParseCommandLineArguments();
             }
 
-            var parseResult = FancyZonesEditorIO.ParseZoneSettings();
-
-            // 10ms retry loop with 1 second timeout
-            if (!parseResult.Result)
-            {
-                CancellationTokenSource ts = new CancellationTokenSource();
-                Task t = Task.Run(() =>
-                {
-                    while (!parseResult.Result && !ts.IsCancellationRequested)
-                    {
-                        Task.Delay(10).Wait();
-                        parseResult = FancyZonesEditorIO.ParseZoneSettings();
-                    }
-                });
-
-                try
-                {
-                    bool result = t.Wait(1000, ts.Token);
-                    ts.Cancel();
-                }
-                catch (OperationCanceledException)
-                {
-                    ts.Dispose();
-                }
-            }
-
-            // Error message if parsing failed
+            var parseResult = FancyZonesEditorIO.ParseAppliedLayouts();
             if (!parseResult.Result)
             {
                 Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
-                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Title, MessageBoxButton.OK);
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
+            }
+
+            parseResult = FancyZonesEditorIO.ParseCustomLayouts();
+            if (!parseResult.Result)
+            {
+                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
+            }
+
+            parseResult = FancyZonesEditorIO.ParseLayoutHotkeys();
+            if (!parseResult.Result)
+            {
+                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
+            }
+
+            parseResult = FancyZonesEditorIO.ParseLayoutTemplates();
+            if (!parseResult.Result)
+            {
+                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
             }
 
             MainWindowSettingsModel settings = ((App)Current).MainWindowSettings;

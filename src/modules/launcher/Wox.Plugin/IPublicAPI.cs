@@ -65,12 +65,6 @@ namespace Wox.Plugin
         void ShowMsg(string title, string subTitle = "", string iconPath = "", bool useMainWindowAsOwner = true);
 
         /// <summary>
-        /// Install Wox plugin
-        /// </summary>
-        /// <param name="path">Plugin path (ends with .wox)</param>
-        void InstallPlugin(string path);
-
-        /// <summary>
         /// Get all loaded plugins
         /// </summary>
         List<PluginPair> GetAllPlugins();

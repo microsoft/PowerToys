@@ -5,8 +5,10 @@
 #include <common/logger/logger.h>
 #include <common/utils/process_path.h>
 
+#include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/util.h>
 
 AppZoneHistory::AppZoneHistory()
 {
@@ -104,7 +106,7 @@ bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::Dev
         auto& perDesktopData = history->second;
         for (auto& data : perDesktopData)
         {
-            if (data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
+            if (data.deviceId == deviceId)
             {
                 // application already has history on this work area, update it with new window position
                 data.processIdToHandleMap[processId] = window;
@@ -151,7 +153,7 @@ bool AppZoneHistory::RemoveAppLastZone(HWND window, const FancyZonesDataTypes::D
             auto& perDesktopData = history->second;
             for (auto data = std::begin(perDesktopData); data != std::end(perDesktopData);)
             {
-                if (data->deviceId.isEqualWithNullVirtualDesktopId(deviceId) && data->zoneSetUuid == zoneSetId)
+                if (data->deviceId == deviceId && data->zoneSetUuid == zoneSetId)
                 {
                     if (!IsAnotherWindowOfApplicationInstanceZoned(window, deviceId))
                     {
@@ -209,7 +211,7 @@ std::optional<FancyZonesDataTypes::AppZoneHistoryData> AppZoneHistory::GetZoneHi
         auto historyVector = iter->second;
         for (const auto& history : historyVector)
         {
-            if (history.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
+            if (history.deviceId == deviceId)
             {
                 return history;
             }
@@ -230,7 +232,7 @@ bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, cons
             auto& perDesktopData = history->second;
             for (auto& data : perDesktopData)
             {
-                if (data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
+                if (data.deviceId == deviceId)
                 {
                     DWORD processId = 0;
                     GetWindowThreadProcessId(window, &processId);
@@ -264,7 +266,7 @@ void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDat
             auto& perDesktopData = history->second;
             for (auto& data : perDesktopData)
             {
-                if (data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
+                if (data.deviceId == deviceId)
                 {
                     DWORD processId = 0;
                     GetWindowThreadProcessId(window, &processId);
@@ -287,7 +289,7 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
             const auto& perDesktopData = history->second;
             for (const auto& data : perDesktopData)
             {
-                if (data.zoneSetUuid == zoneSetId && data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
+                if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
                 {
                     return data.zoneIndexSet;
                 }
@@ -298,16 +300,68 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
     return {};
 }
 
-void AppZoneHistory::RemoveDesktopAppZoneHistory(GUID desktopId)
+void AppZoneHistory::SyncVirtualDesktops(GUID currentVirtualDesktopId)
 {
+    _TRACER_;
+    // Explorer persists current virtual desktop identifier to registry on a per session basis,
+    // but only after first virtual desktop switch happens. If the user hasn't switched virtual
+    // desktops in this session value in registry will be empty and we will use default GUID in
+    // that case (00000000-0000-0000-0000-000000000000).
+    
+    bool dirtyFlag = false;
+
+    for (auto& [path, perDesktopData] : m_history)
+    {
+        for (auto& data : perDesktopData)
+        {
+            if (data.deviceId.virtualDesktopId == GUID_NULL)
+            {
+                data.deviceId.virtualDesktopId = currentVirtualDesktopId;
+                dirtyFlag = true;
+            }
+            else
+            {
+                if (m_virtualDesktopCheckCallback && !m_virtualDesktopCheckCallback(data.deviceId.virtualDesktopId))
+                {
+                    data.deviceId.virtualDesktopId = GUID_NULL;
+                    dirtyFlag = true;
+                }
+            }
+        }
+    }
+
+    if (dirtyFlag)
+    {
+        wil::unique_cotaskmem_string virtualDesktopIdStr;
+        if (SUCCEEDED(StringFromCLSID(currentVirtualDesktopId, &virtualDesktopIdStr)))
+        {
+            Logger::info(L"Update Virtual Desktop id to {}", virtualDesktopIdStr.get());
+        }
+
+        SaveData();
+    }
+}
+
+void AppZoneHistory::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops)
+{
+    std::unordered_set<GUID> active(std::begin(activeDesktops), std::end(activeDesktops));
+    bool dirtyFlag = false;
+
     for (auto it = std::begin(m_history); it != std::end(m_history);)
     {
         auto& perDesktopData = it->second;
         for (auto desktopIt = std::begin(perDesktopData); desktopIt != std::end(perDesktopData);)
         {
-            if (desktopIt->deviceId.virtualDesktopId == desktopId)
+            if (desktopIt->deviceId.virtualDesktopId != GUID_NULL && !active.contains(desktopIt->deviceId.virtualDesktopId))
             {
+                auto virtualDesktopIdStr = FancyZonesUtils::GuidToString(desktopIt->deviceId.virtualDesktopId);
+                if (virtualDesktopIdStr)
+                {
+                    Logger::info(L"Remove Virtual Desktop id {} from app-zone-history", virtualDesktopIdStr.value());
+                }
+
                 desktopIt = perDesktopData.erase(desktopIt);
+                dirtyFlag = true;
             }
             else
             {
@@ -323,5 +377,10 @@ void AppZoneHistory::RemoveDesktopAppZoneHistory(GUID desktopId)
         {
             ++it;
         }
+    }
+
+    if (dirtyFlag)
+    {
+        SaveData();
     }
 }

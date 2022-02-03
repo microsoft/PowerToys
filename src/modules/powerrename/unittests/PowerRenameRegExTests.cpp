@@ -87,7 +87,7 @@ TEST_METHOD(VerifyDefaultFlags)
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = 0;
     Assert::IsTrue(renameRegEx->GetFlags(&flags) == S_OK);
-    Assert::IsTrue(flags == MatchAllOccurences);
+    Assert::IsTrue(flags == 0);
 }
 
 TEST_METHOD(VerifyCaseSensitiveSearch)
