@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.32014.148
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.452
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "runner", "src\runner\runner.vcxproj", "{9412D5C6-2CF2-4FC2-A601-B55508EA9B27}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -356,6 +356,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-PdfThumbnailProvider", "src\modules\previewpane\UnitTests-PdfThumbnailProvider\UnitTests-PdfThumbnailProvider.csproj", "{F40C3397-1834-4530-B2D9-8F8B8456BCDF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.WindowsTerminal", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsTerminal\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.csproj", "{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests.csproj", "{4ED320BC-BA04-4D42-8D15-CBE62151F08B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUIHost", "src\modules\powerrename\PowerRenameUIHost\PowerRenameUIHost.vcxproj", "{F7EC4E6C-19CA-4FBD-9918-B8AC5FEF4F63}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -978,6 +980,13 @@ Global
 		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}.Release|x64.ActiveCfg = Release|x64
 		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}.Release|x64.Build.0 = Release|x64
 		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}.Release|x86.ActiveCfg = Release|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Debug|x64.ActiveCfg = Debug|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Debug|x64.Build.0 = Debug|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Debug|x86.ActiveCfg = Debug|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Release|x64.ActiveCfg = Release|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Release|x64.Build.0 = Release|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Release|x86.ActiveCfg = Release|Any CPU
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Release|x86.Build.0 = Release|Any CPU
 		{F7EC4E6C-19CA-4FBD-9918-B8AC5FEF4F63}.Debug|x64.ActiveCfg = Debug|x64
 		{F7EC4E6C-19CA-4FBD-9918-B8AC5FEF4F63}.Debug|x64.Build.0 = Debug|x64
 		{F7EC4E6C-19CA-4FBD-9918-B8AC5FEF4F63}.Debug|x86.ActiveCfg = Debug|x64
@@ -1181,6 +1190,7 @@ Global
 		{11491FD8-F921-48BF-880C-7FEA185B80A1} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{F40C3397-1834-4530-B2D9-8F8B8456BCDF} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{F7EC4E6C-19CA-4FBD-9918-B8AC5FEF4F63} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{4642D596-723F-4BFC-894C-46811219AC4A} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{322566EF-20DC-43A6-B9F8-616AF942579A} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
