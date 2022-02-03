@@ -52,7 +52,9 @@ namespace Wox.Infrastructure.Http
                 throw new ArgumentNullException(nameof(url));
             }
 
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
             var client = new WebClient { Proxy = WebProxy() };
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
             client.Headers.Add("user-agent", UserAgent);
             client.DownloadFile(url.AbsoluteUri, filePath);
             client.Dispose();
