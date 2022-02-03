@@ -148,4 +148,5 @@ steps:
       **\UnitTests-CommonLib.dll
       **\PowerRenameUnitTests.dll
       **\powerpreviewTest.dll
+      **\UnitTests-FancyZones.dll
       !**\obj\**
