@@ -277,6 +277,12 @@ void InclusiveCrosshairs::ApplySettings(InclusiveCrosshairsSettings& settings, b
     if (applyToRunTimeObjects)
     {
         // Runtime objects already created. Should update in the owner thread.
+        if (m_dispatcherQueueController == nullptr)
+        {
+            Logger::warn("Tried accessing the dispatch queue controller before it was initialized.");
+            // No dispatcher Queue Controller? Means initialization still hasn't run, so settings will be applied then.
+            return;
+        }
         auto dispatcherQueue = m_dispatcherQueueController.DispatcherQueue();
         InclusiveCrosshairsSettings localSettings = settings;
         bool enqueueSucceeded = dispatcherQueue.TryEnqueue([=]() {

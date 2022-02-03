@@ -630,7 +630,7 @@ namespace FancyZonesEditor.Utils
                 }
             }
 
-            return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Layout_Templates_Message);
+            return new ParsingResult(true);
         }
 
         public ParsingResult ParseCustomLayouts()
@@ -670,7 +670,7 @@ namespace FancyZonesEditor.Utils
                 }
             }
 
-            return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Custom_Layouts_Message);
+            return new ParsingResult(true);
         }
 
         public void SerializeAppliedLayouts()

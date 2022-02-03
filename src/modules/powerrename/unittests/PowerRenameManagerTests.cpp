@@ -8,7 +8,7 @@
 #include "TestFileHelper.h"
 #include "Helpers.h"
 
-#define DEFAULT_FLAGS MatchAllOccurences
+#define DEFAULT_FLAGS 0
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
