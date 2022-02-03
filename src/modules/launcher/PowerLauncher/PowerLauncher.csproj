@@ -101,7 +101,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.1" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.19" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />    
     <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />
