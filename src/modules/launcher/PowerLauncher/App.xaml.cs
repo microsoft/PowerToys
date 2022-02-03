@@ -18,6 +18,7 @@ using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
 using Wox;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
@@ -127,6 +128,9 @@ namespace PowerLauncher
 
                 Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
+
+                // main windows needs initialized before theme change because of blur settings
+                HttpClient.Proxy = _settings.Proxy;
 
                 RegisterExitEvents();
 
