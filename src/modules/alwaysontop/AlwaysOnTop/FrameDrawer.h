@@ -1,7 +1,9 @@
 #pragma once
 
 #include <mutex>
+
 #include <d2d1.h>
+#include <winrt/base.h>
 #include <dwrite.h>
 
 class FrameDrawer
@@ -10,8 +12,7 @@ public:
     static std::unique_ptr<FrameDrawer> Create(HWND window);
 
     FrameDrawer(HWND window);
-    FrameDrawer(FrameDrawer&& other);
-    ~FrameDrawer();
+    FrameDrawer(FrameDrawer&& other) = default;
 
     bool Init();
 
@@ -20,6 +21,8 @@ public:
     void SetBorderRect(RECT windowRect, COLORREF color, float thickness);
 
 private:
+    bool CreateRenderTargets(const RECT& clientRect);
+
     struct DrawableRect
     {
         D2D1_RECT_F rect;
@@ -27,25 +30,15 @@ private:
         float thickness;
     };
 
-    enum struct RenderResult
-    {
-        Ok,
-        Failed,
-    };
-
     static ID2D1Factory* GetD2DFactory();
     static IDWriteFactory* GetWriteFactory();
     static D2D1_COLOR_F ConvertColor(COLORREF color);
     static D2D1_RECT_F ConvertRect(RECT rect);
-    RenderResult Render();
-    void RenderLoop();
+    void Render();
 
     HWND m_window = nullptr;
-    ID2D1HwndRenderTarget* m_renderTarget = nullptr;
-
-    std::mutex m_mutex;
-    DrawableRect m_sceneRect;
-
-    std::atomic<bool> m_abortThread = false;
-    std::thread m_renderThread;
+    size_t m_renderTargetSizeHash = {};
+    winrt::com_ptr<ID2D1HwndRenderTarget> m_renderTarget;
+    winrt::com_ptr<ID2D1SolidColorBrush> m_borderBrush;
+    DrawableRect m_sceneRect = {};
 };
