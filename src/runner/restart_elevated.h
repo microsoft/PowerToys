@@ -3,4 +3,4 @@ void schedule_restart_as_elevated(bool openSettings);
 void schedule_restart_as_non_elevated();
 bool is_restart_scheduled();
 bool restart_if_scheduled();
-bool restart_same_elevation();
+bool restart_elevated();
