@@ -47,7 +47,7 @@ bool restart_if_scheduled()
     }
 }
 
-bool restart_elevated()
+bool restart_same_elevation()
 {
     constexpr DWORD exe_path_size = 0xFFFF;
     auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);

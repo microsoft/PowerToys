@@ -386,16 +386,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         apply_general_settings(general_settings, false);
         int rvalue = 0;
         const bool elevated = is_process_elevated();
-        const bool withDontElevateArg = cmdLine.find("--dont-elevate") != std::string::npos;
-        const bool runElevatedSetting = general_settings.GetNamedBoolean(L"run_elevated", false);
+        const bool with_dont_elevate_arg = cmdLine.find("--dont-elevate") != std::string::npos;
+        const bool run_elevated_setting = general_settings.GetNamedBoolean(L"run_elevated", false);
 
-        if (elevated && withDontElevateArg && !runElevatedSetting)
+        if (elevated && with_dont_elevate_arg && !run_elevated_setting)
 
         {
             schedule_restart_as_non_elevated();
             result = 0;
         }
-        else if (elevated || !runElevatedSetting || withDontElevateArg)
+        else if (elevated || !run_elevated_setting || with_dont_elevate_arg)
 
         {
             result = runner(elevated, open_settings, settings_window, openOobe);
@@ -429,7 +429,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         {
             Logger::warn("Scheduled restart failed. Trying restart as admin as fallback...");
-            restart_elevated();
+            restart_same_elevation();
         }
     }
     stop_tray_icon();
