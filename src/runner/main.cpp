@@ -423,7 +423,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (is_restart_scheduled())
     {
-        if (restart_if_scheduled() == false)
+        if (!restart_if_scheduled())
+
         {
             Logger::warn("Scheduled restart failed. Trying restart as admin as fallback...");
             restart_elevated();
