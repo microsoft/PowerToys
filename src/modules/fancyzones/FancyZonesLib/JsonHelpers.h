@@ -33,7 +33,6 @@ namespace JSONHelpers
 
     namespace ZoneSetDataJSON
     {
-        json::JsonObject ToJson(const FancyZonesDataTypes::ZoneSetData& zoneSet);
         std::optional<FancyZonesDataTypes::ZoneSetData> FromJson(const json::JsonObject& zoneSet);
     };
 
@@ -51,7 +50,6 @@ namespace JSONHelpers
         FancyZonesDataTypes::DeviceIdData deviceId;
         FancyZonesDataTypes::DeviceInfoData data;
 
-        static json::JsonObject ToJson(const DeviceInfoJSON& device);
         static std::optional<DeviceInfoJSON> FromJson(const json::JsonObject& device);
     };
 
@@ -60,7 +58,6 @@ namespace JSONHelpers
         std::wstring layoutUuid;
         int key;
 
-        static json::JsonObject ToJson(const LayoutQuickKeyJSON& device);
         static std::optional<LayoutQuickKeyJSON> FromJson(const json::JsonObject& device);
     };
 

@@ -341,16 +341,6 @@ namespace JSONHelpers
         }
     }
 
-    json::JsonObject ZoneSetDataJSON::ToJson(const FancyZonesDataTypes::ZoneSetData& zoneSet)
-    {
-        json::JsonObject result{};
-
-        result.SetNamedValue(NonLocalizable::UuidStr, json::value(zoneSet.uuid));
-        result.SetNamedValue(NonLocalizable::TypeStr, json::value(TypeToString(zoneSet.type)));
-
-        return result;
-    }
-
     std::optional<FancyZonesDataTypes::ZoneSetData> ZoneSetDataJSON::FromJson(const json::JsonObject& zoneSet)
     {
         try
@@ -440,20 +430,6 @@ namespace JSONHelpers
         }
     }
 
-    json::JsonObject DeviceInfoJSON::ToJson(const DeviceInfoJSON& device)
-    {
-        json::JsonObject result{};
-
-        result.SetNamedValue(NonLocalizable::DeviceIdStr, json::value(device.deviceId.toString()));
-        result.SetNamedValue(NonLocalizable::ActiveZoneSetStr, JSONHelpers::ZoneSetDataJSON::ToJson(device.data.activeZoneSet));
-        result.SetNamedValue(NonLocalizable::EditorShowSpacingStr, json::value(device.data.showSpacing));
-        result.SetNamedValue(NonLocalizable::EditorSpacingStr, json::value(device.data.spacing));
-        result.SetNamedValue(NonLocalizable::EditorZoneCountStr, json::value(device.data.zoneCount));
-        result.SetNamedValue(NonLocalizable::EditorSensitivityRadiusStr, json::value(device.data.sensitivityRadius));
-
-        return result;
-    }
-
     std::optional<DeviceInfoJSON> DeviceInfoJSON::FromJson(const json::JsonObject& device)
     {
         try
@@ -489,16 +465,6 @@ namespace JSONHelpers
         {
             return std::nullopt;
         }
-    }
-
-    json::JsonObject LayoutQuickKeyJSON::ToJson(const LayoutQuickKeyJSON& layoutQuickKey)
-    {
-        json::JsonObject result{};
-
-        result.SetNamedValue(NonLocalizable::QuickAccessUuid, json::value(layoutQuickKey.layoutUuid));
-        result.SetNamedValue(NonLocalizable::QuickAccessKey, json::value(layoutQuickKey.key));
-
-        return result;
     }
     
     std::optional<LayoutQuickKeyJSON> LayoutQuickKeyJSON::FromJson(const json::JsonObject& layoutQuickKey)
@@ -678,18 +644,6 @@ namespace JSONHelpers
 
         root.SetNamedValue(NonLocalizable::AppliedLayoutsIds::AppliedLayoutsArrayID, layoutsArray);
         json::to_file(AppliedLayouts::AppliedLayoutsFileName(), root);
-    }
-
-    json::JsonArray SerializeCustomZoneSets(const TCustomZoneSetsMap& customZoneSetsMap)
-    {
-        json::JsonArray customZoneSetsJSON{};
-
-        for (const auto& [zoneSetId, zoneSetData] : customZoneSetsMap)
-        {
-            customZoneSetsJSON.Append(CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ zoneSetId, zoneSetData }));
-        }
-
-        return customZoneSetsJSON;
     }
     
     std::optional<TLayoutQuickKeysMap> ParseQuickKeys(const json::JsonObject& fancyZonesDataJSON)
