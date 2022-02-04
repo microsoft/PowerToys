@@ -244,11 +244,11 @@ void InclusiveCrosshairs::StartDrawing()
 {
     Logger::info("Start drawing crosshairs.");
     Trace::StartDrawingCrosshairs();
+    UpdateCrosshairsPosition();
     m_visible = true;
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN), GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
-    UpdateCrosshairsPosition();
 }
 
 void InclusiveCrosshairs::StopDrawing()
