@@ -389,7 +389,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         const bool withDontElevateArg = cmdLine.find("--dont-elevate") != std::string::npos;
         const bool runElevatedSetting = general_settings.GetNamedBoolean(L"run_elevated", false);
 
-        if (elevated && withDontElevateArg && runElevatedSetting == false)
+        if (elevated && withDontElevateArg && !runElevatedSetting)
+
         {
             schedule_restart_as_non_elevated();
             result = 0;
