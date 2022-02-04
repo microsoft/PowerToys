@@ -22,7 +22,7 @@ void FancyZonesWindowProperties::StampZoneIndexProperty(HWND window, const ZoneI
 
     if (bitmask.part1 != 0)
     {
-        std::array<int, 2> data{
+        std::array<int32_t, 2> data{
             static_cast<int>(bitmask.part1),
             static_cast<int>(bitmask.part1 >> 32)
         };
@@ -38,7 +38,7 @@ void FancyZonesWindowProperties::StampZoneIndexProperty(HWND window, const ZoneI
 
     if (bitmask.part2 != 0)
     {
-        std::array<int, 2> data{
+        std::array<int32_t, 2> data{
             static_cast<int>(bitmask.part2),
             static_cast<int>(bitmask.part2 >> 32)
         };
@@ -68,14 +68,14 @@ ZoneIndexSet FancyZonesWindowProperties::RetrieveZoneIndexProperty(HWND window)
 
     if (handle64)
     {
-        std::array<int, 2> data;
+        std::array<int32_t, 2> data;
         memcpy(data.data(), &handle64, sizeof data);
         bitmask.part1 = (static_cast<decltype(bitmask.part1)>(data[1]) << 32) + data[0];
     }
 
     if (handle128)
     {
-        std::array<int, 2> data;
+        std::array<int32_t, 2> data;
         memcpy(data.data(), &handle128, sizeof data);
         bitmask.part2 = (static_cast<decltype(bitmask.part2)>(data[1]) << 32) + data[0];
     }
