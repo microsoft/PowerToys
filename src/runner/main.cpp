@@ -394,7 +394,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             schedule_restart_as_non_elevated();
             result = 0;
         }
-        else if (elevated || runElevatedSetting == false || withDontElevateArg)
+        else if (elevated || !runElevatedSetting || withDontElevateArg)
+
         {
             result = runner(elevated, open_settings, settings_window, openOobe);
 
