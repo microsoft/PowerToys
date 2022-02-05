@@ -129,7 +129,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             get
             {
-                return (NativeMethods.GetWindowLong(Hwnd, Constants.GWL_EXSTYLE) &
+                return (NativeMethods.GetWindowLong(Hwnd, Win32Constants.GWL_EXSTYLE) &
                     (uint)ExtendedWindowStyles.WS_EX_TOOLWINDOW) ==
                     (uint)ExtendedWindowStyles.WS_EX_TOOLWINDOW;
             }
@@ -142,7 +142,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             get
             {
-                return (NativeMethods.GetWindowLong(Hwnd, Constants.GWL_EXSTYLE) &
+                return (NativeMethods.GetWindowLong(Hwnd, Win32Constants.GWL_EXSTYLE) &
                     (uint)ExtendedWindowStyles.WS_EX_APPWINDOW) ==
                     (uint)ExtendedWindowStyles.WS_EX_APPWINDOW;
             }
@@ -212,7 +212,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 if (!NativeMethods.ShowWindow(Hwnd, ShowWindowCommand.Restore))
                 {
                     // ShowWindow doesn't work if the process is running elevated: fallback to SendMessage
-                    _ = NativeMethods.SendMessage(Hwnd, Constants.WM_SYSCOMMAND, Constants.SC_RESTORE);
+                    _ = NativeMethods.SendMessage(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_RESTORE);
                 }
             }
 
