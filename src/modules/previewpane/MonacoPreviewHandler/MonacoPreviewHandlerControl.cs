@@ -140,6 +140,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 {
                     InvokeOnControlThread(() =>
                     {
+                        Controls.Remove(_loading);
                         Label text = new Label();
                         text.Text = Resources.Exception_Occurred;
                         text.Text += e.Message;
