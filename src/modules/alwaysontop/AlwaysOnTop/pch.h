@@ -5,3 +5,6 @@
 #include <wil/resource.h>
 #include <ProjectTelemetry.h>
 #include <common/logger/logger.h>
+
+#include <functional>
+#include <array>

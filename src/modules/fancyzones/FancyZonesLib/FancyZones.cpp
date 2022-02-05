@@ -419,7 +419,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    const bool isZoned = reinterpret_cast<ZoneIndex>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0;
+    const bool isZoned = !FancyZonesWindowProperties::RetrieveZoneIndexProperty(window).empty();
     if (isZoned)
     {
         return;
@@ -957,7 +957,7 @@ void FancyZones::UpdateWindowsPositions(bool suppressMove) noexcept
 {
     for (const auto [window, desktopId] : m_virtualDesktop.GetWindowsRelatedToDesktops())
     {
-        auto zoneIndexSet = GetZoneIndexSet(window);
+        auto zoneIndexSet = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
         auto workArea = m_workAreaHandler.GetWorkArea(window, desktopId);
         if (workArea)
         {

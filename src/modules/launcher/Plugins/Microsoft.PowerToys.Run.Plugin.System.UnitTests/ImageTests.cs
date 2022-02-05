@@ -27,11 +27,13 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         [DataRow("sleep", "Images\\sleep.dark.png")]
         [DataRow("hibernate", "Images\\sleep.dark.png")]
         [DataRow("empty recycle", "Images\\recyclebin.dark.png")]
+        [DataRow("uefi firmware settings", "Images\\firmwareSettings.dark.png")]
         public void IconThemeDarkTest(string typedString, string expectedResult)
         {
             // Setup
             Mock<Main> main = new Mock<Main>();
             main.Object.IconTheme = "dark";
+            main.Object.IsBootedInUefiMode = true; // Set to true that we can test, regardless of the environment we run on.
             Query expectedQuery = new Query(typedString);
 
             // Act
@@ -49,11 +51,13 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         [DataRow("sleep", "Images\\sleep.light.png")]
         [DataRow("hibernate", "Images\\sleep.light.png")]
         [DataRow("empty recycle", "Images\\recyclebin.light.png")]
+        [DataRow("uefi firmware settings", "Images\\firmwareSettings.light.png")]
         public void IconThemeLightTest(string typedString, string expectedResult)
         {
             // Setup
             Mock<Main> main = new Mock<Main>();
             main.Object.IconTheme = "light";
+            main.Object.IsBootedInUefiMode = true; // Set to true that we can test, regardless of the environment we run on.
             Query expectedQuery = new Query(typedString);
 
             // Act
