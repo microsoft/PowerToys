@@ -114,6 +114,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                 }
                                 catch (WebView2RuntimeNotFoundException)
                                 {
+                                    Controls.Remove(_loading);
+
                                     // WebView2 not installed message
                                     Label errorMessage = new Label();
                                     errorMessage.Text = Resources.WebView2_Not_Installed_Message;
@@ -155,6 +157,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             {
                 InvokeOnControlThread(() =>
                 {
+                    Controls.Remove(_loading);
                     Label errorMessage = new Label();
                     errorMessage.Text = Resources.Max_File_Size_Error;
                     errorMessage.Width = 500;
