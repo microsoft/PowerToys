@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ControlzEx" Version="4.4.0" />
+    <PackageReference Include="ControlzEx" Version="5.0.1" />
   </ItemGroup>
 
   <ItemGroup>
