@@ -20,7 +20,7 @@ namespace winrt::PowerRenameUILib::implementation
         m_searchRegExShortcuts = winrt::single_threaded_observable_vector<PowerRenameUILib::PatternSnippet>();
         auto resourceLoader{ Windows::ApplicationModel::Resources::ResourceLoader::GetForCurrentView() };
 
-        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\.", resourceLoader.GetString(L"RegExCheatSheet_MatchAny")));
+        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L".", resourceLoader.GetString(L"RegExCheatSheet_MatchAny")));
         m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\d", resourceLoader.GetString(L"RegExCheatSheet_MatchDigit")));
         m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\D", resourceLoader.GetString(L"RegExCheatSheet_MatchNonDigit")));
         m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\w", resourceLoader.GetString(L"RegExCheatSheet_MatchNonWS")));
