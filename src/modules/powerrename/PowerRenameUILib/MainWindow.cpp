@@ -25,7 +25,7 @@ namespace winrt::PowerRenameUILib::implementation
         m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\D", resourceLoader.GetString(L"RegExCheatSheet_MatchNonDigit")));
         m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\w", resourceLoader.GetString(L"RegExCheatSheet_MatchNonWS")));
         m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\S", resourceLoader.GetString(L"RegExCheatSheet_MatchWordChar")));
-        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\S+", resourceLoader.GetString(L"RegExCheatSheet_MatchSeveralWS")));
+        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\S+", resourceLoader.GetString(L"RegExCheatSheet_MatchOneOrMoreWS")));
         m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\b", resourceLoader.GetString(L"RegExCheatSheet_MatchWordBoundary")));
 
         m_dateTimeShortcuts = winrt::single_threaded_observable_vector<PowerRenameUILib::PatternSnippet>();
