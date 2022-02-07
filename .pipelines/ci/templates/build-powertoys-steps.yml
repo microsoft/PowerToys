@@ -7,12 +7,20 @@ steps:
   submodules: true
   clean: true
 
-- task: NuGetToolInstaller@0
-  displayName: Ensure NuGet 5.8.0
+- task: UseDotNet@2
+  displayName: 'Use .NET 3.1 for unit test SDK'
   inputs:
-    versionSpec: 5.8.0
+    packageType: sdk
+    version: '3.1.x'
 
-#- template: .\..\..\..\restore-dependencies.yml
+- task: UseDotNet@2
+  displayName: 'Use .NET 6 SDK'
+  inputs:
+    packageType: sdk
+    version: '6.x'
+
+- task: NuGetToolInstaller@1
+  displayName: Ensure NuGet Installer
 
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
@@ -30,7 +38,7 @@ steps:
   displayName: 'Build PowerToys.sln'
   inputs:
     solution: '**\PowerToys.sln'
-    vsVersion: 16.0
+    vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
@@ -49,7 +57,7 @@ steps:
   displayName: 'Build BugReportTool.sln'
   inputs:
     solution: '**\BugReportTool.sln'
-    vsVersion: 16.0
+    vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
@@ -68,7 +76,7 @@ steps:
   displayName: 'Build WebcamReportTool.sln'
   inputs:
     solution: '**\WebcamReportTool.sln'
-    vsVersion: 16.0
+    vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
@@ -87,7 +95,7 @@ steps:
   displayName: 'Build PowerToysSetup.sln'
   inputs:
     solution: '**\installer\PowerToysSetup.sln'
-    vsVersion: 16.0
+    vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
@@ -123,7 +131,7 @@ steps:
       **\Microsoft.Plugin.Uri.UnitTests.dll
       **\Wox.Test.dll
       **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll     
-      **\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests.dll
+      **\Microsoft.Plugin.WindowsTerminal.UnitTests.dll
       !**\obj\**
       !**\ref\**
 
