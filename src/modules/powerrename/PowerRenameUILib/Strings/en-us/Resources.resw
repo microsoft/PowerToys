@@ -138,8 +138,8 @@
   <data name="RegExCheatSheet_MatchWordChar" xml:space="preserve">
     <value>A word character, short for [a-zA-Z_0-9]</value>
   </data>
-  <data name="RegExCheatSheet_MatchSeveralWS" xml:space="preserve">
-    <value>Several non-whitespace characters</value>
+  <data name="RegExCheatSheet_MatchOneOrMoreWS" xml:space="preserve">
+    <value>One or more non-whitespace characters</value>
   </data>
   <data name="RegExCheatSheet_MatchWordBoundary" xml:space="preserve">
     <value>Matches a word boundary where a word character is [a-zA-Z0-9_].</value>
