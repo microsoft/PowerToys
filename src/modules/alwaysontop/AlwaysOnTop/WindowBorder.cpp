@@ -96,7 +96,7 @@ bool WindowBorder::Init(HINSTANCE hinstance)
     m_window = CreateWindowExW(WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW
         , NonLocalizable::ToolWindowClassName
         , L""
-        , WS_POPUP
+        , WS_POPUP | WS_DISABLED
         , windowRect.left
         , windowRect.top
         , windowRect.right - windowRect.left
@@ -216,6 +216,10 @@ LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexce
     break;
 
     case WM_ERASEBKGND:
+        return TRUE;
+
+    // prevent from beeping if the border was clicked
+    case WM_SETCURSOR:
         return TRUE;
 
     default:

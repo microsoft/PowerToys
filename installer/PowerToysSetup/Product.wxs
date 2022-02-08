@@ -541,7 +541,6 @@
                 <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Xaml.Behaviors.dll" />
                 <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ModernWpf.dll" />
                 <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ModernWpf.Controls.dll" />
-                <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Text.Json.dll" />
 
                 <File Id="FancyZones_interop" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.Interop.dll" />
                 <File Id="FancyZones_ManagedCommon" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.ManagedCommon.dll" />
@@ -589,7 +588,6 @@
                 <File Id="Module_ImageResizer_ControlzEX" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ControlzEx.dll" />
                 <File Id="Module_ImageResizer_ModernWpf_Controls" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ModernWpf.Controls.dll" />
                 <File Id="Module_ImageResizer_ModernWpf" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ModernWpf.dll" />
-                <File Id="Module_ImageResizer_System_Text_Json" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\System.Text.Json.dll" />
                 <File Id="Module_ImageResizer_Microsoft_Xaml_Behaviors" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Microsoft.Xaml.Behaviors.dll" />
                 <File Id="ImageResizer_interop" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToys.Interop.dll" />
                 <File Id="ImageResizer_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\System.IO.Abstractions.dll" />
@@ -783,7 +781,7 @@
         <!-- Color Picker -->
         <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
             <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
-                <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;System.Text.Json.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll?>
+                <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll?>
                 <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
                 <?endforeach?>
             </Component>
@@ -801,7 +799,7 @@
         <!-- Awake -->
         <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)">
             <Component Id="Module_Awake" Guid="F26F5780-5B38-43B2-BC21-8406ED6E2071" Win64="yes">
-                <?foreach File in PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;Microsoft.Win32.SystemEvents.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToys.Interop.dll;System.CommandLine.dll;System.Configuration.ConfigurationManager.dll;System.Drawing.Common.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Security.AccessControl.dll;System.Security.Cryptography.ProtectedData.dll;System.Security.Permissions.dll;System.Security.Principal.Windows.dll;System.Text.Json.dll;System.Windows.Extensions.dll?>
+                <?foreach File in PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToys.Interop.dll;System.CommandLine.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll?>
                 <File Id="AwakeFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\$(var.File)" />
                 <?endforeach?>
             </Component>
@@ -817,22 +815,6 @@
         <DirectoryRef Id="AwakeInstallFolderNetStandard20" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0">
             <Component Id="Module_Awake_runtime_netstandard20" Guid="414A31AB-91A8-4F17-9B4B-DB7B93A2BB23">
                 <File Id="AwakeFile_runtime_System.Runtime.Caching.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll" />
-                <File Id="AwakeFile_runtime_System.Security.AccessControl.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll" />
-                <File Id="AwakeFile_runtime_System.Security.Cryptography.ProtectedData.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll" />
-            </Component>
-        </DirectoryRef>
-
-        <DirectoryRef Id="AwakeInstallFolderNetcoreApp30" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0">
-            <Component Id="Module_Awake_runtime_netcoreapp30" Guid="1EBB21FE-083A-4AE6-9208-7DC72A421860">
-                <File Id="AwakeFile_runtime_Microsoft.Win32.SystemEvents.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll" />
-                <File Id="AwakeFile_runtime_System.Drawing.Common.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll" />
-                <File Id="AwakeFile_runtime_System.Windows.Extensions.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll" />
-            </Component>
-        </DirectoryRef>
-
-        <DirectoryRef Id="AwakeInstallFolderNetcoreApp21" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp2.1">
-            <Component Id="Module_Awake_runtime_netcoreapp21" Guid="52ED2831-6F3F-47D3-AA1A-88C697BE9D0F">
-                <File Id="AwakeFile_runtime_System.Security.Principal.Windows.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll" />
             </Component>
         </DirectoryRef>
 
@@ -1079,8 +1061,6 @@
             <ComponentRef Id="Module_Awake"/>
             <ComponentRef Id="Module_Awake_Images"/>
             <ComponentRef Id="Module_Awake_runtime_netstandard20"/>
-            <ComponentRef Id="Module_Awake_runtime_netcoreapp30"/>
-            <ComponentRef Id="Module_Awake_runtime_netcoreapp21"/>
             <ComponentRef Id="Module_FindMyMouse"/>
             <ComponentRef Id="Module_MouseHighlighter"/>
             <ComponentRef Id="Module_MousePointerCrosshairs" />
@@ -1379,7 +1359,7 @@
 
             <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
                 <File Source="$(var.BinX64Dir)modules\Launcher\PowerToys.Launcher.dll" />
-                <?foreach File in concrt140_app.dll;e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll?>
+                <?foreach File in concrt140_app.dll;e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll?>
                 <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
                 <?endforeach?>
                 <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.UI.Lib.dll" />

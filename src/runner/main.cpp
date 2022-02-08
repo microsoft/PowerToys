@@ -386,15 +386,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         apply_general_settings(general_settings, false);
         int rvalue = 0;
         const bool elevated = is_process_elevated();
+        const bool with_dont_elevate_arg = cmdLine.find("--dont-elevate") != std::string::npos;
+        const bool run_elevated_setting = general_settings.GetNamedBoolean(L"run_elevated", false);
 
-        if (elevated && cmdLine.find("--dont-elevate") != std::string::npos &&
-            general_settings.GetNamedBoolean(L"run_elevated", false) == false) {
+        if (elevated && with_dont_elevate_arg && !run_elevated_setting)
+
+        {
             schedule_restart_as_non_elevated();
             result = 0;
         }
-        else if ((elevated ||
-             general_settings.GetNamedBoolean(L"run_elevated", false) == false ||
-             cmdLine.find("--dont-elevate") != std::string::npos))
+        else if (elevated || !run_elevated_setting || with_dont_elevate_arg)
+
         {
             result = runner(elevated, open_settings, settings_window, openOobe);
 
@@ -423,14 +425,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (is_restart_scheduled())
     {
-        if (restart_if_scheduled() == false)
-        {
-            auto text = is_process_elevated() ? GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_NONELEVATED) :
-                                                GET_RESOURCE_STRING(IDS_COULDNOT_RESTART_ELEVATED);
-            MessageBoxW(nullptr, text.c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+        if (!restart_if_scheduled())
 
+        {
+            Logger::warn("Scheduled restart failed. Trying restart as admin as fallback...");
             restart_same_elevation();
-            result = -1;
         }
     }
     stop_tray_icon();

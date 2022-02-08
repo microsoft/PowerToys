@@ -71,7 +71,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.55 - January 2022 Update
 
-In this release, we are continuing our progress toward getting PowerToys ARM64 ready, fix some top issues and new utilities.  Work from last month helped us enable us to upgrade the code base to .NET 5 and next month onward to .NET 6. This will provide stability and speed improvements.
+In this release, we are continuing our progress toward getting PowerToys ARM64 ready, fix some top issues and new utilities.  Work from last month enabled us to upgrade the code base to .NET 5 and next month onward to .NET 6. This will provide stability and speed improvements.
 
 We're also extremely excited to bring on 3 new PowerToy utilities.
 

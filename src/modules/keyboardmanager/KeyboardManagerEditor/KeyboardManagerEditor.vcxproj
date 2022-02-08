@@ -76,7 +76,7 @@
   </PropertyGroup>
   <!-- Props that are constant for both Debug and Release configurations -->
   <PropertyGroup Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\$(MSBuildProjectName)\</OutDir>
     <CharacterSet>Unicode</CharacterSet>

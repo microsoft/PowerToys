@@ -31,7 +31,7 @@ namespace ColorPicker
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
-            NativeMethods.SetPopupStyle(this);
+            NativeMethods.SetToolWindowStyle(this);
         }
     }
 }

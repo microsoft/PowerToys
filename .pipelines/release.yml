@@ -4,7 +4,7 @@ pr: none
 
 pool: 
   name: WinDevPool-L
-  demands: ImageOverride -equals WinDevVS16-latest
+  demands: ImageOverride -equals WinDevVS17-latest
 
 parameters:
   - name: buildConfigurations
@@ -53,37 +53,26 @@ jobs:
       scriptName: .pipelines/versionSetting.ps1
       arguments: -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
 
-  - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
-    displayName: 'Download Localization Files -- PowerToys 37400'
+# Guardian tool needs 'Microsoft.NETCore.App', version '2.1.0' (x64)
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core 2.1 SDK'
     inputs:
-      teamId: 37400
-      authId: '$(TouchdownApplicationID)'
-      authKey: '$(TouchdownApplicationKey)'
-      resourceFilePath: |
-       **\Resources.resx
-       **\Resource.resx
-       **\Resources.resw
-      appendRelativeDir: true
-      localizationTarget: false
-      pseudoSetting: Included
-  - task: PowerShell@2
-    displayName: Move Loc files into correct locations
+      packageType: sdk
+      version: '2.1.x'
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET 6 SDK'
     inputs:
-      targetType: inline
-      script: >-
-        $VerbosePreference = "Continue"
+      packageType: sdk
+      version: '6.x'
 
-        ./tools/build/move-and-rename-resx.ps1
-
-        ./tools/build/move-uwp-resw.ps1
-      pwsh: true
   - task: NuGetAuthenticate@0
     inputs:
       nuGetServiceConnections: PowerToysCDPxFeed
+      
   - task: NuGetToolInstaller@1
-    displayName: Use NuGet 5.10
-    inputs:
-      versionSpec: 5.10
+    displayName: Use NuGet Installer latest
+
 # this will restore the following nugets:
 # - main solution
 # - Bug report tool
@@ -98,6 +87,32 @@ jobs:
       selectOrConfig: config
       nugetConfigPath: .pipelines/release-nuget.config
       
+  - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
+    displayName: 'Download Localization Files -- PowerToys 37400'
+    inputs:
+      teamId: 37400
+      authId: '$(TouchdownApplicationID)'
+      authKey: '$(TouchdownApplicationKey)'
+      resourceFilePath: |
+       **\Resources.resx
+       **\Resource.resx
+       **\Resources.resw
+      appendRelativeDir: true
+      localizationTarget: false
+      pseudoSetting: Included
+
+  - task: PowerShell@2
+    displayName: Move Loc files into correct locations
+    inputs:
+      targetType: inline
+      script: >-
+        $VerbosePreference = "Continue"
+
+        ./tools/build/move-and-rename-resx.ps1
+
+        ./tools/build/move-uwp-resw.ps1
+      pwsh: true
+      
   - task: CmdLine@2
     displayName: Moving telem files
     inputs:
@@ -111,7 +126,7 @@ jobs:
     displayName: Build PowerToys main project
     inputs:
       solution: '**\PowerToys.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -133,7 +148,7 @@ jobs:
     displayName: Build WebcamReportTool
     inputs:
       solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -144,7 +159,7 @@ jobs:
     displayName: Build PowerToysSetupCustomActions
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /target:PowerToysSetupCustomActions /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -155,7 +170,7 @@ jobs:
     displayName: Publish Settings for Packaging
     inputs:
       solution: 'src/settings-ui/PowerToys.Settings/PowerToys.Settings.csproj'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: >-
         /target:Publish
         /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
@@ -170,7 +185,7 @@ jobs:
     displayName: Publish Launcher for Packaging
     inputs:
       solution: 'src/modules/launcher/PowerLauncher/PowerLauncher.csproj'
-      vsVersion: 16.0
+      vsVersion: 17.0
       # The arguments should be the same as the ones for Settings; make sure they are.
       msbuildArgs: >-
         /target:Publish
@@ -185,6 +200,7 @@ jobs:
 #### MAIN SIGNING AREA
 # reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
 # https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
+
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     displayName: Sign Core PT
     inputs:
@@ -210,7 +226,7 @@ jobs:
     displayName: Build MSI
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true /target:PowerToysInstaller /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -246,7 +262,7 @@ jobs:
     displayName: Build Bootstrapper
     inputs:
       solution: '**/installer/PowerToysSetup.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
