@@ -276,7 +276,6 @@ Clipperton
 CLIPSIBLINGS
 cljs
 clrcall
-cls
 Cls
 CLSCTX
 clsid
@@ -664,7 +663,6 @@ FLASHZONESONQUICKSWITCH
 flt
 flyout
 fmtlib
-fof
 FOF
 FOFX
 FOLDERID
@@ -1546,7 +1544,6 @@ pcb
 pch
 PCIDLIST
 PCWSTR
-pdb
 Pdb
 pdbonly
 pdfpreviewhandler
@@ -2142,7 +2139,6 @@ toggleswitch
 Toolchain
 toolkitcontrols
 toolkitconverters
-toolset
 Toolset
 toolstrip
 toolwindow
@@ -2249,7 +2245,6 @@ USESTDHANDLES
 ushort
 USRDLL
 utc
-Utc
 UTC
 utf
 utils
