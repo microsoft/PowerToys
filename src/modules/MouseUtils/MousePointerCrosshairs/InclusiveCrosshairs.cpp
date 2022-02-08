@@ -244,11 +244,11 @@ void InclusiveCrosshairs::StartDrawing()
 {
     Logger::info("Start drawing crosshairs.");
     Trace::StartDrawingCrosshairs();
+    UpdateCrosshairsPosition();
     m_visible = true;
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN), GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
-    UpdateCrosshairsPosition();
 }
 
 void InclusiveCrosshairs::StopDrawing()
@@ -277,6 +277,12 @@ void InclusiveCrosshairs::ApplySettings(InclusiveCrosshairsSettings& settings, b
     if (applyToRunTimeObjects)
     {
         // Runtime objects already created. Should update in the owner thread.
+        if (m_dispatcherQueueController == nullptr)
+        {
+            Logger::warn("Tried accessing the dispatch queue controller before it was initialized.");
+            // No dispatcher Queue Controller? Means initialization still hasn't run, so settings will be applied then.
+            return;
+        }
         auto dispatcherQueue = m_dispatcherQueueController.DispatcherQueue();
         InclusiveCrosshairsSettings localSettings = settings;
         bool enqueueSucceeded = dispatcherQueue.TryEnqueue([=]() {

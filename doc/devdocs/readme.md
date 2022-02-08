@@ -38,7 +38,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 ### Prerequisites for Compiling PowerToys
 
 1. Windows 10 April 2018 Update (version 1803) or newer
-2. Visual Studio Community/Professional/Enterprise 2019
+2. Visual Studio Community/Professional/Enterprise 2022
 3. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
 
 ### Get Submodules to compile
@@ -69,7 +69,7 @@ The installer can only be compiled in `Release` mode, step 1 and 2 must be done 
 
 ### Prerequisites for building the MSI installer
 
-1. Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2019Extension).
+1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
 2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
 
 ### Locally compiling the Bug reporting tool

@@ -81,7 +81,7 @@
             <controls:PageLink x:Uid="LearnMore_Awake" Link="https://aka.ms/PowerToysOverview_Awake"/>
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Text="Den Delimarsky's Awake" Link="https://Awake.den.dev"/>
+            <controls:PageLink Text="Den Delimarsky's work on creating Awake" Link="https://Awake.den.dev"/>
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

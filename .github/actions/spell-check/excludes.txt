@@ -34,6 +34,7 @@ ignore$
 \.woff$
 \.zip$
 ^doc/devdocs/akaLinks\.md$
+^installer/PowerToysSetup/WebView2/MicrosoftEdgeWebview2Setup.exe$
 ^src/common/logger/logger\.vcxproj\.filters$
 ^src/common/notifications/BackgroundActivatorDLL/BackgroundActivator\.vcxproj\.filters$
 ^src/common/notifications/BackgroundActivatorDLL/cpp\.hint$

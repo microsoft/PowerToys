@@ -510,6 +510,7 @@ DQTYPE
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
+DRect
 drivedetectionwarning
 dshow
 dst
@@ -1246,6 +1247,7 @@ mdpreviewhandler
 MEDIASUBTYPE
 mediatype
 Melman
+memcmp
 memcpy
 memset
 MENUITEMINFO
@@ -2184,6 +2186,7 @@ udit
 Udmurtia
 Udp
 uefi
+UHash
 UIA
 Uid
 uint

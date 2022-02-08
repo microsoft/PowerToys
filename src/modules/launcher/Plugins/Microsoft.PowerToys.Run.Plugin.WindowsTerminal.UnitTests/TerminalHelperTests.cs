@@ -5,10 +5,11 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using Microsoft.PowerToys.Run.Plugin.WindowsTerminal;
 using Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests
+namespace Microsoft.Plugin.WindowsTerminal.UnitTests
 {
     [TestClass]
     public class TerminalHelperTests

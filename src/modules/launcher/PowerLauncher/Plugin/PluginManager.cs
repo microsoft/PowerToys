@@ -165,11 +165,6 @@ namespace PowerLauncher.Plugin
             }
         }
 
-        public static void InstallPlugin(string path)
-        {
-            PluginInstaller.Install(path);
-        }
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static List<Result> QueryForPlugin(PluginPair pair, Query query, bool delayedExecution = false)
         {

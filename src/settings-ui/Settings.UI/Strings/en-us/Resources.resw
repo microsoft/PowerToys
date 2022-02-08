@@ -1687,24 +1687,30 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="Awake.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="ColorPicker.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="General.SecondaryLinksHeader" xml:space="preserve">
     <value>Related information</value>
   </data>
   <data name="ImageResizer.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="MouseUtils.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="PowerLauncher.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="PowerRename.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="EditTooltip.Text" xml:space="preserve">
     <value>Edit</value>
@@ -2009,5 +2015,9 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="AlwaysOnTop_Radio_Windows_Default.Content" xml:space="preserve">
     <value>Windows default</value>
+  </data>
+  <data name="PowerPreviewPage.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
   </data>
 </root>

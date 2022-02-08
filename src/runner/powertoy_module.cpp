@@ -74,11 +74,12 @@ void PowertoyModule::UpdateHotkeyEx()
 {
     CentralizedHotkeys::UnregisterHotkeysForModule(pt_module->get_key());
     auto container = pt_module->GetHotkeyEx();
-    if (container.has_value())
+    if (container.has_value() && pt_module->is_enabled())
     {
         auto hotkey = container.value();
         auto modulePtr = pt_module.get();
         auto action = [modulePtr](WORD modifiersMask, WORD vkCode) {
+            Logger::trace(L"{} hotkey Ex is invoked from Centralized keyboard hook", modulePtr->get_key());
             modulePtr->OnHotkeyEx();
         };
 

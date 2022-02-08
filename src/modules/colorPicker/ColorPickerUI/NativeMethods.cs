@@ -15,8 +15,8 @@ namespace ColorPicker
     // will have to rename
     public static class NativeMethods
     {
-        private const int GWL_STYLE = -16;
-        private const int WS_POPUP = 1 << 31; // 0x80000000
+        private const int GWL_EX_STYLE = -20;
+        private const int WS_EX_TOOLWINDOW = 0x00000080;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Interop")]
@@ -180,10 +180,10 @@ namespace ColorPicker
         [DllImport("user32.dll")]
         internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
-        internal static void SetPopupStyle(Window win)
+        internal static void SetToolWindowStyle(Window win)
         {
             var hwnd = new WindowInteropHelper(win).Handle;
-            _ = SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) | WS_POPUP);
+            _ = SetWindowLong(hwnd, GWL_EX_STYLE, GetWindowLong(hwnd, GWL_EX_STYLE) | WS_EX_TOOLWINDOW);
         }
     }
 }
