@@ -498,7 +498,7 @@ namespace Wox.Plugin.Common.Win32
         CreateThread = 0x0002,
 
         /// <summary>
-        ///
+        /// Required to set the session id for a process.
         /// </summary>
         SetSessionId = 0x0004,
 
@@ -579,7 +579,10 @@ namespace Wox.Plugin.Common.Win32
         /// </summary>
         WriteOwner = 0x00080000,
 
-        StandardRightsRequired = 0x000F0000,
+        /// <summary>
+        /// Combines <see cref="Delete"/>, <see cref="ReadControl"/>, <see cref="WriteDac"/>, and <see cref="WriteOwner"/>.
+        /// </summary>
+        StandardRightsRequired = Delete | ReadControl | WriteDac | WriteOwner, // == 0x000F0000
 
         /// <summary>
         /// All possible access rights for a process object.

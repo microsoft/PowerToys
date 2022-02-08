@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
@@ -35,8 +34,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         public string IconTheme { get; set; }
 
         public bool IsBootedInUefiMode { get; set; }
-
-        public ICommand Command { get; set; }
 
         public string Name => Resources.Microsoft_plugin_sys_plugin_name;
 
@@ -66,7 +63,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             _context = context;
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconTheme(_context.API.GetCurrentTheme());
-            IsBootedInUefiMode = NativeMethods.GetSystemFirmwareType() == NativeMethods.FirmwareTypes.Uefi;
+            IsBootedInUefiMode = Win32Helpers.GetSystemFirmwareType() == FirmwareType.Uefi;
 
             // Log info if the system hasn't boot in uefi mode.
             // (Because this is only going into the log we can ignore the fact that normally UEFI and BIOS are written upper case. No need to convert the enumeration value to upper case.)
