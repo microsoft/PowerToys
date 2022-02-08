@@ -13,8 +13,6 @@ namespace NonLocalizable
     const static wchar_t* MONACO_LANGUAGES_FILE_NAME = L"modules\\FileExplorerPreview\\languages.json";
     const static wchar_t* ListID = L"list";
     const static wchar_t* ExtensionsID = L"extensions";
-    const static wchar_t* MDExtension = L".md";
-    const static wchar_t* SVGExtension = L".svg";
 }
 
 inline registry::ChangeSet getSvgPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
@@ -44,7 +42,14 @@ inline registry::ChangeSet getMdPreviewHandlerChangeSet(const std::wstring insta
                                   registry::DOTNET_COMPONENT_CATEGORY_CLSID,
                                   L"Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler",
                                   L"Markdown Preview Handler",
-                                  { L".md" });
+                                  { L".md",
+                                    L".markdown",
+                                    L".mdown",
+                                    L".mkdn",
+                                    L".mkd",
+                                    L".mdwn",
+                                    L".mdtxt",
+                                    L".mdtext" });
 }
 
 inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
@@ -68,13 +73,6 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
                 for (uint32_t j = 0; j < extensionsList.Size(); ++j)
                 {
                     auto extension = extensionsList.GetStringAt(j);
-
-                    // Ignore extensions we already have dedicated handlers for
-                    if (std::wstring{ extension } == std::wstring{ NonLocalizable::MDExtension } ||
-                        std::wstring{ extension } == std::wstring{ NonLocalizable::SVGExtension })
-                    {
-                        continue;
-                    }
                     extensions.push_back(std::wstring{ extension });
                 }
             }
