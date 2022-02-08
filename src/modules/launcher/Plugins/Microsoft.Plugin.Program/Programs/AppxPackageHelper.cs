@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using HRESULT = Wox.Plugin.Common.Win32.HRESULT;
+using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.Program.Programs
 {

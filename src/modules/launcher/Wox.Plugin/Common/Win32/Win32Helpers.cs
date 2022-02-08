@@ -26,8 +26,7 @@ namespace Wox.Plugin.Common.Win32
         /// <returns>The error code as int value.</returns>
         public static int GetLastError()
         {
-            // should be changed to Marshal.GetLastPInvokeError() in .NET 6
-            return Marshal.GetLastWin32Error();
+            return Marshal.GetLastPInvokeError();
         }
 
         /// <summary>
