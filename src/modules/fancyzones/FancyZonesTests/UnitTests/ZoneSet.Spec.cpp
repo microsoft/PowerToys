@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include "FancyZonesLib\FancyZonesDataTypes.h"
+#include "FancyZonesLib\ZoneIndexSetBitmask.h"
 #include "FancyZonesLib\JsonHelpers.h"
 #include "FancyZonesLib\VirtualDesktop.h"
 #include "FancyZonesLib\ZoneSet.h"
@@ -1065,5 +1066,71 @@ namespace FancyZonesUnitTests
                         Assert::IsFalse(result);
                     }
                 }
+    };
+
+    TEST_CLASS(ZoneIndexSetUnitTests)
+    {
+        TEST_METHOD (BitmaskFromIndexSetTest)
+        {
+            // prepare
+            ZoneIndexSet set {0, 64};
+            
+            // test
+            ZoneIndexSetBitmask bitmask = ZoneIndexSetBitmask::FromIndexSet(set);
+            Assert::AreEqual(static_cast<uint64_t>(1), bitmask.part1);
+            Assert::AreEqual(static_cast<uint64_t>(1), bitmask.part2);
+        }
+
+        TEST_METHOD(BitmaskToIndexSet)
+        {
+            // prepare
+            ZoneIndexSetBitmask bitmask{
+                .part1 = 1,
+                .part2 = 1,
+            };
+
+            // test
+            ZoneIndexSet set = bitmask.ToIndexSet();
+            Assert::AreEqual(static_cast<size_t>(2), set.size());
+            Assert::AreEqual(static_cast<ZoneIndex>(0), set[0]);
+            Assert::AreEqual(static_cast<ZoneIndex>(64), set[1]);
+        }
+
+        TEST_METHOD (BitmaskConvertTest)
+        {
+            // prepare
+            ZoneIndexSet set{ 53, 54, 55, 65, 66, 67 };
+            
+            ZoneIndexSetBitmask bitmask = ZoneIndexSetBitmask::FromIndexSet(set);
+
+            // test
+            ZoneIndexSet actual = bitmask.ToIndexSet();
+            Assert::AreEqual(set.size(), actual.size());
+            for (int i = 0; i < set.size(); i++)
+            {
+                Assert::AreEqual(set[i], actual[i]);
+            }
+        }
+
+        TEST_METHOD (BitmaskConvert2Test)
+        {
+            // prepare
+            ZoneIndexSet set;
+            for (int i = 0; i < 128; i++)
+            {
+                set.push_back(i);
+            }
+
+            ZoneIndexSetBitmask bitmask = ZoneIndexSetBitmask::FromIndexSet(set);
+            
+            // test
+            ZoneIndexSet actual = bitmask.ToIndexSet();
+
+            Assert::AreEqual(set.size(), actual.size());
+            for (int i = 0; i < set.size(); i++)
+            {
+                Assert::AreEqual(set[i], actual[i]);
+            }
+        }
     };
 }

@@ -2,7 +2,7 @@
   <Import Project="..\..\Version.props" />
   
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ControlzEx" Version="4.4.0" />
+    <PackageReference Include="ControlzEx" Version="5.0.1" />
   </ItemGroup>
 
   <ItemGroup>

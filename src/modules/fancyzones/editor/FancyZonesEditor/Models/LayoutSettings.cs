@@ -18,7 +18,7 @@ namespace FancyZonesEditor
 
         public const int DefaultSensitivityRadius = 20;
 
-        public const int MaxZones = 40;
+        public const int MaxZones = 128;
 
         public string ZonesetUuid { get; set; } = string.Empty;
 

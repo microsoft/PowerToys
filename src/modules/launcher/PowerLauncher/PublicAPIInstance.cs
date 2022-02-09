@@ -103,11 +103,6 @@ namespace Wox
             });
         }
 
-        public void InstallPlugin(string path)
-        {
-            Application.Current.Dispatcher.Invoke(() => PluginManager.InstallPlugin(path));
-        }
-
         public List<PluginPair> GetAllPlugins()
         {
             return PluginManager.AllPlugins.ToList();

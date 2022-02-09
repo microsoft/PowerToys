@@ -52,13 +52,9 @@ namespace ImageResizer.Models
                     BitmapCreateOptions.PreservePixelFormat,
                     BitmapCacheOption.None);
 
-                var encoder = BitmapEncoder.Create(decoder.CodecInfo.ContainerFormat);
-                if (!encoder.CanEncode())
-                {
-                    encoder = BitmapEncoder.Create(_settings.FallbackEncoder);
-                }
+                var containerFormat = decoder.CodecInfo.ContainerFormat;
 
-                ConfigureEncoder(encoder);
+                var encoder = CreateEncoder(containerFormat);
 
                 if (decoder.Metadata != null)
                 {
@@ -78,49 +74,15 @@ namespace ImageResizer.Models
 
                 foreach (var originalFrame in decoder.Frames)
                 {
-                    BitmapMetadata metadata = (BitmapMetadata)originalFrame.Metadata;
-                    if (metadata != null)
-                    {
-                        try
-                        {
+                    var transformedBitmap = Transform(originalFrame);
+                    BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
+
 #if DEBUG
-                            Debug.WriteLine($"### Processing metadata of file {_file}");
-                            metadata.PrintsAllMetadataToDebugOutput();
+                    Debug.WriteLine($"### Processing metadata of file {_file}");
+                    originalMetadata.PrintsAllMetadataToDebugOutput();
 #endif
 
-                            // read all metadata and build up metadata object from the scratch. Discard invalid (unreadable/unwritable) metadata.
-                            var newMetadata = new BitmapMetadata(metadata.Format);
-                            var listOfMetadata = metadata.GetListOfMetadata();
-                            foreach (var (metadataPath, value) in listOfMetadata)
-                            {
-                                if (value is BitmapMetadata bitmapMetadata)
-                                {
-                                    var innerMetadata = new BitmapMetadata(bitmapMetadata.Format);
-                                    newMetadata.SetQuerySafe(metadataPath, innerMetadata);
-                                }
-                                else
-                                {
-                                    newMetadata.SetQuerySafe(metadataPath, value);
-                                }
-                            }
-
-                            if (newMetadata.IsMetadataObjectValid())
-                            {
-                                metadata = newMetadata;
-                            }
-                            else
-                            {
-                                // Seems like we build an invalid metadata object. ImageResizer will fail when trying to write the image to disk. We discard all metadata to be able to save the image.
-                                metadata = null;
-                            }
-                        }
-                        catch (ArgumentException ex)
-                        {
-                            metadata = null;
-
-                            Debug.WriteLine(ex);
-                        }
-                    }
+                    var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
 
                     if (_settings.RemoveMetadata && metadata != null)
                     {
@@ -133,12 +95,9 @@ namespace ImageResizer.Models
                         metadata = newMetadata;
                     }
 
-                    encoder.Frames.Add(
-                        BitmapFrame.Create(
-                            Transform(originalFrame),
-                            thumbnail: null, /* should be null, see #15413 */
-                            metadata,
-                            colorContexts: null /* should be null, see #14866 */ ));
+                    var frame = CreateBitmapFrame(transformedBitmap, metadata);
+
+                    encoder.Frames.Add(frame);
                 }
 
                 path = GetDestinationPath(encoder);
@@ -162,21 +121,34 @@ namespace ImageResizer.Models
             }
         }
 
-        private void ConfigureEncoder(BitmapEncoder encoder)
+        private BitmapEncoder CreateEncoder(Guid containerFormat)
         {
-            switch (encoder)
+            var createdEncoder = BitmapEncoder.Create(containerFormat);
+            if (!createdEncoder.CanEncode())
             {
-                case JpegBitmapEncoder jpegEncoder:
-                    jpegEncoder.QualityLevel = MathHelpers.Clamp(_settings.JpegQualityLevel, 1, 100);
-                    break;
+                createdEncoder = BitmapEncoder.Create(_settings.FallbackEncoder);
+            }
 
-                case PngBitmapEncoder pngBitmapEncoder:
-                    pngBitmapEncoder.Interlace = _settings.PngInterlaceOption;
-                    break;
+            ConfigureEncoder(createdEncoder);
 
-                case TiffBitmapEncoder tiffEncoder:
-                    tiffEncoder.Compression = _settings.TiffCompressOption;
-                    break;
+            return createdEncoder;
+
+            void ConfigureEncoder(BitmapEncoder encoder)
+            {
+                switch (encoder)
+                {
+                    case JpegBitmapEncoder jpegEncoder:
+                        jpegEncoder.QualityLevel = MathHelpers.Clamp(_settings.JpegQualityLevel, 1, 100);
+                        break;
+
+                    case PngBitmapEncoder pngBitmapEncoder:
+                        pngBitmapEncoder.Interlace = _settings.PngInterlaceOption;
+                        break;
+
+                    case TiffBitmapEncoder tiffEncoder:
+                        tiffEncoder.Compression = _settings.TiffCompressOption;
+                        break;
+                }
             }
         }
 
@@ -230,6 +202,101 @@ namespace ImageResizer.Models
             }
 
             return scaledBitmap;
+        }
+
+        /// <summary>
+        /// Checks original metadata by writing an image containing the given metadata into a memory stream.
+        /// In case of errors, we try to rebuild the metadata object and check again.
+        /// We return null if we were not able to get hold of valid metadata.
+        /// </summary>
+        private BitmapMetadata GetValidMetadata(BitmapMetadata originalMetadata, BitmapSource transformedBitmap, Guid containerFormat)
+        {
+            if (originalMetadata == null)
+            {
+                return null;
+            }
+
+            // Check if the original metadata is valid
+            var frameWithOriginalMetadata = CreateBitmapFrame(transformedBitmap, originalMetadata);
+            if (EnsureFrameIsValid(frameWithOriginalMetadata))
+            {
+                return originalMetadata;
+            }
+
+            // Original metadata was invalid. We try to rebuild the metadata object from the scratch and discard invalid metadata fields
+            var recreatedMetadata = BuildMetadataFromTheScratch(originalMetadata);
+            var frameWithRecreatedMetadata = CreateBitmapFrame(transformedBitmap, recreatedMetadata);
+            if (EnsureFrameIsValid(frameWithRecreatedMetadata))
+            {
+                return recreatedMetadata;
+            }
+
+            // Seems like we have an invalid metadata object. ImageResizer will fail when trying to write the image to disk. We discard all metadata to be able to save the image.
+            return null;
+
+            // The safest way to check if the metadata object is valid is to call Save() on the encoder.
+            // I tried other ways to check if metadata is valid (like calling Clone() on the metadata object) but this was not reliable resulting in a few github issues.
+            bool EnsureFrameIsValid(BitmapFrame frameToBeChecked)
+            {
+                try
+                {
+                    var encoder = CreateEncoder(containerFormat);
+                    encoder.Frames.Add(frameToBeChecked);
+                    using (var testStream = new MemoryStream())
+                    {
+                        encoder.Save(testStream);
+                    }
+
+                    return true;
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Read all metadata and build up metadata object from the scratch. Discard invalid (unreadable/unwritable) metadata.
+        /// </summary>
+        private static BitmapMetadata BuildMetadataFromTheScratch(BitmapMetadata originalMetadata)
+        {
+            try
+            {
+                var metadata = new BitmapMetadata(originalMetadata.Format);
+                var listOfMetadata = originalMetadata.GetListOfMetadata();
+                foreach (var (metadataPath, value) in listOfMetadata)
+                {
+                    if (value is BitmapMetadata bitmapMetadata)
+                    {
+                        var innerMetadata = new BitmapMetadata(bitmapMetadata.Format);
+                        metadata.SetQuerySafe(metadataPath, innerMetadata);
+                    }
+                    else
+                    {
+                        metadata.SetQuerySafe(metadataPath, value);
+                    }
+                }
+
+                return metadata;
+            }
+            catch (ArgumentException ex)
+            {
+                Debug.WriteLine(ex);
+
+                return null;
+            }
+        }
+
+        private static BitmapFrame CreateBitmapFrame(BitmapSource transformedBitmap, BitmapMetadata metadata)
+        {
+            return BitmapFrame.Create(
+                transformedBitmap,
+                thumbnail: null, /* should be null, see #15413 */
+                metadata,
+                colorContexts: null /* should be null, see #14866 */ );
         }
 
         private string GetDestinationPath(BitmapEncoder encoder)
