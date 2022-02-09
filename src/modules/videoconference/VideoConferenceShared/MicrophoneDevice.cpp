@@ -147,6 +147,8 @@ MicrophoneDevice::VolumeNotifier::VolumeNotifier(MicrophoneDevice* subscribedDev
 
 HRESULT __stdcall MicrophoneDevice::VolumeNotifier::OnNotify(PAUDIO_VOLUME_NOTIFICATION_DATA data)
 {
-    _subscribedDevice->_mute_changed_callback(data->bMuted);
+    if (_subscribedDevice && _subscribedDevice->_mute_changed_callback)
+        _subscribedDevice->_mute_changed_callback(data->bMuted);
+    
     return S_OK;
 }

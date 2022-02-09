@@ -8,6 +8,7 @@
 #include <shellapi.h>
 
 #include <filesystem>
+#include <unordered_set>
 
 #include <common/debug_control.h>
 #include <common/SettingsAPI/settings_helpers.h>
@@ -251,7 +252,7 @@ void VideoConferenceModule::onModuleSettingsChanged()
             {
                 toolbar.setHideToolbarWhenUnmuted(val.value());
             }
-            
+
             const auto selectedMic = values.get_string_value(L"selected_mic");
             if (selectedMic && selectedMic != settings.selectedMicrophone)
             {
@@ -265,6 +266,53 @@ void VideoConferenceModule::onModuleSettingsChanged()
     catch (...)
     {
         LOG("onModuleSettingsChanged encountered an exception");
+    }
+}
+
+void VideoConferenceModule::onMicrophoneConfigurationChanged()
+{
+    if (!_controllingAllMics)
+    {
+        // Don't care if we don't control all the mics
+        return;
+    }
+
+    if (!_microphoneTrackedInUI)
+    {
+        // Don't know for sure which state the user expects
+        return;
+    }
+
+    const bool mutedStateForNewMics = _microphoneTrackedInUI->muted();
+    const std::wstring_view trackedMicId = _microphoneTrackedInUI->id();
+    std::unordered_set<std::wstring_view> currentlyTrackedMicsIds;
+    for (const auto& controlledMic : _controlledMicrophones)
+    {
+        currentlyTrackedMicsIds.emplace(controlledMic.id());
+    }
+
+    auto allMics = MicrophoneDevice::getAllActive();
+    for (auto& newMic : allMics)
+    {
+        if (currentlyTrackedMicsIds.contains(newMic.id()))
+        {
+            continue;
+        }
+
+        if (mutedStateForNewMics)
+        {
+            newMic.set_muted(true);
+        }
+
+        _controlledMicrophones.emplace_back(std::move(newMic));
+    }
+    // Restore invalidated pointer
+    _microphoneTrackedInUI = controlledDefaultMic();
+    if (_microphoneTrackedInUI)
+    {
+        _microphoneTrackedInUI->set_mute_changed_callback([&](const bool muted) {
+            toolbar.setMicrophoneMute(muted);
+        });
     }
 }
 
@@ -395,21 +443,13 @@ void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view 
     auto allMics = MicrophoneDevice::getAllActive();
     if (new_mic == L"[All]")
     {
+        _controllingAllMics = true;
         _controlledMicrophones = std::move(allMics);
-        if (auto defaultMic = MicrophoneDevice::getDefault())
-        {
-            for (auto& controlledMic : _controlledMicrophones)
-            {
-                if (controlledMic.id() == defaultMic->id())
-                {
-                    _microphoneTrackedInUI = &controlledMic;
-                    break;
-                }
-            }
-        }
+        _microphoneTrackedInUI = controlledDefaultMic();
     }
     else
     {
+        _controllingAllMics = false;
         for (auto& controlledMic : allMics)
         {
             if (controlledMic.name() == new_mic)
@@ -420,6 +460,7 @@ void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view 
             }
         }
     }
+
     if (_microphoneTrackedInUI)
     {
         _microphoneTrackedInUI->set_mute_changed_callback([&](const bool muted) {
@@ -427,6 +468,22 @@ void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view 
         });
         toolbar.setMicrophoneMute(_microphoneTrackedInUI->muted());
     }
+}
+
+MicrophoneDevice* VideoConferenceModule::controlledDefaultMic()
+{
+    if (auto defaultMic = MicrophoneDevice::getDefault())
+    {
+        for (auto& controlledMic : _controlledMicrophones)
+        {
+            if (controlledMic.id() == defaultMic->id())
+            {
+                return &controlledMic;
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 void toggleProxyCamRegistration(const bool enable)

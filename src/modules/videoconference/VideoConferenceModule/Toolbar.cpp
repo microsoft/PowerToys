@@ -126,6 +126,12 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     }
     case WM_TIMER:
     {
+        if (toolbar->audioConfChangesNotifier.PullPendingNotifications())
+        {
+            instance->onMicrophoneConfigurationChanged();
+        }
+        toolbar->microphoneMuted = instance->getMicrophoneMuteState();
+
         if (toolbar->generalSettingsUpdateScheduled)
         {
             instance->onGeneralSettingsChanged();

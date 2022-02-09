@@ -6,6 +6,7 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="VideoConferenceModule.cpp" />
     <ClCompile Include="trace.cpp" />
+    <ClCompile Include="AudioDeviceNotificationClient.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
@@ -13,6 +14,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="VideoConferenceModule.h" />
     <ClInclude Include="trace.h" />
+    <ClInclude Include="AudioDeviceNotificationClient.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="black.bmp" />

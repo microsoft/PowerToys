@@ -527,6 +527,7 @@ EAF
 EBA
 EBE
 ecount
+EData
 ededf
 EDITKEYBOARD
 editkeyboardwindow
@@ -563,6 +564,7 @@ errc
 errorlevel
 ERRORMESSAGE
 ERRORTITLE
+ERole
 ESettings
 esize
 esrp
@@ -1581,6 +1583,7 @@ programdata
 PROGRAMFILES
 projectname
 PROPBAG
+PROPERTYKEY
 propkey
 propvarutil
 prvpane
