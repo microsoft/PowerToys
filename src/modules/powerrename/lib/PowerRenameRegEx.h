@@ -6,7 +6,7 @@
 
 #include "PowerRenameInterfaces.h"
 
-#define DEFAULT_FLAGS MatchAllOccurences
+#define DEFAULT_FLAGS 0
 
 class CPowerRenameRegEx : public IPowerRenameRegEx
 {

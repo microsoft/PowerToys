@@ -98,15 +98,16 @@ call "..\..\publish.cmd"
 	</Target>
 	-->
   <Target Name="BeforeBuild">
-    <HeatDirectory Directory="..\..\src\modules\previewpane\MonacoPreviewHandler\monacoSRC" 
-      PreprocessorVariable="var.MonacoSRCHarvestPath" 
-      OutputFile="MonacoSRC.wxs" 
-      ComponentGroupName="MonacoSRCHeatGenerated" 
-      DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" 
-      AutogenerateGuids="true" 
-      ToolPath="$(WixToolPath)" 
-      SuppressFragments="true" 
-      SuppressRegistry="true" 
-      SuppressRootDirectory="true" />  
+    <HeatDirectory Directory="..\..\src\modules\previewpane\MonacoPreviewHandler\monacoSRC"
+      PreprocessorVariable="var.MonacoSRCHarvestPath"
+      OutputFile="MonacoSRC.wxs"
+      ComponentGroupName="MonacoSRCHeatGenerated"
+      DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder"
+      AutogenerateGuids="true"
+      ToolPath="$(WixToolPath)"
+      RunAsSeparateProcess="true"
+      SuppressFragments="true"
+      SuppressRegistry="true"
+      SuppressRootDirectory="true" />
   </Target>
 </Project>

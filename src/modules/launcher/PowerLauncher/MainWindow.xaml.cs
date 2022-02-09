@@ -78,7 +78,7 @@ namespace PowerLauncher
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
-            WindowsInteropHelper.SetPopupStyle(this);
+            WindowsInteropHelper.SetToolWindowStyle(this);
         }
 
         private void CheckForFirstDelete(object sender, ElapsedEventArgs e)

@@ -10,6 +10,7 @@ jobs:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
   pool:
+    demands: ImageOverride -equals WinDevVS17-latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: WinDevPoolOSS-L
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:

@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         [DataRow("sleep", "Put computer to sleep")]
         [DataRow("hibernate", "Hibernate computer")]
         [DataRow("empty recycle", "Empty Recycle Bin")]
-        public void QueryResults(string typedString, string expectedResult)
+        public void EnvironmentIndependentQueryResults(string typedString, string expectedResult)
         {
             // Setup
             Mock<Main> main = new Mock<Main>();
@@ -38,6 +38,36 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
 
             // Assert
             Assert.AreEqual(expectedResult, result);
+        }
+
+        [TestMethod]
+        public void UefiCommandIsAvailableOnUefiSystems()
+        {
+            // Setup
+            Mock<Main> main = new Mock<Main>();
+            main.Object.IsBootedInUefiMode = true; // Simulate system with UEFI.
+            Query expectedQuery = new Query("uefi firm");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
+
+            // Assert
+            Assert.AreEqual("Reboot computer into UEFI Firmware Settings (Requires administrative permissions.)", result);
+        }
+
+        [TestMethod]
+        public void UefiCommandIsNotAvailableOnSystemsWithoutUefi()
+        {
+            // Setup
+            Mock<Main> main = new Mock<Main>();
+            main.Object.IsBootedInUefiMode = false; // Simulate system without UEFI.
+            Query expectedQuery = new Query("uefi firm");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).FirstOrDefault();
+
+            // Assert
+            Assert.IsNull(result);
         }
     }
 }

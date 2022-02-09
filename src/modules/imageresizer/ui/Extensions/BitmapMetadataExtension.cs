@@ -188,31 +188,6 @@ namespace ImageResizer.Extensions
         }
 
         /// <summary>
-        /// Detect whether the metadata object is valid and can be copied successfully
-        /// </summary>
-        /// <remarks>
-        /// ImageMetadata.Clone() causes an exception if there is something wrong with the metadata object.
-        /// Operation is rather expensive.
-        /// </remarks>
-        /// <param name="metadata">Metadata object to be checked</param>
-        /// <returns>true if valid, false if invalid</returns>
-        public static bool IsMetadataObjectValid(this BitmapMetadata metadata)
-        {
-            try
-            {
-                _ = metadata.Clone();
-
-                return true;
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Prints all metadata to debug console
         /// </summary>
         /// <remarks>
@@ -260,6 +235,11 @@ namespace ImageResizer.Extensions
 
             void GetMetadataRecursively(BitmapMetadata metadata, string query)
             {
+                if (metadata == null)
+                {
+                    return;
+                }
+
                 foreach (string relativeQuery in metadata)
                 {
                     string absolutePath = query + relativeQuery;

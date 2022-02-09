@@ -13,3 +13,5 @@
 # entries below.
 ###############################################################################
 *.rc diff
+
+*.gcode linguist-detectable=false
