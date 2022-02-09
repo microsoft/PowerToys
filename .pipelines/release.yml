@@ -344,7 +344,7 @@ jobs:
     displayName: 'Remove obj from ArtifactsDirectory'
     inputs:
       contents: |
-        $(System.ArtifactsDirectory)/Symbols/**/obj/*
+        $(System.ArtifactsDirectory)/Symbols/$(BuildPlatform)/$(BuildConfiguration)/obj/*
         $(System.ArtifactsDirectory)/Symbols/packages/*
         $(System.ArtifactsDirectory)/Symbols/src/*
 
@@ -356,14 +356,7 @@ jobs:
         $(Build.ArtifactStagingDirectory)/Symbols/**/*.*
       IndexSources: false
       SymbolServerType: TeamServices
-
-  - task: CopyFiles@2
-    displayName: Copying setup file over
-    inputs:
-      contents: '**/PowerToysSetup-*.exe'
-      flattenFolders: True
-      targetFolder: $(Build.ArtifactStagingDirectory)
-
+      
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: Symbols'
     inputs:
@@ -374,6 +367,12 @@ jobs:
     displayName: 'Remove symbols from ArtifactsDirectory'
     inputs:
       contents: $(System.ArtifactsDirectory)/Symbols/
+  - task: CopyFiles@2
+    displayName: Copying setup file over
+    inputs:
+      contents: '**/PowerToysSetup-*.exe'
+      flattenFolders: True
+      targetFolder: $(Build.ArtifactStagingDirectory)
       
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: PowerToySetup'
