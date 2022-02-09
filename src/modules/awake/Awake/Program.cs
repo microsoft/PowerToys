@@ -12,13 +12,13 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using Awake.Core;
 using Awake.Core.Models;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Newtonsoft.Json;
 using NLog;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -75,7 +75,7 @@ namespace Awake
             // To make it easier to diagnose future issues, let's get the
             // system power capabilities and aggregate them in the log.
             NativeMethods.GetPwrCapabilities(out _powerCapabilities);
-            _log.Info(JsonConvert.SerializeObject(_powerCapabilities));
+            _log.Info(JsonSerializer.Serialize(_powerCapabilities));
 
             _log.Info("Parsing parameters...");
 
