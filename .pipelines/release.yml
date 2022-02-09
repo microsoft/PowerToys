@@ -336,7 +336,7 @@ jobs:
   - task: CopyFiles@2
     displayname: Copying files for symbols
     inputs:
-      contents: **/*.pdb
+      contents: '**/*.pdb'
       targetFolder: $(Build.ArtifactStagingDirectory)/Symbols/
 
   - task: PublishSymbols@2
