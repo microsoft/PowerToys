@@ -38,9 +38,6 @@
     <PackageReference Include="Microsoft.CodeQuality.Analyzers" Version="3.3.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="3.3.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.NetFramework.Analyzers" Version="3.3.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
