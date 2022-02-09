@@ -335,6 +335,32 @@ jobs:
 
   - task: CopyFiles@2
     inputs:
+      contents: |
+        'installer/PowerToysSetup/$(BuildPlatform)/$(BuildConfiguration)/**/*.exe'
+        'installer/PowerToysSetup/$(BuildPlatform)/$(BuildConfiguration)/**/*.dll'
+        'installer/PowerToysSetup/$(BuildPlatform)/$(BuildConfiguration)/**/*.pdb'
+        '$(BuildPlatform)/$(BuildConfiguration)/**/*.exe'
+        '$(BuildPlatform)/$(BuildConfiguration)/**/*.dll'
+        '$(BuildPlatform)/$(BuildConfiguration)/**/*.pdb'
+        'x86/$(BuildConfiguration)/**/*.exe'
+        'x86/$(BuildConfiguration)/**/*.dll'
+        'x86/$(BuildConfiguration)/**/*.pdb'
+        !'installer/PowerToysSetup/$(BuildPlatform)/$(BuildConfiguration)/obj/**/*.*'
+        !'$(BuildPlatform)/$(BuildConfiguration)/obj/**/*.*'
+        !'x86/$(BuildConfiguration)/obj/**/*.*'
+      targetFolder: $(Build.ArtifactStagingDirectory)/Symbols/
+
+  - task: PublishSymbols@2
+    displayName: Publish symbols path
+    continueOnError: True
+    inputs:
+      SearchPattern: |
+        $(Build.ArtifactStagingDirectory)/Symbols/**/*.*
+      IndexSources: false
+      SymbolServerType: TeamServices
+
+  - task: CopyFiles@2
+    inputs:
       contents: '**/PowerToysSetup-*.exe'
       flattenFolders: True
       targetFolder: $(Build.ArtifactStagingDirectory)
