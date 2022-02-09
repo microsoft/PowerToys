@@ -212,7 +212,7 @@ namespace Wox.Plugin.Common.Win32
     }
 
     /// <summary>
-    /// <see href="https://docs.microsoft.com/windows/win32/stg/stgm-constants">see all <typeparamref name="STGM"/> values</see>
+    /// <see href="https://docs.microsoft.com/windows/win32/stg/stgm-constants">see all STGM values</see>
     /// </summary>
     [Flags]
     public enum STGM : long

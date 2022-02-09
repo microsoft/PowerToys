@@ -1942,7 +1942,6 @@ STDMETHODIMP
 stdout
 stefan
 STEPIT
-stgm
 STGM
 STGMEDIUM
 sticpl
