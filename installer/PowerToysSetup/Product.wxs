@@ -320,15 +320,6 @@
                         <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
                         <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
                             <Directory Id="AwakeImagesFolder" Name="Images" />
-                            <Directory Id="AwakeInstallFolderRuntimes" Name="Runtimes">
-                                <Directory Id="AwakeInstallFolderRuntimesWin" Name="Win">
-                                    <Directory Id="AwakeInstallFolderRuntimesWinLib" Name="Lib">
-                                        <Directory Id="AwakeInstallFolderNetcoreApp21" Name="netcoreapp2.1" />
-                                        <Directory Id="AwakeInstallFolderNetcoreApp30" Name="netcoreapp3.0" />
-                                        <Directory Id="AwakeInstallFolderNetStandard20" Name="netstandard2.0" />
-                                    </Directory>
-                                </Directory>
-                            </Directory>
                         </Directory>
 
                         <!-- KBM -->
@@ -812,12 +803,6 @@
             </Component>
         </DirectoryRef>
 
-        <DirectoryRef Id="AwakeInstallFolderNetStandard20" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0">
-            <Component Id="Module_Awake_runtime_netstandard20" Guid="414A31AB-91A8-4F17-9B4B-DB7B93A2BB23">
-                <File Id="AwakeFile_runtime_System.Runtime.Caching.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll" />
-            </Component>
-        </DirectoryRef>
-
         <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
             <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
                 <!-- Component to include PowerPreview Module Source dll's -->
@@ -1060,7 +1045,6 @@
             <ComponentRef Id="Module_ColorPicker_Resources"/>
             <ComponentRef Id="Module_Awake"/>
             <ComponentRef Id="Module_Awake_Images"/>
-            <ComponentRef Id="Module_Awake_runtime_netstandard20"/>
             <ComponentRef Id="Module_FindMyMouse"/>
             <ComponentRef Id="Module_MouseHighlighter"/>
             <ComponentRef Id="Module_MousePointerCrosshairs" />
