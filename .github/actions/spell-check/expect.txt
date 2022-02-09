@@ -1185,6 +1185,9 @@ MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
 MBs
+mdtext
+mdtxt
+mdwn
 MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
@@ -1229,7 +1232,9 @@ minlevel
 Miracast
 mirophone
 mjpg
+mkd
 mkdir
+mkdn
 mlcfg
 mmdeviceapi
 mmi
