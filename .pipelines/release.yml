@@ -334,12 +334,9 @@ jobs:
     displayName: Component Detection
 
   - task: CopyFiles@2
+    displayname: Copying files for symbols
     inputs:
-      contents: |
-        '**/$(BuildConfiguration)/**/*.exe'
-        '**/$(BuildConfiguration)/**/*.dll'
-        '**/$(BuildConfiguration)/**/*.pdb'
-        '**/$(BuildConfiguration)/obj/**/*.pdb'
+      contents: **/*.pdb
       targetFolder: $(Build.ArtifactStagingDirectory)/Symbols/
 
   - task: PublishSymbols@2
@@ -361,5 +358,5 @@ jobs:
     displayName: 'Publish Artifact: PowerToySetup'
     inputs:
       PathtoPublish: $(System.ArtifactsDirectory)
-      ArtifactName: BuildArtifacts
+      ArtifactName: setup-$(BuildPlatform)
 ...
