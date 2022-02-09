@@ -336,8 +336,17 @@ jobs:
   - task: CopyFiles@2
     displayName: Copying files for symbols
     inputs:
-      contents: '**/*.pdb'
+      contents: |
+        '**/*.pdb'
       targetFolder: $(Build.ArtifactStagingDirectory)/Symbols/
+
+  - task: DeleteFiles@1
+    displayName: 'Remove obj from ArtifactsDirectory'
+    inputs:
+      contents: |
+        $(System.ArtifactsDirectory)/Symbols/**/obj/*
+        $(System.ArtifactsDirectory)/Symbols/packages/*
+        $(System.ArtifactsDirectory)/Symbols/src/*
 
   - task: PublishSymbols@2
     displayName: Publish symbols path
@@ -359,8 +368,13 @@ jobs:
     displayName: 'Publish Artifact: Symbols'
     inputs:
       PathtoPublish: $(System.ArtifactsDirectory)/Symbols/
-      ArtifactName: symbols
+      ArtifactName: Symbols
 
+  - task: DeleteFiles@1
+    displayName: 'Remove symbols from ArtifactsDirectory'
+    inputs:
+      contents: $(System.ArtifactsDirectory)/Symbols/
+      
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: PowerToySetup'
     inputs:
