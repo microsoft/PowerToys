@@ -4,6 +4,7 @@
 #include "FindMyMouse.h"
 #include "trace.h"
 #include "common/utils/game_mode.h"
+#include <vector>
 
 #ifdef COMPOSITION
 namespace winrt
@@ -62,17 +63,42 @@ protected:
     int m_sonarZoomFactor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
     DWORD m_fadeDuration = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
     int m_finalAlphaNumerator = FIND_MY_MOUSE_DEFAULT_OVERLAY_OPACITY;
+    bool m_activateOnShake = true;
     static constexpr int FinalAlphaDenominator = 100;
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
 
 private:
+
+    // Save the mouse movement that occurred in any direction.
+    struct PointerRecentMovement
+    {
+        POINT diff;
+        ULONGLONG tick;
+    };
+    std::vector<PointerRecentMovement> m_movementHistory;
+    // Raw Input may give relative or absolute values. Need to take each case into account.
+    bool m_seenAnAbsoluteMousePosition = false;
+    POINT m_lastAbsolutePosition = { 0, 0 };
+    // Don't consider movements started past these milliseconds to detect shaking.
+    static constexpr LONG ShakeIntervalMs = 1000;
+    // By which factor must travelled distance be than the diagonal of the rectangle containing the movements.
+    static constexpr float ShakeFactor = 4.0f;
+
+    static inline byte GetSign(LONG const& num)
+    {
+        if (num > 0)
+            return 1;
+        if (num < 0)
+            return -1;
+        return 0;
+    }
+
     static bool IsEqual(POINT const& p1, POINT const& p2)
     {
         return p1.x == p2.x && p1.y == p2.y;
     }
 
     static constexpr POINT ptNowhere = { -1, -1 };
-
     static constexpr DWORD TIMER_ID_TRACK = 100;
     static constexpr DWORD IdlePeriod = 1000;
 
@@ -89,11 +115,11 @@ private:
     HWND m_hwndOwner;
     SonarState m_sonarState = SonarState::Idle;
     POINT m_lastKeyPos{};
-    DWORD m_lastKeyTime{};
+    ULONGLONG m_lastKeyTime{};
 
     static constexpr DWORD NoSonar = 0;
     static constexpr DWORD SonarWaitingForMouseMove = 1;
-    DWORD m_sonarStart = NoSonar;
+    ULONGLONG m_sonarStart = NoSonar;
     bool m_isSnoopingMouse = false;
 
 private:
@@ -109,6 +135,8 @@ private:
     void OnSonarKeyboardInput(RAWINPUT const& input);
     void OnSonarMouseInput(RAWINPUT const& input);
     void OnMouseTimer();
+
+    void DetectShake();
 
     void StartSonar();
     void StopSonar();
@@ -189,7 +217,9 @@ LRESULT SuperSonar<D>::BaseWndProc(UINT message, WPARAM wParam, LPARAM lParam) n
     switch (message)
     {
     case WM_CREATE:
-        return OnSonarCreate() ? 0 : -1;
+        if(!OnSonarCreate()) return -1;
+        UpdateMouseSnooping();
+        return 0;
 
     case WM_DESTROY:
         OnSonarDestroy();
@@ -293,7 +323,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
         if (pressed)
         {
             m_sonarState = SonarState::ControlDown1;
-            m_lastKeyTime = GetTickCount();
+            m_lastKeyTime = GetTickCount64();
             m_lastKeyPos = {};
             GetCursorPos(&m_lastKeyPos);
             UpdateMouseSnooping();
@@ -310,7 +340,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
     case SonarState::ControlUp1:
         if (pressed)
         {
-            auto now = GetTickCount();
+            auto now = GetTickCount64();
             auto doubleClickInterval = now - m_lastKeyTime;
             POINT ptCursor{};
             auto doubleClickTimeSetting = GetDoubleClickTime();
@@ -325,7 +355,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
             else
             {
                 m_sonarState = SonarState::ControlDown1;
-                m_lastKeyTime = GetTickCount();
+                m_lastKeyTime = GetTickCount64();
                 m_lastKeyPos = {};
                 GetCursorPos(&m_lastKeyPos);
                 UpdateMouseSnooping();
@@ -351,9 +381,92 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
     }
 }
 
+// Shaking detection algorithm is: Has distance travelled been much greater than the diagonal of the rectangle containing the movement?
+template<typename D>
+void SuperSonar<D>::DetectShake()
+{
+    ULONGLONG shakeStartTick = GetTickCount64() - ShakeIntervalMs;
+    
+    // Prune the story of movements for those movements that started too long ago.
+    std::erase_if(m_movementHistory, [shakeStartTick](const PointerRecentMovement& movement) { return movement.tick < shakeStartTick; });
+    
+    
+    double distanceTravelled = 0;
+    LONGLONG currentX=0, minX=0, maxX=0;
+    LONGLONG currentY=0, minY=0, maxY=0;
+
+    for (const PointerRecentMovement& movement : m_movementHistory)
+    {
+        currentX += movement.diff.x;
+        currentY += movement.diff.y;
+        distanceTravelled += sqrt((double)movement.diff.x * movement.diff.x + (double)movement.diff.y * movement.diff.y); // Pythagorean theorem
+        minX = min(currentX, minX);
+        maxX = max(currentX, maxX);
+        minY = min(currentY, minY);
+        maxY = max(currentY, maxY);
+    }
+    
+    // Size of the rectangle the pointer moved in.
+    double rectangleWidth = (double)maxX - minX;
+    double rectangleHeight = (double)maxY - minY;
+
+    double diagonal = sqrt(rectangleWidth * rectangleWidth + rectangleHeight * rectangleHeight);
+    if (diagonal > 0 && distanceTravelled / diagonal > ShakeFactor)
+    {
+        m_movementHistory.clear();
+        StartSonar();
+    }
+
+}
+
 template<typename D>
 void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
 {
+    if (m_activateOnShake)
+    {
+        LONG relativeX = 0;
+        LONG relativeY = 0;
+        if ((input.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE)
+        {
+            // Getting absolute mouse coordinates. Likely inside a VM / RDP session.
+            if (m_seenAnAbsoluteMousePosition)
+            {
+                relativeX = input.data.mouse.lLastX - m_lastAbsolutePosition.x;
+                relativeY = input.data.mouse.lLastY - m_lastAbsolutePosition.y;
+                m_lastAbsolutePosition.x = input.data.mouse.lLastX;
+                m_lastAbsolutePosition.y = input.data.mouse.lLastY;
+            }
+            m_seenAnAbsoluteMousePosition = true;
+        }
+        else
+        {
+            relativeX = input.data.mouse.lLastX;
+            relativeY = input.data.mouse.lLastY;
+        }
+        if (m_movementHistory.size() > 0)
+        {
+            PointerRecentMovement& lastMovement = m_movementHistory.back();
+            // If the pointer is still moving in the same direction, just add to that movement instead of adding a new movement.
+            // This helps in keeping the list of movements smaller even in cases where a high number of messages is sent.
+            if (GetSign(lastMovement.diff.x) == GetSign(relativeX) && GetSign(lastMovement.diff.y) == GetSign(relativeY))
+            {
+                lastMovement.diff.x += relativeX;
+                lastMovement.diff.y += relativeY;
+            }
+            else
+            {
+                m_movementHistory.push_back({ .diff = { .x=relativeX, .y=relativeY }, .tick = GetTickCount64() });
+                // Mouse movement changed directions. Take the opportunity do detect shake.
+                DetectShake();
+            }
+        }
+        else
+        {
+            m_movementHistory.push_back({ .diff = { .x = relativeX, .y = relativeY }, .tick = GetTickCount64() });
+        }
+    
+    }
+
     if (input.data.mouse.usButtonFlags)
     {
         StopSonar();
@@ -393,7 +506,7 @@ void SuperSonar<D>::StopSonar()
 template<typename D>
 void SuperSonar<D>::OnMouseTimer()
 {
-    auto now = GetTickCount();
+    auto now = GetTickCount64();
 
     // If mouse has moved, then reset the sonar timer.
     POINT ptCursor{};
@@ -433,7 +546,7 @@ void SuperSonar<D>::OnMouseTimer()
 template<typename D>
 void SuperSonar<D>::UpdateMouseSnooping()
 {
-    bool wantSnoopingMouse = m_sonarStart != NoSonar || m_sonarState != SonarState::Idle;
+    bool wantSnoopingMouse = m_sonarStart != NoSonar || m_sonarState != SonarState::Idle || m_activateOnShake;
     if (m_isSnoopingMouse != wantSnoopingMouse)
     {
         m_isSnoopingMouse = wantSnoopingMouse;
