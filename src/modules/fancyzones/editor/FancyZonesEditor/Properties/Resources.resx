@@ -304,11 +304,11 @@
     <value>Delete zone</value>
     <comment>A tooltip on a button that allows the user to delete a zone</comment>
   </data>
-  <data name="Error_Parsing_Zones_Settings_Title" xml:space="preserve">
+  <data name="Error_Parsing_Data_Title" xml:space="preserve">
     <value>Editor data parsing error.</value>
   </data>
-  <data name="Error_Parsing_Zones_Settings_Message" xml:space="preserve">
-    <value>A layout that contained invalid data has been removed.</value>
+  <data name="Error_Parsing_Applied_Layouts_Message" xml:space="preserve">
+    <value>An error occurred while parsing applied layouts.</value>
   </data>
   <data name="Apply_Layout" xml:space="preserve">
     <value>Apply layout</value>

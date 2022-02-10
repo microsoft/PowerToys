@@ -188,12 +188,12 @@ namespace FancyZonesDataTypes
         {
             for (const auto& c : parts[0])
             {
-                std::stoi(std::wstring(&c));
+                std::ignore = std::stoi(std::wstring(&c));
             }
 
             for (const auto& c : parts[1])
             {
-                std::stoi(std::wstring(&c));
+                std::ignore = std::stoi(std::wstring(&c));
             }
 
             data.width = std::stoi(parts[0]);
@@ -269,11 +269,11 @@ namespace FancyZonesDataTypes
             //check if resolution contain only digits
             for (const auto& c : parts[1])
             {
-                std::stoi(std::wstring(&c));
+                std::ignore = std::stoi(std::wstring(&c));
             }
             for (const auto& c : parts[2])
             {
-                std::stoi(std::wstring(&c));
+                std::ignore = std::stoi(std::wstring(&c));
             }
         }
         catch (const std::exception&)
@@ -304,10 +304,5 @@ namespace FancyZonesDataTypes
         }
 
         return result;
-    }
-
-    bool DeviceIdData::isEqualWithNullVirtualDesktopId(const DeviceIdData& other) const
-    {
-        return deviceName.compare(other.deviceName) == 0 && width == other.width && height == other.height && (virtualDesktopId == other.virtualDesktopId || virtualDesktopId == GUID_NULL || other.virtualDesktopId == GUID_NULL) && monitorId.compare(other.monitorId) == 0;
     }
 }

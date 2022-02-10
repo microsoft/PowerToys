@@ -1,12 +1,13 @@
 #include "pch.h"
 
 #include "JsonHelpers.h"
-#include "FancyZonesData.h"
 #include "FancyZonesDataTypes.h"
 #include "trace.h"
 #include "util.h"
 
+#include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 
@@ -580,21 +581,6 @@ namespace JSONHelpers
         }
     }
 
-    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap)
-    {
-        auto before = json::from_file(zonesSettingsFileName);
-
-        json::JsonObject root{};
-               
-        root.SetNamedValue(NonLocalizable::DevicesStr, JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
-        
-        if (!before.has_value() || before.value().Stringify() != root.Stringify())
-        {
-            Trace::FancyZones::DataChanged();
-            json::to_file(zonesSettingsFileName, root);
-        }
-    }
-
     void SaveAppZoneHistory(const std::wstring& appZoneHistoryFileName, const TAppZoneHistoryMap& appZoneHistoryMap)
     {
         json::JsonObject root{};
@@ -644,7 +630,7 @@ namespace JSONHelpers
         return appHistoryArray;
     }
 
-    TDeviceInfoMap ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
+    std::optional<TDeviceInfoMap> ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
     {
         try
         {
@@ -661,22 +647,37 @@ namespace JSONHelpers
 
             return std::move(deviceInfoMap);
         }
-        catch (const winrt::hresult_error&)
+        catch (const winrt::hresult_error& e)
         {
-            return {};
+            Logger::error(L"Parsing device info error: {}", e.message());
+            return std::nullopt;
         }
     }
 
-    json::JsonArray SerializeDeviceInfos(const TDeviceInfoMap& deviceInfoMap)
+    void SaveAppliedLayouts(const TDeviceInfoMap& deviceInfoMap)
     {
-        json::JsonArray DeviceInfosJSON{};
+        json::JsonObject root{};
+        json::JsonArray layoutsArray{};
 
-        for (const auto& [deviceID, deviceData] : deviceInfoMap)
+        for (const auto& [deviceID, data] : deviceInfoMap)
         {
-            DeviceInfosJSON.Append(DeviceInfoJSON::DeviceInfoJSON::ToJson(DeviceInfoJSON{ deviceID, deviceData }));
+            json::JsonObject layout{};
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::UuidID, json::value(data.activeZoneSet.uuid));
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::TypeID, json::value(FancyZonesDataTypes::TypeToString(data.activeZoneSet.type)));
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::ShowSpacingID, json::value(data.showSpacing));
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::SpacingID, json::value(data.spacing));
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::ZoneCountID, json::value(data.zoneCount));
+            layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::SensitivityRadiusID, json::value(data.sensitivityRadius));
+
+            json::JsonObject obj{};
+            obj.SetNamedValue(NonLocalizable::AppliedLayoutsIds::DeviceIdID, json::value(deviceID.toString()));
+            obj.SetNamedValue(NonLocalizable::AppliedLayoutsIds::AppliedLayoutID, layout);
+
+            layoutsArray.Append(obj);
         }
 
-        return DeviceInfosJSON;
+        root.SetNamedValue(NonLocalizable::AppliedLayoutsIds::AppliedLayoutsArrayID, layoutsArray);
+        json::to_file(AppliedLayouts::AppliedLayoutsFileName(), root);
     }
 
     json::JsonArray SerializeCustomZoneSets(const TCustomZoneSetsMap& customZoneSetsMap)

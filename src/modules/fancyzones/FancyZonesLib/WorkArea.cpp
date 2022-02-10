@@ -4,7 +4,7 @@
 #include <common/logger/call_tracer.h>
 #include <common/logger/logger.h>
 
-#include "FancyZonesData.h"
+#include "FancyZonesData/AppliedLayouts.h"
 #include "FancyZonesData/AppZoneHistory.h"
 #include "FancyZonesDataTypes.h"
 #include "ZonesOverlay.h"
@@ -486,73 +486,65 @@ void WorkArea::InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& paren
     wil::unique_cotaskmem_string virtualDesktopId;
     if (SUCCEEDED(StringFromCLSID(m_uniqueId.virtualDesktopId, &virtualDesktopId)))
     {
-        Logger::debug(L"Initialize zone sets on the virtual desktop {}", virtualDesktopId.get());
+        Logger::debug(L"Initialize layout on the virtual desktop {}", virtualDesktopId.get());
     }
     
-    bool deviceAdded = FancyZonesDataInstance().AddDevice(m_uniqueId);
-    // If the device has been added, check if it should inherit the parent's layout
-    if (deviceAdded && parentUniqueId.virtualDesktopId != GUID_NULL)
+    bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
+    if (!isLayoutAlreadyApplied)
     {
-        FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
+        if (parentUniqueId.virtualDesktopId != GUID_NULL)
+        {
+            AppliedLayouts::instance().CloneLayout(parentUniqueId, m_uniqueId);
+        }
+        else
+        {
+            AppliedLayouts::instance().ApplyDefaultLayout(m_uniqueId);
+        }
     }
+    
     CalculateZoneSet(m_overlappingAlgorithm);
 }
 
 void WorkArea::CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept
 {
-    const auto& fancyZonesData = FancyZonesDataInstance();
-    const auto deviceInfoData = fancyZonesData.FindDeviceInfo(m_uniqueId);
-
-    if (!deviceInfoData.has_value())
+    const auto appliedLayout = AppliedLayouts::instance().GetDeviceLayout(m_uniqueId);
+    if (!appliedLayout.has_value())
     {
         return;
     }
 
-    const auto& activeZoneSet = deviceInfoData->activeZoneSet;
+    auto zoneSet = MakeZoneSet(ZoneSetConfig(
+        appliedLayout->uuid,
+        appliedLayout->type,
+        m_monitor,
+        appliedLayout->sensitivityRadius,
+        overlappingAlgorithm));
 
-    if (activeZoneSet.uuid.empty())
+    RECT workArea;
+    if (m_monitor)
     {
-        return;
-    }
-
-    GUID zoneSetId;
-    if (SUCCEEDED_LOG(CLSIDFromString(activeZoneSet.uuid.c_str(), &zoneSetId)))
-    {
-        int sensitivityRadius = deviceInfoData->sensitivityRadius;
-
-        auto zoneSet = MakeZoneSet(ZoneSetConfig(
-            zoneSetId,
-            activeZoneSet.type,
-            m_monitor,
-            sensitivityRadius,
-            overlappingAlgorithm));
-
-        RECT workArea;
-        if (m_monitor)
+        MONITORINFO monitorInfo{};
+        monitorInfo.cbSize = sizeof(monitorInfo);
+        if (GetMonitorInfoW(m_monitor, &monitorInfo))
         {
-            MONITORINFO monitorInfo{};
-            monitorInfo.cbSize = sizeof(monitorInfo);
-            if (GetMonitorInfoW(m_monitor, &monitorInfo))
-            {
-                workArea = monitorInfo.rcWork;
-            }
-            else
-            {
-                return;
-            }
+            workArea = monitorInfo.rcWork;
         }
         else
         {
-            workArea = GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
+            return;
         }
-
-        bool showSpacing = deviceInfoData->showSpacing;
-        int spacing = showSpacing ? deviceInfoData->spacing : 0;
-        int zoneCount = deviceInfoData->zoneCount;
-
-        zoneSet->CalculateZones(workArea, zoneCount, spacing);
-        UpdateActiveZoneSet(zoneSet.get());
     }
+    else
+    {
+        workArea = GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
+    }
+
+    bool showSpacing = appliedLayout->showSpacing;
+    int spacing = showSpacing ? appliedLayout->spacing : 0;
+    int zoneCount = appliedLayout->zoneCount;
+
+    zoneSet->CalculateZones(workArea, zoneCount, spacing);
+    UpdateActiveZoneSet(zoneSet.get());
 }
 
 void WorkArea::UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept
@@ -568,7 +560,8 @@ void WorkArea::UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept
                 .uuid = zoneSetId.get(),
                 .type = m_zoneSet->LayoutType()
             };
-            FancyZonesDataInstance().SetActiveZoneSet(m_uniqueId, data);
+
+            AppliedLayouts::instance().ApplyLayout(m_uniqueId, data);
         }
     }
 }

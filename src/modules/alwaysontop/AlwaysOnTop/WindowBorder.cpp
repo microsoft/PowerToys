@@ -31,18 +31,10 @@ std::optional<RECT> GetFrameRect(HWND window)
 }
 
 WindowBorder::WindowBorder(HWND window) :
-    SettingsObserver({SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor }),
-    m_window(nullptr), 
-    m_trackingWindow(window), 
-    m_frameDrawer(nullptr)
-{
-}
-
-WindowBorder::WindowBorder(WindowBorder&& other) :
     SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor }),
-    m_window(other.m_window), 
-    m_trackingWindow(other.m_trackingWindow), 
-    m_frameDrawer(std::move(other.m_frameDrawer))
+    m_window(nullptr),
+    m_trackingWindow(window),
+    m_frameDrawer(nullptr)
 {
 }
 
@@ -59,6 +51,23 @@ WindowBorder::~WindowBorder()
         SetWindowLongPtrW(m_window, GWLP_USERDATA, 0);
         ShowWindow(m_window, SW_HIDE);
     }
+}
+
+std::unique_ptr<WindowBorder> WindowBorder::Create(HWND window, HINSTANCE hinstance)
+{
+    auto self = std::unique_ptr<WindowBorder>(new WindowBorder(window));
+    if (self->Init(hinstance))
+    {
+        return self;
+    }
+
+    return nullptr;
+}
+
+namespace
+{
+    constexpr uint32_t REFRESH_BORDER_TIMER_ID = 123;
+    constexpr uint32_t REFRESH_BORDER_INTERVAL = 100;
 }
 
 bool WindowBorder::Init(HINSTANCE hinstance)
@@ -87,7 +96,7 @@ bool WindowBorder::Init(HINSTANCE hinstance)
     m_window = CreateWindowExW(WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW
         , NonLocalizable::ToolWindowClassName
         , L""
-        , WS_POPUP
+        , WS_POPUP | WS_DISABLED
         , windowRect.left
         , windowRect.top
         , windowRect.right - windowRect.left
@@ -118,7 +127,16 @@ bool WindowBorder::Init(HINSTANCE hinstance)
         , SWP_NOMOVE | SWP_NOSIZE);
 
     m_frameDrawer = FrameDrawer::Create(m_window);
-    return m_frameDrawer != nullptr;
+    if (!m_frameDrawer)
+    {
+        return false;
+    }
+
+    UpdateBorderProperties();
+    m_frameDrawer->Show();
+    m_timer_id = SetTimer(m_window, REFRESH_BORDER_TIMER_ID, REFRESH_BORDER_INTERVAL, nullptr);
+
+    return true;
 }
 
 void WindowBorder::UpdateBorderPosition() const
@@ -131,11 +149,12 @@ void WindowBorder::UpdateBorderPosition() const
     auto rectOpt = GetFrameRect(m_trackingWindow);
     if (!rectOpt.has_value())
     {
+        m_frameDrawer->Hide();
         return;
     }
 
     RECT rect = rectOpt.value();
-    SetWindowPos(m_window, m_trackingWindow, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOREDRAW);
+    SetWindowPos(m_window, m_trackingWindow, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOREDRAW | SWP_NOACTIVATE);
 }
 
 void WindowBorder::UpdateBorderProperties() const
@@ -151,7 +170,9 @@ void WindowBorder::UpdateBorderProperties() const
         return;
     }
 
-    RECT windowRect = windowRectOpt.value();
+    const RECT windowRect = windowRectOpt.value();
+    SetWindowPos(m_window, m_trackingWindow, windowRect.left, windowRect.top, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top, SWP_NOREDRAW | SWP_NOACTIVATE);
+
     RECT frameRect{ 0, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top };
 
     COLORREF color;
@@ -169,29 +190,36 @@ void WindowBorder::UpdateBorderProperties() const
     m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness);
 }
 
-void WindowBorder::Show() const
-{
-    UpdateBorderProperties();
-    m_frameDrawer->Show();
-}
-
-void WindowBorder::Hide() const
-{
-    m_frameDrawer->Hide();
-}
-
 LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
     switch (message)
     {
+    case WM_TIMER:
+    {
+        switch (wparam)
+        {
+        case REFRESH_BORDER_TIMER_ID:
+            KillTimer(m_window, m_timer_id);
+            m_timer_id = SetTimer(m_window, REFRESH_BORDER_TIMER_ID, REFRESH_BORDER_INTERVAL, nullptr);
+            UpdateBorderPosition();
+            UpdateBorderProperties();
+            break;
+        }
+        break;
+    }
     case WM_NCDESTROY:
     {
+        KillTimer(m_window, m_timer_id);
         ::DefWindowProc(m_window, message, wparam, lparam);
         SetWindowLongPtr(m_window, GWLP_USERDATA, 0);
     }
     break;
 
     case WM_ERASEBKGND:
+        return TRUE;
+
+    // prevent from beeping if the border was clicked
+    case WM_SETCURSOR:
         return TRUE;
 
     default:
@@ -223,7 +251,7 @@ void WindowBorder::SettingsUpdate(SettingId id)
         UpdateBorderProperties();
     }
     break;
-    
+
     case SettingId::FrameColor:
     {
         UpdateBorderProperties();
@@ -238,5 +266,4 @@ void WindowBorder::SettingsUpdate(SettingId id)
     default:
         break;
     }
-    
 }

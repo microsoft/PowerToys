@@ -3,8 +3,8 @@
 #include <fstream>
 #include <utility>
 
-#include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
+#include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/util.h>
@@ -996,20 +996,20 @@ namespace FancyZonesUnitTests
         const std::wstring_view m_moduleName = L"FancyZonesUnitTests";
         const std::wstring m_defaultDeviceIdStr = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
         const std::wstring m_defaultCustomDeviceStr = L"{\"device-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"active-zoneset\": {\"type\": \"custom\", \"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}";
+        const std::wstring m_defaultCustomLayoutStr = L"{\"device-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"applied-layout\": {\"type\": \"custom\", \"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"show-spacing\": true, \"spacing\": 16, \"zone-count\": 3, \"sensitivity-radius\": 30}}";
         const json::JsonValue m_defaultCustomDeviceValue = json::JsonValue::Parse(m_defaultCustomDeviceStr);
         const json::JsonObject m_defaultCustomDeviceObj = json::JsonObject::Parse(m_defaultCustomDeviceStr);
+        const json::JsonObject m_defaultCustomLayoutObj = json::JsonObject::Parse(m_defaultCustomLayoutStr);
 
         const FancyZonesDataTypes::DeviceIdData m_defaultDeviceId = FancyZonesDataTypes::DeviceIdData::ParseDeviceId(m_defaultDeviceIdStr).value();
 
         GUID m_defaultVDId;
         
         HINSTANCE m_hInst{};
-        FancyZonesData& m_fzData = FancyZonesDataInstance();
 
         TEST_METHOD_INITIALIZE(Init)
         {
             m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-            m_fzData.clear_data();
             std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
 
             auto guid = Helpers::StringToGuid(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
@@ -1020,46 +1020,15 @@ namespace FancyZonesUnitTests
         TEST_METHOD_CLEANUP(CleanUp)
         {    
             std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
+            std::filesystem::remove_all(AppZoneHistory::AppZoneHistoryFileName());
         }
 
         public:
-            TEST_METHOD (FancyZonesDataPath)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                Assert::IsFalse(data.zonesSettingsFileName.empty());
-            }
-
-            TEST_METHOD (FancyZonesDataJsonEmpty)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                json::JsonObject expected;
-                auto actual = data.GetPersistFancyZonesJSON();
-
-                Assert::AreEqual(expected.Stringify().c_str(), actual.Stringify().c_str());
-            }
-
-            TEST_METHOD (FancyZonesDataJson)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                const auto& jsonPath = data.zonesSettingsFileName;
-
-                json::JsonObject expected = json::JsonObject::Parse(L"{\"fancy-zones\":{\"custom-zonesets \":[{\"uuid\":\"uuid1\",\"name\":\"Custom1\",\"type\":\"custom\" }] }, \"app-zone-history\":[] }");
-                json::to_file(jsonPath, expected);
-
-                auto actual = data.GetPersistFancyZonesJSON();
-                Assert::AreEqual(expected.Stringify().c_str(), actual.Stringify().c_str());
-            }
-
             TEST_METHOD (FancyZonesDataDeviceInfoMapParseEmpty)
             {
                 json::JsonObject deviceInfoJson;
                 const auto& deviceInfoMap = ParseDeviceInfos(deviceInfoJson);
-
-                Assert::IsTrue(deviceInfoMap.empty());
+                Assert::IsFalse(deviceInfoMap.has_value());
             }
 
             TEST_METHOD (FancyZonesDataDeviceInfoMapParseValidEmpty)
@@ -1070,7 +1039,8 @@ namespace FancyZonesUnitTests
 
                 const auto& deviceInfoMap = ParseDeviceInfos(deviceInfoJson);
 
-                Assert::IsTrue(deviceInfoMap.empty());
+                Assert::IsTrue(deviceInfoMap.has_value());
+                Assert::IsTrue(deviceInfoMap->empty());
             }
 
             TEST_METHOD (FancyZonesDataDeviceInfoMapParseValidAndInvalid)
@@ -1084,7 +1054,7 @@ namespace FancyZonesUnitTests
 
                 const auto& deviceInfoMap = ParseDeviceInfos(deviceInfoJson);
 
-                Assert::AreEqual((size_t)1, deviceInfoMap.size());
+                Assert::AreEqual((size_t)1, deviceInfoMap->size());
             }
 
             TEST_METHOD (FancyZonesDataDeviceInfoMapParseInvalid)
@@ -1097,7 +1067,7 @@ namespace FancyZonesUnitTests
 
                 const auto& deviceInfoMap = ParseDeviceInfos(deviceInfoJson);
 
-                Assert::IsTrue(deviceInfoMap.empty());
+                Assert::IsTrue(deviceInfoMap->empty());
             }
 
             TEST_METHOD (FancyZonesDataDeviceInfoMapParseSingle)
@@ -1109,7 +1079,7 @@ namespace FancyZonesUnitTests
 
                 const auto& deviceInfoMap = ParseDeviceInfos(deviceInfoJson);
 
-                Assert::AreEqual((size_t)1, deviceInfoMap.size());
+                Assert::AreEqual((size_t)1, deviceInfoMap->size());
             }
 
             TEST_METHOD (FancyZonesDataDeviceInfoMapParseMany)
@@ -1129,21 +1099,7 @@ namespace FancyZonesUnitTests
 
                 const auto& deviceInfoMap = ParseDeviceInfos(expected);
 
-                Assert::AreEqual((size_t)10, deviceInfoMap.size());
-            }
-
-            TEST_METHOD (FancyZonesDataSerialize)
-            {
-                json::JsonArray expectedDevices;
-                expectedDevices.Append(m_defaultCustomDeviceObj);
-                json::JsonObject expected;
-                expected.SetNamedValue(L"devices", expectedDevices);
-
-                const auto& deviceInfoMap = ParseDeviceInfos(expected);
-
-                auto actual = SerializeDeviceInfos(deviceInfoMap);
-                auto res = CustomAssert::CompareJsonArrays(expectedDevices, actual);
-                Assert::IsTrue(res.first, res.second.c_str());
+                Assert::AreEqual((size_t)10, deviceInfoMap->size());
             }
 
             TEST_METHOD (AppZoneHistoryParseSingle)
@@ -1371,449 +1327,6 @@ namespace FancyZonesUnitTests
                 const auto& actual = SerializeAppZoneHistory(appZoneHistoryMap);
                 auto res = CustomAssert::CompareJsonArrays(expected, actual);
                 Assert::IsTrue(res.first, res.second.c_str());
-            }
-            
-            TEST_METHOD (SetActiveZoneSet)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                const auto uniqueId = m_defaultDeviceId;
-
-                json::JsonArray devices;
-                devices.Append(m_defaultCustomDeviceValue);
-                json::JsonObject json;
-                json.SetNamedValue(L"devices", devices);
-                data.ParseDeviceInfos(json);
-
-                FancyZonesDataTypes::ZoneSetData expectedZoneSetData{
-                    .uuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}",
-                    .type = ZoneSetLayoutType::Focus
-                };
-
-                data.SetActiveZoneSet(uniqueId, expectedZoneSetData);
-
-                auto actual = data.GetDeviceInfoMap().find(uniqueId)->second;
-                Assert::AreEqual(expectedZoneSetData.uuid.c_str(), actual.activeZoneSet.uuid.c_str());
-                Assert::IsTrue(expectedZoneSetData.type == actual.activeZoneSet.type);
-            }
-
-            TEST_METHOD (SetActiveZoneSetUuidEmpty)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                const std::wstring expected = L"{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-                const auto uniqueId = m_defaultDeviceId;
-
-                json::JsonArray devices;
-                devices.Append(m_defaultCustomDeviceValue);
-                json::JsonObject json;
-                json.SetNamedValue(L"devices", devices);
-                data.ParseDeviceInfos(json);
-
-                FancyZonesDataTypes::ZoneSetData expectedZoneSetData{
-                    .uuid = L"",
-                    .type = ZoneSetLayoutType::Focus
-                };
-
-                data.SetActiveZoneSet(uniqueId, expectedZoneSetData);
-
-                auto actual = data.GetDeviceInfoMap().find(uniqueId)->second;
-                Assert::AreEqual(expectedZoneSetData.uuid.c_str(), actual.activeZoneSet.uuid.c_str());
-                Assert::IsTrue(expectedZoneSetData.type == actual.activeZoneSet.type);
-            }
-
-            TEST_METHOD (SetActiveZoneSetUniqueIdInvalid)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-
-                const std::wstring expected = L"{33A2B101-06E0-437B-A61E-CDBECF502906}";
-                auto uniqueId = m_defaultDeviceId;
-                uniqueId.deviceName = L"id-not-contained-by-device-info-map";
-
-                json::JsonArray devices;
-                devices.Append(m_defaultCustomDeviceValue);
-                json::JsonObject json;
-                json.SetNamedValue(L"devices", devices);
-                bool parseRes = data.ParseDeviceInfos(json);
-                Assert::IsTrue(parseRes);
-
-                FancyZonesDataTypes::ZoneSetData zoneSetData{
-                    .uuid = L"new_uuid",
-                    .type = ZoneSetLayoutType::Focus
-                };
-
-                data.SetActiveZoneSet(uniqueId, zoneSetData);
-
-                const auto& deviceInfoMap = data.GetDeviceInfoMap();
-                auto actual = deviceInfoMap.find(m_defaultDeviceId)->second;
-                Assert::AreEqual(expected.c_str(), actual.activeZoneSet.uuid.c_str());
-                Assert::IsTrue(deviceInfoMap.end() == deviceInfoMap.find(uniqueId), L"new device info should not be added");
-            }
-
-            TEST_METHOD (LoadFancyZonesDataFromJson)
-            {
-                FancyZonesData fancyZonesData;
-                fancyZonesData.SetSettingsModulePath(m_moduleName);
-                const auto& jsonPath = fancyZonesData.zonesSettingsFileName;
-                auto savedJson = json::from_file(jsonPath);
-
-                if (std::filesystem::exists(jsonPath))
-                {
-                    std::filesystem::remove(jsonPath);
-                }
-
-                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-                    .rows = 1,
-                    .columns = 3,
-                    .rowsPercents = { 10000 },
-                    .columnsPercents = { 2500, 5000, 2500 },
-                    .cellChildMap = { { 0, 1, 2 } } }));
-                CustomZoneSetJSON zoneSets{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", CustomLayoutData{ L"name", CustomLayoutType::Grid, grid } };
-                AppZoneHistoryData data{
-                    .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"device-id", .zoneIndexSet = { 54321 }
-                };
-                AppZoneHistoryJSON appZoneHistory{ L"app-path", std::vector<AppZoneHistoryData>{ data } };
-
-                DeviceInfoJSON deviceInfo { FancyZonesDataTypes::DeviceIdData{ L"device-id", 0, 0, m_defaultVDId }, DeviceInfoData{ ZoneSetData{ L"{33A2B101-16E1-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                LayoutQuickKeyJSON quickKeys{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", 1 };
-                json::JsonArray zoneSetsArray, appZonesArray, deviceInfoArray, quickKeysArray;
-                zoneSetsArray.Append(CustomZoneSetJSON::ToJson(zoneSets));
-                appZonesArray.Append(AppZoneHistoryJSON::ToJson(appZoneHistory));
-                deviceInfoArray.Append(DeviceInfoJSON::ToJson(deviceInfo));
-                quickKeysArray.Append(LayoutQuickKeyJSON::ToJson(quickKeys));
-                json::JsonObject fancyZones;
-                fancyZones.SetNamedValue(L"custom-zone-sets", zoneSetsArray);
-                fancyZones.SetNamedValue(L"app-zone-history", appZonesArray);
-                fancyZones.SetNamedValue(L"devices", deviceInfoArray);
-                fancyZones.SetNamedValue(L"quick-layout-keys", quickKeysArray);
-
-                json::to_file(jsonPath, fancyZones);
-
-                fancyZonesData.LoadFancyZonesData();
-                if (savedJson)
-                {
-                    json::to_file(jsonPath, *savedJson);
-                }
-                else
-                {
-                    std::filesystem::remove(jsonPath);
-                }
-
-                Assert::IsFalse(fancyZonesData.GetDeviceInfoMap().empty());
-            }
-
-            TEST_METHOD (LoadFancyZonesDataFromCroppedJson)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                const auto& jsonPath = data.zonesSettingsFileName;
-
-                std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"devices\": [{\"device-id\": \"";
-
-                data.LoadFancyZonesData();
-
-                Assert::IsTrue(data.GetDeviceInfoMap().empty());
-            }
-
-            TEST_METHOD (LoadFancyZonesDataFromJsonWithCyrillicSymbols)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                const auto& jsonPath = data.zonesSettingsFileName;
-
-                std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"devices\": [{\"device-id\": \"кириллица\"}], \"custom-zone-sets\": []}";
-                data.LoadFancyZonesData();
-
-                Assert::IsTrue(data.GetDeviceInfoMap().empty());
-            }
-
-            TEST_METHOD (LoadFancyZonesDataFromJsonWithInvalidTypes)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                const auto& jsonPath = data.zonesSettingsFileName;
-
-                std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"devices\": [{\"device-id\":\"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"active-zoneset\":{\"uuid\":\"{568EBC3A-C09C-483E-A64D-6F1F2AF4E48D}\",\"type\":\"columns\"},\"editor-show-spacing\":true,\"editor-spacing\":16,\"editor-zone-count\":3}], \"custom-zone-sets\": null}";
-                data.LoadFancyZonesData();
-
-                Assert::IsFalse(data.GetDeviceInfoMap().empty());
-            }
-
-            TEST_METHOD (LoadFancyZonesDataFromRegistry)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                const auto& jsonPath = data.zonesSettingsFileName;
-
-                data.LoadFancyZonesData();
-                bool actual = std::filesystem::exists(jsonPath);
-
-                Assert::IsTrue(actual);
-            }
-
-            TEST_METHOD (SaveFancyZonesData)
-            {
-                FancyZonesData data;
-                data.SetSettingsModulePath(m_moduleName);
-                const auto& jsonPath = data.zonesSettingsFileName;
-
-                data.SaveZoneSettings();
-                bool actual = std::filesystem::exists(jsonPath);
-
-                Assert::IsTrue(actual);
-            }
-
-            TEST_METHOD (AddDevice)
-            {
-                FancyZonesDataTypes::DeviceIdData expected{
-                    .deviceName = L"Device",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = m_defaultVDId
-                };
-
-                auto result = m_fzData.AddDevice(expected);
-                Assert::IsTrue(result);
-
-                auto actualMap = m_fzData.GetDeviceInfoMap();
-
-                Assert::IsFalse(actualMap.find(expected) == actualMap.end());
-            }
-
-            TEST_METHOD (AddDeviceWithNullVirtualDesktopId)
-            {
-                FancyZonesDataTypes::DeviceIdData expected{
-                    .deviceName = L"Device",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = GUID_NULL
-                };
-
-                auto result = m_fzData.AddDevice(expected);
-                Assert::IsTrue(result);
-
-                auto actualMap = m_fzData.GetDeviceInfoMap();
-
-                Assert::IsFalse(actualMap.find(expected) == actualMap.end());
-            }
-
-            TEST_METHOD (AddDeviceDuplicate)
-            {
-                FancyZonesDataTypes::DeviceIdData expected{
-                    .deviceName = L"Device",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = m_defaultVDId
-                };
-
-                auto result = m_fzData.AddDevice(expected);
-                Assert::IsTrue(result);
-
-                auto result2 = m_fzData.AddDevice(expected);
-                Assert::IsFalse(result2);
-
-                auto actualMap = m_fzData.GetDeviceInfoMap();
-
-                Assert::IsFalse(actualMap.find(expected) == actualMap.end());
-            }
-
-            TEST_METHOD (AddDeviceWithNullVirtualDesktopIdDuplicated)
-            {
-                FancyZonesDataTypes::DeviceIdData expected{
-                    .deviceName = L"Device",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = GUID_NULL
-                };
-
-                auto result = m_fzData.AddDevice(expected);
-                Assert::IsTrue(result);
-
-                auto result2 = m_fzData.AddDevice(expected);
-                Assert::IsFalse(result2);
-
-                auto actualMap = m_fzData.GetDeviceInfoMap();
-
-                Assert::IsFalse(actualMap.find(expected) == actualMap.end());
-            }
-
-            TEST_METHOD (AddDeviceDuplicatedComparedWithNillVirtualDesktopId)
-            {
-                FancyZonesDataTypes::DeviceIdData device1{
-                    .deviceName = L"Device",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = m_defaultVDId
-                };
-
-                FancyZonesDataTypes::DeviceIdData device2{
-                    .deviceName = L"Device",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = GUID_NULL
-                };
-
-                auto result = m_fzData.AddDevice(device1);
-                Assert::IsTrue(result);
-
-                auto result2 = m_fzData.AddDevice(device2);
-                Assert::IsFalse(result2);
-
-                auto actualMap = m_fzData.GetDeviceInfoMap();
-
-                Assert::IsFalse(actualMap.find(device1) == actualMap.end());
-                Assert::IsTrue(actualMap.find(device2) == actualMap.end());
-            }
-
-            TEST_METHOD (AddDeviceDuplicatedComparedWithNillVirtualDesktopId2)
-            {
-                FancyZonesDataTypes::DeviceIdData device1{
-                    .deviceName = L"Device",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = m_defaultVDId
-                };
-
-                FancyZonesDataTypes::DeviceIdData device2{
-                    .deviceName = L"Device",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = GUID_NULL
-                };
-
-                auto result2 = m_fzData.AddDevice(device2);
-                Assert::IsTrue(result2);
-
-                auto result1 = m_fzData.AddDevice(device1);
-                Assert::IsFalse(result1);               
-
-                auto actualMap = m_fzData.GetDeviceInfoMap();
-
-                Assert::IsFalse(actualMap.find(device2) == actualMap.end());
-                Assert::IsTrue(actualMap.find(device1) == actualMap.end());
-            }
-
-            TEST_METHOD(CloneDeviceInfo)
-            {
-                FancyZonesDataTypes::DeviceIdData deviceSrc{
-                    .deviceName = L"Device1",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = m_defaultVDId
-                };
-                FancyZonesDataTypes::DeviceIdData deviceDst{
-                    .deviceName = L"Device2",
-                    .width = 300,
-                    .height = 400,
-                    .virtualDesktopId = m_defaultVDId
-                };
-
-                Assert::IsTrue(m_fzData.AddDevice(deviceSrc));
-                Assert::IsTrue(m_fzData.AddDevice(deviceDst));
-
-                m_fzData.CloneDeviceInfo(deviceSrc, deviceDst);
-
-                auto actualMap = m_fzData.GetDeviceInfoMap();
-                Assert::IsFalse(actualMap.find(deviceSrc) == actualMap.end());
-                Assert::IsFalse(actualMap.find(deviceDst) == actualMap.end());
-                
-                auto expected = m_fzData.FindDeviceInfo(deviceSrc);
-                auto actual = m_fzData.FindDeviceInfo(deviceDst);
-
-                Assert::IsTrue(expected.has_value());
-                Assert::IsTrue(actual.has_value());
-                Assert::IsTrue(expected.value() == actual.value());
-            }
-
-            TEST_METHOD (CloneDeviceInfoIntoUnknownDevice)
-            {
-                FancyZonesDataTypes::DeviceIdData deviceSrc{
-                    .deviceName = L"Device1",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = m_defaultVDId
-                };
-                FancyZonesDataTypes::DeviceIdData deviceDst{
-                    .deviceName = L"Device2",
-                    .width = 300,
-                    .height = 400,
-                    .virtualDesktopId = m_defaultVDId
-                };
-
-                Assert::IsTrue(m_fzData.AddDevice(deviceSrc));
-
-                m_fzData.CloneDeviceInfo(deviceSrc, deviceDst);
-
-                auto actualMap = m_fzData.GetDeviceInfoMap();
-                Assert::IsFalse(actualMap.find(deviceSrc) == actualMap.end());
-                Assert::IsFalse(actualMap.find(deviceDst) == actualMap.end());
-
-                auto expected = m_fzData.FindDeviceInfo(deviceSrc);
-                auto actual = m_fzData.FindDeviceInfo(deviceDst);
-
-                Assert::IsTrue(expected.has_value());
-                Assert::IsTrue(actual.has_value());
-                Assert::IsTrue(expected.value() == actual.value());
-            }
-
-            TEST_METHOD (CloneDeviceInfoFromUnknownDevice)
-            {
-                FancyZonesDataTypes::DeviceIdData deviceSrc{
-                    .deviceName = L"Device1",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = m_defaultVDId
-                };
-                FancyZonesDataTypes::DeviceIdData deviceDst{
-                    .deviceName = L"Device2",
-                    .width = 300,
-                    .height = 400,
-                    .virtualDesktopId = m_defaultVDId
-                };
-
-                Assert::IsTrue(m_fzData.AddDevice(deviceDst));
-
-                m_fzData.CloneDeviceInfo(deviceSrc, deviceDst);
-
-                auto actualMap = m_fzData.GetDeviceInfoMap();
-                Assert::IsTrue(actualMap.find(deviceSrc) == actualMap.end());
-                Assert::IsFalse(actualMap.find(deviceDst) == actualMap.end());
-
-                Assert::IsFalse(m_fzData.FindDeviceInfo(deviceSrc).has_value());
-                Assert::IsTrue(m_fzData.FindDeviceInfo(deviceDst).has_value());
-            }
-
-            TEST_METHOD(CloneDeviceInfoNullVirtualDesktopId)
-            {
-                FancyZonesDataTypes::DeviceIdData deviceSrc{
-                    .deviceName = L"Device1",
-                    .width = 200,
-                    .height = 100,
-                    .virtualDesktopId = GUID_NULL
-                };
-                FancyZonesDataTypes::DeviceIdData deviceDst{
-                    .deviceName = L"Device2",
-                    .width = 300,
-                    .height = 400,
-                    .virtualDesktopId = m_defaultVDId
-                };
-
-                Assert::IsTrue(m_fzData.AddDevice(deviceSrc));
-                Assert::IsTrue(m_fzData.AddDevice(deviceDst));
-
-                m_fzData.CloneDeviceInfo(deviceSrc, deviceDst);
-
-                auto actualMap = m_fzData.GetDeviceInfoMap();
-                Assert::IsFalse(actualMap.find(deviceSrc) == actualMap.end());
-                Assert::IsFalse(actualMap.find(deviceDst) == actualMap.end());
-
-                auto expected = m_fzData.FindDeviceInfo(deviceSrc);
-                auto actual = m_fzData.FindDeviceInfo(deviceDst);
-
-                Assert::IsTrue(expected.has_value());
-                Assert::IsTrue(actual.has_value());
-                Assert::IsTrue(expected.value() == actual.value());
             }
     };
 

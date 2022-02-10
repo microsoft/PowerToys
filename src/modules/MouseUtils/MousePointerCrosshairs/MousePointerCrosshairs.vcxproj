@@ -15,22 +15,22 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{eae14c0e-7a6b-45da-9080-a7d8c077ba6e}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>MousePointerCrosshair</RootNamespace>
+    <RootNamespace>MousePointerCrosshairs</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
-    <ProjectName>MousePointerCrosshair</ProjectName>
+    <ProjectName>MousePointerCrosshairs</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -49,12 +49,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\MouseUtils\</OutDir>
-    <TargetName>PowerToys.MousePointerCrosshair</TargetName>
+    <TargetName>PowerToys.MousePointerCrosshairs</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\MouseUtils\</OutDir>
-    <TargetName>PowerToys.MousePointerCrosshair</TargetName>
+    <TargetName>PowerToys.MousePointerCrosshairs</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -104,14 +104,14 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="InclusiveCrosshair.h" />
+    <ClInclude Include="InclusiveCrosshairs.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="InclusiveCrosshair.cpp" />
+    <ClCompile Include="InclusiveCrosshairs.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
@@ -121,7 +121,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="MousePointerCrosshair.rc" />
+    <ResourceCompile Include="MousePointerCrosshairs.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">

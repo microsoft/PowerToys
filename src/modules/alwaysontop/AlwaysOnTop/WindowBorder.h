@@ -6,15 +6,12 @@ class FrameDrawer;
 
 class WindowBorder : public SettingsObserver
 {
-public:
     WindowBorder(HWND window);
-    WindowBorder(WindowBorder&& other);
+    WindowBorder(WindowBorder&& other) = default;
+
+public:
+    static std::unique_ptr<WindowBorder> Create(HWND window, HINSTANCE hinstance);
     ~WindowBorder();
-
-    bool Init(HINSTANCE hinstance);
-
-    void Show() const;
-    void Hide() const;
 
     void UpdateBorderPosition() const;
     void UpdateBorderProperties() const;
@@ -35,11 +32,13 @@ protected:
     }
 
 private:
-    HWND m_window;
-    HWND m_trackingWindow;
+    UINT_PTR m_timer_id = {};
+    HWND m_window = {};
+    HWND m_trackingWindow = {};
     std::unique_ptr<FrameDrawer> m_frameDrawer;
 
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
+    bool Init(HINSTANCE hinstance);
     virtual void SettingsUpdate(SettingId id) override;
 };

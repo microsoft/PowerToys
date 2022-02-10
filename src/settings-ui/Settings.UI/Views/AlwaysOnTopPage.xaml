@@ -106,7 +106,7 @@
                             <controls:Setting x:Uid="AlwaysOnTop_ExcludedApps" Icon="&#xECE4;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
-                            <TextBox x:Uid="FancyZones_ExcludedApps_TextBoxControl"
+                            <TextBox x:Uid="AlwaysOnTop_ExcludedApps_TextBoxControl"
                                  Margin="{StaticResource ExpanderSettingMargin}"
                                          Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
                                          ScrollViewer.VerticalScrollBarVisibility ="Visible"

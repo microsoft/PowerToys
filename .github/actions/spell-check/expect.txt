@@ -488,6 +488,7 @@ DQTYPE
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
+DRect
 drivedetectionwarning
 dshow
 dst
@@ -1194,6 +1195,7 @@ mdpreviewhandler
 MEDIASUBTYPE
 mediatype
 Melman
+memcmp
 memcpy
 memset
 MENUITEMINFO
@@ -1220,6 +1222,8 @@ mindaro
 Minimatch
 Minimizeallwindows
 MINIMIZEBOX
+MINIMIZEEND
+MINIMIZESTART
 miniz
 minlevel
 Miracast
@@ -2010,6 +2014,7 @@ tadele
 talynone
 TApp
 TApplication
+TApplied
 targ
 TARGETAPPHEADER
 TARGETDIR
@@ -2100,6 +2105,7 @@ uap
 udit
 Udp
 uefi
+UHash
 UIA
 Uid
 uint
@@ -2295,7 +2301,7 @@ WINL
 winmd
 winmm
 WINMSAPP
-winnt
+WINNT
 winres
 winrt
 winsdk

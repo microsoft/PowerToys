@@ -9,6 +9,12 @@
     <ProjectName>BugReportTool</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
   <PropertyGroup>
     <ConfigurationType>Application</ConfigurationType>
     <IntDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>

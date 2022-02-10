@@ -93,14 +93,13 @@ namespace JSONHelpers
 
     json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName);
 
-    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap);
-    void SaveAppZoneHistory(const std::wstring& appZoneHistoryFileName, const TAppZoneHistoryMap& appZoneHistoryMap);
-
     TAppZoneHistoryMap ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON);
     json::JsonArray SerializeAppZoneHistory(const TAppZoneHistoryMap& appZoneHistoryMap);
+    void SaveAppZoneHistory(const std::wstring& appZoneHistoryFileName, const TAppZoneHistoryMap& appZoneHistoryMap);
 
-    TDeviceInfoMap ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON);
-    json::JsonArray SerializeDeviceInfos(const TDeviceInfoMap& deviceInfoMap);
+    // replace zones-settings: applied layouts
+    std::optional<TDeviceInfoMap> ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON);
+    void SaveAppliedLayouts(const TDeviceInfoMap& deviceInfoMap);
 
     // replace zones-settings: layout hotkeys
     std::optional<TLayoutQuickKeysMap> ParseQuickKeys(const json::JsonObject& fancyZonesDataJSON);
