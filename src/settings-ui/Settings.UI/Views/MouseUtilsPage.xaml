@@ -28,6 +28,14 @@
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
+                                <controls:Setting x:Uid="MouseUtils_FindMyMouse_ActivationMethod" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <ComboBox SelectedIndex="{x:Bind Path=ViewModel.FindMyMouseActivationMethod, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                            <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationDoubleControlPress" />
+                                            <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationShakeMouse" />
+                                        </ComboBox>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
                                 <CheckBox x:Uid="MouseUtils_Prevent_Activation_On_Game_Mode"
                                           IsChecked="{x:Bind ViewModel.FindMyMouseDoNotActivateOnGameMode, Mode=TwoWay}"
                                           Margin="{StaticResource ExpanderSettingMargin}"

@@ -58,12 +58,12 @@ protected:
     static const int MIN_DOUBLE_CLICK_TIME = 100;
 
     bool m_destroyed = false;
-    bool m_doNotActivateOnGameMode = true;
+    FindMyMouseActivationMethod m_activationMethod = FIND_MY_MOUSE_DEFAULT_ACTIVATION_METHOD;
+    bool m_doNotActivateOnGameMode = FIND_MY_MOUSE_DEFAULT_DO_NOT_ACTIVATE_ON_GAME_MODE;
     int m_sonarRadius = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS;
     int m_sonarZoomFactor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
     DWORD m_fadeDuration = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
     int m_finalAlphaNumerator = FIND_MY_MOUSE_DEFAULT_OVERLAY_OPACITY;
-    bool m_activateOnShake = true;
     static constexpr int FinalAlphaDenominator = 100;
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
 
@@ -287,13 +287,7 @@ void SuperSonar<D>::OnSonarInput(WPARAM flags, HRAWINPUT hInput)
 template<typename D>
 void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
 {
-    // Don't activate if game mode is on.
-    if (m_doNotActivateOnGameMode && detect_game_mode())
-    {
-        return;
-    }
-
-    if (input.data.keyboard.VKey != VK_CONTROL)
+    if ( m_activationMethod != FindMyMouseActivationMethod::DoubleControlKey || input.data.keyboard.VKey != VK_CONTROL)
     {
         StopSonar();
         return;
@@ -422,7 +416,7 @@ void SuperSonar<D>::DetectShake()
 template<typename D>
 void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
 {
-    if (m_activateOnShake)
+    if (m_activationMethod == FindMyMouseActivationMethod::ShakeMouse)
     {
         LONG relativeX = 0;
         LONG relativeY = 0;
@@ -480,6 +474,12 @@ void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
 template<typename D>
 void SuperSonar<D>::StartSonar()
 {
+    // Don't activate if game mode is on.
+    if (m_doNotActivateOnGameMode && detect_game_mode())
+    {
+        return;
+    }
+
     Logger::info("Focusing the sonar on the mouse cursor.");
     Trace::MousePointerFocused();
     // Cover the entire virtual screen.
@@ -546,7 +546,7 @@ void SuperSonar<D>::OnMouseTimer()
 template<typename D>
 void SuperSonar<D>::UpdateMouseSnooping()
 {
-    bool wantSnoopingMouse = m_sonarStart != NoSonar || m_sonarState != SonarState::Idle || m_activateOnShake;
+    bool wantSnoopingMouse = m_sonarStart != NoSonar || m_sonarState != SonarState::Idle || m_activationMethod == FindMyMouseActivationMethod::ShakeMouse;
     if (m_isSnoopingMouse != wantSnoopingMouse)
     {
         m_isSnoopingMouse = wantSnoopingMouse;
@@ -703,6 +703,7 @@ public:
             m_sonarRadiusFloat = static_cast<float>(m_sonarRadius);
             m_backgroundColor = settings.backgroundColor;
             m_spotlightColor = settings.spotlightColor;
+            m_activationMethod = settings.activationMethod;
             m_doNotActivateOnGameMode = settings.doNotActivateOnGameMode;
             m_fadeDuration = settings.animationDurationMs > 0 ? settings.animationDurationMs : 1;
             m_finalAlphaNumerator = settings.overlayOpacity;
@@ -727,6 +728,7 @@ public:
                     m_sonarRadiusFloat = static_cast<float>(m_sonarRadius);
                     m_backgroundColor = localSettings.backgroundColor;
                     m_spotlightColor = localSettings.spotlightColor;
+                    m_activationMethod = settings.activationMethod;
                     m_doNotActivateOnGameMode = localSettings.doNotActivateOnGameMode;
                     m_fadeDuration = localSettings.animationDurationMs > 0 ? localSettings.animationDurationMs : 1;
                     m_finalAlphaNumerator = localSettings.overlayOpacity;

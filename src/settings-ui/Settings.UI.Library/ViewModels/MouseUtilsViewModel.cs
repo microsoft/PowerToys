@@ -47,6 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             FindMyMouseSettingsConfig = findMyMouseSettingsRepository.SettingsConfig;
+            _findMyMouseActivationMethod = FindMyMouseSettingsConfig.Properties.ActivationMethod.Value;
             _findMyMouseDoNotActivateOnGameMode = FindMyMouseSettingsConfig.Properties.DoNotActivateOnGameMode.Value;
 
             string backgroundColor = FindMyMouseSettingsConfig.Properties.BackgroundColor.Value;
@@ -114,6 +115,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
 
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public int FindMyMouseActivationMethod
+        {
+            get
+            {
+                return _findMyMouseActivationMethod;
+            }
+
+            set
+            {
+                if (value != _findMyMouseActivationMethod)
+                {
+                    _findMyMouseActivationMethod = value;
+                    FindMyMouseSettingsConfig.Properties.ActivationMethod.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
             }
@@ -586,6 +605,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         private bool _isFindMyMouseEnabled;
+        private int _findMyMouseActivationMethod;
         private bool _findMyMouseDoNotActivateOnGameMode;
         private string _findMyMouseBackgroundColor;
         private string _findMyMouseSpotlightColor;

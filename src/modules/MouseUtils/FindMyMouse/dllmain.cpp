@@ -11,6 +11,7 @@ namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_VALUE[] = L"value";
+    const wchar_t JSON_KEY_ACTIVATION_METHOD[] = L"activation_method";
     const wchar_t JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE[] = L"do_not_activate_on_game_mode";
     const wchar_t JSON_KEY_BACKGROUND_COLOR[] = L"background_color";
     const wchar_t JSON_KEY_SPOTLIGHT_COLOR[] = L"spotlight_color";
@@ -171,6 +172,20 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
     FindMyMouseSettings findMyMouseSettings;
     if (settingsObject.GetView().Size())
     {
+        try
+        {
+            // Parse Activation Method
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_METHOD);
+            UINT value = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            if (value < (int)FindMyMouseActivationMethod::EnumElements)
+            {
+                findMyMouseSettings.activationMethod = (FindMyMouseActivationMethod)value;
+            }
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Activation Method from settings. Will use default value");
+        }
         try
         {
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE);
