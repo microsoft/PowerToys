@@ -343,10 +343,10 @@ jobs:
   - task: DeleteFiles@1
     displayName: 'Remove obj from ArtifactsDirectory'
     inputs:
-      contents: |
-        $(System.ArtifactsDirectory)\Symbols\$(BuildPlatform)/$(BuildConfiguration)\obj\*
-        $(System.ArtifactsDirectory)\Symbols\packages\*
-        $(System.ArtifactsDirectory)\Symbols\src\*
+      contents: >-
+        $(System.ArtifactsDirectory)/**/obj/*
+        $(System.ArtifactsDirectory)/Symbols/packages/*
+        $(System.ArtifactsDirectory)/Symbols/src/*
 
   - task: PublishSymbols@2
     displayName: Publish symbols path
