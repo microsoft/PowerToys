@@ -1126,6 +1126,7 @@ logon
 LOGPIXELSX
 LOn
 longdate
+LONGLONG
 lookbehind
 lowlevel
 LOWORD
