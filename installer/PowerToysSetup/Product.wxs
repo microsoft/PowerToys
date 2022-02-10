@@ -320,15 +320,6 @@
                         <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
                         <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
                             <Directory Id="AwakeImagesFolder" Name="Images" />
-                            <Directory Id="AwakeInstallFolderRuntimes" Name="Runtimes">
-                                <Directory Id="AwakeInstallFolderRuntimesWin" Name="Win">
-                                    <Directory Id="AwakeInstallFolderRuntimesWinLib" Name="Lib">
-                                        <Directory Id="AwakeInstallFolderNetcoreApp21" Name="netcoreapp2.1" />
-                                        <Directory Id="AwakeInstallFolderNetcoreApp30" Name="netcoreapp3.0" />
-                                        <Directory Id="AwakeInstallFolderNetStandard20" Name="netstandard2.0" />
-                                    </Directory>
-                                </Directory>
-                            </Directory>
                         </Directory>
 
                         <!-- KBM -->
@@ -812,12 +803,6 @@
             </Component>
         </DirectoryRef>
 
-        <DirectoryRef Id="AwakeInstallFolderNetStandard20" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0">
-            <Component Id="Module_Awake_runtime_netstandard20" Guid="414A31AB-91A8-4F17-9B4B-DB7B93A2BB23">
-                <File Id="AwakeFile_runtime_System.Runtime.Caching.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll" />
-            </Component>
-        </DirectoryRef>
-
         <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
             <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
                 <!-- Component to include PowerPreview Module Source dll's -->
@@ -1060,7 +1045,6 @@
             <ComponentRef Id="Module_ColorPicker_Resources"/>
             <ComponentRef Id="Module_Awake"/>
             <ComponentRef Id="Module_Awake_Images"/>
-            <ComponentRef Id="Module_Awake_runtime_netstandard20"/>
             <ComponentRef Id="Module_FindMyMouse"/>
             <ComponentRef Id="Module_MouseHighlighter"/>
             <ComponentRef Id="Module_MousePointerCrosshairs" />
@@ -1083,7 +1067,8 @@
     </Fragment>
 
     <!-- Languages for localization on build farm -->
-    <?define LocLanguageList = cs-CZ;de-DE;es-ES;fr-FR;hu-HU;it-IT;ja-JP;ko-KR;nl-NL;pl-PL;pt-BR;pt-PT;qps-ploc;qps-ploca;qps-plocm;ru-RU;sv-SE;tr-TR;zh-CN;zh-TW?>
+    <!-- qps-ploc;qps-ploca;qps-plocm; -->
+    <?define LocLanguageList = cs-CZ;de-DE;es-ES;fr-FR;hu-HU;it-IT;ja-JP;ko-KR;nl-NL;pl-PL;pt-BR;pt-PT;ru-RU;sv-SE;tr-TR;zh-CN;zh-TW?>
 
     <Fragment>
         <!-- Resource directories should be added only if the installer is built on the build farm -->
@@ -1117,12 +1102,15 @@
             <?define IdSafeLanguage = pt_BR?>
             <?elseif $(var.Language) = pt-PT?>
             <?define IdSafeLanguage = pt_PT?>
+<!--
+
             <?elseif $(var.Language) = qps-ploc?>
             <?define IdSafeLanguage = qps_ploc?>
             <?elseif $(var.Language) = qps-ploca?>
             <?define IdSafeLanguage = qps_ploca?>
             <?elseif $(var.Language) = qps-plocm?>
             <?define IdSafeLanguage = qps_plocm?>
+-->
             <?elseif $(var.Language) = ru-RU?>
             <?define IdSafeLanguage = ru_RU?>
             <?elseif $(var.Language) = sv-SE?>
@@ -1185,15 +1173,17 @@
             <?elseif $(var.Language) = pt-PT?>
             <?define CompGUIDPrefix = 58155841-D53A-4330-89D3-5C0338B928?>
             <?define IdSafeLanguage = pt_PT?>
-            <?elseif $(var.Language) = qps-ploc?>
-            <?define CompGUIDPrefix = 75710CB2-DBDA-420B-9676-34D5F9D4A2?>
-            <?define IdSafeLanguage = qps_ploc?>
-            <?elseif $(var.Language) = qps-ploca?>
-            <?define CompGUIDPrefix = 55AF2A35-F959-49AB-B9EF-DFC9964A4F?>
-            <?define IdSafeLanguage = qps_ploca?>
-            <?elseif $(var.Language) = qps-plocm?>
-            <?define CompGUIDPrefix = D8CE2F7B-B0A1-4687-BFB7-1792B2FCCD?>
-            <?define IdSafeLanguage = qps_plocm?>
+            <!-- 
+                <?elseif $(var.Language) = qps-ploc?>
+                <?define CompGUIDPrefix = 75710CB2-DBDA-420B-9676-34D5F9D4A2?>
+                <?define IdSafeLanguage = qps_ploc?>
+                <?elseif $(var.Language) = qps-ploca?>
+                <?define CompGUIDPrefix = 55AF2A35-F959-49AB-B9EF-DFC9964A4F?>
+                <?define IdSafeLanguage = qps_ploca?>
+                <?elseif $(var.Language) = qps-plocm?>
+                <?define CompGUIDPrefix = D8CE2F7B-B0A1-4687-BFB7-1792B2FCCD?>
+                <?define IdSafeLanguage = qps_plocm?> 
+            -->
             <?elseif $(var.Language) = ru-RU?>
             <?define CompGUIDPrefix = 157BAF33-8D3F-46B7-9CF9-2C18E601CC?>
             <?define IdSafeLanguage = ru_RU?>

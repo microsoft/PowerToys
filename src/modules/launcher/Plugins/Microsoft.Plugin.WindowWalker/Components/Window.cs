@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.WindowWalker.Components
@@ -128,9 +129,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             get
             {
-                return (NativeMethods.GetWindowLong(Hwnd, NativeMethods.GWL_EXSTYLE) &
-                    (uint)NativeMethods.ExtendedWindowStyles.WS_EX_TOOLWINDOW) ==
-                    (uint)NativeMethods.ExtendedWindowStyles.WS_EX_TOOLWINDOW;
+                return (NativeMethods.GetWindowLong(Hwnd, Win32Constants.GWL_EXSTYLE) &
+                    (uint)ExtendedWindowStyles.WS_EX_TOOLWINDOW) ==
+                    (uint)ExtendedWindowStyles.WS_EX_TOOLWINDOW;
             }
         }
 
@@ -141,9 +142,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             get
             {
-                return (NativeMethods.GetWindowLong(Hwnd, NativeMethods.GWL_EXSTYLE) &
-                    (uint)NativeMethods.ExtendedWindowStyles.WS_EX_APPWINDOW) ==
-                    (uint)NativeMethods.ExtendedWindowStyles.WS_EX_APPWINDOW;
+                return (NativeMethods.GetWindowLong(Hwnd, Win32Constants.GWL_EXSTYLE) &
+                    (uint)ExtendedWindowStyles.WS_EX_APPWINDOW) ==
+                    (uint)ExtendedWindowStyles.WS_EX_APPWINDOW;
             }
         }
 
@@ -165,7 +166,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             get
             {
-                return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) == IntPtr.Zero;
+                return NativeMethods.GetWindow(Hwnd, GetWindowCmd.GW_OWNER) == IntPtr.Zero;
             }
         }
 
@@ -208,10 +209,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
             else
             {
-                if (!NativeMethods.ShowWindow(Hwnd, NativeMethods.ShowWindowCommands.Restore))
+                if (!NativeMethods.ShowWindow(Hwnd, ShowWindowCommand.Restore))
                 {
                     // ShowWindow doesn't work if the process is running elevated: fallback to SendMessage
-                    _ = NativeMethods.SendMessage(Hwnd, NativeMethods.WM_SYSCOMMAND, NativeMethods.SC_RESTORE);
+                    _ = NativeMethods.SendMessage(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_RESTORE);
                 }
             }
 
@@ -234,16 +235,16 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>The state (minimized, maximized, etc..) of the window</returns>
         public WindowSizeState GetWindowSizeState()
         {
-            NativeMethods.GetWindowPlacement(Hwnd, out NativeMethods.WINDOWPLACEMENT placement);
+            NativeMethods.GetWindowPlacement(Hwnd, out WINDOWPLACEMENT placement);
 
             switch (placement.ShowCmd)
             {
-                case NativeMethods.ShowWindowCommands.Normal:
+                case ShowWindowCommand.Normal:
                     return WindowSizeState.Normal;
-                case NativeMethods.ShowWindowCommands.Minimize:
-                case NativeMethods.ShowWindowCommands.ShowMinimized:
+                case ShowWindowCommand.Minimize:
+                case ShowWindowCommand.ShowMinimized:
                     return WindowSizeState.Minimized;
-                case NativeMethods.ShowWindowCommands.Maximize: // No need for ShowMaximized here since its also of value 3
+                case ShowWindowCommand.Maximize: // No need for ShowMaximized here since its also of value 3
                     return WindowSizeState.Maximized;
                 default:
                     // throw new Exception("Don't know how to handle window state = " + placement.ShowCmd);
@@ -269,17 +270,17 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>The state (none, app, ...) of the window</returns>
         public WindowCloakState GetWindowCloakState()
         {
-            _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)NativeMethods.DwmWindowAttribute.Cloaked, out int isCloakedState, sizeof(uint));
+            _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)DwmWindowAttributes.Cloaked, out int isCloakedState, sizeof(uint));
 
             switch (isCloakedState)
             {
-                case (int)NativeMethods.DwmWindowCloakState.None:
+                case (int)DwmWindowCloakStates.None:
                     return WindowCloakState.None;
-                case (int)NativeMethods.DwmWindowCloakState.CloakedApp:
+                case (int)DwmWindowCloakStates.CloakedApp:
                     return WindowCloakState.App;
-                case (int)NativeMethods.DwmWindowCloakState.CloakedShell:
+                case (int)DwmWindowCloakStates.CloakedShell:
                     return WindowCloakState.Shell;
-                case (int)NativeMethods.DwmWindowCloakState.CloakedInherited:
+                case (int)DwmWindowCloakStates.CloakedInherited:
                     return WindowCloakState.Inherited;
                 default:
                     return WindowCloakState.Unknown;
@@ -357,7 +358,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     new Task(() =>
                     {
-                        NativeMethods.CallBackPtr callbackptr = new NativeMethods.CallBackPtr((IntPtr hwnd, IntPtr lParam) =>
+                        EnumWindowsProc callbackptr = new EnumWindowsProc((IntPtr hwnd, IntPtr lParam) =>
                         {
                             // Every uwp app main window has at least three child windows. Only the one we are interested in has a class starting with "Windows.UI.Core." and is assigned to the real app process.
                             // (The other ones have a class name that begins with the string "ApplicationFrame".)

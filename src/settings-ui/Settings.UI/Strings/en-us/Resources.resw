@@ -1832,7 +1832,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Description" xml:space="preserve">
-    <value>Time before a highlight appears (ms)</value>
+    <value>Time before the highlight begins to fade (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Header" xml:space="preserve">

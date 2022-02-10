@@ -20,13 +20,13 @@ using System.Windows.Media.Imaging;
 using System.Xml;
 using ManagedCommon;
 using Microsoft.Plugin.Program.Logger;
-using Microsoft.Plugin.Program.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
 using Wox.Plugin.Common;
+using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
-using static Microsoft.Plugin.Program.Programs.UWP;
+using PackageVersion = Microsoft.Plugin.Program.Programs.UWP.PackageVersion;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -331,7 +331,7 @@ namespace Microsoft.Plugin.Program.Programs
                 string source = $"@{{{packageFullName}? {parsed}}}";
                 var capacity = (uint)outBuffer.Capacity;
                 var hResult = NativeMethods.SHLoadIndirectString(source, outBuffer, capacity, IntPtr.Zero);
-                if (hResult == Hresult.Ok)
+                if (hResult == HRESULT.S_OK)
                 {
                     var loaded = outBuffer.ToString();
                     if (!string.IsNullOrEmpty(loaded))

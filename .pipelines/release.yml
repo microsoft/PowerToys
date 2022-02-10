@@ -99,7 +99,7 @@ jobs:
        **\Resources.resw
       appendRelativeDir: true
       localizationTarget: false
-      pseudoSetting: Included
+      # pseudoSetting: Included
 
   - task: PowerShell@2
     displayName: Move Loc files into correct locations
