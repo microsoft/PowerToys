@@ -25,12 +25,7 @@ ignore$
 \.jpg$
 \.lcl$
 \.lock$
-\.mdtext$
-\.mdtxt$
-\.mdwn$
 \.min\.
-\.mkd$
-\.mkdn$
 \.mod$
 \.pdf$
 \.PNG$
