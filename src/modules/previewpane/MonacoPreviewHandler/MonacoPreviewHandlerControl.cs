@@ -91,11 +91,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
                                     _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                                     var vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
-                                    var fileContent = File.ReadAllText(filePath);
+                                    var fileContent = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
                                     var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
 
                                     // prepping index html to load in
-                                    var html = File.ReadAllText(Settings.AssemblyDirectory + "\\index.html").Replace("\t", string.Empty, StringComparison.InvariantCulture);
+                                    var html = fileContent = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
 
                                     html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
                                     html = html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
@@ -104,7 +104,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                     html = html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
 
                                     // Initialize WebView
-                                    await _webView.EnsureCoreWebView2Async(_webView2Environment);
+                                    await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
                                     _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
                                     _webView.NavigateToString(html);
                                     _webView.NavigationCompleted += WebView2Init;
