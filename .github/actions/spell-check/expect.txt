@@ -1942,7 +1942,7 @@ STDMETHODIMP
 stdout
 stefan
 STEPIT
-stgm
+STGM
 STGMEDIUM
 sticpl
 stl
@@ -2098,6 +2098,7 @@ TYPEMOUSE
 typename
 typeof
 typeparam
+typeparamref
 TYPESHORTCUT
 UAC
 UAL

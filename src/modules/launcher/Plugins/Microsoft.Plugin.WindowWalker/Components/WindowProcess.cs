@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
@@ -160,17 +161,17 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>A string representing the process name or an empty string if the function fails</returns>
         public static string GetProcessNameFromProcessID(uint pid)
         {
-            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.QueryLimitedInformation, true, (int)pid);
+            IntPtr processHandle = NativeMethods.OpenProcess(ProcessAccessFlags.QueryLimitedInformation, true, (int)pid);
             StringBuilder processName = new StringBuilder(MaximumFileNameLength);
 
             if (NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
             {
-                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
                 return processName.ToString().Split('\\').Reverse().ToArray()[0];
             }
             else
             {
-                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
                 return string.Empty;
             }
         }
@@ -182,17 +183,17 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>True if denied and false if not.</returns>
         private static bool TestProcessAccessUsingAllAccessFlag(uint pid)
         {
-            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)pid);
+            IntPtr processHandle = NativeMethods.OpenProcess(ProcessAccessFlags.AllAccess, true, (int)pid);
 
-            if (NativeMethods.GetLastWin32Error() == 5)
+            if (Win32Helpers.GetLastError() == 5)
             {
                 // Error 5 = ERROR_ACCESS_DENIED
-                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
                 return true;
             }
             else
             {
-                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
                 return false;
             }
         }
