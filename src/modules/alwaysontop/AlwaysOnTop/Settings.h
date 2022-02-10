@@ -19,7 +19,7 @@ struct Settings
     bool enableSound = true;
     bool blockInGameMode = true;
     bool frameAccentColor = true;
-    float frameThickness = 15.0f;
+    int frameThickness = 15;
     COLORREF frameColor = RGB(0, 173, 239);
     std::vector<std::wstring> excludedApps{};
 };
