@@ -1,6 +1,7 @@
 #include "pch.h"
-
 #include "FrameDrawer.h"
+
+#include <dwmapi.h>
 
 namespace
 {
@@ -66,8 +67,7 @@ bool FrameDrawer::CreateRenderTargets(const RECT& clientRect)
 bool FrameDrawer::Init()
 {
     RECT clientRect;
-
-    if (!GetClientRect(m_window, &clientRect))
+    if (!SUCCEEDED(DwmGetWindowAttribute(m_window, DWMWA_EXTENDED_FRAME_BOUNDS, &clientRect, sizeof(clientRect))))
     {
         return false;
     }
@@ -86,7 +86,7 @@ void FrameDrawer::Show()
     Render();
 }
 
-void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, float thickness)
+void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, int thickness)
 {
     const auto newSceneRect = DrawableRect{
         .rect = ConvertRect(windowRect),
@@ -99,8 +99,7 @@ void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, float thickness
     const bool needsRedraw = colorUpdated || thicknessUpdated;
 
     RECT clientRect;
-
-    if (!GetClientRect(m_window, &clientRect))
+    if (!SUCCEEDED(DwmGetWindowAttribute(m_window, DWMWA_EXTENDED_FRAME_BOUNDS, &clientRect, sizeof(clientRect))))
     {
         return;
     }
@@ -186,7 +185,8 @@ void FrameDrawer::Render()
 
     if (m_borderBrush)
     {
-        m_renderTarget->DrawRectangle(m_sceneRect.rect, m_borderBrush.get(), m_sceneRect.thickness);
+        // The border stroke is centered on the line.
+        m_renderTarget->DrawRectangle(m_sceneRect.rect, m_borderBrush.get(), static_cast<float>(m_sceneRect.thickness * 2));
     }
 
     m_renderTarget->EndDraw();

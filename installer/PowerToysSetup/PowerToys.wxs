@@ -51,6 +51,7 @@
                 Permanent="yes"
                 PerMachine="yes"
                 UninstallCommand="/uninstall /quiet">
+                <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
                     Description="Microsoft Windows Desktop Runtime - 3.1.22 (x64)"
                     ProductName="Microsoft Windows Desktop Runtime - 3.1.22 (x64)"
@@ -69,11 +70,12 @@
                 Permanent="yes"
                 PerMachine="yes"
                 UninstallCommand="/uninstall /quiet">
+                <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
                     Description="Microsoft Windows Desktop Runtime - 6.0.1 (x64)"
                     ProductName="Microsoft Windows Desktop Runtime - 6.0.1 (x64)"
                     Size="57508696"
-                    Version="5.0.13.30717"
+                    Version="6.0.1.30718"
                     Hash="1DC44C31438725846F59071C868736112398329B" />
             </ExePackage>
             <ExePackage

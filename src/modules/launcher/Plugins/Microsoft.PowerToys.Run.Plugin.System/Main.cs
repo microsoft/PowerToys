@@ -8,14 +8,13 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
-using Microsoft.PowerToys.Run.Plugin.System.Win32;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
 using Wox.Plugin;
+using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.PowerToys.Run.Plugin.System
 {
@@ -35,8 +34,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         public string IconTheme { get; set; }
 
         public bool IsBootedInUefiMode { get; set; }
-
-        public ICommand Command { get; set; }
 
         public string Name => Resources.Microsoft_plugin_sys_plugin_name;
 
@@ -66,13 +63,13 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             _context = context;
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconTheme(_context.API.GetCurrentTheme());
-            IsBootedInUefiMode = NativeMethods.GetSystemFirmwareType() == NativeMethods.FirmwareTypes.Uefi;
+            IsBootedInUefiMode = Win32Helpers.GetSystemFirmwareType() == FirmwareType.Uefi;
 
             // Log info if the system hasn't boot in uefi mode.
             // (Because this is only going into the log we can ignore the fact that normally UEFI and BIOS are written upper case. No need to convert the enumeration value to upper case.)
             if (!IsBootedInUefiMode)
             {
-                Wox.Plugin.Logger.Log.Info($"The UEFI command will not show to the user. The system has not booted in UEFI mode or the system does not have an UEFI firmware! (Detected type: {NativeMethods.GetSystemFirmwareType()})", typeof(Main));
+                Wox.Plugin.Logger.Log.Info($"The UEFI command will not show to the user. The system has not booted in UEFI mode or the system does not have an UEFI firmware! (Detected type: {Win32Helpers.GetSystemFirmwareType()})", typeof(Main));
             }
         }
 
@@ -183,7 +180,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                         // FYI, couldn't find documentation for this but if the recycle bin is already empty, it will return -2147418113 (0x8000FFFF (E_UNEXPECTED))
                         // 0 for nothing
                         var result = NativeMethods.SHEmptyRecycleBin(new WindowInteropHelper(Application.Current.MainWindow).Handle, 0);
-                        if (result != (uint)NativeMethods.HRESULT.S_OK && result != 0x8000FFFF)
+                        if (result != (uint)HRESULT.S_OK && result != 0x8000FFFF)
                         {
                             var name = "Plugin: " + Resources.Microsoft_plugin_sys_plugin_name;
                             var message = $"Error emptying recycle bin, error code: {result}\n" +
