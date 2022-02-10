@@ -337,16 +337,16 @@ jobs:
     displayName: Copying files for symbols
     inputs:
       contents: |
-        '**/*.pdb'
+        '**\*.pdb'
       targetFolder: $(Build.ArtifactStagingDirectory)/Symbols/
 
   - task: DeleteFiles@1
     displayName: 'Remove obj from ArtifactsDirectory'
     inputs:
       contents: |
-        $(System.ArtifactsDirectory)/Symbols/$(BuildPlatform)/$(BuildConfiguration)/obj/*
-        $(System.ArtifactsDirectory)/Symbols/packages/*
-        $(System.ArtifactsDirectory)/Symbols/src/*
+        $(System.ArtifactsDirectory)\Symbols\$(BuildPlatform)/$(BuildConfiguration)\obj\*
+        $(System.ArtifactsDirectory)\Symbols\packages\*
+        $(System.ArtifactsDirectory)\Symbols\src\*
 
   - task: PublishSymbols@2
     displayName: Publish symbols path
@@ -367,6 +367,7 @@ jobs:
     displayName: 'Remove symbols from ArtifactsDirectory'
     inputs:
       contents: $(System.ArtifactsDirectory)/Symbols/
+
   - task: CopyFiles@2
     displayName: Copying setup file over
     inputs:
