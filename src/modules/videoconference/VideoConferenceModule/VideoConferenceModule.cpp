@@ -60,12 +60,14 @@ void VideoConferenceModule::reverseMicrophoneMute()
     {
         Trace::MicrophoneMuted();
     }
+    instance->_mic_muted_state_during_disconnect = !instance->_mic_muted_state_during_disconnect;
+
     toolbar.setMicrophoneMute(muted);
 }
 
 bool VideoConferenceModule::getMicrophoneMuteState()
 {
-    return instance->_microphoneTrackedInUI ? instance->_microphoneTrackedInUI->muted() : false;
+    return instance->_microphoneTrackedInUI ? instance->_microphoneTrackedInUI->muted() : instance->_mic_muted_state_during_disconnect;
 }
 
 void VideoConferenceModule::reverseVirtualCameraMuteState()
@@ -277,14 +279,7 @@ void VideoConferenceModule::onMicrophoneConfigurationChanged()
         return;
     }
 
-    if (!_microphoneTrackedInUI)
-    {
-        // Don't know for sure which state the user expects
-        return;
-    }
-
-    const bool mutedStateForNewMics = _microphoneTrackedInUI->muted();
-    const std::wstring_view trackedMicId = _microphoneTrackedInUI->id();
+    const bool mutedStateForNewMics = _microphoneTrackedInUI ? _microphoneTrackedInUI->muted() : _mic_muted_state_during_disconnect;
     std::unordered_set<std::wstring_view> currentlyTrackedMicsIds;
     for (const auto& controlledMic : _controlledMicrophones)
     {
@@ -310,7 +305,7 @@ void VideoConferenceModule::onMicrophoneConfigurationChanged()
     _microphoneTrackedInUI = controlledDefaultMic();
     if (_microphoneTrackedInUI)
     {
-        _microphoneTrackedInUI->set_mute_changed_callback([&](const bool muted) {
+        _microphoneTrackedInUI->set_mute_changed_callback([](const bool muted) {
             toolbar.setMicrophoneMute(muted);
         });
     }
@@ -463,7 +458,7 @@ void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view 
 
     if (_microphoneTrackedInUI)
     {
-        _microphoneTrackedInUI->set_mute_changed_callback([&](const bool muted) {
+        _microphoneTrackedInUI->set_mute_changed_callback([](const bool muted) {
             toolbar.setMicrophoneMute(muted);
         });
         toolbar.setMicrophoneMute(_microphoneTrackedInUI->muted());

@@ -77,6 +77,7 @@ private:
     static HHOOK hook_handle;
     bool _enabled = false;
 
+    bool _mic_muted_state_during_disconnect = false;
     bool _controllingAllMics = false;
     std::vector<MicrophoneDevice> _controlledMicrophones;
     MicrophoneDevice* _microphoneTrackedInUI = nullptr;
