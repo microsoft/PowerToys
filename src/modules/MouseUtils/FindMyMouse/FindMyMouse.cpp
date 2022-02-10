@@ -44,6 +44,7 @@ protected:
     void BeforeMoveSonar() {}
     void AfterMoveSonar() {}
     void SetSonarVisibility(bool visible) = delete;
+    void UpdateMouseSnooping();
 
 protected:
     // Base class members you can access.
@@ -140,8 +141,6 @@ private:
 
     void StartSonar();
     void StopSonar();
-
-    void UpdateMouseSnooping();
 };
 
 template<typename D>
@@ -733,7 +732,8 @@ public:
                     m_fadeDuration = localSettings.animationDurationMs > 0 ? localSettings.animationDurationMs : 1;
                     m_finalAlphaNumerator = localSettings.overlayOpacity;
                     m_sonarZoomFactor = localSettings.spotlightInitialZoom;
-        
+                    UpdateMouseSnooping(); // For the shake mouse activation method
+
                     // Apply new settings to runtime composition objects.
                     m_backdrop.Brush().as<winrt::CompositionColorBrush>().Color(m_backgroundColor);
                     m_circleShape.FillBrush().as<winrt::CompositionColorBrush>().Color(m_spotlightColor);
