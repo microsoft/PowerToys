@@ -1067,7 +1067,8 @@
     </Fragment>
 
     <!-- Languages for localization on build farm -->
-    <?define LocLanguageList = cs-CZ;de-DE;es-ES;fr-FR;hu-HU;it-IT;ja-JP;ko-KR;nl-NL;pl-PL;pt-BR;pt-PT;qps-ploc;qps-ploca;qps-plocm;ru-RU;sv-SE;tr-TR;zh-CN;zh-TW?>
+    <!-- qps-ploc;qps-ploca;qps-plocm; -->
+    <?define LocLanguageList = cs-CZ;de-DE;es-ES;fr-FR;hu-HU;it-IT;ja-JP;ko-KR;nl-NL;pl-PL;pt-BR;pt-PT;ru-RU;sv-SE;tr-TR;zh-CN;zh-TW?>
 
     <Fragment>
         <!-- Resource directories should be added only if the installer is built on the build farm -->
@@ -1101,12 +1102,15 @@
             <?define IdSafeLanguage = pt_BR?>
             <?elseif $(var.Language) = pt-PT?>
             <?define IdSafeLanguage = pt_PT?>
+<!--
+
             <?elseif $(var.Language) = qps-ploc?>
             <?define IdSafeLanguage = qps_ploc?>
             <?elseif $(var.Language) = qps-ploca?>
             <?define IdSafeLanguage = qps_ploca?>
             <?elseif $(var.Language) = qps-plocm?>
             <?define IdSafeLanguage = qps_plocm?>
+-->
             <?elseif $(var.Language) = ru-RU?>
             <?define IdSafeLanguage = ru_RU?>
             <?elseif $(var.Language) = sv-SE?>
@@ -1169,15 +1173,17 @@
             <?elseif $(var.Language) = pt-PT?>
             <?define CompGUIDPrefix = 58155841-D53A-4330-89D3-5C0338B928?>
             <?define IdSafeLanguage = pt_PT?>
-            <?elseif $(var.Language) = qps-ploc?>
-            <?define CompGUIDPrefix = 75710CB2-DBDA-420B-9676-34D5F9D4A2?>
-            <?define IdSafeLanguage = qps_ploc?>
-            <?elseif $(var.Language) = qps-ploca?>
-            <?define CompGUIDPrefix = 55AF2A35-F959-49AB-B9EF-DFC9964A4F?>
-            <?define IdSafeLanguage = qps_ploca?>
-            <?elseif $(var.Language) = qps-plocm?>
-            <?define CompGUIDPrefix = D8CE2F7B-B0A1-4687-BFB7-1792B2FCCD?>
-            <?define IdSafeLanguage = qps_plocm?>
+            <!-- 
+                <?elseif $(var.Language) = qps-ploc?>
+                <?define CompGUIDPrefix = 75710CB2-DBDA-420B-9676-34D5F9D4A2?>
+                <?define IdSafeLanguage = qps_ploc?>
+                <?elseif $(var.Language) = qps-ploca?>
+                <?define CompGUIDPrefix = 55AF2A35-F959-49AB-B9EF-DFC9964A4F?>
+                <?define IdSafeLanguage = qps_ploca?>
+                <?elseif $(var.Language) = qps-plocm?>
+                <?define CompGUIDPrefix = D8CE2F7B-B0A1-4687-BFB7-1792B2FCCD?>
+                <?define IdSafeLanguage = qps_plocm?> 
+            -->
             <?elseif $(var.Language) = ru-RU?>
             <?define CompGUIDPrefix = 157BAF33-8D3F-46B7-9CF9-2C18E601CC?>
             <?define IdSafeLanguage = ru_RU?>
