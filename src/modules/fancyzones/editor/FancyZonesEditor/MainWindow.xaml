@@ -125,7 +125,8 @@
                       Margin="16,12,16,16">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="24" />
-                        <RowDefinition Height="124" />
+                        <RowDefinition Height="104" />
+                        <RowDefinition Height="12" />
                         <RowDefinition Height="0" />
                     </Grid.RowDefinitions>
                     <TextBlock Name="layoutName"
@@ -140,6 +141,48 @@
                                          Margin="0,8,0,8"
                                          VerticalAlignment="Stretch"
                                          HorizontalAlignment="Stretch" />
+                    <Grid Grid.Row="2"
+                          Opacity="0.5"
+                          ToolTip="{x:Static props:Resources.QuickKey_Title}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding QuickKey}" Value="{x:Static props:Resources.Quick_Key_None}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <TextBlock
+                            x:Name="QuickKeyTitle"
+                            FontSize="10"
+                            Text="{x:Static props:Resources.QuickKey_Title}" />
+                        <TextBlock Grid.Column="1"
+                            Margin="4,1,0,0"
+                            AutomationProperties.Name="{x:Static props:Resources.QuickKey_Description}"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="10"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
+                            Text="&#xE946;"
+                            ToolTip="{x:Static props:Resources.QuickKey_Description}" />
+                        <TextBlock Margin="10,0,0,0"
+                            Grid.Column="2"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            AutomationProperties.HelpText="{x:Static props:Resources.QuickKey_Description}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=QuickKeyTitle}"
+                            AutomationProperties.Name="{x:Static props:Resources.QuickKey_Title}"
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Text="{Binding QuickKey}" />
+                    </Grid>
                 </Grid>
                 <Button x:Name="EditLayoutButton"
                         HorizontalAlignment="Right"
