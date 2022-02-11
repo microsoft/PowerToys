@@ -5,7 +5,7 @@
     <Company>Microsoft Corporation</Company>
     <AssemblyDescription>PowerToys ColorPicker</AssemblyDescription>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corporation</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\ColorPicker</OutputPath>

@@ -12,7 +12,7 @@
 	  <Platforms>x64</Platforms>
 	  <AssemblyTitle>interop-tests</AssemblyTitle>
 	<Company>Microsoft Corp.</Company>
-	<Copyright>Copyright (C) 2020 Microsoft Corp.</Copyright>
+	<Copyright>Copyright (C) 2022 Microsoft Corp.</Copyright>
   </PropertyGroup>
 	
   <PropertyGroup>

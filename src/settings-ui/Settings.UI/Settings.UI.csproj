@@ -7,7 +7,7 @@
     <AssemblyTitle>Microsoft.PowerToys.Settings.UI</AssemblyTitle>
     <AssemblyDescription>PowerToys Settings UI</AssemblyDescription>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corp.</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corp.</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>

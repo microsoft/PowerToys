@@ -9,7 +9,7 @@
     <RootNamespace>ImageResizer</RootNamespace>
     <AssemblyName>ImageResizer.Test</AssemblyName>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corp.</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corp.</AssemblyCopyright>
     <Version>$(Version).0</Version>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\ImageResizer\$(AssemblyName)\</OutputPath>
     <CodeAnalysisRuleSet>..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
