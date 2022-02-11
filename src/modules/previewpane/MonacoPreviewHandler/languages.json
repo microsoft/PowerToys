@@ -432,6 +432,23 @@
       ]
     },
     {
+      "id": "markdown",
+      "extensions": [
+        ".md",
+        ".markdown",
+        ".mdown",
+        ".mkdn",
+        ".mkd",
+        ".mdwn",
+        ".mdtxt",
+        ".mdtext"
+      ],
+      "aliases": [
+        "Markdown",
+        "markdown"
+      ]
+    },
+    {
       "id": "mips",
       "extensions": [
         ".s"
@@ -907,6 +924,8 @@
         ".wxl",
         ".wxs",
         ".xaml",
+        ".svg",
+        ".svgz",
         ".opf",
         ".xsl"
       ],
