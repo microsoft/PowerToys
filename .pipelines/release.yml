@@ -344,9 +344,9 @@ jobs:
     displayName: 'Remove obj from ArtifactsDirectory'
     inputs:
       contents: >-
-        **/$(System.ArtifactsDirectory)/**/obj/*
-        **/$(System.ArtifactsDirectory)/Symbols/packages/*
-        **/$(System.ArtifactsDirectory)/Symbols/src/*
+        **/$(Build.ArtifactsDirectory)/**/obj/*
+        **/$(Build.ArtifactsDirectory)/Symbols/packages/*
+        **/$(Build.ArtifactsDirectory)/Symbols/src/*
 
   - task: PublishSymbols@2
     displayName: Publish symbols path
@@ -366,7 +366,7 @@ jobs:
   - task: DeleteFiles@1
     displayName: 'Remove symbols from ArtifactsDirectory'
     inputs:
-      contents: $(System.ArtifactsDirectory)/Symbols/
+      contents: $(Build.ArtifactsDirectory)/Symbols/
 
   - task: CopyFiles@2
     displayName: Copying setup file over
@@ -378,6 +378,6 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: PowerToySetup'
     inputs:
-      PathtoPublish: $(System.ArtifactsDirectory)
+      PathtoPublish: $(Build.ArtifactsDirectory)
       ArtifactName: setup-$(BuildPlatform)
 ...
