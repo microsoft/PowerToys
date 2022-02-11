@@ -22,6 +22,14 @@
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+                    <controls:Setting x:Uid="MouseUtils_FindMyMouse_ActivationMethod" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Path=ViewModel.FindMyMouseActivationMethod, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationDoubleControlPress" />
+                                <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationShakeMouse" />
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />

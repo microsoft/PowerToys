@@ -1648,7 +1648,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
   <data name="Oobe_MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
-    <value>Press the left Ctrl key twice to focus the mouse pointer.</value>
+    <value>Shake the mouse or press the left Ctrl key twice to focus the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral. Key as in a keyboard key</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter.Text" xml:space="preserve">
@@ -1757,12 +1757,23 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when pressing the left Ctrl key twice.</value>
+    <value>Find My Mouse highlights the position of the cursor when shaking the mouse or pressing the left Ctrl key twice.</value>
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
     <value>Enable Find My Mouse</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationMethod.Header" xml:space="preserve">
+    <value>Activation method</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationDoubleControlPress.Content" xml:space="preserve">
+    <value>Press Left Control twice</value>
+    <comment>Left control is the physical key on the keyboard.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationShakeMouse.Content" xml:space="preserve">
+    <value>Shake mouse</value>
+    <comment>Mouse is the hardware peripheral.</comment>
   </data>
   <data name="MouseUtils_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>

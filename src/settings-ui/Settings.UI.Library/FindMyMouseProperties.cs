@@ -8,6 +8,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class FindMyMouseProperties
     {
+        [JsonPropertyName("activation_method")]
+        public IntProperty ActivationMethod { get; set; }
+
         [JsonPropertyName("do_not_activate_on_game_mode")]
         public BoolProperty DoNotActivateOnGameMode { get; set; }
 
@@ -31,6 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public FindMyMouseProperties()
         {
+            ActivationMethod = new IntProperty(0);
             DoNotActivateOnGameMode = new BoolProperty(true);
             BackgroundColor = new StringProperty("#000000");
             SpotlightColor = new StringProperty("#FFFFFF");

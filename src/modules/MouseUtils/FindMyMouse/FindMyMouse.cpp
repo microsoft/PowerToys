@@ -4,6 +4,7 @@
 #include "FindMyMouse.h"
 #include "trace.h"
 #include "common/utils/game_mode.h"
+#include <vector>
 
 #ifdef COMPOSITION
 namespace winrt
@@ -43,6 +44,7 @@ protected:
     void BeforeMoveSonar() {}
     void AfterMoveSonar() {}
     void SetSonarVisibility(bool visible) = delete;
+    void UpdateMouseSnooping();
 
 protected:
     // Base class members you can access.
@@ -57,7 +59,8 @@ protected:
     static const int MIN_DOUBLE_CLICK_TIME = 100;
 
     bool m_destroyed = false;
-    bool m_doNotActivateOnGameMode = true;
+    FindMyMouseActivationMethod m_activationMethod = FIND_MY_MOUSE_DEFAULT_ACTIVATION_METHOD;
+    bool m_doNotActivateOnGameMode = FIND_MY_MOUSE_DEFAULT_DO_NOT_ACTIVATE_ON_GAME_MODE;
     int m_sonarRadius = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS;
     int m_sonarZoomFactor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
     DWORD m_fadeDuration = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
@@ -66,13 +69,37 @@ protected:
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
 
 private:
+
+    // Save the mouse movement that occurred in any direction.
+    struct PointerRecentMovement
+    {
+        POINT diff;
+        ULONGLONG tick;
+    };
+    std::vector<PointerRecentMovement> m_movementHistory;
+    // Raw Input may give relative or absolute values. Need to take each case into account.
+    bool m_seenAnAbsoluteMousePosition = false;
+    POINT m_lastAbsolutePosition = { 0, 0 };
+    // Don't consider movements started past these milliseconds to detect shaking.
+    static constexpr LONG ShakeIntervalMs = 1000;
+    // By which factor must travelled distance be than the diagonal of the rectangle containing the movements.
+    static constexpr float ShakeFactor = 4.0f;
+
+    static inline byte GetSign(LONG const& num)
+    {
+        if (num > 0)
+            return 1;
+        if (num < 0)
+            return -1;
+        return 0;
+    }
+
     static bool IsEqual(POINT const& p1, POINT const& p2)
     {
         return p1.x == p2.x && p1.y == p2.y;
     }
 
     static constexpr POINT ptNowhere = { -1, -1 };
-
     static constexpr DWORD TIMER_ID_TRACK = 100;
     static constexpr DWORD IdlePeriod = 1000;
 
@@ -89,11 +116,11 @@ private:
     HWND m_hwndOwner;
     SonarState m_sonarState = SonarState::Idle;
     POINT m_lastKeyPos{};
-    DWORD m_lastKeyTime{};
+    ULONGLONG m_lastKeyTime{};
 
     static constexpr DWORD NoSonar = 0;
     static constexpr DWORD SonarWaitingForMouseMove = 1;
-    DWORD m_sonarStart = NoSonar;
+    ULONGLONG m_sonarStart = NoSonar;
     bool m_isSnoopingMouse = false;
 
 private:
@@ -110,10 +137,10 @@ private:
     void OnSonarMouseInput(RAWINPUT const& input);
     void OnMouseTimer();
 
+    void DetectShake();
+
     void StartSonar();
     void StopSonar();
-
-    void UpdateMouseSnooping();
 };
 
 template<typename D>
@@ -189,7 +216,9 @@ LRESULT SuperSonar<D>::BaseWndProc(UINT message, WPARAM wParam, LPARAM lParam) n
     switch (message)
     {
     case WM_CREATE:
-        return OnSonarCreate() ? 0 : -1;
+        if(!OnSonarCreate()) return -1;
+        UpdateMouseSnooping();
+        return 0;
 
     case WM_DESTROY:
         OnSonarDestroy();
@@ -257,13 +286,7 @@ void SuperSonar<D>::OnSonarInput(WPARAM flags, HRAWINPUT hInput)
 template<typename D>
 void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
 {
-    // Don't activate if game mode is on.
-    if (m_doNotActivateOnGameMode && detect_game_mode())
-    {
-        return;
-    }
-
-    if (input.data.keyboard.VKey != VK_CONTROL)
+    if ( m_activationMethod != FindMyMouseActivationMethod::DoubleControlKey || input.data.keyboard.VKey != VK_CONTROL)
     {
         StopSonar();
         return;
@@ -293,7 +316,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
         if (pressed)
         {
             m_sonarState = SonarState::ControlDown1;
-            m_lastKeyTime = GetTickCount();
+            m_lastKeyTime = GetTickCount64();
             m_lastKeyPos = {};
             GetCursorPos(&m_lastKeyPos);
             UpdateMouseSnooping();
@@ -310,7 +333,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
     case SonarState::ControlUp1:
         if (pressed)
         {
-            auto now = GetTickCount();
+            auto now = GetTickCount64();
             auto doubleClickInterval = now - m_lastKeyTime;
             POINT ptCursor{};
             auto doubleClickTimeSetting = GetDoubleClickTime();
@@ -325,7 +348,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
             else
             {
                 m_sonarState = SonarState::ControlDown1;
-                m_lastKeyTime = GetTickCount();
+                m_lastKeyTime = GetTickCount64();
                 m_lastKeyPos = {};
                 GetCursorPos(&m_lastKeyPos);
                 UpdateMouseSnooping();
@@ -351,9 +374,92 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
     }
 }
 
+// Shaking detection algorithm is: Has distance travelled been much greater than the diagonal of the rectangle containing the movement?
+template<typename D>
+void SuperSonar<D>::DetectShake()
+{
+    ULONGLONG shakeStartTick = GetTickCount64() - ShakeIntervalMs;
+    
+    // Prune the story of movements for those movements that started too long ago.
+    std::erase_if(m_movementHistory, [shakeStartTick](const PointerRecentMovement& movement) { return movement.tick < shakeStartTick; });
+    
+    
+    double distanceTravelled = 0;
+    LONGLONG currentX=0, minX=0, maxX=0;
+    LONGLONG currentY=0, minY=0, maxY=0;
+
+    for (const PointerRecentMovement& movement : m_movementHistory)
+    {
+        currentX += movement.diff.x;
+        currentY += movement.diff.y;
+        distanceTravelled += sqrt((double)movement.diff.x * movement.diff.x + (double)movement.diff.y * movement.diff.y); // Pythagorean theorem
+        minX = min(currentX, minX);
+        maxX = max(currentX, maxX);
+        minY = min(currentY, minY);
+        maxY = max(currentY, maxY);
+    }
+    
+    // Size of the rectangle the pointer moved in.
+    double rectangleWidth = (double)maxX - minX;
+    double rectangleHeight = (double)maxY - minY;
+
+    double diagonal = sqrt(rectangleWidth * rectangleWidth + rectangleHeight * rectangleHeight);
+    if (diagonal > 0 && distanceTravelled / diagonal > ShakeFactor)
+    {
+        m_movementHistory.clear();
+        StartSonar();
+    }
+
+}
+
 template<typename D>
 void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
 {
+    if (m_activationMethod == FindMyMouseActivationMethod::ShakeMouse)
+    {
+        LONG relativeX = 0;
+        LONG relativeY = 0;
+        if ((input.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE)
+        {
+            // Getting absolute mouse coordinates. Likely inside a VM / RDP session.
+            if (m_seenAnAbsoluteMousePosition)
+            {
+                relativeX = input.data.mouse.lLastX - m_lastAbsolutePosition.x;
+                relativeY = input.data.mouse.lLastY - m_lastAbsolutePosition.y;
+                m_lastAbsolutePosition.x = input.data.mouse.lLastX;
+                m_lastAbsolutePosition.y = input.data.mouse.lLastY;
+            }
+            m_seenAnAbsoluteMousePosition = true;
+        }
+        else
+        {
+            relativeX = input.data.mouse.lLastX;
+            relativeY = input.data.mouse.lLastY;
+        }
+        if (m_movementHistory.size() > 0)
+        {
+            PointerRecentMovement& lastMovement = m_movementHistory.back();
+            // If the pointer is still moving in the same direction, just add to that movement instead of adding a new movement.
+            // This helps in keeping the list of movements smaller even in cases where a high number of messages is sent.
+            if (GetSign(lastMovement.diff.x) == GetSign(relativeX) && GetSign(lastMovement.diff.y) == GetSign(relativeY))
+            {
+                lastMovement.diff.x += relativeX;
+                lastMovement.diff.y += relativeY;
+            }
+            else
+            {
+                m_movementHistory.push_back({ .diff = { .x=relativeX, .y=relativeY }, .tick = GetTickCount64() });
+                // Mouse movement changed directions. Take the opportunity do detect shake.
+                DetectShake();
+            }
+        }
+        else
+        {
+            m_movementHistory.push_back({ .diff = { .x = relativeX, .y = relativeY }, .tick = GetTickCount64() });
+        }
+    
+    }
+
     if (input.data.mouse.usButtonFlags)
     {
         StopSonar();
@@ -367,6 +473,12 @@ void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
 template<typename D>
 void SuperSonar<D>::StartSonar()
 {
+    // Don't activate if game mode is on.
+    if (m_doNotActivateOnGameMode && detect_game_mode())
+    {
+        return;
+    }
+
     Logger::info("Focusing the sonar on the mouse cursor.");
     Trace::MousePointerFocused();
     // Cover the entire virtual screen.
@@ -393,7 +505,7 @@ void SuperSonar<D>::StopSonar()
 template<typename D>
 void SuperSonar<D>::OnMouseTimer()
 {
-    auto now = GetTickCount();
+    auto now = GetTickCount64();
 
     // If mouse has moved, then reset the sonar timer.
     POINT ptCursor{};
@@ -433,7 +545,7 @@ void SuperSonar<D>::OnMouseTimer()
 template<typename D>
 void SuperSonar<D>::UpdateMouseSnooping()
 {
-    bool wantSnoopingMouse = m_sonarStart != NoSonar || m_sonarState != SonarState::Idle;
+    bool wantSnoopingMouse = m_sonarStart != NoSonar || m_sonarState != SonarState::Idle || m_activationMethod == FindMyMouseActivationMethod::ShakeMouse;
     if (m_isSnoopingMouse != wantSnoopingMouse)
     {
         m_isSnoopingMouse = wantSnoopingMouse;
@@ -590,6 +702,7 @@ public:
             m_sonarRadiusFloat = static_cast<float>(m_sonarRadius);
             m_backgroundColor = settings.backgroundColor;
             m_spotlightColor = settings.spotlightColor;
+            m_activationMethod = settings.activationMethod;
             m_doNotActivateOnGameMode = settings.doNotActivateOnGameMode;
             m_fadeDuration = settings.animationDurationMs > 0 ? settings.animationDurationMs : 1;
             m_finalAlphaNumerator = settings.overlayOpacity;
@@ -614,11 +727,13 @@ public:
                     m_sonarRadiusFloat = static_cast<float>(m_sonarRadius);
                     m_backgroundColor = localSettings.backgroundColor;
                     m_spotlightColor = localSettings.spotlightColor;
+                    m_activationMethod = settings.activationMethod;
                     m_doNotActivateOnGameMode = localSettings.doNotActivateOnGameMode;
                     m_fadeDuration = localSettings.animationDurationMs > 0 ? localSettings.animationDurationMs : 1;
                     m_finalAlphaNumerator = localSettings.overlayOpacity;
                     m_sonarZoomFactor = localSettings.spotlightInitialZoom;
-        
+                    UpdateMouseSnooping(); // For the shake mouse activation method
+
                     // Apply new settings to runtime composition objects.
                     m_backdrop.Brush().as<winrt::CompositionColorBrush>().Color(m_backgroundColor);
                     m_circleShape.FillBrush().as<winrt::CompositionColorBrush>().Color(m_spotlightColor);
