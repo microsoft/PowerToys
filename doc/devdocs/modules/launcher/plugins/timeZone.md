@@ -105,8 +105,10 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 | ------------------------------------- | ----------------------------------------------------------------------- |
 | `Classes\OneTimeZone.cs`              | A class that represent one time zone                                    |
 | `Classes\TimeZones.cs`                | A wrapper class that only contains a list with time zones  (see 1)      |
+| `Classes\TimeZoneSettings.cs`         | A class that contains all settings for the Time Zone plugin             |
+| `Extensions\SringBuilderExtension.cs` | Extension methods for `StringBuilder` Objects                           |
 | `Helper\ContextMenuHelper.cs`         | All functions to build the context menu (for each result entry)         |
-| `Helper\JsonSettingsListHelper.cs`    | All functions to load the time zones from a JSON file                   |
+| `Helper\JsonHelper.cs`                | All functions to load the time zones from a JSON file                   |
 | `Helper\ResultHelper.cs`              | All functions to convert internal results into WOX results              |
 | `Helper\TranslationHelper.cs`         | All functions to translate the result in the surface language           |
 | `Images\timeZone.dark.png`            | Symbol for the results for the dark theme                               |
@@ -117,19 +119,22 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 | `Main.cs`                             | Main class, the only place that implement the WOX interfaces            |
 | `plugin.json`                         | All meta-data for this plugin                                           |
 | `StyleCop.json`                       | Code style (no real file, linked via *.csproj)                          |
+| `timezones.json`                      | File that contains all time zone information                            |
+| `timeZones.schema.json`               | JSON schema for `timezones.json`                                        |
+| `StyleCop.json`                       | Code style (no real file, linked via *.csproj)                          |
 
 1. We need this extra wrapper class to make it possible that the JSON file can have and use a JSON schema file.
 Because the JSON file must have a object as root type, instead of a array.
 
 ### Important project values (*.csproj)
 
-| Name            | Value                                                                                        |
-| --------------- | -------------------------------------------------------------------------------------------- |
-| TargetFramework | `net5.0-windows` (.NET 5) or `net5.0-windows10.0.18362.0` (OS version specific)              |
-| Platforms       | `x64`                                                                                        |
-| Output          | `..\..\..\..\..\x64\Debug\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeZone\` |
-| RootNamespace   | `Microsoft.PowerToys.Run.Plugin.TimeZone`                                                    |
-| AssemblyName    | `Microsoft.PowerToys.Run.Plugin.TimeZone`                                                    |
+| Name            | Value                                                         |
+| --------------- | ------------------------------------------------------------- |
+| TargetFramework | `net6.0-windows`                                              |
+| Platforms       | `x64`                                                         |
+| Output          | `..\..\..\..\..\x64\Debug\modules\launcher\Plugins\TimeZone\` |
+| RootNamespace   | `Microsoft.PowerToys.Run.Plugin.TimeZone`                     |
+| AssemblyName    | `Microsoft.PowerToys.Run.Plugin.TimeZone`                     |
 
 ### Project dependencies
 
