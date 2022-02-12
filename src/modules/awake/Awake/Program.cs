@@ -12,9 +12,10 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
-using System.Windows;
 using Awake.Core;
+using Awake.Core.Models;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -27,6 +28,14 @@ namespace Awake
 {
     internal class Program
     {
+        // PowerToys Awake build codename. Used for exact logging
+        // that does not map to PowerToys broad versioning to pinpoint
+        // internal issues easier.
+        // Format of the build ID is: CODENAME_MMDDYYYY, where MMDDYYYY
+        // is representative of the date when the last change was made before
+        // the pull request is issued.
+        private static readonly string BuildId = "ARBITER_01312022";
+
         private static Mutex? _mutex = null;
         private static FileSystemWatcher? _watcher = null;
         private static SettingsUtils? _settingsUtils = null;
@@ -37,6 +46,7 @@ namespace Awake
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private static ConsoleEventHandler _handler;
+        private static SystemPowerCapabilities _powerCapabilities;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         private static ManualResetEvent _exitSignal = new ManualResetEvent(false);
@@ -56,17 +66,23 @@ namespace Awake
 
             _settingsUtils = new SettingsUtils();
 
-            _log.Info("Launching PowerToys Awake...");
+            _log.Info($"Launching {InternalConstants.AppName}...");
             _log.Info(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
+            _log.Info($"Build: {BuildId}");
             _log.Info($"OS: {Environment.OSVersion}");
             _log.Info($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
 
+            // To make it easier to diagnose future issues, let's get the
+            // system power capabilities and aggregate them in the log.
+            NativeMethods.GetPwrCapabilities(out _powerCapabilities);
+            _log.Info(JsonSerializer.Serialize(_powerCapabilities));
+
             _log.Info("Parsing parameters...");
 
-            Option<bool>? configOption = new Option<bool>(
+            Option<bool>? configOption = new (
                     aliases: new[] { "--use-pt-config", "-c" },
                     getDefaultValue: () => false,
-                    description: "Specifies whether PowerToys Awake will be using the PowerToys configuration file for managing the state.")
+                    description: $"Specifies whether {InternalConstants.AppName} will be using the PowerToys configuration file for managing the state.")
             {
                 Argument = new Argument<bool>(() => false)
                 {
@@ -76,7 +92,7 @@ namespace Awake
 
             configOption.Required = false;
 
-            Option<bool>? displayOption = new Option<bool>(
+            Option<bool>? displayOption = new (
                     aliases: new[] { "--display-on", "-d" },
                     getDefaultValue: () => true,
                     description: "Determines whether the display should be kept awake.")
@@ -89,7 +105,7 @@ namespace Awake
 
             displayOption.Required = false;
 
-            Option<uint>? timeOption = new Option<uint>(
+            Option<uint>? timeOption = new (
                     aliases: new[] { "--time-limit", "-t" },
                     getDefaultValue: () => 0,
                     description: "Determines the interval, in seconds, during which the computer is kept awake.")
@@ -102,10 +118,10 @@ namespace Awake
 
             timeOption.Required = false;
 
-            Option<int>? pidOption = new Option<int>(
+            Option<int>? pidOption = new (
                     aliases: new[] { "--pid", "-p" },
                     getDefaultValue: () => 0,
-                    description: "Bind the execution of PowerToys Awake to another process.")
+                    description: $"Bind the execution of {InternalConstants.AppName} to another process.")
             {
                 Argument = new Argument<int>(() => 0)
                 {
@@ -135,9 +151,7 @@ namespace Awake
         private static bool ExitHandler(ControlType ctrlType)
         {
             _log.Info($"Exited through handler with control type: {ctrlType}");
-
             Exit("Exiting from the internal termination handler.", Environment.ExitCode);
-
             return false;
         }
 
@@ -251,7 +265,8 @@ namespace Awake
             {
                 RunnerHelper.WaitForPowerToysRunner(pid, () =>
                 {
-                    Exit("Terminating from PowerToys binding hook.", 0, true);
+                    _log.Info($"Triggered PID-based exit handler for PID {pid}.");
+                    Exit("Terminating from process binding hook.", 0, true);
                 });
             }
 
