@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "FindMyMouse.h"
 #include "trace.h"
-#include "common/utils/game_mode.h"
+#include "common/utils/excluded_apps.h"
 #include <vector>
 
 #ifdef COMPOSITION
