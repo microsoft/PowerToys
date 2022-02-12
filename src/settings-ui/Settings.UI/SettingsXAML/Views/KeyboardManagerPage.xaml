@@ -14,6 +14,7 @@
 
     <Page.Resources>
         <converters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
+        <converters:EnumToStringConverter x:Key="enumToStringConverter" />
         <Style x:Name="KeysListViewContainerStyle" TargetType="ListViewItem">
             <Setter Property="IsTabStop" Value="False" />
         </Style>
@@ -25,7 +26,6 @@
         <DataTemplate x:Key="RemappedKeyTemplate" x:DataType="x:String">
             <custom:KeyVisual Content="{Binding}" VisualType="Small" />
         </DataTemplate>
-
         <!--<DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">
             <StackPanel
                 Name="KeyboardManager_RemappedKeysListItem"
@@ -43,6 +43,23 @@
                 Height="56">
 
         </DataTemplate>-->
+
+        <ControlTemplate x:Key="RemapAttributeControlTemplate" TargetType="ContentControl">
+            <Border VerticalAlignment="Center"
+                    Padding="12,4,12,6"
+                    Margin="16,0,0,0"
+                    CornerRadius="12">
+                <Border.Background>
+                    <SolidColorBrush Color="{ThemeResource SystemAccentColorLight3}"
+                                     Opacity="0.3"/>
+                </Border.Background>
+                <ContentControl Content="{TemplateBinding Content}"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource SystemAccentColorDark1}" />
+            </Border>
+        </ControlTemplate>
+
     </Page.Resources>
 
     <custom:SettingsPageControl x:Uid="KeyboardManager" ModuleImageSource="ms-appx:///Assets/Settings/Modules/KBM.png">
@@ -112,6 +129,9 @@
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
+                                        <ContentControl
+                                            Template="{StaticResource RemapAttributeControlTemplate}"
+                                            Content="{x:Bind Condition, Converter={StaticResource enumToStringConverter}}" />
                                     </StackPanel>
                                 </controls:SettingsCard>
                             </DataTemplate>

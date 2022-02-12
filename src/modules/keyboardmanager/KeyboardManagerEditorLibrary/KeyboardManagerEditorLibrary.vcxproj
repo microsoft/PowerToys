@@ -47,6 +47,7 @@
     <ClInclude Include="KeyDropDownControl.h" />
     <ClInclude Include="LoadingAndSavingRemappingHelper.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="RemapBuffer.h" />
     <ClInclude Include="ShortcutControl.h" />
     <ClInclude Include="ShortcutErrorType.h" />
     <ClInclude Include="SingleKeyRemapControl.h" />

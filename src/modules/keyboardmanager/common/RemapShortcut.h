@@ -1,6 +1,5 @@
 #pragma once
 #include "Shortcut.h"
-#include <variant>
 
 // This class stores all the variables associated with each shortcut remapping
 class RemapShortcut

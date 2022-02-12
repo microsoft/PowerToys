@@ -75,6 +75,9 @@
     <ClInclude Include="EditorConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RemapBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="XamlBridge2.h">
       <Filter>Header Files</Filter>
     </ClInclude>

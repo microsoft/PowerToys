@@ -7,6 +7,7 @@
 #pragma warning(pop)
 
 #include "MockedInput.h"
+#include <keyboardmanager/common/UnitTestUtils.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/State.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.h>
 #include "TestHelpers.h"
@@ -38,7 +39,7 @@ namespace RemappingLogicTests
         TEST_METHOD (RemappedKey_ShouldSetTargetKeyState_OnKeyEvent)
         {
             // Remap A to B
-            testState.AddSingleKeyRemap(0x41, (DWORD)0x42);
+            testState.AddSingleKeyRemap(0x41, VK_B, RemapCondition::Always);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -65,7 +66,7 @@ namespace RemappingLogicTests
         TEST_METHOD (RemappedKeyDisabled_ShouldNotChangeKeyState_OnKeyEvent)
         {
             // Remap A to VK_DISABLE (disabled)
-            testState.AddSingleKeyRemap(0x41, CommonSharedConstants::VK_DISABLED);
+            testState.AddSingleKeyRemap(0x41, CommonSharedConstants::VK_DISABLED, RemapCondition::Always);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -90,7 +91,7 @@ namespace RemappingLogicTests
         TEST_METHOD (RemappedKeyToWinBoth_ShouldSetWinLeftKeyState_OnKeyEvent)
         {
             // Remap A to Common Win key
-            testState.AddSingleKeyRemap(0x41, CommonSharedConstants::VK_WIN_BOTH);
+            testState.AddSingleKeyRemap(0x41, CommonSharedConstants::VK_WIN_BOTH, RemapCondition::Always);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -125,7 +126,7 @@ namespace RemappingLogicTests
             });
 
             // Remap Caps Lock to Ctrl
-            testState.AddSingleKeyRemap(VK_CAPITAL, (DWORD)VK_CONTROL);
+            testState.AddSingleKeyRemap(VK_CAPITAL, VK_CONTROL, RemapCondition::Always);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -151,7 +152,7 @@ namespace RemappingLogicTests
             });
 
             // Remap Ctrl to Caps Lock
-            testState.AddSingleKeyRemap(VK_CONTROL, (DWORD)VK_CAPITAL);
+            testState.AddSingleKeyRemap(VK_CONTROL, VK_CAPITAL, RemapCondition::Always);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -181,7 +182,7 @@ namespace RemappingLogicTests
             dest.SetKey(VK_CONTROL);
             dest.SetKey(VK_SHIFT);
             dest.SetKey(0x56);
-            testState.AddSingleKeyRemap(VK_CAPITAL, dest);
+            testState.AddSingleKeyRemap(VK_CAPITAL, dest, RemapCondition::Always);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -210,7 +211,7 @@ namespace RemappingLogicTests
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(VK_CAPITAL);
-            testState.AddSingleKeyRemap(VK_CONTROL, dest);
+            testState.AddSingleKeyRemap(VK_CONTROL, dest, RemapCondition::Always);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -231,7 +232,7 @@ namespace RemappingLogicTests
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x56);
-            testState.AddSingleKeyRemap(0x41, dest);
+            testState.AddSingleKeyRemap(0x41, dest, RemapCondition::Always);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -264,7 +265,7 @@ namespace RemappingLogicTests
             dest.SetKey(VK_CONTROL);
             dest.SetKey(VK_SHIFT);
             dest.SetKey(0x56);
-            testState.AddSingleKeyRemap(0x41, dest);
+            testState.AddSingleKeyRemap(0x41, dest, RemapCondition::Always);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -298,7 +299,7 @@ namespace RemappingLogicTests
             Shortcut dest;
             dest.SetKey(VK_LCONTROL);
             dest.SetKey(0x56);
-            testState.AddSingleKeyRemap(VK_LCONTROL, dest);
+            testState.AddSingleKeyRemap(VK_LCONTROL, dest, RemapCondition::Always);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -319,6 +320,138 @@ namespace RemappingLogicTests
             // LCtrl, V key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
+        }
+
+        // Test if the alone remapped key is pressed and released if the original key is pressed and released alone.
+        TEST_METHOD (AloneRemappedKey_ShouldInjectTargetKeyOnReleasing)
+        {
+            auto keyboardEvents = std::vector<std::tuple<DWORD, WPARAM>>{};
+            mockedInputHandler.SetHookProc([mockedInputHandler{ std::ref(mockedInputHandler) }, testState{std::ref(testState)}, &keyboardEvents](LowlevelKeyboardEvent* data) {
+                auto result = KeyboardEventHandlers::HandleSingleKeyRemapEvent(mockedInputHandler, data, testState);
+                if (result == 0)
+                {
+                    keyboardEvents.emplace_back(data->lParam->vkCode, data->wParam);
+                }
+
+                return 1;
+            });
+
+            testState.AddSingleKeyRemap(VK_A, VK_B, RemapCondition::Always);
+            testState.AddSingleKeyRemap(VK_A, VK_C, RemapCondition::Alone);
+            testState.AddSingleKeyRemap(VK_A, VK_D, RemapCondition::Combination);
+
+            // Pressing "A" key should do nothing.
+            {
+                auto input = INPUT{};
+                input.type = INPUT_KEYBOARD;
+                input.ki.wVk = 'A';
+                auto inputs = std::vector{ input };
+                mockedInputHandler.SendVirtualInput(inputs);
+                Assert::IsTrue(keyboardEvents.empty());
+            }
+
+            // Releasing "A" key should press and release "C" key.
+            {
+                auto input = INPUT{};
+                input.type = INPUT_KEYBOARD;
+                input.ki.wVk = 'A';
+                input.ki.dwFlags = KEYEVENTF_KEYUP;
+                auto inputs = std::vector{ input };
+                mockedInputHandler.SendVirtualInput(inputs);
+
+                Assert::AreEqual(static_cast<size_t>(2), keyboardEvents.size());
+
+                const auto& [keyCode1, wParam1] = keyboardEvents.at(0);
+                Assert::AreEqual(VK_C, keyCode1);
+                Assert::AreEqual(static_cast<WPARAM>(WM_KEYDOWN), wParam1);
+
+                const auto& [keyCode2, wParam2] = keyboardEvents.at(1);
+                Assert::AreEqual(VK_C, keyCode2);
+                Assert::AreEqual(static_cast<WPARAM>(WM_KEYUP), wParam2);
+            }
+        }
+
+        // Test if a combination remapped key is pressed and released when the original key is pressed together with another key.
+        TEST_METHOD (CombinationRemappedKey_ShouldInjectTargetKeyOnReleasing)
+        {
+            auto keyboardEvents = std::vector<std::tuple<DWORD, WPARAM>>{};
+            mockedInputHandler.SetHookProc([mockedInputHandler{ std::ref(mockedInputHandler) }, testState{std::ref(testState)}, &keyboardEvents](LowlevelKeyboardEvent* data) {
+                auto result = KeyboardEventHandlers::HandleSingleKeyRemapEvent(mockedInputHandler, data, testState);
+                if (result == 0)
+                {
+                    keyboardEvents.emplace_back(data->lParam->vkCode, data->wParam);
+                }
+
+                return 1;
+            });
+
+            testState.AddSingleKeyRemap(VK_A, VK_B, RemapCondition::Always);
+            testState.AddSingleKeyRemap(VK_A, VK_C, RemapCondition::Alone);
+            testState.AddSingleKeyRemap(VK_A, VK_D, RemapCondition::Combination);
+
+            // Pressing "A" key should do nothing.
+            {
+                auto input = INPUT{};
+                input.type = INPUT_KEYBOARD;
+                input.ki.wVk = 'A';
+                auto inputs = std::vector{ input };
+                mockedInputHandler.SendVirtualInput(inputs);
+                Assert::IsTrue(keyboardEvents.empty());
+            }
+
+            // Pressing "E" key while "A" key is pressed
+            // should press the combination remap key followed by "E" key.
+            {
+                auto input = INPUT{};
+                input.type = INPUT_KEYBOARD;
+                input.ki.wVk = 'E';
+                auto inputs = std::vector{ input };
+                mockedInputHandler.SendVirtualInput(inputs);
+                Assert::AreEqual(static_cast<size_t>(2), keyboardEvents.size());
+
+                const auto& [keyCode1, wParam1] = keyboardEvents.at(0);
+                Assert::AreEqual(VK_D, keyCode1);
+                Assert::AreEqual(static_cast<WPARAM>(WM_KEYDOWN), wParam1);
+
+                const auto& [keyCode2, wParam2] = keyboardEvents.at(1);
+                Assert::AreEqual(VK_E, keyCode2);
+                Assert::AreEqual(static_cast<WPARAM>(WM_KEYDOWN), wParam2);
+
+                keyboardEvents.clear();
+            }
+
+            // Releasing "E" key should release "E" key.
+            {
+                auto input = INPUT{};
+                input.type = INPUT_KEYBOARD;
+                input.ki.wVk = 'E';
+                input.ki.dwFlags = KEYEVENTF_KEYUP;
+                auto inputs = std::vector{ input };
+                mockedInputHandler.SendVirtualInput(inputs);
+                Assert::AreEqual(static_cast<size_t>(1), keyboardEvents.size());
+
+                const auto& [keyCode, wParam] = keyboardEvents.at(0);
+                Assert::AreEqual(VK_E, keyCode);
+                Assert::AreEqual(static_cast<WPARAM>(WM_KEYUP), wParam);
+
+                keyboardEvents.clear();
+            }
+
+            // Releasing "A" key should release "D" key.
+            {
+                auto input = INPUT{};
+                input.type = INPUT_KEYBOARD;
+                input.ki.wVk = 'A';
+                input.ki.dwFlags = KEYEVENTF_KEYUP;
+                auto inputs = std::vector{ input };
+                mockedInputHandler.SendVirtualInput(inputs);
+
+                Assert::AreEqual(static_cast<size_t>(1), keyboardEvents.size());
+
+                const auto& [keyCode, wParam] = keyboardEvents.at(0);
+                Assert::AreEqual(VK_D, keyCode);
+                Assert::AreEqual(static_cast<WPARAM>(WM_KEYUP), wParam);
+            }
         }
     };
 }

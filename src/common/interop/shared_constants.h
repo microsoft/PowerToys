@@ -91,4 +91,8 @@ namespace CommonSharedConstants
 
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
+
+    constexpr auto VK_NULL = DWORD{};
+
+    constexpr auto VK_INVALID = static_cast<DWORD>(-1);
 }

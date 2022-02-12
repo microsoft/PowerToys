@@ -1,6 +1,7 @@
 #pragma once
 
 #include <keyboardmanager/common/Shortcut.h>
+#include "RemapBuffer.h"
 
 namespace KBMEditor
 {

@@ -1,12 +1,17 @@
 #include "pch.h"
 #include "SingleKeyRemapControl.h"
 
+#include "BufferValidationHelpers.h"
 #include "KeyboardManagerState.h"
 #include "KeyboardManagerEditorStrings.h"
 #include "ShortcutControl.h"
 #include "UIHelpers.h"
 #include "EditorHelpers.h"
 #include "EditorConstants.h"
+
+using namespace Windows::UI::Xaml::Controls::Primitives;
+using namespace Windows::UI::Xaml::Input;
+using namespace Windows::UI::Xaml::Media;
 
 //Both static members are initialized to null
 HWND SingleKeyRemapControl::EditKeyboardWindowHandle = nullptr;
@@ -30,7 +35,6 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
 
         keyDropDownControlObjects.emplace_back(std::make_unique<KeyDropDownControl>(false));
         singleKeyRemapControlLayout.as<StackPanel>().Children().Append(keyDropDownControlObjects[0]->GetComboBox());
-        // Set selection handler for the drop down
         keyDropDownControlObjects[0]->SetSelectionHandler(table, row, colIndex, singleKeyRemapBuffer);
     }
 
@@ -72,7 +76,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
                 return;
             }
 
-            singleKeyRemapBuffer[rowIndex].first[1] = text.c_str();
+            singleKeyRemapBuffer[rowIndex].mapping.at(1) = text.c_str();
         });
 
         auto typeCombo = ComboBox();
@@ -137,7 +141,13 @@ void SingleKeyRemapControl::TextToMapChangedHandler(winrt::Windows::Foundation::
 }
 
 // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
-void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const KeyShortcutTextUnion newKey)
+void SingleKeyRemapControl::AddNewControlKeyRemapRow(
+    StackPanel& parent,
+    winrt::weak_ref<Button> weakApplyButton,
+    std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects,
+    DWORD originalKey,
+    const KeyShortcutTextUnion& newKey,
+    RemapCondition condition)
 {
     // Create new SingleKeyRemapControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<SingleKeyRemapControl>> newrow;
@@ -163,10 +173,109 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     SymbolIcon arrowIcon(Symbol::Forward);
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
     arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
-    auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, EditorConstants::TableArrowColWidth).as<StackPanel>();
+
+    FontIcon statusCircleIcon;
+    statusCircleIcon.FontFamily(FontFamily(L"Segoe MDL2 Assets"));
+    statusCircleIcon.Glyph(L"\xEA81");
+    statusCircleIcon.Foreground(SolidColorBrush(Colors::Red()));
+    statusCircleIcon.VerticalAlignment(VerticalAlignment::Center);
+    statusCircleIcon.HorizontalAlignment(HorizontalAlignment::Center);
+
+    FontIcon statusErrorIcon;
+    statusErrorIcon.FontFamily(FontFamily(L"Segoe MDL2 Assets"));
+    statusErrorIcon.Glyph(L"\xEA83");
+    statusErrorIcon.VerticalAlignment(VerticalAlignment::Center);
+    statusErrorIcon.HorizontalAlignment(HorizontalAlignment::Center);
+
+    auto statusIcon = Grid{};
+    statusIcon.Children().Append(statusCircleIcon);
+    statusIcon.Children().Append(statusErrorIcon);
+    statusIcon.Visibility(Visibility::Collapsed);
+
+    auto layeredIcon = Grid{};
+    layeredIcon.Children().Append(arrowIcon);
+    layeredIcon.Children().Append(statusIcon);
+
+    auto errorTextBlock = TextBlock{};
+    auto errorFlyout = Flyout{};
+    errorFlyout.Content(errorTextBlock);
+
+    // Enable narrator for Content of FlyoutPresenter.
+    // For details https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.flyout#accessibility
+    auto style = Style(winrt::xaml_typename<FlyoutPresenter>());
+    style.Setters().Append(Setter(Control::IsTabStopProperty(), winrt::box_value(true)));
+    style.Setters().Append(Setter(Control::TabNavigationProperty(), winrt::box_value(KeyboardNavigationMode::Cycle)));
+    errorFlyout.FlyoutPresenterStyle(style);
+    FlyoutBase::SetAttachedFlyout(statusIcon, errorFlyout);
+
+    auto arrowIconContainer = UIHelpers::GetWrapped(layeredIcon, EditorConstants::TableArrowColWidth).as<StackPanel>();
+    arrowIconContainer.Spacing(10);
     arrowIconContainer.Orientation(Orientation::Vertical);
     arrowIconContainer.VerticalAlignment(VerticalAlignment::Center);
     arrowIconContainer.Margin({ 0, 0, 0, 10 });
+
+    auto toolTip = ToolTip{};
+    toolTip.Content(TextBlock{});
+    ToolTipService::SetToolTip(statusIcon, toolTip);
+
+    auto weakStatusIcon = winrt::make_weak(statusIcon);
+    auto errorHandler = [weakStatusIcon, weakApplyButton](ShortcutErrorType errorType, PCWSTR message)
+    {
+        const auto isError = errorType != ShortcutErrorType::NoError;
+
+        if (auto statusIcon = weakStatusIcon.get())
+        {
+            const auto visibility = isError ? Visibility::Visible : Visibility::Collapsed;
+            statusIcon.Visibility(visibility);
+
+            auto errorFlyout = FlyoutBase::GetAttachedFlyout(statusIcon).as<Flyout>();
+            if (isError)
+            {
+                errorFlyout.Content().as<TextBlock>().Text(message);
+                errorFlyout.ShowAt(statusIcon);
+
+                auto errorToolTip = ToolTipService::GetToolTip(statusIcon).as<ToolTip>();
+                errorToolTip.Content().as<TextBlock>().Text(message);
+            }
+            else
+            {
+                errorFlyout.Hide();
+            }
+        }
+
+        if (auto applyButton = weakApplyButton.get())
+        {
+            applyButton.IsEnabled(!isError);
+        }
+    };
+
+    auto comboBox = ComboBox{};
+    comboBox.ItemsSource(UIHelpers::ToBoxValue(
+        { { 0, GET_RESOURCE_STRING(IDS_REMAPCONDITION_ALWAYS) },
+          { 1, GET_RESOURCE_STRING(IDS_REMAPCONDITION_ALONE) },
+          { 2, GET_RESOURCE_STRING(IDS_REMAPCONDITION_COMBINATION) } }));
+    comboBox.SelectedIndex(static_cast<int32_t>(condition));
+    comboBox.HorizontalAlignment(HorizontalAlignment::Center);
+    comboBox.VerticalAlignment(VerticalAlignment::Center);
+    comboBox.SelectionChanged([parent, row](const winrt::Windows::Foundation::IInspectable& sender, SelectionChangedEventArgs args)
+    {
+        uint32_t rowIndex;
+        UIElementCollection children = parent.Children();
+        if (!children.IndexOf(row, rowIndex))
+        {
+            return;
+        }
+
+        const auto senderComboBox = sender.as<ComboBox>();
+        const auto selectedIndex = senderComboBox.SelectedIndex();
+        if (selectedIndex >= 0)
+        {
+            singleKeyRemapBuffer.at(rowIndex).condition = static_cast<RemapCondition>(selectedIndex);
+            BufferValidationHelpers::ValidateAndUpdateRemapCondition(rowIndex, selectedIndex, singleKeyRemapBuffer);
+        }
+    });
+    arrowIconContainer.Children().Append(comboBox);
+
     row.Children().Append(arrowIconContainer);
 
     // SingleKeyRemapControl for the new remap key
@@ -175,9 +284,9 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     row.Children().Append(targetElement);
 
     // Set the key text if the two keys are not null (i.e. default args)
-    if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey))) && !(newKey.index() == 2 && std::get<std::wstring>(newKey).empty()))
+    if (IsValidSingleKey(originalKey) && IsValidSingleKeyOrShortcutOrText(newKey))
     {
-        singleKeyRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ originalKey, newKey }, L""));
+        singleKeyRemapBuffer.emplace_back(RemapBufferRow{ RemapBufferItem{ originalKey, newKey }, L"", condition });
         keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->keyDropDownControlObjects[0]->SetSelectedValue(std::to_wstring(originalKey));
         if (newKey.index() == 0)
         {
@@ -201,7 +310,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     else
     {
         // Initialize both keys to NULL
-        singleKeyRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ (DWORD)0, (DWORD)0 }, L""));
+        singleKeyRemapBuffer.emplace_back(RemapBufferItem{}, L"", RemapCondition::Always);
     }
 
     // Delete row button

@@ -34,11 +34,11 @@ public:
     // Function to clear the App specific shortcut remapping table
     void ClearAppSpecificShortcuts();
 
-    // Function to add a new single key to key remapping
-    bool AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutTextUnion& newRemapKey);
-
     // Function to add a new single key to unicode string remapping
     bool AddSingleKeyToTextRemap(const DWORD originalKey, const std::wstring& text);
+
+    // Function to add a new single key to key remapping
+    bool AddSingleKeyRemap(DWORD originalKey, const KeyShortcutTextUnion& newRemapKey, RemapCondition condition);
 
     // Function to add a new OS level shortcut remapping
     bool AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutTextUnion& newSC);
@@ -48,8 +48,15 @@ public:
 
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initialized to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
-    // Stores single key remappings
-    SingleKeyRemapTable singleKeyReMap;
+
+    // Stores single key remappings which are always effective.
+    SingleKeyRemapTable alwaysSingleKeyRemapTable;
+
+    // Stores single key remappings effective only when the key is pressed alone.
+    SingleKeyRemapTable aloneSingleKeyRemapTable;
+
+    // Stores single key remappings effective only when the key is pressed in combination with other keys.
+    SingleKeyRemapTable combinationSingleKeyRemapTable;
 
     // Stores single key to text remappings
     SingleKeyToTextRemapTable singleKeyToTextReMap;
@@ -66,6 +73,7 @@ public:
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
 
 private:
+    bool AddSingleKeyRemap(SingleKeyRemapTable& table, DWORD originalKey, const KeyShortcutTextUnion& newRemapKey);
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);

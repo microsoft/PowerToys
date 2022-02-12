@@ -9,7 +9,13 @@ void MockedInput::SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> ho
     hookProc = hookProcedure;
 }
 
-// Function to simulate keyboard input - arguments and return value based on SendInput function (https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-sendinput)
+// Function to simulate keyboard input
+void MockedInput::SendVirtualInput(std::vector<INPUT>& inputs)
+{
+    SendVirtualInput(static_cast<UINT>(inputs.size()), inputs.data(), static_cast<int>(sizeof(INPUT)));
+}
+
+// Deprecated function to simulate keyboard input - Use SendVirtualInput(std::vector<INPUT>& inputs) above in new codes
 UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int /*cbSize*/)
 {
     // Iterate over inputs

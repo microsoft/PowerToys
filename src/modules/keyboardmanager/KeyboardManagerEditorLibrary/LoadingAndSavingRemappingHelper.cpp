@@ -9,6 +9,7 @@
 #include "KeyboardManagerState.h"
 #include "keyboardmanager/KeyboardManagerEditorLibrary/trace.h"
 #include "EditorHelpers.h"
+#include "RemapBuffer.h"
 #include "ShortcutErrorType.h"
 
 namespace LoadingAndSavingRemappingHelper
@@ -16,38 +17,30 @@ namespace LoadingAndSavingRemappingHelper
     // Function to check if the set of remappings in the buffer are valid
     ShortcutErrorType CheckIfRemappingsAreValid(const RemapBuffer& remappings)
     {
-        ShortcutErrorType isSuccess = ShortcutErrorType::NoError;
-        std::map<std::wstring, std::set<KeyShortcutTextUnion>> ogKeys;
-        for (int i = 0; i < remappings.size(); i++)
+        const auto n = remappings.size();
+        for (int i = 0; i < n; ++i)
         {
-            KeyShortcutTextUnion ogKey = remappings[i].first[0];
-            KeyShortcutTextUnion newKey = remappings[i].first[1];
-            std::wstring appName = remappings[i].second;
-
-            const bool ogKeyValidity = (ogKey.index() == 0 && std::get<DWORD>(ogKey) != NULL) || (ogKey.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(ogKey)));
-            const bool newKeyValidity = (newKey.index() == 0 && std::get<DWORD>(newKey) != NULL) || (newKey.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey))) || (newKey.index() == 2 && !std::get<std::wstring>(newKey).empty());
-
-            // Add new set for a new target app name
-            if (ogKeys.find(appName) == ogKeys.end())
+            const auto& remap1 = remappings.at(i);
+            const auto& [originalKey1, remappedKey1] = remap1.mapping;
+            if (!IsValidSingleKeyOrShortcutOrText(originalKey1) || !IsValidSingleKeyOrShortcutOrText(remappedKey1))
             {
-                ogKeys[appName] = std::set<KeyShortcutTextUnion>();
+                return ShortcutErrorType::RemapUnsuccessful;
             }
 
-            if (ogKeyValidity && newKeyValidity && ogKeys[appName].find(ogKey) == ogKeys[appName].end())
+            for (int j = i + 1; j < n; ++j)
             {
-                ogKeys[appName].insert(ogKey);
-            }
-            else if (ogKeyValidity && newKeyValidity && ogKeys[appName].find(ogKey) != ogKeys[appName].end())
-            {
-                isSuccess = ShortcutErrorType::RemapUnsuccessful;
-            }
-            else
-            {
-                isSuccess = ShortcutErrorType::RemapUnsuccessful;
+                const auto& remap2 = remappings.at(j);
+                const auto& originalKey2 = remap2.mapping.at(0);
+                if ((originalKey1 == originalKey2) &&
+                    (remap1.appName == remap2.appName) &&
+                    (remap1.condition == remap2.condition))
+                {
+                    return ShortcutErrorType::RemapUnsuccessful;
+                }
             }
         }
 
-        return isSuccess;
+        return ShortcutErrorType::NoError;
     }
 
     // Function to return the set of keys that have been orphaned from the remap buffer
@@ -56,20 +49,17 @@ namespace LoadingAndSavingRemappingHelper
         std::set<DWORD> ogKeys;
         std::set<DWORD> newKeys;
 
-        for (int i = 0; i < remappings.size(); i++)
+        for (const auto& remapping : remappings)
         {
-            DWORD ogKey = std::get<DWORD>(remappings[i].first[0]);
-            KeyShortcutTextUnion newKey = remappings[i].first[1];
+            const DWORD ogKey = std::get<DWORD>(remapping.mapping[0]);
+            const KeyShortcutTextUnion& newKey = remapping.mapping[1];
 
-            const bool hasValidKeyRemapping = newKey.index() == 0 && std::get<DWORD>(newKey) != 0;
-            const bool hasValidShortcutRemapping = newKey.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey));
-            const bool hasValidTextRemapping = newKey.index() == 2 && !std::get<std::wstring>(newKey).empty();
-            if (ogKey != NULL && (hasValidKeyRemapping || hasValidShortcutRemapping || hasValidTextRemapping))
+            if (IsValidSingleKey(ogKey) && IsValidSingleKeyOrShortcutOrText(newKey))
             {
                 ogKeys.insert(ogKey);
 
                 // newKey should be added only if the target is a key
-                if (remappings[i].first[1].index() == 0)
+                if (newKey.index() == 0)
                 {
                     newKeys.insert(std::get<DWORD>(newKey));
                 }
@@ -123,12 +113,13 @@ namespace LoadingAndSavingRemappingHelper
         DWORD successfulKeyToKeyRemapCount = 0;
         DWORD successfulKeyToShortcutRemapCount = 0;
         DWORD successfulKeyToTextRemapCount = 0;
-        for (int i = 0; i < remappings.size(); i++)
+        for (const auto& remapping : remappings)
         {
-            const DWORD originalKey = std::get<DWORD>(remappings[i].first[0]);
-            KeyShortcutTextUnion newKey = remappings[i].first[1];
+            const DWORD originalKey = std::get<DWORD>(remapping.mapping[0]);
+            const KeyShortcutTextUnion newKey = remapping.mapping[1];
+            const RemapCondition condition = remapping.condition;
 
-            if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey))) && !(newKey.index() == 2 && std::get<std::wstring>(newKey).empty()))
+            if (IsValidSingleKey(originalKey) && IsValidSingleKeyOrShortcutOrText(newKey))
             {
                 // If Ctrl/Alt/Shift are added, add their L and R versions instead to the same key
                 bool result = false;
@@ -161,7 +152,9 @@ namespace LoadingAndSavingRemappingHelper
                 for (const DWORD key : originalKeysWithModifiers)
                 {
                     const bool mappedToText = newKey.index() == 2;
-                    result = mappedToText ? mappingConfiguration.AddSingleKeyToTextRemap(key, std::get<std::wstring>(newKey)) : mappingConfiguration.AddSingleKeyRemap(key, newKey) && result;
+                    result = mappedToText
+                        ? mappingConfiguration.AddSingleKeyToTextRemap(key, std::get<std::wstring>(newKey))
+                        : mappingConfiguration.AddSingleKeyRemap(key, newKey, condition) && result;
                 }
 
                 if (result)
@@ -203,12 +196,11 @@ namespace LoadingAndSavingRemappingHelper
         // Save the shortcuts that are valid and report if any of them were invalid
         for (int i = 0; i < remappings.size(); i++)
         {
-            Shortcut originalShortcut = std::get<Shortcut>(remappings[i].first[0]);
-            KeyShortcutTextUnion newShortcut = remappings[i].first[1];
-
-            if (EditorHelpers::IsValidShortcut(originalShortcut) && ((newShortcut.index() == 0 && std::get<DWORD>(newShortcut) != NULL) || (newShortcut.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(newShortcut))) || (newShortcut.index() == 2 && !std::get<std::wstring>(newShortcut).empty())))
+            Shortcut originalShortcut = std::get<Shortcut>(remappings[i].mapping[0]);
+            const KeyShortcutTextUnion& newShortcut = remappings[i].mapping[1];
+            if (IsValidShortcut(originalShortcut) && IsValidSingleKeyOrShortcutOrText(newShortcut))
             {
-                if (remappings[i].second == L"")
+                if (remappings[i].appName == L"")
                 {
                     bool result = mappingConfiguration.AddOSLevelShortcut(originalShortcut, newShortcut);
                     if (result)
@@ -225,7 +217,7 @@ namespace LoadingAndSavingRemappingHelper
                 }
                 else
                 {
-                    bool result = mappingConfiguration.AddAppSpecificShortcut(remappings[i].second, originalShortcut, newShortcut);
+                    bool result = mappingConfiguration.AddAppSpecificShortcut(remappings[i].appName, originalShortcut, newShortcut);
                     if (result)
                     {
                         if (newShortcut.index() == 0)

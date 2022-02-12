@@ -453,7 +453,7 @@ winrt::hstring Shortcut::ToHstringVK() const
 }
 
 // Function to return a vector of key codes in the display order
-std::vector<DWORD> Shortcut::GetKeyCodes()
+std::vector<DWORD> Shortcut::GetKeyCodes() const
 {
     std::vector<DWORD> keys;
     if (winKey != ModifierKey::Disabled)

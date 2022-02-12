@@ -34,7 +34,8 @@ namespace KeyboardManagerInput
         void SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> hookProcedure);
 
         // Function to simulate keyboard input
-        UINT SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize);
+        void SendVirtualInput(std::vector<INPUT>& inputs) override;
+        UINT SendVirtualInput(UINT cInputs, LPINPUT pInput, int cbSize);
 
         // Function to simulate keyboard hook behavior
         intptr_t MockedKeyboardHook(LowlevelKeyboardEvent* data);

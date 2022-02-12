@@ -20,5 +20,5 @@ enum class ShortcutErrorType
     ShortcutOneActionKey,
     ShortcutNotMoreThanOneActionKey,
     ShortcutMaxShortcutSizeOneActionKey,
-    ShortcutDisableAsActionKey
+    ShortcutDisableAsActionKey,
 };

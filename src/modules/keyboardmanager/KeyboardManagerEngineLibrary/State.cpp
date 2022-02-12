@@ -1,17 +1,88 @@
 #include "pch.h"
 #include "State.h"
-#include <optional>
 
-// Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
-std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyRemap(const DWORD& originalKey)
+inline KeyShortcutUnion GetRemappedKey(const SingleKeyRemapTable& table, DWORD originalKey)
 {
-    auto it = singleKeyReMap.find(originalKey);
-    if (it != singleKeyReMap.end())
+    if (const auto it = table.find(originalKey); it != table.end())
     {
-        return it;
+        return it->second;
+    }
+    
+    return KeyboardManagerConstants::VK_NULL;
+}
+
+// Function to get key events for a single key remap given the source key event.
+SingleKeyRemapResult State::GetSingleKeyRemapResult(DWORD originalKeyCode, bool isKeyDown)
+{
+    const auto universalRemapKey = GetRemappedKey(alwaysSingleKeyRemapTable, originalKeyCode);
+    const auto combinationRemapKey = GetRemappedKey(combinationSingleKeyRemapTable, originalKeyCode);
+    const auto aloneRemapKey = GetRemappedKey(aloneSingleKeyRemapTable, originalKeyCode);
+    const auto isUniversalRemapKeyValid = IsValidSingleKeyOrShortcut(universalRemapKey);
+    const auto isCombinationRemapKeyValid = IsValidSingleKeyOrShortcut(combinationRemapKey);
+    const auto isAloneRemapKeyValid = IsValidSingleKeyOrShortcut(aloneRemapKey);
+    const auto originalKey = KeyShortcutUnion{ originalKeyCode };
+    const auto& effectiveCombinationRemapKey =
+        isCombinationRemapKeyValid ? combinationRemapKey :
+        isUniversalRemapKeyValid ? universalRemapKey :
+        originalKey;
+    const auto& effectiveAloneRemapKey =
+        isAloneRemapKeyValid ? aloneRemapKey :
+        isUniversalRemapKeyValid ? universalRemapKey :
+        originalKey;
+    const auto isDualRemap = (isCombinationRemapKeyValid || isAloneRemapKeyValid) && (effectiveCombinationRemapKey != effectiveAloneRemapKey);
+
+    auto keyEvents = std::vector<RemappedKeyEvent>{};
+
+    // Another key is pressed while a dual-remapped key is pressed.
+    if (isKeyDown && (pendingPressedKeyCode != KeyboardManagerConstants::VK_NULL) && (pendingPressedKeyCode != originalKeyCode))
+    {
+        keyEvents.insert(keyEvents.end(), pendingCombinationRemappedKeyEvents.cbegin(), pendingCombinationRemappedKeyEvents.cend());
+        pendingCombinationRemappedKeyEvents.clear();
+        pendingPressedKeyCode = KeyboardManagerConstants::VK_NULL;
     }
 
-    return std::nullopt;
+    if (isDualRemap)
+    {
+        if (isKeyDown)
+        {
+            // Delay the key press of a dual-mapped key.
+            // We cannot tell which remap to use until the next key event.
+            pendingPressedKeyCode = originalKeyCode;
+            pendingCombinationRemappedKeyEvents = {
+                { effectiveCombinationRemapKey, true },
+            };
+        }
+        else // Key Up
+        {
+            if (pendingPressedKeyCode == originalKeyCode)
+            {
+                // No key has been pressed while the dual-mapped key is pressed and released.
+                // Inject a key press and release using the alone remap.
+                pendingPressedKeyCode = KeyboardManagerConstants::VK_NULL;
+                pendingCombinationRemappedKeyEvents.clear();
+                keyEvents.emplace_back(effectiveAloneRemapKey, true /*isKeyDown*/);
+                keyEvents.emplace_back(effectiveAloneRemapKey, false /*isKeyDown*/);
+            }
+            else
+            {
+                // One or more keys have been pressed while the dual-mapped key is pressed and released.
+                // Inject a key release using the combination remap.
+                // A remapped key press should have been injected when another key was pressed or released.
+                keyEvents.emplace_back(effectiveCombinationRemapKey, false /*isKeyDown*/);
+            }
+        }
+
+        return { true, keyEvents };
+    }
+    else if (isUniversalRemapKeyValid)
+    {
+        keyEvents.emplace_back(universalRemapKey, isKeyDown);
+        return { true /*shouldEatOriginalKey*/, keyEvents };
+    }
+    else
+    {
+        return { false /*shouldEatOriginalKey*/, keyEvents };
+    }
 }
 
 std::optional<std::wstring> State::GetSingleKeyToTextRemapEvent(const DWORD originalKey) const

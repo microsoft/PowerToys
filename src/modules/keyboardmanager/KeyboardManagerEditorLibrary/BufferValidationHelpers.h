@@ -3,6 +3,7 @@
 #include <keyboardmanager/common/Helpers.h>
 
 #include "ShortcutErrorType.h"
+#include "RemapBuffer.h"
 
 namespace BufferValidationHelpers
 {
@@ -16,6 +17,8 @@ namespace BufferValidationHelpers
 
     // Helper function to verify if a key is being remapped to/from its combined key
     bool IsKeyRemappingToItsCombinedKey(DWORD keyCode1, DWORD keyCode2);
+
+    ShortcutErrorType ValidateAndUpdateRemapCondition(int rowIndex, int selectedConditionIndex, RemapBuffer& remapBuffer);
 
     // Function to validate and update an element of the key remap buffer when the selection has changed
     ShortcutErrorType ValidateAndUpdateKeyBufferElement(int rowIndex, int colIndex, int selectedKeyCode, RemapBuffer& remapBuffer);

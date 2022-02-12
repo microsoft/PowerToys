@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -20,6 +21,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("unicodeText")]
         public string NewRemapString { get; set; }
+
+        [JsonPropertyName("condition")]
+        public RemapCondition Condition { get; set; }
 
         private static List<string> MapKeys(string stringOfKeys)
         {

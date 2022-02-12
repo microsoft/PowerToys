@@ -1,6 +1,7 @@
 #pragma once
 
 #include <keyboardmanager/common/Shortcut.h>
+#include "RemapBuffer.h"
 
 // Enables the WinUI teaching tip to show as the new warning flyout
 #define USE_NEW_DROPDOWN_WARNING_TIP
@@ -28,8 +29,6 @@ namespace winrt::Windows
         struct TextBlock;
     }
 }
-
-enum class ShortcutErrorType;
 
 // Wrapper class for the key drop down menu
 class KeyDropDownControl
@@ -100,7 +99,7 @@ public:
     // Function for validating the selection of shortcuts for all the associated drop downs
     static void ValidateShortcutFromDropDownList(StackPanel table, StackPanel row, VariableSizedWrapGrid parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
 
-    // Function to set the warning message
+	// Function to set the warning message
     void SetDropDownError(winrt::Windows::UI::Xaml::Controls::ComboBox currentDropDown, winrt::hstring message);
 
     // Set selected Value

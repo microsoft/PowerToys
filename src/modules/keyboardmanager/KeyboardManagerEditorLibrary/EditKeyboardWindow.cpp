@@ -284,21 +284,15 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditKeyboardWindowActivated, _hWndEditKeyboardWindow);
 
     // Load existing remaps into UI
-    SingleKeyRemapTable singleKeyRemapCopy = mappingConfiguration.singleKeyReMap;
+    SingleKeyRemapTable singleKeyRemapCopy = mappingConfiguration.alwaysSingleKeyRemapTable;
+    SingleKeyRemapTable aloneSingleKeyRemapCopy = mappingConfiguration.aloneSingleKeyRemapTable;
+    SingleKeyRemapTable combinationSingleKeyRemapCopy = mappingConfiguration.combinationSingleKeyRemapTable;
     SingleKeyToTextRemapTable singleKeyToTextRemapCopy = mappingConfiguration.singleKeyToTextReMap;
 
     LoadingAndSavingRemappingHelper::PreProcessRemapTable(singleKeyRemapCopy);
+    LoadingAndSavingRemappingHelper::PreProcessRemapTable(aloneSingleKeyRemapCopy);
+    LoadingAndSavingRemappingHelper::PreProcessRemapTable(combinationSingleKeyRemapCopy);
     LoadingAndSavingRemappingHelper::PreProcessRemapTable(singleKeyToTextRemapCopy);
-
-    for (const auto& it : singleKeyRemapCopy)
-    {
-        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects, it.first, it.second);
-    }
-
-    for (const auto& it : singleKeyToTextRemapCopy)
-    {
-        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects, it.first, it.second);
-    }
 
     // Main Header Apply button
     Button applyButton;
@@ -308,6 +302,27 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     cancelButton.MinWidth(EditorConstants::HeaderButtonWidth);
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
+    auto weakApplyButton = winrt::make_weak(applyButton);
+
+    for (const auto& [originalKey, newRemapKey] : aloneSingleKeyRemapCopy)
+    {
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, weakApplyButton, keyboardRemapControlObjects, originalKey, newRemapKey, RemapCondition::Alone);
+    }
+
+    for (const auto& [originalKey, newRemapKey] : combinationSingleKeyRemapCopy)
+    {
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, weakApplyButton, keyboardRemapControlObjects, originalKey, newRemapKey, RemapCondition::Combination);
+    }
+
+    for (const auto& [originalKey, newRemapKey] : singleKeyRemapCopy)
+    {
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, weakApplyButton, keyboardRemapControlObjects, originalKey, newRemapKey, RemapCondition::Always);
+    }
+
+    for (const auto& [originalKey, newRemapKey] : singleKeyToTextRemapCopy)
+    {
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, weakApplyButton, keyboardRemapControlObjects, originalKey, newRemapKey, RemapCondition::Always);
+    }
 
     auto ApplyRemappings = [&mappingConfiguration, _hWndEditKeyboardWindow]() {
         LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(mappingConfiguration, SingleKeyRemapControl::singleKeyRemapBuffer, true);
@@ -333,8 +348,14 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     Windows::UI::Xaml::Controls::Button addRemapKey;
     addRemapKey.Margin({ 10, 10, 0, 25 });
     addRemapKey.Style(AccentButtonStyle());
-    addRemapKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);
+    addRemapKey.Click([weakApplyButton, &scrollViewer, &keyRemapTable, &keyboardRemapControlObjects](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(
+            keyRemapTable,
+            weakApplyButton,
+            keyboardRemapControlObjects,
+            CommonSharedConstants::VK_NULL,
+            CommonSharedConstants::VK_NULL,
+            RemapCondition::Always);
 
         // Whenever a remap is added move to the bottom of the screen
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
