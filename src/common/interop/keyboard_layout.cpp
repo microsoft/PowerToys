@@ -50,7 +50,7 @@ std::wstring LayoutMap::LayoutMapImpl::GetKeyName(DWORD key)
     return result;
 }
 
-bool mapKeycodeToUnicode(const int vCode, HKL layout, const BYTE* keyState, std::array<wchar_t, 3>& outBuffer)
+bool mapKeyCodeToUnicode(const int vCode, HKL layout, const BYTE* keyState, std::array<wchar_t, 3>& outBuffer)
 {
     // Get the scan code from the virtual key code
     const UINT scanCode = MapVirtualKeyExW(vCode, MAPVK_VK_TO_VSC, layout);
@@ -83,7 +83,7 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     for (int i = 1; i < 256; i++)
     {
         std::array<wchar_t, 3> szBuffer = { 0 };
-        if (mapKeycodeToUnicode(i, layout, btKeys.data(), szBuffer))
+        if (mapKeyCodeToUnicode(i, layout, btKeys.data(), szBuffer))
         {
             keyboardLayoutMap[i] = szBuffer.data();
             if (!isKeyCodeListGenerated)

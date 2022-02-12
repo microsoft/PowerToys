@@ -1,4 +1,5 @@
 #pragma once
+#include "KeyboardManagerConstants.h"
 #include "ModifierKey.h"
 #include <variant>
 
@@ -7,6 +8,19 @@ namespace KeyboardManagerInput
     class InputInterface;
 }
 class LayoutMap;
+
+// The condition to apply a single key remapping.
+// Values are explicitly specified because they should keep in sync with 
+// \settings-ui\Settings.UI.Library\RemapCondition.cs
+enum class RemapCondition
+{
+    // Indicates that the remapping is always effective.
+    Always = 0,
+    // Indicates that the remapping is effective only when the key is pressed and released alone.
+    Alone = 1,
+    // Indicates that the remapping is effective only when the key is pressed together with other keys.
+    Combination = 2,
+};
 
 class Shortcut
 {
@@ -147,7 +161,7 @@ public:
     winrt::hstring ToHstringVK() const;
 
     // Function to return a vector of key codes in the display order
-    std::vector<DWORD> GetKeyCodes();
+    std::vector<DWORD> GetKeyCodes() const;
 
     // Function to set a shortcut from a vector of key codes
     void SetKeyCodes(const std::vector<int32_t>& keys);
@@ -163,6 +177,41 @@ public:
 };
 
 using KeyShortcutUnion = std::variant<DWORD, Shortcut>;
-using RemapBufferItem = std::vector<KeyShortcutUnion>;
-using RemapBufferRow = std::pair<RemapBufferItem, std::wstring>;
-using RemapBuffer = std::vector<RemapBufferRow>;
+
+// Function to return true if the key code is valid. A valid single key has a non-zero key code.
+constexpr bool IsValidSingleKey(DWORD key)
+{
+    return key != KeyboardManagerConstants::VK_NULL;
+}
+
+// Function to return true if the union is a valid single key. A valid single key has a non-zero key code.
+constexpr bool IsValidSingleKey(const KeyShortcutUnion& keyShortcut)
+{
+    return (keyShortcut.index() == 0) && IsValidSingleKey(std::get<DWORD>(keyShortcut));
+}
+
+// Function to return true if the shortcut is valid. A valid shortcut has at least one modifier, as well as an action key
+constexpr bool IsValidShortcut(const Shortcut& shortcut)
+{
+    if (shortcut.actionKey != NULL)
+    {
+        if (shortcut.winKey != ModifierKey::Disabled || shortcut.ctrlKey != ModifierKey::Disabled || shortcut.altKey != ModifierKey::Disabled || shortcut.shiftKey != ModifierKey::Disabled)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Function to return true if the union is a valid shortcut. A valid shortcut has at least one modifier, as well as an action key.
+constexpr bool IsValidShortcut(const KeyShortcutUnion& keyShortcut)
+{
+    return (keyShortcut.index() == 1) && IsValidShortcut(std::get<Shortcut>(keyShortcut));
+}
+
+// Function to return true if the union is a valid single key or a valid shortcut.
+constexpr bool IsValidSingleKeyOrShortcut(const KeyShortcutUnion& keyShortcut)
+{
+    return IsValidSingleKey(keyShortcut) || IsValidShortcut(keyShortcut);
+}

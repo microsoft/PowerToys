@@ -49,20 +49,6 @@ namespace EditorHelpers
         return numberOfSameType > 1;
     }
 
-    // Function to return true if the shortcut is valid. A valid shortcut has atleast one modifier, as well as an action key
-    bool IsValidShortcut(Shortcut shortcut)
-    {
-        if (shortcut.actionKey != NULL)
-        {
-            if (shortcut.winKey != ModifierKey::Disabled || shortcut.ctrlKey != ModifierKey::Disabled || shortcut.altKey != ModifierKey::Disabled || shortcut.shiftKey != ModifierKey::Disabled)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     // Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
     ShortcutErrorType DoShortcutsOverlap(const Shortcut& first, const Shortcut& second)
     {

@@ -19,6 +19,9 @@ namespace KeyboardManagerConstants
     // Name of the property use to store single keyremaps array in case of in process approach.
     inline const std::wstring InProcessRemapKeysSettingName = L"inProcess";
 
+    // Name of the property use to store the remap condition numeric value.
+    constexpr auto RemapConditionSettingName = L"condition"; 
+
     // Name of the property use to store shortcut remaps.
     inline const std::wstring RemapShortcutsSettingName = L"remapShortcuts";
 
@@ -58,4 +61,6 @@ namespace KeyboardManagerConstants
 
     // String constant to represent no activated application in app-specific shortcuts
     inline const std::wstring NoActivatedApp = L"";
+
+    constexpr DWORD VK_NULL = 0;
 }

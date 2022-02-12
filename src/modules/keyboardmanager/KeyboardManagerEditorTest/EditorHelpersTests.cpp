@@ -144,7 +144,7 @@ namespace EditorHelpersTests
             s.SetKey(NULL);
 
             // Act
-            bool result = EditorHelpers::IsValidShortcut(s);
+            bool result = IsValidShortcut(s);
 
             // Assert
             Assert::IsFalse(result);
@@ -158,7 +158,7 @@ namespace EditorHelpersTests
             s.SetKey(0x41);
 
             // Act
-            bool result = EditorHelpers::IsValidShortcut(s);
+            bool result = IsValidShortcut(s);
 
             // Assert
             Assert::IsFalse(result);
@@ -173,7 +173,7 @@ namespace EditorHelpersTests
             s.SetKey(VK_SHIFT);
 
             // Act
-            bool result = EditorHelpers::IsValidShortcut(s);
+            bool result = IsValidShortcut(s);
 
             // Assert
             Assert::IsFalse(result);
@@ -188,7 +188,7 @@ namespace EditorHelpersTests
             s.SetKey(0x41);
 
             // Act
-            bool result = EditorHelpers::IsValidShortcut(s);
+            bool result = IsValidShortcut(s);
 
             // Assert
             Assert::IsTrue(result);

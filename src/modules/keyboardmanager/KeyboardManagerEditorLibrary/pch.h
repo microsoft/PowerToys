@@ -7,6 +7,12 @@
 #include <windows.h>
 #include <shellapi.h>
 
+#include <array>
+#include <functional>
+#include <string>
+#include <variant>
+#include <vector>
+
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 
 #include <winrt/Windows.Foundation.Collections.h>

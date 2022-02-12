@@ -206,6 +206,7 @@ CANRENAME
 CAPTURECHANGED
 cassert
 CAtl
+cbegin
 cch
 CCom
 CContext
@@ -213,6 +214,7 @@ cdecl
 CDeclaration
 CDEF
 cdpx
+cend
 CENTERALIGN
 cguid
 changecursor
@@ -1016,7 +1018,6 @@ keyboardmanagercommon
 KEYBOARDMANAGEREDITOR
 keyboardmanagerstate
 keyboardmanagerui
-keycode
 keydown
 keydropdowncontrol
 keyevent
@@ -1682,6 +1683,7 @@ REINSTALLMODE
 reloadable
 Remapper
 remappings
+REMAPCONDITION
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable

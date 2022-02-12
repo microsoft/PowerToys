@@ -10,6 +10,7 @@
 #include "UIHelpers.h"
 #include "EditorHelpers.h"
 #include "EditorConstants.h"
+#include "RemapBuffer.h"
 
 namespace BufferValidationHelpers
 {
@@ -20,65 +21,74 @@ namespace BufferValidationHelpers
                Helpers::GetCombinedKey(keyCode1) == Helpers::GetCombinedKey(keyCode2);
     }
 
-    // Function to validate and update an element of the key remap buffer when the selection has changed
-    ShortcutErrorType ValidateAndUpdateKeyBufferElement(int rowIndex, int colIndex, int selectedKeyCode, RemapBuffer& remapBuffer)
+    void ValidateRemapBuffer(const RemapBuffer& remapBuffer)
     {
-        ShortcutErrorType errorType = ShortcutErrorType::NoError;
-
-        // Check if the element was not found or the index exceeds the known keys
-        if (selectedKeyCode != -1)
+        const auto n = remapBuffer.size();
+        auto errorTypes = std::vector<ShortcutErrorType>(n);
+        std::fill(errorTypes.begin(), errorTypes.end(), ShortcutErrorType::NoError);
+        for (auto i = 0U; i < n; ++i)
         {
-            // Check if the value being set is the same as the other column
-            if (remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)].index() == 0)
+            const auto& remap = remapBuffer.at(i);
+
+            // Check if the element was not found or the index exceeds the known keys.
+            const auto& originalKey = remap.mapping.at(0);
+            if (!IsValidSingleKey(originalKey))
             {
-                DWORD otherColumnKeyCode = std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]);
-                if (otherColumnKeyCode == selectedKeyCode || IsKeyRemappingToItsCombinedKey(selectedKeyCode, otherColumnKeyCode))
+                errorTypes.at(i) = ShortcutErrorType::InvalidOriginalKey;
+                continue;
+            }
+
+            const auto& remappedKey = remap.mapping.at(1);
+            if (!IsValidSingleKeyOrShortcut(remappedKey))
+            {
+                errorTypes.at(i) = ShortcutErrorType::InvalidRemappedKey;
+                continue;
+            }
+
+            // Check if the value being set is the same as the other column
+            const auto originalKeyCode = std::get<DWORD>(originalKey);
+            if (IsValidSingleKey(remappedKey))
+            {
+                const auto remappedKeyCode = std::get<DWORD>(remappedKey);
+                if (originalKeyCode == remappedKeyCode || IsKeyRemappingToItsCombinedKey(originalKeyCode, remappedKeyCode))
                 {
-                    errorType = ShortcutErrorType::MapToSameKey;
+                    errorTypes.at(i) = ShortcutErrorType::MapToSameKey;
+                    continue;
                 }
             }
 
-            // If one column is shortcut and other is key no warning required
-
-            if (errorType == ShortcutErrorType::NoError && colIndex == 0)
+            // Check if the key is already remapped to something else.
+            // Check with other rows already validated to avoid the result overwritten by validations.
+            for (auto j = 0U; j < i; ++j)
             {
-                // Check if the key is already remapped to something else
-                for (int i = 0; i < remapBuffer.size(); i++)
+                const auto& otherRemap = remapBuffer.at(j);
+                const auto& otherOriginalKey = otherRemap.mapping.at(0);
+                if (IsValidSingleKey(otherOriginalKey))
                 {
-                    if (i != rowIndex)
+                    const auto otherOriginalKeyCode = std::get<DWORD>(otherOriginalKey);
+                    ShortcutErrorType result = EditorHelpers::DoKeysOverlap(otherOriginalKeyCode, originalKeyCode);
+                    if (result != ShortcutErrorType::NoError)
                     {
-                        if (remapBuffer[i].first[colIndex].index() == 0)
+                        const auto condition = remap.condition;
+                        const auto otherCondition = otherRemap.condition;
+                        if (EditorHelpers::DoConditionsOverlap(condition, otherCondition))
                         {
-                            ShortcutErrorType result = EditorHelpers::DoKeysOverlap(std::get<DWORD>(remapBuffer[i].first[colIndex]), selectedKeyCode);
-                            if (result != ShortcutErrorType::NoError)
-                            {
-                                errorType = result;
-                                break;
-                            }
+                            errorTypes.at(i) = result;
+                            errorTypes.at(j) = result;
                         }
-
-                        // If one column is shortcut and other is key no warning required
                     }
                 }
-            }
 
-            // If there is no error, set the buffer
-            if (errorType == ShortcutErrorType::NoError)
-            {
-                remapBuffer[rowIndex].first[colIndex] = (DWORD)selectedKeyCode;
-            }
-            else
-            {
-                remapBuffer[rowIndex].first[colIndex] = (DWORD)0;
+                // If one column is shortcut and other is key no warning required
             }
         }
-        else
+
+        for (auto i = 0U; i < n; ++i)
         {
-            // Reset to null if the key is not found
-            remapBuffer[rowIndex].first[colIndex] = (DWORD)0;
+            const auto errorType = errorTypes.at(i);
+            const auto message = KeyboardManagerEditorStrings::GetErrorMessage(errorType);
+            remapBuffer.at(i).errorHandler(errorType, message.c_str());
         }
-
-        return errorType;
     }
 
     // Function to validate an element of the shortcut remap buffer when the selection has changed
@@ -241,13 +251,15 @@ namespace BufferValidationHelpers
             }
 
             // Check if the value being set is the same as the other column - index of other column does not have to be checked since only one column is hybrid
+            const auto otherColumnIndex = static_cast<size_t>(std::abs(colIndex - 1));
+            const auto& otherColumnKey = remapBuffer.at(rowIndex).mapping.at(otherColumnIndex);
             if (tempShortcut.index() == 1)
             {
                 // If shortcut to shortcut
-                if (remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)].index() == 1)
+                if (otherColumnKey.index() == 1)
                 {
-                    auto& shortcut = std::get<Shortcut>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]);
-                    if (shortcut == std::get<Shortcut>(tempShortcut) && EditorHelpers::IsValidShortcut(shortcut) && EditorHelpers::IsValidShortcut(std::get<Shortcut>(tempShortcut)))
+                    const auto& shortcut = std::get<Shortcut>(otherColumnKey);
+                    if (shortcut == std::get<Shortcut>(tempShortcut) && IsValidShortcut(shortcut) && IsValidShortcut(tempShortcut))
                     {
                         errorType = ShortcutErrorType::MapToSameShortcut;
                     }
@@ -258,9 +270,9 @@ namespace BufferValidationHelpers
             else
             {
                 // If key to key
-                if (remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)].index() == 0)
+                if (otherColumnKey.index() == 0)
                 {
-                    DWORD otherColumnKeyCode = std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]);
+                    const auto otherColumnKeyCode = std::get<DWORD>(otherColumnKey);
                     DWORD shortcutKeyCode = std::get<DWORD>(tempShortcut);
                     if ((otherColumnKeyCode == shortcutKeyCode || IsKeyRemappingToItsCombinedKey(otherColumnKeyCode, shortcutKeyCode)) && otherColumnKeyCode != NULL && shortcutKeyCode != NULL)
                     {
@@ -276,32 +288,26 @@ namespace BufferValidationHelpers
                 // Check if the key is already remapped to something else for the same target app
                 for (int i = 0; i < remapBuffer.size(); i++)
                 {
-                    std::wstring currAppName = remapBuffer[i].second;
+                    std::wstring currAppName = remapBuffer[i].appName;
                     std::transform(currAppName.begin(), currAppName.end(), currAppName.begin(), towlower);
 
                     if (i != rowIndex && currAppName == appName)
                     {
                         ShortcutErrorType result = ShortcutErrorType::NoError;
+                        const auto& originalKey = remapBuffer[i].mapping[colIndex];
                         if (!isHybridControl)
                         {
-                            result = EditorHelpers::DoShortcutsOverlap(std::get<Shortcut>(remapBuffer[i].first[colIndex]), std::get<Shortcut>(tempShortcut));
+                            result = EditorHelpers::DoShortcutsOverlap(std::get<Shortcut>(originalKey), std::get<Shortcut>(tempShortcut));
                         }
                         else
                         {
-                            if (tempShortcut.index() == 0 && remapBuffer[i].first[colIndex].index() == 0)
+                            if (IsValidSingleKey(tempShortcut) && IsValidSingleKey(originalKey))
                             {
-                                if (std::get<DWORD>(tempShortcut) != NULL && std::get<DWORD>(remapBuffer[i].first[colIndex]) != NULL)
-                                {
-                                    result = EditorHelpers::DoKeysOverlap(std::get<DWORD>(remapBuffer[i].first[colIndex]), std::get<DWORD>(tempShortcut));
-                                }
+                                result = EditorHelpers::DoKeysOverlap(std::get<DWORD>(originalKey), std::get<DWORD>(tempShortcut));
                             }
-                            else if (tempShortcut.index() == 1 && remapBuffer[i].first[colIndex].index() == 1)
+                            else if (IsValidShortcut(tempShortcut) && IsValidShortcut(originalKey))
                             {
-                                auto& shortcut = std::get<Shortcut>(remapBuffer[i].first[colIndex]);
-                                if (EditorHelpers::IsValidShortcut(std::get<Shortcut>(tempShortcut)) && EditorHelpers::IsValidShortcut(shortcut))
-                                {
-                                    result = EditorHelpers::DoShortcutsOverlap(std::get<Shortcut>(remapBuffer[i].first[colIndex]), std::get<Shortcut>(tempShortcut));
-                                }
+                                result = EditorHelpers::DoShortcutsOverlap(std::get<Shortcut>(originalKey), std::get<Shortcut>(tempShortcut));
                             }
                             // Other scenarios not possible since key to shortcut is with key to key, and shortcut to key is with shortcut to shortcut
                         }

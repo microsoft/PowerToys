@@ -6,12 +6,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
         <local:VisibleIfNotEmpty x:Key="visibleIfNotEmptyConverter" />
+        <converters:EnumToStringConverter x:Key="enumToStringConverter" />
       
         <Style TargetType="ListViewItem" x:Name="KeysListViewContainerStyle">
             <Setter Property="IsTabStop" Value="False"/>
@@ -43,6 +45,23 @@
                 Height="56">
               
         </DataTemplate>-->
+
+        <ControlTemplate x:Key="RemapAttributeControlTemplate" TargetType="ContentControl">
+            <Border VerticalAlignment="Center"
+                    Padding="12,4,12,6"
+                    Margin="16,0,0,0"
+                    CornerRadius="12">
+                <Border.Background>
+                    <SolidColorBrush Color="{ThemeResource SystemAccentColorLight3}"
+                                     Opacity="0.3"/>
+                </Border.Background>
+                <ContentControl Content="{TemplateBinding Content}"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource SystemAccentColorDark1}" />
+            </Border>
+        </ControlTemplate>
+
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="KeyboardManager"
@@ -117,6 +136,9 @@
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                     </ItemsControl>
+
+                                    <ContentControl Template="{StaticResource RemapAttributeControlTemplate}"
+                                                    Content="{x:Bind Condition, Converter={StaticResource enumToStringConverter}}" />
                                 </StackPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>
@@ -176,21 +198,8 @@
                                         </ItemsControl.ItemsPanel>
                                     </ItemsControl>
 
-                                    <StackPanel Orientation="Horizontal">
-                                        <Border VerticalAlignment="Center"
-                                                Padding="12,4,12,6"
-                                                Margin="16,0,0,0"
-                                                CornerRadius="12">
-                                            <Border.Background>
-                                                <SolidColorBrush Color="{ThemeResource SystemAccentColorLight3}"
-                                                                 Opacity="0.3"/>
-                                            </Border.Background>
-                                            <TextBlock Text="{x:Bind TargetApp}"
-                                                       Foreground="{ThemeResource SystemAccentColorDark1}"
-                                                       FontWeight="SemiBold"
-                                                       FontSize="12" />
-                                        </Border>
-                                    </StackPanel>
+                                    <ContentControl Template="{StaticResource RemapAttributeControlTemplate}"
+                                                    Content="{x:Bind TargetApp}" />
                                 </StackPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>

@@ -17,11 +17,12 @@ void MappingConfiguration::ClearOSLevelShortcuts()
     osLevelShortcutReMapSortedKeys.clear();
 }
 
-
 // Function to clear the Keys remapping table.
 void MappingConfiguration::ClearSingleKeyRemaps()
 {
-    singleKeyReMap.clear();
+    alwaysSingleKeyRemapTable.clear();
+    aloneSingleKeyRemapTable.clear();
+    combinationSingleKeyRemapTable.clear();
 }
 
 // Function to clear the App specific shortcut remapping table
@@ -48,18 +49,33 @@ bool MappingConfiguration::AddOSLevelShortcut(const Shortcut& originalSC, const 
     return true;
 }
 
-// Function to add a new single key to key/shortcut remapping
-bool MappingConfiguration::AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutUnion& newRemapKey)
+bool MappingConfiguration::AddSingleKeyRemap(SingleKeyRemapTable& table, DWORD originalKey, const KeyShortcutUnion& newRemapKey)
 {
     // Check if the key is already remapped
-    auto it = singleKeyReMap.find(originalKey);
-    if (it != singleKeyReMap.end())
+    auto it = table.find(originalKey);
+    if (it != table.end())
     {
         return false;
     }
 
-    singleKeyReMap[originalKey] = newRemapKey;
+    table[originalKey] = newRemapKey;
     return true;
+}
+
+// Function to add a new single key to key/shortcut remapping
+bool MappingConfiguration::AddSingleKeyRemap(DWORD originalKey, const KeyShortcutUnion& newRemapKey, RemapCondition condition)
+{
+    switch (condition)
+    {
+    case RemapCondition::Combination:
+        return AddSingleKeyRemap(combinationSingleKeyRemapTable, originalKey, newRemapKey);
+    case RemapCondition::Alone:
+        return AddSingleKeyRemap(aloneSingleKeyRemapTable, originalKey, newRemapKey);
+    case RemapCondition::Always:
+        return AddSingleKeyRemap(alwaysSingleKeyRemapTable, originalKey, newRemapKey);
+    }
+
+    return false;
 }
 
 // Function to add a new App specific shortcut remapping
@@ -92,6 +108,28 @@ bool MappingConfiguration::AddAppSpecificShortcut(const std::wstring& app, const
     return true;
 }
 
+inline RemapCondition LoadRemapCondition(const json::JsonObject jsonObject)
+{
+    if (jsonObject.HasKey(KeyboardManagerConstants::RemapConditionSettingName))
+    {
+        const auto conditionValue = jsonObject.GetNamedNumber(KeyboardManagerConstants::RemapConditionSettingName);
+        return static_cast<RemapCondition>(static_cast<int>(std::round(conditionValue)));
+    }
+
+    return RemapCondition::Always;
+}
+
+inline KeyShortcutUnion CreateSingleKeyOrShortcut(std::wstring key)
+{
+    if (key.find(L";") != std::string::npos)
+    {
+        return Shortcut{ key.c_str() };
+    }
+    else
+    {
+        return static_cast<DWORD>(std::stoul(key.c_str()));
+    }
+}
 
 bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
 {
@@ -104,24 +142,21 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
 
         if (remapKeysData)
         {
-            auto inProcessRemapKeys = remapKeysData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
-            for (const auto& it : inProcessRemapKeys)
+            const auto remapArray = remapKeysData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+            for (const auto& remap : remapArray)
             {
                 try
                 {
-                    auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
-                    auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
-
-                    // If remapped to a shortcut
-                    if (std::wstring(newRemapKey).find(L";") != std::string::npos)
+                    const auto jsonObject = remap.GetObjectW();
+                    const auto originalKey = jsonObject.GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                    const auto newRemapKey = jsonObject.GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+                    const auto condition = LoadRemapCondition(jsonObject);
+                    const auto originalKeyCode = static_cast<DWORD>(std::stoul(originalKey.c_str()));
+                    const auto newRemapKeyUnion = CreateSingleKeyOrShortcut(newRemapKey.c_str());
+                    if (!AddSingleKeyRemap(originalKeyCode, newRemapKeyUnion, condition))
                     {
-                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), Shortcut(newRemapKey.c_str()));
-                    }
-
-                    // If remapped to a key
-                    else
-                    {
-                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                        Logger::warn(L"Failed to remap '%s' to '%s' with the condition '%f'.",
+                            originalKey.c_str(), newRemapKey.c_str(), static_cast<int>(condition));
                     }
                 }
                 catch (...)
@@ -283,6 +318,39 @@ bool MappingConfiguration::LoadSettings()
     return false;
 }
 
+inline json::JsonValue CreateStringJsonValue(DWORD value)
+{
+    return json::value(winrt::to_hstring(static_cast<unsigned int>(value)));
+}
+
+static void AppendSingleKeyRemaps(json::JsonArray& remapArray, const SingleKeyRemapTable& remaps, RemapCondition condition)
+{
+    for (const auto& [originalKey, newRemapKey] : remaps)
+    {
+        json::JsonObject keys;
+        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, CreateStringJsonValue(originalKey));
+
+        // For key to key remapping
+        if (newRemapKey.index() == 0)
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, CreateStringJsonValue(std::get<DWORD>(newRemapKey)));
+        }
+
+        // For key to shortcut remapping
+        else
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(newRemapKey).ToHstringVK()));
+        }
+
+        if (condition != RemapCondition::Always)
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::RemapConditionSettingName, json::value(static_cast<int>(condition)));
+        }
+
+        remapArray.Append(keys);
+    }
+}
+
 // Save the updated configuration.
 bool MappingConfiguration::SaveSettingsToFile()
 {
@@ -291,27 +359,11 @@ bool MappingConfiguration::SaveSettingsToFile()
     json::JsonObject remapShortcuts;
     json::JsonObject remapKeys;
     json::JsonArray inProcessRemapKeysArray;
+    AppendSingleKeyRemaps(inProcessRemapKeysArray, alwaysSingleKeyRemapTable, RemapCondition::Always);
+    AppendSingleKeyRemaps(inProcessRemapKeysArray, aloneSingleKeyRemapTable, RemapCondition::Alone);
+    AppendSingleKeyRemaps(inProcessRemapKeysArray, combinationSingleKeyRemapTable, RemapCondition::Combination);
     json::JsonArray appSpecificRemapShortcutsArray;
     json::JsonArray globalRemapShortcutsArray;
-    for (const auto& it : singleKeyReMap)
-    {
-        json::JsonObject keys;
-        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.first)));
-
-        // For key to key remapping
-        if (it.second.index() == 0)
-        {
-            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(it.second))));
-        }
-
-        // For key to shortcut remapping
-        else
-        {
-            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(it.second).ToHstringVK()));
-        }
-
-        inProcessRemapKeysArray.Append(keys);
-    }
 
     for (const auto& it : osLevelShortcutReMap)
     {
@@ -321,7 +373,7 @@ bool MappingConfiguration::SaveSettingsToFile()
         // For shortcut to key remapping
         if (it.second.targetShortcut.index() == 0)
         {
-            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(it.second.targetShortcut))));
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, CreateStringJsonValue(std::get<DWORD>(it.second.targetShortcut)));
         }
 
         // For shortcut to shortcut remapping
@@ -344,7 +396,7 @@ bool MappingConfiguration::SaveSettingsToFile()
             // For shortcut to key remapping
             if (itKeys.second.targetShortcut.index() == 0)
             {
-                keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(itKeys.second.targetShortcut))));
+                keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, CreateStringJsonValue(std::get<DWORD>(itKeys.second.targetShortcut)));
             }
 
             // For shortcut to shortcut remapping

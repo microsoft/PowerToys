@@ -2152,4 +2152,13 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
     <value>Enable round corners</value>
   </data>
+  <data name="RemapCondition_Alone" xml:space="preserve">
+    <value>Alone</value>
+  </data>
+  <data name="RemapCondition_Always" xml:space="preserve">
+    <value>Always</value>
+  </data>
+  <data name="RemapCondition_Combination" xml:space="preserve">
+    <value>Combination</value>
+  </data>
 </root>

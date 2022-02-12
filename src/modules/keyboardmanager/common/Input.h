@@ -1,5 +1,6 @@
 #pragma once
 
+#include <common/utils/winapi_error.h>
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>
 
@@ -10,9 +11,13 @@ namespace KeyboardManagerInput
     {
     public:
         // Function to simulate input
-        UINT SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
+        void SendVirtualInput(std::vector<INPUT>& inputs)
         {
-            return SendInput(cInputs, pInputs, cbSize);
+            const auto size = static_cast<UINT>(inputs.size());
+            if (SendInput(size, inputs.data(), sizeof(INPUT)) != size)
+            {
+                Logger::error(L"Failed to send input. {0}", get_last_error_or_default(GetLastError()));
+            }
         }
 
         // Function to get the state of a particular key

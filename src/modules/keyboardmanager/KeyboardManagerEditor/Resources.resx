@@ -305,4 +305,16 @@
     <value>Disable can not be an action or a modifier key</value>
     <comment>Key on a keyboard</comment>
   </data>
+  <data name="RemapCondition_Always" xml:space="preserve">
+    <value>Always</value>
+    <comment>A label of a combo box item for a universal remap condition where the remapping is always effective.</comment>
+  </data>
+  <data name="RemapCondition_Alone" xml:space="preserve">
+    <value>Alone</value>
+    <comment>A label of a combo box item for an alone remap condition where the remapping is effective when the key is pressed and released alone.</comment>
+  </data>
+  <data name="RemapCondition_Combination" xml:space="preserve">
+    <value>Combination</value>
+    <comment>A label of a combo box item for a combination remap condition where the remapping is effective when the key is pressed and released together with other keys.</comment>
+  </data>
 </root>
