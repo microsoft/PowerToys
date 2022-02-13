@@ -24,6 +24,11 @@ namespace Wox.Plugin.Common.VirtualDesktop
     public class VirtualDesktopHelper
     {
         /// <summary>
+        /// Value indicating if Virtual Desktop Manager is successfull initialized
+        /// </summary>
+        private readonly bool _vdmInitSuccessfully;
+
+        /// <summary>
         /// Internal settings to enable automatic update of desktop list.
         /// This will be off by default to avoid to many registry queries.
         /// </summary>
@@ -52,6 +57,9 @@ namespace Wox.Plugin.Common.VirtualDesktop
         public VirtualDesktopHelper(bool desktopListUpdate = false)
         {
             // ToDo: Error-Handling if VDs are diabled and instance can't be creted.
+            // ToDo: Set private var, Log com exception, handle init errors in other pblic methods
+            // ToDo: Exc on init: "Init vdh: Failed to create vdm instance."
+            // ToDo: Exc in other methods: "XYZ: Operation failed with HResult {}. This can happen if the vdm instance isn't available.
             virtualDesktopManager = (IVirtualDesktopManager)new CVirtualDesktopManager();
 
             _desktopListAutoUpdate = desktopListUpdate;
@@ -78,21 +86,36 @@ namespace Wox.Plugin.Common.VirtualDesktop
             // Each guid has 16 bytes
             RegistryKey allDeskSubKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops", false);
             byte[] allDeskValue = (byte[])allDeskSubKey.GetValue("VirtualDesktopIDs");
-
-            int numberOfDesktops = allDeskValue.Length / 16;
             availableDesktops.Clear();
 
-            for (int i = 0; i < numberOfDesktops; i++)
+            if (allDeskValue != null)
             {
-                byte[] guidArray = new byte[16];
-                Array.ConstrainedCopy(allDeskValue, i * 16, guidArray, 0, 16);
-                availableDesktops.Add(new Guid(guidArray));
+                int numberOfDesktops = allDeskValue.Length / 16;
+
+                for (int i = 0; i < numberOfDesktops; i++)
+                {
+                    byte[] guidArray = new byte[16];
+                    Array.ConstrainedCopy(allDeskValue, i * 16, guidArray, 0, 16);
+                    availableDesktops.Add(new Guid(guidArray));
+                }
+            }
+            else
+            {
+                Log.Error("Failed to read the list of existing desktops form registry.", typeof(VirtualDesktopHelper));
             }
 
             // Guid for current desktop
             RegistryKey currentDeskSubKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\1\\VirtualDesktops", false);
             var currentDeskValue = currentDeskSubKey.GetValue("CurrentVirtualDesktop");
-            currentDesktop = (currentDeskValue != null) ? new Guid((byte[])currentDeskValue) : Guid.Empty;
+            if (currentDeskValue != null)
+            {
+                currentDesktop = new Guid((byte[])currentDeskValue);
+            }
+            else
+            {
+                Log.Error("Failed to read the id for the current desktop form registry.", typeof(VirtualDesktopHelper));
+                currentDesktop = Guid.Empty;
+            }
         }
 
         /// <summary>
@@ -300,7 +323,7 @@ namespace Wox.Plugin.Common.VirtualDesktop
             }
             else
             {
-                Log.Error("The window is DateOnly the last desktop.", typeof(VirtualDesktopHelper));
+                Log.Error("The window is on the last desktop.", typeof(VirtualDesktopHelper));
                 return false;
             }
         }
@@ -327,7 +350,7 @@ namespace Wox.Plugin.Common.VirtualDesktop
             }
             else
             {
-                Log.Error("The window is DateOnly the last desktop.", typeof(VirtualDesktopHelper));
+                Log.Error("The window is on the first desktop.", typeof(VirtualDesktopHelper));
                 return false;
             }
         }
