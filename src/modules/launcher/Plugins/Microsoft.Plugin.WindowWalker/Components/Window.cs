@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+using Wox.Plugin.Common.VirtualDesktop;
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
 
@@ -19,6 +20,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// </summary>
     public class Window
     {
+        private static VirtualDesktopHelper vdhInstance = new VirtualDesktopHelper(false);
+
         /// <summary>
         /// The handle to the window
         /// </summary>

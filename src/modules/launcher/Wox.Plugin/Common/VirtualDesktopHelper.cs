@@ -3,20 +3,42 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
+using Wox.Plugin.Common.Win32;
+using Wox.Plugin.Logger;
 
-namespace Microsoft.Plugin.Common.VirtualDesktop
+namespace Wox.Plugin.Common.VirtualDesktop
 {
     /// <summary>
     /// Helper class to work with Virtual Desktops.
-    /// This class grants access to public documented interfaces of Virtual Desktop Manager.
+    /// This helper uses only public available and documented COM-Interfaces or informations from registry.
     /// </summary>
-    /// <remarks> We are only allowed to use public documented com interfaces.</remarks>
+    /// <remarks>
+    /// To use this hleper you have to create an instance of it and acces the method via the helper instance.
+    /// We are only allowed to use public documented com interfaces.
+    /// </remarks>
     /// <seealso href="https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ivirtualdesktopmanager">Documentation of IVirtualDesktopManager interface</seealso>
     /// <seealso href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10">CSharp example code for IVirtualDesktopManager</seealso>
     public class VirtualDesktopHelper
     {
+        /// <summary>
+        /// Internal settings to enable automatic update of desktop list.
+        /// This will be off by default to avoid to many registry queries.
+        /// </summary>
+        private readonly bool _desktopListAutoUpdate;
+
+        /// <summary>
+        /// List of all available Virtual Desktop in their real order
+        /// </summary>
+        private List<Guid> availableDesktops;
+
+        /// <summary>
+        /// Id of the current visible Desktop.
+        /// </summary>
+        private Guid currentDesktop;
+
         /// <summary>
         /// Instance of "Virtual Desktop Manager"
         /// </summary>
@@ -25,10 +47,14 @@ namespace Microsoft.Plugin.Common.VirtualDesktop
         /// <summary>
         /// Initializes a new instance of the <see cref="VirtualDesktopHelper"/> class.
         /// </summary>
-        public VirtualDesktopHelper()
+        /// <param name="desktopListUpdate">Setting to configure if the list of available desktops should update automatically or only when calling <see cref="UpdateDesktopList"/>. Per default this is set to manual update (false) to have less registry queries.</param>
+        public VirtualDesktopHelper(bool desktopListUpdate = false)
         {
             // ToDo: Error-Handling if VDs are diabled and instance can't be creted.
             virtualDesktopManager = (IVirtualDesktopManager)new CVirtualDesktopManager();
+
+            _desktopListAutoUpdate = desktopListUpdate;
+            UpdateDesktopList();
         }
 
         /// <summary>
@@ -37,6 +63,34 @@ namespace Microsoft.Plugin.Common.VirtualDesktop
         ~VirtualDesktopHelper()
         {
             virtualDesktopManager = null;
+            availableDesktops = null;
+            currentDesktop = Guid.Empty;
+        }
+
+        /// <summary>
+        /// Method to update the list of Virtual Desktops from Registry
+        /// </summary>
+        public void UpdateDesktopList()
+        {
+            // List of all desktops
+            // Each guid has 16 bytes
+            RegistryKey allDeskSubKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops", false);
+            byte[] allDeskValue = (byte[])allDeskSubKey.GetValue("VirtualDesktopIDs");
+
+            int numberOfDesktops = allDeskValue.Length / 16;
+            availableDesktops.Clear();
+
+            for (int i = 0; i < numberOfDesktops; i++)
+            {
+                byte[] guidArray = new byte[16];
+                Array.ConstrainedCopy(allDeskValue, i * 16, guidArray, 0, 16);
+                availableDesktops.Add(new Guid(guidArray));
+            }
+
+            // Guid for current desktop
+            RegistryKey currentDeskSubKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\1\\VirtualDesktops", false);
+            var currentDeskValue = currentDeskSubKey.GetValue("CurrentVirtualDesktop");
+            currentDesktop = (currentDeskValue != null) ? new Guid((byte[])currentDeskValue) : Guid.Empty;
         }
 
         /// <summary>
@@ -48,7 +102,7 @@ namespace Microsoft.Plugin.Common.VirtualDesktop
         {
             _ = virtualDesktopManager.IsWindowOnCurrentVirtualDesktop(hWindow, out int isCurrentDesktop);
             int hResult = GetDesktopIdFromHwnd(hWindow, out Guid windowDesktopId);
-            Guid currentDesktopId = GetCurrentDesktopIdFromRegistry();
+            Guid currentDesktopId = currentDesktop;
 
             if (hResult != 0)
             {
@@ -85,31 +139,21 @@ namespace Microsoft.Plugin.Common.VirtualDesktop
         }
 
         /// <summary>
-        /// Returns a value indicating if the window is cloaked by VDM.
+        /// Returns a value indicating if the window is cloaked by VirtualDesktopManager.
+        /// (A cloaked window is not visible to the user. But the window is still composed by DWM.)
         /// </summary>
         /// <param name="hWindow">Handle of the window.</param>
-        /// <returns>True if the window is cloaked by VDM because it is moved to an other desktop.</returns>
+        /// <returns>A value indicating if the window is cloaked by VDM, because it is moved to an other desktop.</returns>
         public bool IsWindowCloakedByVdm(IntPtr hWindow)
         {
-            _ = NativeMethods.DwmGetWindowAttribute(hWindow, (int)NativeMethods.DwmWindowAttribute.Cloaked, out int dwmCloakedState, sizeof(uint));
-
-            // If a window is hidden because it is moved to an other desktop, then DWM returns type "CloakedShell".
-            return GetDesktopAssignmentStateFromHwnd(hWindow) == DesktopAssignmentType.OtherDesktop && dwmCloakedState == (int)NativeMethods.DwmWindowCloakState.CloakedShell;
+            // If a window is hidden because it is moved to an other desktop, then DWM returns type "CloakedShell". If DWM returns an other type the window is not cloaked by shell or VirtualDesktopManager.
+            _ = NativeMethods.DwmGetWindowAttribute(hWindow, (int)DwmWindowAttributes.Cloaked, out int dwmCloakedState, sizeof(uint));
+            return GetDesktopAssignmentStateFromHwnd(hWindow) == DesktopAssignmentType.OtherDesktop && dwmCloakedState == (int)DwmWindowCloakStates.CloakedShell;
         }
 
-        /// <summary>
-        /// Reads the guid of the current desktop from the registry.
-        /// </summary>
-        /// <returns>The guid of the current desktop from regedit as string. An empty guid is return on failure.</returns>
-        private static Guid GetCurrentDesktopIdFromRegistry()
+        public List<Guid> GetListOfAllDesktops()
         {
-            string regKeyPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\1\\VirtualDesktops";
-            string regValueName = "CurrentVirtualDesktop";
-
-            RegistryKey regSubKey = Registry.CurrentUser.OpenSubKey(regKeyPath, false);
-            var regValueData = regSubKey.GetValue(regValueName);
-
-            return (regValueData != null) ? new Guid((byte[])regValueData) : Guid.Empty;
+            return availableDesktops;
         }
 
         public bool GetAllDesktopsId(out Guid deskGuid)
@@ -126,6 +170,7 @@ namespace Microsoft.Plugin.Common.VirtualDesktop
 
         /// <summary>
         /// Virtual Desktop Manager class
+        /// Code used from <see href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10"./>
         /// </summary>
         [ComImport]
         [Guid("aa509086-5ca9-4c25-8f95-589d3c07b48a")]
@@ -135,6 +180,7 @@ namespace Microsoft.Plugin.Common.VirtualDesktop
 
         /// <summary>
         /// Interface for accessing Virtual Desktop Manager.
+        /// Code used from <see href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10"./>
         /// </summary>
         [ComImport]
         [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -142,44 +188,26 @@ namespace Microsoft.Plugin.Common.VirtualDesktop
         [System.Security.SuppressUnmanagedCodeSecurity]
         private interface IVirtualDesktopManager
         {
-            /// <summary>
-            /// Checks if the window is shown on the current desktop.
-            /// </summary>
-            /// <param name="hWindow">Handle of the top level window.</param>
-            /// <param name="onCurrentDesktop">Vlaue indicating whether the window is on the current desktop.</param>
-            /// <returns>Hresult of the method.</returns>
             [PreserveSig]
-            int IsWindowOnCurrentVirtualDesktop([In] IntPtr hWindow, [Out] out int onCurrentDesktop);
+            int IsWindowOnCurrentVirtualDesktop([In] IntPtr hTopLevelWindow, [Out] out int onCurrentDesktop);
 
-            /// <summary>
-            /// Gets the desktop guid where the window is shown.
-            /// </summary>
-            /// <param name="hWindow">Handle of the top level window.</param>
-            /// <param name="desktop">Guid of the assigned desktop.</param>
-            /// <returns>Hresult of the method.</returns>
             [PreserveSig]
-            int GetWindowDesktopId([In] IntPtr hWindow, [Out] out Guid desktop);
+            int GetWindowDesktopId([In] IntPtr hTopLevelWindow, [Out] out Guid desktop);
 
-            /// <summary>
-            /// Move the window to a specific desktop.
-            /// </summary>
-            /// <param name="hWindow">Handle of the top level window.</param>
-            /// <param name="desktop">Guid of the desktop where the window should be moved to.</param>
-            /// <returns>Hresult of the method.</returns>
             [PreserveSig]
-            int MoveWindowToDesktop([In] IntPtr hWindow, [MarshalAs(UnmanagedType.LPStruct)] [In]Guid desktop);
+            int MoveWindowToDesktop([In] IntPtr hTopLevelWindow, [MarshalAs(UnmanagedType.LPStruct)] [In]Guid desktop);
         }
     }
-	
-	        /// <summary>
-        /// Enum to show in which way a window is assigned to a desktop
-        /// </summary>
-        public enum DesktopAssignmentType
-        {
-            Unknown = -1,
-            NotAssigned = 0,
-            AllDesktops = 1,
-            CurrentDesktop = 2,
-            OtherDesktop = 3,
-        }
+
+    /// <summary>
+    /// Enum to show in which way a window is assigned to a desktop
+    /// </summary>
+    public enum DesktopAssignmentType
+    {
+        Unknown = -1,
+        NotAssigned = 0,
+        AllDesktops = 1,
+        CurrentDesktop = 2,
+        OtherDesktop = 3,
+    }
 }
