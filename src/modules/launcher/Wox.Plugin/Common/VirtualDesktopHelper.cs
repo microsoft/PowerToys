@@ -269,10 +269,18 @@ namespace Wox.Plugin.Common.VirtualDesktop
         /// </summary>
         /// <param name="hWindow">Handle of the top level window.</param>
         /// <param name="desktopId">Guid of the target desktop.</param>
-        /// <returns>HResult of non-zero on faile or zero on success.</returns>
-        public int MoveWindowToDesktop(IntPtr hWindow, in Guid desktopId)
+        /// <returns>True on success and false on failure.</returns>
+        public bool MoveWindowToDesktop(IntPtr hWindow, in Guid desktopId)
         {
-            return virtualDesktopManager.MoveWindowToDesktop(hWindow, desktopId);
+            int hr = virtualDesktopManager.MoveWindowToDesktop(hWindow, desktopId);
+
+            if (hr != (int)HRESULT.S_OK)
+            {
+                Log.Exception($"Failed to move the window ({hWindow}) to an other desktop ({desktopId}).", Marshal.GetExceptionForHR(hr), typeof(VirtualDesktopHelper));
+                return false;
+            }
+
+            return true;
         }
 
         public bool MoveWindowOneDesktopLeft(IntPtr hWindow)
@@ -288,16 +296,11 @@ namespace Wox.Plugin.Common.VirtualDesktop
             if (currentWindowDesktopNumber > 1)
             {
                 Guid newDesktop = availableDesktops[currentWindowDesktopNumber - 1];
-                int hr = MoveWindowToDesktop(hWindow, newDesktop);
-                if (hr != (int)HRESULT.S_OK)
-                {
-                    Log.Exception("Failed to move the window to an other desktop.", Marshal.GetExceptionForHR(hr), typeof(VirtualDesktopHelper));
-                }
-
-                return true;
+                return MoveWindowToDesktop(hWindow, newDesktop);
             }
             else
             {
+                Log.Error("The window is DateOnly the last desktop.", typeof(VirtualDesktopHelper));
                 return false;
             }
         }
@@ -320,16 +323,11 @@ namespace Wox.Plugin.Common.VirtualDesktop
             if (currentWindowDesktopNumber < GetDesktopCount())
             {
                 Guid newDesktop = availableDesktops[currentWindowDesktopNumber + 1];
-                int hr = MoveWindowToDesktop(hWindow, newDesktop);
-                if (hr != (int)HRESULT.S_OK)
-                {
-                    Log.Exception("Failed to move the window to an other desktop.", Marshal.GetExceptionForHR(hr), typeof(VirtualDesktopHelper));
-                }
-
-                return true;
+                return MoveWindowToDesktop(hWindow, newDesktop);
             }
             else
             {
+                Log.Error("The window is DateOnly the last desktop.", typeof(VirtualDesktopHelper));
                 return false;
             }
         }
