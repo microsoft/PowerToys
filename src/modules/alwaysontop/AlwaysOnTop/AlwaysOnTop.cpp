@@ -2,6 +2,7 @@
 #include "AlwaysOnTop.h"
 
 #include <common/display/dpi_aware.h>
+#include <common/utils/game_mode.h>
 #include <common/utils/excluded_apps.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
