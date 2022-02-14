@@ -137,7 +137,7 @@ jobs:
     displayName: Build BugReportTool
     inputs:
       solution: '**/tools/BugReportTool/BugReportTool.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
