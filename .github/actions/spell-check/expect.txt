@@ -61,6 +61,7 @@ APeriod
 api
 APIENTRY
 APIIs
+Apm
 APPBARDATA
 appcontainer
 appdata
@@ -71,6 +72,7 @@ APPLASTZONE
 applets
 Applicationcan
 applicationframehost
+applog
 appmanifest
 appref
 apps
@@ -277,6 +279,7 @@ cnt
 coclass
 codebase
 codecvt
+CODENAME
 codeofconduct
 codereview
 Codespaces
@@ -393,7 +396,7 @@ davidegiacometti
 Dayof
 DBCD
 DBDA
-dbg
+Dbg
 Dbghelp
 DBLCLKS
 DBLEPSILON
@@ -734,6 +737,8 @@ hhk
 HHmmss
 HHOOK
 hhx
+Hiber
+Hiberboot
 HICON
 HIDEWINDOW
 highlighter
@@ -1232,6 +1237,7 @@ mirophone
 mjpg
 mkdir
 mlcfg
+MMDDYYYY
 mmdeviceapi
 mmi
 mmsys
