@@ -5,70 +5,74 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Search.Interop
 {
-    [Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF50")]
     [ComConversionLoss]
-    [InterfaceType(1)]
+    [Guid("AAB49DD5-AD0B-40AE-B654-AE8976BF6BD2")]
+    [ClassInterface((short)0)]
     [ComImport]
-    public interface ISearchCatalogManager
+    public class CSearchCatalogManagerClass : ISearchCatalogManager, CSearchCatalogManager
     {
+
+
         [DispId(1610678272)]
-        string Name { [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)][return: MarshalAs(UnmanagedType.LPWStr)] get; }
+        public virtual extern string Name { [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)][return: MarshalAs(UnmanagedType.LPWStr)] get; }
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        IntPtr GetParameter([MarshalAs(UnmanagedType.LPWStr), In] string pszName);
+        public virtual extern IntPtr GetParameter([MarshalAs(UnmanagedType.LPWStr), In] string pszName);
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void SetParameter([MarshalAs(UnmanagedType.LPWStr), In] string pszName, [In] ref tag_inner_PROPVARIANT pValue);
+        public virtual extern void SetParameter([MarshalAs(UnmanagedType.LPWStr), In] string pszName, [In] ref tag_inner_PROPVARIANT pValue);
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void GetCatalogStatus(out _CatalogStatus pStatus, out _CatalogPausedReason pPausedReason);
+        public virtual extern void GetCatalogStatus(
+          out _CatalogStatus pStatus,
+          out _CatalogPausedReason pPausedReason);
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void Reset();
+        public virtual extern void Reset();
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void Reindex();
+        public virtual extern void Reindex();
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void ReindexMatchingURLs([MarshalAs(UnmanagedType.LPWStr), In] string pszPattern);
+        public virtual extern void ReindexMatchingURLs([MarshalAs(UnmanagedType.LPWStr), In] string pszPattern);
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void ReindexSearchRoot([MarshalAs(UnmanagedType.LPWStr), In] string pszRootURL);
+        public virtual extern void ReindexSearchRoot([MarshalAs(UnmanagedType.LPWStr), In] string pszRootURL);
 
         [DispId(1610678280)]
-        uint ConnectTimeout { [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)][param: In] set; [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)] get; }
+        public virtual extern uint ConnectTimeout { [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)][param: In] set; [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)] get; }
 
         [DispId(1610678282)]
-        uint DataTimeout { [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)][param: In] set; [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)] get; }
+        public virtual extern uint DataTimeout { [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)][param: In] set; [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)] get; }
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        int NumberOfItems();
+        public virtual extern int NumberOfItems();
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void NumberOfItemsToIndex(
+        public virtual extern void NumberOfItemsToIndex(
           out int plIncrementalCount,
           out int plNotificationQueue,
           out int plHighPriorityQueue);
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
         [return: MarshalAs(UnmanagedType.LPWStr)]
-        string URLBeingIndexed();
+        public virtual extern string URLBeingIndexed();
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint GetURLIndexingState([MarshalAs(UnmanagedType.LPWStr), In] string pszUrl);
+        public virtual extern uint GetURLIndexingState([MarshalAs(UnmanagedType.LPWStr), In] string pszUrl);
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
         [return: MarshalAs(UnmanagedType.Interface)]
-        CSearchPersistentItemsChangedSink GetPersistentItemsChangedSink();
+        public virtual extern CSearchPersistentItemsChangedSink GetPersistentItemsChangedSink();
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void RegisterViewForNotification(
+        public virtual extern void RegisterViewForNotification(
           [MarshalAs(UnmanagedType.LPWStr), In] string pszView,
           [MarshalAs(UnmanagedType.Interface), In] ISearchViewChangedSink pViewChangedSink,
           out uint pdwCookie);
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void GetItemsChangedSink(
+        public virtual extern void GetItemsChangedSink(
           [MarshalAs(UnmanagedType.Interface), In] ISearchNotifyInlineSite pISearchNotifyInlineSite,
           [In] ref Guid riid,
           out IntPtr ppv,
@@ -77,24 +81,24 @@ namespace Microsoft.Search.Interop
           out uint pdwLastCheckPointNumber);
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void UnregisterViewForNotification([In] uint dwCookie);
+        public virtual extern void UnregisterViewForNotification([In] uint dwCookie);
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void SetExtensionClusion([MarshalAs(UnmanagedType.LPWStr), In] string pszExtension, [In] int fExclude);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [return: MarshalAs(UnmanagedType.Interface)]
-        IEnumString EnumerateExcludedExtensions();
+        public virtual extern void SetExtensionClusion([MarshalAs(UnmanagedType.LPWStr), In] string pszExtension, [In] int fExclude);
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
         [return: MarshalAs(UnmanagedType.Interface)]
-        CSearchQueryHelper GetQueryHelper();
+        public virtual extern IEnumString EnumerateExcludedExtensions();
+
+        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+        [return: MarshalAs(UnmanagedType.Interface)]
+        public virtual extern CSearchQueryHelper GetQueryHelper();
 
         [DispId(1610678295)]
-        int DiacriticSensitivity { [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)][param: In] set; [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)] get; }
+        public virtual extern int DiacriticSensitivity { [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)][param: In] set; [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)] get; }
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
         [return: MarshalAs(UnmanagedType.Interface)]
-        CSearchCrawlScopeManager GetCrawlScopeManager();
+        public virtual extern CSearchCrawlScopeManager GetCrawlScopeManager();
     }
 }
