@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Plugin.Indexer;
 using Microsoft.Plugin.Indexer.DriveDetection;
+using Microsoft.Plugin.Indexer.Interop;
 using Microsoft.Plugin.Indexer.SearchHelper;
-using Microsoft.Search.Interop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Wox.Plugin;
@@ -29,8 +29,8 @@ namespace Wox.Test.Plugins
         {
             var sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE CONTAINS(System.FileName,'\"FilePath\"',1033) AND scope='file:' ORDER BY System.DateModified DESC";
             var mockSearchManager = new Mock<ISearchManager>();
-            var mockCatalog = new Mock<CSearchCatalogManager>();
-            var mockQueryHelper = new Mock<CSearchQueryHelper>();
+            var mockCatalog = new Mock<CSearchCatalogManagerImp>();
+            var mockQueryHelper = new Mock<CSearchQueryHelperImp>();
             mockQueryHelper.SetupAllProperties();
             mockQueryHelper.Setup(x => x.ConnectionString).Returns("provider=Search.CollatorDSO.1;EXTENDED PROPERTIES=\"Application=Windows\"");
             mockQueryHelper.Setup(x => x.GenerateSQLFromUserQuery(It.IsAny<string>())).Returns(sqlQuery);

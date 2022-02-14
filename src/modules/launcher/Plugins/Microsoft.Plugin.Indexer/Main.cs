@@ -11,9 +11,9 @@ using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.Indexer.DriveDetection;
+using Microsoft.Plugin.Indexer.Interop;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.Search.Interop;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -106,7 +106,7 @@ namespace Microsoft.Plugin.Indexer
                         }
 
                         // This uses the Microsoft.Search.Interop assembly
-                        var searchManager = new CSearchManager();
+                        var searchManager = new CSearchManagerImp();
                         var searchResultsList = _api.Search(searchQuery, searchManager, maxCount: _settings.MaxSearchCount).ToList();
 
                         // If the delayed execution query is not required (since the SQL query is fast) return empty results
