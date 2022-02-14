@@ -81,7 +81,7 @@
     <ClInclude Include="MonitorUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ZoneColors.h">
+    <ClInclude Include="Colors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FancyZonesWindowProperties.h">
@@ -198,6 +198,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FancyZonesWindowProperties.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Colors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

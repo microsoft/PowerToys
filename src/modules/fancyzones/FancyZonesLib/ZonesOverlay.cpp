@@ -282,7 +282,7 @@ void ZonesOverlay::Flash()
 
 void ZonesOverlay::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                                      const ZoneIndexSet& highlightZones,
-                                     const ZoneColors& colors,
+                                     const Colors::ZoneColors& colors,
                                      const bool showZoneText)
 {
     _TRACER_;

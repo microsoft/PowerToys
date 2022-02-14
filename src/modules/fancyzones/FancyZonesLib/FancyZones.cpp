@@ -21,6 +21,7 @@
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/Settings.h>
+#include <FancyZonesLib/SettingsObserver.h>
 #include <FancyZonesLib/ZoneSet.h>
 #include <FancyZonesLib/WorkArea.h>
 #include <FancyZonesLib/WindowMoveHandler.h>
@@ -33,7 +34,6 @@
 #include "util.h"
 
 #include <FancyZonesLib/SecondaryMouseButtonsHook.h>
-#include <winrt/Windows.UI.ViewManagement.h>
 
 enum class DisplayChangeType
 {
@@ -50,10 +50,11 @@ namespace NonLocalizable
     const wchar_t FZEditorExecutablePath[] = L"modules\\FancyZones\\PowerToys.FancyZonesEditor.exe";
 }
 
-struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback>
+struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback>, public SettingsObserver
 {
 public:
     FancyZones(HINSTANCE hinstance, std::function<void()> disableModuleCallback) noexcept :
+        SettingsObserver({ SettingId::EditorHotkey, SettingId::PrevTabHotkey, SettingId::NextTabHotkey, SettingId::SpanZonesAcrossMonitors }),
         m_hinstance(hinstance),
         m_windowMoveHandler([this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
@@ -88,12 +89,6 @@ public:
         if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
         {
             monitor = NULL;
-        }
-
-        // If accent color or theme is changed need to update colors for zones
-        if (FancyZonesSettings::settings().systemTheme && GetSystemTheme())
-        {
-            m_workAreaHandler.UpdateZoneColors(GetZoneColors());
         }
 
         m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
@@ -191,6 +186,8 @@ private:
     bool GetSystemTheme() const noexcept;
     ZoneColors GetZoneColors() const noexcept;
 
+    virtual void SettingsUpdate(SettingId type) override;
+
     const HINSTANCE m_hinstance{};
 
     HWND m_window{};
@@ -226,8 +223,6 @@ private:
 };
 
 std::function<void()> FancyZones::disableModuleCallback = {};
-COLORREF currentAccentColor;
-COLORREF currentBackgroundColor;
 
 // IFancyZones
 IFACEMETHODIMP_(void)
@@ -789,7 +784,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         else if (message == WM_PRIV_SETTINGS_CHANGED)
         {
-            OnSettingsChanged();
+            FancyZonesSettings::instance().LoadSettings();
         }
         else
         {
@@ -890,7 +885,7 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noe
             parentId = parentArea->UniqueId();
         }
 
-        auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId, GetZoneColors(), FancyZonesSettings::settings().overlappingZonesAlgorithm, FancyZonesSettings::settings().showZoneNumber);
+        auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId);
         if (workArea)
         {
             m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
@@ -1243,28 +1238,34 @@ void FancyZones::UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObjec
     }
 }
 
-void FancyZones::OnSettingsChanged() noexcept
+void FancyZones::SettingsUpdate(SettingId id)
 {
-    _TRACER_;
-    FancyZonesSettings::instance().LoadSettings();
-
-    // Update the hotkeys
-    UpdateHotkey(static_cast<int>(HotkeyId::Editor), FancyZonesSettings::settings().editorHotkey, true);
-
-    auto windowSwitching = FancyZonesSettings::settings().windowSwitching;
-    UpdateHotkey(static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().nextTabHotkey, windowSwitching);
-    UpdateHotkey(static_cast<int>(HotkeyId::PrevTab), FancyZonesSettings::settings().prevTabHotkey, windowSwitching);
-
-    // Needed if we toggled spanZonesAcrossMonitors
-    m_workAreaHandler.Clear();
-
-    // update zone colors
-    m_workAreaHandler.UpdateZoneColors(GetZoneColors());
-
-    // update overlapping algorithm
-    m_workAreaHandler.UpdateOverlappingAlgorithm(FancyZonesSettings::settings().overlappingZonesAlgorithm);
-
-    PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
+    switch (id)
+    {
+    case SettingId::EditorHotkey:
+    {
+        UpdateHotkey(static_cast<int>(HotkeyId::Editor), FancyZonesSettings::settings().editorHotkey, true);
+    }
+    break;
+    case SettingId::PrevTabHotkey:
+    {
+        UpdateHotkey(static_cast<int>(HotkeyId::PrevTab), FancyZonesSettings::settings().prevTabHotkey, FancyZonesSettings::settings().windowSwitching);
+    }
+    break;
+    case SettingId::NextTabHotkey:
+    {
+        UpdateHotkey(static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().nextTabHotkey, FancyZonesSettings::settings().windowSwitching);
+    }
+    break;
+    case SettingId::SpanZonesAcrossMonitors:
+    {
+        m_workAreaHandler.Clear();
+        PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
+    }
+    break;
+    default:
+        break;
+    }
 }
 
 void FancyZones::OnEditorExitEvent() noexcept
@@ -1388,53 +1389,6 @@ HMONITOR FancyZones::WorkAreaKeyFromWindow(HWND window) noexcept
     {
         return MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
     }
-}
-
-bool FancyZones::GetSystemTheme() const noexcept
-{
-    winrt::Windows::UI::ViewManagement::UISettings settings;
-    auto accentValue = settings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Accent);
-    auto accentColor = RGB(accentValue.R, accentValue.G, accentValue.B);
-
-    auto backgroundValue = settings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Background);
-    auto backgroundColor = RGB(backgroundValue.R, backgroundValue.G, backgroundValue.B);
-
-    if (currentAccentColor != accentColor || currentBackgroundColor != backgroundColor)
-    {
-        currentAccentColor = accentColor;
-        currentBackgroundColor = backgroundColor;
-        return true;
-    }
-
-    return false;
-}
-
-ZoneColors FancyZones::GetZoneColors() const noexcept
-{
-    if (FancyZonesSettings::settings().systemTheme)
-    {
-        GetSystemTheme();
-        auto numberColor = currentBackgroundColor == RGB(0, 0, 0) ? RGB(255, 255, 255) : RGB(0, 0, 0);
-
-
-        return ZoneColors{
-            .primaryColor = currentBackgroundColor,
-            .borderColor = currentAccentColor,
-            .highlightColor = currentAccentColor,
-            .numberColor = numberColor,
-            .highlightOpacity = FancyZonesSettings::settings().zoneHighlightOpacity
-        };
-    }
-    else
-    {
-        return ZoneColors{
-            .primaryColor = FancyZonesUtils::HexToRGB(FancyZonesSettings::settings().zoneColor),
-            .borderColor = FancyZonesUtils::HexToRGB(FancyZonesSettings::settings().zoneBorderColor),
-            .highlightColor = FancyZonesUtils::HexToRGB(FancyZonesSettings::settings().zoneHighlightColor),
-            .numberColor = FancyZonesUtils::HexToRGB(FancyZonesSettings::settings().zoneNumberColor),
-            .highlightOpacity = FancyZonesSettings::settings().zoneHighlightOpacity
-        };
-    } 
 }
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance, std::function<void()> disableCallback) noexcept
