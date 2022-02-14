@@ -11,7 +11,7 @@ namespace Awake.Core
 {
     internal static class NativeMethods
     {
-        [DllImport("PowrProf.dll", SetLastError = true)]
+        [DllImport("Powrprof.dll", SetLastError = true)]
         internal static extern bool GetPwrCapabilities(out SystemPowerCapabilities lpSystemPowerCapabilities);
 
         [DllImport("kernel32.dll", SetLastError = true)]

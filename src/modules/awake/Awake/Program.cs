@@ -28,8 +28,8 @@ namespace Awake
 {
     internal class Program
     {
-        // PowerToys Awake build codename. Used for exact logging
-        // that does not map to PowerToys broad versioning to pinpoint
+        // PowerToys Awake build code name. Used for exact logging
+        // that does not map to PowerToys broad version schema to pinpoint
         // internal issues easier.
         // Format of the build ID is: CODENAME_MMDDYYYY, where MMDDYYYY
         // is representative of the date when the last change was made before
