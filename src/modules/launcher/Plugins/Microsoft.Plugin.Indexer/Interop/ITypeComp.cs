@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.CustomMarshalers;
 
-namespace Microsoft.Search.Interop
+namespace Microsoft.Plugin.Indexer.Interop
 {
     [ComConversionLoss]
     [InterfaceType(1)]

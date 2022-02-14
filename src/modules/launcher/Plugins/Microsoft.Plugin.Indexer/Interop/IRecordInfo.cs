@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.CustomMarshalers;
 
-namespace Microsoft.Search.Interop
+namespace Microsoft.Plugin.Indexer.Interop
 {
     [Guid("0000002F-0000-0000-C000-000000000046")]
     [InterfaceType(1)]

@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Search.Interop
+namespace Microsoft.Plugin.Indexer.Interop
 {
     [ClassInterface((short)0)]
     [Guid("A5270F6C-19EC-4E17-9EA1-A7074276B9B9")]

@@ -1,5 +1,4 @@
-﻿
-namespace Microsoft.Search.Interop
+﻿namespace Microsoft.Plugin.Indexer.Interop
 {
     public enum _CatalogStatus
     {

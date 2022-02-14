@@ -1,7 +1,7 @@
 ﻿
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Search.Interop
+namespace Microsoft.Plugin.Indexer.Interop
 {
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public struct tag_inner_PROPVARIANT

@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Search.Interop
+namespace Microsoft.Plugin.Indexer.Interop
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct _tagpropertykey

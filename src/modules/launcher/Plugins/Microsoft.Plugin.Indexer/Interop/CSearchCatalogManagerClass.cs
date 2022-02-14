@@ -3,7 +3,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Search.Interop
+namespace Microsoft.Plugin.Indexer.Interop
 {
     [ComConversionLoss]
     [Guid("AAB49DD5-AD0B-40AE-B654-AE8976BF6BD2")]

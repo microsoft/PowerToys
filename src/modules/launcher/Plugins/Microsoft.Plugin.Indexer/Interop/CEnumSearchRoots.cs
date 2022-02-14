@@ -1,7 +1,7 @@
 ﻿
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Search.Interop
+namespace Microsoft.Plugin.Indexer.Interop
 {
     [CoClass(typeof(CEnumSearchRootsClass))]
     [Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF52")]

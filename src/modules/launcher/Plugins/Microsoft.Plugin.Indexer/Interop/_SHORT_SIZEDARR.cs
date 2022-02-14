@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Search.Interop
+namespace Microsoft.Plugin.Indexer.Interop
 {
     [ComConversionLoss]
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
