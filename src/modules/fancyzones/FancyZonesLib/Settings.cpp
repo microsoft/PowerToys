@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Settings.h"
 
+#include <common/logger/call_tracer.h>
+#include <common/logger/logger.h>
 #include <common/SettingsAPI/FileWatcher.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/resources.h>
@@ -97,6 +99,8 @@ void FancyZonesSettings::SetBoolFlag(const PowerToysSettings::PowerToyValues& va
 
 void FancyZonesSettings::LoadSettings()
 {
+    _TRACER_;
+
     try
     {
         PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::load_from_settings_file(NonLocalizable::ModuleKey);
@@ -240,9 +244,10 @@ void FancyZonesSettings::LoadSettings()
             }
         }
     }
-    catch (...)
+    catch (const winrt::hresult_error& e)
     {
         // Failure to load settings does not break FancyZones functionality. Display error message and continue with default settings.
+        Logger::error(L"Failed to read settings. {}", e.message());
         MessageBox(NULL,
                    GET_RESOURCE_STRING(IDS_FANCYZONES_SETTINGS_LOAD_ERROR).c_str(),
                    GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
@@ -260,38 +265,3 @@ void FancyZonesSettings::NotifyObservers(SettingId id) const
         }
     }
 }
-
-//void FancyZonesSettings::SaveSettings() noexcept
-//{
-//    try
-//    {
-//        PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
-//
-//        for (auto const& setting : m_configBools)
-//        {
-//            values.add_property(setting.name, *setting.value);
-//        }
-//
-//        values.add_property(NonLocalizable::ZoneColorID, m_settings.zoneColor);
-//        values.add_property(NonLocalizable::ZoneBorderColorID, m_settings.zoneBorderColor);
-//        values.add_property(NonLocalizable::ZoneHighlightColorID, m_settings.zoneHighlightColor);
-//        values.add_property(NonLocalizable::ZoneNumberColorID, m_settings.zoneNumberColor);
-//        values.add_property(NonLocalizable::ZoneHighlightOpacityID, m_settings.zoneHighlightOpacity);
-//        values.add_property(NonLocalizable::OverlappingZonesAlgorithmID, (int)m_settings.overlappingZonesAlgorithm);
-//        values.add_property(NonLocalizable::EditorHotkeyID, m_settings.editorHotkey.get_json());
-//        values.add_property(NonLocalizable::NextTabHotkeyID, m_settings.nextTabHotkey.get_json());
-//        values.add_property(NonLocalizable::PrevTabHotkeyID, m_settings.prevTabHotkey.get_json());
-//        values.add_property(NonLocalizable::ExcludedAppsID, m_settings.excludedApps);
-//
-//        values.save_to_settings_file();
-//    }
-//    catch (...)
-//    {
-//        // Failure to save settings does not break FancyZones functionality. Display error message and continue with currently cached settings.
-//        std::wstring errorMessage = GET_RESOURCE_STRING(IDS_FANCYZONES_SETTINGS_LOAD_ERROR) + L" " + NonLocalizable::PowerToysIssuesURL;
-//        MessageBox(NULL,
-//                   errorMessage.c_str(),
-//                   GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
-//                   MB_OK);
-//    }
-//}
