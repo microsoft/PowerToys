@@ -4,6 +4,8 @@
 #include "FindMyMouse.h"
 #include "trace.h"
 #include "common/utils/game_mode.h"
+#include "common/utils/process_path.h"
+#include "common/utils/excluded_apps.h"
 #include <vector>
 
 #ifdef COMPOSITION
@@ -45,6 +47,7 @@ protected:
     void AfterMoveSonar() {}
     void SetSonarVisibility(bool visible) = delete;
     void UpdateMouseSnooping();
+    bool IsForegroundAppExcluded();
 
 protected:
     // Base class members you can access.
@@ -65,6 +68,7 @@ protected:
     int m_sonarZoomFactor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
     DWORD m_fadeDuration = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
     int m_finalAlphaNumerator = FIND_MY_MOUSE_DEFAULT_OVERLAY_OPACITY;
+    std::vector<std::wstring> m_excludedApps;
     static constexpr int FinalAlphaDenominator = 100;
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
 
@@ -479,6 +483,11 @@ void SuperSonar<D>::StartSonar()
         return;
     }
 
+    if (IsForegroundAppExcluded())
+    {
+        return;
+    }
+
     Logger::info("Focusing the sonar on the mouse cursor.");
     Trace::MousePointerFocused();
     // Cover the entire virtual screen.
@@ -563,6 +572,25 @@ void SuperSonar<D>::UpdateMouseSnooping()
             mouse.hwndTarget = nullptr;
         }
         RegisterRawInputDevices(&mouse, 1, sizeof(mouse));
+    }
+}
+
+template<typename D>
+bool SuperSonar<D>::IsForegroundAppExcluded()
+{
+    if (m_excludedApps.size() < 1)
+    {
+        return false;
+    }
+    if (HWND foregroundApp{ GetForegroundWindow() })
+    {
+        auto processPath = get_process_path(foregroundApp);
+        CharUpperBuffW(processPath.data(), (DWORD)processPath.length());
+        return find_app_name_in_path(processPath, m_excludedApps);
+    }
+    else
+    {
+        return false;
     }
 }
 
@@ -707,6 +735,7 @@ public:
             m_fadeDuration = settings.animationDurationMs > 0 ? settings.animationDurationMs : 1;
             m_finalAlphaNumerator = settings.overlayOpacity;
             m_sonarZoomFactor = settings.spotlightInitialZoom;
+            m_excludedApps = settings.excludedApps;
         }
         else
         {
@@ -727,11 +756,12 @@ public:
                     m_sonarRadiusFloat = static_cast<float>(m_sonarRadius);
                     m_backgroundColor = localSettings.backgroundColor;
                     m_spotlightColor = localSettings.spotlightColor;
-                    m_activationMethod = settings.activationMethod;
+                    m_activationMethod = localSettings.activationMethod;
                     m_doNotActivateOnGameMode = localSettings.doNotActivateOnGameMode;
                     m_fadeDuration = localSettings.animationDurationMs > 0 ? localSettings.animationDurationMs : 1;
                     m_finalAlphaNumerator = localSettings.overlayOpacity;
                     m_sonarZoomFactor = localSettings.spotlightInitialZoom;
+                    m_excludedApps = localSettings.excludedApps;
                     UpdateMouseSnooping(); // For the shake mouse activation method
 
                     // Apply new settings to runtime composition objects.

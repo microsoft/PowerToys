@@ -32,6 +32,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("spotlight_initial_zoom")]
         public IntProperty SpotlightInitialZoom { get; set; }
 
+        [JsonPropertyName("excluded_apps")]
+        public StringProperty ExcludedApps { get; set; }
+
         public FindMyMouseProperties()
         {
             ActivationMethod = new IntProperty(0);
@@ -42,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SpotlightRadius = new IntProperty(100);
             AnimationDurationMs = new IntProperty(500);
             SpotlightInitialZoom = new IntProperty(9);
+            ExcludedApps = new StringProperty();
         }
     }
 }

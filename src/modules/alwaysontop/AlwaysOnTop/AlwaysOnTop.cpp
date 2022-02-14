@@ -3,6 +3,7 @@
 
 #include <common/display/dpi_aware.h>
 #include <common/utils/game_mode.h>
+#include <common/utils/excluded_apps.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/process_path.h>
@@ -13,22 +14,6 @@ namespace NonLocalizable
 {
     const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
     const static wchar_t* WINDOW_IS_PINNED_PROP = L"AlwaysOnTop_Pinned";
-}
-
-// TODO: move to common utils
-bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wstring>& what)
-{
-    for (const auto& row : what)
-    {
-        const auto pos = where.rfind(row);
-        const auto last_slash = where.rfind('\\');
-        //Check that row occurs in where, and its last occurrence contains in itself the first character after the last backslash.
-        if (pos != std::wstring::npos && pos <= last_slash + 1 && pos + row.length() > last_slash)
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 bool isExcluded(HWND window)
