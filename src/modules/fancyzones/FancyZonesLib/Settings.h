@@ -2,8 +2,10 @@
 
 #include <unordered_set>
 
+#include <common/SettingsAPI/settings_helpers.h>
 #include <common/SettingsAPI/settings_objects.h>
 
+#include <FancyZonesLib/ModuleConstants.h>
 #include <FancyZonesLib/SettingsConstants.h>
 
 class SettingsObserver;
@@ -64,7 +66,14 @@ public:
         return instance().m_settings;
     }
 
-    static std::wstring GetSettingsFileName();
+    inline static std::wstring GetSettingsFileName()
+    {
+        std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
+#if defined(UNIT_TESTS)
+        return saveFolderPath + L"\\test-settings.json";
+#endif
+        return saveFolderPath + L"\\settings.json";
+    }
 
     void AddObserver(SettingsObserver& observer);
     void RemoveObserver(SettingsObserver& observer);

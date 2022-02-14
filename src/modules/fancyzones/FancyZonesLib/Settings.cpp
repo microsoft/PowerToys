@@ -4,20 +4,16 @@
 #include <common/logger/call_tracer.h>
 #include <common/logger/logger.h>
 #include <common/SettingsAPI/FileWatcher.h>
-#include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/resources.h>
 #include <common/utils/string_utils.h>
 
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
-#include <FancyZonesLib/ModuleConstants.h>
 #include <FancyZonesLib/SettingsObserver.h>
 #include <FancyZonesLib/trace.h>
 
 // Non-Localizable strings
 namespace NonLocalizable
 {
-    const static wchar_t* SettingsFileName = L"settings.json";
-
     // FancyZones settings descriptions are localized, but underlying toggle (spinner, color picker) names are not.
     const wchar_t ShiftDragID[] = L"fancyzones_shiftDrag";
     const wchar_t MouseSwitchID[] = L"fancyzones_mouseSwitch";
@@ -65,12 +61,6 @@ FancyZonesSettings& FancyZonesSettings::instance()
     return instance;
 }
 
-std::wstring FancyZonesSettings::GetSettingsFileName()
-{
-    std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-    return saveFolderPath + L"\\" + std::wstring(NonLocalizable::SettingsFileName);
-}
-
 void FancyZonesSettings::AddObserver(SettingsObserver& observer)
 {
     m_observers.insert(&observer);
@@ -103,7 +93,14 @@ void FancyZonesSettings::LoadSettings()
 
     try
     {
-        PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::load_from_settings_file(NonLocalizable::ModuleKey);
+        auto jsonOpt = json::from_file(GetSettingsFileName());
+        if (!jsonOpt)
+        {
+            Logger::warn(L"Failed to read from settings file");
+            return;
+        }
+
+        PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(jsonOpt->Stringify(), NonLocalizable::ModuleKey);
 
         // flags
         SetBoolFlag(values, NonLocalizable::ShiftDragID, SettingId::ShiftDrag, m_settings.shiftDrag);
