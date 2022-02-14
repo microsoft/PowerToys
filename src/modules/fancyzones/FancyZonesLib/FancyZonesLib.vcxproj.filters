@@ -117,6 +117,12 @@
     <ClInclude Include="ZoneIndexSetBitmask.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SettingsObserver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SettingsConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

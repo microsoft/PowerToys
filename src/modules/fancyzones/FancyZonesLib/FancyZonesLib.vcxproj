@@ -66,6 +66,8 @@
     <None Include="resource.base.h" />
     <ClInclude Include="SecondaryMouseButtonsHook.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="SettingsConstants.h" />
+    <ClInclude Include="SettingsObserver.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="VirtualDesktop.h" />
