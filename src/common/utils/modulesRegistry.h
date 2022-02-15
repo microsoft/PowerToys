@@ -15,6 +15,17 @@ namespace NonLocalizable
     const static wchar_t* ExtensionsID = L"extensions";
     const static wchar_t* MDExtension = L".md";
     const static wchar_t* SVGExtension = L".svg";
+    const static std::vector<std::wstring> ExtSVG      = { L".svg" };
+    const static std::vector<std::wstring> ExtMarkdown = { L".md", L".markdown", L".mdown", L".mkdn", L".mkd", L".mdwn", L".mdtxt", L".mdtext" };
+    const static std::vector<std::wstring> ExtPDF      = { L".pdf" };
+    const static std::vector<std::wstring> ExtGCode    = { L".gcode" };
+    const static std::vector<std::wstring> ExtSTL      = { L".stl" };
+    const static std::vector<std::wstring> ExtNoNoNo   = { 
+        L".txt", //Windows has been rendering text well since 1998, thank you very much.
+        L".ini", //Buggy. Try previewing System.ini or any INI file with words consisting of digits and letters.
+        L".reg", //Same as INI.
+        L".log"
+    };
 }
 
 inline registry::ChangeSet getSvgPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
@@ -30,7 +41,7 @@ inline registry::ChangeSet getSvgPreviewHandlerChangeSet(const std::wstring inst
                                   registry::DOTNET_COMPONENT_CATEGORY_CLSID,
                                   L"Microsoft.PowerToys.PreviewHandler.Svg.SvgPreviewHandler",
                                   L"Svg Preview Handler",
-                                  { L".svg" });
+                                  NonLocalizable::ExtSVG);
 }
 
 inline registry::ChangeSet getMdPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
@@ -50,7 +61,18 @@ inline registry::ChangeSet getMdPreviewHandlerChangeSet(const std::wstring insta
 inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
 {
     using namespace registry::shellex;
+
+    // Set up a list of extensions for the preview handler to take over
     std::vector<std::wstring> extensions;
+
+    // Set up a list of extensions that Monaco support but the preview handler shouldn't take over
+    /*
+    std::vector<std::wstring> ExtExclusions;
+    ExtExclusions.insert(ExtExclusions.end(), NonLocalizable::ExtMarkdown.begin(), NonLocalizable::ExtMarkdown.end());
+    ExtExclusions.insert(ExtExclusions.end(), NonLocalizable::ExtSVG.begin(), NonLocalizable::ExtSVG.end());
+    ExtExclusions.insert(ExtExclusions.end(), NonLocalizable::ExtNoNoNo.begin(), NonLocalizable::ExtNoNoNo.end());
+    bool IsExcluded = false;
+    */
 
     std::wstring languagesFilePath = fs::path{ installationDir } / NonLocalizable::MONACO_LANGUAGES_FILE_NAME;
     auto json = json::from_file(languagesFilePath);
@@ -76,6 +98,32 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
                         continue;
                     }
                     extensions.push_back(std::wstring{ extension });
+                    
+                    // Ignore extensions in the exclusion list
+                    // IsExcluded = false;
+                    // 
+                    // for (std::wstring k : ExtExclusions)
+                    // {
+                    //     if (std::wstring{ extension } == k)
+                    //     {
+                    //         IsExcluded = true;
+                    //         break;
+                    //     }
+                    // }
+                    // if (!IsExcluded) { continue; }
+                    // extensions.push_back(std::wstring{ extension });
+
+                    // if (std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[0] } ||
+                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[1] } ||
+                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[2] } ||
+                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[3] } ||
+                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[4] } ||
+                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[5] } ||
+                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[6] } ||
+                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[7] } ||
+                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtSVG[0] })
+                    // { continue; }
+                    // extensions.push_back(std::wstring{ extension });
                 }
             }
         }
