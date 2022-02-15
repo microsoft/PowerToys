@@ -141,7 +141,7 @@ Because the JSON file must have a object as root type, instead of a array.
 
 | Name            | Value                                                                                               |
 | --------------- | --------------------------------------------------------------------------------------------------- |
-| TargetFramework | `net5.0-windows` (.NET 5) or `net5.0-windows10.0.18362.0` (OS version specific)                     |
+| TargetFramework | `net6.0-windows` (.NET 5) or `net6.0-windows10.0.18362.0` (OS version specific)                     |
 | Platforms       | `x64`                                                                                               |
 | Output          | `..\..\..\..\..\x64\Debug\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\` |
 | RootNamespace   | `Microsoft.PowerToys.Run.Plugin.WindowsSettings`                                                    |

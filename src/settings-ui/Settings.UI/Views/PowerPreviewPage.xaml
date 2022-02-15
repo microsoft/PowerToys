@@ -99,5 +99,9 @@
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="LearnMore_PowerPreview" Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns"/>
         </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Text="Aaron Junker's work on developer file preview" Link="https://blog.aaron-junker.ch" />
+            <controls:PageLink Text="Pedro Lamas's work on G-Code and STL" Link="https://www.pedrolamas.com" />
+        </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

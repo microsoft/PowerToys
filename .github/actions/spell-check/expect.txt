@@ -61,6 +61,7 @@ APeriod
 api
 APIENTRY
 APIIs
+Apm
 APPBARDATA
 appcontainer
 appdata
@@ -71,6 +72,7 @@ APPLASTZONE
 applets
 Applicationcan
 applicationframehost
+applog
 appmanifest
 appref
 apps
@@ -278,6 +280,7 @@ cnt
 coclass
 codebase
 codecvt
+CODENAME
 codeofconduct
 codereview
 Codespaces
@@ -394,7 +397,7 @@ davidegiacometti
 Dayof
 DBCD
 DBDA
-dbg
+Dbg
 Dbghelp
 DBLCLKS
 DBLEPSILON
@@ -735,6 +738,8 @@ hhk
 HHmmss
 HHOOK
 hhx
+Hiber
+Hiberboot
 HICON
 HIDEWINDOW
 highlighter
@@ -1127,6 +1132,7 @@ logon
 LOGPIXELSX
 LOn
 longdate
+LONGLONG
 lookbehind
 lowlevel
 LOWORD
@@ -1232,6 +1238,7 @@ mirophone
 mjpg
 mkdir
 mlcfg
+MMDDYYYY
 mmdeviceapi
 mmi
 mmsys
@@ -1944,7 +1951,7 @@ STDMETHODIMP
 stdout
 stefan
 STEPIT
-stgm
+STGM
 STGMEDIUM
 sticpl
 stl
@@ -2100,6 +2107,7 @@ TYPEMOUSE
 typename
 typeof
 typeparam
+typeparamref
 TYPESHORTCUT
 UAC
 UAL

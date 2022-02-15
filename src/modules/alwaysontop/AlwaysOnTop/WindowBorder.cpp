@@ -2,10 +2,10 @@
 #include "WindowBorder.h"
 
 #include <dwmapi.h>
+#include "winrt/Windows.Foundation.h"
 
 #include <FrameDrawer.h>
 #include <Settings.h>
-#include "winrt/Windows.Foundation.h"
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -21,7 +21,7 @@ std::optional<RECT> GetFrameRect(HWND window)
         return std::nullopt;
     }
 
-    int border = static_cast<int>(AlwaysOnTopSettings::settings().frameThickness / 2);
+    int border = AlwaysOnTopSettings::settings().frameThickness;
     rect.top -= border;
     rect.left -= border;
     rect.right += border;
@@ -96,7 +96,7 @@ bool WindowBorder::Init(HINSTANCE hinstance)
     m_window = CreateWindowExW(WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW
         , NonLocalizable::ToolWindowClassName
         , L""
-        , WS_POPUP
+        , WS_POPUP | WS_DISABLED
         , windowRect.left
         , windowRect.top
         , windowRect.right - windowRect.left
@@ -122,8 +122,8 @@ bool WindowBorder::Init(HINSTANCE hinstance)
         , m_window
         , windowRect.left
         , windowRect.top
-        , windowRect.right - windowRect.left - static_cast<int>(AlwaysOnTopSettings::settings().frameThickness)
-        , windowRect.bottom - windowRect.top - static_cast<int>(AlwaysOnTopSettings::settings().frameThickness)
+        , windowRect.right - windowRect.left
+        , windowRect.bottom - windowRect.top
         , SWP_NOMOVE | SWP_NOSIZE);
 
     m_frameDrawer = FrameDrawer::Create(m_window);
@@ -216,6 +216,10 @@ LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexce
     break;
 
     case WM_ERASEBKGND:
+        return TRUE;
+
+    // prevent from beeping if the border was clicked
+    case WM_SETCURSOR:
         return TRUE;
 
     default:

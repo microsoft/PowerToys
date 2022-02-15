@@ -1,8 +1,8 @@
-# PowerToy DLL Project For Visual Studio 2019
+# PowerToy DLL Project For Visual Studio 2022
 
 ## Installation
 
-- Put the `ModuleTemplate.zip` file inside the `%USERPROFILE%\Documents\Visual Studio 2019\Templates\ProjectTemplates\` folder, which is the default *User project templates location*. You can change that location via `Tools > Options > Projects and Solutions`.
+- Put the `ModuleTemplate.zip` file inside the `%USERPROFILE%\Documents\Visual Studio 2022\Templates\ProjectTemplates\` folder, which is the default *User project templates location*. You can change that location via `Tools > Options > Projects and Solutions`.
 - The template will be available in Visual Studio, when adding a new project, under the `Visual C++` tab.
 
 ## Contributing

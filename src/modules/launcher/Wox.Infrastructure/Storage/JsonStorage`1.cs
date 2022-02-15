@@ -24,7 +24,7 @@ namespace Wox.Infrastructure.Storage
         // easier and flexible for default value of object
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
-            IgnoreNullValues = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
             IncludeFields = true,
             PropertyNameCaseInsensitive = true,
             WriteIndented = true,

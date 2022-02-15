@@ -5,13 +5,14 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Windows.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     public static class NativeMethods
     {
-        private const int GWL_STYLE = -16;
-        private const int WS_POPUP = 1 << 31; // 0x80000000
+        private const int GWL_EX_STYLE = -20;
+        private const int WS_EX_TOOLWINDOW = 0x00000080;
         internal const int SPI_GETDESKWALLPAPER = 0x0073;
 
         [DllImport("user32.dll")]
@@ -44,9 +45,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool SystemParametersInfo(int uiAction, int uiParam, StringBuilder pvParam, int fWinIni);
 
-        public static void SetPopupStyle(IntPtr hwnd)
+        public static void SetToolWindowStyle(IntPtr hwnd)
         {
-            _ = SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) | WS_POPUP);
+            _ = SetWindowLong(hwnd, GWL_EX_STYLE, GetWindowLong(hwnd, GWL_EX_STYLE) | WS_EX_TOOLWINDOW);
         }
     }
 }
