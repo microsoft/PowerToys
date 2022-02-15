@@ -29,8 +29,8 @@ namespace Wox.Test.Plugins
         {
             var sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE CONTAINS(System.FileName,'\"FilePath\"',1033) AND scope='file:' ORDER BY System.DateModified DESC";
             var mockSearchManager = new Mock<ISearchManager>();
-            var mockCatalog = new Mock<CSearchCatalogManagerImp>();
-            var mockQueryHelper = new Mock<CSearchQueryHelperImp>();
+            var mockCatalog = new Mock<CSearchCatalogManager>();
+            var mockQueryHelper = new Mock<CSearchQueryHelper>();
             mockQueryHelper.SetupAllProperties();
             mockQueryHelper.Setup(x => x.ConnectionString).Returns("provider=Search.CollatorDSO.1;EXTENDED PROPERTIES=\"Application=Windows\"");
             mockQueryHelper.Setup(x => x.GenerateSQLFromUserQuery(It.IsAny<string>())).Returns(sqlQuery);
