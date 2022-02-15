@@ -2227,8 +2227,8 @@ vsonline
 vstemplate
 VSTHRD
 VSTT
-VTABLE
 vtable
+VTABLE
 Vtbl
 WBounds
 wca
