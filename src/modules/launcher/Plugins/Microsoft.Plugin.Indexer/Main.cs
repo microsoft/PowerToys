@@ -106,7 +106,7 @@ namespace Microsoft.Plugin.Indexer
                         }
 
                         // This uses the Microsoft.Search.Interop assembly
-                        var searchManager = new CSearchManagerImp();
+                        var searchManager = new CSearchManager();
                         var searchResultsList = _api.Search(searchQuery, searchManager, maxCount: _settings.MaxSearchCount).ToList();
 
                         // If the delayed execution query is not required (since the SQL query is fast) return empty results
