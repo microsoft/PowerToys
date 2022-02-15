@@ -107,9 +107,6 @@
     <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />
     <PackageReference Include="System.Data.OleDb" Version="6.0.0" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="6.0.0" />
-    <PackageReference Include="tlbimp-Microsoft.Search.Interop" Version="1.0.0">
-      <NoWarn>NU1701</NoWarn>
-    </PackageReference>
     <PackageReference Include="UnitsNet" Version="4.76.0" />
   </ItemGroup>
 
