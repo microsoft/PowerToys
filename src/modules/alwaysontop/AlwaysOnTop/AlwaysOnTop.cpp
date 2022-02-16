@@ -247,12 +247,11 @@ void AlwaysOnTop::RegisterHotkey() const
 void AlwaysOnTop::SubscribeToEvents()
 {
     // subscribe to windows events
-    std::array<DWORD, 6> events_to_subscribe = {
+    std::array<DWORD, 5> events_to_subscribe = {
         EVENT_OBJECT_LOCATIONCHANGE,
         EVENT_SYSTEM_MINIMIZESTART,
         EVENT_SYSTEM_MINIMIZEEND,
         EVENT_SYSTEM_MOVESIZEEND,
-        EVENT_OBJECT_DESTROY,
         EVENT_OBJECT_NAMECHANGE
     };
 
@@ -330,9 +329,27 @@ bool AlwaysOnTop::IsTracked(HWND window) const noexcept
 
 void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
-    if (!AlwaysOnTopSettings::settings().enableFrame)
+    if (!AlwaysOnTopSettings::settings().enableFrame || !data->hwnd)
     {
         return;
+    }
+
+    // fix for the https://github.com/microsoft/PowerToys/issues/15300
+    // check if the window was closed, since for some EVENT_OBJECT_DESTROY doesn't work 
+    std::vector<HWND> toErase{};
+    for (const auto& [window, border] : m_topmostWindows)
+    {
+        bool visible = IsWindowVisible(window);
+        if (!visible)
+        {
+            UnpinTopmostWindow(window);
+            toErase.push_back(window);
+        }
+    }
+
+    for (const auto window : toErase)
+    {
+        m_topmostWindows.erase(window);
     }
 
     switch (data->event)
@@ -378,15 +395,6 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
             {
                 border->UpdateBorderPosition();
             }
-        }
-    }
-    break;
-    case EVENT_OBJECT_DESTROY:
-    {
-        auto iter = m_topmostWindows.find(data->hwnd);
-        if (iter != m_topmostWindows.end())
-        {
-            m_topmostWindows.erase(iter);
         }
     }
     break;
