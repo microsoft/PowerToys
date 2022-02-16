@@ -10,9 +10,9 @@
 #include "SettingsObserver.h"
 #include "ZonesOverlay.h"
 #include "trace.h"
-#include "util.h"
 #include "on_thread_executor.h"
 #include "Settings.h"
+#include <FancyZonesLib/WindowUtils.h>
 
 #include <ShellScalingApi.h>
 #include <mutex>
@@ -66,7 +66,7 @@ namespace
             {
                 HWND window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, position.left(), position.top(), position.width(), position.height(), nullptr, nullptr, hinstance, owner);
                 Logger::info("Creating new ZonesOverlay window, hWnd = {}", (void*)window);
-                MakeWindowTransparent(window);
+                FancyZonesWindowUtils::MakeWindowTransparent(window);
 
                 // According to ShowWindow docs, we must call it with SW_SHOWNORMAL the first time
                 ShowWindow(window, SW_SHOWNORMAL);
@@ -287,7 +287,7 @@ IFACEMETHODIMP WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcep
         MapWindowPoints(nullptr, m_window, &ptClient, 1);
         m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, m_highlightZone);
 
-        if (FancyZonesUtils::HasNoVisibleOwner(window))
+        if (!FancyZonesWindowUtils::HasVisibleOwner(window))
         {
             SaveWindowProcessToZoneIndex(window);
         }
@@ -321,7 +321,7 @@ WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool 
     {
         if (m_zoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window, vkCode, cycle))
         {
-            if (FancyZonesUtils::HasNoVisibleOwner(window))
+            if (!FancyZonesWindowUtils::HasVisibleOwner(window))
             {
                 SaveWindowProcessToZoneIndex(window);
             }

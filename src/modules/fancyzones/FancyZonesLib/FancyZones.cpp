@@ -25,6 +25,7 @@
 #include <FancyZonesLib/ZoneSet.h>
 #include <FancyZonesLib/WorkArea.h>
 #include <FancyZonesLib/WindowMoveHandler.h>
+#include <FancyZonesLib/WindowUtils.h>
 #include <FancyZonesLib/util.h>
 
 #include "on_thread_executor.h"
@@ -1014,8 +1015,8 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
             bool moved = m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */, workArea);
             if (!moved)
             {
-                FancyZonesUtils::RestoreWindowOrigin(window);
-                FancyZonesUtils::RestoreWindowSize(window);
+                FancyZonesWindowUtils::RestoreWindowOrigin(window);
+                FancyZonesWindowUtils::RestoreWindowSize(window);
             }
             else
             {

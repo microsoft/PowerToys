@@ -10,7 +10,7 @@
 #include "FancyZonesData/AppZoneHistory.h"
 #include "Settings.h"
 #include "WorkArea.h"
-#include "util.h"
+#include <FancyZonesLib/WindowUtils.h>
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -60,13 +60,13 @@ WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallb
 
 void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept
 {
-    if (!FancyZonesUtils::IsCandidateForZoning(window, FancyZonesSettings::settings().excludedAppsArray) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
+    if (WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
     {
         return;
     }
 
-    m_draggedWindowInfo.hasNoVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
-    m_draggedWindowInfo.isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
+    m_draggedWindowInfo.hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(window);
+    m_draggedWindowInfo.isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(window);
     m_inDragging = true;
 
     auto iter = workAreaMap.find(monitor);
@@ -218,12 +218,12 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
         auto workArea = std::move(m_draggedWindowWorkArea);
         ResetWindowTransparency();
 
-        bool hasNoVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
-        bool isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
+        bool hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(window);
+        bool isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(window);
 
         if ((isStandardWindow == false && hasNoVisibleOwner == true &&
              m_draggedWindowInfo.isStandardWindow == true && m_draggedWindowInfo.hasNoVisibleOwner == true) ||
-            FancyZonesUtils::IsWindowMaximized(window))
+            FancyZonesWindowUtils::IsWindowMaximized(window))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
             // or if the window is maximized by Windows when the cursor hits the screen top border
@@ -241,9 +241,9 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
             {
                 ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
             }
-            else if (!FancyZonesUtils::IsWindowMaximized(window))
+            else if (!FancyZonesWindowUtils::IsWindowMaximized(window))
             {
-                FancyZonesUtils::RestoreWindowSize(window);
+                FancyZonesWindowUtils::RestoreWindowSize(window);
             }
         }
 
@@ -311,10 +311,9 @@ void WindowMoveHandler::WarnIfElevationIsRequired(HWND window) noexcept
 {
     using namespace notifications;
     using namespace NonLocalizable;
-    using namespace FancyZonesUtils;
 
     static bool warning_shown = false;
-    if (!is_process_elevated() && IsProcessOfWindowElevated(window))
+    if (!is_process_elevated() && FancyZonesWindowUtils::IsProcessOfWindowElevated(window))
     {
         m_dragEnabled = false;
         if (!warning_shown && !is_toast_disabled(CantDragElevatedDontShowAgainRegistryPath, CantDragElevatedDisableIntervalInDays))
