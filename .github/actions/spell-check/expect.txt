@@ -45,6 +45,7 @@ Altdown
 altform
 alwaysontop
 amd
+AMF
 Amicrosoft
 AModifier
 AMPROPERTY
@@ -1670,7 +1671,9 @@ RECTL
 rectp
 rects
 Recyclebin
+recyclebin
 redirectedfrom
+Redist
 reencode
 reencoded
 refactor
@@ -1911,6 +1914,7 @@ spsrm
 spsv
 sqlite
 SRCCOPY
+Srch
 sre
 sregex
 SResize
@@ -2325,6 +2329,7 @@ wixproj
 wixtoolset
 WIXUI
 WKSG
+Wlkr
 wmain
 WMKEYDOWN
 WMKEYUP
@@ -2352,6 +2357,7 @@ wprp
 wregex
 WResize
 writefile
+Wrk
 wsf
 wsh
 wsl
