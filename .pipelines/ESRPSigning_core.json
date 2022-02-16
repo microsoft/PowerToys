@@ -158,7 +158,6 @@
         },
         {
             "MatchedPath": [
-                "Microsoft.Search.Interop.dll",
                 "ModernWpf.dll",
                 "ModernWpf.Controls.dll", 
                 "System.IO.Abstractions.dll", 
