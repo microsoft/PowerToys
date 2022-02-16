@@ -2226,6 +2226,7 @@ VSC
 VSCBD
 vscdb
 vscode
+vsconfig
 VSCROLL
 vse
 vsix
