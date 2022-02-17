@@ -56,7 +56,7 @@
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.IO.Abstractions" Version="16.1.10" />
+    <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
   </ItemGroup>
   
   <ItemGroup>

@@ -71,7 +71,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.IO.Abstractions">
-      <Version>16.1.10</Version>
+      <Version>12.2.5</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json" Version="6.0.2" />
   </ItemGroup>
