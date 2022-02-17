@@ -398,7 +398,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
 
     // Avoid processing splash screens, already stamped (zoned) windows, or those windows
     // that belong to excluded applications list.
-    const bool isSplashScreen = FancyZonesUtils::IsSplashScreen(window);
+    const bool isSplashScreen = FancyZonesWindowUtils::IsSplashScreen(window);
     if (isSplashScreen)
     {
         return;
@@ -416,7 +416,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    const bool isCandidateForLastKnownZone = FancyZonesUtils::IsCandidateForZoning(window, FancyZonesSettings::settings().excludedAppsArray);
+    const bool isCandidateForLastKnownZone = FancyZonesWindowUtils::IsCandidateForZoning(window);
     if (!isCandidateForLastKnownZone)
     {
         return;
@@ -1291,7 +1291,7 @@ void FancyZones::UpdateZoneSets() noexcept
 bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
-    if (FancyZonesSettings::settings().overrideSnapHotkeys && FancyZonesUtils::IsCandidateForZoning(window, FancyZonesSettings::settings().excludedAppsArray))
+    if (FancyZonesSettings::settings().overrideSnapHotkeys && FancyZonesWindowUtils::IsCandidateForZoning(window))
     {
         HMONITOR monitor = WorkAreaKeyFromWindow(window);
 

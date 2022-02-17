@@ -66,7 +66,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     }
 
     m_draggedWindowInfo.hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(window);
-    m_draggedWindowInfo.isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(window);
+    m_draggedWindowInfo.isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(window) && (!FancyZonesWindowUtils::IsChildWindow(window) || FancyZonesSettings::settings().allowSnapChildWindows);
     m_inDragging = true;
 
     auto iter = workAreaMap.find(monitor);

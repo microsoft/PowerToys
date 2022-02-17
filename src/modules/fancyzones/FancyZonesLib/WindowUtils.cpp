@@ -2,21 +2,23 @@
 #include "WindowUtils.h"
 
 #include <common/display/dpi_aware.h>
+#include <common/utils/process_path.h>
 #include <common/utils/window.h>
 
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
+#include <FancyZonesLib/Settings.h>
 
 // Non-Localizable strings
 namespace NonLocalizable
 {
     const wchar_t PowerToysAppFZEditor[] = L"POWERTOYS.FANCYZONESEDITOR.EXE";
     const wchar_t SplashClassName[] = L"MsoSplash";
+    const wchar_t CoreWindow[] = L"Windows.UI.Core.CoreWindow";
+    const wchar_t SearchUI[] = L"SearchUI.exe";
 }
 
 namespace
-{
-    
-    
+{   
     BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
     {
         reinterpret_cast<std::vector<HMONITOR>*>(data)->emplace_back(monitor);
@@ -97,6 +99,21 @@ namespace
             rect.top = max(monitorInfo.rcMonitor.top, rect.top);
             rect.bottom = min(monitorInfo.rcMonitor.bottom - yOffset, rect.bottom);
         }
+    }
+    
+    bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wstring>& what)
+    {
+        for (const auto& row : what)
+        {
+            const auto pos = where.rfind(row);
+            const auto last_slash = where.rfind('\\');
+            //Check that row occurs in where, and its last occurrence contains in itself the first character after the last backslash.
+            if (pos != std::wstring::npos && pos <= last_slash + 1 && pos + row.length() > last_slash)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -182,6 +199,29 @@ bool FancyZonesWindowUtils::IsChildWindow(HWND window) noexcept
     return ((style & WS_CHILD) == WS_CHILD);
 }
 
+bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
+{
+    auto zonable = IsStandardWindow(window) && !HasVisibleOwner(window) && (!IsChildWindow(window) || FancyZonesSettings::settings().allowSnapChildWindows);
+    if (!zonable)
+    {
+        return false;
+    }
+
+    std::wstring processPath = get_process_path(window);
+    CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), (DWORD)processPath.length());
+    if (IsExcludedByUser(processPath))
+    {
+        return false;
+    }
+
+    if (IsExcludedByDefault(processPath))
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
 {
     DWORD pid = 0;
@@ -208,6 +248,17 @@ bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
         }
     }
     return false;
+}
+
+bool FancyZonesWindowUtils::IsExcludedByUser(const std::wstring& processPath) noexcept
+{
+    return (find_app_name_in_path(processPath, FancyZonesSettings::settings().excludedAppsArray));
+}
+
+bool FancyZonesWindowUtils::IsExcludedByDefault(const std::wstring& processPath) noexcept
+{
+    static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
+    return (find_app_name_in_path(processPath, defaultExcludedApps));
 }
 
 void FancyZonesWindowUtils::SwitchToWindow(HWND window) noexcept
