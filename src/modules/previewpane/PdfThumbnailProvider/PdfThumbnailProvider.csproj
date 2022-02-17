@@ -8,7 +8,7 @@
     <AssemblyTitle>PowerToys.PdfThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys PdfPreviewHandler</AssemblyDescription>
     <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corporation</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
@@ -17,7 +17,7 @@
     <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Description>PowerToys PdfPreviewHandler</Description>
-    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

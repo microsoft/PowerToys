@@ -8,7 +8,7 @@
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>PowerToys PowerLauncher Telemetry</Description>
-    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageTags>PowerToys</PackageTags>

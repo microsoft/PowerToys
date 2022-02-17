@@ -5,13 +5,13 @@
     <AssemblyTitle>PowerToys.PreviewHandlerCommon</AssemblyTitle>
     <AssemblyDescription>PowerToys PreviewHandlerCommon</AssemblyDescription>
     <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corporation</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <Company>Microsoft Corporation</Company>
     <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Description>PowerToys PreviewHandlerCommon</Description>
-    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
     <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\PreviewHandlerCommonDocumentation.xml</DocumentationFile>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
