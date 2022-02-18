@@ -12,7 +12,7 @@
 	  <Platforms>x64</Platforms>
 	  <AssemblyTitle>interop-tests</AssemblyTitle>
 	<Company>Microsoft Corp.</Company>
-	<Copyright>Copyright (C) 2020 Microsoft Corp.</Copyright>
+	<Copyright>Copyright (C) 2022 Microsoft Corp.</Copyright>
   </PropertyGroup>
 	
   <PropertyGroup>
@@ -52,10 +52,10 @@
 
 
 	<ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
-    <PackageReference Include="coverlet.collector" Version="3.0.3">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
