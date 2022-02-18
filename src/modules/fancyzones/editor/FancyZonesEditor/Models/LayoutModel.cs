@@ -75,7 +75,9 @@ namespace FancyZonesEditor.Models
 
         public LayoutType Type { get; set; }
 
+#pragma warning disable CA1720 // Identifier contains type name (Not worth the effort to change this now.)
         public Guid Guid
+#pragma warning restore CA1720 // Identifier contains type name
         {
             get
             {
