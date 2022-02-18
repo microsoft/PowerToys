@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -177,9 +178,9 @@ namespace FancyZonesEditor
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
                 string name = customModel.Name;
-                if (name.StartsWith(defaultNamePrefix))
+                if (name.StartsWith(defaultNamePrefix, StringComparison.Ordinal))
                 {
-                    if (int.TryParse(name.Substring(defaultNamePrefix.Length), out int i))
+                    if (int.TryParse(name.AsSpan(defaultNamePrefix.Length), out int i))
                     {
                         if (maxCustomIndex < i)
                         {
@@ -226,7 +227,7 @@ namespace FancyZonesEditor
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
                 string customModelName = customModel.Name;
-                if (customModelName.StartsWith(name))
+                if (customModelName.StartsWith(name, StringComparison.Ordinal))
                 {
                     int openBraceIndex = customModelName.LastIndexOf('(');
                     int closeBraceIndex = customModelName.LastIndexOf(')');
@@ -320,7 +321,7 @@ namespace FancyZonesEditor
             }
 
             Keyboard.ClearFocus();
-            EditLayoutDialogTitle.Text = string.Format(Properties.Resources.Edit_Template, ((LayoutModel)dataContext).Name);
+            EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Edit_Template, ((LayoutModel)dataContext).Name);
             await EditLayoutDialog.ShowAsync();
         }
 

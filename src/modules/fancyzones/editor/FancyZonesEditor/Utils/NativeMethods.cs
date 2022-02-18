@@ -26,7 +26,7 @@ namespace FancyZonesEditor.Utils
         public static void SetWindowStyleToolWindow(Window hwnd)
         {
             var helper = new WindowInteropHelper(hwnd).Handle;
-            SetWindowLong(helper, GWL_EX_STYLE, (GetWindowLong(helper, GWL_EX_STYLE) | WS_EX_TOOLWINDOW) & ~WS_EX_APPWINDOW);
+            _ = SetWindowLong(helper, GWL_EX_STYLE, (GetWindowLong(helper, GWL_EX_STYLE) | WS_EX_TOOLWINDOW) & ~WS_EX_APPWINDOW);
         }
     }
 }
