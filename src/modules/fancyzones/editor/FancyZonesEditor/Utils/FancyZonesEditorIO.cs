@@ -903,7 +903,7 @@ namespace FancyZonesEditor.Utils
             {
                 try
                 {
-                    Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open);
+                    using (Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open))
                     using (StreamReader reader = new StreamReader(inputStream))
                     {
                         string data = reader.ReadToEnd();
