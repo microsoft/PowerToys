@@ -33,10 +33,7 @@ namespace FancyZonesEditor
         {
             if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
             {
-                ClickAutomationEventButtonAutomationPeer peer =
-                    UIElementAutomationPeer.FromElement(this) as ClickAutomationEventButtonAutomationPeer;
-
-                if (peer != null)
+                if (UIElementAutomationPeer.FromElement(this) is ClickAutomationEventButtonAutomationPeer peer)
                 {
                     peer.RaisePropertyChangedEvent(
                         ValuePatternIdentifiers.ValueProperty,

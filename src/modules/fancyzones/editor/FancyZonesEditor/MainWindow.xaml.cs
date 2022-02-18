@@ -77,8 +77,7 @@ namespace FancyZonesEditor
         {
             if (e.Key == Key.Enter && _openedDialog != null && _openedDialog.IsVisible)
             {
-                var source = e.OriginalSource as RadioButton;
-                if (source != null && source.IsChecked != true)
+                if (e.OriginalSource is RadioButton source && source.IsChecked != true)
                 {
                     source.IsChecked = true;
                     e.Handled = true;
@@ -106,7 +105,7 @@ namespace FancyZonesEditor
         private void DecrementZones_Click(object sender, RoutedEventArgs e)
         {
             var mainEditor = App.Overlay;
-            if (!(mainEditor.CurrentDataContext is LayoutModel model))
+            if (mainEditor.CurrentDataContext is not LayoutModel model)
             {
                 return;
             }
@@ -120,7 +119,7 @@ namespace FancyZonesEditor
         private void IncrementZones_Click(object sender, RoutedEventArgs e)
         {
             var mainEditor = App.Overlay;
-            if (!(mainEditor.CurrentDataContext is LayoutModel model))
+            if (mainEditor.CurrentDataContext is not LayoutModel model)
             {
                 return;
             }
@@ -203,7 +202,7 @@ namespace FancyZonesEditor
             EditLayoutDialog.Hide();
 
             var mainEditor = App.Overlay;
-            if (!(mainEditor.CurrentDataContext is LayoutModel model))
+            if (mainEditor.CurrentDataContext is not LayoutModel model)
             {
                 return;
             }
@@ -332,7 +331,7 @@ namespace FancyZonesEditor
             Select((LayoutModel)dataContext);
             EditLayoutDialog.Hide();
             var mainEditor = App.Overlay;
-            if (!(mainEditor.CurrentDataContext is LayoutModel model))
+            if (mainEditor.CurrentDataContext is not LayoutModel model)
             {
                 return;
             }
@@ -416,7 +415,7 @@ namespace FancyZonesEditor
             Logger.LogTrace();
 
             var mainEditor = App.Overlay;
-            if (!(mainEditor.CurrentDataContext is LayoutModel model))
+            if (mainEditor.CurrentDataContext is not LayoutModel model)
             {
                 return;
             }
@@ -528,8 +527,7 @@ namespace FancyZonesEditor
 
         private void TextBox_GotKeyboardFocus(object sender, RoutedEventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb != null)
+            if (sender is TextBox tb)
             {
                 tb.SelectionStart = tb.Text.Length;
             }
