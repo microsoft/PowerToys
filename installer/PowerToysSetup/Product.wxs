@@ -25,6 +25,12 @@
          Some resource files, e.g. images, do not have version, so even if Component has only a single image and a static GUID, it won't be updated.
          
          Considering all of the above, it's much simpler to just have one file per Component with an implicit Guid.
+
+         More info:
+         - https://stackoverflow.com/a/1604348/657390
+         - https://stackoverflow.com/a/1422121/657390
+         - https://robmensching.com/blog/posts/2003/10/18/component-rules-101/
+         - https://robmensching.com/blog/posts/2003/10/4/windows-installer-components-introduction/
            -->
     <?define ShortcutGuideSvgsFiles=0.svg;1.svg;2.svg;3.svg;4.svg;5.svg;6.svg;7.svg;8.svg;9.svg;no_active_window.svg;overlay.svg;overlay_portrait.svg?>
 
