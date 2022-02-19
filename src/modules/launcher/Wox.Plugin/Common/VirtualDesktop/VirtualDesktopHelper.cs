@@ -120,7 +120,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         }
 
         /// <summary>
-        /// Returns a odered list of all existing desktops. The list is odered in the same way as the existing desktops.
+        /// Returns an ordered list of all existing desktops. The list is ordered in the same way as the existing desktops.
         /// </summary>
         /// <returns>List of desktops or an empty list on failure.</returns>
         public List<Guid> GetDesktopList()
@@ -165,7 +165,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// Checks if a desktop is currently visible to the user.
         /// </summary>
         /// <param name="desktop">The guid of the desktop to check.</param>
-        /// <returns>A value indicating if the guid belongs to the currently visible dekstop.</returns>
+        /// <returns>A value indicating if the guid belongs to the currently visible desktop.</returns>
         public bool IsDesktopVisible(Guid desktop)
         {
             if (_desktopListAutoUpdate)
@@ -188,7 +188,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 UpdateDesktopList();
             }
 
-            // Adding +1 because index starts with zero and humans start conuting with one.
+            // Adding +1 because index starts with zero and humans start counting with one.
             return availableDesktops.IndexOf(desktop) + 1;
         }
 
@@ -206,13 +206,13 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             }
 
             // If the desktop name was not changed by the user, it isn't saved to the registry. Then we need the default name for the desktop.
-            var defaultNname = Properties.Resources.VirtualDesktopHelper_Desktop + " " + GetDesktopNumber(desktop);
+            var defaultName = Properties.Resources.VirtualDesktopHelper_Desktop + " " + GetDesktopNumber(desktop);
 
             string registryPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops\\Desktops\\{" + desktop.ToString().ToUpper() + "}";
             RegistryKey deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);
             var desktopName = deskSubKey?.GetValue("Name");
 
-            return (desktopName != null) ? (string)desktopName : defaultNname;
+            return (desktopName != null) ? (string)desktopName : defaultName;
         }
 
         /// <summary>
@@ -274,7 +274,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         }
 
         /// <summary>
-        /// Returns a value indicating if the window is assigned to a currently visible dekstop.
+        /// Returns a value indicating if the window is assigned to a currently visible desktop.
         /// </summary>
         /// <param name="hWindow">Handle to the top level window.</param>
         /// <returns>True if the desktop with the window is visible or if the window is assigned to all desktops. False if the desktop is not visible and on failure,</returns>
@@ -335,14 +335,14 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             int hr = GetWindowDesktopId(hWindow, out Guid windowDesktop);
             if (hr != (int)HRESULT.S_OK)
             {
-                Log.Error($"Failed to move the window ({hWindow}) one dekstop left: Can't get current desktop of the window.", typeof(VirtualDesktopHelper));
+                Log.Error($"Failed to move the window ({hWindow}) one desktop left: Can't get current desktop of the window.", typeof(VirtualDesktopHelper));
                 return false;
             }
 
             int windowDesktopNumber = GetDesktopList().IndexOf(windowDesktop);
             if (windowDesktopNumber == 1)
             {
-                Log.Error($"Failed to move the window ({hWindow}) one dekstop right: The window is on the first desktop.", typeof(VirtualDesktopHelper));
+                Log.Error($"Failed to move the window ({hWindow}) one desktop right: The window is on the first desktop.", typeof(VirtualDesktopHelper));
                 return false;
             }
 
@@ -365,14 +365,14 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             int hr = GetWindowDesktopId(hWindow, out Guid windowDesktop);
             if (hr != (int)HRESULT.S_OK)
             {
-                Log.Error($"Failed to move the window ({hWindow}) one dekstop right: Can't get current desktop of the window.", typeof(VirtualDesktopHelper));
+                Log.Error($"Failed to move the window ({hWindow}) one desktop right: Can't get current desktop of the window.", typeof(VirtualDesktopHelper));
                 return false;
             }
 
             int windowDesktopNumber = GetDesktopList().IndexOf(windowDesktop);
             if (windowDesktopNumber == GetDesktopCount())
             {
-                Log.Error($"Failed to move the window ({hWindow}) one dekstop right: The window is on the last desktop.", typeof(VirtualDesktopHelper));
+                Log.Error($"Failed to move the window ({hWindow}) one desktop right: The window is on the last desktop.", typeof(VirtualDesktopHelper));
                 return false;
             }
 

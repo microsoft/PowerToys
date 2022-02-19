@@ -375,6 +375,7 @@ cursorpos
 customaction
 CUSTOMACTIONTEST
 cvd
+CVirtual
 cwchar
 cwd
 cxfksword
