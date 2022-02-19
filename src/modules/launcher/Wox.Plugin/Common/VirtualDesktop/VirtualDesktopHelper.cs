@@ -4,29 +4,31 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
+using Wox.Plugin.Common.VirtualDesktop.Interop;
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
 
-namespace Wox.Plugin.Common.VirtualDesktop
+namespace Wox.Plugin.Common.VirtualDesktop.Helper
 {
     /// <summary>
     /// Helper class to work with Virtual Desktops.
     /// This helper uses only public available and documented COM-Interfaces or informations from registry.
     /// </summary>
     /// <remarks>
-    /// To use this hleper you have to create an instance of it and acces the method via the helper instance.
+    /// To use this helper you have to create an instance of it and access the method via the helper instance.
     /// We are only allowed to use public documented com interfaces.
     /// </remarks>
-    /// <seealso href="https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ivirtualdesktopmanager">Documentation of IVirtualDesktopManager interface</seealso>
-    /// <seealso href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10">CSharp example code for IVirtualDesktopManager</seealso>
+    /// <SeeAlso href="https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ivirtualdesktopmanager">Documentation of IVirtualDesktopManager interface</SeeAlso>
+    /// <SeeAlso href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10">CSharp example code for IVirtualDesktopManager</SeeAlso>
     public class VirtualDesktopHelper
     {
         /// <summary>
-        /// Value indicating if Virtual Desktop Manager is successfull initialized
+        /// Instance of "Virtual Desktop Manager"
         /// </summary>
-        private readonly bool _vdmInitSuccessfully;
+        private readonly IVirtualDesktopManager _virtualDesktopManager;
 
         /// <summary>
         /// Internal settings to enable automatic update of desktop list.
@@ -36,9 +38,9 @@ namespace Wox.Plugin.Common.VirtualDesktop
 
         /// <summary>
         /// List of all available Virtual Desktop in their real order
-        /// The oder and list in the registry is always up to date
+        /// The order and list in the registry is always up to date
         /// </summary>
-        private List<Guid> availableDesktops;
+        private List<Guid> availableDesktops = new List<Guid>();
 
         /// <summary>
         /// Id of the current visible Desktop.
@@ -46,34 +48,31 @@ namespace Wox.Plugin.Common.VirtualDesktop
         private Guid currentDesktop;
 
         /// <summary>
-        /// Instance of "Virtual Desktop Manager"
-        /// </summary>
-        private IVirtualDesktopManager virtualDesktopManager;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="VirtualDesktopHelper"/> class.
         /// </summary>
         /// <param name="desktopListUpdate">Setting to configure if the list of available desktops should update automatically or only when calling <see cref="UpdateDesktopList"/>. Per default this is set to manual update (false) to have less registry queries.</param>
         public VirtualDesktopHelper(bool desktopListUpdate = false)
         {
-            // ToDo: Error-Handling if VDs are diabled and instance can't be creted.
-            // ToDo: Set private var, Log com exception, handle init errors in other pblic methods
-            // ToDo: Exc on init: "Init vdh: Failed to create vdm instance."
-            // ToDo: Exc in other methods: "XYZ: Operation failed with HResult {}. This can happen if the vdm instance isn't available.
-            virtualDesktopManager = (IVirtualDesktopManager)new CVirtualDesktopManager();
+            try
+            {
+                _virtualDesktopManager = (IVirtualDesktopManager)new CVirtualDesktopManager();
+            }
+            catch (COMException ex)
+            {
+                Log.Exception("Failed to create an instance of COM interface <IVirtualDesktopManager>.", ex, typeof(VirtualDesktopHelper));
+                return;
+            }
 
             _desktopListAutoUpdate = desktopListUpdate;
             UpdateDesktopList();
         }
 
         /// <summary>
-        /// Finalizes an instance of the <see cref="VirtualDesktopHelper"/> class.
+        /// Gets a value indicating whether the Virtual Desktop Manager is initialized successfully
         /// </summary>
-        ~VirtualDesktopHelper()
+        public bool VirtualDesktopManagerInitialized
         {
-            virtualDesktopManager = null;
-            availableDesktops = null;
-            currentDesktop = Guid.Empty;
+            get { return _virtualDesktopManager != null; }
         }
 
         /// <summary>
@@ -83,13 +82,13 @@ namespace Wox.Plugin.Common.VirtualDesktop
         public void UpdateDesktopList()
         {
             // List of all desktops
-            // Each guid has 16 bytes
             RegistryKey allDeskSubKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops", false);
             byte[] allDeskValue = (byte[])allDeskSubKey.GetValue("VirtualDesktopIDs");
             availableDesktops.Clear();
 
             if (allDeskValue != null)
             {
+                // Each guid has a length of 16 elements
                 int numberOfDesktops = allDeskValue.Length / 16;
 
                 for (int i = 0; i < numberOfDesktops; i++)
@@ -105,7 +104,8 @@ namespace Wox.Plugin.Common.VirtualDesktop
             }
 
             // Guid for current desktop
-            RegistryKey currentDeskSubKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\1\\VirtualDesktops", false);
+            int userSessionId = Process.GetCurrentProcess().SessionId;
+            RegistryKey currentDeskSubKey = Registry.CurrentUser.OpenSubKey($"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\{userSessionId}\\VirtualDesktops", false);
             var currentDeskValue = currentDeskSubKey.GetValue("CurrentVirtualDesktop");
             if (currentDeskValue != null)
             {
@@ -113,13 +113,14 @@ namespace Wox.Plugin.Common.VirtualDesktop
             }
             else
             {
-                Log.Error("Failed to read the id for the current desktop form registry.", typeof(VirtualDesktopHelper));
-                currentDesktop = Guid.Empty;
+                // The registry value is missing when the user hasn't switched the desktop at least one time before reading the registry. In this case we can set it to desktop one.
+                Log.Debug("Failed to read the id for the current desktop form registry.", typeof(VirtualDesktopHelper));
+                currentDesktop = availableDesktops[0];
             }
         }
 
         /// <summary>
-        /// Retruns a odered list of all existing desktops. The list is odered in the same way as the existing desktops.
+        /// Returns a odered list of all existing desktops. The list is odered in the same way as the existing desktops.
         /// </summary>
         /// <returns>List of desktops or an empty list on failure.</returns>
         public List<Guid> GetDesktopList()
@@ -147,21 +148,10 @@ namespace Wox.Plugin.Common.VirtualDesktop
         }
 
         /// <summary>
-        /// Returns the id of the generic desktop (view) "All Desktops".
-        /// (At the moment we can't implement this because the necessary com interfaces are private.)
-        /// </summary>
-        /// <exception cref="NotImplementedException">Because this mehtod isn't implemented.</exception>
-        private void GetAllDesktopsId()
-        {
-            // Not available via public com interfaces.
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Returns the id of the desktop taht is currently visible to the user.
+        /// Returns the id of the desktop that is currently visible to the user.
         /// </summary>
         /// <returns>Guid of the current desktop or an empty guid on failure.</returns>
-        public Guid GetCurrentDesktopId()
+        public Guid GetIdOfCurrentDesktop()
         {
             if (_desktopListAutoUpdate)
             {
@@ -172,9 +162,24 @@ namespace Wox.Plugin.Common.VirtualDesktop
         }
 
         /// <summary>
+        /// Checks if a desktop is currently visible to the user.
+        /// </summary>
+        /// <param name="desktop">The guid of the desktop to check.</param>
+        /// <returns>A value indicating if the guid belongs to the currently visible dekstop.</returns>
+        public bool IsDesktopVisible(Guid desktop)
+        {
+            if (_desktopListAutoUpdate)
+            {
+                UpdateDesktopList();
+            }
+
+            return availableDesktops.Contains(desktop);
+        }
+
+        /// <summary>
         /// Returns the number (position) of a desktop.
         /// </summary>
-        /// <returns>Number of the desktop, if found, otherwise -1.</returns>
+        /// <returns>Number of the desktop, if found. Otherwise a value of zero.</returns>
         /// <param name="desktop">The guid of the desktop.</param>
         public int GetDesktopNumber(Guid desktop)
         {
@@ -183,40 +188,31 @@ namespace Wox.Plugin.Common.VirtualDesktop
                 UpdateDesktopList();
             }
 
-            return availableDesktops.IndexOf(desktop);
+            // Adding +1 because index starts with zero and humans start conuting with one.
+            return availableDesktops.IndexOf(desktop) + 1;
         }
 
         /// <summary>
         /// Returns the name of a desktop
         /// </summary>
         /// <param name="desktop">Guid of the desktop</param>
-        /// <returns>Returns the name of the desktop, or "All Desktops" if guid belongs to the generic desktop "All Desktops", or an empty string on failur.</returns>
-        public string GetNameOfDesktop(Guid desktop)
+        /// <returns>Returns the name of the desktop or an empty string on failure.</returns>
+        public string GetDesktopName(Guid desktop)
         {
-            if (desktop == Guid.Empty)
+            if (desktop == Guid.Empty || !GetDesktopList().Contains(desktop))
             {
+                Log.Error("GetDesktopName() failed. Parameter contains an invalid desktop guid that doesn't belongs to an available desktop. Maybe the guid belongs to the generic 'AllDesktops' view.", typeof(VirtualDesktopHelper));
                 return string.Empty;
             }
 
-            // Here we expect that the guid in the parameter is valid.
-            // So if we can't find the id in the desktop list, it must be the generic id for "All Desktops".
-            if (!GetDesktopList().Contains(desktop))
-            {
-                return Properties.Resources.VirtualDesktopHelper_AllDesktops;
-            }
+            // If the desktop name was not changed by the user, it isn't saved to the registry. Then we need the default name for the desktop.
+            var defaultNname = Properties.Resources.VirtualDesktopHelper_Desktop + " " + GetDesktopNumber(desktop);
 
             string registryPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops\\Desktops\\{" + desktop.ToString().ToUpper() + "}";
             RegistryKey deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);
-            if (deskSubKey == null)
-            {
-                int number = GetDesktopNumber(desktop);
-                return $"{Properties.Resources.VirtualDesktopHelper_Desktop} {number}";
-            }
-            else
-            {
-                var name = deskSubKey.GetValue("Name");
-                return (name != null) ? (string)name : string.Empty;
-            }
+            var desktopName = deskSubKey?.GetValue("Name");
+
+            return (desktopName != null) ? (string)desktopName : defaultNname;
         }
 
         /// <summary>
@@ -227,7 +223,14 @@ namespace Wox.Plugin.Common.VirtualDesktop
         /// <returns>HResult of the called method.</returns>
         public int GetWindowDesktopId(IntPtr hWindow, out Guid desktopId)
         {
-            return virtualDesktopManager.GetWindowDesktopId(hWindow, out desktopId);
+            if (_virtualDesktopManager == null)
+            {
+                Log.Error("GetWindowDesktopId() failed: The instance of <IVirtualDesktopHelper> isn't available.", typeof(VirtualDesktopHelper));
+                desktopId = Guid.Empty;
+                return unchecked((int)HRESULT.E_UNEXPECTED);
+            }
+
+            return _virtualDesktopManager.GetWindowDesktopId(hWindow, out desktopId);
         }
 
         /// <summary>
@@ -235,32 +238,38 @@ namespace Wox.Plugin.Common.VirtualDesktop
         /// </summary>
         /// <param name="hWindow">Handle of the window.</param>
         /// <returns>Type of <see cref="DesktopAssignment"/>.</returns>
-        public DesktopAssignmentType GetWindowDesktopAssignmentType(IntPtr hWindow)
+        public VirtualDesktopAssignmentType GetWindowDesktopAssignmentType(IntPtr hWindow)
         {
-            _ = virtualDesktopManager.IsWindowOnCurrentVirtualDesktop(hWindow, out int isCurrentDesktop);
-            int hResult = GetWindowDesktopId(hWindow, out Guid windowDesktopId);
-            Guid currentDesktopId = currentDesktop;
-
-            if (hResult != 0)
+            if (_virtualDesktopManager == null)
             {
-                return DesktopAssignmentType.Unknown;
+                Log.Error("GetWindowDesktopAssignmentType() failed: The instance of <IVirtualDesktopHelper> isn't available.", typeof(VirtualDesktopHelper));
+                return VirtualDesktopAssignmentType.Unknown;
+            }
+
+            _ = _virtualDesktopManager.IsWindowOnCurrentVirtualDesktop(hWindow, out int isOnCurrentDesktop);
+            int hResult = GetWindowDesktopId(hWindow, out Guid windowDesktopId);
+
+            if (hResult != (int)HRESULT.S_OK)
+            {
+                return VirtualDesktopAssignmentType.Unknown;
             }
             else if (windowDesktopId == Guid.Empty)
             {
-                return DesktopAssignmentType.NotAssigned;
+                return VirtualDesktopAssignmentType.NotAssigned;
             }
-            else if (isCurrentDesktop == 1 && currentDesktopId != Guid.Empty && windowDesktopId != currentDesktopId)
+            else if (isOnCurrentDesktop == 1 && !GetDesktopList().Contains(windowDesktopId))
             {
-                // These windows are marked as visible on the current desktop, but their desktop is not the one from the current desktop.
-                return DesktopAssignmentType.AllDesktops;
+                // These windows are marked as visible on the current desktop, but the desktop id doesn't belongs to an existing desktop.
+                // In this case the desktop id belongs to the generic view 'AllDesktops'.
+                return VirtualDesktopAssignmentType.AllDesktops;
             }
-            else if (isCurrentDesktop == 1)
+            else if (isOnCurrentDesktop == 1)
             {
-                return DesktopAssignmentType.CurrentDesktop;
+                return VirtualDesktopAssignmentType.CurrentDesktop;
             }
             else
             {
-                return DesktopAssignmentType.OtherDesktop;
+                return VirtualDesktopAssignmentType.OtherDesktop;
             }
         }
 
@@ -271,7 +280,7 @@ namespace Wox.Plugin.Common.VirtualDesktop
         /// <returns>True if the desktop with the window is visible or if the window is assigned to all desktops. False if the desktop is not visible and on failure,</returns>
         public bool IsWindowOnVisibleDesktop(IntPtr hWindow)
         {
-            return GetWindowDesktopAssignmentType(hWindow) == DesktopAssignmentType.CurrentDesktop || GetWindowDesktopAssignmentType(hWindow) == DesktopAssignmentType.AllDesktops;
+            return GetWindowDesktopAssignmentType(hWindow) == VirtualDesktopAssignmentType.CurrentDesktop || GetWindowDesktopAssignmentType(hWindow) == VirtualDesktopAssignmentType.AllDesktops;
         }
 
         /// <summary>
@@ -279,12 +288,12 @@ namespace Wox.Plugin.Common.VirtualDesktop
         /// (A cloaked window is not visible to the user. But the window is still composed by DWM.)
         /// </summary>
         /// <param name="hWindow">Handle of the window.</param>
-        /// <returns>A value indicating if the window is cloaked by VDM, because it is moved to an other desktop.</returns>
-        public bool IsWindowCloakedByVdm(IntPtr hWindow)
+        /// <returns>A value indicating if the window is cloaked by Virtual Desktop Manager, because it is moved to an other desktop.</returns>
+        public bool IsWindowCloakedByVirtualDesktopManager(IntPtr hWindow)
         {
             // If a window is hidden because it is moved to an other desktop, then DWM returns type "CloakedShell". If DWM returns an other type the window is not cloaked by shell or VirtualDesktopManager.
             _ = NativeMethods.DwmGetWindowAttribute(hWindow, (int)DwmWindowAttributes.Cloaked, out int dwmCloakedState, sizeof(uint));
-            return GetWindowDesktopAssignmentType(hWindow) == DesktopAssignmentType.OtherDesktop && dwmCloakedState == (int)DwmWindowCloakStates.CloakedShell;
+            return GetWindowDesktopAssignmentType(hWindow) == VirtualDesktopAssignmentType.OtherDesktop && dwmCloakedState == (int)DwmWindowCloakStates.CloakedShell;
         }
 
         /// <summary>
@@ -295,8 +304,13 @@ namespace Wox.Plugin.Common.VirtualDesktop
         /// <returns>True on success and false on failure.</returns>
         public bool MoveWindowToDesktop(IntPtr hWindow, in Guid desktopId)
         {
-            int hr = virtualDesktopManager.MoveWindowToDesktop(hWindow, desktopId);
+            if (_virtualDesktopManager == null)
+            {
+                Log.Error("MoveWindowToDesktop() failed: The instance of <IVirtualDesktopHelper> isn't available.", typeof(VirtualDesktopHelper));
+                return false;
+            }
 
+            int hr = _virtualDesktopManager.MoveWindowToDesktop(hWindow, desktopId);
             if (hr != (int)HRESULT.S_OK)
             {
                 Log.Exception($"Failed to move the window ({hWindow}) to an other desktop ({desktopId}).", Marshal.GetExceptionForHR(hr), typeof(VirtualDesktopHelper));
@@ -306,26 +320,34 @@ namespace Wox.Plugin.Common.VirtualDesktop
             return true;
         }
 
+        /// <summary>
+        /// Move a window one desktop left.
+        /// </summary>
+        /// <param name="hWindow">Handle of the top level window.</param>
+        /// <returns>True on success and false on failure.</returns>
         public bool MoveWindowOneDesktopLeft(IntPtr hWindow)
         {
-            if (GetWindowDesktopAssignmentType(hWindow) == DesktopAssignmentType.Unknown || GetWindowDesktopAssignmentType(hWindow) == DesktopAssignmentType.NotAssigned)
+            if (GetWindowDesktopAssignmentType(hWindow) == VirtualDesktopAssignmentType.Unknown || GetWindowDesktopAssignmentType(hWindow) == VirtualDesktopAssignmentType.NotAssigned)
             {
                 return false;
             }
 
-            _ = GetWindowDesktopId(hWindow, out Guid currentDesktop);
-            int currentWindowDesktopNumber = GetDesktopNumber(currentDesktop);
-
-            if (currentWindowDesktopNumber > 1)
+            int hr = GetWindowDesktopId(hWindow, out Guid windowDesktop);
+            if (hr != (int)HRESULT.S_OK)
             {
-                Guid newDesktop = availableDesktops[currentWindowDesktopNumber - 1];
-                return MoveWindowToDesktop(hWindow, newDesktop);
-            }
-            else
-            {
-                Log.Error("The window is on the last desktop.", typeof(VirtualDesktopHelper));
+                Log.Error($"Failed to move the window ({hWindow}) one dekstop left: Can't get current desktop of the window.", typeof(VirtualDesktopHelper));
                 return false;
             }
+
+            int windowDesktopNumber = GetDesktopList().IndexOf(windowDesktop);
+            if (windowDesktopNumber == 1)
+            {
+                Log.Error($"Failed to move the window ({hWindow}) one dekstop right: The window is on the first desktop.", typeof(VirtualDesktopHelper));
+                return false;
+            }
+
+            Guid newDesktop = availableDesktops[windowDesktopNumber - 1];
+            return MoveWindowToDesktop(hWindow, newDesktop);
         }
 
         /// <summary>
@@ -335,72 +357,34 @@ namespace Wox.Plugin.Common.VirtualDesktop
         /// <returns>True on success and false on failure.</returns>
         public bool MoveWindowOneDesktopRight(IntPtr hWindow)
         {
-            if (GetWindowDesktopAssignmentType(hWindow) == DesktopAssignmentType.Unknown || GetWindowDesktopAssignmentType(hWindow) == DesktopAssignmentType.NotAssigned)
+            if (GetWindowDesktopAssignmentType(hWindow) == VirtualDesktopAssignmentType.Unknown || GetWindowDesktopAssignmentType(hWindow) == VirtualDesktopAssignmentType.NotAssigned)
             {
                 return false;
             }
 
-            _ = GetWindowDesktopId(hWindow, out Guid currentDesktop);
-            int currentWindowDesktopNumber = GetDesktopNumber(currentDesktop);
-
-            if (currentWindowDesktopNumber < GetDesktopCount())
+            int hr = GetWindowDesktopId(hWindow, out Guid windowDesktop);
+            if (hr != (int)HRESULT.S_OK)
             {
-                Guid newDesktop = availableDesktops[currentWindowDesktopNumber + 1];
-                return MoveWindowToDesktop(hWindow, newDesktop);
-            }
-            else
-            {
-                Log.Error("The window is on the first desktop.", typeof(VirtualDesktopHelper));
+                Log.Error($"Failed to move the window ({hWindow}) one dekstop right: Can't get current desktop of the window.", typeof(VirtualDesktopHelper));
                 return false;
             }
-        }
 
-        /// <summary>
-        /// Returns the id of the generic desktop (view) "All Desktops".
-        /// (At the moment we can't implement this because the necessary com interfaces are private.)
-        /// </summary>
-        /// <exception cref="NotImplementedException">Because this mehtod isn't implemented.</exception>
-        private void ShowWindowOnAllDesktops()
-        {
-            // Not available via public com interfaces.
-            throw new NotImplementedException();
-        }
+            int windowDesktopNumber = GetDesktopList().IndexOf(windowDesktop);
+            if (windowDesktopNumber == GetDesktopCount())
+            {
+                Log.Error($"Failed to move the window ({hWindow}) one dekstop right: The window is on the last desktop.", typeof(VirtualDesktopHelper));
+                return false;
+            }
 
-        /// <summary>
-        /// Virtual Desktop Manager class
-        /// Code used from <see href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10"./>
-        /// </summary>
-        [ComImport]
-        [Guid("aa509086-5ca9-4c25-8f95-589d3c07b48a")]
-        private class CVirtualDesktopManager
-        {
-        }
-
-        /// <summary>
-        /// Interface for accessing Virtual Desktop Manager.
-        /// Code used from <see href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10"./>
-        /// </summary>
-        [ComImport]
-        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        [Guid("a5cd92ff-29be-454c-8d04-d82879fb3f1b")]
-        [System.Security.SuppressUnmanagedCodeSecurity]
-        private interface IVirtualDesktopManager
-        {
-            [PreserveSig]
-            int IsWindowOnCurrentVirtualDesktop([In] IntPtr hTopLevelWindow, [Out] out int onCurrentDesktop);
-
-            [PreserveSig]
-            int GetWindowDesktopId([In] IntPtr hTopLevelWindow, [Out] out Guid desktop);
-
-            [PreserveSig]
-            int MoveWindowToDesktop([In] IntPtr hTopLevelWindow, [MarshalAs(UnmanagedType.LPStruct)] [In]Guid desktop);
+            Guid newDesktop = availableDesktops[windowDesktopNumber + 1];
+            return MoveWindowToDesktop(hWindow, newDesktop);
         }
     }
 
     /// <summary>
     /// Enum to show in which way a window is assigned to a desktop
     /// </summary>
-    public enum DesktopAssignmentType
+    public enum VirtualDesktopAssignmentType
     {
         Unknown = -1,
         NotAssigned = 0,

@@ -123,9 +123,6 @@
   <data name="FailedToLoadPluginTitle" xml:space="preserve">
     <value>Fail to Load {0} Plugin</value>
   </data>
-  <data name="VirtualDesktopHelper_AllDesktops" xml:space="preserve">
-    <value>All Desktops</value>
-  </data>
   <data name="VirtualDesktopHelper_Desktop" xml:space="preserve">
     <value>Desktop</value>
   </data>

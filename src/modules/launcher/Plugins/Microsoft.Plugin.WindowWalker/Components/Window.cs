@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
-using Wox.Plugin.Common.VirtualDesktop;
+using Wox.Plugin.Common.VirtualDesktop.Helper;
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
 
@@ -20,7 +20,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// </summary>
     public class Window
     {
-        private static VirtualDesktopHelper vdhInstance = new VirtualDesktopHelper(false);
+#pragma warning disable IDE0052 // Remove unread private members
+        private static readonly VirtualDesktopHelper _virtualDesktopHelperInstance = new VirtualDesktopHelper(false);
+#pragma warning restore IDE0052 // Remove unread private members
 
         /// <summary>
         /// The handle to the window
