@@ -1775,6 +1775,15 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Shake mouse</value>
     <comment>Mouse is the hardware peripheral.</comment>
   </data>
+  <data name="MouseUtils_FindMyMouse_ExcludedApps.Description" xml:space="preserve">
+    <value>Prevents module activation when an excluded application is the foreground application</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ExcludedApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ExcludedApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
+  </data>
   <data name="MouseUtils_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
     <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>

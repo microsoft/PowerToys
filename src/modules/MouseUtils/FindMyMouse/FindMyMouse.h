@@ -27,6 +27,7 @@ struct FindMyMouseSettings
     int spotlightRadius = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS;
     int animationDurationMs = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
     int spotlightInitialZoom = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
+    std::vector<std::wstring> excludedApps;
 };
 
 int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings);

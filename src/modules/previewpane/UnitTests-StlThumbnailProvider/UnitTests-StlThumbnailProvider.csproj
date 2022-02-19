@@ -4,14 +4,14 @@
     <AssemblyTitle>UnitTests-StlThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-StlThumbnailProvider</AssemblyDescription>
     <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corporation</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <AssemblyTitle>UnitTests-StlThumbnailProvider</AssemblyTitle>
     <Company>Microsoft Corporation</Company>
     <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Description>PowerToys UnitTests-StlThumbnailProvider</Description>
-    <Copyright>Copyright (C) 2021 Microsoft Corporation</Copyright>
+    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -44,7 +44,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />

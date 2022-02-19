@@ -4,14 +4,14 @@
     <AssemblyTitle>UnitTests-PdfPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-PdfPreviewHandler</AssemblyDescription>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corp.</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corp.</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <AssemblyTitle>UnitTests-PdfPreviewHandler</AssemblyTitle>
     <Company>Microsoft Corp.</Company>
     <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Description>PowerToys UnitTests-PdfPreviewHandler</Description>
-    <Copyright>Copyright (C) 2020 Microsoft Corp.</Copyright>
+    <Copyright>Copyright (C) 2022 Microsoft Corp.</Copyright>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">

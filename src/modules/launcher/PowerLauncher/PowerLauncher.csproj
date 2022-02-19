@@ -18,7 +18,7 @@
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>PowerToys PowerLauncher</Description>
-    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageTags>PowerToys</PackageTags>
@@ -91,7 +91,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
     <PackageReference Include="Mages" Version="2.0.0">
        <NoWarn>NU1701</NoWarn>
     </PackageReference>
@@ -99,17 +99,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.2" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />    
-    <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />
+    <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.7" />
     <PackageReference Include="System.Data.OleDb" Version="6.0.0" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="6.0.0" />
-    <PackageReference Include="tlbimp-Microsoft.Search.Interop" Version="1.0.0">
-      <NoWarn>NU1701</NoWarn>
-    </PackageReference>
     <PackageReference Include="UnitsNet" Version="4.76.0" />
   </ItemGroup>
 

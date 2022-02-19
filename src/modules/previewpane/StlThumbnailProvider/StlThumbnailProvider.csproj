@@ -8,7 +8,7 @@
     <AssemblyTitle>PowerToys.StlThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys StlPreviewHandler</AssemblyDescription>
     <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corporation</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <TargetFramework>net6.0-windows</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
@@ -17,7 +17,7 @@
     <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Description>PowerToys StlPreviewHandler</Description>
-    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -29,8 +29,8 @@
   <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
-    <PackageReference Include="HelixToolkit" Version="2.20.1" />
-    <PackageReference Include="HelixToolkit.Core.Wpf" Version="2.20.1" />
+    <PackageReference Include="HelixToolkit" Version="2.20.2" />
+    <PackageReference Include="HelixToolkit.Core.Wpf" Version="2.20.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

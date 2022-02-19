@@ -5,6 +5,7 @@
 #include <common/display/dpi_aware.h>
 #include <common/utils/process_path.h>
 #include <common/utils/window.h>
+#include <common/utils/excluded_apps.h>
 
 #include <array>
 #include <complex>
@@ -20,20 +21,6 @@ namespace NonLocalizable
     const wchar_t SplashClassName[] = L"MsoSplash";
 }
 
-bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wstring>& what)
-{
-    for (const auto& row : what)
-    {
-        const auto pos = where.rfind(row);
-        const auto last_slash = where.rfind('\\');
-        //Check that row occurs in where, and its last occurrence contains in itself the first character after the last backslash.
-        if (pos != std::wstring::npos && pos <= last_slash + 1 && pos + row.length() > last_slash)
-        {
-            return true;
-        }
-    }
-    return false;
-}
 namespace
 {
     bool IsZonableByProcessPath(const std::wstring& processPath, const std::vector<std::wstring>& excludedApps)

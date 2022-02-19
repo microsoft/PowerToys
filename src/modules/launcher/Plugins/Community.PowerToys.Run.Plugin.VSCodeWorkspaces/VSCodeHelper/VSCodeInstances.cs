@@ -68,14 +68,14 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 
                 _systemPath = Environment.GetEnvironmentVariable("PATH");
                 var paths = _systemPath.Split(";");
-                paths = paths.Where(x => x.Contains("VS Code")).ToArray();
+                paths = paths.Where(x => x.Contains("VS Code") || x.Contains("VSCodium")).ToArray();
                 foreach (var path in paths)
                 {
                     if (Directory.Exists(path))
                     {
                         var files = Directory.GetFiles(path);
                         var iconPath = Path.GetDirectoryName(path);
-                        files = files.Where(x => x.Contains("code") && !x.EndsWith(".cmd")).ToArray();
+                        files = files.Where(x => (x.Contains("code") || x.Contains("VSCodium")) && !x.EndsWith(".cmd")).ToArray();
 
                         if (files.Length > 0)
                         {
@@ -101,6 +101,11 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
                             {
                                 version = "Code - Exploration";
                                 instance.VSCodeVersion = VSCodeVersion.Exploration;
+                            }
+                            else if (file.EndsWith("VSCodium"))
+                            {
+                                version = "VSCodium";
+                                instance.VSCodeVersion = VSCodeVersion.Stable; // ?
                             }
 
                             if (version != string.Empty)
