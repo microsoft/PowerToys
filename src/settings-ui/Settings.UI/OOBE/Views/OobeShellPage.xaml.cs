@@ -71,6 +71,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 DescriptionLink = "https://aka.ms/PowerToysOverview",
                 Link = "https://github.com/microsoft/PowerToys/releases/",
             });
+            Modules.Insert((int)PowerToysModulesEnum.WhatsNew, new OobePowerToysModule()
+            {
+                ModuleName = loader.GetString("Oobe_WhatsNew"),
+                Tag = "WhatsNew",
+                IsNew = false,
+                Icon = "\uEF3C",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerToys.png",
+            });
             Modules.Insert((int)PowerToysModulesEnum.AlwaysOnTop, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_AlwaysOnTop"),
@@ -242,6 +250,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             switch (selectedItem.Tag)
             {
                 case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
+                case "WhatsNew": NavigationFrame.Navigate(typeof(OobeWhatsNew)); break;
                 case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                 case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
                 case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
