@@ -77,7 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Tag = "WhatsNew",
                 IsNew = false,
                 Icon = "\uEF3C",
-                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerToys.png",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsSettings.png",
             });
             Modules.Insert((int)PowerToysModulesEnum.AlwaysOnTop, new OobePowerToysModule()
             {
