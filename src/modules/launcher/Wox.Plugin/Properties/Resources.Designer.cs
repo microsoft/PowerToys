@@ -79,7 +79,16 @@ namespace Wox.Plugin.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Desktop.
+        ///   Looks up a localized string similar to On all Desktops.
+        /// </summary>
+        public static string VirtualDesktopHelper_AllDesktops {
+            get {
+                return ResourceManager.GetString("VirtualDesktopHelper_AllDesktops", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Desktop {0}.
         /// </summary>
         public static string VirtualDesktopHelper_Desktop {
             get {

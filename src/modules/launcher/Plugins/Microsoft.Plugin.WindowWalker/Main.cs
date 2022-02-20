@@ -8,6 +8,7 @@ using System.Linq;
 using ManagedCommon;
 using Microsoft.Plugin.WindowWalker.Components;
 using Wox.Plugin;
+using Wox.Plugin.Common.VirtualDesktop.Helper;
 
 namespace Microsoft.Plugin.WindowWalker
 {
@@ -21,6 +22,8 @@ namespace Microsoft.Plugin.WindowWalker
 
         public string Description => Properties.Resources.wox_plugin_windowwalker_plugin_description;
 
+        internal static readonly VirtualDesktopHelper VirtualDesktopHelperInstance = new VirtualDesktopHelper();
+
         static Main()
         {
             OpenWindows.Instance.UpdateOpenWindowsList();
@@ -33,6 +36,7 @@ namespace Microsoft.Plugin.WindowWalker
                 throw new ArgumentNullException(nameof(query));
             }
 
+            VirtualDesktopHelperInstance.UpdateDesktopList();
             OpenWindows.Instance.UpdateOpenWindowsList();
             SearchController.Instance.UpdateSearchText(query.Search);
             List<SearchResult> searchControllerResults = SearchController.Instance.SearchMatches;
@@ -41,7 +45,7 @@ namespace Microsoft.Plugin.WindowWalker
             {
                 Title = x.Result.Title,
                 IcoPath = IconPath,
-                SubTitle = Properties.Resources.wox_plugin_windowwalker_running + ": " + x.Result.ProcessInfo.Name,
+                SubTitle = Properties.Resources.wox_plugin_windowwalker_running + ": " + x.Result.Process.Name,
                 Action = c =>
                 {
                     x.Result.SwitchToWindow();
@@ -49,7 +53,7 @@ namespace Microsoft.Plugin.WindowWalker
                 },
 
                 // For debugging you can remove the comment sign in the next line.
-                // ToolTipData = new ToolTipData(x.Result.Title, $"hWnd: {x.Result.Hwnd}\nWindow class: {x.Result.ClassName}\nProcess ID: {x.Result.ProcessInfo.ProcessID}\nThread ID: {x.Result.ProcessInfo.ThreadID}\nProcess: {x.Result.ProcessInfo.Name}\nProcess exists: {x.Result.ProcessInfo.DoesExist}\nIs full access denied: {x.Result.ProcessInfo.IsFullAccessDenied}\nIs uwp app: {x.Result.ProcessInfo.IsUwpApp}\nIs ShellProcess: {x.Result.ProcessInfo.IsShellProcess}\nIs window cloaked: {x.Result.IsCloaked}\nWindow cloak state: {x.Result.GetWindowCloakState()}"),
+                ToolTipData = new ToolTipData(x.Result.Title, $"hWnd: {x.Result.Hwnd}\nWindow class: {x.Result.ClassName}\nProcess ID: {x.Result.Process.ProcessID}\nThread ID: {x.Result.Process.ThreadID}\nProcess: {x.Result.Process.Name}\nProcess exists: {x.Result.Process.DoesExist}\nIs full access denied: {x.Result.Process.IsFullAccessDenied}\nIs uwp app: {x.Result.Process.IsUwpApp}\nIs ShellProcess: {x.Result.Process.IsShellProcess}\nIs window cloaked: {x.Result.IsCloaked}\nWindow cloak state: {x.Result.GetWindowCloakState()}\nDesktop: {x.Result.Desktop.Name} ({x.Result.Desktop.Number})\nAllDesktops: {x.Result.Desktop.IsAllDesktopsView}\nVisibleDesktop: {x.Result.Desktop.IsVisible}\nDesktopPosition: {x.Result.Desktop.Position}"),
             }).ToList();
         }
 

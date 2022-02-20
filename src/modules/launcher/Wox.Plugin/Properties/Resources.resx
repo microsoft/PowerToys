@@ -123,7 +123,12 @@
   <data name="FailedToLoadPluginTitle" xml:space="preserve">
     <value>Fail to Load {0} Plugin</value>
   </data>
+  <data name="VirtualDesktopHelper_AllDesktops" xml:space="preserve">
+    <value>On all Desktops</value>
+    <comment>The window is shown on all desktops</comment>
+  </data>
   <data name="VirtualDesktopHelper_Desktop" xml:space="preserve">
-    <value>Desktop</value>
+    <value>Desktop {0}</value>
+    <comment>Default name for virtual desktops</comment>
   </data>
 </root>

@@ -20,10 +20,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// </summary>
     public class Window
     {
-#pragma warning disable IDE0052 // Remove unread private members
-        private static readonly VirtualDesktopHelper _virtualDesktopHelperInstance = new VirtualDesktopHelper(false);
-#pragma warning restore IDE0052 // Remove unread private members
-
         /// <summary>
         /// The handle to the window
         /// </summary>
@@ -39,6 +35,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// An instance of <see cref="WindowProcess"/> that contains the process information for the window
         /// </summary>
         private readonly WindowProcess processInfo;
+
+        /// <summary>
+        /// An instance of <see cref="VDesktop"/> that contains the desktop information for the window
+        /// </summary>
+        private readonly VDesktop desktopInfo;
 
         /// <summary>
         /// Gets the title of the window (the string displayed at the top of the window)
@@ -77,9 +78,17 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the object of with the process information of the window
         /// </summary>
-        public WindowProcess ProcessInfo
+        public WindowProcess Process
         {
             get { return processInfo; }
+        }
+
+        /// <summary>
+        /// Gets the object of with the desktop information of the window
+        /// </summary>
+        public VDesktop Desktop
+        {
+            get { return desktopInfo; }
         }
 
         /// <summary>
@@ -196,6 +205,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             // TODO: Add verification as to whether the window handle is valid
             this.hwnd = hwnd;
             processInfo = CreateWindowProcessInstance(hwnd);
+            desktopInfo = Main.VirtualDesktopHelperInstance.GetWindowDesktop(hwnd);
         }
 
         /// <summary>
@@ -284,7 +294,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 case (int)DwmWindowCloakStates.CloakedApp:
                     return WindowCloakState.App;
                 case (int)DwmWindowCloakStates.CloakedShell:
-                    return WindowCloakState.Shell;
+                    return Main.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(hwnd) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
                 case (int)DwmWindowCloakStates.CloakedInherited:
                     return WindowCloakState.Inherited;
                 default:
@@ -301,6 +311,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             App,
             Shell,
             Inherited,
+            OtherDesktop,
             Unknown,
         }
 
