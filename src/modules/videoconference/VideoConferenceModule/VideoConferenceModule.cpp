@@ -251,7 +251,7 @@ void VideoConferenceModule::onModuleSettingsChanged()
             {
                 toolbar.setHideToolbarWhenUnmuted(val.value());
             }
-            
+
             const auto selectedMic = values.get_string_value(L"selected_mic");
             if (selectedMic && selectedMic != settings.selectedMicrophone)
             {
@@ -508,7 +508,11 @@ void VideoConferenceModule::disable()
             }
         }
 
-        instance->unmuteAll();
+        if (getVirtualCameraMuteState())
+        {
+            reverseVirtualCameraMuteState();
+        }
+
         toolbar.hide();
 
         _enabled = false;

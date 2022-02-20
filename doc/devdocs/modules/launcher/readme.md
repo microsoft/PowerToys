@@ -11,7 +11,7 @@
     - [Program](/doc/devdocs/modules/launcher/plugins/program.md)
     - [Registry](/doc/devdocs/modules/launcher/plugins/registry.md)
     - [Shell](/doc/devdocs/modules/launcher/plugins/shell.md)
-    - [Sys](/doc/devdocs/modules/launcher/plugins/sys.md)
+    - [Windows System Commands](/doc/devdocs/modules/launcher/plugins/system.md)
     - [Uri](/doc/devdocs/modules/launcher/plugins/uri.md)
     - [Window Walker](/doc/devdocs/modules/launcher/plugins/windowwalker.md)
     - [Web Search](/doc/devdocs/modules/launcher/plugins/WebSearch.md)

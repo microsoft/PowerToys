@@ -114,6 +114,9 @@
     <ClInclude Include="FancyZonesData\Layout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ZoneIndexSetBitmask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -186,6 +189,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FancyZonesData\LayoutTemplates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FancyZonesWindowProperties.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

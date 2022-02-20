@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
@@ -71,7 +72,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public void UpdateOpenWindowsList()
         {
             windows.Clear();
-            NativeMethods.CallBackPtr callbackptr = new NativeMethods.CallBackPtr(WindowEnumerationCallBack);
+            EnumWindowsProc callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
             _ = NativeMethods.EnumWindows(callbackptr, 0);
         }
 
@@ -92,10 +93,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
             {
                 // To hide (not add) preloaded uwp app windows that are invisible to the user we check the cloak state in DWM to be "none". (Issue #13637.)
                 // (If user asking to see these windows again we can add an optional plugin setting in the future.)
-                if (!newWindow.IsCloaked)
-                {
-                    windows.Add(newWindow);
-                }
+                // [@htcfreek, 2022-02-01: Removed the IsCloaked check to list windows from virtual desktops other than the current one again (#15887). In a second PR I will fix it re-implement it with improved code again.]
+                // if (!newWindow.IsCloaked)
+                // {
+                windows.Add(newWindow);
+
+                // }
             }
 
             return true;

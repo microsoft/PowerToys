@@ -21,7 +21,7 @@
         </BootstrapperApplicationRef>
 
         <util:FileSearch Variable="HasDotnet3122" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\3.1.22\System.Xaml.dll" Result="exists" />
-        <util:FileSearch Variable="HasDotnet5013" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\5.0.13\System.Xaml.dll" Result="exists" />
+        <util:FileSearch Variable="HasDotnet601" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\6.0.1\System.Xaml.dll" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
@@ -51,6 +51,7 @@
                 Permanent="yes"
                 PerMachine="yes"
                 UninstallCommand="/uninstall /quiet">
+                <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
                     Description="Microsoft Windows Desktop Runtime - 3.1.22 (x64)"
                     ProductName="Microsoft Windows Desktop Runtime - 3.1.22 (x64)"
@@ -59,22 +60,23 @@
                     Hash="08EF2F6CFDB33946061884B1CE13FA867EFBD576" />
             </ExePackage>
             <ExePackage
-                Name="windowsdesktop-runtime-5.0.13-win-x64.exe"
+                Name="windowsdesktop-runtime-6.0.1-win-x64.exe"
                 Compressed="no"
-                Id="DotnetRuntime5"
-                DetectCondition="HasDotnet5013"
-                DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/2bfb80f2-b8f2-44b0-90c1-d3c8c1c8eac8/409dd3d3367feeeda048f4ff34b32e82/windowsdesktop-runtime-5.0.13-win-x64.exe"
+                Id="DotnetRuntime6"
+                DetectCondition="HasDotnet601"
+                DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/bf058765-6f71-4971-aee1-15229d8bfb3e/c3366e6b74bec066487cd643f915274d/windowsdesktop-runtime-6.0.1-win-x64.exe"
                 InstallCommand="/install /quiet"
                 RepairCommand="/repair /passive"
                 Permanent="yes"
                 PerMachine="yes"
                 UninstallCommand="/uninstall /quiet">
+                <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
-                    Description="Microsoft Windows Desktop Runtime - 5.0.13 (x64)"
-                    ProductName="Microsoft Windows Desktop Runtime - 5.0.13 (x64)"
-                    Size="54456248"
-                    Version="5.0.13.30717"
-                    Hash="EB5506CEBB3DD1CEC78F7F8131F87A2C5F665B40" />
+                    Description="Microsoft Windows Desktop Runtime - 6.0.1 (x64)"
+                    ProductName="Microsoft Windows Desktop Runtime - 6.0.1 (x64)"
+                    Size="57508696"
+                    Version="6.0.1.30718"
+                    Hash="1DC44C31438725846F59071C868736112398329B" />
             </ExePackage>
             <ExePackage
                 Name="MicrosoftEdgeWebview2Setup.exe"

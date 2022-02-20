@@ -4,7 +4,7 @@
   <PropertyGroup>
     <AssemblyTitle>PowerToys.Interop</AssemblyTitle>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2019 Microsoft Corp.</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corp.</AssemblyCopyright>
   </PropertyGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -18,6 +18,12 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CLRSupport>true</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

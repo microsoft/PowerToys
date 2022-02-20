@@ -1,6 +1,19 @@
 #include "pch.h"
 #include "FrameDrawer.h"
 
+#include <dwmapi.h>
+
+namespace
+{
+    size_t D2DRectUHash(D2D1_SIZE_U rect)
+    {
+        using pod_repr_t = uint64_t;
+        static_assert(sizeof(D2D1_SIZE_U) == sizeof(pod_repr_t));
+        std::hash<pod_repr_t> hasher{};
+        return hasher(*reinterpret_cast<const pod_repr_t*>(&rect));
+    }
+}
+
 std::unique_ptr<FrameDrawer> FrameDrawer::Create(HWND window)
 {
     auto self = std::make_unique<FrameDrawer>(window);
@@ -12,63 +25,54 @@ std::unique_ptr<FrameDrawer> FrameDrawer::Create(HWND window)
     return nullptr;
 }
 
-FrameDrawer::FrameDrawer(FrameDrawer&& other) :
-    m_window(other.m_window),
-    m_renderTarget(std::move(other.m_renderTarget)), 
-    m_sceneRect(std::move(other.m_sceneRect)),
-    m_renderThread(std::move(m_renderThread))
-{
-}
-
 FrameDrawer::FrameDrawer(HWND window) :
-    m_window(window), m_renderTarget(nullptr)
+    m_window(window)
 {
 }
 
-FrameDrawer::~FrameDrawer()
+bool FrameDrawer::CreateRenderTargets(const RECT& clientRect)
 {
-    m_abortThread = true;
-    m_renderThread.join();
+    HRESULT hr;
 
-    if (m_renderTarget)
+    constexpr float DPI = 96.f; // Always using the default in DPI-aware mode
+    const auto renderTargetProperties = D2D1::RenderTargetProperties(
+        D2D1_RENDER_TARGET_TYPE_DEFAULT,
+        D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+        DPI,
+        DPI);
+
+    const auto renderTargetSize = D2D1::SizeU(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+    const auto rectHash = D2DRectUHash(renderTargetSize);
+    if (m_renderTarget && rectHash == m_renderTargetSizeHash)
     {
-        m_renderTarget->Release();
+        // Already at the desired size -> do nothing
+        return true;
     }
+
+    m_renderTarget = nullptr;
+
+    const auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(m_window, renderTargetSize, D2D1_PRESENT_OPTIONS_NONE);
+
+    hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, m_renderTarget.put());
+
+    if (!SUCCEEDED(hr) || !m_renderTarget)
+    {
+        return false;
+    }
+    m_renderTargetSizeHash = rectHash;
+
+    return true;
 }
 
 bool FrameDrawer::Init()
 {
     RECT clientRect;
-
-    // Obtain the size of the drawing area.
-    if (!GetClientRect(m_window, &clientRect))
+    if (!SUCCEEDED(DwmGetWindowAttribute(m_window, DWMWA_EXTENDED_FRAME_BOUNDS, &clientRect, sizeof(clientRect))))
     {
         return false;
     }
 
-    HRESULT hr;
-
-    // Create a Direct2D render target
-    // We should always use the DPI value of 96 since we're running in DPI aware mode
-    auto renderTargetProperties = D2D1::RenderTargetProperties(
-        D2D1_RENDER_TARGET_TYPE_DEFAULT,
-        D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
-        96.f,
-        96.f);
-
-    auto renderTargetSize = D2D1::SizeU(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
-    auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(m_window, renderTargetSize);
-
-    hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, &m_renderTarget);
-
-    if (!SUCCEEDED(hr))
-    {
-        return false;
-    }
-
-    m_renderThread = std::thread([this]() { RenderLoop(); });
-
-    return true;
+    return CreateRenderTargets(clientRect);
 }
 
 void FrameDrawer::Hide()
@@ -79,19 +83,63 @@ void FrameDrawer::Hide()
 void FrameDrawer::Show()
 {
     ShowWindow(m_window, SW_SHOWNA);
+    Render();
 }
 
-void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, float thickness)
+void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, int thickness)
 {
-    std::unique_lock lock(m_mutex);
-
-    auto borderColor = ConvertColor(color);
-
-    m_sceneRect = DrawableRect{
+    const auto newSceneRect = DrawableRect{
         .rect = ConvertRect(windowRect),
-        .borderColor = borderColor,
+        .borderColor = ConvertColor(color),
         .thickness = thickness
     };
+
+    const bool colorUpdated = std::memcmp(&m_sceneRect.borderColor, &newSceneRect.borderColor, sizeof(newSceneRect.borderColor));
+    const bool thicknessUpdated = m_sceneRect.thickness != newSceneRect.thickness;
+    const bool needsRedraw = colorUpdated || thicknessUpdated;
+
+    RECT clientRect;
+    if (!SUCCEEDED(DwmGetWindowAttribute(m_window, DWMWA_EXTENDED_FRAME_BOUNDS, &clientRect, sizeof(clientRect))))
+    {
+        return;
+    }
+
+    m_sceneRect = newSceneRect;
+
+    const auto renderTargetSize = D2D1::SizeU(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+
+    const auto rectHash = D2DRectUHash(renderTargetSize);
+
+    const bool atTheDesiredSize = (rectHash == m_renderTargetSizeHash) && m_renderTarget;
+    if (!atTheDesiredSize)
+    {
+        const bool resizeOk = m_renderTarget && SUCCEEDED(m_renderTarget->Resize(renderTargetSize));
+        if (!resizeOk)
+        {
+            if (!CreateRenderTargets(clientRect))
+            {
+                Logger::error(L"Failed to create render targets");
+            }
+        }
+        else
+        {
+            m_renderTargetSizeHash = rectHash;
+        }
+    }
+
+    if (colorUpdated)
+    {
+        m_borderBrush = nullptr;
+        if (m_renderTarget)
+        {
+            m_renderTarget->CreateSolidColorBrush(m_sceneRect.borderColor, m_borderBrush.put());
+        }
+    }
+
+    if (!atTheDesiredSize || needsRedraw)
+    {
+        Render();
+    }
 }
 
 ID2D1Factory* FrameDrawer::GetD2DFactory()
@@ -127,46 +175,19 @@ D2D1_RECT_F FrameDrawer::ConvertRect(RECT rect)
     return D2D1::RectF((float)rect.left, (float)rect.top, (float)rect.right, (float)rect.bottom);
 }
 
-FrameDrawer::RenderResult FrameDrawer::Render()
+void FrameDrawer::Render()
 {
-    std::unique_lock lock(m_mutex);
-
     if (!m_renderTarget)
-    {
-        return RenderResult::Failed;
-    }
-
+        return;
     m_renderTarget->BeginDraw();
 
-    // Draw backdrop
     m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
 
-    ID2D1SolidColorBrush* borderBrush = nullptr;
-    m_renderTarget->CreateSolidColorBrush(m_sceneRect.borderColor, &borderBrush);
-
-    if (borderBrush)
+    if (m_borderBrush)
     {
-        m_renderTarget->DrawRectangle(m_sceneRect.rect, borderBrush, m_sceneRect.thickness);
-        borderBrush->Release();
+        // The border stroke is centered on the line.
+        m_renderTarget->DrawRectangle(m_sceneRect.rect, m_borderBrush.get(), static_cast<float>(m_sceneRect.thickness * 2));
     }
-
-    // The lock must be released here, as EndDraw() will wait for vertical sync
-    lock.unlock();
 
     m_renderTarget->EndDraw();
-    return RenderResult::Ok;
-}
-
-void FrameDrawer::RenderLoop()
-{
-    while (!m_abortThread)
-    {
-        auto result = Render();
-        if (result == RenderResult::Failed)
-        {
-            Logger::error("Render failed");
-            Hide();
-            m_abortThread = true;
-        }
-    }
 }

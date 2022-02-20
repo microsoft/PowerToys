@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Microsoft.Search.Interop;
+using Microsoft.Plugin.Indexer.Interop;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Indexer.SearchHelper

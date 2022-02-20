@@ -149,7 +149,8 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
             {
                 continue;
             }
-            const bool module_inst_enabled = modules().at(name)->is_enabled();
+            PowertoyModule& powertoy = modules().at(name);
+            const bool module_inst_enabled = powertoy->is_enabled();
             const bool target_enabled = value.GetBoolean();
             if (module_inst_enabled == target_enabled)
             {
@@ -157,12 +158,14 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
             }
             if (target_enabled)
             {
-                modules().at(name)->enable();
+                powertoy->enable();
             }
             else
             {
-                modules().at(name)->disable();
+                powertoy->disable();
             }
+            // Sync the hotkey state with the module state, so it can be removed for disabled modules.
+            powertoy.UpdateHotkeyEx();
         }
     }
 
@@ -221,6 +224,7 @@ void start_enabled_powertoys()
         if (!powertoys_to_disable.contains(name))
         {
             powertoy->enable();
+            powertoy.UpdateHotkeyEx();
         }
     }
 }

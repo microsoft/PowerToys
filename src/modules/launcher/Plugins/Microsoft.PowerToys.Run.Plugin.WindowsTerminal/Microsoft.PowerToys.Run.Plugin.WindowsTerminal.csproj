@@ -3,7 +3,7 @@
   <Import Project="..\..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.WindowsTerminal</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.WindowsTerminal</AssemblyName>
     <Version>$(Version).0</Version>
@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
