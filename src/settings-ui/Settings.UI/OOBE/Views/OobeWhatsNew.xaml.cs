@@ -61,8 +61,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             IList<PowerToysReleaseInfo> releases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(releaseNotesJSON);
 
-            // Get the 10 latest releases
-            var latestReleases = releases.OrderByDescending(release => release.PublishedDate).Take(10);
+            // Get the latest releases
+            var latestReleases = releases.OrderByDescending(release => release.PublishedDate).Take(5);
 
             StringBuilder releaseNotesHtmlBuilder = new StringBuilder(string.Empty);
 
