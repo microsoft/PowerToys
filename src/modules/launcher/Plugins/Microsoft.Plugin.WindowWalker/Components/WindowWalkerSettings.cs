@@ -37,7 +37,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         internal bool ConfirmKillProcess { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether the "kill process" command is hidden on processes that require additional permissions (uac).
+        /// Gets a value indicating whether the "kill process" command is hidden on processes that require additional permissions (UAC).
         /// </summary>
         internal bool HideKillProcessOnElevatedProcesses { get; private set; }
 
