@@ -90,12 +90,12 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
                     auto extension = extensionsList.GetStringAt(j);
 
                     // Ignore extensions for which we already have dedicated handlers
-                    if (std::wstring{ extension } == std::wstring{ NonLocalizable::MDExtension } ||
-                        std::wstring{ extension } == std::wstring{ NonLocalizable::SVGExtension })
-                    {
-                        continue;
-                    }
-                    extensions.push_back(std::wstring{ extension });
+                    // if (std::wstring{ extension } == std::wstring{ NonLocalizable::MDExtension } ||
+                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::SVGExtension })
+                    // {
+                    //     continue;
+                    // }
+                    // extensions.push_back(std::wstring{ extension });
                     
                     // Ignore extensions in the exclusion list
                     IsExcluded = false;
