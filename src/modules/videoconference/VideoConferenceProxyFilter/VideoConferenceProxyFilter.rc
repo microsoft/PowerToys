@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "../../../../common/version/version.h"
+#include "../../../common/version/version.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -24,7 +24,7 @@ FILEFLAGS 0x0L
 #endif
 FILEOS VOS_NT_WINDOWS32
 FILETYPE VFT_DLL
-FILESUBTYPE VFT2_UNKNOWN 
+FILESUBTYPE VFT2_UNKNOWN
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
