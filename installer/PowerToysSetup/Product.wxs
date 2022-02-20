@@ -865,7 +865,7 @@
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\HtmlAgilityPack.dll" />
                 <File Id="FileExplorerPreview_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.IO.Abstractions.dll" />
                 <!-- Files to include dll's for Monaco Preview Handler and it's dependencies -->
-                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\languages.json" />
+                <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\monaco_languages.json" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.Common.UI.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.dll" />
                 <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToys.MonacoPreviewHandler.comhost.dll" />
