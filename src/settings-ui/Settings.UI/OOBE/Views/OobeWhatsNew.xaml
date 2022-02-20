@@ -20,9 +20,16 @@
             <TextBlock
                 x:Name="TitleTxt"
                 Text=""
-                Margin="0,0,0,32"
                 AutomationProperties.HeadingLevel="Level1"
                 Style="{StaticResource TitleTextBlockStyle}" />
+            <HyperlinkButton
+                NavigateUri="https://github.com/microsoft/PowerToys/releases"
+                Margin="0,0,0,16"
+                Style="{StaticResource TextButtonStyle}">
+                <TextBlock
+                    x:Uid="Oobe_WhatsNew_DetailedReleaseNotesLink"
+                    TextWrapping="Wrap" />
+            </HyperlinkButton>
             <muxc:ProgressRing
                 x:Name="LoadingProgressRing"
                 IsIndeterminate="True"
