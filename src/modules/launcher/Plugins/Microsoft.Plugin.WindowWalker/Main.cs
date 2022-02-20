@@ -5,18 +5,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.WindowWalker.Components;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
 using Wox.Plugin.Common.VirtualDesktop.Helper;
 
 namespace Microsoft.Plugin.WindowWalker
 {
-    public class Main : IPlugin, IPluginI18n
+    public class Main : IPlugin, IPluginI18n, ISettingProvider
     {
         private string IconPath { get; set; }
 
         private PluginInitContext Context { get; set; }
+
+        private readonly WindowWalkerSettings _windowWalkerSettings = new WindowWalkerSettings();
 
         public string Name => Properties.Resources.wox_plugin_windowwalker_plugin_name;
 
@@ -64,6 +68,11 @@ namespace Microsoft.Plugin.WindowWalker
             UpdateIconPath(Context.API.GetCurrentTheme());
         }
 
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions
+        {
+            get { return _windowWalkerSettings.GetAdditionalOptions(); }
+        }
+
         // Todo : Update with theme based IconPath
         private void UpdateIconPath(Theme theme)
         {
@@ -90,6 +99,16 @@ namespace Microsoft.Plugin.WindowWalker
         public string GetTranslatedPluginDescription()
         {
             return Properties.Resources.wox_plugin_windowwalker_plugin_description;
+        }
+
+        public Control CreateSettingPanel()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            _windowWalkerSettings.UpdateSettings(settings);
         }
     }
 }

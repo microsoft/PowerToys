@@ -19,7 +19,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -84,6 +84,60 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         public static string wox_plugin_windowwalker_running {
             get {
                 return ResourceManager.GetString("wox_plugin_windowwalker_running", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Request confirmation when killing a process.
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingConfirmKillProcess {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingConfirmKillProcess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide the information about the Explorer setting.
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingExplorerSettingInfo {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingExplorerSettingInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide &quot;kill process&quot; menu if additional permissions are required.
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingHideKillProcess {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingHideKillProcess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show only results from visible desktop.
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingResultsVisibleDesktop {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingResultsVisibleDesktop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show desktop name in subtitle.
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingSubtitleDesktopName {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingSubtitleDesktopName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show process id in subtitle.
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingSubtitlePid {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingSubtitlePid", resourceCulture);
             }
         }
     }

@@ -10,6 +10,7 @@ using Microsoft.Win32;
 using Wox.Plugin.Common.VirtualDesktop.Interop;
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
+using Wox.Plugin.Properties;
 
 namespace Wox.Plugin.Common.VirtualDesktop.Helper
 {
@@ -240,13 +241,41 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             }
 
             // If the desktop name was not changed by the user, it isn't saved to the registry. Then we need the default name for the desktop.
-            var defaultName = string.Format(Properties.Resources.VirtualDesktopHelper_Desktop, GetDesktopNumber(desktop));
+            var defaultName = string.Format(Resources.VirtualDesktopHelper_Desktop, GetDesktopNumber(desktop));
 
             string registryPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops\\Desktops\\{" + desktop.ToString().ToUpper() + "}";
             RegistryKey deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);
             var desktopName = deskSubKey?.GetValue("Name");
 
             return (desktopName != null) ? (string)desktopName : defaultName;
+        }
+
+        /// <summary>
+        /// Returns the position type for a desktop.
+        /// </summary>
+        /// <param name="desktop">Guid of the desktop.</param>
+        /// <returns>Type of desktop position.</returns>
+        public VirtualDesktopPosition GetDesktopPositionType(Guid desktop)
+        {
+            int desktopNumber = GetDesktopNumber(desktop);
+            int desktopCount = GetDesktopCount();
+
+            if (desktopNumber == 1)
+            {
+                return VirtualDesktopPosition.FirstDesktop;
+            }
+            else if (desktopNumber == desktopCount)
+            {
+                return VirtualDesktopPosition.LastDesktop;
+            }
+            else if (desktopNumber > 1 & desktopNumber < desktopCount)
+            {
+                return VirtualDesktopPosition.BetweenOtherDesktops;
+            }
+            else
+            {
+                return VirtualDesktopPosition.NotApplicable;
+            }
         }
 
         /// <summary>
@@ -432,34 +461,6 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         }
 
         /// <summary>
-        /// Returns the position type for a desktop.
-        /// </summary>
-        /// <param name="desktop">Guid of the desktop.</param>
-        /// <returns>Type of desktop position.</returns>
-        private VirtualDesktopPosition GetDesktopPositionType(Guid desktop)
-        {
-            int desktopNumber = GetDesktopNumber(desktop);
-            int desktopCount = GetDesktopCount();
-
-            if (desktopNumber == 1)
-            {
-                return VirtualDesktopPosition.FirstDesktop;
-            }
-            else if (desktopNumber == desktopCount)
-            {
-                return VirtualDesktopPosition.LastDesktop;
-            }
-            else if (desktopNumber > 1 & desktopNumber < desktopCount)
-            {
-                return VirtualDesktopPosition.BetweenOtherDesktops;
-            }
-            else
-            {
-                return VirtualDesktopPosition.NotApplicable;
-            }
-        }
-
-        /// <summary>
         /// Returns an instance of VDesktop for a Guid.
         /// </summary>
         /// <param name="desktop">Guid of the desktop.</param>
@@ -473,7 +474,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             return new VDesktop()
             {
                 Id = desktop,
-                Name = isAllDesktops ? Properties.Resources.VirtualDesktopHelper_AllDesktops : GetDesktopName(desktop),
+                Name = isAllDesktops ? Resources.VirtualDesktopHelper_AllDesktops : GetDesktopName(desktop),
                 Number = GetDesktopNumber(desktop),
                 IsVisible = IsDesktopVisible(desktop) || isAllDesktops,
                 IsAllDesktopsView = isAllDesktops,

@@ -2200,6 +2200,7 @@ vcredist
 VCRT
 vcruntime
 vcvars
+VDesktop
 vdi
 VDId
 vec

@@ -126,4 +126,23 @@
   <data name="wox_plugin_windowwalker_running" xml:space="preserve">
     <value>Running</value>
   </data>
+  <data name="wox_plugin_windowwalker_SettingConfirmKillProcess" xml:space="preserve">
+    <value>Request confirmation when killing a process</value>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingExplorerSettingInfo" xml:space="preserve">
+    <value>Hide the information about the Explorer setting</value>
+    <comment>Explorer is here the program File Explorer</comment>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingHideKillProcess" xml:space="preserve">
+    <value>Hide "kill process" menu if additional permissions are required</value>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingResultsVisibleDesktop" xml:space="preserve">
+    <value>Show only results from visible desktop</value>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingSubtitleDesktopName" xml:space="preserve">
+    <value>Show desktop name in subtitle</value>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingSubtitlePid" xml:space="preserve">
+    <value>Show process id in subtitle</value>
+  </data>
 </root>
