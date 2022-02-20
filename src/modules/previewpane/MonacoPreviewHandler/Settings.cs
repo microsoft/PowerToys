@@ -6,6 +6,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.PreviewHandler.Monaco
 {
@@ -14,18 +15,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
     /// </summary>
     public class Settings
     {
+
+        private static SettingsUtils ModuleSettings = new SettingsUtils();
+
         /// <summary>
         /// Word warping. Set by PT settings.
         /// </summary>
-        private bool _wrap;
-
         public bool Wrap
         {
-            get => _wrap;
-            set
-            {
-                _wrap = value;
-            }
+            get => ModuleSettings.GetSettings<PowerPreviewSettings>("File Explorer").Properties.EnableMonacoPreviewWordWrap;
         }
 
         /// <summary>
