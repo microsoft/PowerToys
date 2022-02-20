@@ -95,7 +95,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                     var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
 
                                     // prepping index html to load in
-                                    var html = fileContent = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
+                                    var html = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
 
                                     html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
                                     html = html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
