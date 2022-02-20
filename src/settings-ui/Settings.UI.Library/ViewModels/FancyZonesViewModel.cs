@@ -42,9 +42,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private enum ZoneTitleBarStyle
         {
             None = 0,
-            Numbers = 1,
-            Icons = 2,
-            Tabs = 3,
+            AutoHide = 1,
+            Numbers = 2,
+            AutoHideNumbers = 3,
+            Icons = 4,
+            AutoHideIcons = 5,
+            Tabs = 6,
+            AutoHideTabs = 7,
         }
 
         public FancyZonesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
@@ -175,6 +179,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     OnPropertyChanged(nameof(SnapHotkeysCategoryEnabled));
                     OnPropertyChanged(nameof(QuickSwitchEnabled));
                     OnPropertyChanged(nameof(WindowSwitchingCategoryEnabled));
+                    OnPropertyChanged(nameof(ZoneTitleBarCategoryEnabled));
                 }
             }
         }
@@ -341,15 +346,45 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return (int)_zoneTitleBarStyle;
+                return ((int)_zoneTitleBarStyle) >> 1;
             }
 
             set
             {
-                if (value != (int)_zoneTitleBarStyle)
+                if (value != ZoneTitleBarStyleIndex)
                 {
-                    _zoneTitleBarStyle = (ZoneTitleBarStyle)value;
-                    Settings.Properties.FancyzonesZoneTitleBarStyle.Value = value;
+                    var autoHide = _zoneTitleBarStyle & ZoneTitleBarStyle.AutoHide;
+                    _zoneTitleBarStyle = (ZoneTitleBarStyle)(value << 1) | autoHide;
+                    Settings.Properties.FancyzonesZoneTitleBarStyle.Value = (int)_zoneTitleBarStyle;
+                    NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(ZoneTitleBarCategoryEnabled));
+                }
+            }
+        }
+
+        public bool ZoneTitleBarCategoryEnabled
+        {
+            get
+            {
+                return _isEnabled && _zoneTitleBarStyle != ZoneTitleBarStyle.None;
+            }
+        }
+
+        public bool ZoneTitleBarAutoHide
+        {
+            get
+            {
+                var autoHide = _zoneTitleBarStyle & ZoneTitleBarStyle.AutoHide;
+                return autoHide == ZoneTitleBarStyle.AutoHide;
+            }
+
+            set
+            {
+                if (value != ZoneTitleBarAutoHide)
+                {
+                    var autoHide = value ? ZoneTitleBarStyle.AutoHide : ZoneTitleBarStyle.None;
+                    _zoneTitleBarStyle = (ZoneTitleBarStyle)(ZoneTitleBarStyleIndex << 1) | autoHide;
+                    Settings.Properties.FancyzonesZoneTitleBarStyle.Value = (int)_zoneTitleBarStyle;
                     NotifyPropertyChanged();
                 }
             }

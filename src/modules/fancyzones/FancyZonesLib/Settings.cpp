@@ -41,6 +41,7 @@ namespace NonLocalizable
     const wchar_t ExcludedAppsID[] = L"fancyzones_excluded_apps";
     const wchar_t ZoneHighlightOpacityID[] = L"fancyzones_highlight_opacity";
     const wchar_t ShowZoneNumberID[] = L"fancyzones_showZoneNumber";
+    const wchar_t ZoneTitleBarAutoHide[] = L"fancyzones_zoneTitleBarAutoHide";
 
     const wchar_t ToggleEditorActionID[] = L"ToggledFZEditor";
     const wchar_t IconKeyID[] = L"pt-fancy-zones";
@@ -84,7 +85,7 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[19] = {
+    } m_configBools[20] = {
         { NonLocalizable::ShiftDragID, &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
         { NonLocalizable::MouseSwitchID, &m_settings.mouseSwitch, IDS_SETTING_DESCRIPTION_MOUSESWITCH },
         { NonLocalizable::OverrideSnapHotKeysID, &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
@@ -104,6 +105,7 @@ private:
         { NonLocalizable::WindowSwitchingToggleID, &m_settings.windowSwitching, IDS_SETTING_WINDOW_SWITCHING_TOGGLE_LABEL },
         { NonLocalizable::SystemThemeID, &m_settings.systemTheme, IDS_SETTING_DESCRIPTION_SYSTEM_THEME },
         { NonLocalizable::ShowZoneNumberID, &m_settings.showZoneNumber, IDS_SETTING_DESCRIPTION_SHOW_ZONE_NUMBER },
+        { NonLocalizable::ZoneTitleBarAutoHide, &m_settings.zoneTitleBarAutoHide, IDS_SETTING_DESCRIPTION_ZONE_TITLE_BAR_AUTO_HIDE },
     };
 };
 

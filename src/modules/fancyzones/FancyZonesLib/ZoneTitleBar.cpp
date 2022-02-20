@@ -82,6 +82,8 @@ class NoZoneTitleBar : public IZoneTitleBar
 public:
     NoZoneTitleBar() noexcept {}
 
+    void Show(bool show) override {}
+
     void UpdateZoneWindows(std::vector<HWND> zoneWindows) override {}
 
     void ReadjustPos() override {}
@@ -92,7 +94,8 @@ public:
 class SlimZoneTitleBar : public IZoneTitleBar
 {
 public:
-    SlimZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi) noexcept :
+    SlimZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi, bool isOverlay) noexcept :
+        m_isOverlay(isOverlay),
         m_dpi(dpi),
         m_window(
             hinstance,
@@ -106,6 +109,8 @@ public:
     {
     }
 
+    void Show(bool show) override {}
+
     void UpdateZoneWindows(std::vector<HWND> zoneWindows) override
     {
         m_zoneWindows = zoneWindows;
@@ -114,16 +119,24 @@ public:
 
     void ReadjustPos() override
     {
-        auto zoneCurrentWindow = GetZoneCurrentWindow();
-
-        // Put the zone title bar just above the zone current window
-        if (zoneCurrentWindow != NULL)
+        if (m_isOverlay)
         {
-            // Get the window above the zone current window
-            HWND windowAboveZoneCurrentWindow = GetWindow(zoneCurrentWindow, GW_HWNDPREV);
+            // Set the zone title bar to be top
+            SetWindowPos(m_window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE);
+        }
+        else
+        {
+            auto zoneCurrentWindow = GetZoneCurrentWindow();
 
-            // Put the zone title bar just below the windowAboveZoneCurrentWindow
-            SetWindowPos(m_window, windowAboveZoneCurrentWindow, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE);
+            // Put the zone title bar just above the zone current window
+            if (zoneCurrentWindow != NULL)
+            {
+                // Get the window above the zone current window
+                HWND windowAboveZoneCurrentWindow = GetWindow(zoneCurrentWindow, GW_HWNDPREV);
+
+                // Put the zone title bar just below the windowAboveZoneCurrentWindow
+                SetWindowPos(m_window, windowAboveZoneCurrentWindow, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE);
+            }
         }
 
         Render(m_window);
@@ -188,6 +201,7 @@ protected:
     }
 
 protected:
+    bool m_isOverlay;
     UINT m_dpi;
     int m_height;
     std::vector<HWND> m_zoneWindows;
@@ -198,8 +212,8 @@ protected:
 class NumbersZoneTitleBar : public SlimZoneTitleBar
 {
 public:
-    NumbersZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi) noexcept :
-        SlimZoneTitleBar(hinstance, zone, dpi)
+    NumbersZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi, bool isOverlay) noexcept :
+        SlimZoneTitleBar(hinstance, zone, dpi, isOverlay)
     {
     }
 
@@ -247,8 +261,8 @@ public:
 class IconsZoneTitleBar : public SlimZoneTitleBar
 {
 public:
-    IconsZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi) noexcept :
-        SlimZoneTitleBar(hinstance, zone, dpi)
+    IconsZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi, bool isOverlay) noexcept :
+        SlimZoneTitleBar(hinstance, zone, dpi, isOverlay)
     {
     }
 
@@ -324,7 +338,8 @@ private:
     }
 
 public:
-    TabsZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi) noexcept :
+    TabsZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi, bool isOverlay) noexcept :
+        m_isOverlay(isOverlay),
         m_hiddenWindow(hinstance),
         m_zoneCurrentWindow(NULL),
         m_dpi(dpi),
@@ -340,6 +355,8 @@ public:
     {
     }
 
+    void Show(bool show) override {}
+
     void UpdateZoneWindows(std::vector<HWND> zoneWindows) override
     {
         m_zoneWindows = zoneWindows;
@@ -350,13 +367,20 @@ public:
     {
         auto zoneCurrentWindow = GetZoneCurrentWindow();
 
-        // Put the zone title bar just below the zone current window
         if (zoneCurrentWindow != NULL)
         {
             m_zoneCurrentWindow = zoneCurrentWindow;
 
-            // Put the zone title bar just below the zoneCurrentWindow
-            SetWindowPos(m_window, zoneCurrentWindow, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE);
+            if (m_isOverlay)
+            {
+                // Set the zone title bar to be top
+                SetWindowPos(m_window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE);
+            }
+            else
+            {
+                // Put the zone title bar just below the zoneCurrentWindow
+                SetWindowPos(m_window, zoneCurrentWindow, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE);
+            }
         }
 
         Render(m_window);
@@ -397,8 +421,9 @@ protected:
         BOOL disable = TRUE;
         DwmSetWindowAttribute(hwnd, DWMWA_TRANSITIONS_FORCEDISABLED, &disable, sizeof(disable));
 
-        // Extend frame (twice the size needed)
-        MARGINS margins = { 0, 0, 2 * m_height, 0 };
+        // Extend frame (twice the size if not overlay)
+        int height = m_isOverlay ? m_height : 2 * m_height;
+        MARGINS margins = { 0, 0, height, 0 };
         DwmExtendFrameIntoClientArea(hwnd, &margins);
 
         // Update frame
@@ -458,14 +483,13 @@ protected:
 
     BOOL WindowPosChanging(HWND hwnd, WINDOWPOS* pos)
     {
-        if (m_zoneCurrentWindow != NULL)
+        if (m_isOverlay)
         {
-            // If changing the Z order and the change does not put it in the correct place
-            if (pos->hwndInsertAfter != m_zoneCurrentWindow)
-            {
-                // Abort the change
-                pos->flags |= SWP_NOZORDER;
-            }
+            pos->hwndInsertAfter = HWND_TOPMOST;
+        }
+        else if (m_zoneCurrentWindow != NULL)
+        {
+            pos->hwndInsertAfter = m_zoneCurrentWindow;
         }
 
         return true;
@@ -586,6 +610,7 @@ protected:
     }
 
 protected:
+    bool m_isOverlay;
     HiddenWindow m_hiddenWindow;
     HWND m_zoneCurrentWindow;
     UINT m_dpi;
@@ -596,18 +621,103 @@ protected:
     Window m_window;
 };
 
+class AutoHideZoneTitleBar : public IZoneTitleBar
+{
+public:
+    AutoHideZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi, ZoneTitleBarStyle style) :
+        m_hinstance(hinstance),
+        m_zone(zone),
+        m_dpi(dpi),
+        m_style(style)
+    {
+    }
+
+    virtual void Show(bool show) override
+    {
+        if (show)
+        {
+            if (!m_zoneTitleBar)
+            {
+                switch (m_style)
+                {
+                case ZoneTitleBarStyle::Numbers:
+                    m_zoneTitleBar = std::make_unique<NumbersZoneTitleBar>(m_hinstance, m_zone, m_dpi, true);
+                    break;
+
+                case ZoneTitleBarStyle::Icons:
+                    m_zoneTitleBar = std::make_unique<IconsZoneTitleBar>(m_hinstance, m_zone, m_dpi, true);
+                    break;
+
+                case ZoneTitleBarStyle::Tabs:
+                    m_zoneTitleBar = std::make_unique<TabsZoneTitleBar>(m_hinstance, m_zone, m_dpi, true);
+                    break;
+
+                case ZoneTitleBarStyle::None:
+                default:
+                    m_zoneTitleBar = std::make_unique<NoZoneTitleBar>();
+                    break;
+                }
+
+                m_zoneTitleBar->UpdateZoneWindows(m_zoneWindows);
+            }
+        }
+        else
+        {
+            m_zoneTitleBar.reset();
+        }
+    }
+
+    virtual void UpdateZoneWindows(std::vector<HWND> zoneWindows) override
+    {
+        m_zoneWindows = zoneWindows;
+
+        if (m_zoneTitleBar)
+        {
+            m_zoneTitleBar->UpdateZoneWindows(zoneWindows);
+        }
+    }
+
+    virtual void ReadjustPos() override
+    {
+        if (m_zoneTitleBar)
+        {
+            m_zoneTitleBar->ReadjustPos();
+        }
+    }
+
+    virtual int GetHeight() const override
+    {
+        return 0;
+    }
+
+protected:
+    HINSTANCE m_hinstance;
+    Rect m_zone;
+    UINT m_dpi;
+    ZoneTitleBarStyle m_style;
+    std::vector<HWND> m_zoneWindows;
+
+    std::unique_ptr<IZoneTitleBar> m_zoneTitleBar;
+};
+
 std::unique_ptr<IZoneTitleBar> MakeZoneTitleBar(ZoneTitleBarStyle style, HINSTANCE hinstance, Rect zone, UINT dpi)
 {
+    bool isAutoHide = ((int)style & (int)ZoneTitleBarStyle::AutoHide) && style != ZoneTitleBarStyle::AutoHide;
+    if (isAutoHide)
+    {
+        return std::make_unique<AutoHideZoneTitleBar>(hinstance, zone, dpi, (ZoneTitleBarStyle)((int)style & ~(int)ZoneTitleBarStyle::AutoHide));
+    }
+
     switch (style)
     {
     case ZoneTitleBarStyle::Numbers:
-        return std::make_unique<NumbersZoneTitleBar>(hinstance, zone, dpi);
+        return std::make_unique<NumbersZoneTitleBar>(hinstance, zone, dpi, false);
 
     case ZoneTitleBarStyle::Icons:
-        return std::make_unique<IconsZoneTitleBar>(hinstance, zone, dpi);
+        return std::make_unique<IconsZoneTitleBar>(hinstance, zone, dpi, false);
 
     case ZoneTitleBarStyle::Tabs:
-        return std::make_unique<TabsZoneTitleBar>(hinstance, zone, dpi);
+        return std::make_unique<TabsZoneTitleBar>(hinstance, zone, dpi, false);
 
     case ZoneTitleBarStyle::None:
     default:

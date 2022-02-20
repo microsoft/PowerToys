@@ -1189,6 +1189,12 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_ZoneTitleBarStyle_Tabs.Content" xml:space="preserve">
     <value>Tabs</value>
   </data>
+  <data name="FancyZones_ZoneTitleBar_AutoHide.Header" xml:space="preserve">
+    <value>Auto hide</value>
+  </data>
+  <data name="FancyZones_ZoneTitleBar_AutoHide.Description" xml:space="preserve">
+    <value>Automatically hide the zone title bar</value>
+  </data>
   <data name="PowerLauncher_Plugins.Header" xml:space="preserve">
     <value>Plugins</value>
   </data>

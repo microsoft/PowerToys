@@ -150,6 +150,10 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
     IFACEMETHOD_(void, CycleTabs)
     (HWND window, bool reverse, HWND workAreaWindow) = 0;
     /**
+     * End the active tabs switching.
+     */
+    IFACEMETHOD_(void, EndTabs)() = 0;
+    /**
      * Calculate zone coordinates within zone layout based on number of zones and spacing.
      *
      * @param   workAreaRect The rectangular area on the screen on which the zone layout is applied.

@@ -13,7 +13,7 @@ public:
     {
     public:
         static void EnableFancyZones(bool enabled) noexcept;
-        static void OnKeyDown(DWORD vkCode, bool win, bool control, bool inMoveSize) noexcept;
+        static void OnKeyDownOrUp(DWORD vkCode, bool win, bool control, bool inMoveSize) noexcept;
         static void DataChanged() noexcept;
         static void EditorLaunched(int value) noexcept;
         static void Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept;

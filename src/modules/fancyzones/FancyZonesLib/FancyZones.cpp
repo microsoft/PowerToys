@@ -56,6 +56,8 @@ public:
     FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings, std::function<void()> disableModuleCallback) noexcept :
         m_hinstance(hinstance),
         m_settings(settings),
+        m_isSwitchingTabsForeward(false),
+        m_isSwitchingTabsBackward(false),
         m_windowMoveHandler(settings, [this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
         }),
@@ -166,7 +168,7 @@ public:
     IFACEMETHODIMP_(void)
     VirtualDesktopChanged() noexcept;
     IFACEMETHODIMP_(bool)
-    OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
+    OnKeyDownOrUp(PKBDLLHOOKSTRUCT info) noexcept;
 
     void WindowCreated(HWND window) noexcept;
     void WindowClosed(HWND window) noexcept;
@@ -184,6 +186,7 @@ private:
     void UpdateWorkAreas() noexcept;
     void UpdateWindowsPositions(bool suppressMove = false) noexcept;
     void CycleTabs(bool reverse) noexcept;
+    void EndTabs() noexcept;
     bool OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
@@ -221,6 +224,8 @@ private:
     FileWatcher m_settingsFileWatcher;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
+    bool m_isSwitchingTabsForeward;
+    bool m_isSwitchingTabsBackward;
     GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.
     GUID m_currentDesktopId{}; // UUID of the current virtual desktop.
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
@@ -245,6 +250,7 @@ private:
         Editor = 1,
         NextTab = 2,
         PrevTab = 3,
+        EndTabs = 4,
     };
 };
 
@@ -272,11 +278,6 @@ FancyZones::Run() noexcept
     }
 
     RegisterHotKey(m_window, static_cast<int>(HotkeyId::Editor), m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
-    if (m_settings->GetSettings()->windowSwitching)
-    {
-        RegisterHotKey(m_window, static_cast<int>(HotkeyId::NextTab), m_settings->GetSettings()->nextTabHotkey.get_modifiers(), m_settings->GetSettings()->nextTabHotkey.get_code());
-        RegisterHotKey(m_window, static_cast<int>(HotkeyId::PrevTab), m_settings->GetSettings()->prevTabHotkey.get_modifiers(), m_settings->GetSettings()->prevTabHotkey.get_code());
-    }
 
     m_virtualDesktop.Init();
 
@@ -507,13 +508,56 @@ void FancyZones::WindowReorder(HWND window) noexcept
 
 // IFancyZonesCallback
 IFACEMETHODIMP_(bool)
-FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
+FancyZones::OnKeyDownOrUp(PKBDLLHOOKSTRUCT info) noexcept
 {
     // Return true to swallow the keyboard event
     bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
     bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000;
     bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
     bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
+
+    if (m_settings->GetSettings()->windowSwitching)
+    {
+        auto modifiers = PowerToysSettings::HotkeyObject::modifiers_repeat_from_states(win, ctrl, alt, shift);
+
+        auto nextTabHotkey = m_settings->GetSettings()->nextTabHotkey;
+        auto prevTabHotkey = m_settings->GetSettings()->prevTabHotkey;
+        if (!(info->flags & LLKHF_UP))
+        {
+            if (nextTabHotkey.get_modifiers_repeat() == modifiers && nextTabHotkey.get_code() == info->vkCode)
+            {
+                PostMessageW(m_window, WM_HOTKEY, (WPARAM)HotkeyId::NextTab, 0);
+                m_isSwitchingTabsForeward = true;
+                return true;
+            }
+            if (prevTabHotkey.get_modifiers_repeat() == modifiers && prevTabHotkey.get_code() == info->vkCode)
+            {
+                PostMessageW(m_window, WM_HOTKEY, (WPARAM)HotkeyId::PrevTab, 0);
+                m_isSwitchingTabsBackward = true;
+                return true;
+            }
+        }
+        else if (m_isSwitchingTabsForeward || m_isSwitchingTabsBackward)
+        {
+            auto modifier = PowerToysSettings::HotkeyObject::modifier_from_key(info->vkCode);
+            if (modifier & nextTabHotkey.get_modifiers_repeat())
+            {
+                PostMessageW(m_window, WM_HOTKEY, (WPARAM)HotkeyId::EndTabs, 0);
+                m_isSwitchingTabsForeward = false;
+            }
+            if (modifier & prevTabHotkey.get_modifiers_repeat())
+            {
+                PostMessageW(m_window, WM_HOTKEY, (WPARAM)HotkeyId::EndTabs, 0);
+                m_isSwitchingTabsBackward = false;
+            }
+        }
+    }
+
+    if (info->flags & LLKHF_UP)
+    {
+        return false;
+    }
+
     if ((win && !shift && !ctrl) || (win && ctrl && alt))
     {
         if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT) || (info->vkCode == VK_UP) || (info->vkCode == VK_DOWN))
@@ -521,7 +565,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
             PostMessageW(m_window, WM_PRIV_WINDOWCLOSED, (WPARAM)GetForegroundWindow(), 0);
             if (ShouldProcessSnapHotkey(info->vkCode))
             {
-                Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
+                Trace::FancyZones::OnKeyDownOrUp(info->vkCode, win, ctrl, false /*inMoveSize*/);
                 // Win+Left, Win+Right will cycle through Zones in the active ZoneSet when WM_PRIV_SNAP_HOTKEY's handled
                 PostMessageW(m_window, WM_PRIV_SNAP_HOTKEY, 0, info->vkCode);
                 return true;
@@ -746,6 +790,10 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             bool reverse = wparam == static_cast<WPARAM>(HotkeyId::PrevTab);
             CycleTabs(reverse);
+        }
+        else if (wparam == static_cast<WPARAM>(HotkeyId::EndTabs))
+        {
+            EndTabs();
         }
     }
     break;
@@ -1048,6 +1096,15 @@ void FancyZones::CycleTabs(bool reverse) noexcept
     }
 }
 
+void FancyZones::EndTabs() noexcept
+{
+    // Try to end tabs for all work areas (if it is not there, it will be silently ignored)
+    for (auto workArea : m_workAreaHandler.GetAllWorkAreas())
+    {
+        workArea->EndTabs();
+    }
+}
+
 bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept
 {
     _TRACER_;
@@ -1326,9 +1383,8 @@ void FancyZones::OnSettingsChanged() noexcept
     // Update the hotkeys
     UpdateHotkey(static_cast<int>(HotkeyId::Editor), m_settings->GetSettings()->editorHotkey, true);
 
-    auto windowSwitching = m_settings->GetSettings()->windowSwitching;
-    UpdateHotkey(static_cast<int>(HotkeyId::NextTab), m_settings->GetSettings()->nextTabHotkey, windowSwitching);
-    UpdateHotkey(static_cast<int>(HotkeyId::PrevTab), m_settings->GetSettings()->prevTabHotkey, windowSwitching);
+    m_isSwitchingTabsForeward = false;
+    m_isSwitchingTabsBackward = false;
 
     // Needed if we toggled spanZonesAcrossMonitors
     m_workAreaHandler.Clear();

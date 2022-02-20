@@ -130,7 +130,7 @@ void Trace::FancyZones::EnableFancyZones(bool enabled) noexcept
         TraceLoggingBoolean(enabled, EventEnabledKey));
 }
 
-void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inMoveSize) noexcept
+void Trace::FancyZones::OnKeyDownOrUp(DWORD vkCode, bool win, bool control, bool inMoveSize) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,

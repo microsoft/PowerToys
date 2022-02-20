@@ -48,7 +48,7 @@ interface __declspec(uuid("{2CB37E8F-87E6-4AEC-B4B2-E0FDC873343F}")) IFancyZones
      * @returns Boolean indicating if this event should be passed on further to other applications
      *          in event chain, or should it be suppressed.
      */
-    IFACEMETHOD_(bool, OnKeyDown)
+    IFACEMETHOD_(bool, OnKeyDownOrUp)
     (PKBDLLHOOKSTRUCT info) = 0;
 };
 

@@ -138,19 +138,19 @@ namespace FancyZonesUnitTests
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = code;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
 
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = VK_LEFT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
 
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = VK_RIGHT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
                 }
 
@@ -162,19 +162,19 @@ namespace FancyZonesUnitTests
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = code;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
 
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = VK_LEFT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
 
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = VK_RIGHT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
                 }
 
@@ -186,19 +186,19 @@ namespace FancyZonesUnitTests
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = code;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
 
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = VK_LEFT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
 
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = VK_RIGHT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
                 }
 
@@ -211,19 +211,19 @@ namespace FancyZonesUnitTests
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = code;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
 
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = VK_LEFT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
 
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = VK_RIGHT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
                 }
                 /*
@@ -243,19 +243,19 @@ namespace FancyZonesUnitTests
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = code;
-                        Assert::IsTrue(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsTrue(m_fzCallback->OnKeyDownOrUp(&input));
                     }
 
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = VK_LEFT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
 
                     {
                         tagKBDLLHOOKSTRUCT input{};
                         input.vkCode = VK_RIGHT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                        Assert::IsFalse(m_fzCallback->OnKeyDownOrUp(&input));
                     }
                 }
                 */

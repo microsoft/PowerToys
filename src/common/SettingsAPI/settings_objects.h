@@ -145,10 +145,11 @@ namespace PowerToysSettings
         bool shift_pressed() const { return m_json.GetNamedBoolean(L"shift"); }
         UINT get_modifiers_repeat() const
         {
-            return (win_pressed() ? MOD_WIN : 0) |
-                   (ctrl_pressed() ? MOD_CONTROL : 0) |
-                   (alt_pressed() ? MOD_ALT : 0) |
-                   (shift_pressed() ? MOD_SHIFT : 0);
+            return modifiers_repeat_from_states(
+                win_pressed(),
+                ctrl_pressed(),
+                alt_pressed(),
+                shift_pressed());
         }
         UINT get_modifiers() const
         {
@@ -234,6 +235,29 @@ namespace PowerToysSettings
                 return output.data();
             }
             return L"(Key " + std::to_wstring(key_code) + L")";
+        }
+        static UINT modifiers_repeat_from_states(bool win, bool ctrl, bool alt, bool shift)
+        {
+            return (win ? MOD_WIN : 0) |
+                   (ctrl ? MOD_CONTROL : 0) |
+                   (alt ? MOD_ALT : 0) |
+                   (shift ? MOD_SHIFT : 0);
+        }
+        static UINT modifier_from_key(UINT key_code)
+        {
+            switch (key_code)
+            {
+            case VK_SHIFT:
+                return MOD_SHIFT;
+            case VK_CONTROL:
+                return MOD_CONTROL;
+            case VK_MENU:
+                return MOD_ALT;
+            case VK_LWIN:
+            case VK_RWIN:
+                return MOD_WIN;
+            default: return 0;
+            }
         }
 
     protected:

@@ -14,10 +14,14 @@ enum struct OverlappingZonesAlgorithm : int
 enum struct ZoneTitleBarStyle : int
 {
     None = 0,
-    Numbers = 1,
-    Icons = 2,
-    Tabs = 3,
-    EnumElements = 4, // number of elements in the enum, not counting this
+    AutoHide = 1,
+    Numbers = 2,
+    AutoHideNumbers = 3,
+    Icons = 4,
+    AutoHideIcons = 5,
+    Tabs = 6,
+    AutoHideTabs = 7,
+    EnumElements = 8, // number of elements in the enum, not counting this
 };
 
 // in reality, this file needs to be kept in sync currently with src/settings-ui/Settings.UI.Library/FZConfigProperties.cs

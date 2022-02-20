@@ -140,6 +140,10 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea :
      */
     IFACEMETHOD_(void, CycleTabs)(HWND window, bool reverse) = 0;
     /**
+     * End the active tabs switching.
+     */
+    IFACEMETHOD_(void, EndTabs)() = 0;
+    /**
      * Clear the selected zones when this WorkArea loses focus.
      */
     IFACEMETHOD_(void, ClearSelectedZones)() = 0;

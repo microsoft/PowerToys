@@ -146,6 +146,8 @@ public:
     IFACEMETHODIMP_(void)
     CycleTabs(HWND window, bool reverse) noexcept;
     IFACEMETHODIMP_(void)
+    EndTabs() noexcept;
+    IFACEMETHODIMP_(void)
     ClearSelectedZones() noexcept;
     IFACEMETHODIMP_(void)
     FlashZones() noexcept;
@@ -468,6 +470,15 @@ WorkArea::CycleTabs(HWND window, bool reverse) noexcept
     if (m_zoneSet)
     {
         m_zoneSet->CycleTabs(window, reverse, m_window);
+    }
+}
+
+IFACEMETHODIMP_(void)
+WorkArea::EndTabs() noexcept
+{
+    if (m_zoneSet)
+    {
+        m_zoneSet->EndTabs();
     }
 }
 

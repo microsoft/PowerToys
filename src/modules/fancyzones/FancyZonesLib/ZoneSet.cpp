@@ -141,6 +141,8 @@ public:
     WindowReorder(HWND window, HWND workAreaWindow) noexcept;
     IFACEMETHODIMP_(void)
     CycleTabs(HWND window, bool reverse, HWND workAreaWindow) noexcept;
+    IFACEMETHODIMP_(void)
+    EndTabs() noexcept;
     IFACEMETHODIMP_(bool)
     CalculateZones(RECT workArea, int zoneCount, int spacing) noexcept;
     IFACEMETHODIMP_(bool) IsZoneEmpty(ZoneIndex zoneIndex) const noexcept;
@@ -734,9 +736,23 @@ ZoneSet::CycleTabs(HWND window, bool reverse, HWND workAreaWindow) noexcept
             continue;
         }
 
+        auto zoneTitleBar = m_zoneTitleBarByIndexSets.find(indexSet);
+        if (zoneTitleBar != m_zoneTitleBarByIndexSets.end())
+        {
+            zoneTitleBar->second->Show(true);
+        }
         SwitchToWindow(next);
 
         break;
+    }
+}
+
+IFACEMETHODIMP_(void)
+ZoneSet::EndTabs() noexcept
+{
+    for (auto& [indexSet, zoneTitleBar] : m_zoneTitleBarByIndexSets)
+    {
+        zoneTitleBar->Show(false);
     }
 }
 

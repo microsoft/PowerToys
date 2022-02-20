@@ -94,16 +94,29 @@
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
 
-                    <controls:Setting x:Uid="FancyZones_ZoneTitleBarStyle" Icon="&#xE620;">
-                        <controls:Setting.ActionContent>
-                            <ComboBox SelectedIndex="{x:Bind Path=ViewModel.ZoneTitleBarStyleIndex, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
-                                <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_None" />
-                                <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Numbers" />
-                                <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Icons" />
-                                <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Tabs" />
-                            </ComboBox>
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="FancyZones_ZoneTitleBarStyle" Icon="&#xE620;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <ComboBox SelectedIndex="{x:Bind Path=ViewModel.ZoneTitleBarStyleIndex, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                        <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_None" />
+                                        <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Numbers" />
+                                        <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Icons" />
+                                        <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Tabs" />
+                                    </ComboBox>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel>
+                                <controls:Setting x:Uid="FancyZones_ZoneTitleBar_AutoHide" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.ZoneTitleBarCategoryEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneTitleBarAutoHide}" x:Uid="ToggleSwitch"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
