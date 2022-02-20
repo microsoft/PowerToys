@@ -25,3 +25,4 @@ void open_settings_window(std::optional<std::wstring> settings_window);
 void close_settings_window();
 
 void open_oobe_window();
+void open_scoobe_window();
