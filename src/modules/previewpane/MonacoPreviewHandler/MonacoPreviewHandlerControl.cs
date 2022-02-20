@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -104,13 +105,19 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                     html = html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
 
                                     // Initialize WebView
-                                    await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
-                                    _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
-                                    _webView.NavigateToString(html);
-                                    _webView.NavigationCompleted += WebView2Init;
-                                    _webView.Height = this.Height;
-                                    _webView.Width = this.Width;
-                                    Controls.Add(_webView);
+                                    try
+                                    {
+                                        await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
+                                        _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                                        _webView.NavigateToString(html);
+                                        _webView.NavigationCompleted += WebView2Init;
+                                        _webView.Height = this.Height;
+                                        _webView.Width = this.Width;
+                                        Controls.Add(_webView);
+                                    }
+                                    catch (NullReferenceException)
+                                    {
+                                    }
                                 }
                                 catch (WebView2RuntimeNotFoundException)
                                 {
