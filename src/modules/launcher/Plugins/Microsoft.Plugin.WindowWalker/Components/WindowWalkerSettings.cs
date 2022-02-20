@@ -70,13 +70,13 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     Key = nameof(SubtitleShowDesktopName),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingSubtitleDesktopName,
-                    Value = false,
+                    Value = true,
                 },
                 new PluginAdditionalOption
                 {
                     Key = nameof(ConfirmKillProcess),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingConfirmKillProcess,
-                    Value = false,
+                    Value = true,
                 },
                 new PluginAdditionalOption
                 {
@@ -106,12 +106,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 return;
             }
 
-            ResultsFromVisibleDesktopOnly = GetSettingOrDefault(settings, nameof(ResultsFromVisibleDesktopOnly), false);
-            SubtitleShowPid = GetSettingOrDefault(settings, nameof(SubtitleShowPid), false);
-            SubtitleShowDesktopName = GetSettingOrDefault(settings, nameof(SubtitleShowDesktopName), true);
-            ConfirmKillProcess = GetSettingOrDefault(settings, nameof(ConfirmKillProcess), true);
-            HideKillProcessOnElevatedProcesses = GetSettingOrDefault(settings, nameof(HideKillProcessOnElevatedProcesses), false);
-            HideExplorerSettingInfo = GetSettingOrDefault(settings, nameof(HideExplorerSettingInfo), false);
+            ResultsFromVisibleDesktopOnly = GetSettingOrFallback(settings, nameof(ResultsFromVisibleDesktopOnly), false);
+            SubtitleShowPid = GetSettingOrFallback(settings, nameof(SubtitleShowPid), false);
+            SubtitleShowDesktopName = GetSettingOrFallback(settings, nameof(SubtitleShowDesktopName), true);
+            ConfirmKillProcess = GetSettingOrFallback(settings, nameof(ConfirmKillProcess), true);
+            HideKillProcessOnElevatedProcesses = GetSettingOrFallback(settings, nameof(HideKillProcessOnElevatedProcesses), false);
+            HideExplorerSettingInfo = GetSettingOrFallback(settings, nameof(HideExplorerSettingInfo), false);
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="name">The name of the setting.</param>
         /// <param name="fallbackValue">The fall-back value that is used when the setting is not found.</param>
         /// <returns>A settings value.</returns>
-        private static bool GetSettingOrDefault(PowerLauncherPluginSettings settings, string name, bool fallbackValue)
+        private static bool GetSettingOrFallback(PowerLauncherPluginSettings settings, string name, bool fallbackValue)
         {
             var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == name);
             var settingsValue = option?.Value ?? fallbackValue;
