@@ -20,8 +20,6 @@ namespace Microsoft.Plugin.WindowWalker
 
         private PluginInitContext Context { get; set; }
 
-        private readonly WindowWalkerSettings _windowWalkerSettings = new WindowWalkerSettings();
-
         public string Name => Properties.Resources.wox_plugin_windowwalker_plugin_name;
 
         public string Description => Properties.Resources.wox_plugin_windowwalker_plugin_description;
@@ -70,7 +68,7 @@ namespace Microsoft.Plugin.WindowWalker
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions
         {
-            get { return _windowWalkerSettings.GetAdditionalOptions(); }
+            get { return WindowWalkerSettings.GetAdditionalOptions(); }
         }
 
         // Todo : Update with theme based IconPath
@@ -108,7 +106,7 @@ namespace Microsoft.Plugin.WindowWalker
 
         public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
-            _windowWalkerSettings.UpdateSettings(settings);
+            WindowWalkerSettings.Instance.UpdateSettings(settings);
         }
     }
 }

@@ -10,11 +10,16 @@ using Microsoft.PowerToys.Settings.UI.Library;
 namespace Microsoft.Plugin.WindowWalker.Components
 {
     /// <summary>
-    /// Additional settings for the time zone plugin.
+    /// Additional settings for the WindowWalker plugin.
     /// </summary>
-    /// <remarks>Code reused from "Microsoft.PowerToys.Run.Plugin.TimeZone" plugin.</remarks>
+    /// <remarks>Some code parts reused from TimeZone plugin.</remarks>
     internal sealed class WindowWalkerSettings
     {
+        /// <summary>
+        /// An instance of the class <see cref="WindowWalkerSettings"></see>
+        /// </summary>
+        private static WindowWalkerSettings instance;
+
         /// <summary>
         /// Gets a value indicating whether we only search for windows on the currently visible desktop or on all desktops.
         /// </summary>
@@ -47,10 +52,38 @@ namespace Microsoft.Plugin.WindowWalker.Components
         internal bool HideExplorerSettingInfo { get; private set; }
 
         /// <summary>
-        /// Return a list with all settings. Additional
+        /// Initializes a new instance of the <see cref="WindowWalkerSettings"/> class.
+        /// Private constructor to make sure there is never more than one instance of this class
         /// </summary>
-        /// <returns>A list with all settings.</returns>
-        internal List<PluginAdditionalOption> GetAdditionalOptions()
+        private WindowWalkerSettings()
+        {
+        }
+
+        /// <summary>
+        /// Gets an instance property of this class that makes sure that the first instance gets created
+        /// and that all the requests end up at that one instance.
+        /// The benefit of this is that we don't need additional variables/parameters
+        /// to communicate the settings between plugin's classes/methods.
+        /// We can simply access this one instance, whenever we need the actual settings.
+        /// </summary>
+        internal static WindowWalkerSettings Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new WindowWalkerSettings();
+                }
+
+                return instance;
+            }
+        }
+
+        /// <summary>
+        /// Return a list with all additional plugin options.
+        /// </summary>
+        /// <returns>A list with all additional plugin options.</returns>
+        internal static List<PluginAdditionalOption> GetAdditionalOptions()
         {
             var optionList = new List<PluginAdditionalOption>
             {
@@ -98,7 +131,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Update this settings.
         /// </summary>
-        /// <param name="settings">The settings for all power launcher plugin.</param>
+        /// <param name="settings">The settings for all power launcher plugins.</param>
         internal void UpdateSettings(PowerLauncherPluginSettings settings)
         {
             if (settings is null || settings.AdditionalOptions is null)
@@ -106,12 +139,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 return;
             }
 
-            ResultsFromVisibleDesktopOnly = GetSettingOrFallback(settings, nameof(ResultsFromVisibleDesktopOnly), false);
-            SubtitleShowPid = GetSettingOrFallback(settings, nameof(SubtitleShowPid), false);
-            SubtitleShowDesktopName = GetSettingOrFallback(settings, nameof(SubtitleShowDesktopName), true);
-            ConfirmKillProcess = GetSettingOrFallback(settings, nameof(ConfirmKillProcess), true);
-            HideKillProcessOnElevatedProcesses = GetSettingOrFallback(settings, nameof(HideKillProcessOnElevatedProcesses), false);
-            HideExplorerSettingInfo = GetSettingOrFallback(settings, nameof(HideExplorerSettingInfo), false);
+            ResultsFromVisibleDesktopOnly = GetSettingOrDefault(settings, nameof(ResultsFromVisibleDesktopOnly));
+            SubtitleShowPid = GetSettingOrDefault(settings, nameof(SubtitleShowPid));
+            SubtitleShowDesktopName = GetSettingOrDefault(settings, nameof(SubtitleShowDesktopName));
+            ConfirmKillProcess = GetSettingOrDefault(settings, nameof(ConfirmKillProcess));
+            HideKillProcessOnElevatedProcesses = GetSettingOrDefault(settings, nameof(HideKillProcessOnElevatedProcesses));
+            HideExplorerSettingInfo = GetSettingOrDefault(settings, nameof(HideExplorerSettingInfo));
         }
 
         /// <summary>
@@ -119,12 +152,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         /// <param name="settings">The object that contain all settings.</param>
         /// <param name="name">The name of the setting.</param>
-        /// <param name="fallbackValue">The fall-back value that is used when the setting is not found.</param>
         /// <returns>A settings value.</returns>
-        private static bool GetSettingOrFallback(PowerLauncherPluginSettings settings, string name, bool fallbackValue)
+        private static bool GetSettingOrDefault(PowerLauncherPluginSettings settings, string name)
         {
             var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == name);
-            var settingsValue = option?.Value ?? fallbackValue;
+            var settingsValue = option?.Value ?? GetAdditionalOptions().FirstOrDefault(x => x.Key == name).Value;
             return settingsValue;
         }
     }
