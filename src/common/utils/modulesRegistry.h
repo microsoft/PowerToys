@@ -108,7 +108,7 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
                             break;
                         }
                     }
-                    if (!IsExcluded) { continue; }
+                    if (IsExcluded) { continue; }
                     extensions.push_back(std::wstring{ extension });
 
                     // if (std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[0] } ||
