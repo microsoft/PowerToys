@@ -181,7 +181,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         start_enabled_powertoys();
         std::wstring product_version = get_product_version();
         Trace::EventLaunch(product_version, isProcessElevated);
-        PTSettingsHelper::save_oobe_last_version_run(product_version);
+        PTSettingsHelper::save_last_version_run(product_version);
 
         if (openSettings)
         {
@@ -381,7 +381,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     bool openScoobe = false;
     try
     {
-        std::wstring last_version_run = PTSettingsHelper::get_oobe_last_version_run();
+        std::wstring last_version_run = PTSettingsHelper::get_last_version_run();
         openScoobe = last_version_run != get_product_version();
     }
     catch (const std::exception& e)

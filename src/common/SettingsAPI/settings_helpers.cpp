@@ -5,7 +5,7 @@ namespace PTSettingsHelper
 {
     constexpr inline const wchar_t* settings_filename = L"\\settings.json";
     constexpr inline const wchar_t* oobe_filename = L"oobe_settings.json";
-    constexpr inline const wchar_t* last_version_run_filename = L"oobe_last_version_run.json";
+    constexpr inline const wchar_t* last_version_run_filename = L"last_version_run.json";
 
     std::wstring get_root_save_folder_location()
     {
@@ -109,7 +109,7 @@ namespace PTSettingsHelper
         json::to_file(oobePath.c_str(), obj);      
     }
 
-    std::wstring get_oobe_last_version_run()
+    std::wstring get_last_version_run()
     {
 
         std::filesystem::path lastVersionRunPath(PTSettingsHelper::get_root_save_folder_location());
@@ -128,7 +128,7 @@ namespace PTSettingsHelper
         return L"";
     }
 
-    void save_oobe_last_version_run(const std::wstring& version)
+    void save_last_version_run(const std::wstring& version)
     {
         std::filesystem::path lastVersionRunPath(PTSettingsHelper::get_root_save_folder_location());
         lastVersionRunPath = lastVersionRunPath.append(last_version_run_filename);
