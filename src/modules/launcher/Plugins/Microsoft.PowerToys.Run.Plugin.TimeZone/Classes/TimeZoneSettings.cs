@@ -33,25 +33,25 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         /// Return a list with all settings. Additional
         /// </summary>
         /// <returns>A list with all settings.</returns>
-        internal List<PluginAdditionalOption> GetAdditionalOptions()
+        internal static List<PluginAdditionalOption> GetAdditionalOptions()
         {
             var optionList = new List<PluginAdditionalOption>
             {
                 new PluginAdditionalOption
                 {
-                    Key = nameof(ShowTimeZoneNames),
+                    Key = "ShowTimeZoneNames",
                     DisplayLabel = Resources.ShowTimeZoneNames,
                     Value = true,
                 },
                 new PluginAdditionalOption
                 {
-                    Key = nameof(ShowTimeNames),
+                    Key = "ShowTimeNames",
                     DisplayLabel = Resources.ShowTimeNames,
                     Value = true,
                 },
                 new PluginAdditionalOption
                 {
-                    Key = nameof(ShowMilitaryTimeZoneNames),
+                    Key = "ShowMilitaryTimeZoneNames",
                     DisplayLabel = Resources.ShowMilitaryTimeZoneNames,
                     Value = false,
                 },
@@ -71,9 +71,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
                 return;
             }
 
-            ShowTimeZoneNames = GetOneBoolSetting(settings, nameof(ShowTimeZoneNames), true);
-            ShowTimeNames = GetOneBoolSetting(settings, nameof(ShowTimeNames), true);
-            ShowMilitaryTimeZoneNames = GetOneBoolSetting(settings, nameof(ShowMilitaryTimeZoneNames), false);
+            ShowTimeZoneNames = GetSettingOrDefault(settings, "ShowTimeZoneNames");
+            ShowTimeNames = GetSettingOrDefault(settings, "ShowTimeNames");
+            ShowMilitaryTimeZoneNames = GetSettingOrDefault(settings, "ShowMilitaryTimeZoneNames");
         }
 
         /// <summary>
@@ -81,13 +81,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         /// </summary>
         /// <param name="settings">The object that contain all settings.</param>
         /// <param name="name">The name of the setting.</param>
-        /// <param name="fallbackValue">The fall-back value that is used when the setting is not found.</param>
         /// <returns>A settings value.</returns>
-        private static bool GetOneBoolSetting(PowerLauncherPluginSettings settings, string name, bool fallbackValue)
+        private static bool GetSettingOrDefault(PowerLauncherPluginSettings settings, string name)
         {
+            // As a fallback if a setting isn't available, we use the value defined in the method GetAdditionalOptions()
             var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == name);
-            var command = option?.Value ?? fallbackValue;
-            return command;
+
+            var settingsValue = option?.Value
+                ?? GetAdditionalOptions().FirstOrDefault(x => x.Key == name)?.Value
+                ?? default;
+
+            return settingsValue;
         }
     }
 }

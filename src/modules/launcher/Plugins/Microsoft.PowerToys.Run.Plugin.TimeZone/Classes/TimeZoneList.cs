@@ -21,12 +21,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         /// </remarks>
         public TimeZoneList()
         {
-            TimeZones = Enumerable.Empty<OneTimeZone>();
+            TimeZones = Enumerable.Empty<TimeZoneProperties>();
         }
 
         /// <summary>
         /// Gets or sets a list with all time zones.
         /// </summary>
-        public IEnumerable<OneTimeZone> TimeZones { get; set; }
+        public IEnumerable<TimeZoneProperties> TimeZones { get; set; }
     }
 }

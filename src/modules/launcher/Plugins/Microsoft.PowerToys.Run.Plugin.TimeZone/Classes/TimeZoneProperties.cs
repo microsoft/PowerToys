@@ -12,15 +12,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
     /// <summary>
     /// A time zone
     /// </summary>
-    public sealed class OneTimeZone
+    public sealed class TimeZoneProperties
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="OneTimeZone"/> class with empty properties.
+        /// Initializes a new instance of the <see cref="TimeZoneProperties"/> class with empty properties.
         /// </summary>
         /// <remarks>
         /// The standard constructor is need by the <see cref="JsonSerializer.Deserialize{TValue}(string, JsonSerializerOptions?)"/>-Method.
         /// </remarks>
-        public OneTimeZone()
+        public TimeZoneProperties()
         {
             Offset = "00:00";
             Name = string.Empty;

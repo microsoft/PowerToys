@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         /// </summary>
         public IEnumerable<PluginAdditionalOption> AdditionalOptions
         {
-            get { return _timeZoneSettings.GetAdditionalOptions(); }
+            get { return TimeZoneSettings.GetAdditionalOptions(); }
         }
 
         /// <summary>

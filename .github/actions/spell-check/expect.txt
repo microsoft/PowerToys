@@ -2244,7 +2244,7 @@ USESHOWWINDOW
 USESTDHANDLES
 ushort
 USRDLL
-UTC
+Utc
 utf
 utils
 uuidof
