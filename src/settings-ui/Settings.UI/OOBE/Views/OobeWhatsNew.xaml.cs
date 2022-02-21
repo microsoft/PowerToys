@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
@@ -48,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             DataContext = ViewModel;
         }
 
-        private async Task<string> GetReleaseNotesHTML()
+        private async Task<string> GetReleaseNotesMarkdown()
         {
             string releaseNotesJSON = string.Empty;
             using (HttpClient getReleaseInfoClient = new HttpClient())
@@ -66,10 +67,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             StringBuilder releaseNotesHtmlBuilder = new StringBuilder(string.Empty);
 
+            // Regex to remove installer hash sections from the release notes.
+            Regex removeHashRegex = new Regex(@"(\r\n)+#+ installer( SHA256)? hash(\r\n)+[0-9A-F]{64}", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
             foreach (var release in latestReleases)
             {
                 releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
-                releaseNotesHtmlBuilder.AppendLine(release.ReleaseNotes);
+                releaseNotesHtmlBuilder.AppendLine(removeHashRegex.Replace(release.ReleaseNotes, string.Empty));
             }
 
             return releaseNotesHtmlBuilder.ToString();
@@ -81,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             TitleTxt.Text = loader.GetString("Oobe_WhatsNew");
             try
             {
-                ReleaseNotesMarkdown.Text = await GetReleaseNotesHTML();
+                ReleaseNotesMarkdown.Text = await GetReleaseNotesMarkdown();
                 ReleaseNotesMarkdown.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 LoadingProgressRing.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             }
