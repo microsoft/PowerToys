@@ -234,11 +234,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        private void UserControl_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
-        {
-            // NavigateToModule((int)PowerToysModulesEnum.Overview);
-        }
-
         public void NavigateToModule(int moduleIndex)
         {
             if (Modules.Count > 0)
