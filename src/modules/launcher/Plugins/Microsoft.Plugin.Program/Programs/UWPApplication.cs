@@ -20,13 +20,13 @@ using System.Windows.Media.Imaging;
 using System.Xml;
 using ManagedCommon;
 using Microsoft.Plugin.Program.Logger;
-using Microsoft.Plugin.Program.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
 using Wox.Plugin.Common;
+using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
-using static Microsoft.Plugin.Program.Programs.UWP;
+using PackageVersion = Microsoft.Plugin.Program.Programs.UWP.PackageVersion;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -308,6 +308,7 @@ namespace Microsoft.Plugin.Program.Programs
                 // https://github.com/talynone/Wox.Plugin.WindowsUniversalAppLauncher/blob/master/StoreAppLauncher/Helpers/NativeApiHelper.cs#L139-L153
                 string key = resourceReference.Substring(prefix.Length);
                 string parsed;
+                string parsedFallback = string.Empty;
 
                 // Using Ordinal/OrdinalIgnoreCase since these are used internally
                 if (key.StartsWith("//", StringComparison.Ordinal))
@@ -325,13 +326,49 @@ namespace Microsoft.Plugin.Program.Programs
                 else
                 {
                     parsed = prefix + "///resources/" + key;
+
+                    // e.g. for Windows Terminal version >= 1.12 DisplayName and Description resources are not in the 'resources' subtree
+                    parsedFallback = prefix + "///" + key;
                 }
 
                 var outBuffer = new StringBuilder(128);
                 string source = $"@{{{packageFullName}? {parsed}}}";
                 var capacity = (uint)outBuffer.Capacity;
                 var hResult = NativeMethods.SHLoadIndirectString(source, outBuffer, capacity, IntPtr.Zero);
-                if (hResult == Hresult.Ok)
+                if (hResult != HRESULT.S_OK)
+                {
+                    if (!string.IsNullOrEmpty(parsedFallback))
+                    {
+                        string sourceFallback = $"@{{{packageFullName}? {parsedFallback}}}";
+                        hResult = NativeMethods.SHLoadIndirectString(sourceFallback, outBuffer, capacity, IntPtr.Zero);
+                        if (hResult == HRESULT.S_OK)
+                        {
+                            var loaded = outBuffer.ToString();
+                            if (!string.IsNullOrEmpty(loaded))
+                            {
+                                return loaded;
+                            }
+                            else
+                            {
+                                ProgramLogger.Exception($"Can't load null or empty result pri {sourceFallback} in uwp location {Package.Location}", new NullReferenceException(), GetType(), Package.Location);
+
+                                return string.Empty;
+                            }
+                        }
+                    }
+
+                    // https://github.com/Wox-launcher/Wox/issues/964
+                    // known hresult 2147942522:
+                    // 'Microsoft Corporation' violates pattern constraint of '\bms-resource:.{1,256}'.
+                    // for
+                    // Microsoft.MicrosoftOfficeHub_17.7608.23501.0_x64__8wekyb3d8bbwe: ms-resource://Microsoft.MicrosoftOfficeHub/officehubintl/AppManifest_GetOffice_Description
+                    // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
+                    var e = Marshal.GetExceptionForHR((int)hResult);
+                    ProgramLogger.Exception($"Load pri failed {source} with HResult {hResult} and location {Package.Location}", e, GetType(), Package.Location);
+
+                    return string.Empty;
+                }
+                else
                 {
                     var loaded = outBuffer.ToString();
                     if (!string.IsNullOrEmpty(loaded))
@@ -344,19 +381,6 @@ namespace Microsoft.Plugin.Program.Programs
 
                         return string.Empty;
                     }
-                }
-                else
-                {
-                    // https://github.com/Wox-launcher/Wox/issues/964
-                    // known hresult 2147942522:
-                    // 'Microsoft Corporation' violates pattern constraint of '\bms-resource:.{1,256}'.
-                    // for
-                    // Microsoft.MicrosoftOfficeHub_17.7608.23501.0_x64__8wekyb3d8bbwe: ms-resource://Microsoft.MicrosoftOfficeHub/officehubintl/AppManifest_GetOffice_Description
-                    // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
-                    var e = Marshal.GetExceptionForHR((int)hResult);
-                    ProgramLogger.Exception($"Load pri failed {source} with HResult {hResult} and location {Package.Location}", e, GetType(), Package.Location);
-
-                    return string.Empty;
                 }
             }
             else

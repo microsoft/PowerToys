@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Linq;
 using Microsoft.Plugin.Program.Logger;
-using Microsoft.Plugin.Program.Win32;
+using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -63,10 +63,10 @@ namespace Microsoft.Plugin.Program.Programs
             InitPackageVersion(namespaces);
 
             const uint noAttribute = 0x80;
-            const Stgm exclusiveRead = Stgm.Read;
+            const STGM exclusiveRead = STGM.READ;
             var hResult = NativeMethods.SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out IStream stream);
 
-            if (hResult == Hresult.Ok)
+            if (hResult == HRESULT.S_OK)
             {
                 Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest => new UWPApplication(appInManifest, this)).Where(a =>
                 {
@@ -213,18 +213,6 @@ namespace Microsoft.Plugin.Program.Programs
             Windows81,
             Windows8,
             Unknown,
-        }
-
-        [Flags]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1714:Flags enums should have plural names", Justification = "This name is consistent with the corresponding win32 flags: https://docs.microsoft.com/en-us/windows/win32/stg/stgm-constants ")]
-        public enum Stgm : long
-        {
-            Read = 0x00000000L,
-        }
-
-        public enum Hresult : int
-        {
-            Ok = 0x0,
         }
     }
 }

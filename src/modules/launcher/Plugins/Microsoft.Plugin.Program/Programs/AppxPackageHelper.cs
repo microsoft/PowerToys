@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using static Microsoft.Plugin.Program.Programs.UWP;
+using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -33,9 +33,9 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        public static T CheckHRAndReturnOrThrow<T>(Hresult hr, T result)
+        public static T CheckHRAndReturnOrThrow<T>(HRESULT hr, T result)
         {
-            if (hr != Hresult.Ok)
+            if (hr != HRESULT.S_OK)
             {
                 Marshal.ThrowExceptionForHR((int)hr);
             }

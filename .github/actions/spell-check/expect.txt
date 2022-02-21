@@ -47,6 +47,7 @@ Altdown
 altform
 alwaysontop
 amd
+AMF
 Amicrosoft
 AModifier
 AMPROPERTY
@@ -64,6 +65,7 @@ APeriod
 api
 APIENTRY
 APIIs
+Apm
 APPBARDATA
 appcontainer
 appdata
@@ -74,6 +76,7 @@ APPLASTZONE
 applets
 Applicationcan
 applicationframehost
+applog
 appmanifest
 appref
 apps
@@ -279,6 +282,7 @@ clrcall
 Cls
 CLSCTX
 clsid
+Clusion
 cmder
 Cmdlet
 cmdline
@@ -295,6 +299,7 @@ Cocklebiddy
 coclass
 codebase
 codecvt
+CODENAME
 codeofconduct
 codereview
 Codespaces
@@ -414,7 +419,7 @@ davidegiacometti
 Dayof
 DBCD
 DBDA
-dbg
+Dbg
 Dbghelp
 DBLCLKS
 DBLEPSILON
@@ -760,6 +765,8 @@ hhk
 HHmmss
 HHOOK
 hhx
+Hiber
+Hiberboot
 HICON
 HIDEWINDOW
 highlighter
@@ -1165,6 +1172,7 @@ logon
 LOGPIXELSX
 LOn
 longdate
+LONGLONG
 lookbehind
 lowlevel
 LOWORD
@@ -1282,6 +1290,7 @@ Mishkeegogamang
 mjpg
 mkdir
 mlcfg
+MMDDYYYY
 mmdeviceapi
 mmi
 mmsys
@@ -1558,6 +1567,7 @@ pesi
 PEXCEPTION
 pfn
 pfo
+pft
 pgp
 pguid
 phbm
@@ -1728,8 +1738,9 @@ RECTDESTINATION
 RECTL
 rectp
 rects
-Recyclebin
+recyclebin
 redirectedfrom
+Redist
 reencode
 reencoded
 refactor
@@ -1797,6 +1808,7 @@ RKey
 RMENU
 RNumber
 roadmap
+robmensching
 robocopy
 Roboto
 roslyn
@@ -1972,6 +1984,7 @@ spsrm
 spsv
 sqlite
 SRCCOPY
+Srch
 sre
 Srednekolymsk
 sregex
@@ -2011,7 +2024,7 @@ STDMETHODIMP
 stdout
 stefan
 STEPIT
-stgm
+STGM
 STGMEDIUM
 sticpl
 stl
@@ -2174,6 +2187,7 @@ TYPEMOUSE
 typename
 typeof
 typeparam
+typeparamref
 TYPESHORTCUT
 UAC
 UAL
@@ -2298,6 +2312,7 @@ VSC
 VSCBD
 vscdb
 vscode
+vsconfig
 VSCROLL
 vse
 vsix
@@ -2305,6 +2320,7 @@ vsonline
 vstemplate
 VSTHRD
 VSTT
+vtable
 VTABLE
 Vtbl
 WBounds
@@ -2397,6 +2413,7 @@ wixproj
 wixtoolset
 WIXUI
 WKSG
+Wlkr
 wmain
 WMKEYDOWN
 WMKEYUP
@@ -2424,6 +2441,7 @@ wprp
 wregex
 WResize
 writefile
+Wrk
 wsf
 wsh
 wsl

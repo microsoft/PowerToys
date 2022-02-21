@@ -18,7 +18,7 @@ public:
 
     void Show();
     void Hide();
-    void SetBorderRect(RECT windowRect, COLORREF color, float thickness);
+    void SetBorderRect(RECT windowRect, COLORREF color, int thickness);
 
 private:
     bool CreateRenderTargets(const RECT& clientRect);
@@ -27,7 +27,7 @@ private:
     {
         D2D1_RECT_F rect;
         D2D1_COLOR_F borderColor;
-        float thickness;
+        int thickness;
     };
 
     static ID2D1Factory* GetD2DFactory();
