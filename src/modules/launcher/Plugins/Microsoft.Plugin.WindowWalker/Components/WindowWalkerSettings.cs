@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets a value indicating whether PowerToys run should stay open after executing killing process and closing window.
         /// </summary>
-        internal bool StayOpenAfterKillAndClose { get; private set; }
+        internal bool OpenAfterKillAndClose { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the "kill process" command is hidden on processes that require additional permissions (UAC).
@@ -118,7 +118,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 },
                 new PluginAdditionalOption
                 {
-                    Key = nameof(StayOpenAfterKillAndClose),
+                    Key = nameof(OpenAfterKillAndClose),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingOpenAfterKillAndClose,
                     Value = false,
                 },
@@ -154,7 +154,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             SubtitleShowPid = GetSettingOrDefault(settings, nameof(SubtitleShowPid));
             SubtitleShowDesktopName = GetSettingOrDefault(settings, nameof(SubtitleShowDesktopName));
             ConfirmKillProcess = GetSettingOrDefault(settings, nameof(ConfirmKillProcess));
-            StayOpenAfterKillAndClose = GetSettingOrDefault(settings, nameof(StayOpenAfterKillAndClose));
+            OpenAfterKillAndClose = GetSettingOrDefault(settings, nameof(OpenAfterKillAndClose));
             HideKillProcessOnElevatedProcesses = GetSettingOrDefault(settings, nameof(HideKillProcessOnElevatedProcesses));
             HideExplorerSettingInfo = GetSettingOrDefault(settings, nameof(HideExplorerSettingInfo));
         }
