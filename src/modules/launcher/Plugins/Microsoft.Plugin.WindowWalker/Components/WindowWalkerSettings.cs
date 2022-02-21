@@ -42,6 +42,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         internal bool ConfirmKillProcess { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether PowerToys run should stay open after executing killing process and closing window.
+        /// </summary>
+        internal bool StayOpenAfterKillAndClose { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether the "kill process" command is hidden on processes that require additional permissions (UAC).
         /// </summary>
         internal bool HideKillProcessOnElevatedProcesses { get; private set; }
@@ -113,6 +118,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 },
                 new PluginAdditionalOption
                 {
+                    Key = nameof(StayOpenAfterKillAndClose),
+                    DisplayLabel = Resources.wox_plugin_windowwalker_SettingOpenAfterKillAndClose,
+                    Value = false,
+                },
+                new PluginAdditionalOption
+                {
                     Key = nameof(HideKillProcessOnElevatedProcesses),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingHideKillProcess,
                     Value = false,
@@ -143,6 +154,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             SubtitleShowPid = GetSettingOrDefault(settings, nameof(SubtitleShowPid));
             SubtitleShowDesktopName = GetSettingOrDefault(settings, nameof(SubtitleShowDesktopName));
             ConfirmKillProcess = GetSettingOrDefault(settings, nameof(ConfirmKillProcess));
+            StayOpenAfterKillAndClose = GetSettingOrDefault(settings, nameof(StayOpenAfterKillAndClose));
             HideKillProcessOnElevatedProcesses = GetSettingOrDefault(settings, nameof(HideKillProcessOnElevatedProcesses));
             HideExplorerSettingInfo = GetSettingOrDefault(settings, nameof(HideExplorerSettingInfo));
         }
@@ -155,10 +167,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>A settings value.</returns>
         private static bool GetSettingOrDefault(PowerLauncherPluginSettings settings, string name)
         {
-            // As a fallback if a setting isn't available, we use the value defined in the method GetAdditionalOptions()
+            // If a setting isn't available, we use the value defined in the method GetAdditionalOptions() as fallback.
+            // We can use First() instead of FirstOrDefault() because the values must exist. Otherwise, we made a mistake when defining the settings.
             var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == name);
-            var settingsValue = option?.Value ?? GetAdditionalOptions().FirstOrDefault(x => x.Key == name).Value;
-            return settingsValue;
+            return option?.Value ?? GetAdditionalOptions().First(x => x.Key == name).Value;
         }
     }
 }

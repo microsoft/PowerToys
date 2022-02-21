@@ -145,4 +145,7 @@
   <data name="wox_plugin_windowwalker_SettingSubtitlePid" xml:space="preserve">
     <value>Show process id in subtitle</value>
   </data>
+  <data name="wox_plugin_windowwalker_SettingOpenAfterKillAndClose" xml:space="preserve">
+    <value>Stay open after kill process and close window</value>
+  </data>
 </root>

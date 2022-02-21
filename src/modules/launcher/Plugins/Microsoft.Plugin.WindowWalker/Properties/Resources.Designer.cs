@@ -115,6 +115,15 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Stay open after kill process and close window.
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingOpenAfterKillAndClose {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingOpenAfterKillAndClose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show only results from visible desktop.
         /// </summary>
         public static string wox_plugin_windowwalker_SettingResultsVisibleDesktop {
