@@ -1998,6 +1998,7 @@ SVE
 SVGIn
 SVGIO
 svgpreviewhandler
+svgz
 svh
 SWC
 SWFO
