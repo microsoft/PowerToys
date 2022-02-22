@@ -177,7 +177,7 @@ namespace FancyZonesEditor
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
                 string name = customModel.Name;
-                if (name.StartsWith(defaultNamePrefix, StringComparison.Ordinal))
+                if (name.StartsWith(defaultNamePrefix, StringComparison.CurrentCulture))
                 {
                     if (int.TryParse(name.AsSpan(defaultNamePrefix.Length), out int i))
                     {
@@ -226,7 +226,7 @@ namespace FancyZonesEditor
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
                 string customModelName = customModel.Name;
-                if (customModelName.StartsWith(name, StringComparison.Ordinal))
+                if (customModelName.StartsWith(name, StringComparison.CurrentCulture))
                 {
                     int openBraceIndex = customModelName.LastIndexOf('(');
                     int closeBraceIndex = customModelName.LastIndexOf(')');

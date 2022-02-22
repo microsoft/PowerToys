@@ -146,9 +146,8 @@ namespace FancyZonesEditor
             }
 
             Orientation orient = Orientation.Horizontal;
-            int zoneIndex = Preview.Children.IndexOf(gridZone);
-            _ = _data.Zones[zoneIndex];
-            Debug.Assert(Preview.Children.Count > zoneIndex, "Zone index out of range");
+
+            Debug.Assert(Preview.Children.Count > Preview.Children.IndexOf(gridZone), "Zone index out of range");
 
             int offset;
             if (((App)Application.Current).MainWindowSettings.IsShiftKeyPressed)

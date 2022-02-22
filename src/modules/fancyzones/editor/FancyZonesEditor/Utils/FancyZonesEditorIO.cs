@@ -1067,7 +1067,7 @@ namespace FancyZonesEditor.Utils
             MainWindowSettingsModel.LayoutHotkeys.CleanUp();
             foreach (var wrapper in layoutHotkeys.LayoutHotkeys)
             {
-                MainWindowSettingsModel.LayoutHotkeys.SelectKey(wrapper.Key.ToString(CultureInfo.InvariantCulture), wrapper.LayoutId);
+                MainWindowSettingsModel.LayoutHotkeys.SelectKey(wrapper.Key.ToString(CultureInfo.CurrentCulture), wrapper.LayoutId);
             }
 
             return true;
