@@ -6,6 +6,8 @@ namespace PTSettingsHelper
     constexpr inline const wchar_t* settings_filename = L"\\settings.json";
     constexpr inline const wchar_t* oobe_filename = L"oobe_settings.json";
     constexpr inline const wchar_t* last_version_run_filename = L"last_version_run.json";
+    constexpr inline const wchar_t* opened_at_first_launch_json_field_name = L"openedAtFirstLaunch";
+    constexpr inline const wchar_t* last_version_json_field_name = L"last_version";
 
     std::wstring get_root_save_folder_location()
     {
@@ -91,7 +93,7 @@ namespace PTSettingsHelper
                 return false;
             }
 
-            bool opened = saved_settings->GetNamedBoolean(L"openedAtFirstLaunch", false);
+            bool opened = saved_settings->GetNamedBoolean(opened_at_first_launch_json_field_name, false);
             return opened;
         }
         
@@ -104,7 +106,7 @@ namespace PTSettingsHelper
         oobePath = oobePath.append(oobe_filename);
 
         json::JsonObject obj;
-        obj.SetNamedValue(L"openedAtFirstLaunch", json::value(true));
+        obj.SetNamedValue(opened_at_first_launch_json_field_name, json::value(true));
 
         json::to_file(oobePath.c_str(), obj);      
     }
@@ -122,7 +124,7 @@ namespace PTSettingsHelper
                 return L"";
             }
 
-            std::wstring last_version = saved_settings->GetNamedString(L"last_version", L"").c_str();
+            std::wstring last_version = saved_settings->GetNamedString(last_version_json_field_name, L"").c_str();
             return last_version;
         }
         return L"";
@@ -134,7 +136,7 @@ namespace PTSettingsHelper
         lastVersionRunPath = lastVersionRunPath.append(last_version_run_filename);
 
         json::JsonObject obj;
-        obj.SetNamedValue(L"last_version", json::value(version));
+        obj.SetNamedValue(last_version_json_field_name, json::value(version));
 
         json::to_file(lastVersionRunPath.c_str(), obj);
     }
