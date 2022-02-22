@@ -1218,6 +1218,11 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
 
 void FancyZones::UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept
 {
+    if (!m_window)
+    {
+        return;
+    }
+
     UnregisterHotKey(m_window, hotkeyId);
 
     if (!enable)
