@@ -261,8 +261,8 @@ bool FancyZonesWindowUtils::IsExcludedByUser(const std::wstring& processPath) no
 
 bool FancyZonesWindowUtils::IsExcludedByDefault(const std::wstring& processPath) noexcept
 {
-    static std::vector<std::wstring> defaultExludedFolders = { NonLocalizable::SystemAppsFolder };
-    if (find_folder_in_path(processPath, defaultExludedFolders))
+    static std::vector<std::wstring> defaultExcludedFolders = { NonLocalizable::SystemAppsFolder };
+    if (find_folder_in_path(processPath, defaultExcludedFolders))
     {
         return true;
     }

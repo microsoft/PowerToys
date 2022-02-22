@@ -236,10 +236,10 @@ void FancyZonesSettings::LoadSettings()
             // Avoid undefined behavior
             if (*val >= 0 || *val < (int)OverlappingZonesAlgorithm::EnumElements)
             {
-                auto algo = (OverlappingZonesAlgorithm)*val;
-                if (m_settings.overlappingZonesAlgorithm != algo)
+                auto algorithm = (OverlappingZonesAlgorithm)*val;
+                if (m_settings.overlappingZonesAlgorithm != algorithm)
                 {
-                    m_settings.overlappingZonesAlgorithm = algo;
+                    m_settings.overlappingZonesAlgorithm = algorithm;
                     NotifyObservers(SettingId::OverlappingZonesAlgorithm);
                 }
             }
