@@ -168,8 +168,7 @@ private:
     void RegisterVirtualDesktopUpdates() noexcept;
 
     void UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept;
-    void OnSettingsChanged() noexcept;
-
+    
     std::pair<winrt::com_ptr<IWorkArea>, ZoneIndexSet> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept;
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> workArea, const ZoneIndexSet& zoneIndexSet) noexcept;
     bool MoveToAppLastZone(HWND window, HMONITOR active, HMONITOR primary) noexcept;
@@ -183,9 +182,6 @@ private:
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
     HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
-
-    bool GetSystemTheme() const noexcept;
-    ZoneColors GetZoneColors() const noexcept;
 
     virtual void SettingsUpdate(SettingId type) override;
 
