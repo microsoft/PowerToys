@@ -344,6 +344,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Logger::init(LogSettings::runnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
     const std::string cmdLine{ lpCmdLine };
+    Logger::info("Running powertoys with cmd args: {}", cmdLine);
+
     auto open_settings_it = cmdLine.find("--open-settings");
     const bool open_settings = open_settings_it != std::string::npos;
     // Check if opening specific settings window
@@ -408,6 +410,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (elevated && with_dont_elevate_arg && !run_elevated_setting)
 
         {
+            Logger::info("Scheduling restart as non elevated");
             schedule_restart_as_non_elevated();
             result = 0;
         }
@@ -422,6 +425,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
         else
         {
+            Logger::info("Scheduling restart as elevated");
             schedule_restart_as_elevated(open_settings);
             result = 0;
         }
