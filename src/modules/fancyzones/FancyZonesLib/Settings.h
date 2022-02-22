@@ -43,7 +43,7 @@ struct Settings
     bool makeDraggedWindowTransparent = true;
     bool systemTheme = true;
     bool showZoneNumber = true;
-    bool allowSnapChildWindows = false;
+    bool allowSnapPopupWindows = false;
     std::wstring zoneColor = L"#AACDFF";
     std::wstring zoneBorderColor = L"#FFFFFF";
     std::wstring zoneHighlightColor = L"#008CFF";

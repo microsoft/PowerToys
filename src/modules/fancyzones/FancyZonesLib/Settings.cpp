@@ -123,7 +123,7 @@ void FancyZonesSettings::LoadSettings()
         SetBoolFlag(values, NonLocalizable::WindowSwitchingToggleID, SettingId::WindowSwitching, m_settings.windowSwitching);
         SetBoolFlag(values, NonLocalizable::SystemThemeID, SettingId::SystemTheme, m_settings.systemTheme);
         SetBoolFlag(values, NonLocalizable::ShowZoneNumberID, SettingId::ShowZoneNumber, m_settings.showZoneNumber);
-        SetBoolFlag(values, NonLocalizable::AllowSnapChildWindowsID, SettingId::AllowSnapChildWindows, m_settings.allowSnapChildWindows);
+        SetBoolFlag(values, NonLocalizable::AllowSnapChildWindowsID, SettingId::AllowSnapChildWindows, m_settings.allowSnapPopupWindows);
 
         // colors
         if (auto val = values.get_string_value(NonLocalizable::ZoneColorID))

@@ -13,7 +13,7 @@ namespace FancyZonesWindowUtils
     bool IsWindowMaximized(HWND window) noexcept;
     bool HasVisibleOwner(HWND window) noexcept;
     bool IsStandardWindow(HWND window);
-    bool IsChildWindow(HWND window) noexcept;
+    bool IsPopupWindow(HWND window) noexcept;
     bool IsCandidateForZoning(HWND window);
     bool IsProcessOfWindowElevated(HWND window); // If HWND is already dead, we assume it wasn't elevated
     bool IsExcludedByUser(const std::wstring& processPath) noexcept;

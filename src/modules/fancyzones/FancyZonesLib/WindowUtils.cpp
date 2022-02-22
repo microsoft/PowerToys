@@ -162,27 +162,21 @@ bool FancyZonesWindowUtils::HasVisibleOwner(HWND window) noexcept
 
 bool FancyZonesWindowUtils::IsStandardWindow(HWND window)
 {
-    if (GetAncestor(window, GA_ROOT) != window || !IsWindowVisible(window))
+    if (GetAncestor(window, GA_ROOT) != window)
     {
         return false;
     }
+
     auto style = GetWindowLong(window, GWL_STYLE);
     auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
-    // WS_POPUP need to have a border or minimize/maximize buttons,
-    // otherwise the window is "not interesting"
-    if ((style & WS_POPUP) == WS_POPUP &&
-        (style & WS_THICKFRAME) == 0 &&
-        (style & WS_MINIMIZEBOX) == 0 &&
-        (style & WS_MAXIMIZEBOX) == 0)
+
+    bool isToolWindow = (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW;
+    bool isVisible = (style & WS_VISIBLE) == WS_VISIBLE;
+    if (isToolWindow || !isVisible)
     {
         return false;
     }
-    if ((style & WS_DISABLED) == WS_DISABLED ||
-        (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
-        (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE)
-    {
-        return false;
-    }
+
     std::array<char, 256> class_name;
     GetClassNameA(window, class_name.data(), static_cast<int>(class_name.size()));
     if (is_system_window(window, class_name.data()))
@@ -193,16 +187,29 @@ bool FancyZonesWindowUtils::IsStandardWindow(HWND window)
     return true;
 }
 
-bool FancyZonesWindowUtils::IsChildWindow(HWND window) noexcept
+bool FancyZonesWindowUtils::IsPopupWindow(HWND window) noexcept
 {
     auto style = GetWindowLong(window, GWL_STYLE);
-    return ((style & WS_CHILD) == WS_CHILD);
+    return ((style & WS_POPUP) == WS_POPUP);
 }
 
 bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
 {
-    auto zonable = IsStandardWindow(window) && !HasVisibleOwner(window) && (!IsChildWindow(window) || FancyZonesSettings::settings().allowSnapChildWindows);
-    if (!zonable)
+    bool isStandard = IsStandardWindow(window);
+    if (!isStandard)
+    {
+        return false;
+    }
+    
+    // popup could be the window we don't want to snap: start menu, notification popup, tray window, etc.
+    bool isPopup = IsPopupWindow(window);
+    if (isPopup && !FancyZonesSettings::settings().allowSnapPopupWindows)
+    {
+        return false;
+    }
+    
+    auto hasOwner = HasVisibleOwner(window);
+    if (hasOwner)
     {
         return false;
     }
