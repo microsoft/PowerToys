@@ -13,18 +13,13 @@ namespace NonLocalizable
     const static wchar_t* MONACO_LANGUAGES_FILE_NAME = L"modules\\FileExplorerPreview\\monaco_languages.json";
     const static wchar_t* ListID = L"list";
     const static wchar_t* ExtensionsID = L"extensions";
-    const static wchar_t* MDExtension = L".md";
-    const static wchar_t* SVGExtension = L".svg";
     const static std::vector<std::wstring> ExtSVG      = { L".svg" };
     const static std::vector<std::wstring> ExtMarkdown = { L".md", L".markdown", L".mdown", L".mkdn", L".mkd", L".mdwn", L".mdtxt", L".mdtext" };
     const static std::vector<std::wstring> ExtPDF      = { L".pdf" };
     const static std::vector<std::wstring> ExtGCode    = { L".gcode" };
     const static std::vector<std::wstring> ExtSTL      = { L".stl" };
     const static std::vector<std::wstring> ExtNoNoNo   = { 
-        L".txt", //Windows has been rendering text well since 1998, thank you very much.
-        L".ini", //Buggy. Try previewing System.ini or any INI file with words consisting of digits and letters.
-        L".reg", //Same as INI.
-        L".log"
+        L".svgz" //Monaco cannot handle this file type at all; it's a binary file.
     };
 }
 

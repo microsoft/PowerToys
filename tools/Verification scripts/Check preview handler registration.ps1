@@ -14,7 +14,7 @@ function PublicStaticVoidMain {
     [String] $Handler
   }
 
-  [String[]]$TypesToCheck = @(".svg", ".pdf", ".gcode", ".stl", ".md", ".markdown", ".mdown", ".mkdn", ".mkd", ".mdwn", ".mdtxt", ".mdtext")
+  [String[]]$TypesToCheck = @(".svg", ".svgz", ".pdf", ".gcode", ".stl", ".md", ".markdown", ".mdown", ".mkdn", ".mkd", ".mdwn", ".mdtxt", ".mdtext", ".txt", ".ini")
    $IPREVIEW_HANDLER_CLSID = '{8895b1c6-b41f-4c1c-a562-0d564250836f}'
   $PowerToysHandlers = @{
     '{07665729-6243-4746-95b7-79579308d1b2}' = "PowerToys PDF handler"
