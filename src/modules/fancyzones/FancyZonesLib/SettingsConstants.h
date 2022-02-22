@@ -31,5 +31,6 @@ enum class SettingId
     NextTabHotkey,
     PrevTabHotkey,
     ExcludedApps,
+    AllowSnapPopupWindows,
     AllowSnapChildWindows,
 };

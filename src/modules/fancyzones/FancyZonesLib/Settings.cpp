@@ -32,7 +32,8 @@ namespace NonLocalizable
     const wchar_t ShowOnAllMonitorsID[] = L"fancyzones_show_on_all_monitors";
     const wchar_t SpanZonesAcrossMonitorsID[] = L"fancyzones_span_zones_across_monitors";
     const wchar_t MakeDraggedWindowTransparentID[] = L"fancyzones_makeDraggedWindowTransparent";
-    const wchar_t AllowSnapChildWindowsID[] = L"fancyzones_allowSnapChildWindows";
+    const wchar_t AllowPopupWindowSnapID[] = L"fancyzones_allowPopupWindowSnap";
+    const wchar_t AllowChildWindowSnapID[] = L"fancyzones_allowChildWindowSnap";
 
     const wchar_t SystemThemeID[] = L"fancyzones_systemTheme";
     const wchar_t ZoneColorID[] = L"fancyzones_zoneColor";
@@ -123,7 +124,8 @@ void FancyZonesSettings::LoadSettings()
         SetBoolFlag(values, NonLocalizable::WindowSwitchingToggleID, SettingId::WindowSwitching, m_settings.windowSwitching);
         SetBoolFlag(values, NonLocalizable::SystemThemeID, SettingId::SystemTheme, m_settings.systemTheme);
         SetBoolFlag(values, NonLocalizable::ShowZoneNumberID, SettingId::ShowZoneNumber, m_settings.showZoneNumber);
-        SetBoolFlag(values, NonLocalizable::AllowSnapChildWindowsID, SettingId::AllowSnapChildWindows, m_settings.allowSnapPopupWindows);
+        SetBoolFlag(values, NonLocalizable::AllowPopupWindowSnapID, SettingId::AllowSnapPopupWindows, m_settings.allowSnapPopupWindows);
+        SetBoolFlag(values, NonLocalizable::AllowChildWindowSnapID, SettingId::AllowSnapChildWindows, m_settings.allowSnapChildWindows);
 
         // colors
         if (auto val = values.get_string_value(NonLocalizable::ZoneColorID))

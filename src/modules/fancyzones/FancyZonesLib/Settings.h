@@ -44,6 +44,7 @@ struct Settings
     bool systemTheme = true;
     bool showZoneNumber = true;
     bool allowSnapPopupWindows = false;
+    bool allowSnapChildWindows = false;
     std::wstring zoneColor = L"#AACDFF";
     std::wstring zoneBorderColor = L"#FFFFFF";
     std::wstring zoneHighlightColor = L"#008CFF";

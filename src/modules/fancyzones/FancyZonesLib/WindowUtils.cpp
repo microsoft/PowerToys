@@ -206,6 +206,14 @@ bool FancyZonesWindowUtils::IsPopupWindow(HWND window) noexcept
     return ((style & WS_POPUP) == WS_POPUP);
 }
 
+bool FancyZonesWindowUtils::HasThickFrameAndMinimizeMaximizeButtons(HWND window) noexcept
+{
+    auto style = GetWindowLong(window, GWL_STYLE);
+    return ((style & WS_THICKFRAME) == WS_THICKFRAME
+        && (style & WS_MINIMIZEBOX) == WS_MINIMIZEBOX
+        && (style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX);
+}
+
 bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
 {
     bool isStandard = IsStandardWindow(window);
@@ -215,14 +223,16 @@ bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
     }
     
     // popup could be the window we don't want to snap: start menu, notification popup, tray window, etc.
+    // also, popup could be the windows we want to snap disregarding the "allowSnapPopupWindows" setting, e.g. Telegram
     bool isPopup = IsPopupWindow(window);
-    if (isPopup && !FancyZonesSettings::settings().allowSnapPopupWindows)
+    if (isPopup && !HasThickFrameAndMinimizeMaximizeButtons(window) && !FancyZonesSettings::settings().allowSnapPopupWindows)
     {
         return false;
     }
     
+    // allow child windows 
     auto hasOwner = HasVisibleOwner(window);
-    if (hasOwner)
+    if (hasOwner && !FancyZonesSettings::settings().allowSnapChildWindows)
     {
         return false;
     }
