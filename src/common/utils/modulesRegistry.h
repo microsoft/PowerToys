@@ -88,14 +88,6 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
                 for (uint32_t j = 0; j < extensionsList.Size(); ++j)
                 {
                     auto extension = extensionsList.GetStringAt(j);
-
-                    // Ignore extensions for which we already have dedicated handlers
-                    // if (std::wstring{ extension } == std::wstring{ NonLocalizable::MDExtension } ||
-                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::SVGExtension })
-                    // {
-                    //     continue;
-                    // }
-                    // extensions.push_back(std::wstring{ extension });
                     
                     // Ignore extensions in the exclusion list
                     IsExcluded = false;
@@ -110,18 +102,6 @@ inline registry::ChangeSet getMonacoPreviewHandlerChangeSet(const std::wstring i
                     }
                     if (IsExcluded) { continue; }
                     extensions.push_back(std::wstring{ extension });
-
-                    // if (std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[0] } ||
-                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[1] } ||
-                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[2] } ||
-                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[3] } ||
-                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[4] } ||
-                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[5] } ||
-                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[6] } ||
-                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtMarkdown[7] } ||
-                    //     std::wstring{ extension } == std::wstring{ NonLocalizable::ExtSVG[0] })
-                    // { continue; }
-                    // extensions.push_back(std::wstring{ extension });
                 }
             }
         }
