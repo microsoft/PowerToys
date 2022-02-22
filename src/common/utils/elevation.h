@@ -189,6 +189,7 @@ inline bool drop_elevated_privileges()
 // Run command as elevated user, returns true if succeeded
 inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params)
 {
+    Logger::info(L"run_elevated with params={}", params);
     SHELLEXECUTEINFOW exec_info = { 0 };
     exec_info.cbSize = sizeof(SHELLEXECUTEINFOW);
     exec_info.lpVerb = L"runas";
@@ -206,6 +207,7 @@ inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params)
 // Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
 inline bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid)
 {
+    Logger::info(L"run_non_elevated with params={}", params);
     auto executable_args = L"\"" + file + L"\"";
     if (!params.empty())
     {

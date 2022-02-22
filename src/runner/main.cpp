@@ -105,7 +105,7 @@ void debug_verify_launcher_assets()
     }
 }
 
-int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe)
+int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe, bool openScoobe)
 {
     Logger::info("Runner is starting. Elevated={}", isProcessElevated);
     DPIAware::EnableDPIAwarenessForThisProcess();
@@ -179,8 +179,9 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         }
         // Start initial powertoys
         start_enabled_powertoys();
-
-        Trace::EventLaunch(get_product_version(), isProcessElevated);
+        std::wstring product_version = get_product_version();
+        Trace::EventLaunch(product_version, isProcessElevated);
+        PTSettingsHelper::save_last_version_run(product_version);
 
         if (openSettings)
         {
@@ -195,6 +196,10 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         if (openOobe)
         {
             open_oobe_window();
+        }
+        else if (openScoobe)
+        {
+            open_scoobe_window();
         }
 
         settings_telemetry::init();
@@ -339,6 +344,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Logger::init(LogSettings::runnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
     const std::string cmdLine{ lpCmdLine };
+    Logger::info("Running powertoys with cmd args: {}", cmdLine);
+
     auto open_settings_it = cmdLine.find("--open-settings");
     const bool open_settings = open_settings_it != std::string::npos;
     // Check if opening specific settings window
@@ -373,6 +380,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         Logger::error("Failed to get or save OOBE state with an exception: {}", e.what());
     }
 
+    bool openScoobe = false;
+    try
+    {
+        std::wstring last_version_run = PTSettingsHelper::get_last_version_run();
+        openScoobe = last_version_run != get_product_version();
+    }
+    catch (const std::exception& e)
+    {
+        Logger::error("Failed to get last version with an exception: {}", e.what());
+    }
+
     int result = 0;
     try
     {
@@ -392,13 +410,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (elevated && with_dont_elevate_arg && !run_elevated_setting)
 
         {
+            Logger::info("Scheduling restart as non elevated");
             schedule_restart_as_non_elevated();
             result = 0;
         }
         else if (elevated || !run_elevated_setting || with_dont_elevate_arg)
 
         {
-            result = runner(elevated, open_settings, settings_window, openOobe);
+            result = runner(elevated, open_settings, settings_window, openOobe, openScoobe);
 
             // Save settings on closing
             auto general_settings = get_general_settings();
@@ -406,6 +425,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
         else
         {
+            Logger::info("Scheduling restart as elevated");
             schedule_restart_as_elevated(open_settings);
             result = 0;
         }

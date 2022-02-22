@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -91,11 +92,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
                                     _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                                     var vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
-                                    var fileContent = File.ReadAllText(filePath);
+                                    var fileContent = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
                                     var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
 
                                     // prepping index html to load in
-                                    var html = File.ReadAllText(Settings.AssemblyDirectory + "\\index.html").Replace("\t", string.Empty, StringComparison.InvariantCulture);
+                                    var html = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
 
                                     html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
                                     html = html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
@@ -104,16 +105,24 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                     html = html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
 
                                     // Initialize WebView
-                                    await _webView.EnsureCoreWebView2Async(_webView2Environment);
-                                    _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
-                                    _webView.NavigateToString(html);
-                                    _webView.NavigationCompleted += WebView2Init;
-                                    _webView.Height = this.Height;
-                                    _webView.Width = this.Width;
-                                    Controls.Add(_webView);
+                                    try
+                                    {
+                                        await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
+                                        _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                                        _webView.NavigateToString(html);
+                                        _webView.NavigationCompleted += WebView2Init;
+                                        _webView.Height = this.Height;
+                                        _webView.Width = this.Width;
+                                        Controls.Add(_webView);
+                                    }
+                                    catch (NullReferenceException)
+                                    {
+                                    }
                                 }
                                 catch (WebView2RuntimeNotFoundException)
                                 {
+                                    Controls.Remove(_loading);
+
                                     // WebView2 not installed message
                                     Label errorMessage = new Label();
                                     errorMessage.Text = Resources.WebView2_Not_Installed_Message;
@@ -138,6 +147,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 {
                     InvokeOnControlThread(() =>
                     {
+                        Controls.Remove(_loading);
                         Label text = new Label();
                         text.Text = Resources.Exception_Occurred;
                         text.Text += e.Message;
@@ -155,6 +165,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             {
                 InvokeOnControlThread(() =>
                 {
+                    Controls.Remove(_loading);
                     Label errorMessage = new Label();
                     errorMessage.Text = Resources.Max_File_Size_Error;
                     errorMessage.Width = 500;

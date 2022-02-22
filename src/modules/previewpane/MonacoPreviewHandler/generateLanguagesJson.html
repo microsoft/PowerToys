@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Monaco Preview Handler languages.json generator</title>
+        <title>Monaco Preview Handler monaco_languages.json generator</title>
         <script src="monacoSRC/min/vs/loader.js"></script>
         <script>
             function download(filename, text) {
@@ -19,7 +19,7 @@
             }
             require.config({ paths: { vs: 'monacoSRC/min/vs' } });
             require(['vs/editor/editor.main'], function () {
-                download("languages.json", "{\"list\":"+ JSON.stringify(monaco.languages.getLanguages())+"}");
+                download("monaco_languages.json", "{\"list\":"+ JSON.stringify(monaco.languages.getLanguages())+"}");
             });
 
         </script>
