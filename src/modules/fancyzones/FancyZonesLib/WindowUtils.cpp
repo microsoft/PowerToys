@@ -4,6 +4,7 @@
 #include <common/display/dpi_aware.h>
 #include <common/utils/process_path.h>
 #include <common/utils/window.h>
+#include <common/utils/excluded_apps.h>
 
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/Settings.h>
@@ -15,6 +16,7 @@ namespace NonLocalizable
     const wchar_t SplashClassName[] = L"MsoSplash";
     const wchar_t CoreWindow[] = L"Windows.UI.Core.CoreWindow";
     const wchar_t SearchUI[] = L"SearchUI.exe";
+    const wchar_t SystemAppsFolder[] = L"SYSTEMAPPS";
 }
 
 namespace
@@ -99,34 +101,6 @@ namespace
             rect.top = max(monitorInfo.rcMonitor.top, rect.top);
             rect.bottom = min(monitorInfo.rcMonitor.bottom - yOffset, rect.bottom);
         }
-    }
-    
-    bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wstring>& what)
-    {
-        for (const auto& row : what)
-        {
-            const auto pos = where.rfind(row);
-            const auto last_slash = where.rfind('\\');
-            //Check that row occurs in where, and its last occurrence contains in itself the first character after the last backslash.
-            if (pos != std::wstring::npos && pos <= last_slash + 1 && pos + row.length() > last_slash)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool find_folder_in_path(const std::wstring& where, const std::vector<std::wstring>& what)
-    {
-        for (const auto& row : what)
-        {
-            const auto pos = where.rfind(row);
-            if (pos != std::wstring::npos)
-            {
-                return true;
-            }
-        }
-        return false;
     }
 }
 
@@ -287,7 +261,7 @@ bool FancyZonesWindowUtils::IsExcludedByUser(const std::wstring& processPath) no
 
 bool FancyZonesWindowUtils::IsExcludedByDefault(const std::wstring& processPath) noexcept
 {
-    static std::vector<std::wstring> defaultExludedFolders = { L"SYSTEMAPPS" };
+    static std::vector<std::wstring> defaultExludedFolders = { NonLocalizable::SystemAppsFolder };
     if (find_folder_in_path(processPath, defaultExludedFolders))
     {
         return true;

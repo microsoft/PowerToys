@@ -13,24 +13,6 @@
 
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 
-namespace
-{
-    bool IsZonableByProcessPath(const std::wstring& processPath, const std::vector<std::wstring>& excludedApps)
-    {
-        // Filter out user specified apps
-        CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), (DWORD)processPath.length());
-        if (find_app_name_in_path(processPath, excludedApps))
-        {
-            return false;
-        }
-        if (find_app_name_in_path(processPath, { NonLocalizable::PowerToysAppFZEditor }))
-        {
-            return false;
-        }
-        return true;
-    }
-}
-
 namespace FancyZonesUtils
 {
     std::wstring TrimDeviceId(const std::wstring& deviceId)
