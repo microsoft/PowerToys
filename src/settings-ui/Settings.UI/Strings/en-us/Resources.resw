@@ -2051,7 +2051,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="FancyZones_AllowPopupWindowSnap.Description" xml:space="preserve">
-    <value>This setting can affect all popup windows including notifications.</value>
+    <value>This setting can affect all popup windows including notifications</value>
   </data>
   <data name="FancyZones_AllowPopupWindowSnap.Header" xml:space="preserve">
     <value>Allow popup windows snapping</value>
