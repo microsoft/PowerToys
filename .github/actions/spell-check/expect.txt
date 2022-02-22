@@ -1780,7 +1780,7 @@ scancode
 scanled
 schedtasks
 scm
-SCOOBE
+scoobe
 SCOPEID
 screenshot
 scrollable

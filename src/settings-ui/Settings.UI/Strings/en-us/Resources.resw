@@ -1438,6 +1438,16 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="Oobe_Welcome" xml:space="preserve">
     <value>Welcome</value>
   </data>
+  <data name="Oobe_WhatsNew" xml:space="preserve">
+    <value>What's new?</value>
+  </data>
+  <data name="Oobe_WhatsNew_LoadingError.Title" xml:space="preserve">
+    <value>Couldn't load the release notes. Please check your internet connection.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DetailedReleaseNotesLink.Text" xml:space="preserve">
+    <value>See more detailed release notes on the GitHub repository</value>
+    <comment>Don't loc "GitHub", it's the name of a product</comment>
+  </data>
   <data name="OOBE_Settings.Content" xml:space="preserve">
     <value>Open Settings</value>
   </data>
