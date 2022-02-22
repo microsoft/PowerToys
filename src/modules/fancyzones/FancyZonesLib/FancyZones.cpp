@@ -240,11 +240,22 @@ FancyZones::Run() noexcept
         return;
     }
 
-    RegisterHotKey(m_window, static_cast<int>(HotkeyId::Editor), FancyZonesSettings::settings().editorHotkey.get_modifiers(), FancyZonesSettings::settings().editorHotkey.get_code());
+    if (!RegisterHotKey(m_window, static_cast<int>(HotkeyId::Editor), FancyZonesSettings::settings().editorHotkey.get_modifiers(), FancyZonesSettings::settings().editorHotkey.get_code()))
+    {
+        Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
+    }
+
     if (FancyZonesSettings::settings().windowSwitching)
     {
-        RegisterHotKey(m_window, static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().nextTabHotkey.get_modifiers(), FancyZonesSettings::settings().nextTabHotkey.get_code());
-        RegisterHotKey(m_window, static_cast<int>(HotkeyId::PrevTab), FancyZonesSettings::settings().prevTabHotkey.get_modifiers(), FancyZonesSettings::settings().prevTabHotkey.get_code());
+        if (!RegisterHotKey(m_window, static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().nextTabHotkey.get_modifiers(), FancyZonesSettings::settings().nextTabHotkey.get_code()))
+        {
+            Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
+        }
+
+        if (!RegisterHotKey(m_window, static_cast<int>(HotkeyId::PrevTab), FancyZonesSettings::settings().prevTabHotkey.get_modifiers(), FancyZonesSettings::settings().prevTabHotkey.get_code()))
+        {
+            Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
+        }
     }
 
     m_virtualDesktop.Init();
