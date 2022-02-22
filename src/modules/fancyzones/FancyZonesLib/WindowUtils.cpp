@@ -115,6 +115,19 @@ namespace
         }
         return false;
     }
+
+    bool find_folder_in_path(const std::wstring& where, const std::vector<std::wstring>& what)
+    {
+        for (const auto& row : what)
+        {
+            const auto pos = where.rfind(row);
+            if (pos != std::wstring::npos)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 
@@ -264,6 +277,12 @@ bool FancyZonesWindowUtils::IsExcludedByUser(const std::wstring& processPath) no
 
 bool FancyZonesWindowUtils::IsExcludedByDefault(const std::wstring& processPath) noexcept
 {
+    static std::vector<std::wstring> defaultExludedFolders = { L"SYSTEMAPPS" };
+    if (find_folder_in_path(processPath, defaultExludedFolders))
+    {
+        return true;
+    }
+    
     static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
     return (find_app_name_in_path(processPath, defaultExcludedApps));
 }
