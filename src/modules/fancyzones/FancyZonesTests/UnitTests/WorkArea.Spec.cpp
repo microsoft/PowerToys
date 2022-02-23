@@ -15,7 +15,7 @@
 #include <common/utils/process_path.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-/*
+
 namespace FancyZonesUnitTests
 {
     const std::wstring m_deviceId = L"\\\\?\\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
@@ -499,4 +499,3 @@ namespace FancyZonesUnitTests
             }
     };
 }
-*/
