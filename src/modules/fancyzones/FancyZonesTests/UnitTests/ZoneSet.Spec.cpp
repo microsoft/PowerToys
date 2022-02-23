@@ -13,7 +13,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace FancyZonesDataTypes;
-/*
+
 namespace FancyZonesUnitTests
 {
     TEST_CLASS (ZoneSetUnitTests)
@@ -1134,4 +1134,3 @@ namespace FancyZonesUnitTests
         }
     };
 }
-*/
