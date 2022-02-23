@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -17,15 +16,15 @@ namespace ImageResizer.Properties
         }
 
         public override JsonConverter CreateConverter(
-            Type type,
+            Type typeToConvert,
             JsonSerializerOptions options)
         {
-            if (type == null)
+            if (typeToConvert == null)
             {
                 return null;
             }
 
-            Type keyType = type.UnderlyingSystemType;
+            Type keyType = typeToConvert.UnderlyingSystemType;
 
             JsonConverter converter = (JsonConverter)Activator.CreateInstance(
                 typeof(WrappedJsonConverter<>).MakeGenericType(keyType));

@@ -1,6 +1,15 @@
 #pragma once
 
+#include <unordered_set>
+
+#include <common/SettingsAPI/settings_helpers.h>
 #include <common/SettingsAPI/settings_objects.h>
+
+#include <FancyZonesLib/ModuleConstants.h>
+#include <FancyZonesLib/SettingsConstants.h>
+
+class SettingsObserver;
+class FileWatcher;
 
 enum struct OverlappingZonesAlgorithm : int
 {
@@ -34,6 +43,8 @@ struct Settings
     bool makeDraggedWindowTransparent = true;
     bool systemTheme = true;
     bool showZoneNumber = true;
+    bool allowSnapPopupWindows = false;
+    bool allowSnapChildWindows = false;
     std::wstring zoneColor = L"#AACDFF";
     std::wstring zoneBorderColor = L"#FFFFFF";
     std::wstring zoneHighlightColor = L"#008CFF";
@@ -48,12 +59,38 @@ struct Settings
     std::vector<std::wstring> excludedAppsArray;
 };
 
-interface __declspec(uuid("{BA4E77C4-6F44-4C5D-93D3-CBDE880495C2}")) IFancyZonesSettings : public IUnknown
+class FancyZonesSettings
 {
-    IFACEMETHOD_(bool, GetConfig)(_Out_ PWSTR buffer, _Out_ int *buffer_size) = 0;
-    IFACEMETHOD_(void, SetConfig)(PCWSTR serializedPowerToysSettings) = 0;
-    IFACEMETHOD_(void, ReloadSettings)() = 0;
-    IFACEMETHOD_(const Settings*, GetSettings)() const = 0;
-};
+public:
+    static FancyZonesSettings& instance();
+    static inline const Settings& settings()
+    {
+        return instance().m_settings;
+    }
 
-winrt::com_ptr<IFancyZonesSettings> MakeFancyZonesSettings(HINSTANCE hinstance, PCWSTR name, PCWSTR key) noexcept;
+    inline static std::wstring GetSettingsFileName()
+    {
+        std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
+#if defined(UNIT_TESTS)
+        return saveFolderPath + L"\\test-settings.json";
+#endif
+        return saveFolderPath + L"\\settings.json";
+    }
+
+    void AddObserver(SettingsObserver& observer);
+    void RemoveObserver(SettingsObserver& observer);
+
+    void LoadSettings();
+
+private:
+    FancyZonesSettings();
+    ~FancyZonesSettings() = default;
+
+    Settings m_settings;
+    std::unique_ptr<FileWatcher> m_settingsFileWatcher;
+    std::unordered_set<SettingsObserver*> m_observers;
+
+    void SetBoolFlag(const PowerToysSettings::PowerToyValues& values, const wchar_t* id, SettingId notificationId, bool& out);
+
+    void NotifyObservers(SettingId id) const;
+};

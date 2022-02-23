@@ -1292,7 +1292,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
   </data>
   <data name="Oobe_FileExplorer_Description" xml:space="preserve">
-    <value>PowerToys introduces add-ons to the Windows File Explorer that will currently enable Markdown files (.md), PDF files (.pdf) and SVG icons (.svg) to be viewed in the preview pane.</value>
+    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown files (.md), PDF files (.pdf), SVG icons (.svg), STL files (.stl), Gcode files (.gcode) and developer files to be viewed in the preview pane. It introduces file explorer thumbnail support for a number of these file types as well.</value>
   </data>
   <data name="Oobe_ImageResizer_Description" xml:space="preserve">
     <value>Image Resizer is a Windows shell extension for simple bulk image-resizing.</value>
@@ -1347,7 +1347,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
     <value>Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. 
-From there, simply click on a Markdown file, PDF file or SVG icon in the File Explorer and observe the content on the preview pane!</value>
+From there, simply click on one of the supported files in the File Explorer and observe the content on the preview pane!</value>
   </data>
   <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
     <value>How to create mappings</value>
@@ -2049,5 +2049,14 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="PowerPreviewPage.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
+  </data>
+  <data name="FancyZones_AllowPopupWindowSnap.Description" xml:space="preserve">
+    <value>This setting can affect all popup windows including notifications</value>
+  </data>
+  <data name="FancyZones_AllowPopupWindowSnap.Header" xml:space="preserve">
+    <value>Allow popup windows snapping</value>
+  </data>
+  <data name="FancyZones_AllowChildWindowSnap.Content" xml:space="preserve">
+    <value>Allow child windows snapping</value>
   </data>
 </root>

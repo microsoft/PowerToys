@@ -1,7 +1,6 @@
 #pragma once
 #include "FancyZones.h"
 #include "FancyZonesLib/ZoneSet.h"
-#include "FancyZonesLib/ZoneColors.h"
 #include "FancyZonesLib/FancyZonesDataTypes.h"
 
 /**
@@ -135,14 +134,6 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea :
      * Display the layout on the screen and then hide it.
      */
     IFACEMETHOD_(void, FlashZones)() = 0;
-    /*
-    * Set zone colors
-    */
-    IFACEMETHOD_(void, SetZoneColors)(const ZoneColors& colors) = 0;
-    /*
-    * Set overlapping algorithm
-    */
-    IFACEMETHOD_(void, SetOverlappingZonesAlgorithm)(OverlappingZonesAlgorithm overlappingAlgorithm) = 0;
 };
 
-winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm, const bool showZoneText) noexcept;
+winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept;

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace FancyZonesEditor.Models
@@ -74,7 +75,9 @@ namespace FancyZonesEditor.Models
 
         public LayoutType Type { get; set; }
 
+#pragma warning disable CA1720 // Identifier contains type name (Not worth the effort to change this now.)
         public Guid Guid
+#pragma warning restore CA1720 // Identifier contains type name
         {
             get
             {
@@ -181,16 +184,22 @@ namespace FancyZonesEditor.Models
         {
             get
             {
-                return _quickKey == -1 ? Properties.Resources.Quick_Key_None : _quickKey.ToString();
+                return _quickKey == -1 ? Properties.Resources.Quick_Key_None : _quickKey.ToString(CultureInfo.CurrentCulture);
             }
 
             set
             {
+                var intValue = -1;
                 string none = Properties.Resources.Quick_Key_None;
-                var intValue = value == none ? -1 : int.Parse(value);
+
+                if (value != none && int.TryParse(value, out var parsedInt))
+                {
+                    intValue = parsedInt;
+                }
+
                 if (intValue != _quickKey)
                 {
-                    string prev = _quickKey == -1 ? none : _quickKey.ToString();
+                    string prev = _quickKey == -1 ? none : _quickKey.ToString(CultureInfo.CurrentCulture);
                     _quickKey = intValue;
 
                     if (intValue != -1)

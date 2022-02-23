@@ -310,15 +310,28 @@ bool AlwaysOnTop::PinTopmostWindow(HWND window) const noexcept
 {
     if (!SetProp(window, NonLocalizable::WINDOW_IS_PINNED_PROP, (HANDLE)1))
     {
-        Logger::error(L"SetProp failed");
+        Logger::error(L"SetProp failed, {}", get_last_error_or_default(GetLastError()));
     }
-    return SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
+    auto res = SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    if (!res)
+    {
+        Logger::error(L"Failed to pin window, {}", get_last_error_or_default(GetLastError()));
+    }
+
+    return res;
 }
 
 bool AlwaysOnTop::UnpinTopmostWindow(HWND window) const noexcept
 {
     RemoveProp(window, NonLocalizable::WINDOW_IS_PINNED_PROP);
-    return SetWindowPos(window, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    auto res = SetWindowPos(window, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    if (!res)
+    {
+        Logger::error(L"Failed to unpin window, {}", get_last_error_or_default(GetLastError()));
+    }
+
+    return res;
 }
 
 bool AlwaysOnTop::IsTracked(HWND window) const noexcept
