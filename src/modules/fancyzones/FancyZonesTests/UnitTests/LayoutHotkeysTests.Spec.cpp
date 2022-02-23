@@ -136,7 +136,7 @@ namespace FancyZonesUnitTests
             m_fzData.ReplaceZoneSettingsFileFromOlderVersions();
             LayoutHotkeys::instance().LoadData();
             auto actualCount = LayoutHotkeys::instance().GetHotkeysCount();
-            Assert::AreEqual((size_t)0, actualCount, std::wstring(L"Non emply layout hotkeys, actual count: " + std::to_wstring(actualCount)).c_str());
+            Assert::AreEqual((size_t)0, actualCount, std::wstring(L"Non empty layout hotkeys, actual count: " + std::to_wstring(actualCount)).c_str());
         }
     };
 }
