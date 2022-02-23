@@ -9,7 +9,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests
 {
-    /*TEST_CLASS (AppZoneHistoryUnitTests)
+    TEST_CLASS (AppZoneHistoryUnitTests)
     {
         HINSTANCE m_hInst{};
 
@@ -125,5 +125,5 @@ namespace FancyZonesUnitTests
 
             Assert::IsFalse(AppZoneHistory::instance().RemoveAppLastZone(nullptr, deviceId, zoneSetId));
         }
-    };*/
+    };
 }
