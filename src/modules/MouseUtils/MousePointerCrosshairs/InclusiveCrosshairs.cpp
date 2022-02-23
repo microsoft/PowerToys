@@ -205,7 +205,7 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
     ScreenToClient(m_hwnd, &ptMonitorUpperLeft);
     ScreenToClient(m_hwnd, &ptMonitorBottomRight);
 
-    // Crosshair position should receive a minor adjustment for odd values to prevent antialiasing due to half pixels, while still looking like it's centered around the mouse pointer.
+    // Crosshair position should receive a minor adjustment for odd values to prevent anti-aliasing due to half pixels, while still looking like it's centered around the mouse pointer.
     float halfPixelAdjustment = m_crosshairs_thickness % 2 == 1 ? 0.5f : 0.0f;
 
     // Position crosshairs components around the mouse pointer.
