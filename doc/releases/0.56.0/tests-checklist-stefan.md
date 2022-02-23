@@ -32,53 +32,53 @@
 
 ## Color Picker
 * Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
-  - [ ] when PowerToys is running unelevated on start-up
-  - [ ] when PowerToys is running as admin on start-up
-  - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
-- [ ] Change `Activate Color Picker shortcut` and check the new shortcut is working
-- [ ] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
-- [ ] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
-- [ ] Try to copy color formats to the clipboard from the Editor
-- [ ] Check `Show color name` and verify if color name is shown in the Color picker
-- [ ] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
-- [ ] Select a color from the history in the Editor
-- [ ] Remove color from the history in the Editor
-- [ ] Open the Color Picker from the Editor
-- [ ] Open Adjust color from the Editor
-- [ ] Check Color Picker logs for errors
+  - [x] when PowerToys is running unelevated on start-up
+  - [x] when PowerToys is running as admin on start-up
+  - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
+- [x] Change `Activate Color Picker shortcut` and check the new shortcut is working
+- [x] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
+- [x] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
+- [x] Try to copy color formats to the clipboard from the Editor
+- [x] Check `Show color name` and verify if color name is shown in the Color picker
+- [x] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
+- [x] Select a color from the history in the Editor
+- [x] Remove color from the history in the Editor
+- [x] Open the Color Picker from the Editor
+- [x] Open Adjust color from the Editor
+- [x] Check Color Picker logs for errors
 
 ## FancyZones Editor
 
-- [ ] Open editor from the settings
-- [ ] Open editor with a shortcut
-- [ ] Create a new layout (grid and canvas)
-- [ ] Duplicate a template and a custom layout
-- [ ] Delete layout
-- [ ] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
-- [ ] Edit canvas layout: zones size and position, create or delete zones.
-- [ ] Edit grid layout: split, merge, resize zones.
-- [ ] Check `Save and apply` and `Cancel` buttons behavior after editing.
-- [ ] Assign a layout to each monitor.
-- [ ] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
+- [x] Open editor from the settings
+- [x] Open editor with a shortcut
+- [x] Create a new layout (grid and canvas)
+- [x] Duplicate a template and a custom layout
+- [x] Delete layout
+- [X] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
+- [x] Edit canvas layout: zones size and position, create or delete zones.
+- [x] Edit grid layout: split, merge, resize zones.
+- [x] Check `Save and apply` and `Cancel` buttons behavior after editing.
+- [x] Assign a layout to each monitor.
+- [x] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
 
 
 ## FancyZones
-- [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
-- [ ] Change zone colors and opacity.
-- [ ] Exclude some apps, verify that they're not applicable to a zone.
-- [ ] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
-- [ ] Launch PT in administrator mode, assign a window with administrator privileges.
-- [ ] Create virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
-- [ ] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
-- [ ] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
+- [x] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
+- [x] Change zone colors and opacity.
+- [x] Exclude some apps, verify that they're not applicable to a zone.
+- [X] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
+- [x] Launch PT in administrator mode, assign a window with administrator privileges.
+- [x] Create virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
+- [x] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
+- [x] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
 * Switch between layouts with quick keys.
-    - [ ] Switch with `Win` + `Ctrl` + `Alt` + `key`
-    - [ ] Switch with just a key while dragging a window.
+    - [x] Switch with `Win` + `Ctrl` + `Alt` + `key`
+    - [x] Switch with just a key while dragging a window.
 * Change screen resolution or scaling.
-    - [ ] Assign grid layout, verify that the assigned layout fits the screen.
+    - [x] Assign grid layout, verify that the assigned layout fits the screen.
       NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
-- [ ] Disable FZ
-- [ ] Re-enable FZ, verify that everything is in the same state as it was before disabling.
+- [x] Disable FZ
+- [x] Re-enable FZ, verify that everything is in the same state as it was before disabling.
 
 * Test layout resetting.
 Before testing 
@@ -87,38 +87,38 @@ Before testing
    * Remove `VirtualDesktopIDs` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops`
 
 
-- [ ] Test screen locking
+- [x] Test screen locking
    * Set custom layouts on each monitor
    * Lock screen / unplug monitor / plug monitor
    * Verify that layouts weren't reset to defaults
    
-- [ ] Test restart
+- [x] Test restart
    * Set custom layouts on each monitor
    * Restart the computer
    * Verify that layouts weren't reset to defaults
 
 ## Image Resizer
-- [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
-- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu
-- [ ] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
-- [ ] Resize one image
-- [ ] Resize multiple images
-- [ ] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
+- [x] Disable the Image Resizer and check that `Resize images` is absent in the context menu
+- [x] Enable the Image Resizer and check that `Resize images` is present in the context menu
+- [x] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
+- [x] Resize one image
+- [x] Resize multiple images
+- [x] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
 
-- [ ] Resize images with `Fill` option
-- [ ] Resize images with `Fit` option
-- [ ] Resize images with `Stretch` option
+- [x] Resize images with `Fill` option
+- [x] Resize images with `Fit` option
+- [x] Resize images with `Stretch` option
 
-- [ ] Resize images using dimension: Centimeters
-- [ ] Resize images using dimension: Inches
-- [ ] Resize images using dimension: Percents
-- [ ] Resize images using dimension: Pixels
+- [x] Resize images using dimension: Centimeters
+- [x] Resize images using dimension: Inches
+- [x] Resize images using dimension: Percents
+- [x] Resize images using dimension: Pixels
 
-- [ ] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
-- [ ] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
-- [ ] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
-- [ ] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
-- [ ] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
+- [x] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
+- [x] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
+- [x] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
+- [x] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
+- [x] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
 
 ## PowerRename
 - [ ] Check if disable and enable of the module works.
