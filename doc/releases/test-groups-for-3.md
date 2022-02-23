@@ -2,9 +2,10 @@
 All:
 - Install
 - Functional
+- Localization
 - General
 - Color Picker
-- Espresso
+- Awake
 - FZ Editor
 - FZ
 - File Explorer Add-ons
@@ -14,43 +15,53 @@ All:
 - PowerToys Run
 - Shortcut Guide
 - OOBE
-- VideoConference Mute
+- Mouse Utils
+- VCM
+- AlwaysOnTop
 ```
 
 ```
 Group 1: 
-- Install
 - Functional
+- Localization
 - General
-- Image Resizer
 - Color Picker
-- FZ Editor
-- FZ
-- PowerToys Run
-- Shortcut Guide
-```
-```
-Group 2:
-- Functional
 - File Explorer Add-ons
 - Image Resizer
 - Keyboard Manager
 - PowerRename
 - PowerToys Run
 - OOBE
+- Mouse Utils
+- Awake
+```
+```
+Group 2:
+- Install
+- General
+- FZ Editor
+- FZ
+- File Explorer Add-ons
+- Keyboard Manager
+- Mouse Utils
+- Awake
 - Shortcut Guide
-- VideoConference Mute
+- VCM
+- AlwaysOnTop
 ```
 ```
 Group 3:
 - Install
-- General
+- Functional
+- Localization
 - Color Picker
 - FZ Editor
 - FZ
-- File Explorer Add-ons
-- Keyboard Manager
+- Image Resizer
 - PowerRename
+- PowerToys Run
+- Shortcut Guide
 - OOBE
-- VideoConference Mute
+- VCM
+- AlwaysOnTop
 ```
