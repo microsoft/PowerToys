@@ -19,7 +19,6 @@ private:
     winrt::com_ptr<IFancyZones> m_app;
     HWINEVENTHOOK m_objectLocationWinEventHook = nullptr;
     std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
-    winrt::com_ptr<IFancyZonesSettings> m_settings;
 
     void DisableModule() noexcept;
 

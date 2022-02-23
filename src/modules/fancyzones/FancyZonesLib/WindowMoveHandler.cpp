@@ -10,7 +10,7 @@
 #include "FancyZonesData/AppZoneHistory.h"
 #include "Settings.h"
 #include "WorkArea.h"
-#include "util.h"
+#include <FancyZonesLib/WindowUtils.h>
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -49,8 +49,7 @@ namespace WindowMoveHandlerUtils
     }
 }
 
-WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, const std::function<void()>& keyUpdateCallback) :
-    m_settings(settings),
+WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallback) :
     m_mouseState(false),
     m_mouseHook(std::bind(&WindowMoveHandler::OnMouseDown, this)),
     m_shiftKeyState(keyUpdateCallback),
@@ -61,13 +60,13 @@ WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& 
 
 void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept
 {
-    if (!FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
+    if (!FancyZonesWindowUtils::IsCandidateForZoning(window) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
     {
         return;
     }
 
-    m_draggedWindowInfo.hasNoVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
-    m_draggedWindowInfo.isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
+    m_draggedWindowInfo.hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(window);
+    m_draggedWindowInfo.isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(window) && (!FancyZonesWindowUtils::IsPopupWindow(window) || FancyZonesSettings::settings().allowSnapPopupWindows);
     m_inDragging = true;
 
     auto iter = workAreaMap.find(monitor);
@@ -78,7 +77,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
 
     m_draggedWindow = window;
 
-    if (m_settings->GetSettings()->mouseSwitch)
+    if (FancyZonesSettings::settings().mouseSwitch)
     {
         m_mouseHook.enable();
     }
@@ -97,7 +96,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
         m_draggedWindowWorkArea = iter->second;
         SetWindowTransparency(m_draggedWindow);
         m_draggedWindowWorkArea->MoveSizeEnter(m_draggedWindow);
-        if (m_settings->GetSettings()->showZonesOnAllMonitors)
+        if (FancyZonesSettings::settings().showZonesOnAllMonitors)
         {
             for (auto [keyMonitor, workArea] : workAreaMap)
             {
@@ -172,7 +171,7 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
                 {
                     // The drag has moved to a different monitor.
                     m_draggedWindowWorkArea->ClearSelectedZones();
-                    if (!m_settings->GetSettings()->showZonesOnAllMonitors)
+                    if (!FancyZonesSettings::settings().showZonesOnAllMonitors)
                     {
                         m_draggedWindowWorkArea->HideZonesOverlay();
                     }
@@ -219,12 +218,12 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
         auto workArea = std::move(m_draggedWindowWorkArea);
         ResetWindowTransparency();
 
-        bool hasNoVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
-        bool isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
+        bool hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(window);
+        bool isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(window);
 
         if ((isStandardWindow == false && hasNoVisibleOwner == true &&
              m_draggedWindowInfo.isStandardWindow == true && m_draggedWindowInfo.hasNoVisibleOwner == true) ||
-            FancyZonesUtils::IsWindowMaximized(window))
+            FancyZonesWindowUtils::IsWindowMaximized(window))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
             // or if the window is maximized by Windows when the cursor hits the screen top border
@@ -236,15 +235,15 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
     }
     else
     {
-        if (m_settings->GetSettings()->restoreSize)
+        if (FancyZonesSettings::settings().restoreSize)
         {
             if (WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
             {
                 ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
             }
-            else if (!FancyZonesUtils::IsWindowMaximized(window))
+            else if (!FancyZonesWindowUtils::IsWindowMaximized(window))
             {
-                FancyZonesUtils::RestoreWindowSize(window);
+                FancyZonesWindowUtils::RestoreWindowSize(window);
             }
         }
 
@@ -312,10 +311,9 @@ void WindowMoveHandler::WarnIfElevationIsRequired(HWND window) noexcept
 {
     using namespace notifications;
     using namespace NonLocalizable;
-    using namespace FancyZonesUtils;
 
     static bool warning_shown = false;
-    if (!is_process_elevated() && IsProcessOfWindowElevated(window))
+    if (!is_process_elevated() && FancyZonesWindowUtils::IsProcessOfWindowElevated(window))
     {
         m_dragEnabled = false;
         if (!warning_shown && !is_toast_disabled(CantDragElevatedDontShowAgainRegistryPath, CantDragElevatedDisableIntervalInDays))
@@ -335,7 +333,7 @@ void WindowMoveHandler::WarnIfElevationIsRequired(HWND window) noexcept
 
 void WindowMoveHandler::UpdateDragState() noexcept
 {
-    if (m_settings->GetSettings()->shiftDrag)
+    if (FancyZonesSettings::settings().shiftDrag)
     {
         m_dragEnabled = (m_shiftKeyState.state() ^ m_mouseState);
     }
@@ -347,7 +345,7 @@ void WindowMoveHandler::UpdateDragState() noexcept
 
 void WindowMoveHandler::SetWindowTransparency(HWND window) noexcept
 {
-    if (m_settings->GetSettings()->makeDraggedWindowTransparent)
+    if (FancyZonesSettings::settings().makeDraggedWindowTransparent)
     {
         m_windowTransparencyProperties.draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
 
@@ -364,7 +362,7 @@ void WindowMoveHandler::SetWindowTransparency(HWND window) noexcept
 
 void WindowMoveHandler::ResetWindowTransparency() noexcept
 {
-    if (m_settings->GetSettings()->makeDraggedWindowTransparent && m_windowTransparencyProperties.draggedWindow != nullptr)
+    if (FancyZonesSettings::settings().makeDraggedWindowTransparent && m_windowTransparencyProperties.draggedWindow != nullptr)
     {
         SetLayeredWindowAttributes(m_windowTransparencyProperties.draggedWindow, m_windowTransparencyProperties.draggedWindowCrKey, m_windowTransparencyProperties.draggedWindowInitialAlpha, m_windowTransparencyProperties.draggedWindowDwFlags);
         SetWindowLong(m_windowTransparencyProperties.draggedWindow, GWL_EXSTYLE, m_windowTransparencyProperties.draggedWindowExstyle);

@@ -66,19 +66,23 @@
     <None Include="resource.base.h" />
     <ClInclude Include="SecondaryMouseButtonsHook.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="SettingsConstants.h" />
+    <ClInclude Include="SettingsObserver.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="VirtualDesktop.h" />
     <ClInclude Include="WindowMoveHandler.h" />
     <ClInclude Include="FancyZonesWindowProperties.h" />
+    <ClInclude Include="WindowUtils.h" />
     <ClInclude Include="Zone.h" />
-    <ClInclude Include="ZoneColors.h" />
+    <ClInclude Include="Colors.h" />
     <ClInclude Include="ZoneIndexSetBitmask.h" />
     <ClInclude Include="ZoneSet.h" />
     <ClInclude Include="WorkArea.h" />
     <ClInclude Include="ZonesOverlay.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Colors.cpp" />
     <ClCompile Include="FancyZonesData\AppZoneHistory.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../pch.h</PrecompiledHeaderFile>
@@ -117,6 +121,7 @@
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VirtualDesktop.cpp" />
     <ClCompile Include="WindowMoveHandler.cpp" />
+    <ClCompile Include="WindowUtils.cpp" />
     <ClCompile Include="Zone.cpp" />
     <ClCompile Include="ZoneSet.cpp" />
     <ClCompile Include="WorkArea.cpp" />

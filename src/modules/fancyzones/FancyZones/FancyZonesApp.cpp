@@ -16,11 +16,9 @@
 FancyZonesApp::FancyZonesApp(const std::wstring& appName, const std::wstring& appKey)
 {
     DPIAware::EnableDPIAwarenessForThisProcess();
-
-    m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), appName.c_str(), appKey.c_str());
-    
+        
     InitializeWinhookEventIds();
-    m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings, std::bind(&FancyZonesApp::DisableModule, this));
+    m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), std::bind(&FancyZonesApp::DisableModule, this));
 
     InitHooks();
 
