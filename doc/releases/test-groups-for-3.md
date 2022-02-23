@@ -43,10 +43,10 @@ Group 2:
 - FZ
 - File Explorer Add-ons
 - Keyboard Manager
-- Mouse Utils
-- Awake
 - Shortcut Guide
+- Mouse Utils
 - VCM
+- Awake
 - AlwaysOnTop
 ```
 ```
