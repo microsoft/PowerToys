@@ -18,7 +18,7 @@ namespace Wox.Plugin
         {
             if (obj == null)
             {
-                throw new NullReferenceException();
+                throw new ArgumentNullException(nameof(obj));
             }
             else
             {
