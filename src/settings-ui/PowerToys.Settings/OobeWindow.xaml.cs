@@ -96,7 +96,7 @@ namespace PowerToys.Settings
         {
             base.OnSourceInitialized(e);
             var hwnd = new WindowInteropHelper(this).Handle;
-            NativeMethods.SetToolWindowStyle(hwnd);
+            NativeMethods.SetPopupStyle(hwnd);
         }
     }
 }

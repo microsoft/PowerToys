@@ -86,6 +86,8 @@
 
 	<?define SystemComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.System.deps.json;Microsoft.PowerToys.Run.Plugin.System.dll?>
 
+    <?define TimeZoneComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json;Microsoft.PowerToys.Run.Plugin.TimeZone.dll;PowerToys.ManagedTelemetry.dll?>
+
 	<?define SystemImagesComponentFiles=lock.dark.png;lock.light.png;logoff.dark.png;logoff.light.png;recyclebin.dark.png;recyclebin.light.png;restart.dark.png;restart.light.png;shutdown.dark.png;shutdown.light.png;sleep.dark.png;sleep.light.png;firmwareSettings.dark.png;firmwareSettings.light.png?>
 
 	<?define WinSetCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;PowerToys.ManagedTelemetry.dll?>
@@ -476,6 +478,10 @@
                                 </Directory>
                                 <Directory Id="SystemPluginFolder" Name="System">
                                     <Directory Id="SystemImagesFolder" Name="Images" />
+                                </Directory>
+                                <Directory Id="TimeZonePluginFolder" Name="TimeZone">
+                                    <Directory Id="TimeZoneImagesFolder" Name="Images" />
+                                    <Directory Id="TimeZoneLanguagesFolder" Name="Languages" />
                                 </Directory>
                                 <Directory Id="WindowsSettingsPluginFolder" Name="WindowsSettings">
                                     <Directory Id="WindowsSettingsImagesFolder" Name="Images" />
@@ -1085,7 +1091,7 @@
     <Fragment>
         <!-- Resource directories should be added only if the installer is built on the build farm -->
         <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
             <!-- Resource file directories -->
             <?foreach Language in $(var.LocLanguageList)?>
@@ -1335,10 +1341,16 @@
                 Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
                 <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
             </Component>
+            <Component
+                Id="Launcher_TimeZone_$(var.IdSafeLanguage)_Component"
+                Guid="$(var.CompGUIDPrefix)14"
+                Directory="Resource$(var.IdSafeLanguage)TimeZonePluginFolder">
+                <File Id="Launcher_TimeZone_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeZone.resources.dll" />
+            </Component>
             <!-- Uncomment after Plugin receives the localization files.
                 <Component 
                     Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component" 
-                    Guid="$(var.CompGUIDPrefix)14"                
+                    Guid="$(var.CompGUIDPrefix)15"                
                     Directory="Resource$(var.IdSafeLanguage)WindowsTerminalFolder">
                     <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
                 </Component>
@@ -1549,7 +1561,20 @@
 				    <File Id="SystemImagesComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\$(var.File)" />
 			    </Component>
 			<?endforeach?>
-			
+      
+            <!-- TimeZone Plugin -->
+            <?foreach File in $(var.TimeZoneComponentFiles)?>
+			    <Component Id="TimeZoneComponent_$(var.File)" Win64="yes" Directory="TimeZonePluginFolder">
+				    <File Id="TimeZoneComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\$(var.File)" />
+			    </Component>
+			<?endforeach?>
+            <Component Id="TimeZoneImagesComponentLight" Directory="TimeZoneImagesFolder" >
+                <File Id="TimeZoneLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\Images\timeZone.light.png" />
+            </Component>
+            <Component Id="TimeZoneImagesComponentDark" Directory="TimeZoneImagesFolder" >
+	            <File Id="TimeZoneDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\Images\timeZone.dark.png" />
+		    </Component>
+      
             <!-- WindowsSettings Plugin -->
 			<?foreach File in $(var.WinSetCmpFiles)?>
 			    <Component Id="WinSetCmp_$(var.File)" Win64="yes" Directory="WindowsSettingsPluginFolder">

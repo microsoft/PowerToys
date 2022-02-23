@@ -49,3 +49,5 @@ ignore$
 ^\.github/
 ^\.github/actions/spell-check/
 ^\.gitmodules$
+(?:^|/)WindowsSettings\.json$
+(?:^|/)timezones\.json$

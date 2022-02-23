@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "MonitorUtils.h"
 
-#include <FancyZonesLib/util.h>
+#include <FancyZonesLib/WindowUtils.h>
 
 namespace MonitorUtils
 {
@@ -68,7 +68,7 @@ namespace MonitorUtils
                 if (GetMonitorInfo(monitor, &destMi))
                 {
                     RECT newPosition = FitOnScreen(placement.rcNormalPosition, originMi.rcWork, destMi.rcWork);
-                    FancyZonesUtils::SizeWindowToRect(window, newPosition);
+                    FancyZonesWindowUtils::SizeWindowToRect(window, newPosition);
                 }
             }
         }
