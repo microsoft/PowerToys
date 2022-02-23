@@ -13,6 +13,7 @@ namespace FancyZonesUnitTests
     {
         FancyZonesData& m_fzData = FancyZonesDataInstance();
         std::wstring m_testFolder = L"FancyZonesUnitTests";
+        std::wstring m_testFolderPath = PTSettingsHelper::get_module_save_folder_location(m_testFolder);
 
         TEST_METHOD_INITIALIZE(Init)
         {
