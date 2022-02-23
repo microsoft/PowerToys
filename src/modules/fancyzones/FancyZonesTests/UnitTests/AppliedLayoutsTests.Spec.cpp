@@ -13,6 +13,7 @@ namespace FancyZonesUnitTests
     {
         FancyZonesData& m_fzData = FancyZonesDataInstance();
         std::wstring m_testFolder = L"FancyZonesUnitTests";
+        std::wstring m_testFolderPath = PTSettingsHelper::get_module_save_folder_location(m_testFolder);
 
         TEST_METHOD_INITIALIZE(Init)
         {
@@ -22,7 +23,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD_CLEANUP(CleanUp)
         {
             std::filesystem::remove_all(AppliedLayouts::AppliedLayoutsFileName());
-            std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_testFolder));
+            std::filesystem::remove_all(m_testFolderPath);
         }
 
         TEST_METHOD (AppliedLayoutsParse)
