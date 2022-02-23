@@ -17,6 +17,9 @@ namespace FancyZonesUnitTests
         TEST_METHOD_INITIALIZE(Init)
         {
             m_fzData.SetSettingsModulePath(m_testFolder);
+
+            std::filesystem::remove_all(LayoutHotkeys::LayoutHotkeysFileName());
+            LayoutHotkeys::instance().LoadData(); // reset
         }
 
         TEST_METHOD_CLEANUP(CleanUp)
