@@ -8,7 +8,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests
 {
-    TEST_CLASS(ZoneUnitTests)
+    /*TEST_CLASS(ZoneUnitTests)
     {
     private:
         RECT m_zoneRect{ 10, 10, 200, 200 };
@@ -42,5 +42,5 @@ namespace FancyZonesUnitTests
 
             Assert::AreEqual(zone->Id(), zoneId);
         }
-    };
+    };*/
 }
