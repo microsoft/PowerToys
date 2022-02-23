@@ -122,12 +122,14 @@ namespace FancyZonesUnitTests
         {
             // prepare
             std::filesystem::remove_all(m_testFolderPath);
-            Assert::IsFalse(std::filesystem::exists(m_testFolderPath));
+            Assert::IsFalse(std::filesystem::exists(m_testFolderPath), L"Test folder still exists");
+            Assert::IsFalse(std::filesystem::exists(LayoutHotkeys::LayoutHotkeysFileName()), std::wstring(L"Layout hotkeys file exists: " + LayoutHotkeys::LayoutHotkeysFileName()).c_str());
 
             // test
             m_fzData.ReplaceZoneSettingsFileFromOlderVersions();
             LayoutHotkeys::instance().LoadData();
-            Assert::AreEqual((size_t)0, LayoutHotkeys::instance().GetHotkeysCount());
+            auto actualCount = LayoutHotkeys::instance().GetHotkeysCount();
+            Assert::AreEqual((size_t)0, actualCount, std::wstring(L"Non emply layout hotkeys, actual count: " + std::to_wstring(actualCount)).c_str());
         }
     };
 }
