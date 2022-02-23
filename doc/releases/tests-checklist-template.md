@@ -283,6 +283,8 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
  * Quit PowerToys
  * Delete %localappdata%\Microsoft\PowerToys
  - [ ] Start PowerToys and verify OOBE opens
+ * Change version saved on `%localappdata%\Microsoft\PowerToys\last_version.txt`
+ - [ ] Start PowerToys and verify OOBE opens in the "What's New" page
  * Visit each OOBE section and for each section:
    - [ ] open the Settings for that module
    - [ ] verify the Settings work as expected (toggle some controls on/off etc.)
@@ -313,6 +315,8 @@ Find My Mouse:
     - [ ] Spotlight radius
     - [ ] Spotlight initial zoom (1x vs 9x will show the difference)
     - [ ] Animation duration
+    - [ ] Change activation method to shake and activate by shaking your mouse pointer
+    - [ ] Excluded apps
 
 Mouse Highlighter:
   * Enable Mouse Highlighter. Then:
