@@ -85,15 +85,26 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             TitleTxt.Text = loader.GetString("Oobe_WhatsNew");
             try
             {
-                ReleaseNotesMarkdown.Text = await GetReleaseNotesMarkdown();
-                ReleaseNotesMarkdown.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                LoadingProgressRing.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                string releaseNotesMarkdown = await GetReleaseNotesMarkdown();
+
+                // Make sure we run in the UI thread. await doesn't seem to guarantee it.
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
+                    ReleaseNotesMarkdown.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                    LoadingProgressRing.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                });
             }
             catch (Exception ex)
             {
                 Logger.LogError("Exception when loading the release notes", ex);
-                LoadingProgressRing.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                ErrorInfoBar.Visibility = Windows.UI.Xaml.Visibility.Visible;
+
+                // Make sure we run in the UI thread. await doesn't seem to guarantee it.
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    LoadingProgressRing.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                    ErrorInfoBar.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                });
             }
         }
 
