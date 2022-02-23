@@ -2,7 +2,10 @@
 #include <filesystem>
 
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
+#include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 #include <FancyZonesLib/util.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -19,13 +22,17 @@ namespace FancyZonesUnitTests
         {
             m_fzData.SetSettingsModulePath(m_testFolder);
 
-            std::filesystem::remove_all(LayoutHotkeys::LayoutHotkeysFileName());
+            std::filesystem::remove(LayoutHotkeys::LayoutHotkeysFileName());
             LayoutHotkeys::instance().LoadData(); // reset
         }
 
         TEST_METHOD_CLEANUP(CleanUp)
         {
-            std::filesystem::remove_all(LayoutHotkeys::LayoutHotkeysFileName());
+            // Move...FromZonesSettings creates all of these files, clean up
+            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
+            std::filesystem::remove(CustomLayouts::CustomLayoutsFileName());
+            std::filesystem::remove(LayoutHotkeys::LayoutHotkeysFileName());
+            std::filesystem::remove(LayoutTemplates::LayoutTemplatesFileName());
             std::filesystem::remove_all(m_testFolderPath);
         }
 

@@ -2,6 +2,9 @@
 #include <filesystem>
 
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 
 #include "util.h"
@@ -23,7 +26,11 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_CLEANUP(CleanUp)
         {
-            std::filesystem::remove_all(LayoutTemplates::LayoutTemplatesFileName());
+            // Move...FromZonesSettings creates all of these files, clean up
+            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
+            std::filesystem::remove(CustomLayouts::CustomLayoutsFileName());
+            std::filesystem::remove(LayoutHotkeys::LayoutHotkeysFileName());
+            std::filesystem::remove(LayoutTemplates::LayoutTemplatesFileName());
             std::filesystem::remove_all(m_testFolderPath);
         }
 
