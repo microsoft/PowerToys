@@ -5,7 +5,7 @@
 #include "Util.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
+/*
 namespace FancyZonesUnitTests
 {
     TEST_CLASS(ZoneUnitTests)
@@ -44,3 +44,4 @@ namespace FancyZonesUnitTests
         }
     };
 }
+*/

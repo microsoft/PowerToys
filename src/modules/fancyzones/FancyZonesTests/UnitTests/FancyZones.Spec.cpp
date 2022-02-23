@@ -10,7 +10,7 @@
 #include "util.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
+/*
 namespace FancyZonesUnitTests
 {
     TEST_CLASS (FancyZonesUnitTests)
@@ -207,38 +207,38 @@ namespace FancyZonesUnitTests
                         Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
                     }
                 }
-                /*
-                TEST_METHOD (OnKeyDownWinCtrlPressed)
-                {
-                    sendKeyboardInput(VK_LWIN);
-                    sendKeyboardInput(VK_CONTROL);
 
-                    const Settings settings{
-                        .overrideSnapHotkeys = false,
-                    };
+                //TEST_METHOD (OnKeyDownWinCtrlPressed)
+                //{
+                //    sendKeyboardInput(VK_LWIN);
+                //    sendKeyboardInput(VK_CONTROL);
 
-                    auto config = serializedPowerToySettings(settings);
-                    m_settings->SetConfig(config.c_str());
+                //    const Settings settings{
+                //        .overrideSnapHotkeys = false,
+                //    };
 
-                    for (DWORD code = '0'; code <= '9'; code++)
-                    {
-                        tagKBDLLHOOKSTRUCT input{};
-                        input.vkCode = code;
-                        Assert::IsTrue(m_fzCallback->OnKeyDown(&input));
-                    }
+                //    auto config = serializedPowerToySettings(settings);
+                //    m_settings->SetConfig(config.c_str());
 
-                    {
-                        tagKBDLLHOOKSTRUCT input{};
-                        input.vkCode = VK_LEFT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
-                    }
+                //    for (DWORD code = '0'; code <= '9'; code++)
+                //    {
+                //        tagKBDLLHOOKSTRUCT input{};
+                //        input.vkCode = code;
+                //        Assert::IsTrue(m_fzCallback->OnKeyDown(&input));
+                //    }
 
-                    {
-                        tagKBDLLHOOKSTRUCT input{};
-                        input.vkCode = VK_RIGHT;
-                        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
-                    }
-                }
-                */
+                //    {
+                //        tagKBDLLHOOKSTRUCT input{};
+                //        input.vkCode = VK_LEFT;
+                //        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                //    }
+
+                //    {
+                //        tagKBDLLHOOKSTRUCT input{};
+                //        input.vkCode = VK_RIGHT;
+                //        Assert::IsFalse(m_fzCallback->OnKeyDown(&input));
+                //    }
+                //}
     };
 }
+*/
