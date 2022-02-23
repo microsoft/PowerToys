@@ -349,6 +349,10 @@ namespace FancyZonesUtils
         // Do it again, allowing Windows to resize the window and set correct scaling
         // This fixes Issue #365
         ::SetWindowPlacement(window, &placement);
+
+        // Set window corner preference on Windows 11 to "Do not round"
+        auto preference = 1;
+        DwmSetWindowAttribute(window, 33, &preference, sizeof(preference));
     }
 
     void SwitchToWindow(HWND window) noexcept
@@ -498,6 +502,11 @@ namespace FancyZonesUtils
                 rect.bottom = rect.top + windowSize[1];
                 SizeWindowToRect(window, rect);
             }
+
+            // Set window corner preference on Windows 11 to "Default"
+            // Note: Should probably store preference from before snap
+            auto preference = 0;
+            DwmSetWindowAttribute(window, 33, &preference, sizeof(preference));
 
             ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
         }
