@@ -37,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             _isEnabled = GeneralSettingsConfig.Enabled.Awake;
             _keepDisplayOn = Settings.Properties.KeepDisplayOn;
+            _keepAudioOn = Settings.Properties.KeepAudioOn;
             _mode = Settings.Properties.Mode;
             _hours = Settings.Properties.Hours;
             _minutes = Settings.Properties.Minutes;
@@ -103,6 +104,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool KeepAudioOn
+        {
+            get => _keepAudioOn;
+            set
+            {
+                if (_keepAudioOn != value)
+                {
+                    _keepAudioOn = value;
+                    OnPropertyChanged(nameof(KeepAudioOn));
+
+                    Settings.Properties.KeepAudioOn = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public uint Hours
         {
             get => _hours;
@@ -152,6 +169,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private uint _hours;
         private uint _minutes;
         private bool _keepDisplayOn;
+        private bool _keepAudioOn;
         private AwakeMode _mode;
     }
 }

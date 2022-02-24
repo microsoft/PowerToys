@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public AwakeProperties()
         {
             KeepDisplayOn = false;
+            KeepAudioOn = false;
             Mode = AwakeMode.PASSIVE;
             Hours = 0;
             Minutes = 0;
