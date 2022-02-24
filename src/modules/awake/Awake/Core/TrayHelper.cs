@@ -62,11 +62,13 @@ namespace Awake.Core
             SetTray(
                 text,
                 settings.Properties.KeepDisplayOn,
+                settings.Properties.KeepAudioOn,
                 settings.Properties.Mode,
                 PassiveKeepAwakeCallback(InternalConstants.AppName),
                 IndefiniteKeepAwakeCallback(InternalConstants.AppName),
                 TimedKeepAwakeCallback(InternalConstants.AppName),
                 KeepDisplayOnCallback(InternalConstants.AppName),
+                KeepAudioOnCallback(InternalConstants.AppName),
                 ExitCallback());
         }
 
@@ -94,6 +96,27 @@ namespace Awake.Core
                 }
 
                 currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
+
+                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            };
+        }
+
+        private static Action KeepAudioOnCallback(string moduleName)
+        {
+            return () =>
+            {
+                AwakeSettings currentSettings;
+
+                try
+                {
+                    currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
+                }
+                catch (FileNotFoundException)
+                {
+                    currentSettings = new AwakeSettings();
+                }
+
+                currentSettings.Properties.KeepAudioOn = !currentSettings.Properties.KeepAudioOn;
 
                 ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
             };
@@ -164,7 +187,7 @@ namespace Awake.Core
             };
         }
 
-        public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Action passiveKeepAwakeCallback, Action indefiniteKeepAwakeCallback, Action<uint, uint> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
+        public static void SetTray(string text, bool keepDisplayOn, bool keepAudioOn, AwakeMode mode, Action passiveKeepAwakeCallback, Action indefiniteKeepAwakeCallback, Action<uint, uint> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action keepAudioOnCallback, Action exitCallback)
         {
             ContextMenuStrip? contextMenuStrip = new ContextMenuStrip();
 
@@ -213,6 +236,19 @@ namespace Awake.Core
             {
                 // User opted to set the display mode directly.
                 keepDisplayOnCallback();
+            };
+
+            CheckButtonToolStripMenuItem? audioOnMenuItem = new CheckButtonToolStripMenuItem
+            {
+                Text = "Keep audio on",
+            };
+
+            audioOnMenuItem.Checked = keepAudioOn;
+
+            audioOnMenuItem.Click += (e, s) =>
+            {
+                // User opted to set the display mode directly.
+                keepAudioOnCallback();
             };
 
             // Timed keep-awake menu item
@@ -279,6 +315,7 @@ namespace Awake.Core
 
             contextMenuStrip.Items.Add(operationContextMenu);
             contextMenuStrip.Items.Add(displayOnMenuItem);
+            contextMenuStrip.Items.Add(audioOnMenuItem);
             contextMenuStrip.Items.Add(new ToolStripSeparator());
             contextMenuStrip.Items.Add(exitContextMenu);
 
