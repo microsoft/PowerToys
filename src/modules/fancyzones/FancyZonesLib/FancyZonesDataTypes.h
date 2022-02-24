@@ -116,10 +116,10 @@ namespace FancyZonesDataTypes
     struct DeviceIdData
     {
         std::wstring deviceName = L"FallbackDevice";
-        int width;
-        int height;
-        GUID virtualDesktopId;
-        std::wstring monitorId;
+        int width{};
+        int height{};
+        GUID virtualDesktopId{};
+        std::wstring monitorId{};
 
         static std::optional<DeviceIdData> ParseDeviceId(const std::wstring& str);
         static bool IsValidDeviceId(const std::wstring& str);
