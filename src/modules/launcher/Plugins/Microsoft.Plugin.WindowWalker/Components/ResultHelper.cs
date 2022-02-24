@@ -39,7 +39,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Returns the tootlip for a result
+        /// Returns the tool tip for a result
         /// </summary>
         /// <param name="window">The window properties of the result</param>
         /// <param name="debugToolTip">Value indicating if a detailed debug tooltip should be returned</param>

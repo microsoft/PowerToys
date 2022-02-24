@@ -151,7 +151,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Stay open after kill process and close window.
+        ///   Looks up a localized string similar to Stay open after closing windows and killing processes.
         /// </summary>
         public static string wox_plugin_windowwalker_SettingOpenAfterKillAndClose {
             get {

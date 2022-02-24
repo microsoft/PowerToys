@@ -54,7 +54,7 @@ namespace Microsoft.Plugin.WindowWalker
                     return true;
                 },
 
-                // For debugging you can set the second paramneter to true to see more informations.
+                // For debugging you can set the second parameter to true to see more informations.
                 ToolTipData = ResultHelper.GetToolTip(x.Result),
             }).ToList();
         }
