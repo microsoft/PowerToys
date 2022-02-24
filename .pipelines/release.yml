@@ -359,7 +359,7 @@ jobs:
   - task: DeleteFiles@1
     displayName: 'Remove symbols from ArtifactStagingDirectory'
     inputs:
-      Contents: *
+      Contents: '*'
       SourceFolder: $(Build.ArtifactStagingDirectory)/Symbols/
       RemoveSourceFolder: True
 
