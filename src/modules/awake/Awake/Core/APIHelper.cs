@@ -40,7 +40,16 @@ namespace Awake.Core
             _timedLoopTimer = new System.Timers.Timer();
             _log = LogManager.GetCurrentClassLogger();
             _tokenSource = new CancellationTokenSource();
-            _soundPlayer = new SoundPlayer("modules/Awake/Sounds/anti-sleep.wav");
+
+            if (File.Exists("modules/Awake/Sounds/anti-sleep.wav"))
+            {
+                _soundPlayer = new SoundPlayer("modules/Awake/Sounds/anti-sleep.wav");
+            }
+            else
+            {
+                _soundPlayer = new SoundPlayer("Sounds/anti-sleep.wav");
+            }
+
             _soundPlayer.Load();
         }
 
