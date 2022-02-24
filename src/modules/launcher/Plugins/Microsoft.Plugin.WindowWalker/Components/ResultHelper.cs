@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using System.Collections.Generic;
 using Microsoft.Plugin.WindowWalker.Properties;
 using Wox.Plugin;
 
@@ -45,7 +44,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="window">The window properties of the result</param>
         /// <param name="debugToolTip">Value indicating if a detailed debug tooltip should be returned</param>
         /// <returns>Tooltip for the result or null of failure</returns>
-        internal static ToolTipData GetToolTip(Window window, bool debugToolTip = false)
+        internal static ToolTipData GetToolTip(Window window, bool debugToolTip)
         {
             if (window == null || !(window is Window))
             {
@@ -54,8 +53,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (!debugToolTip)
             {
-                string text = $"{Resources.wox_plugin_windowwalker_Process}: {window.Process.Name}\n";
-                text += $"{Resources.wox_plugin_windowwalker_ProcessId}: {window.Process.ProcessID}";
+                string text = $"{Resources.wox_plugin_windowwalker_Process}: {window.Process.Name}";
+                text += $"\n{Resources.wox_plugin_windowwalker_ProcessId}: {window.Process.ProcessID}";
 
                 if (Main.VirtualDesktopHelperInstance.GetDesktopCount() > 1)
                 {
