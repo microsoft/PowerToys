@@ -360,7 +360,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: Symbols'
     inputs:
-      PathtoPublish: $(Build.ArtifactsDirectory)/Symbols/
+      PathtoPublish: $(System.ArtifactsDirectory)/Symbols/
       ArtifactName: Symbols
 
   - task: DeleteFiles@1
@@ -378,6 +378,6 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: PowerToySetup'
     inputs:
-      PathtoPublish: $(Build.ArtifactsDirectory)
+      PathtoPublish: $(System.ArtifactsDirectory)
       ArtifactName: setup-$(BuildPlatform)
 ...
