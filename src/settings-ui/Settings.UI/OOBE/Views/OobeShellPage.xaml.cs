@@ -139,6 +139,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
+        public void NavigateToModule(PowerToysModulesEnum selectedModule)
+        {
+            if (selectedModule == PowerToysModulesEnum.WhatsNew)
+            {
+                NavigationView.SelectedItem = NavigationView.FooterMenuItems[0];
+            }
+            else
+            {
+                NavigationView.SelectedItem = NavigationView.MenuItems[(int)selectedModule];
+            }
+        }
+
         [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
         private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
@@ -184,7 +196,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            NavigateToModule(0);
+            NavigationView.SelectedItem = NavigationView.FooterMenuItems[0];
         }
     }
 }
