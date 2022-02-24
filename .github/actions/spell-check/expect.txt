@@ -2136,6 +2136,7 @@ Uniq
 uniquifier
 Uniquifies
 unitconverter
+unittest
 unittests
 unk
 unknwn
