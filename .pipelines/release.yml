@@ -359,7 +359,9 @@ jobs:
   - task: DeleteFiles@1
     displayName: 'Remove symbols from ArtifactsDirectory'
     inputs:
-      contents: $(Build.ArtifactStagingDirectory)/Symbols/
+      SourceFolder: $(Build.ArtifactStagingDirectory)
+      RemoveSourceFolder: true
+      contents: *
 
   - task: CopyFiles@2
     displayName: Copying setup file over
