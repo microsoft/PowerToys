@@ -80,7 +80,7 @@ namespace Awake.Core
             }
         }
 
-        public static void SetIndefiniteKeepAwake(Action<bool> callback, Action failureCallback, bool keepDisplayOn = false)
+        public static void SetIndefiniteKeepAwake(Action<bool> callback, Action failureCallback, bool keepDisplayOn = false, bool keepAudioOn = false)
         {
             _tokenSource.Cancel();
 
@@ -99,7 +99,7 @@ namespace Awake.Core
             _tokenSource = new CancellationTokenSource();
             _threadToken = _tokenSource.Token;
 
-            _runnerThread = Task.Run(() => RunIndefiniteLoop(keepDisplayOn), _threadToken)
+            _runnerThread = Task.Run(() => RunIndefiniteLoop(keepDisplayOn, keepAudioOn), _threadToken)
                 .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
                 .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
         }
@@ -121,7 +121,7 @@ namespace Awake.Core
             }
         }
 
-        public static void SetTimedKeepAwake(uint seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
+        public static void SetTimedKeepAwake(uint seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true, bool keepAudioOn = true)
         {
             _tokenSource.Cancel();
 
@@ -140,12 +140,12 @@ namespace Awake.Core
             _tokenSource = new CancellationTokenSource();
             _threadToken = _tokenSource.Token;
 
-            _runnerThread = Task.Run(() => RunTimedLoop(seconds, keepDisplayOn), _threadToken)
+            _runnerThread = Task.Run(() => RunTimedLoop(seconds, keepDisplayOn, keepAudioOn), _threadToken)
                 .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
                 .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
         }
 
-        private static bool RunIndefiniteLoop(bool keepDisplayOn = false)
+        private static bool RunIndefiniteLoop(bool keepDisplayOn = false, bool keepAudioOn = false)
         {
             bool success;
             if (keepDisplayOn)
@@ -161,9 +161,20 @@ namespace Awake.Core
             {
                 if (success)
                 {
-                    _log.Info($"Initiated indefinite keep awake in background thread: {NativeMethods.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    _log.Info($"Initiated indefinite keep awake in background thread: {NativeMethods.GetCurrentThreadId()}. Screen on: {keepDisplayOn}, Audio on: {keepAudioOn}");
 
-                    WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
+                    if (keepAudioOn)
+                    {
+                        while (!_threadToken.IsCancellationRequested)
+                        {
+                            // Do something
+                            Task.Delay(3000, _threadToken).Wait();
+                        }
+                    }
+                    else
+                    {
+                        WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
+                    }
 
                     return success;
                 }
@@ -181,7 +192,7 @@ namespace Awake.Core
             }
         }
 
-        private static bool RunTimedLoop(uint seconds, bool keepDisplayOn = true)
+        private static bool RunTimedLoop(uint seconds, bool keepDisplayOn = true, bool keepAudioOn = true)
         {
             bool success = false;
 
@@ -217,7 +228,19 @@ namespace Awake.Core
 
                     _timedLoopTimer.Start();
 
-                    WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
+                    if (keepAudioOn)
+                    {
+                        while (!_threadToken.IsCancellationRequested)
+                        {
+                            // Do something
+                            Task.Delay(3000, _threadToken).Wait();
+                        }
+                    }
+                    else
+                    {
+                        WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
+                    }
+
                     _timedLoopTimer.Stop();
                     _timedLoopTimer.Dispose();
 

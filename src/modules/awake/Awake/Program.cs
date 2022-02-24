@@ -118,6 +118,19 @@ namespace Awake
 
             timeOption.Required = false;
 
+            Option<bool>? audioOption = new (
+                    aliases: new[] { "--audio-on", "-a" },
+                    getDefaultValue: () => false,
+                    description: "Determines whether inaudiable sounds should be played to keep speakers awake.")
+            {
+                Argument = new Argument<bool>(() => false)
+                {
+                    Arity = ArgumentArity.ZeroOrOne,
+                },
+            };
+
+            audioOption.Required = false;
+
             Option<int>? pidOption = new (
                     aliases: new[] { "--pid", "-p" },
                     getDefaultValue: () => 0,
@@ -136,12 +149,13 @@ namespace Awake
                 configOption,
                 displayOption,
                 timeOption,
+                audioOption,
                 pidOption,
             };
 
             rootCommand.Description = InternalConstants.AppName;
 
-            rootCommand.Handler = CommandHandler.Create<bool, bool, uint, int>(HandleCommandLineArguments);
+            rootCommand.Handler = CommandHandler.Create<bool, bool, uint, bool, int>(HandleCommandLineArguments);
 
             _log.Info("Parameter setup complete. Proceeding to the rest of the app initiation...");
 
@@ -173,7 +187,7 @@ namespace Awake
             }
         }
 
-        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid)
+        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, bool audioOn, int pid)
         {
             _handler += new ConsoleEventHandler(ExitHandler);
             APIHelper.SetConsoleControlHandler(_handler, true);
@@ -187,6 +201,7 @@ namespace Awake
             _log.Info($"The value for --use-pt-config is: {usePtConfig}");
             _log.Info($"The value for --display-on is: {displayOn}");
             _log.Info($"The value for --time-limit is: {timeLimit}");
+            _log.Info($"The value for --audio-on is: {audioOn}");
             _log.Info($"The value for --pid is: {pid}");
 
             if (usePtConfig)
@@ -253,11 +268,11 @@ namespace Awake
 
                 if (mode == AwakeMode.INDEFINITE)
                 {
-                    SetupIndefiniteKeepAwake(displayOn);
+                    SetupIndefiniteKeepAwake(displayOn, audioOn);
                 }
                 else
                 {
-                    SetupTimedKeepAwake(timeLimit, displayOn);
+                    SetupTimedKeepAwake(timeLimit, displayOn, audioOn);
                 }
             }
 
@@ -273,9 +288,9 @@ namespace Awake
             _exitSignal.WaitOne();
         }
 
-        private static void SetupIndefiniteKeepAwake(bool displayOn)
+        private static void SetupIndefiniteKeepAwake(bool displayOn, bool audioOn)
         {
-            APIHelper.SetIndefiniteKeepAwake(LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
+            APIHelper.SetIndefiniteKeepAwake(LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn, audioOn);
         }
 
         private static void HandleAwakeConfigChange(FileSystemEventArgs fileEvent)
@@ -303,14 +318,14 @@ namespace Awake
 
                         case AwakeMode.INDEFINITE:
                             {
-                                SetupIndefiniteKeepAwake(settings.Properties.KeepDisplayOn);
+                                SetupIndefiniteKeepAwake(settings.Properties.KeepDisplayOn, settings.Properties.KeepAudioOn);
                                 break;
                             }
 
                         case AwakeMode.TIMED:
                             {
                                 uint computedTime = (settings.Properties.Hours * 60 * 60) + (settings.Properties.Minutes * 60);
-                                SetupTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
+                                SetupTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn, settings.Properties.KeepAudioOn);
 
                                 break;
                             }
@@ -348,11 +363,11 @@ namespace Awake
             APIHelper.SetNoKeepAwake();
         }
 
-        private static void SetupTimedKeepAwake(uint time, bool displayOn)
+        private static void SetupTimedKeepAwake(uint time, bool displayOn, bool audioOn)
         {
             _log.Info($"Timed keep-awake. Expected runtime: {time} seconds with display on setting set to {displayOn}.");
 
-            APIHelper.SetTimedKeepAwake(time, LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
+            APIHelper.SetTimedKeepAwake(time, LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn, audioOn);
         }
 
         private static void LogUnexpectedOrCancelledKeepAwakeThreadCompletion()

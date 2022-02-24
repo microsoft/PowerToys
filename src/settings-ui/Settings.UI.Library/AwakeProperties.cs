@@ -19,6 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("awake_keep_display_on")]
         public bool KeepDisplayOn { get; set; }
 
+        [JsonPropertyName("awake_keep_audio_on")]
+        public bool KeepAudioOn { get; set; }
+
         [JsonPropertyName("awake_mode")]
         public AwakeMode Mode { get; set; }
 
