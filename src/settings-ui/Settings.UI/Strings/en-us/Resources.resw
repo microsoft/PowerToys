@@ -617,7 +617,7 @@
     <value>Show recently used strings</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
-    <value>Enable Markdown (.md) preview</value>
+    <value>Enable Markdown preview  (.md, .markdown, .mdown, .mkdn, .mkd, .mdwn, .mdtxt, .mdtext)</value>
     <comment>Do not loc "Markdown".  Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
