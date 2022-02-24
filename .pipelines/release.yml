@@ -338,15 +338,8 @@ jobs:
     inputs:
       contents: >-
         **/*.pdb
+      flattenFolders: True
       targetFolder: $(Build.ArtifactStagingDirectory)/Symbols/
-
-  - task: DeleteFiles@1
-    displayName: 'Remove obj from ArtifactsDirectory'
-    inputs:
-      contents: >-
-        **/$(Build.ArtifactStagingDirectory)/**/obj/*
-        **/$(Build.ArtifactStagingDirectory)/Symbols/packages/*
-        **/$(Build.ArtifactStagingDirectory)/Symbols/src/*
 
   - task: PublishSymbols@2
     displayName: Publish symbols path
