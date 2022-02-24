@@ -341,6 +341,14 @@ jobs:
       flattenFolders: True
       targetFolder: $(Build.ArtifactStagingDirectory)/Symbols/
 
+  - task: DeleteFiles@1
+    displayName: 'Remove unneeded files from ArtifactStagingDirectory'
+    inputs:
+      Contents: >-
+        **/*unittest*.pdb
+        **/vc143.pdb
+      SourceFolder: $(Build.ArtifactStagingDirectory)/Symbols/
+
   - task: PublishSymbols@2
     displayName: Publish symbols path
     continueOnError: True
