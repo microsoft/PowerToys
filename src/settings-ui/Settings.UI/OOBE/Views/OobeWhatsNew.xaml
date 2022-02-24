@@ -18,8 +18,7 @@
             VerticalAlignment="Top">
 
             <TextBlock
-                x:Name="TitleTxt"
-                Text=""
+                x:Uid="Oobe_WhatsNew"
                 AutomationProperties.HeadingLevel="Level1"
                 Style="{StaticResource TitleTextBlockStyle}" />
             <HyperlinkButton

@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private async void Page_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
-            TitleTxt.Text = loader.GetString("Oobe_WhatsNew");
+
             try
             {
                 string releaseNotesMarkdown = await GetReleaseNotesMarkdown();

@@ -71,11 +71,6 @@ namespace PowerToys.Settings
             WindowsXamlHost windowsXamlHost = sender as WindowsXamlHost;
             shellPage = windowsXamlHost.GetUwpInternalObject() as OobeShellPage;
 
-            if (shellPage != null)
-            {
-                shellPage.NavigateToModule(initialModule);
-            }
-
             OobeShellPage.SetRunSharedEventCallback(() =>
             {
                 return Constants.PowerLauncherSharedEvent();
