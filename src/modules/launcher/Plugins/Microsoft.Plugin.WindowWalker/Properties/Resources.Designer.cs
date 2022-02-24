@@ -106,7 +106,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Process ID.
+        ///   Looks up a localized string similar to Process id.
         /// </summary>
         public static string wox_plugin_windowwalker_ProcessId {
             get {

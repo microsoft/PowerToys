@@ -159,6 +159,6 @@
     <value>Process name</value>
   </data>
   <data name="wox_plugin_windowwalker_ProcessId" xml:space="preserve">
-    <value>Process ID</value>
+    <value>Process id</value>
   </data>
 </root>

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+using System.Collections.Generic;
 using Microsoft.Plugin.WindowWalker.Properties;
 using Wox.Plugin;
 
@@ -53,11 +54,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (!debugToolTip)
             {
-                string text = $"{Resources.wox_plugin_windowwalker_Process}: {window.Process.Name}\n" +
-                    $"{Resources.wox_plugin_windowwalker_ProcessId}: {window.Process.ProcessID}\n" +
-                    $"{Resources.wox_plugin_windowwalker_Desktop}: {window.Desktop.Name}";
+                string text = $"{Resources.wox_plugin_windowwalker_Process}: {window.Process.Name}\n";
+                text += $"{Resources.wox_plugin_windowwalker_ProcessId}: {window.Process.ProcessID}";
 
-                text += window.Desktop.IsAllDesktopsView ? string.Empty : $" ({Resources.wox_plugin_windowwalker_Number} {window.Desktop.Number})";
+                if (Main.VirtualDesktopHelperInstance.GetDesktopCount() > 1)
+                {
+                    text += $"\n{Resources.wox_plugin_windowwalker_Desktop}: {window.Desktop.Name}";
+
+                    if (!window.Desktop.IsAllDesktopsView)
+                    {
+                        text += $" ({Resources.wox_plugin_windowwalker_Number} {window.Desktop.Number})";
+                    }
+                }
 
                 return new ToolTipData(window.Title, text);
             }
