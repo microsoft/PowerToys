@@ -340,14 +340,12 @@ jobs:
         **/*.pdb
       flattenFolders: True
       targetFolder: $(Build.ArtifactStagingDirectory)/Symbols/
-
-  - task: DeleteFiles@1
+   
+  - task: PowerShell@2
     displayName: 'Remove unneeded files from ArtifactStagingDirectory'
     inputs:
-      Contents: >-
-        **/*unittest*.pdb
-        **/vc143.pdb
-      SourceFolder: $(Build.ArtifactStagingDirectory)/Symbols/
+      targetType: 'inline'
+      script: Remove-Item $(Build.ArtifactStagingDirectory)/Symbols/* -Include "*unittest*.pdb, vc143.pdb"
 
   - task: PublishSymbols@2
     displayName: Publish symbols path
