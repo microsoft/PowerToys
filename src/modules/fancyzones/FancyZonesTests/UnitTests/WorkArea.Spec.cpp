@@ -23,19 +23,14 @@ namespace FancyZonesUnitTests
 
     TEST_CLASS (WorkAreaCreationUnitTests)
     {
-        FancyZonesDataTypes::DeviceIdData m_parentUniqueId;
         FancyZonesDataTypes::DeviceIdData m_uniqueId;
         FancyZonesDataTypes::DeviceIdData m_emptyUniqueId;
 
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};
-        MONITORINFOEX m_monitorInfo{};
-        GUID m_virtualDesktopGuid{};
 
         void testWorkArea(winrt::com_ptr<IWorkArea> workArea)
         {
-            const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
-
             Assert::IsNotNull(workArea.get());
             Assert::IsTrue(m_uniqueId == workArea->UniqueId());
         }
@@ -43,26 +38,12 @@ namespace FancyZonesUnitTests
         TEST_METHOD_INITIALIZE(Init)
         {
             m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-
-            m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
-            m_monitorInfo.cbSize = sizeof(m_monitorInfo);
-            Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
-
-            m_parentUniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
-            m_parentUniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
-            m_parentUniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top; 
-            auto res = CLSIDFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}", &m_parentUniqueId.virtualDesktopId);
-            Assert::IsTrue(SUCCEEDED(res));
-                
+                            
             m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
-            m_uniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
-            m_uniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top;
-            res = CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
+            m_uniqueId.width = 1920;
+            m_uniqueId.height = 1080;
+            auto res = CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
             Assert::IsTrue(SUCCEEDED(res));
-
-            auto guid = Helpers::StringToGuid(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
-            Assert::IsTrue(guid.has_value());
-            m_virtualDesktopGuid = *guid;
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
@@ -74,123 +55,46 @@ namespace FancyZonesUnitTests
             std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
         }
 
-            TEST_METHOD (CreateWorkArea)
-            {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_emptyUniqueId);
-                testWorkArea(workArea);
+        TEST_METHOD (CreateWorkArea)
+        {
+            auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_emptyUniqueId);
+            testWorkArea(workArea);
 
-                auto* zoneSet{ workArea->ZoneSet() };
-                Assert::IsNotNull(zoneSet);
-                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
-            }
-
-            TEST_METHOD (CreateWorkAreaNoHinst)
-            {
-                auto workArea = MakeWorkArea({}, m_monitor, m_uniqueId, m_emptyUniqueId);
-                testWorkArea(workArea);
-
-                auto* zoneSet{ workArea->ZoneSet() };
-                Assert::IsNotNull(zoneSet);
-                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
-            }
-
-            TEST_METHOD (CreateWorkAreaNoHinstFlashZones)
-            {
-                auto workArea = MakeWorkArea({}, m_monitor, m_uniqueId, m_emptyUniqueId);
-                testWorkArea(workArea);
-
-                auto* zoneSet{ workArea->ZoneSet() };
-                Assert::IsNotNull(zoneSet);
-                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
-            }
-
-            TEST_METHOD (CreateWorkAreaNoMonitor)
-            {
-                auto workArea = MakeWorkArea(m_hInst, {}, m_uniqueId, m_emptyUniqueId);
-                testWorkArea(workArea);
-            }
-
-            TEST_METHOD (CreateWorkAreaNoDeviceId)
-            {
-                // Generate unique id without device id
-                FancyZonesDataTypes::DeviceIdData uniqueIdData;
-                uniqueIdData.virtualDesktopId = m_virtualDesktopGuid;
-
-                MONITORINFOEXW mi;
-                mi.cbSize = sizeof(mi);
-                if (GetMonitorInfo(m_monitor, &mi))
-                {
-                    FancyZonesUtils::Rect const monitorRect(mi.rcMonitor);
-                    uniqueIdData.width = monitorRect.width();
-                    uniqueIdData.height = monitorRect.height();
-                }
-
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, uniqueIdData, m_emptyUniqueId);
-
-                const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
-                const FancyZonesDataTypes::DeviceIdData expectedUniqueId{ L"FallbackDevice", m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left, m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top, m_virtualDesktopGuid };
-
-                Assert::IsNotNull(workArea.get());
-                Assert::IsTrue(expectedUniqueId == workArea->UniqueId());
-
-                auto* zoneSet{ workArea->ZoneSet() };
-                Assert::IsNotNull(zoneSet);
-                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
-            }
-
-            TEST_METHOD (CreateWorkAreaNoDesktopId)
-            {
-                // Generate unique id without virtual desktop id
-                FancyZonesDataTypes::DeviceIdData uniqueId;
-                uniqueId.deviceName = FancyZonesUtils::TrimDeviceId(m_deviceId);
-
-                MONITORINFOEXW mi;
-                mi.cbSize = sizeof(mi);
-                if (GetMonitorInfo(m_monitor, &mi))
-                {
-                    FancyZonesUtils::Rect const monitorRect(mi.rcMonitor);
-                    uniqueId.width = monitorRect.width();
-                    uniqueId.height = monitorRect.height();
-                }
-
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, uniqueId, m_emptyUniqueId);
-
-                const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
-                Assert::IsNotNull(workArea.get());
-
-                auto* zoneSet{ workArea->ZoneSet() };
-                Assert::IsNotNull(zoneSet);
-                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
-            }
+            auto* zoneSet{ workArea->ZoneSet() };
+            Assert::IsNotNull(zoneSet);
+            Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
+            Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
+        }
 
         TEST_METHOD (CreateWorkAreaClonedFromParent)
         {
             using namespace FancyZonesDataTypes;
 
-            const ZoneSetLayoutType type = ZoneSetLayoutType::PriorityGrid;
-            const int spacing = 10;
-            const int zoneCount = 5;
-            const auto customSetGuid = Helpers::CreateGuidString();
+            FancyZonesDataTypes::DeviceIdData parentUniqueId;
+            parentUniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
+            parentUniqueId.width = 1920;
+            parentUniqueId.height = 1080;
+            auto res = CLSIDFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}", &parentUniqueId.virtualDesktopId);
+            Assert::IsTrue(SUCCEEDED(res));
 
-            auto parentWorkArea = MakeWorkArea(m_hInst, m_monitor, m_parentUniqueId, m_emptyUniqueId);
-                
-            // newWorkArea = false - workArea won't be cloned from parent
-            auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_emptyUniqueId);
+            ZoneSetData data
+            {
+                .uuid = L"{61FA9FC0-26A6-4B37-A834-491C148DFC58}",
+                .type = ZoneSetLayoutType::Rows,
+            };
+
+            auto parentWorkArea = MakeWorkArea(m_hInst, m_monitor, parentUniqueId, m_emptyUniqueId);
+            AppliedLayouts::instance().ApplyLayout(parentUniqueId, data);
+
+            auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, parentUniqueId);
 
             Assert::IsNotNull(actualWorkArea->ZoneSet());
 
             Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().contains(m_uniqueId));
             auto currentDeviceInfo = AppliedLayouts::instance().GetAppliedLayoutMap().at(m_uniqueId);
-            // default values
-            Assert::AreEqual(true, currentDeviceInfo.showSpacing);
-            Assert::AreEqual(3, currentDeviceInfo.zoneCount);
-            Assert::AreEqual(16, currentDeviceInfo.spacing);
-            Assert::AreEqual(static_cast<int>(ZoneSetLayoutType::PriorityGrid), static_cast<int>(currentDeviceInfo.type));
+
+            Assert::AreEqual(static_cast<int>(data.type), static_cast<int>(currentDeviceInfo.type));
+            Assert::AreEqual(data.uuid, FancyZonesUtils::GuidToString(currentDeviceInfo.uuid).value());
         }
     };
     /*
