@@ -195,6 +195,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 
         if (openOobe)
         {
+            PTSettingsHelper::save_oobe_opened_state();
             open_oobe_window();
         }
         else if (openScoobe)
@@ -370,10 +371,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     try
     {
         openOobe = !PTSettingsHelper::get_oobe_opened_state();
-        if (openOobe)
-        {
-            PTSettingsHelper::save_oobe_opened_state();
-        }
     }
     catch (const std::exception& e)
     {
