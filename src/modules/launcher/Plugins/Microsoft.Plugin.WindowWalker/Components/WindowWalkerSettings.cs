@@ -167,9 +167,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>A settings value.</returns>
         private static bool GetSettingOrDefault(PowerLauncherPluginSettings settings, string name)
         {
+            var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == name);
+
             // If a setting isn't available, we use the value defined in the method GetAdditionalOptions() as fallback.
             // We can use First() instead of FirstOrDefault() because the values must exist. Otherwise, we made a mistake when defining the settings.
-            var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == name);
             return option?.Value ?? GetAdditionalOptions().First(x => x.Key == name).Value;
         }
     }

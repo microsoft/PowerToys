@@ -148,4 +148,17 @@
   <data name="wox_plugin_windowwalker_SettingOpenAfterKillAndClose" xml:space="preserve">
     <value>Stay open after kill process and close window</value>
   </data>
+  <data name="wox_plugin_windowwalker_Desktop" xml:space="preserve">
+    <value>Desktop</value>
+  </data>
+  <data name="wox_plugin_windowwalker_Number" xml:space="preserve">
+    <value>No.</value>
+    <comment>Short version of "Number"</comment>
+  </data>
+  <data name="wox_plugin_windowwalker_Process" xml:space="preserve">
+    <value>Process name</value>
+  </data>
+  <data name="wox_plugin_windowwalker_ProcessId" xml:space="preserve">
+    <value>Process ID</value>
+  </data>
 </root>

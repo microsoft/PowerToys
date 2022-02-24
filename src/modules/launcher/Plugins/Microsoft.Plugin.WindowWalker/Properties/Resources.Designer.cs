@@ -61,6 +61,24 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Desktop.
+        /// </summary>
+        public static string wox_plugin_windowwalker_Desktop {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_Desktop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No..
+        /// </summary>
+        public static string wox_plugin_windowwalker_Number {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_Number", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Switches between open windows..
         /// </summary>
         public static string wox_plugin_windowwalker_plugin_description {
@@ -75,6 +93,24 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         public static string wox_plugin_windowwalker_plugin_name {
             get {
                 return ResourceManager.GetString("wox_plugin_windowwalker_plugin_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Process name.
+        /// </summary>
+        public static string wox_plugin_windowwalker_Process {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_Process", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Process ID.
+        /// </summary>
+        public static string wox_plugin_windowwalker_ProcessId {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_ProcessId", resourceCulture);
             }
         }
         
