@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Media;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +28,7 @@ namespace Awake.Core
         private const uint GenericRead = 0x80000000;
 
         private static readonly Logger _log;
+        private static readonly SoundPlayer _soundPlayer;
         private static CancellationTokenSource _tokenSource;
         private static CancellationToken _threadToken;
 
@@ -38,6 +40,8 @@ namespace Awake.Core
             _timedLoopTimer = new System.Timers.Timer();
             _log = LogManager.GetCurrentClassLogger();
             _tokenSource = new CancellationTokenSource();
+            _soundPlayer = new SoundPlayer(@"Sounds\anti-sleep.wav");
+            _soundPlayer.Load();
         }
 
         public static void SetConsoleControlHandler(ConsoleEventHandler handler, bool addHandler)
@@ -167,7 +171,9 @@ namespace Awake.Core
                     {
                         while (!_threadToken.IsCancellationRequested)
                         {
-                            // Do something
+                            _log.Debug("About to play sound");
+                            _soundPlayer.PlaySync();
+                            _log.Debug("Playing sound");
                             Task.Delay(3000, _threadToken).Wait();
                         }
                     }
@@ -176,6 +182,7 @@ namespace Awake.Core
                         WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
                     }
 
+                    _log.Debug("Indefinite loop stopped");
                     return success;
                 }
                 else
@@ -232,7 +239,7 @@ namespace Awake.Core
                     {
                         while (!_threadToken.IsCancellationRequested)
                         {
-                            // Do something
+                            _soundPlayer.PlaySync();
                             Task.Delay(3000, _threadToken).Wait();
                         }
                     }
