@@ -121,7 +121,7 @@ namespace Awake
             Option<bool>? audioOption = new (
                     aliases: new[] { "--audio-on", "-a" },
                     getDefaultValue: () => false,
-                    description: "Determines whether inaudiable sounds should be played to keep speakers awake.")
+                    description: "Determines whether inaudible sounds should be played to keep speakers awake.")
             {
                 Argument = new Argument<bool>(() => false)
                 {
