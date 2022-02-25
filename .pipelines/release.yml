@@ -345,10 +345,9 @@ jobs:
     displayName: 'Remove unneeded files from ArtifactStagingDirectory'
     inputs:
       targetType: 'inline'
-      script: 
+      script: |
         cd $(Build.ArtifactStagingDirectory)/Symbols/
         Remove-Item vc143.pdb
-        Remove-Item *unittest*.pdb
 
   - task: PublishSymbols@2
     displayName: Publish symbols path
