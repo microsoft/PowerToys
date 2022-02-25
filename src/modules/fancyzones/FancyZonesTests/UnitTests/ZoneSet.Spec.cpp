@@ -1,16 +1,9 @@
 #include "pch.h"
-#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
-#include "FancyZonesLib\FancyZonesDataTypes.h"
 #include "FancyZonesLib\ZoneIndexSetBitmask.h"
-#include "FancyZonesLib\JsonHelpers.h"
-#include "FancyZonesLib\VirtualDesktop.h"
 #include "FancyZonesLib\ZoneSet.h"
 
-#include <filesystem>
-
 #include "Util.h"
-#include <common/SettingsAPI/settings_helpers.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace FancyZonesDataTypes;
