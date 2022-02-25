@@ -9,7 +9,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     muxc:BackdropMaterial.ApplyToRootOrPageBackground="True"
     mc:Ignorable="d"
-    Loaded="Page_Loaded"
     HighContrastAdjustment="None">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">

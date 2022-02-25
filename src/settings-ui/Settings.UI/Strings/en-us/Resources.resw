@@ -1316,16 +1316,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>A collection of utilities to enhance your mouse.</value>
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
-  <data name="Oobe_Overview_Description.Text" xml:space="preserve">
+  <data name="Oobe_Overview.Description" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
-    
+
 Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
-  </data>
+  </data>    
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Documentation on Microsoft Docs</value>
-  </data>
-  <data name="Oobe_Overview_LatestVersionLink.Text" xml:space="preserve">
-    <value>Release notes</value>
   </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
     <value>Release notes</value>
@@ -1416,9 +1413,6 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Keyboard Manager</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_Overview" xml:space="preserve">
-    <value>Overview</value>
-  </data>
   <data name="Oobe_PowerRename.Title" xml:space="preserve">
     <value>PowerRename</value>
     <comment>Do not localize this string</comment>
@@ -1435,7 +1429,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Video Conference Mute</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_Welcome.Title" xml:space="preserve">
+  <data name="Oobe_Overview.Title" xml:space="preserve">
     <value>Welcome</value>
   </data>
   <data name="Oobe_WhatsNew.Text" xml:space="preserve">

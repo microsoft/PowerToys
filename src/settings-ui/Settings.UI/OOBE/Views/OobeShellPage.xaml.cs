@@ -133,9 +133,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public void OnClosing()
         {
-            if (NavigationView.SelectedItem != null)
+            Microsoft.UI.Xaml.Controls.NavigationViewItem selectedItem = NavigationView.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
+            if (selectedItem != null)
             {
-                ((OobePowerToysModule)NavigationView.SelectedItem).LogClosingModuleEvent();
+                Modules[(int)(PowerToysModulesEnum)Enum.Parse(typeof(PowerToysModulesEnum), (string)selectedItem.Tag, true)].LogClosingModuleEvent();
             }
         }
 
@@ -192,11 +193,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     this.RequestedTheme = ElementTheme.Default;
                     break;
             }
-        }
-
-        private void Page_Loaded(object sender, RoutedEventArgs e)
-        {
-            NavigationView.SelectedItem = NavigationView.FooterMenuItems[0];
         }
     }
 }
