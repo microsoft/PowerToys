@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Plugin.WindowWalker.Properties;
 using Wox.Plugin;
 
@@ -11,6 +13,48 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// </summary>
     internal static class ResultHelper
     {
+         /// <summary>
+         /// Returns a list of all <see cref="Result"/> for the search.
+         /// </summary>
+         /// <param name="searchControllerResults">List with all search controller matches</param>
+         /// <param name="icon">The path to the result icon</param>
+         /// <returns>List of results</returns>
+        internal static List<Result> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch, string icon, string infoIcon)
+        {
+            bool addExplorerInfo = false;
+            List<Result> results = new List<Result>();
+
+            foreach (SearchResult x in searchControllerResults)
+            {
+                if (x.Result.Process.Name.ToLower() == "explorer.exe" && x.Result.Process.IsShellProcess)
+                {
+                    addExplorerInfo = true;
+                }
+
+                results.Add(new Result()
+                {
+                    Title = x.Result.Title,
+                    IcoPath = icon,
+                    SubTitle = GetSubtitle(x.Result),
+                    Action = c =>
+                    {
+                        x.Result.SwitchToWindow();
+                        return true;
+                    },
+
+                    // For debugging you can set the second parameter to true to see more informations.
+                    ToolTipData = GetToolTip(x.Result, false),
+                });
+            }
+
+            if (addExplorerInfo && isKeywordSearch && !WindowWalkerSettings.Instance.HideExplorerSettingInfo)
+            {
+                results.Add(GetExplorerInfoResult(infoIcon));
+            }
+
+            return results;
+        }
+
         /// <summary>
         /// Returns the subtitle for a result
         /// </summary>
@@ -89,6 +133,22 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
                 return new ToolTipData(window.Title, text);
            }
+        }
+
+        private static Result GetExplorerInfoResult(string icon)
+        {
+            return new Result()
+            {
+                Title = Resources.wox_plugin_windowwalker_ExplorerInfoTitle,
+                IcoPath = icon, // ToDo: change icon
+                SubTitle = Resources.wox_plugin_windowwalker_ExplorerInfoSubTitle,
+                Action = c =>
+                {
+                    Wox.Infrastructure.Helper.OpenInShell("rundll32.exe", "shell32.dll,Options_RunDLL 7"); // "shell32.dll,Options_RunDLL 7" opens the view tab in folder options of explorer.
+                    return true;
+                },
+                Score = 100_000,
+            };
         }
     }
 }

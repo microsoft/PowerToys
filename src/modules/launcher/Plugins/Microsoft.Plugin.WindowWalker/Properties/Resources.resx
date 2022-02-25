@@ -130,7 +130,7 @@
     <value>Request confirmation when killing a process</value>
   </data>
   <data name="wox_plugin_windowwalker_SettingExplorerSettingInfo" xml:space="preserve">
-    <value>Hide the information about the Explorer setting</value>
+    <value>Hide Explorer setting information</value>
     <comment>Explorer is here the program File Explorer</comment>
   </data>
   <data name="wox_plugin_windowwalker_SettingHideKillProcess" xml:space="preserve">
@@ -160,5 +160,13 @@
   </data>
   <data name="wox_plugin_windowwalker_ProcessId" xml:space="preserve">
     <value>Process id</value>
+  </data>
+  <data name="wox_plugin_windowwalker_ExplorerInfoSubTitle" xml:space="preserve">
+    <value>This requires enabling the seperate process setting in Explorer. Klick to open Explorer options.</value>
+    <comment>Explorer is here the program File Explorer</comment>
+  </data>
+  <data name="wox_plugin_windowwalker_ExplorerInfoTitle" xml:space="preserve">
+    <value>You aren't allowed to kill Explorer processes</value>
+    <comment>Explorer is here the program File Explorer</comment>
   </data>
 </root>

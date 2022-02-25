@@ -70,6 +70,24 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This requires enabling the seperate process setting in Explorer. Klick to open Explorer options..
+        /// </summary>
+        public static string wox_plugin_windowwalker_ExplorerInfoSubTitle {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_ExplorerInfoSubTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You aren&apos;t allowed to kill Explorer processes.
+        /// </summary>
+        public static string wox_plugin_windowwalker_ExplorerInfoTitle {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_ExplorerInfoTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No..
         /// </summary>
         public static string wox_plugin_windowwalker_Number {
@@ -133,7 +151,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hide the information about the Explorer setting.
+        ///   Looks up a localized string similar to Hide Explorer setting information.
         /// </summary>
         public static string wox_plugin_windowwalker_SettingExplorerSettingInfo {
             get {

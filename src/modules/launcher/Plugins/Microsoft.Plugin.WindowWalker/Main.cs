@@ -18,6 +18,8 @@ namespace Microsoft.Plugin.WindowWalker
     {
         private string IconPath { get; set; }
 
+        private string InfoIconPath { get; set; }
+
         private PluginInitContext Context { get; set; }
 
         public string Name => Properties.Resources.wox_plugin_windowwalker_plugin_name;
@@ -43,20 +45,7 @@ namespace Microsoft.Plugin.WindowWalker
             SearchController.Instance.UpdateSearchText(query.Search);
             List<SearchResult> searchControllerResults = SearchController.Instance.SearchMatches;
 
-            return searchControllerResults.Select(x => new Result()
-            {
-                Title = x.Result.Title,
-                IcoPath = IconPath,
-                SubTitle = ResultHelper.GetSubtitle(x.Result),
-                Action = c =>
-                {
-                    x.Result.SwitchToWindow();
-                    return true;
-                },
-
-                // For debugging you can set the second parameter to true to see more informations.
-                ToolTipData = ResultHelper.GetToolTip(x.Result, false),
-            }).ToList();
+            return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query.ActionKeyword), IconPath, InfoIconPath);
         }
 
         public void Init(PluginInitContext context)
@@ -77,10 +66,12 @@ namespace Microsoft.Plugin.WindowWalker
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
                 IconPath = "Images/windowwalker.light.png";
+                InfoIconPath = "Images/info.light.png";
             }
             else
             {
                 IconPath = "Images/windowwalker.dark.png";
+                InfoIconPath = "Images/info.dark.png";
             }
         }
 
