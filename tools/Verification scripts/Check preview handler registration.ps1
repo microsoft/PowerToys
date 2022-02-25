@@ -45,23 +45,20 @@ function PublicStaticVoidMain {
     Write-Progress -Activity 'Querying Windows Registry' -Status "$ItemsPending of $ItemsTotal" -PercentComplete $PercentComplete -Completed:$Completed
   }
 
-  $ItemsTotal = $TypesToCheck.Count * 3
+  $ItemsTotal = $TypesToCheck.Count * 2
   $ItemsPending = 0
   WriteMyProgress 0 $ItemsTotal
 
   $CheckResults = New-Object -TypeName 'System.Collections.Generic.List[TypeHandlerData]'
   foreach ($item in $TypesToCheck) {
-    $CurrentUserGUID = $null
-    $MachineWideGUID = $null
-    
     $CurrentUserGUID = Get-ItemPropertyValue -Path "HKCU://Software/Classes/$item/shellex/$IPREVIEW_HANDLER_CLSID" -Name '(default)' -ErrorAction SilentlyContinue
     $ItemsPending += 1
     WriteMyProgress $ItemsPending $ItemsTotal
 
-    $MachineWideGUID = Get-ItemPropertyValue -Path "HKLM://Software/Classes/$item/shellex/$IPREVIEW_HANDLER_CLSID" -Name '(default)' -ErrorAction SilentlyContinue
+    $MachineWideGUID = "Didn't check"
+    # $MachineWideGUID = Get-ItemPropertyValue -Path "HKLM://Software/Classes/$item/shellex/$IPREVIEW_HANDLER_CLSID" -Name '(default)' -ErrorAction SilentlyContinue
     $ItemsPending += 1
     WriteMyProgress $ItemsPending $ItemsTotal
-
 
     $temp = New-Object -TypeName TypeHandlerData -Property @{
       Name               = $item
@@ -69,8 +66,8 @@ function PublicStaticVoidMain {
       MachineWideHandler = ($null -eq $MachineWideGUID) ? "Nothing" : (ResolveHandlerGUIDtoName ($MachineWideGUID))
     }
     $CheckResults.Add($temp)
-    $ItemsPending += 1
-    WriteMyProgress $ItemsPending $ItemsTotal
+
+    Clear-Variable 'CurrentUserGUID', 'MachineWideGUID'
   }
   WriteMyProgress $ItemsPending $ItemsTotal -Completed
   $CheckResults | Format-Table -AutoSize
