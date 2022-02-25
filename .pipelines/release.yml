@@ -348,6 +348,7 @@ jobs:
       script: |
         cd $(Build.ArtifactStagingDirectory)/Symbols/
         Remove-Item vc143.pdb
+        Remove-Item *unittest*
 
   - task: PublishSymbols@2
     displayName: Publish symbols path
