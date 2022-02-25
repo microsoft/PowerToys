@@ -45,7 +45,7 @@
                 <muxc:NavigationViewItem x:Uid="Shell_General"
                                          Tag="Overview">
                     <muxc:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsSettings.png"
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToys.png"
                                     ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>

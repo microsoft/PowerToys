@@ -1436,7 +1436,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>What's new</value>
   </data>
   <data name="Oobe_WhatsNew_LoadingError.Title" xml:space="preserve">
-    <value>Couldn't load the release notes. Please check your internet connection.</value>
+    <value>Couldn't load the release notes.</value>
   </data>
 	  <data name="Oobe_WhatsNew_LoadingError.Message" xml:space="preserve">
     <value>Please check your internet connection.</value>
