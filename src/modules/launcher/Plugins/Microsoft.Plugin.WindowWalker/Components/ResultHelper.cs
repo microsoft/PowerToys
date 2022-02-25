@@ -140,7 +140,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             return new Result()
             {
                 Title = Resources.wox_plugin_windowwalker_ExplorerInfoTitle,
-                IcoPath = icon, // ToDo: change icon
+                IcoPath = icon,
                 SubTitle = Resources.wox_plugin_windowwalker_ExplorerInfoSubTitle,
                 Action = c =>
                 {

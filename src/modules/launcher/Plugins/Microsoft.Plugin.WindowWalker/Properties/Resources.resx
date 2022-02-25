@@ -162,7 +162,7 @@
     <value>Process id</value>
   </data>
   <data name="wox_plugin_windowwalker_ExplorerInfoSubTitle" xml:space="preserve">
-    <value>This requires enabling the seperate process setting in Explorer. Klick to open Explorer options.</value>
+    <value>This requires enabling the separate process setting in Explorer. Klick to open Explorer options.</value>
     <comment>Explorer is here the program File Explorer</comment>
   </data>
   <data name="wox_plugin_windowwalker_ExplorerInfoTitle" xml:space="preserve">

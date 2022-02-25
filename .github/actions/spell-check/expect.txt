@@ -1760,6 +1760,7 @@ RTLREADING
 ruleset
 RUNACTIVEXCTLS
 runas
+rundll
 rungameid
 RUNLEVEL
 runsettings

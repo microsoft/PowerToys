@@ -70,7 +70,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This requires enabling the seperate process setting in Explorer. Klick to open Explorer options..
+        ///   Looks up a localized string similar to This requires enabling the separate process setting in Explorer. Klick to open Explorer options..
         /// </summary>
         public static string wox_plugin_windowwalker_ExplorerInfoSubTitle {
             get {
