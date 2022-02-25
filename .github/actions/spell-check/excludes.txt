@@ -31,6 +31,7 @@ ignore$
 \.PNG$
 \.png$
 \.stl$
+\.wav$
 \.woff$
 \.zip$
 ^doc/devdocs/akaLinks\.md$
