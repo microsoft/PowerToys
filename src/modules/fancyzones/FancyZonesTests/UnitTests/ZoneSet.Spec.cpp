@@ -9,7 +9,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace FancyZonesDataTypes;
 
 namespace FancyZonesUnitTests
-{ /*
+{
     TEST_CLASS (ZoneSetUnitTests)
     {
         GUID m_id;
@@ -463,7 +463,7 @@ namespace FancyZonesUnitTests
                 Assert::IsTrue(std::vector<ZoneIndex>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
             }
     };
-
+    /*
     // MoveWindowIntoZoneByDirectionAndIndex is complicated enough to warrant it's own test class
     TEST_CLASS (ZoneSetsMoveWindowIntoZoneByDirectionUnitTests)
     {
