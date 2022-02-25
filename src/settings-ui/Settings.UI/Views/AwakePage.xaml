@@ -73,7 +73,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="Awake_EnableAudioKeepAwake" Icon="&#xE7FB;">
+                    <controls:Setting x:Uid="Awake_EnableAudioKeepAwake" Icon="&#xE995;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind ViewModel.KeepAudioOn, Mode=TwoWay}" x:Uid="ToggleSwitch" />
                         </controls:Setting.ActionContent>
