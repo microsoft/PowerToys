@@ -1553,7 +1553,8 @@ pcb
 pch
 PCIDLIST
 PCWSTR
-Pdb
+
+pdb
 pdbonly
 pdfpreviewhandler
 pdo
@@ -2229,6 +2230,7 @@ Uniq
 uniquifier
 Uniquifies
 unitconverter
+unittest
 unittests
 unk
 unknwn
