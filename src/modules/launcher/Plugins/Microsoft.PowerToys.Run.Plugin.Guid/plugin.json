@@ -1,0 +1,13 @@
+{
+    "ID": "DC308D1D7C4D4F71A5D504462D7D9455",
+    "ActionKeyword": "{",
+    "IsGlobal": false,
+    "Name": "Guid",
+    "Author": "TobiasSekan",
+    "Version": "1.0.0",
+    "Language": "csharp",
+    "Website": "https://aka.ms/powertoys",
+    "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.Guid.dll",
+    "IcoPathDark": "Images\\timeZone.dark.png",
+    "IcoPathLight": "Images\\timeZone.light.png"
+}
