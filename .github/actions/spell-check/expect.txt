@@ -1481,7 +1481,6 @@ pcb
 pch
 PCIDLIST
 PCWSTR
-Pdb
 pdb
 pdbonly
 pdfpreviewhandler
