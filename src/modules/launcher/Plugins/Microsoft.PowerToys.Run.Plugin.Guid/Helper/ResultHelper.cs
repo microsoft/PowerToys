@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.PowerToys.Run.Plugin.Guid.Properties;
 using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.Guid.Helper
@@ -22,43 +23,58 @@ namespace Microsoft.PowerToys.Run.Plugin.Guid.Helper
         {
             var guid = System.Guid.NewGuid();
 
-            var reverseSearch = string.IsNullOrEmpty(query.Search)
+            var reverseSearch = string.IsNullOrEmpty(query?.Search)
                 ? string.Empty
                 : string.Join(string.Empty, query.Search.Reverse());
 
-            var left = query.Search
+            var prefix = query?.Search
                 .Replace('}', '{')
                 .Replace(')', '(')
                 .Replace(']', '[');
 
-            var right = reverseSearch
+            var suffix = reverseSearch
                 .Replace('{', '}')
                 .Replace('(', ')')
                 .Replace('[', ']');
+
+            var guidHexValues = guid.ToString("X").Replace("{", string.Empty).Replace("}", string.Empty).Replace(",", ", ");
+
+            var formatDigitsOnly = $"{prefix}{guid.ToString("N").ToLower()}{suffix}";
+            var formatDigitsInGroups = $"{prefix}{guid.ToString("D").ToLower()}{suffix}";
+            var formatHexValues = $"{prefix}{guidHexValues.ToLower()}{suffix}";
+            var formatDigitsInUrn = $"{prefix}urn:uuid:{guid.ToString("D").ToLower()}{suffix}";
 
             var resultList = new List<Result>
             {
                 new Result
                 {
                     IcoPath = iconPath,
-                    Title = $"{left}{guid.ToString("N").ToUpper()}{right}",
-                    SubTitle = $"{left}{guid.ToString("N").ToLower()}{right}",
-                    ContextData = $"{left}{guid.ToString("N").ToUpper()}{right}",
+                    Title = formatDigitsOnly,
+                    SubTitle = $"{Resources.Format}:{Resources.FormatDigitsOnly}",
+                    ContextData = formatDigitsOnly,
                 },
                 new Result
                 {
                     IcoPath = iconPath,
-                    Title = $"{left}{guid.ToString("D").ToUpper()}{right}",
-                    SubTitle = $"{left}{guid.ToString("D").ToLower()}{right}",
-                    ContextData = $"{left}{guid.ToString("D").ToUpper()}{right}",
+                    Title = formatDigitsInGroups,
+                    SubTitle = $"{Resources.Format}:{Resources.FormatDigitsInGroups}",
+                    ContextData = formatDigitsInGroups,
                 },
 
                 new Result
                 {
                     IcoPath = iconPath,
-                    Title = $"{left}urn:uuid:{guid.ToString("D").ToUpper()}{right}",
-                    SubTitle = $"Uniform Resource Name (URN)",
-                    ContextData = $"{left}urn:uuid:{guid.ToString("D").ToUpper()}{right}",
+                    Title = formatHexValues,
+                    SubTitle = $"{Resources.Format}:{Resources.FormatHexValues}",
+                    ContextData = formatHexValues,
+                },
+
+                new Result
+                {
+                    IcoPath = iconPath,
+                    Title = formatDigitsInUrn,
+                    SubTitle = $"{Resources.Format}:{Resources.FormatDigitsInUrn}",
+                    ContextData = formatDigitsInUrn,
                 },
             };
 

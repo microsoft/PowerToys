@@ -79,6 +79,51 @@ namespace Microsoft.PowerToys.Run.Plugin.Guid.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Format.
+        /// </summary>
+        internal static string Format {
+            get {
+                return ResourceManager.GetString("Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Digits, 8-4-4-16, separated by hyphens.
+        /// </summary>
+        internal static string FormatDigitsInGroups {
+            get {
+                return ResourceManager.GetString("FormatDigitsInGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uniform Resource Name (URN).
+        /// </summary>
+        internal static string FormatDigitsInUrn {
+            get {
+                return ResourceManager.GetString("FormatDigitsInUrn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Digits, no groups, no seperators.
+        /// </summary>
+        internal static string FormatDigitsOnly {
+            get {
+                return ResourceManager.GetString("FormatDigitsOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hexadecimal values, 8-4-4-16 (fourth value is a subset of eight hexadecimal values).
+        /// </summary>
+        internal static string FormatHexValues {
+            get {
+                return ResourceManager.GetString("FormatHexValues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Build a globally unique identifier.
         /// </summary>
         internal static string PluginDescription {

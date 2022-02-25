@@ -123,6 +123,25 @@
   <data name="CopyCommandUpper" xml:space="preserve">
     <value>Copy uppercase to clipboard</value>
   </data>
+  <data name="Format" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="FormatDigitsInGroups" xml:space="preserve">
+    <value>Digits, 8-4-4-16, separated by hyphens</value>
+    <comment>Short format description</comment>
+  </data>
+  <data name="FormatDigitsInUrn" xml:space="preserve">
+    <value>Uniform Resource Name (URN)</value>
+    <comment>Short format description</comment>
+  </data>
+  <data name="FormatDigitsOnly" xml:space="preserve">
+    <value>Digits, no groups, no seperators</value>
+    <comment>Short format description</comment>
+  </data>
+  <data name="FormatHexValues" xml:space="preserve">
+    <value>Hexadecimal values, 8-4-4-16 (fourth value is a subset of eight hexadecimal values)</value>
+    <comment>Short format description</comment>
+  </data>
   <data name="PluginDescription" xml:space="preserve">
     <value>Build a globally unique identifier</value>
   </data>
