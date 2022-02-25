@@ -20,7 +20,7 @@ namespace FancyZonesUnitTests
 {
     const std::wstring m_deviceId = L"\\\\?\\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
     const std::wstring m_virtualDesktopId = L"MyVirtualDesktopId";
-
+    /*
     TEST_CLASS (WorkAreaCreationUnitTests)
     {
         FancyZonesDataTypes::DeviceIdData m_uniqueId;
@@ -97,7 +97,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(data.uuid, FancyZonesUtils::GuidToString(currentDeviceInfo.uuid).value());
         }
     };
-    /*
+    
     TEST_CLASS (WorkAreaUnitTests)
     {
         FancyZonesDataTypes::DeviceIdData m_uniqueId;

@@ -9,7 +9,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace FancyZonesDataTypes;
 
 namespace FancyZonesUnitTests
-{
+{ /*
     TEST_CLASS (ZoneSetUnitTests)
     {
         GUID m_id;
@@ -921,7 +921,7 @@ namespace FancyZonesUnitTests
                     }
                 }
     };
-
+    */
     TEST_CLASS(ZoneIndexSetUnitTests)
     {
         TEST_METHOD (BitmaskFromIndexSetTest)
