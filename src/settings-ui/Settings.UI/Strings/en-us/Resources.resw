@@ -1292,7 +1292,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
   </data>
   <data name="Oobe_FileExplorer_Description" xml:space="preserve">
-    <value>PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md), PDF files (.pdf) and SVG icons (.svg) to be viewed in the preview pane.</value>
+    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown files (.md), PDF files (.pdf), SVG icons (.svg), STL files (.stl), Gcode files (.gcode) and developer files to be viewed in the preview pane. It introduces file explorer thumbnail support for a number of these file types as well.</value>
   </data>
   <data name="Oobe_ImageResizer_Description" xml:space="preserve">
     <value>Image Resizer is a Windows shell extension for simple bulk image-resizing.</value>
@@ -1347,7 +1347,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
     <value>Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. 
-From there, simply click on a Markdown file, PDF file or SVG icon in the File Explorer and observe the content on the preview pane!</value>
+From there, simply click on one of the supported files in the File Explorer and observe the content on the preview pane!</value>
   </data>
   <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
     <value>How to create mappings</value>
@@ -1437,6 +1437,16 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="Oobe_Welcome" xml:space="preserve">
     <value>Welcome</value>
+  </data>
+  <data name="Oobe_WhatsNew" xml:space="preserve">
+    <value>What's new?</value>
+  </data>
+  <data name="Oobe_WhatsNew_LoadingError.Title" xml:space="preserve">
+    <value>Couldn't load the release notes. Please check your internet connection.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DetailedReleaseNotesLink.Text" xml:space="preserve">
+    <value>See more detailed release notes on the GitHub repository</value>
+    <comment>Don't loc "GitHub", it's the name of a product</comment>
   </data>
   <data name="OOBE_Settings.Content" xml:space="preserve">
     <value>Open Settings</value>
@@ -1648,7 +1658,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
   <data name="Oobe_MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
-    <value>Press the left Ctrl key twice to focus the mouse pointer.</value>
+    <value>Shake the mouse or press the left Ctrl key twice to focus the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral. Key as in a keyboard key</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter.Text" xml:space="preserve">
@@ -1757,12 +1767,32 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when pressing the left Ctrl key twice.</value>
+    <value>Find My Mouse highlights the position of the cursor when shaking the mouse or pressing the left Ctrl key twice.</value>
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
     <value>Enable Find My Mouse</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationMethod.Header" xml:space="preserve">
+    <value>Activation method</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationDoubleControlPress.Content" xml:space="preserve">
+    <value>Press Left Control twice</value>
+    <comment>Left control is the physical key on the keyboard.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationShakeMouse.Content" xml:space="preserve">
+    <value>Shake mouse</value>
+    <comment>Mouse is the hardware peripheral.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ExcludedApps.Description" xml:space="preserve">
+    <value>Prevents module activation when an excluded application is the foreground application</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ExcludedApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ExcludedApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
   </data>
   <data name="MouseUtils_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
@@ -2019,5 +2049,14 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="PowerPreviewPage.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
+  </data>
+  <data name="FancyZones_AllowPopupWindowSnap.Description" xml:space="preserve">
+    <value>This setting can affect all popup windows including notifications</value>
+  </data>
+  <data name="FancyZones_AllowPopupWindowSnap.Header" xml:space="preserve">
+    <value>Allow popup windows snapping</value>
+  </data>
+  <data name="FancyZones_AllowChildWindowSnap.Content" xml:space="preserve">
+    <value>Allow child windows snapping</value>
   </data>
 </root>

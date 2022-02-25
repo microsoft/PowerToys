@@ -7,7 +7,8 @@
 #include "FancyZonesWindowProperties.h"
 #include "Settings.h"
 #include "Zone.h"
-#include "util.h"
+#include <FancyZonesLib/util.h>
+#include <FancyZonesLib/WindowUtils.h>
 
 #include <common/logger/logger.h>
 #include <common/display/dpi_aware.h>
@@ -344,10 +345,10 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
     {
         if (!suppressMove)
         {
-            SaveWindowSizeAndOrigin(window);
+            FancyZonesWindowUtils::SaveWindowSizeAndOrigin(window);
 
-            auto rect = AdjustRectForSizeWindowToRect(window, size, workAreaWindow);
-            SizeWindowToRect(window, rect);
+            auto rect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, size, workAreaWindow);
+            FancyZonesWindowUtils::SizeWindowToRect(window, rect);
         }
 
         FancyZonesWindowProperties::StampZoneIndexProperty(window, indexSet);
@@ -597,7 +598,7 @@ ZoneSet::CycleTabs(HWND window, bool reverse) noexcept
             continue;
         }
 
-        SwitchToWindow(next);
+        FancyZonesWindowUtils::SwitchToWindow(next);
 
         break;
     }

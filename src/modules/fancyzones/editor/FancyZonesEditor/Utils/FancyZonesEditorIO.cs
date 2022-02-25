@@ -35,9 +35,6 @@ namespace FancyZonesEditor.Utils
         private const string CustomLayoutsFile = "\\Microsoft\\PowerToys\\FancyZones\\custom-layouts.json";
         private const string ParamsFile = "\\Microsoft\\PowerToys\\FancyZones\\editor-parameters.json";
 
-        // Non-localizable string: Multi-monitor id
-        private const string MultiMonitorId = "FancyZones#MultiMonitorDevice";
-
         // Non-localizable string: default virtual desktop id
         private const string DefaultVirtualDesktopGuid = "{00000000-0000-0000-0000-000000000000}";
 
@@ -317,7 +314,7 @@ namespace FancyZonesEditor.Utils
                 if (!App.Overlay.SpanZonesAcrossMonitors)
                 {
                     // Test launch with custom monitors configuration
-                    bool isCustomMonitorConfigurationMode = targetMonitorName.StartsWith("Monitor#");
+                    bool isCustomMonitorConfigurationMode = targetMonitorName.StartsWith("Monitor#", StringComparison.Ordinal);
                     if (isCustomMonitorConfigurationMode)
                     {
                         App.Overlay.Monitors.Clear();
@@ -735,7 +732,7 @@ namespace FancyZonesEditor.Utils
                     {
                         LayoutHotkeyWrapper wrapper = new LayoutHotkeyWrapper
                         {
-                            Key = int.Parse(pair.Key),
+                            Key = int.Parse(pair.Key, CultureInfo.CurrentCulture),
                             LayoutId = pair.Value,
                         };
 
@@ -906,7 +903,7 @@ namespace FancyZonesEditor.Utils
             {
                 try
                 {
-                    Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open);
+                    using (Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open))
                     using (StreamReader reader = new StreamReader(inputStream))
                     {
                         string data = reader.ReadToEnd();
@@ -948,11 +945,11 @@ namespace FancyZonesEditor.Utils
                 bool unused = true;
                 foreach (Monitor monitor in monitors)
                 {
-                    string deviceIdSaved = monitor.Device.Id.Substring(0, monitor.Device.Id.LastIndexOf("_"));
-                    string deviceIdReadFromSettings = layout.DeviceId.Substring(0, layout.DeviceId.LastIndexOf("_"));
+                    string deviceIdSaved = monitor.Device.Id.Substring(0, monitor.Device.Id.LastIndexOf("_", StringComparison.Ordinal));
+                    string deviceIdReadFromSettings = layout.DeviceId.Substring(0, layout.DeviceId.LastIndexOf("_", StringComparison.Ordinal));
 
-                    string virtualDesktopIdSaved = monitor.Device.Id.Substring(monitor.Device.Id.LastIndexOf("_") + 1);
-                    string virtualDesktopIdReadFromSettings = layout.DeviceId.Substring(layout.DeviceId.LastIndexOf("_") + 1);
+                    string virtualDesktopIdSaved = monitor.Device.Id.Substring(monitor.Device.Id.LastIndexOf("_", StringComparison.Ordinal) + 1);
+                    string virtualDesktopIdReadFromSettings = layout.DeviceId.Substring(layout.DeviceId.LastIndexOf("_", StringComparison.Ordinal) + 1);
 
                     if (deviceIdSaved == deviceIdReadFromSettings && (virtualDesktopIdSaved == virtualDesktopIdReadFromSettings || virtualDesktopIdReadFromSettings == DefaultVirtualDesktopGuid))
                     {
@@ -1070,7 +1067,7 @@ namespace FancyZonesEditor.Utils
             MainWindowSettingsModel.LayoutHotkeys.CleanUp();
             foreach (var wrapper in layoutHotkeys.LayoutHotkeys)
             {
-                MainWindowSettingsModel.LayoutHotkeys.SelectKey(wrapper.Key.ToString(), wrapper.LayoutId);
+                MainWindowSettingsModel.LayoutHotkeys.SelectKey(wrapper.Key.ToString(CultureInfo.CurrentCulture), wrapper.LayoutId);
             }
 
             return true;

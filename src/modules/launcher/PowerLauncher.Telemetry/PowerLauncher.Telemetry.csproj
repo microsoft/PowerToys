@@ -8,7 +8,7 @@
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>PowerToys PowerLauncher Telemetry</Description>
-    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageTags>PowerToys</PackageTags>
@@ -29,7 +29,7 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

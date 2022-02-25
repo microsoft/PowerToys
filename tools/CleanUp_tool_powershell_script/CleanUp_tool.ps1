@@ -1,5 +1,5 @@
 ﻿#CleanUp tool 1.0
-#Copyright (C) 2020 Microsoft Corporation
+#Copyright (C) 2022 Microsoft Corporation
 #Tool to clean PowerToys settings inside AppData folder and registry
 
 #Deleting json settings files in %AppData%/Local/Microsoft/PowerToys.

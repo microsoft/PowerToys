@@ -7,30 +7,12 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Awake.Core.Models;
 using Microsoft.Win32;
 using NLog;
 
 namespace Awake.Core
 {
-    [Flags]
-    public enum EXECUTION_STATE : uint
-    {
-        ES_AWAYMODE_REQUIRED = 0x00000040,
-        ES_CONTINUOUS = 0x80000000,
-        ES_DISPLAY_REQUIRED = 0x00000002,
-        ES_SYSTEM_REQUIRED = 0x00000001,
-    }
-
-    // See: https://docs.microsoft.com/windows/console/handlerroutine
-    public enum ControlType
-    {
-        CTRL_C_EVENT = 0,
-        CTRL_BREAK_EVENT = 1,
-        CTRL_CLOSE_EVENT = 2,
-        CTRL_LOGOFF_EVENT = 5,
-        CTRL_SHUTDOWN_EVENT = 6,
-    }
-
     public delegate bool ConsoleEventHandler(ControlType ctrlType);
 
     /// <summary>
@@ -85,7 +67,7 @@ namespace Awake.Core
         /// </summary>
         /// <param name="state">Single or multiple EXECUTION_STATE entries.</param>
         /// <returns>true if successful, false if failed</returns>
-        private static bool SetAwakeState(EXECUTION_STATE state)
+        private static bool SetAwakeState(ExecutionState state)
         {
             try
             {
@@ -168,11 +150,11 @@ namespace Awake.Core
             bool success;
             if (keepDisplayOn)
             {
-                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                success = SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS);
             }
             else
             {
-                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                success = SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS);
             }
 
             try
@@ -209,11 +191,11 @@ namespace Awake.Core
             {
                 if (keepDisplayOn)
                 {
-                    success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                    success = SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS);
                 }
                 else
                 {
-                    success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                    success = SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS);
                 }
 
                 if (success)

@@ -71,9 +71,9 @@ private:
     // Configurable Settings
     winrt::Windows::UI::Color m_crosshairs_border_color = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_COLOR;
     winrt::Windows::UI::Color m_crosshairs_color = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_COLOR;
-    float m_crosshairs_radius = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_RADIUS;
-    float m_crosshairs_thickness = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_THICKNESS;
-    float m_crosshairs_border_size = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_SIZE;
+    int m_crosshairs_radius = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_RADIUS;
+    int m_crosshairs_thickness = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_THICKNESS;
+    int m_crosshairs_border_size = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_SIZE;
     float m_crosshairs_opacity = max(0.f, min(1.f, (float)INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_OPACITY / 100.0f));
 };
 
@@ -205,26 +205,29 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
     ScreenToClient(m_hwnd, &ptMonitorUpperLeft);
     ScreenToClient(m_hwnd, &ptMonitorBottomRight);
 
+    // Crosshair position should receive a minor adjustment for odd values to prevent anti-aliasing due to half pixels, while still looking like it's centered around the mouse pointer.
+    float halfPixelAdjustment = m_crosshairs_thickness % 2 == 1 ? 0.5f : 0.0f;
+
     // Position crosshairs components around the mouse pointer.
-    m_left_crosshairs_border.Offset({ (float)ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size, (float)ptCursor.y, .0f });
-    m_left_crosshairs_border.Size({ (float)ptCursor.x - (float)ptMonitorUpperLeft.x - m_crosshairs_radius + m_crosshairs_border_size, m_crosshairs_thickness + m_crosshairs_border_size * 2 });
-    m_left_crosshairs.Offset({ (float)ptCursor.x - m_crosshairs_radius, (float)ptCursor.y, .0f });
-    m_left_crosshairs.Size({ (float)ptCursor.x - (float)ptMonitorUpperLeft.x - m_crosshairs_radius, m_crosshairs_thickness });
+    m_left_crosshairs_border.Offset({ (float)ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size, (float)ptCursor.y - halfPixelAdjustment, .0f });
+    m_left_crosshairs_border.Size({ (float)ptCursor.x - (float)ptMonitorUpperLeft.x - m_crosshairs_radius + m_crosshairs_border_size, (float)m_crosshairs_thickness + m_crosshairs_border_size * 2 });
+    m_left_crosshairs.Offset({ (float)ptCursor.x - m_crosshairs_radius, (float)ptCursor.y - halfPixelAdjustment, .0f });
+    m_left_crosshairs.Size({ (float)ptCursor.x - (float)ptMonitorUpperLeft.x - m_crosshairs_radius, (float)m_crosshairs_thickness });
 
-    m_right_crosshairs_border.Offset({ (float)ptCursor.x + m_crosshairs_radius - m_crosshairs_border_size, (float)ptCursor.y, .0f });
-    m_right_crosshairs_border.Size({ (float)ptMonitorBottomRight.x - (float)ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size, m_crosshairs_thickness + m_crosshairs_border_size * 2 });
-    m_right_crosshairs.Offset({ (float)ptCursor.x + m_crosshairs_radius, (float)ptCursor.y, .0f });
-    m_right_crosshairs.Size({ (float)ptMonitorBottomRight.x - (float)ptCursor.x - m_crosshairs_radius, m_crosshairs_thickness });
+    m_right_crosshairs_border.Offset({ (float)ptCursor.x + m_crosshairs_radius - m_crosshairs_border_size, (float)ptCursor.y - halfPixelAdjustment, .0f });
+    m_right_crosshairs_border.Size({ (float)ptMonitorBottomRight.x - (float)ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size, (float)m_crosshairs_thickness + m_crosshairs_border_size * 2 });
+    m_right_crosshairs.Offset({ (float)ptCursor.x + m_crosshairs_radius, (float)ptCursor.y - halfPixelAdjustment, .0f });
+    m_right_crosshairs.Size({ (float)ptMonitorBottomRight.x - (float)ptCursor.x - m_crosshairs_radius, (float)m_crosshairs_thickness });
 
-    m_top_crosshairs_border.Offset({ (float)ptCursor.x, (float)ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size, .0f });
-    m_top_crosshairs_border.Size({ m_crosshairs_thickness + m_crosshairs_border_size * 2, (float)ptCursor.y - (float)ptMonitorUpperLeft.y - m_crosshairs_radius + m_crosshairs_border_size });
-    m_top_crosshairs.Offset({ (float)ptCursor.x, (float)ptCursor.y - m_crosshairs_radius, .0f });
-    m_top_crosshairs.Size({ m_crosshairs_thickness, (float)ptCursor.y - (float)ptMonitorUpperLeft.y - m_crosshairs_radius });
+    m_top_crosshairs_border.Offset({ (float)ptCursor.x - halfPixelAdjustment, (float)ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size, .0f });
+    m_top_crosshairs_border.Size({ (float)m_crosshairs_thickness + m_crosshairs_border_size * 2, (float)ptCursor.y - (float)ptMonitorUpperLeft.y - m_crosshairs_radius + m_crosshairs_border_size });
+    m_top_crosshairs.Offset({ (float)ptCursor.x - halfPixelAdjustment, (float)ptCursor.y - m_crosshairs_radius, .0f });
+    m_top_crosshairs.Size({ (float)m_crosshairs_thickness, (float)ptCursor.y - (float)ptMonitorUpperLeft.y - m_crosshairs_radius });
 
-    m_bottom_crosshairs_border.Offset({ (float)ptCursor.x, (float)ptCursor.y + m_crosshairs_radius - m_crosshairs_border_size, .0f });
-    m_bottom_crosshairs_border.Size({ m_crosshairs_thickness + m_crosshairs_border_size * 2, (float)ptMonitorBottomRight.y - (float)ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size });
-    m_bottom_crosshairs.Offset({ (float)ptCursor.x, (float)ptCursor.y + m_crosshairs_radius, .0f });
-    m_bottom_crosshairs.Size({ m_crosshairs_thickness, (float)ptMonitorBottomRight.y - (float)ptCursor.y - m_crosshairs_radius });
+    m_bottom_crosshairs_border.Offset({ (float)ptCursor.x - halfPixelAdjustment, (float)ptCursor.y + m_crosshairs_radius - m_crosshairs_border_size, .0f });
+    m_bottom_crosshairs_border.Size({ (float)m_crosshairs_thickness + m_crosshairs_border_size * 2, (float)ptMonitorBottomRight.y - (float)ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size });
+    m_bottom_crosshairs.Offset({ (float)ptCursor.x - halfPixelAdjustment, (float)ptCursor.y + m_crosshairs_radius, .0f });
+    m_bottom_crosshairs.Size({ (float)m_crosshairs_thickness, (float)ptMonitorBottomRight.y - (float)ptCursor.y - m_crosshairs_radius });
 
 }
 
@@ -244,10 +247,10 @@ void InclusiveCrosshairs::StartDrawing()
 {
     Logger::info("Start drawing crosshairs.");
     Trace::StartDrawingCrosshairs();
-    UpdateCrosshairsPosition();
-    m_visible = true;
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN), GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
+    UpdateCrosshairsPosition();
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
+    m_visible = true;
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
 }
 
@@ -267,12 +270,12 @@ void InclusiveCrosshairs::SwitchActivationMode()
 
 void InclusiveCrosshairs::ApplySettings(InclusiveCrosshairsSettings& settings, bool applyToRunTimeObjects)
 {
-    m_crosshairs_radius = (float)settings.crosshairsRadius;
-    m_crosshairs_thickness = (float)settings.crosshairsThickness;
+    m_crosshairs_radius = settings.crosshairsRadius;
+    m_crosshairs_thickness = settings.crosshairsThickness;
     m_crosshairs_color = settings.crosshairsColor;
     m_crosshairs_opacity = max(0.f, min(1.f, (float)settings.crosshairsOpacity / 100.0f));
     m_crosshairs_border_color = settings.crosshairsBorderColor;
-    m_crosshairs_border_size = (float)settings.crosshairsBorderSize;
+    m_crosshairs_border_size = settings.crosshairsBorderSize;
 
     if (applyToRunTimeObjects)
     {
