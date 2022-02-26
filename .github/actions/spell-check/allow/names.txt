@@ -1,6 +1,6 @@
 bdoserror
 crutkas
 edwinzap
-nvidia
+nVidia
 robmen
 snickler
