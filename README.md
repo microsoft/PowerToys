@@ -69,7 +69,7 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.56 - Febuary 2022 Update
+### 0.56 - February 2022 Update
 
 In this release, we focused heavily on stability and improvements.  Below are some of the highlights!
 
@@ -78,7 +78,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - Upgrade notes!  A big feedback items for new versions was upgrade notes.  We have the release notes on GitHub as well.
 - FancyZones zone limit has been increased to 128 zones.  Before the limit was 40.
 - Timezone conversion plugin for PowerToys Run!  Thanks [@TobiasSekan](https://github.com/TobiasSekan)
-- Child and Popup window support for FancyZones.  To enable, go to Settings->FancyZones->Windows. These were bugs we fixed that unknowning to us was a useful feature to most.
+- Child and Popup window support for FancyZones.  To enable, go to Settings->FancyZones->Windows. These were bugs we fixed that without realizing it was a useful feature to most.
 - Find my mouse will now activate via shaking the mouse with a settings change!
 ![Find my mouse setting for Activate to shake](https://user-images.githubusercontent.com/26118718/153509687-e99cc9ce-28bf-481b-b27b-39715cb3d82a.png)
 
@@ -126,14 +126,14 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 - Timezone conversion plugin for PowerToys Run!  Thanks [@TobiasSekan](https://github.com/TobiasSekan)
 - Hexadecimal and binary numbers now are supported. This was added a bit ago and looks like [@gsuberland](https://github.com/gsuberland)
-- Termianl plugin performance boost.  Thanks [@htcfreek](https://github.com/htcfreek)!
+- Terminal plugin performance boost.  Thanks [@htcfreek](https://github.com/htcfreek)!
 - Terminal will now be found via the Program plugin
 - Shutdown command is now using hybrid command
 - Support for VSCodium with VS Code workplace plugin. Thanks [@makeProjectGreatAgain](https://github.com/makeProjectGreatAgain)
 
 ### Video conference mute
 
-- NVidia Broadcast software won't crash anymore
+- nVidia Broadcast software won't crash anymore
 
 ### Settings
 
