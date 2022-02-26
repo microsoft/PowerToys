@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.WindowWalker.Components;
@@ -14,7 +14,7 @@ using Wox.Plugin.Common.VirtualDesktop.Helper;
 
 namespace Microsoft.Plugin.WindowWalker
 {
-    public class Main : IPlugin, IPluginI18n, ISettingProvider
+    public class Main : IPlugin, IPluginI18n, ISettingProvider, IContextMenu
     {
         private string IconPath { get; set; }
 
@@ -23,6 +23,8 @@ namespace Microsoft.Plugin.WindowWalker
         private PluginInitContext Context { get; set; }
 
         public string Name => Properties.Resources.wox_plugin_windowwalker_plugin_name;
+
+        private readonly string _assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 
         public string Description => Properties.Resources.wox_plugin_windowwalker_plugin_description;
 
@@ -46,6 +48,11 @@ namespace Microsoft.Plugin.WindowWalker
             List<SearchResult> searchControllerResults = SearchController.Instance.SearchMatches;
 
             return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query.ActionKeyword), IconPath, InfoIconPath);
+        }
+
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
+        {
+            return ContextMenuHelper.LoadContextMenuResults(selectedResult);
         }
 
         public void Init(PluginInitContext context)

@@ -61,6 +61,15 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Close window.
+        /// </summary>
+        public static string wox_plugin_windowwalker_close {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Desktop.
         /// </summary>
         public static string wox_plugin_windowwalker_Desktop {
@@ -70,7 +79,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This requires enabling the separate process setting in Explorer. Klick to open Explorer options..
+        ///   Looks up a localized string similar to Explorer windows doesn&apos;t run in separate processes. (Klick to open Explorer properties.).
         /// </summary>
         public static string wox_plugin_windowwalker_ExplorerInfoSubTitle {
             get {
@@ -79,11 +88,20 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You aren&apos;t allowed to kill Explorer processes.
+        ///   Looks up a localized string similar to Info: Killing an Explorer process isn&apos;t possible..
         /// </summary>
         public static string wox_plugin_windowwalker_ExplorerInfoTitle {
             get {
                 return ResourceManager.GetString("wox_plugin_windowwalker_ExplorerInfoTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kill process.
+        /// </summary>
+        public static string wox_plugin_windowwalker_kill {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_kill", resourceCulture);
             }
         }
         

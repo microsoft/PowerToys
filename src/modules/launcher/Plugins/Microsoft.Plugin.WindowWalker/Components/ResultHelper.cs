@@ -14,7 +14,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
     internal static class ResultHelper
     {
          /// <summary>
-         /// Returns a list of all <see cref="Result"/> for the search.
+         /// Returns a list of all results for the query.
          /// </summary>
          /// <param name="searchControllerResults">List with all search controller matches</param>
          /// <param name="icon">The path to the result icon</param>
@@ -36,6 +36,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     Title = x.Result.Title,
                     IcoPath = icon,
                     SubTitle = GetSubtitle(x.Result),
+                    ContextData = x.Result,
                     Action = c =>
                     {
                         x.Result.SwitchToWindow();
@@ -60,7 +61,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         /// <param name="window">The window properties of the result</param>
         /// <returns>String with the subtitle</returns>
-        internal static string GetSubtitle(Window window)
+        private static string GetSubtitle(Window window)
         {
             if (window == null || !(window is Window))
             {
@@ -88,7 +89,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="window">The window properties of the result</param>
         /// <param name="debugToolTip">Value indicating if a detailed debug tooltip should be returned</param>
         /// <returns>Tooltip for the result or null of failure</returns>
-        internal static ToolTipData GetToolTip(Window window, bool debugToolTip)
+        private static ToolTipData GetToolTip(Window window, bool debugToolTip)
         {
             if (window == null || !(window is Window))
             {
@@ -135,6 +136,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
            }
         }
 
+        /// <summary>
+        /// Returns an information result about the explorer setting
+        /// </summary>
+        /// <param name="icon">The path to the info icon.</param>
+        /// <returns>An object of the type <see cref="Result"/> with the information.</returns>
         private static Result GetExplorerInfoResult(string icon)
         {
             return new Result()

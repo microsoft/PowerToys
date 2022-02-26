@@ -235,6 +235,19 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
+        /// Closes the window
+        /// </summary>
+        public void CloseThisWindow(bool switchBeforeClose)
+        {
+            if (switchBeforeClose)
+            {
+                SwitchToWindow();
+            }
+
+            _ = NativeMethods.SendMessage(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_CLOSE);
+        }
+
+        /// <summary>
         /// Converts the window name to string along with the process name
         /// </summary>
         /// <returns>The title of the window</returns>

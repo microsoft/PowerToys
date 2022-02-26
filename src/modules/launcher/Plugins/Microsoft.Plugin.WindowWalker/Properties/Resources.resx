@@ -162,11 +162,17 @@
     <value>Process id</value>
   </data>
   <data name="wox_plugin_windowwalker_ExplorerInfoSubTitle" xml:space="preserve">
-    <value>This requires enabling the separate process setting in Explorer. Klick to open Explorer options.</value>
+    <value>Explorer windows doesn't run in separate processes. (Klick to open Explorer properties.)</value>
     <comment>Explorer is here the program File Explorer</comment>
   </data>
   <data name="wox_plugin_windowwalker_ExplorerInfoTitle" xml:space="preserve">
-    <value>You aren't allowed to kill Explorer processes</value>
+    <value>Info: Killing an Explorer process isn't possible.</value>
     <comment>Explorer is here the program File Explorer</comment>
+  </data>
+  <data name="wox_plugin_windowwalker_close" xml:space="preserve">
+    <value>Close window</value>
+  </data>
+  <data name="wox_plugin_windowwalker_kill" xml:space="preserve">
+    <value>Kill process</value>
   </data>
 </root>
