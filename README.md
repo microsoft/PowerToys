@@ -76,7 +76,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 **Highlights**
 
 - Upgrade notes!  A big feedback items for new versions was upgrade notes.  We have the release notes on GitHub as well.
-- FancyZones zone limit has been increased to 128 zones.  Before the limit was 40.
+- FancyZones zone amount limit has been increased to 128 zones. (Before, the limit was 40.)
 - Timezone conversion plugin for PowerToys Run!  Thanks [@TobiasSekan](https://github.com/TobiasSekan)
 - Child and Popup window support for FancyZones.  To enable, go to Settings->FancyZones->Windows. These were bugs we fixed that without realizing it was a useful feature to most.
 - Find my mouse will now activate via shaking the mouse with a settings change!
@@ -86,7 +86,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 - Fixed excess GPU / CPU usage when enabled
 - If border has focus, not closable via F4
-- Changing border sizes should resize correctly for existing windows
+- Changing border thickness should resize them correctly for existing windows
 - Border goes away with Outlook modal windows 
 
 ### ColorPicker
@@ -112,13 +112,13 @@ In this release, we focused heavily on stability and improvements.  Below are so
 ### Mouse utility
 
 - Find my mouse will now activate via shaking the mouse with a settings change!
-- Find my mouse now can excludes apps.
+- Find my mouse can now exclude apps.
 - Fix for crosshair thickness looking odd due to anti-aliasing
 - Fix for a hard crash on crosshair (This was a hotfix for 0.55)
 
 ### PowerRename
 
-- Will not spells check file names anymore. Thanks [@niels9001](https://github.com/niels9001)
+- Will not spell check file names anymore. Thanks [@niels9001](https://github.com/niels9001)
 - Autocomplete result box to not obscure apply button. Thanks [@niels9001](https://github.com/niels9001)
 - Regex fix
 
