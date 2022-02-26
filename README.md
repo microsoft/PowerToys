@@ -96,7 +96,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 ### FancyZones
 
 - Increased zone limit to 128 from 40.
-- Child and Popup window support for FancyZones.  To enable, go to Settings->FancyZones->Windows. These were bugs we fixed that unknowning to us was a useful feature to most.
+- Child and Popup window support for FancyZones. To enable, go to Settings->FancyZones->Windows. These were bugs we fixed that without realizing it was a useful feature to most.
 
 ### File explorer
 
