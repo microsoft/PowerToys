@@ -164,9 +164,12 @@ We'd like to directly mention certain contributors (in alphabetical order) for t
 
 #### What is being planned for v0.57
 
-For [v0.57][github-next-release-work], 
+For [v0.57][github-next-release-work], we'll start work on below
 
-TODO
+- Start work on two new PowerToys
+- Improvements to PowerToy Run plugins
+- Stability / bug fixes
+- Validation pass again using WinUI 3.1 for Settings
 
 ## PowerToys Community
 
