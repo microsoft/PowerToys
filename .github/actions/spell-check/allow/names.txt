@@ -1,5 +1,6 @@
 bdoserror
 crutkas
 edwinzap
+nvidia
 robmen
 snickler
