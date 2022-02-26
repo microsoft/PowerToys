@@ -114,7 +114,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - Find my mouse will now activate via shaking the mouse with a settings change!
 - Find my mouse now can excludes apps.
 - Fix for crosshair thickness looking odd due to anti-aliasing
-- Fix for a hard crash on crosshair (This was hotfixed for 0.55)
+- Fix for a hard crash on crosshair (This was a hotfix for 0.55)
 
 ### PowerRename
 
@@ -138,13 +138,13 @@ In this release, we focused heavily on stability and improvements.  Below are so
 ### Settings
 
 - Upgrade notes in OOBE
-- Fix for settings being lost (This was hotfixed for 0.55)
+- Fix for settings being lost (This was a hotfix for 0.55)
 - UX improvements. Thanks [@niels9001](https://github.com/niels9001)
 
 ### Installer
 
 - Believe we have a fix for the long hated "app.dark.png is missing" error. Thanks to [@robmen](https://github.com/robmen) for having a great blog!
-- Installer will launch PowerToys under appropriate elevation versus Admin only due to UAC prompt for installation (This was hotfixed for 0.55)
+- Installer will launch PowerToys under appropriate elevation versus Admin only due to UAC prompt for installation (This was a hotfix for 0.55)
 - PowerToys will now start if installed under different user
 
 ### Development
