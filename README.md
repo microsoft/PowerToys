@@ -29,7 +29,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 - Windows 11 or Windows 10 v1903 (18362) or newer.
 - Our installer will install the following items:
    - [.NET Core 3.1.22 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.22-windows-x64-installer) or a newer 3.1.x runtime. This is needed currently for the Settings application.
-   - [.NET 6.02 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-6.0.2-windows-x64-installer) or a newer 5.0.x runtime. 
+   - [.NET 6.02 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-6.0.2-windows-x64-installer) or a newer 6.0.x runtime. 
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version. 
 
 ### Via GitHub with EXE [Recommended]
@@ -76,9 +76,9 @@ In this release, we focused heavily on stability and improvements.  Below are so
 **Highlights**
 
 - Upgrade notes!  A big feedback items for new versions was upgrade notes.  We have the release notes on GitHub as well.
-- FancyZones zone amount limit has been increased to 128 zones. (Before, the limit was 40.)
+- FancyZones zone limit has been increased to 128 zones.  Before the limit was 40.
 - Timezone conversion plugin for PowerToys Run!  Thanks [@TobiasSekan](https://github.com/TobiasSekan)
-- Child and Popup window support for FancyZones.  To enable, go to Settings->FancyZones->Windows. These were bugs we fixed that without realizing it was a useful feature to most.
+- Child and Popup window support for FancyZones.  To enable, go to Settings→FancyZones→Windows. These were bugs we fixed that without realizing it was a useful feature to most.
 - Find my mouse will now activate via shaking the mouse with a settings change!
 ![Find my mouse setting for Activate to shake](https://user-images.githubusercontent.com/26118718/153509687-e99cc9ce-28bf-481b-b27b-39715cb3d82a.png)
 
@@ -86,7 +86,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 - Fixed excess GPU / CPU usage when enabled
 - If border has focus, not closable via F4
-- Changing border thickness should resize them correctly for existing windows
+- Changing border sizes should resize correctly for existing windows
 - Border goes away with Outlook modal windows 
 
 ### ColorPicker
@@ -96,7 +96,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 ### FancyZones
 
 - Increased zone limit to 128 from 40.
-- Child and Popup window support for FancyZones. To enable, go to Settings->FancyZones->Windows. These were bugs we fixed that without realizing it was a useful feature to most.
+- Child and Popup window support for FancyZones. To enable, go to Settings→FancyZones→Windows. These were bugs we fixed that without realizing it was a useful feature to most.
 
 ### File explorer
 
@@ -112,23 +112,23 @@ In this release, we focused heavily on stability and improvements.  Below are so
 ### Mouse utility
 
 - Find my mouse will now activate via shaking the mouse with a settings change!
-- Find my mouse can now exclude apps.
+- Find my mouse now can excludes apps.
 - Fix for crosshair thickness looking odd due to anti-aliasing
 - Fix for a hard crash on crosshair (This was a hotfix for 0.55)
 
 ### PowerRename
 
-- Will not spell check file names anymore. Thanks [@niels9001](https://github.com/niels9001)
+- Will not spells check file names anymore. Thanks [@niels9001](https://github.com/niels9001)
 - Autocomplete result box to not obscure apply button. Thanks [@niels9001](https://github.com/niels9001)
 - Regex fix
 
 ### PowerToys Run
 
 - Timezone conversion plugin for PowerToys Run!  Thanks [@TobiasSekan](https://github.com/TobiasSekan)
-- Hexadecimal and binary numbers now are supported. This was added a bit ago and looks like [@gsuberland](https://github.com/gsuberland)
+- Hexadecimal and binary numbers now are supported in the calculator plugin. This was added a bit ago and we'd like to extend a belated thanks to [@gsuberland](https://github.com/gsuberland)
 - Terminal plugin performance boost.  Thanks [@htcfreek](https://github.com/htcfreek)!
-- Terminal will now be found via the Program plugin
-- Shutdown command is now using hybrid command
+- Terminal will now be found via the Program plugin again.  
+- Shutdown command is now using hybrid fast argument for shutting down
 - Support for VSCodium with VS Code workplace plugin. Thanks [@makeProjectGreatAgain](https://github.com/makeProjectGreatAgain)
 
 ### Video conference mute
