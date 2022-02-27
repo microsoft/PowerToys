@@ -44,41 +44,6 @@
 			/*Hides alert box */
 			display:none!important
 		} 
-
-		.context-menu { 
-			position: absolute; 
-		} 
-		.menu {
-			background-color: #fff;
-			border-radius: 10px;
-			box-shadow: 0 10px 20px rgb(64 64 64 / 5%);
-			width: 60px;
-		}
-		.menu > li > a {
-			font: inherit;
-			border: 0;
-			width: 100%;
-			align-items: center;
-			position: relative;
-			text-decoration: unset;
-			color: #000;
-			font-weight: 500;
-			transition: 0.1s linear;
-		}
-		.menu > li > a:hover {
-			background:#f1f3f7;
-			color: #4b00ff;	
-		}
-		.menu > li > a > i {
-			padding-right: 10px;
-		}
-		.menu > li.trash > a:hover {
-			color: red;
-		}
-
-		.menu ul{
-			list-style: none;
-		}
 	</style>
 </head>
 
@@ -119,7 +84,7 @@
 		editor.addAction({
 			id: 'text-wrap',
 
-			label: 'Switch text wrapping',
+			label: 'Toggle text wrapping',
 
 			// A precondition for this action.
 			precondition: null,
