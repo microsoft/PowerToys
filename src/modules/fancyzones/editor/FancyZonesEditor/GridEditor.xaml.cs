@@ -146,12 +146,10 @@ namespace FancyZonesEditor
             }
 
             Orientation orient = Orientation.Horizontal;
-            int offset = 0;
 
-            int zoneIndex = Preview.Children.IndexOf(gridZone);
-            var zone = _data.Zones[zoneIndex];
-            Debug.Assert(Preview.Children.Count > zoneIndex, "Zone index out of range");
+            Debug.Assert(Preview.Children.Count > Preview.Children.IndexOf(gridZone), "Zone index out of range");
 
+            int offset;
             if (((App)Application.Current).MainWindowSettings.IsShiftKeyPressed)
             {
                 orient = Orientation.Vertical;
@@ -174,8 +172,7 @@ namespace FancyZonesEditor
             }
             else
             {
-                var resizer = Keyboard.FocusedElement as GridResizer;
-                if (resizer != null)
+                if (Keyboard.FocusedElement is GridResizer resizer)
                 {
                     HandleResizerKeyDown(resizer, e);
                     return;
@@ -185,15 +182,13 @@ namespace FancyZonesEditor
 
         private void GridEditor_KeyUp(object sender, KeyEventArgs e)
         {
-            var resizer = Keyboard.FocusedElement as GridResizer;
-            if (resizer != null)
+            if (Keyboard.FocusedElement is GridResizer resizer)
             {
                 HandleResizerKeyUp(resizer, e);
                 return;
             }
 
-            var gridZone = Keyboard.FocusedElement as GridZone;
-            if (gridZone != null)
+            if (Keyboard.FocusedElement is GridZone gridZone)
             {
                 HandleGridZoneKeyUp(gridZone, e);
                 return;

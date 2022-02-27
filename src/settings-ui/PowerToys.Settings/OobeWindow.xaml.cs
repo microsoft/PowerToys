@@ -20,6 +20,7 @@ namespace PowerToys.Settings
     {
         private static Window inst;
         private OobeShellPage shellPage;
+        private int initialModule;
 
         public static bool IsOpened
         {
@@ -29,10 +30,11 @@ namespace PowerToys.Settings
             }
         }
 
-        public OobeWindow()
+        public OobeWindow(int initialModule)
         {
             InitializeComponent();
             Utils.FitToScreen(this);
+            this.initialModule = initialModule;
 
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
             Title = loader.GetString("OobeWindow_Title");
@@ -69,6 +71,11 @@ namespace PowerToys.Settings
             WindowsXamlHost windowsXamlHost = sender as WindowsXamlHost;
             shellPage = windowsXamlHost.GetUwpInternalObject() as OobeShellPage;
 
+            if (shellPage != null)
+            {
+                shellPage.NavigateToModule(initialModule);
+            }
+
             OobeShellPage.SetRunSharedEventCallback(() =>
             {
                 return Constants.PowerLauncherSharedEvent();
@@ -89,7 +96,7 @@ namespace PowerToys.Settings
         {
             base.OnSourceInitialized(e);
             var hwnd = new WindowInteropHelper(this).Handle;
-            NativeMethods.SetToolWindowStyle(hwnd);
+            NativeMethods.SetPopupStyle(hwnd);
         }
     }
 }

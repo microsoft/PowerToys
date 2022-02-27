@@ -9,8 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     winui:BackdropMaterial.ApplyToRootOrPageBackground="True"
     mc:Ignorable="d"
-    HighContrastAdjustment="None"
-    Loaded="UserControl_Loaded">
+    HighContrastAdjustment="None">
 
     <UserControl.Resources>
         <DataTemplate x:Key="NavigationViewMenuItem" x:DataType="localModels:OobePowerToysModule">

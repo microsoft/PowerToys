@@ -355,17 +355,17 @@ namespace FancyZonesEditor
                 });
             }
 
-            Action<Zone> extend = (zone) =>
+            void Extend(Zone zone)
             {
                 left = Math.Min(left, zone.Left);
                 right = Math.Max(right, zone.Right);
                 top = Math.Min(top, zone.Top);
                 bottom = Math.Max(bottom, zone.Bottom);
-            };
+            }
 
             foreach (Index index in indices)
             {
-                extend(_zones[index]);
+                Extend(_zones[index]);
             }
 
             bool possiblyBroken = true;
@@ -386,7 +386,7 @@ namespace FancyZonesEditor
                     if (newArea != 0 && newArea != area)
                     {
                         // bad intersection found, extend
-                        extend(zone);
+                        Extend(zone);
                         possiblyBroken = true;
                     }
                 }
@@ -494,17 +494,17 @@ namespace FancyZonesEditor
         {
             var resizer = _resizers[resizerIndex];
 
-            Func<int, int> getSize = (zoneIndex) =>
+            int GetSize(int zoneIndex)
             {
                 Zone zone = _zones[zoneIndex];
                 return resizer.Orientation == Orientation.Vertical ? zone.Right - zone.Left : zone.Bottom - zone.Top;
-            };
+            }
 
             int minZoneSize = resizer.Orientation == Orientation.Vertical ? MinZoneWidth : MinZoneHeight;
 
             foreach (int zoneIndex in resizer.PositiveSideIndices)
             {
-                if (getSize(zoneIndex) - delta < minZoneSize)
+                if (GetSize(zoneIndex) - delta < minZoneSize)
                 {
                     return false;
                 }
@@ -512,7 +512,7 @@ namespace FancyZonesEditor
 
             foreach (int zoneIndex in resizer.NegativeSideIndices)
             {
-                if (getSize(zoneIndex) + delta < minZoneSize)
+                if (GetSize(zoneIndex) + delta < minZoneSize)
                 {
                     return false;
                 }

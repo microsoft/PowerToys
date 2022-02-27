@@ -18,10 +18,6 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild" Condition="'$(Platform)'=='x64'">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.x86.h resource.x86.h VideoConferenceProxyFilter.base.rc VideoConferenceProxyFilter.rc" />
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h VideoConferenceProxyFilter.base.rc VideoConferenceProxyFilter.rc" />
-  </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{AC2857B4-103D-4D6D-9740-926EBF785042}</ProjectGuid>
@@ -114,7 +110,6 @@
     <ClInclude Include="DirectShowUtils.h" />
     <ClInclude Include="VideoCaptureDevice.h" />
     <ClInclude Include="VideoCaptureProxyFilter.h" />
-    <None Include="resource.base.h" />
     <ClInclude Include="Generated Files/resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -130,10 +125,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="resource.x86.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Generated Files\VideoConferenceProxyFilter.rc" />
-    <None Include="VideoConferenceProxyFilter.base.rc" />
+    <ResourceCompile Include="VideoConferenceProxyFilter.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VideoConferenceShared\VideoConferenceShared.vcxproj">

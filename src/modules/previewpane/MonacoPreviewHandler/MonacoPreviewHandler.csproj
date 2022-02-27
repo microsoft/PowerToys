@@ -82,7 +82,7 @@
   </ItemGroup>
 
   <ItemGroup>
-      <None Update="languages.json">
+      <None Update="monaco_languages.json">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
   </ItemGroup>

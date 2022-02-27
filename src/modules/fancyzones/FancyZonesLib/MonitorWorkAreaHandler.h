@@ -86,16 +86,6 @@ public:
      * Clear all persisted work area related data.
      */
     void Clear();
-
-    /**
-    * Update zone colors after settings changed
-    */
-    void UpdateZoneColors(const ZoneColors& colors);
-
-    /**
-    * Update overlapping algorithm after settings changed
-    */
-    void UpdateOverlappingAlgorithm(OverlappingZonesAlgorithm overlappingAlgorithm);
     
 private:
     // Work area is uniquely defined by monitor and virtual desktop id.
