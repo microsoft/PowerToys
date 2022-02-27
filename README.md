@@ -100,10 +100,11 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 ### File explorer
 
-- Dev file preview fix for object reference not set. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)
-- Dev file preview fix for encoding UTF-8. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)
-- Dev file preview fix for file is in use. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)
-- Dev file preview fix for saying the file is too big. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)
+- Fixes for Dev file preview: (Thanks [@Aaron-Junker](https://github.com/Aaron-Junker))
+  - Fix fix for object reference not set.
+  - Fix for encoding UTF-8.
+  - Fix for file is in use. 
+  - Fix for saying the file is too big.
 
 ### Image Resizer
 
