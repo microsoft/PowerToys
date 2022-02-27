@@ -169,7 +169,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Choose "UsGallon" or "ImperialGallon" accoring to current culture when the input contains "gal" or "gallon".
+        /// Choose "UsGallon" or "ImperialGallon" according to current culture when the input contains "gal" or "gallon".
         /// </summary>
         public static void GallonHandler(ref string[] split, CultureInfo culture)
         {
