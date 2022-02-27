@@ -2020,8 +2020,8 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
   </data>
-  <data name="FileExplorerPreview_ToggleSwitch_Wrap_Text.Header" xml:space="preserve">
-    <value>Text wrapping</value>
+  <data name="FileExplorerPreview_ToggleSwitch_Wrap_Text.Content" xml:space="preserve">
+    <value>Wrap text</value>
     <comment>Feature on or off</comment>
   </data>
 </root>
