@@ -1507,9 +1507,11 @@
 			<?endforeach?>
 			<Component Id="WindowWalkerImagesComponentLight" Directory="WindowWalkerImagesFolder" >
                 <File Id="WindowWalkerLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\windowwalker.light.png" />
+                <File Id="WindowWalkerInfoLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\info.light.png" />
             </Component>
 			<Component Id="WindowWalkerImagesComponentDark" Directory="WindowWalkerImagesFolder" >
 			    <File Id="WindowWalkerDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\windowwalker.dark.png" />
+			    <File Id="WindowWalkerInfoDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\info.dark.png" />
 			</Component>
 
             <!-- Registry Plugin -->

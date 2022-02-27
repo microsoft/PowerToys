@@ -146,7 +146,7 @@
     <value>Show process id in subtitle</value>
   </data>
   <data name="wox_plugin_windowwalker_SettingOpenAfterKillAndClose" xml:space="preserve">
-    <value>Stay open after closing windows and killing processes</value>
+    <value>Stay open after closing windows and killing processes (Not working with kill process confirmation)</value>
   </data>
   <data name="wox_plugin_windowwalker_Desktop" xml:space="preserve">
     <value>Desktop</value>
