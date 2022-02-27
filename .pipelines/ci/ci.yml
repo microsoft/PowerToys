@@ -9,6 +9,7 @@ trigger:
       - doc/*
       - temp/*
       - tools/*
+      - '**.md'
 
 pr:
   branches:
