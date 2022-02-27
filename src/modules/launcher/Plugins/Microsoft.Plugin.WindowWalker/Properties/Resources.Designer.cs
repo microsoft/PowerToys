@@ -63,9 +63,9 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Close window.
         /// </summary>
-        public static string wox_plugin_windowwalker_close {
+        public static string wox_plugin_windowwalker_Close {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_close", resourceCulture);
+                return ResourceManager.GetString("wox_plugin_windowwalker_Close", resourceCulture);
             }
         }
         
@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Explorer windows doesn&apos;t run in separate processes. (Klick to open Explorer properties.).
+        ///   Looks up a localized string similar to Folder windows doesn&apos;t run in separate processes. (Klick to open Explorer properties.).
         /// </summary>
         public static string wox_plugin_windowwalker_ExplorerInfoSubTitle {
             get {
@@ -88,7 +88,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Info: Killing an Explorer process isn&apos;t possible..
+        ///   Looks up a localized string similar to Info: Killing the Explorer process isn&apos;t possible..
         /// </summary>
         public static string wox_plugin_windowwalker_ExplorerInfoTitle {
             get {
@@ -99,9 +99,45 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Kill process.
         /// </summary>
-        public static string wox_plugin_windowwalker_kill {
+        public static string wox_plugin_windowwalker_Kill {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_kill", resourceCulture);
+                return ResourceManager.GetString("wox_plugin_windowwalker_Kill", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your are going to kill the following process:.
+        /// </summary>
+        public static string wox_plugin_windowwalker_KillMessage {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_KillMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Continue?.
+        /// </summary>
+        public static string wox_plugin_windowwalker_KillMessageQuestion {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_KillMessageQuestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kill process confirmation.
+        /// </summary>
+        public static string wox_plugin_windowwalker_KillMessageTitle {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_KillMessageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Because this is an app process, all instances of the app will be killed. Continue?.
+        /// </summary>
+        public static string wox_plugin_windowwalker_KillMessageUwp {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_KillMessageUwp", resourceCulture);
             }
         }
         
@@ -153,9 +189,9 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Running.
         /// </summary>
-        public static string wox_plugin_windowwalker_running {
+        public static string wox_plugin_windowwalker_Running {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_running", resourceCulture);
+                return ResourceManager.GetString("wox_plugin_windowwalker_Running", resourceCulture);
             }
         }
         

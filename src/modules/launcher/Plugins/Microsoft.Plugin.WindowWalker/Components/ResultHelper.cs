@@ -68,7 +68,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 return string.Empty;
             }
 
-            string subtitleText = Resources.wox_plugin_windowwalker_running + ": " + window.Process.Name;
+            string subtitleText = Resources.wox_plugin_windowwalker_Running + ": " + window.Process.Name;
 
             if (WindowWalkerSettings.Instance.SubtitleShowPid)
             {

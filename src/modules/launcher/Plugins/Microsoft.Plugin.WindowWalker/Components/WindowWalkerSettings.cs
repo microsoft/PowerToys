@@ -42,7 +42,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         internal bool ConfirmKillProcess { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether to kill the entire process tre or theselected process only.
+        /// Gets a value indicating whether to kill the entire process tree or the selected process only.
         /// </summary>
         internal bool KillProcessTree { get; private set; }
 
