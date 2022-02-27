@@ -51,14 +51,23 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 FontFamily = "Segoe MDL2 Assets",
                 Glyph = "\xE74D",                       // E74D => Symbol: Delete
                 Title = $"{Resources.wox_plugin_windowwalker_kill} (Ctrl+Delete)",
-                Action = _ =>
-                {
-                    // ToDo: Code to kill process
-                    return false;
-                },
+                Action = _ => KillProcessCommand(windowData),
             });
 
             return contextMenu;
+        }
+
+        /// <summary>
+        /// Method initiate killing the process of a window
+        /// </summary>
+        /// <param name="window">Window data</param>
+        /// <returns>True if the PT Run window should close, otherwise false.</returns>
+        private static bool KillProcessCommand(Window window)
+        {
+            window.Process.KillThisProcess(WindowWalkerSettings.Instance.KillProcessTree);
+
+            // ToDo: Code to kill process
+            return false;
         }
     }
 }

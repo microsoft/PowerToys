@@ -175,4 +175,7 @@
   <data name="wox_plugin_windowwalker_kill" xml:space="preserve">
     <value>Kill process</value>
   </data>
+  <data name="wox_plugin_windowwalker_SettingKillProcessTree" xml:space="preserve">
+    <value>Kill the entire process tree</value>
+  </data>
 </root>

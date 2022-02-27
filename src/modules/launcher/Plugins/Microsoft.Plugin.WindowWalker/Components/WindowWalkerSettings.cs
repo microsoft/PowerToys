@@ -42,6 +42,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         internal bool ConfirmKillProcess { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether to kill the entire process tre or theselected process only.
+        /// </summary>
+        internal bool KillProcessTree { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether PowerToys run should stay open after executing killing process and closing window.
         /// </summary>
         internal bool OpenAfterKillAndClose { get; private set; }
@@ -118,6 +123,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 },
                 new PluginAdditionalOption
                 {
+                    Key = nameof(KillProcessTree),
+                    DisplayLabel = Resources.wox_plugin_windowwalker_SettingKillProcessTree,
+                    Value = false,
+                },
+                new PluginAdditionalOption
+                {
                     Key = nameof(OpenAfterKillAndClose),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingOpenAfterKillAndClose,
                     Value = false,
@@ -154,6 +165,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             SubtitleShowPid = GetSettingOrDefault(settings, nameof(SubtitleShowPid));
             SubtitleShowDesktopName = GetSettingOrDefault(settings, nameof(SubtitleShowDesktopName));
             ConfirmKillProcess = GetSettingOrDefault(settings, nameof(ConfirmKillProcess));
+            KillProcessTree = GetSettingOrDefault(settings, nameof(KillProcessTree));
             OpenAfterKillAndClose = GetSettingOrDefault(settings, nameof(OpenAfterKillAndClose));
             HideKillProcessOnElevatedProcesses = GetSettingOrDefault(settings, nameof(HideKillProcessOnElevatedProcesses));
             HideExplorerSettingInfo = GetSettingOrDefault(settings, nameof(HideExplorerSettingInfo));

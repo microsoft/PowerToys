@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Plugin.WindowWalker.Properties;
+using Wox.Infrastructure;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.WindowWalker.Components
@@ -150,7 +150,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 SubTitle = Resources.wox_plugin_windowwalker_ExplorerInfoSubTitle,
                 Action = c =>
                 {
-                    Wox.Infrastructure.Helper.OpenInShell("rundll32.exe", "shell32.dll,Options_RunDLL 7"); // "shell32.dll,Options_RunDLL 7" opens the view tab in folder options of explorer.
+                    Helper.OpenInShell("rundll32.exe", "shell32.dll,Options_RunDLL 7"); // "shell32.dll,Options_RunDLL 7" opens the view tab in folder options of explorer.
                     return true;
                 },
                 Score = 100_000,

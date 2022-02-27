@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Wox.Infrastructure;
 using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.WindowWalker.Components
@@ -173,6 +174,23 @@ namespace Microsoft.Plugin.WindowWalker.Components
             {
                 _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
                 return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Kills the process by it's id. If permitions required they will be requested.
+        /// </summary>
+        /// <param name="killProcessTree">Kill process and sub processes.</param>
+        public void KillThisProcess(bool killProcessTree)
+        {
+            if (IsFullAccessDenied)
+            {
+                string killTree = killProcessTree ? " /t" : string.Empty;
+                Helper.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, true, true);
+            }
+            else
+            {
+                Process.GetProcessById((int)ProcessID).Kill(killProcessTree);
             }
         }
 
