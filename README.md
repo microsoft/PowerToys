@@ -170,6 +170,7 @@ For [v0.57][github-next-release-work], we'll start work on below
 - Improvements to PowerToy Run plugins
 - Stability / bug fixes
 - Validation pass again using WinUI 3.1 for Settings
+- Adding new file types to dev file preview
 
 ## PowerToys Community
 
