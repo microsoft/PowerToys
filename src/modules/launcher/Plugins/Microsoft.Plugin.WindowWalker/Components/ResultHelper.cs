@@ -22,7 +22,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         internal static List<Result> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch, string icon, string infoIcon)
         {
             bool addExplorerInfo = false;
-            List<Result> results = new List<Result>();
+            List<Result> resultsList = new List<Result>();
 
             foreach (SearchResult x in searchControllerResults)
             {
@@ -31,7 +31,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     addExplorerInfo = true;
                 }
 
-                results.Add(new Result()
+                resultsList.Add(new Result()
                 {
                     Title = x.Result.Title,
                     IcoPath = icon,
@@ -50,10 +50,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (addExplorerInfo && isKeywordSearch && !WindowWalkerSettings.Instance.HideExplorerSettingInfo)
             {
-                results.Add(GetExplorerInfoResult(infoIcon));
+                resultsList.Add(GetExplorerInfoResult(infoIcon));
             }
 
-            return results;
+            return resultsList;
         }
 
         /// <summary>
@@ -139,14 +139,14 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Returns an information result about the explorer setting
         /// </summary>
-        /// <param name="icon">The path to the info icon.</param>
+        /// <param name="iIcon">The path to the info icon.</param>
         /// <returns>An object of the type <see cref="Result"/> with the information.</returns>
-        private static Result GetExplorerInfoResult(string icon)
+        private static Result GetExplorerInfoResult(string iIcon)
         {
             return new Result()
             {
                 Title = Resources.wox_plugin_windowwalker_ExplorerInfoTitle,
-                IcoPath = icon,
+                IcoPath = iIcon,
                 SubTitle = Resources.wox_plugin_windowwalker_ExplorerInfoSubTitle,
                 Action = c =>
                 {

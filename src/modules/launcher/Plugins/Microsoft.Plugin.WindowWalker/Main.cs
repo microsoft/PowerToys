@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.WindowWalker
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            return ContextMenuHelper.LoadContextMenuResults(selectedResult);
+            return ContextMenuHelper.GetContextMenuResults(selectedResult);
         }
 
         public void Init(PluginInitContext context)

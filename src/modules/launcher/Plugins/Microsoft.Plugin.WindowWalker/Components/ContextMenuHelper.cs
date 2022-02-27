@@ -10,9 +10,9 @@ using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
-    public class ContextMenuHelper : IContextMenu
+    public class ContextMenuHelper
     {
-        public static List<ContextMenuResult> LoadContextMenuResults(in Result result)
+        public static List<ContextMenuResult> GetContextMenuResults(in Result result)
         {
             if (!(result?.ContextData is Window windowData))
             {
@@ -35,7 +35,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                             Log.Debug($"Can not close the window {windowData.Hwnd}, because it doesn't exist.", typeof(ContextMenuHelper));
                         }
 
-                        // As a workaround to close PT Run after executing the context menu command, we switch to the window before closing it.
+                        // As a workaround to close PT Run after executing the context menu command, we switch to the window before closing it (Issue #16601).
                         // We use the setting OpenAfterKillAndClose to detect if we have to switch.
                         windowData.CloseThisWindow(!WindowWalkerSettings.Instance.OpenAfterKillAndClose);
 
@@ -59,16 +59,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
             });
 
             return contextMenu;
-        }
-
-        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        internal static List<ContextMenuResult> LoadContextMenuResults(Result result, Result selectedResult)
-        {
-            throw new NotImplementedException();
         }
     }
 }
