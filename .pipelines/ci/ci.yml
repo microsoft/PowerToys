@@ -4,6 +4,7 @@ trigger:
     include:
       - main
       - stable
+      - exclude-md-file
   paths:
     exclude:
       - doc/*
