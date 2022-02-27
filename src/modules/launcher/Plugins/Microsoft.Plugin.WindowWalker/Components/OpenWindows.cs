@@ -34,7 +34,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the list of all open windows
         /// </summary>
-        public List<Window> Windows
+        internal List<Window> Windows
         {
             get { return new List<Window>(windows); }
         }
@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// the first instance gets created and that all the requests
         /// end up at that one instance
         /// </summary>
-        public static OpenWindows Instance
+        internal static OpenWindows Instance
         {
             get
             {
@@ -69,7 +69,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Updates the list of open windows
         /// </summary>
-        public void UpdateOpenWindowsList()
+        internal void UpdateOpenWindowsList()
         {
             windows.Clear();
             EnumWindowsProc callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
@@ -83,7 +83,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="lParam">Value being passed from the caller (we don't use this but might come in handy
         /// in the future</param>
         /// <returns>true to make sure to continue enumeration</returns>
-        public bool WindowEnumerationCallBack(IntPtr hwnd, IntPtr lParam)
+        internal bool WindowEnumerationCallBack(IntPtr hwnd, IntPtr lParam)
         {
             Window newWindow = new Window(hwnd);
 

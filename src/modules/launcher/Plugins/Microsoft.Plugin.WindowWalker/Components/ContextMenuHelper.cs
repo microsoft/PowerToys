@@ -11,9 +11,9 @@ using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
-    public class ContextMenuHelper
+    internal class ContextMenuHelper
     {
-        public static List<ContextMenuResult> GetContextMenuResults(in Result result)
+        internal static List<ContextMenuResult> GetContextMenuResults(in Result result)
         {
             if (!(result?.ContextData is Window windowData))
             {
