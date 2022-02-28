@@ -10,7 +10,7 @@ The user can switch to the found windows, close them or kill their process.
 ### UWP Apps
 - The process of an UWP app can't be detected correctly for windows that are minimized while searching. At this time they are assigned to the generic process `ApplicationFrameHost.exe`. If the user searches for such an window while it is not minimized, then the process get's assigned correctly/updated. 
 
-### Killing porcesses
+### Killing processes
 - Killing the Explorer process is only allowed, if each folder window is running in it's own process. (See section `File Explorer setting` below.)
 - You can only kill elevated processes, if you have admin permissions (UAC).
 - If you kill the process of an UWP app window, you kill all instances of the app. All windows are assigned to the same process.
@@ -18,8 +18,9 @@ The user can switch to the found windows, close them or kill their process.
 
 ### File Explorer setting
 - To kill the Process of an Explorer window, each window has to run in a separate process. Otherwise the process is the same one as the shell process and killing the shell process will crash the shell (Windows ui).
-- To enable this behavior the setting `Launch folder windows in a separate process` under `Folder Options > View` has to be enabled. ![Folder otions for Window Walker](/doc/images/launcher/plugins/windowwalker_folderoptions.png)
-- The user can open the `Folder options` dialoge by clicking the information message in the search results. The information message is only shown when searching with action keyword for explorer windows and can be hidden in the plugin settings.
+- To enable this behavior the setting `Launch folder windows in a separate process` under `Folder Options > View` has to be enabled. 
+![Folder options for Window Walker](/doc/images/launcher/plugins/windowwalker_folder_options.png)
+- The user can open the `Folder options` dialog by clicking the information message in the search results. The information message is only shown when searching with action keyword for explorer windows and can be hidden in the plugin settings.
 - Note: The folder option/process is evaluated in real time. After changing the setting it is enough to search again for the windows.
 
 
@@ -66,8 +67,8 @@ The user can switch to the found windows, close them or kill their process.
 - The [`ContextMenuHelper`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/ContextMenuHelper.cs) class provides the code for the context menu items.
 
 ### [`WindowWalkerSettings.cs`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/WindowWalkerSettings.cs)
-- The [`WindowWalkerSettings`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/WindowWalkerSettings.cs) class provides acces to all optional plugin settings.
-- The class has a static property called `Instance` that holds an instance of the class itself. This allows us to access the settings from everywhere in the plugin code without having addtitional parameters in our methods.
+- The [`WindowWalkerSettings`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/WindowWalkerSettings.cs) class provides access to all optional plugin settings.
+- The class has a static property called `Instance` that holds an instance of the class itself. This allows us to access the settings from everywhere in the plugin code without having additional parameters in our methods.
 
 ### Score
 The window walker plugin uses [`FuzzyMatching`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/FuzzyMatching.cs) to get the matching indices and calculates the score by creating a 2 dimensional array of the window and the query text.
