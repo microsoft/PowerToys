@@ -27,7 +27,7 @@ The user can switch to the found windows, close them or kill their process.
 
 ## Optional plugin settings
 - The optional plugin settings are implemented via the [`ISettingProvider`](/src/modules/launcher/Wox.Plugin/ISettingProvider.cs) interface from `Wox.Plugin` project.
-- All available settings for the plugin are defined in the [`WindowWalkerSettings`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/WindowWalkerSettings.cs) class of the plugin. The settings can be accessed everywhere in the plugin code via the static class instance `WindowWalkerSettings.Instance`.
+- All available settings for the plugin are defined in the [`WindowWalkerSettings`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/WindowWalkerSettings.cs) class of the plugin. The settings can be accessed everywhere in the plugin code via the static class instance `WindowWalkerSettings.Instance`.
 - We have the following settings that the user can configure to change the behavior of the plugin:
 
 	| Key | Default value | Name/Description |
@@ -52,11 +52,14 @@ The user can switch to the found windows, close them or kill their process.
 - It is responsible for updating the search text and performing a fuzzy search on all the open windows.
 
 ### [`Window.cs`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/Window.cs)
-- The [`Window`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/Window.cs) class represents a specific window and has functions to get the name of the window, the state of the window (whether it is visible or not), and the `SwitchTowindow` function which switches the desktop focus to the selected window. This action is performed when the user clicks on a window walker plugin result.
+- The [`Window`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/Window.cs) class represents a specific window and has functions to get the name of the window, the state of the window (whether it is visible or not), the `SwitchTowindow` function which switches the desktop focus to the selected window and the `CloseThisWindow` function which closes the window. The `SwitchTowindow` action is performed when the user clicks on a window walker plugin result.
 - The `Window` class holds a static cache with the process information of all windows we know so far and each window instance has a property which holds its process information (name, file, ...). The process data in the cache and the window property are of the type `WindowProcess`.
+- To get the desktop information for a window, we use the common [`VirtualDesktopHelper`](/src/modules/launcher/Wox.Plugin/Common/VirtualDesktop/VirtualDesktopHelper.cs) in `Wox.Plugin` project. The instance of `VirtualDesktopHelper` is cached in the `Main` class of the plugin at runtime. The desktop information is stored in a property of the type [`VDesktop`](/src/modules/launcher/Wox.Plugin/Common/VirtualDesktop/VDesktop.cs).
 
 ### [`WindowProcess.cs`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/WindowProcess.cs)
-- The [`WindowProcess`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/WindowProcess.cs) class represents a specific process for a window. It contains static methods to query process information from the system. And it contains instance methods and properties to hold/retrieve the process information we want to know about a window's process.
+- The [`WindowProcess`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/WindowProcess.cs) class represents a specific process for a window.
+- It contains static methods to query process information from the system and instance methods/properties to hold/retrieve the process information we want to know about a window's process.
+- Additionally, it contains the method `KillThisProcess` to kill the process. (If the user has not enough permissions to kill a process they are requested via UAC.)
 
 ### [`ResultHelper.cs`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/ResultHelper.cs)
 - The [`ResultHelper`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/ResultHelper.cs) class contains the code to create the list with all results for PT Run based on the data returned from `SearchController` class.
