@@ -205,7 +205,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hide Explorer setting information.
+        ///   Looks up a localized string similar to Hide Explorer process information.
         /// </summary>
         public static string wox_plugin_windowwalker_SettingExplorerSettingInfo {
             get {
@@ -214,7 +214,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hide &quot;kill process&quot; menu if additional permissions are required.
+        ///   Looks up a localized string similar to Hide &quot;kill process&quot; button if additional permissions required.
         /// </summary>
         public static string wox_plugin_windowwalker_SettingHideKillProcess {
             get {
@@ -223,7 +223,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Kill the entire process tree.
+        ///   Looks up a localized string similar to Kill process and it&apos;s child processes.
         /// </summary>
         public static string wox_plugin_windowwalker_SettingKillProcessTree {
             get {
@@ -250,7 +250,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show desktop name in subtitle.
+        ///   Looks up a localized string similar to Show desktop name in subtitle (If two or more desktops exist).
         /// </summary>
         public static string wox_plugin_windowwalker_SettingSubtitleDesktopName {
             get {

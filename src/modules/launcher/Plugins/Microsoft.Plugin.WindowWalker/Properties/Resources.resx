@@ -130,17 +130,17 @@
     <value>Request confirmation when killing a process</value>
   </data>
   <data name="wox_plugin_windowwalker_SettingExplorerSettingInfo" xml:space="preserve">
-    <value>Hide Explorer setting information</value>
+    <value>Hide Explorer process information</value>
     <comment>Explorer is here the program File Explorer</comment>
   </data>
   <data name="wox_plugin_windowwalker_SettingHideKillProcess" xml:space="preserve">
-    <value>Hide "kill process" menu if additional permissions are required</value>
+    <value>Hide "kill process" button if additional permissions required</value>
   </data>
   <data name="wox_plugin_windowwalker_SettingResultsVisibleDesktop" xml:space="preserve">
     <value>Show only results from visible desktop</value>
   </data>
   <data name="wox_plugin_windowwalker_SettingSubtitleDesktopName" xml:space="preserve">
-    <value>Show desktop name in subtitle</value>
+    <value>Show desktop name in subtitle (If two or more desktops exist)</value>
   </data>
   <data name="wox_plugin_windowwalker_SettingSubtitlePid" xml:space="preserve">
     <value>Show process id in subtitle</value>
@@ -188,6 +188,6 @@
     <value>Because this is an app process, all instances of the app will be killed. Continue?</value>
   </data>
   <data name="wox_plugin_windowwalker_SettingKillProcessTree" xml:space="preserve">
-    <value>Kill the entire process tree</value>
+    <value>Kill process and it's child processes</value>
   </data>
 </root>

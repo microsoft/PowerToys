@@ -13,6 +13,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
 {
     internal class ContextMenuHelper
     {
+        /// <summary>
+        /// Returns a list of all <see cref="ContextMenuResult"/>s for the selected <see cref="Result"/>.
+        /// </summary>
+        /// <param name="result">Selected result</param>
+        /// <returns>List of context menu results</returns>
         internal static List<ContextMenuResult> GetContextMenuResults(in Result result)
         {
             if (!(result?.ContextData is Window windowData))
@@ -66,7 +71,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Method initiate killing the process of a window
+        /// Method to initiate killing the process of a window
         /// </summary>
         /// <param name="window">Window data</param>
         /// <returns>True if the PT Run window should close, otherwise false.</returns>
@@ -82,7 +87,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             // Request user confirmation
             if (WindowWalkerSettings.Instance.ConfirmKillProcess)
             {
-                string messageBody = Resources.wox_plugin_windowwalker_KillMessage + "\n"
+                string messageBody = $"{Resources.wox_plugin_windowwalker_KillMessage}\n"
                     + $"{window.Process.Name} ({window.Process.ProcessID})\n\n"
                     + $"{(window.Process.IsUwpApp ? Resources.wox_plugin_windowwalker_KillMessageUwp : Resources.wox_plugin_windowwalker_KillMessageQuestion)}";
                 MessageBoxResult messageBoxResult = MessageBox.Show(
@@ -95,6 +100,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     return false;
                 }
+            }
+
+            // As a workaround to close PT Run before executing the command, we switch to the window before killing it's process
+            if (!WindowWalkerSettings.Instance.OpenAfterKillAndClose)
+            {
+                window.SwitchToWindow();
             }
 
             // Kill process
