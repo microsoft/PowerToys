@@ -2,6 +2,7 @@
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include "FancyZonesLib\ZoneIndexSetBitmask.h"
 #include "FancyZonesLib\ZoneSet.h"
+#include <FancyZonesLib/util.h>
 
 #include "Util.h"
 
@@ -553,7 +554,7 @@ namespace FancyZonesUnitTests
                 Assert::IsFalse(moreZonesInLayout);
             }
     };
-
+    
     TEST_CLASS (ZoneSetCalculateZonesUnitTests)
     {
         GUID m_id;
@@ -602,9 +603,8 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_INITIALIZE(Init)
         {
-            auto hres = CoCreateGuid(&m_id);
-            Assert::AreEqual(S_OK, hres);
-
+            m_id = FancyZonesUtils::GuidFromString(L"{33A2B101-06E0-437B-A61E-CDBECF502906}").value();
+            
             ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, m_monitor, DefaultValues::SensitivityRadius);
             m_set = MakeZoneSet(m_config);
         }
@@ -778,7 +778,7 @@ namespace FancyZonesUnitTests
                     }
                 }
     };
-
+    
     TEST_CLASS(ZoneIndexSetUnitTests)
     {
         TEST_METHOD (BitmaskFromIndexSetTest)
