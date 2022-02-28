@@ -37,13 +37,12 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_INITIALIZE(Init)
         {
-            m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-                            
             m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
             m_uniqueId.width = 1920;
             m_uniqueId.height = 1080;
-            auto res = CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
-            Assert::IsTrue(SUCCEEDED(res));
+            auto vd = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
+            Assert::IsTrue(vd.has_value());
+            m_uniqueId.virtualDesktopId = vd.value();
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
@@ -74,8 +73,7 @@ namespace FancyZonesUnitTests
             parentUniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
             parentUniqueId.width = 1920;
             parentUniqueId.height = 1080;
-            auto res = CLSIDFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}", &parentUniqueId.virtualDesktopId);
-            Assert::IsTrue(SUCCEEDED(res));
+            parentUniqueId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value();
 
             ZoneSetData data
             {
@@ -105,21 +103,13 @@ namespace FancyZonesUnitTests
 
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};
-        MONITORINFO m_monitorInfo{};
 
         TEST_METHOD_INITIALIZE(Init)
         {
-            m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-            
-            m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
-            m_monitorInfo.cbSize = sizeof(m_monitorInfo);
-            Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
-
             m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
-            m_uniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
-            m_uniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top;
-            auto res = CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
-            Assert::IsTrue(SUCCEEDED(res));
+            m_uniqueId.width = 1920;
+            m_uniqueId.height = 1080;
+            m_uniqueId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value();
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
@@ -179,7 +169,7 @@ namespace FancyZonesUnitTests
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
 
                 const auto expected = S_OK;
-                const auto actual = workArea->MoveSizeUpdate(POINT{ m_monitorInfo.rcMonitor.right + 1, m_monitorInfo.rcMonitor.bottom + 1 }, true, false);
+                const auto actual = workArea->MoveSizeUpdate(POINT{ m_uniqueId.width + 1, m_uniqueId.height + 1 }, true, false);
 
                 Assert::AreEqual(expected, actual);
             }
