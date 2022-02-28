@@ -80,7 +80,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - Timezone conversion plugin for PowerToys Run!  Thanks [@TobiasSekan](https://github.com/TobiasSekan)
 - Child and Popup window support for FancyZones.  To enable, go to Settings→FancyZones→Windows. These were bugs we fixed that without realizing it was a useful feature to most.
 - Find my mouse will now activate via shaking the mouse with a settings change!
-![Find my mouse setting for Activate to shake](https://user-images.githubusercontent.com/26118718/153509687-e99cc9ce-28bf-481b-b27b-39715cb3d82a.png)
+![Find my mouse setting for Activate to shake](https://user-images.githubusercontent.com/1462282/156048525-35687ae0-df4e-49d1-b207-7fc2f9770862.png)
 
 ### Always on Top
 
