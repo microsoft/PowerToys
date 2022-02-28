@@ -19,6 +19,21 @@ namespace NonLocalizable
     const wchar_t SystemAppsFolder[] = L"SYSTEMAPPS";
 }
 
+// Placeholder enums since dwmapi.h doesn't have these until SDK 22000.
+// Note: Remove once SDK targets 22000 or above.
+enum DWMWINDOWATTRIBUTE_CUSTOM
+{
+    DWMWA_WINDOW_CORNER_PREFERENCE = 33
+};
+
+enum DWM_WINDOW_CORNER_PREFERENCE
+{
+    DWMWCP_DEFAULT = 0,
+    DWMWCP_DONOTROUND = 1,
+    DWMWCP_ROUND = 2,
+    DWMWCP_ROUNDSMALL = 3
+};
+
 namespace
 {   
     BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
@@ -316,16 +331,17 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
     ScreenToWorkAreaCoords(window, rect);
 
     placement.rcNormalPosition = rect;
+
+    // Set window corner preference on Windows 11 to "Do not round"
+    int corner_preference = DWMWCP_DONOTROUND;
+    DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &corner_preference, sizeof(corner_preference));
+
     placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
     ::SetWindowPlacement(window, &placement);
     // Do it again, allowing Windows to resize the window and set correct scaling
     // This fixes Issue #365
     ::SetWindowPlacement(window, &placement);
-
-    // Set window corner preference on Windows 11 to "Do not round"
-    auto preference = 1;
-    DwmSetWindowAttribute(window, 33, &preference, sizeof(preference));
 }
 
 void FancyZonesWindowUtils::SaveWindowSizeAndOrigin(HWND window) noexcept
@@ -379,8 +395,8 @@ void FancyZonesWindowUtils::RestoreWindowSize(HWND window) noexcept
 
         // Set window corner preference on Windows 11 to "Default"
         // Note: Should probably store preference from before snap
-        auto preference = 0;
-        DwmSetWindowAttribute(window, 33, &preference, sizeof(preference));
+        int corner_preference = DWMWCP_DEFAULT;
+        DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &corner_preference, sizeof(corner_preference));
 
         ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
     }
