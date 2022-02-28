@@ -165,7 +165,7 @@ We'd like to directly mention certain contributors (in alphabetical order) for t
 
 #### What is being planned for v0.57
 
-For [v0.57][github-next-release-work], we'll start work on below
+For [v0.57][github-next-release-work], we'll start work on below:
 
 - Start work on two new PowerToys
 - Improvements to PowerToy Run plugins
