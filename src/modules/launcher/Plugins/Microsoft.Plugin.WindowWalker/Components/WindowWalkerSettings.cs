@@ -111,6 +111,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 },
                 new PluginAdditionalOption
                 {
+                    // ToDo: When description property is implemented (#15853), move the note in brackets to description and update to: "The information is only shown, if more than one desktop exists."
                     Key = nameof(SubtitleShowDesktopName),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingSubtitleDesktopName,
                     Value = true,
@@ -123,12 +124,14 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 },
                 new PluginAdditionalOption
                 {
+                    // ToDo: When description property is implemented (#15853), add description: "Be careful when activating this."
                     Key = nameof(KillProcessTree),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingKillProcessTree,
                     Value = false,
                 },
                 new PluginAdditionalOption
                 {
+                    // ToDo: When description property is implemented (#15853), move the note in brackets to description.
                     Key = nameof(OpenAfterKillAndClose),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingOpenAfterKillAndClose,
                     Value = false,
@@ -141,8 +144,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 },
                 new PluginAdditionalOption
                 {
+                   // ToDo: When description property is implemented (#15853), add description: "Message is only shown when searching with direct activation command."
                     Key = nameof(HideExplorerSettingInfo),
-                    // ToDo: When description property is implemented (#15853), add description: "Message is only shown when searching with direct activation command."
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingExplorerSettingInfo,
                     Value = false,
                 },
