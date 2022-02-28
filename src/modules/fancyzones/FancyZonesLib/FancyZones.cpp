@@ -1338,16 +1338,8 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
         return;
     }
 
-    auto uuidStr = FancyZonesUtils::GuidToString(layoutId.value());
-    if (!uuidStr)
-    {
-        return;
-    }
-
-    FancyZonesDataTypes::ZoneSetData data{ .uuid = uuidStr.value(), .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom };
-    
     auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(m_currentDesktopId);
-    AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), data);
+    AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout.value());
     AppliedLayouts::instance().SaveData();
     UpdateZoneSets();
     FlashZones();
