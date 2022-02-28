@@ -142,6 +142,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 new PluginAdditionalOption
                 {
                     Key = nameof(HideExplorerSettingInfo),
+                    // ToDo: When description property is implemented (#15853), add description: "Message is only shown when searching with direct activation command."
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingExplorerSettingInfo,
                     Value = false,
                 },
