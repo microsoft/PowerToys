@@ -99,7 +99,19 @@ namespace ColorPicker.Helpers
             foreach (var (key, val) in source)
             {
                 res += $"{key}{separator}";
-                res = val.Aggregate(res, (current, pair) => current + $"{pair.Key}{pair.Value}{separator}");
+                res = val.Aggregate(res, (current, pair) =>
+                                         {
+                                             var (p, v) = pair;
+
+                                             // if grouped by format, add a space between color* and its value, to avoid illegibility:
+                                             // decimal;color1 12345678;color2 23456789;color11 13579246
+                                             if (key == "Decimal")
+                                             {
+                                                 v = " " + v;
+                                             }
+
+                                             return current + $"{p}{v}{separator}";
+                                         });
                 res = res.TrimEnd(separator) + System.Environment.NewLine;
             }
 

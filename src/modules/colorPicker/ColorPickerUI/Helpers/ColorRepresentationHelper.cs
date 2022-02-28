@@ -79,9 +79,13 @@ namespace ColorPicker.Helpers
         /// <param name="color">The see cref="Color"/> for the hexadecimal presentation</param>
         /// <returns>A hexadecimal <see cref="string"/> representation of a RGB color</returns>
         private static string ColorToHex(Color color)
-            => $"{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
-             + $"{color.G.ToString("X2", CultureInfo.InvariantCulture)}"
-             + $"{color.B.ToString("X2", CultureInfo.InvariantCulture)}";
+        {
+            const string hexFormat = "x2";
+
+            return $"{color.R.ToString(hexFormat, CultureInfo.InvariantCulture)}"
+                + $"{color.G.ToString(hexFormat, CultureInfo.InvariantCulture)}"
+                + $"{color.B.ToString(hexFormat, CultureInfo.InvariantCulture)}";
+        }
 
         /// <summary>
         /// Return a <see cref="string"/> representation of a HSB color
@@ -109,9 +113,12 @@ namespace ColorPicker.Helpers
         private static string ColorToFloat(Color color)
         {
             var (red, green, blue) = ColorHelper.ConvertToDouble(color);
-            var precision = 2;
+            const int precision = 2;
+            const string floatFormat = "0.##";
 
-            return $"({Math.Round(red, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, {Math.Round(green, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, {Math.Round(blue, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, 1f)";
+            return $"({Math.Round(red, precision).ToString(floatFormat, CultureInfo.InvariantCulture)}f"
+                 + $", {Math.Round(green, precision).ToString(floatFormat, CultureInfo.InvariantCulture)}f"
+                 + $", {Math.Round(blue, precision).ToString(floatFormat, CultureInfo.InvariantCulture)}f, 1f)";
         }
 
         /// <summary>
