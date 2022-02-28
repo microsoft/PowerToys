@@ -95,7 +95,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(data.uuid, FancyZonesUtils::GuidToString(currentDeviceInfo.uuid).value());
         }
     };
-    
+    /*
     TEST_CLASS (WorkAreaUnitTests)
     {
         FancyZonesDataTypes::DeviceIdData m_uniqueId;
@@ -397,4 +397,5 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual(originalHeight, (int)inZoneRect.bottom - (int)inZoneRect.top);
             }
     };
+    */
 }
