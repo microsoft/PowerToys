@@ -8,6 +8,6 @@
   "Language": "csharp",
   "Website": "https://aka.ms/powertoys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.TimeDate.dll",
-  "IcoPathDark": "Images\\lock.dark.png",
-  "IcoPathLight": "Images\\lock.light.png"
+  "IcoPathDark": "Images\\datetime.dark.png",
+  "IcoPathLight": "Images\\datetime.light.png"
 }
