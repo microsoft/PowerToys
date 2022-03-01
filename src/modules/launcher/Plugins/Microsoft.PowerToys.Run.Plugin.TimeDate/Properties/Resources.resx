@@ -123,6 +123,24 @@
   <data name="Microsoft_plugin_timedate_date" xml:space="preserve">
     <value>Date</value>
   </data>
+  <data name="Microsoft_plugin_timedate_Day" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DayOfMonth" xml:space="preserve">
+    <value>Day of the month</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DayOfWeek" xml:space="preserve">
+    <value>Day of the week</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DayOfYear" xml:space="preserve">
+    <value>Day of the year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Month" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_MonthOfYear" xml:space="preserve">
+    <value>Month of the year</value>
+  </data>
   <data name="Microsoft_plugin_timedate_now" xml:space="preserve">
     <value>Now (Date and time)</value>
   </data>
@@ -148,5 +166,14 @@
   </data>
   <data name="Microsoft_plugin_timedate_timeUnix" xml:space="preserve">
     <value>Time as Unix Timestamp</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_WeekOfMonth" xml:space="preserve">
+    <value>Week of the month</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_WeekOfYear" xml:space="preserve">
+    <value>Week of the year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Year" xml:space="preserve">
+    <value>Year</value>
   </data>
 </root>

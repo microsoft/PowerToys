@@ -52,9 +52,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 
             if (!string.IsNullOrEmpty(query.ActionKeyword) && string.IsNullOrWhiteSpace(query.Search))
             {
-                // if no search term is entered we show only the most important results
-                var commands = ResultHelper.GetCommandList(false, IconTheme);
-                return commands;
+                // Because of the predefined order, the important results are shown at the top of the list.
+                return ResultHelper.GetCommandList(true, IconTheme);
             }
             else
             {
