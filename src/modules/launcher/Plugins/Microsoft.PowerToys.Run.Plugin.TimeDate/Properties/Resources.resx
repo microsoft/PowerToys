@@ -138,7 +138,7 @@
     <value>Show only date, time and now result in global results</value>
   </data>
   <data name="Microsoft_plugin_timedate_settingDateWithWeekday" xml:space="preserve">
-    <value>Show date with weekday</value>
+    <value>Show date with weekday and name of month</value>
   </data>
   <data name="Microsoft_plugin_timedate_settingTimeWithSeconds" xml:space="preserve">
     <value>Show time with seconds</value>

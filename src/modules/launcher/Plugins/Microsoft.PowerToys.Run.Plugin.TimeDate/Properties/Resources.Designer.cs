@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show date with weekday.
+        ///   Looks up a localized string similar to Show date with weekday and name of month.
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingDateWithWeekday {
             get {
