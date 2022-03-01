@@ -21,12 +21,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         private static TimeDateSettings instance;
 
         /// <summary>
-        /// Gets a value indicating whether to show the time with seconds
+        /// Gets a value indicating whether to show only the time and date in global results or not
+        /// </summary>
+        internal bool DateTimeNowGlobalOnly { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether to show the time with seconds or not
         /// </summary>
         internal bool TimeWithSeconds { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether the date with the weekday
+        /// Gets a value indicating whether the date with the weekday or not
         /// </summary>
         internal bool DateWithWeekday { get; private set; }
 
@@ -68,6 +73,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             {
                 new PluginAdditionalOption()
                 {
+                    Key = nameof(DateTimeNowGlobalOnly),
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_settingDateTimeGlobalOnly,
+                    Value = true,
+                },
+                new PluginAdditionalOption()
+                {
                     Key = nameof(TimeWithSeconds),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_settingTimeWithSeconds,
                     Value = false,
@@ -94,6 +105,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 return;
             }
 
+            DateTimeNowGlobalOnly = GetSettingOrDefault(settings, nameof(DateTimeNowGlobalOnly));
             TimeWithSeconds = GetSettingOrDefault(settings, nameof(TimeWithSeconds));
             DateWithWeekday = GetSettingOrDefault(settings, nameof(DateWithWeekday));
         }

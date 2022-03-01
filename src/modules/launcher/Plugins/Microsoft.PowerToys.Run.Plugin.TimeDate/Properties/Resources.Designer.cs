@@ -70,6 +70,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Date.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_date {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Now (Date and time).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_now {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_now", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Provide actual time and date informations.
         /// </summary>
         internal static string Microsoft_plugin_timedate_plugin_description {
@@ -84,6 +102,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_plugin_name {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_plugin_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show only date, time and now result in global results.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_settingDateTimeGlobalOnly {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_settingDateTimeGlobalOnly", resourceCulture);
             }
         }
         

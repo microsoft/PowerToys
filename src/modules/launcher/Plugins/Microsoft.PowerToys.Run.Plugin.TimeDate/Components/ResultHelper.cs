@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// </summary>
         /// <param name="iconTheme">Them for the icon</param>
         /// <returns>List of results</returns>
-        internal static List<Result> GetCommandList(string iconTheme)
+        internal static List<Result> GetCommandList(bool isKeywordSearch, string iconTheme)
         {
             List<Result> results = new List<Result>();
             DateTime dateTimeNow = DateTime.Now;
@@ -32,15 +32,43 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     SubTitle = $"{Resources.Microsoft_plugin_timedate_time} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
                     IcoPath = $"Images\\time.{iconTheme}.png",
                     Action = _ => TryToCopyToClipBoard(dateTimeNow.ToString(GetStringFormat(FormatType.Time))),
+                    ContextData = Resources.Microsoft_plugin_timedate_time, // Search term
                 },
                 new Result()
                 {
-                    Title = unixTimestamp.ToString(),
-                    SubTitle = $"{Resources.Microsoft_plugin_timedate_timeUnix} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                    IcoPath = $"Images\\time.{iconTheme}.png",
-                    Action = _ => TryToCopyToClipBoard(unixTimestamp.ToString()),
+                    Title = dateTimeNow.ToString(GetStringFormat(FormatType.Date)),
+                    SubTitle = $"{Resources.Microsoft_plugin_timedate_date} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
+                    IcoPath = $"Images\\calendar.{iconTheme}.png",
+                    Action = _ => TryToCopyToClipBoard(dateTimeNow.ToString(GetStringFormat(FormatType.Date))),
+                    ContextData = Resources.Microsoft_plugin_timedate_date, // Search term
+                },
+                new Result()
+                {
+                    Title = dateTimeNow.ToString(GetStringFormat(FormatType.DateTime)),
+                    SubTitle = $"{Resources.Microsoft_plugin_timedate_now} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
+                    IcoPath = $"Images\\timeDate.{iconTheme}.png",
+                    Action = _ => TryToCopyToClipBoard(dateTimeNow.ToString(GetStringFormat(FormatType.DateTime))),
+                    ContextData = Resources.Microsoft_plugin_timedate_now, // Search term
                 },
             });
+
+            if (isKeywordSearch || !TimeDateSettings.Instance.DateTimeNowGlobalOnly)
+            {
+                results.AddRange(new[]
+                {
+                    new Result()
+                    {
+                        Title = unixTimestamp.ToString(),
+                        SubTitle = $"{Resources.Microsoft_plugin_timedate_timeUnix} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
+                        IcoPath = $"Images\\time.{iconTheme}.png",
+                        Action = _ => TryToCopyToClipBoard(unixTimestamp.ToString()),
+                        ContextData = Resources.Microsoft_plugin_timedate_timeUnix, // Search term
+                    },
+                });
+
+                // calendar
+                // CultureInfo.CurrentCulture.            DateTimeFormat.GetMonthName            (month);
+            }
 
             return results;
         }
@@ -68,9 +96,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 
         /// <summary>
         /// Get the format for the time string
+        /// 
         /// </summary>
         /// <param name="targetFormat">Type of format</param>
-        /// <returns>Stirng that identifies the tiem/date format</returns>
+        /// <returns>String that identifies the time/date format (<see href="https://docs.microsoft.com/en-us/dotnet/api/system.datetime.tostring"/>)</returns>
         private static string GetStringFormat(FormatType targetFormat)
         {
             switch (targetFormat)
@@ -82,20 +111,20 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 case FormatType.DateTime:
                     if (TimeDateSettings.Instance.TimeWithSeconds & TimeDateSettings.Instance.DateWithWeekday)
                     {
-                        return "d";
+                        return "F"; // Friday, October 31, 2008 5:04:32 PM
                     }
                     else if (TimeDateSettings.Instance.TimeWithSeconds & !TimeDateSettings.Instance.DateWithWeekday)
                     {
-                        return "d";
+                        return "G"; // 10/31/2008 5:04:32 PM
                     }
                     else if (!TimeDateSettings.Instance.TimeWithSeconds & TimeDateSettings.Instance.DateWithWeekday)
                     {
-                        return "d";
+                        return "f"; // Friday, October 31, 2008 5:04 PM
                     }
                     else
                     {
                         // (!TimeDateSettings.Instance.TimeWithSeconds & !TimeDateSettings.Instance.DateWithWeekday)
-                        return "d";
+                        return "g"; // 10/31/2008 5:04 PM
                     }
 
                 default:

@@ -48,21 +48,31 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            var commands = ResultHelper.GetCommandList(IconTheme);
             var results = new List<Result>();
 
-            foreach (var c in commands)
+            if (!string.IsNullOrEmpty(query.ActionKeyword) && string.IsNullOrWhiteSpace(query.Search))
             {
-                var resultMatch = StringMatcher.FuzzySearch(query.Search, c.SubTitle.ToString());
-                if (resultMatch.Score > 0)
-                {
-                    c.Score = resultMatch.Score;
-                    c.SubTitleHighlightData = resultMatch.MatchData;
-                    results.Add(c);
-                }
+                // if no search term is entered we shw only the most important results
+                var commands = ResultHelper.GetCommandList(false, IconTheme);
+                return commands;
             }
+            else
+            {
+                var commands = ResultHelper.GetCommandList(!string.IsNullOrEmpty(query.ActionKeyword), IconTheme);
 
-            return results;
+                foreach (var c in commands)
+                {
+                    var resultMatch = StringMatcher.FuzzySearch(query.Search, c.ContextData.ToString());
+                    if (resultMatch.Score > 0)
+                    {
+                        c.Score = resultMatch.Score;
+                        c.SubTitleHighlightData = resultMatch.MatchData;
+                        results.Add(c);
+                    }
+                }
+
+                return results;
+            }
         }
 
         private void UpdateIconTheme(Theme theme)
