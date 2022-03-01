@@ -137,4 +137,7 @@
   <data name="Microsoft_plugin_timedate_time" xml:space="preserve">
     <value>Time</value>
   </data>
+  <data name="Microsoft_plugin_timedate_timeUnix" xml:space="preserve">
+    <value>Time as Unix Timestamp</value>
+  </data>
 </root>

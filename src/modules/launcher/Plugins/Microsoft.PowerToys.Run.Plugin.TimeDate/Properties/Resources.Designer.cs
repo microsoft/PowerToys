@@ -113,5 +113,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_time", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time as Unix Timestamp.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_timeUnix {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_timeUnix", resourceCulture);
+            }
+        }
     }
 }

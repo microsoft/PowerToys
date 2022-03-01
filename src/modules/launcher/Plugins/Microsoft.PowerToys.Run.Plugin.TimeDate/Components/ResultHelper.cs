@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         {
             List<Result> results = new List<Result>();
             DateTime dateTimeNow = DateTime.Now;
+            long unixTimestamp = (long)dateTimeNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
             results.AddRange(new[]
             {
@@ -31,6 +32,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     SubTitle = $"{Resources.Microsoft_plugin_timedate_time} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
                     IcoPath = $"Images\\time.{iconTheme}.png",
                     Action = _ => TryToCopyToClipBoard(dateTimeNow.ToString(GetStringFormat(FormatType.Time))),
+                },
+                new Result()
+                {
+                    Title = unixTimestamp.ToString(),
+                    SubTitle = $"{Resources.Microsoft_plugin_timedate_timeUnix} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
+                    IcoPath = $"Images\\time.{iconTheme}.png",
+                    Action = _ => TryToCopyToClipBoard(unixTimestamp.ToString()),
                 },
             });
 
