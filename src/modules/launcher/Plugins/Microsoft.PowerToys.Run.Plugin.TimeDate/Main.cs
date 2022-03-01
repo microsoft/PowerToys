@@ -52,7 +52,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 
             if (!string.IsNullOrEmpty(query.ActionKeyword) && string.IsNullOrWhiteSpace(query.Search))
             {
-                // if no search term is entered we shw only the most important results
+                // if no search term is entered we show only the most important results
                 var commands = ResultHelper.GetCommandList(false, IconTheme);
                 return commands;
             }
