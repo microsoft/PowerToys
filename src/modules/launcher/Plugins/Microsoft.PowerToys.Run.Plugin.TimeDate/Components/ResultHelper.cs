@@ -183,6 +183,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
         }
 
+        /// <summary>
+        /// Returns the number week in the month (Used code from 'David Morton' from <see href="https://social.msdn.microsoft.com/Forums/vstudio/en-US/bf504bba-85cb-492d-a8f7-4ccabdf882cb/get-week-number-for-month"/>)
+        /// </summary>
+        /// <param name="date">date</param>
+        /// <returns>Number of week in the month</returns>
         public static int GetWeekOfMonth(DateTime date)
         {
             DateTime beginningOfMonth = new DateTime(date.Year, date.Month, 1);

@@ -145,15 +145,13 @@
     <value>Now (Date and time)</value>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_description" xml:space="preserve">
-    <value>Provide actual time and date informations</value>
-    <comment>This should align to the actions in Windows relating to shutting down, signing out, locking, sleeping, restarting, emptying the recycle bin, and hibernating your computer. </comment>
+    <value>Provides system time and date values</value>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_name" xml:space="preserve">
     <value>Time and Date</value>
-    <comment>Windows operating system commands.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_settingDateTimeGlobalOnly" xml:space="preserve">
-    <value>Show only date, time and now result in global results</value>
+    <value>Show only 'date', 'time' and 'now' result in global results</value>
   </data>
   <data name="Microsoft_plugin_timedate_settingDateWithWeekday" xml:space="preserve">
     <value>Show date with weekday and name of month</value>

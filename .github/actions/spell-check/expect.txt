@@ -415,6 +415,7 @@ DARKYELLOW
 datareader
 Datavalue
 DATAW
+David
 davidegiacometti
 Dayof
 DBCD
@@ -1309,6 +1310,7 @@ MONITORINFOEXW
 monitorinfof
 Monthand
 Moq
+Morton
 MOUSEACTIVATE
 MOUSEHWHEEL
 MOUSEINPUT

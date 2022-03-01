@@ -142,7 +142,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provide actual time and date informations.
+        ///   Looks up a localized string similar to Provides system time and date values.
         /// </summary>
         internal static string Microsoft_plugin_timedate_plugin_description {
             get {
@@ -160,7 +160,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show only date, time and now result in global results.
+        ///   Looks up a localized string similar to Show only &apos;date&apos;, &apos;time&apos; and &apos;now&apos; result in global results.
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingDateTimeGlobalOnly {
             get {
