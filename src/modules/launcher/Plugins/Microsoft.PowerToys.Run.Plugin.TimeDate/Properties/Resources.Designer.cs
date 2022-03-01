@@ -61,6 +61,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Select to copy result to the clipboard.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_copyToClipboard {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_copyToClipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Provide actual time and date informations.
         /// </summary>
         internal static string Microsoft_plugin_timedate_plugin_description {
@@ -81,18 +90,27 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Show date with weekday.
         /// </summary>
-        internal static string Microsoft_plugin_timedate_plugin_settingDateWithWekday {
+        internal static string Microsoft_plugin_timedate_settingDateWithWeekday {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_plugin_settingDateWithWekday", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_settingDateWithWeekday", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Show time with seconds.
         /// </summary>
-        internal static string Microsoft_plugin_timedate_plugin_settingTimeWithSeconds {
+        internal static string Microsoft_plugin_timedate_settingTimeWithSeconds {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_plugin_settingTimeWithSeconds", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_settingTimeWithSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_time {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_time", resourceCulture);
             }
         }
     }

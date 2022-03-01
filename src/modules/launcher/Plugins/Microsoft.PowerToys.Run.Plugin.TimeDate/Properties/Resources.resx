@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Microsoft_plugin_timedate_copyToClipboard" xml:space="preserve">
+    <value>Select to copy result to the clipboard</value>
+  </data>
   <data name="Microsoft_plugin_timedate_plugin_description" xml:space="preserve">
     <value>Provide actual time and date informations</value>
     <comment>This should align to the actions in Windows relating to shutting down, signing out, locking, sleeping, restarting, emptying the recycle bin, and hibernating your computer. </comment>
@@ -125,10 +128,13 @@
     <value>Time and Date</value>
     <comment>Windows operating system commands.</comment>
   </data>
-  <data name="Microsoft_plugin_timedate_plugin_settingDateWithWekday" xml:space="preserve">
+  <data name="Microsoft_plugin_timedate_settingDateWithWeekday" xml:space="preserve">
     <value>Show date with weekday</value>
   </data>
-  <data name="Microsoft_plugin_timedate_plugin_settingTimeWithSeconds" xml:space="preserve">
+  <data name="Microsoft_plugin_timedate_settingTimeWithSeconds" xml:space="preserve">
     <value>Show time with seconds</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_time" xml:space="preserve">
+    <value>Time</value>
   </data>
 </root>

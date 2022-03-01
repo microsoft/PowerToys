@@ -4,15 +4,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Windows;
 using System.Windows.Controls;
 using ManagedCommon;
-using Microsoft.PowerToys.Run.Plugin.TimeDate.Classes;
+using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
 using Wox.Plugin;
-using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 {
@@ -50,12 +48,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            var commands = Commands();
+            var commands = ResultHelper.GetCommandList(IconTheme);
             var results = new List<Result>();
 
             foreach (var c in commands)
             {
-                var resultMatch = StringMatcher.FuzzySearch(query.Search, c.ContextData.ToString());
+                var resultMatch = StringMatcher.FuzzySearch(query.Search, c.SubTitle.ToString());
                 if (resultMatch.Score > 0)
                 {
                     c.Score = resultMatch.Score;
@@ -63,24 +61,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
                     results.Add(c);
                 }
             }
-
-            return results;
-        }
-
-        private List<Result> Commands()
-        {
-            var results = new List<Result>();
-            results.AddRange(new[]
-            {
-                new Result()
-                {
-                    Title = "Time",
-                    SubTitle = "Test result",
-                    IcoPath = $"Images\\datetime.{IconTheme}.png",
-                    Action = _ => TryToCopyToClipBoard("text dummy"),
-                    ContextData = "SearchTerm",
-                },
-            });
 
             return results;
         }
@@ -110,27 +90,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
         public string GetTranslatedPluginTitle()
         {
             return Resources.Microsoft_plugin_timedate_plugin_name;
-        }
-
-        /// <summary>
-        /// Copy the given text to the clipboard
-        /// </summary>
-        /// <param name="text">The text to copy to the clipboard</param>
-        /// <returns><see langword="true"/>The text successful copy to the clipboard, otherwise <see langword="false"/></returns>
-        /// <remarks>Code copied from TimeZone plugin</remarks>
-        private static bool TryToCopyToClipBoard(in string text)
-        {
-            try
-            {
-                Clipboard.Clear();
-                Clipboard.SetText(text);
-                return true;
-            }
-            catch (Exception exception)
-            {
-                Log.Exception("Can't copy to clipboard", exception, typeof(Main));
-                return false;
-            }
         }
 
         public Control CreateSettingPanel()

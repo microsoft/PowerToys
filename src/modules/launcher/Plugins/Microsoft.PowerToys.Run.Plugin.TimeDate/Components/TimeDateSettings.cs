@@ -7,7 +7,7 @@ using System.Linq;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 
-namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Classes
+namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
     /// <summary>
     /// Additional settings for the WindowWalker plugin.
@@ -69,14 +69,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Classes
                 new PluginAdditionalOption()
                 {
                     Key = nameof(TimeWithSeconds),
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_plugin_settingTimeWithSeconds,
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_settingTimeWithSeconds,
                     Value = false,
                 },
                 new PluginAdditionalOption()
                 {
                     Key = nameof(DateWithWeekday),
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_plugin_settingDateWithWekday,
-                    Value = true,
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_settingDateWithWeekday,
+                    Value = false,
                 },
             };
 
