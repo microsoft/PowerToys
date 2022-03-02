@@ -1,7 +1,8 @@
 #pragma once
-#include "FancyZones.h"
-#include "FancyZonesLib/ZoneSet.h"
-#include "FancyZonesLib/FancyZonesDataTypes.h"
+
+#include <FancyZonesLib/FancyZonesDataTypes.h>
+#include <FancyZonesLib/ZoneSet.h>
+#include <FancyZonesLib/util.h>
 
 class ZonesOverlay;
 
@@ -12,7 +13,34 @@ public:
     ~WorkArea();
 
 public:
-    bool Init(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId);
+    bool Init(HINSTANCE hinstance, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId);
+    inline bool InitWorkAreaRect(HMONITOR monitor)
+    {
+        m_monitor = monitor;
+
+#if defined(UNIT_TESTS)
+        m_workAreaRect = FancyZonesUtils::Rect({ 0, 0, 1920, 1080 });
+        return true;
+#endif
+
+        if (monitor)
+        {
+            MONITORINFO mi{};
+            mi.cbSize = sizeof(mi);
+            if (!GetMonitorInfoW(monitor, &mi))
+            {
+                return false;
+            }
+
+            m_workAreaRect = FancyZonesUtils::Rect(mi.rcWork);
+        }
+        else
+        {
+            m_workAreaRect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
+        }
+
+        return true;
+    }
 
     HRESULT MoveSizeEnter(HWND window) noexcept;
     HRESULT MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
@@ -33,6 +61,8 @@ public:
     void ClearSelectedZones() noexcept;
     void FlashZones() noexcept;
 
+    void LogInitializationError();
+
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
@@ -45,6 +75,8 @@ private:
     void SetAsTopmostWindow() noexcept;
 
     HMONITOR m_monitor{};
+    FancyZonesUtils::Rect m_workAreaRect{};
+
     FancyZonesDataTypes::DeviceIdData m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
@@ -56,4 +88,19 @@ private:
     std::unique_ptr<ZonesOverlay> m_zonesOverlay;
 };
 
-std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept;
+inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept
+{
+    auto self = std::make_shared<WorkArea>(hinstance);
+    if (!self->InitWorkAreaRect(monitor))
+    {
+        self->LogInitializationError();
+        return nullptr;
+    }
+    
+    if (!self->Init(hinstance, uniqueId, parentUniqueId))
+    {
+        return nullptr;
+    }
+
+    return self;
+}
