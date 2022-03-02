@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
-using Wox.Plugin;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
@@ -17,128 +16,107 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <summary>
         /// Returns a list with all available commands
         /// </summary>
-        /// <param name="iconTheme">Them for the icon</param>
+        /// <param name="isKeywordSearch">Is this a search with plugin activation keyword or not</param>
+        /// <param name="timeLong">Required for UnitTest: Show time in long format</param>
+        /// <param name="dateLong">Required for UnitTest: Show date in long format</param>
+        /// <param name="timestamp">Required for UnitTest: Use custom <see cref="DateTime"/> object to calculate results</param>
         /// <returns>List of results</returns>
-        internal static List<Result> GetCommandList(bool isKeywordSearch, string iconTheme)
+        internal static List<AvailableResult> GetCommandList(bool isKeywordSearch, bool? timeLong = null, bool? dateLong = null, DateTime? timestamp = null)
         {
-            List<Result> results = new List<Result>();
-            DateTime dateTimeNow = DateTime.Now;
+            List<AvailableResult> results = new List<AvailableResult>();
+            DateTime dateTimeNow = timestamp ?? DateTime.Now;
+            bool timeExtended = timeLong ?? TimeDateSettings.Instance.TimeWithSeconds;
+            bool dateExtended = dateLong ?? TimeDateSettings.Instance.DateWithWeekday;
 
             results.AddRange(new[]
             {
-                new Result()
+                new AvailableResult()
                 {
-                    Title = dateTimeNow.ToString(GetStringFormat(FormatType.Time)),
-                    SubTitle = $"{Resources.Microsoft_plugin_timedate_time} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                    IcoPath = $"Images\\time.{iconTheme}.png",
-                    Action = _ => TryToCopyToClipBoard(dateTimeNow.ToString(GetStringFormat(FormatType.Time))),
-                    ContextData = Resources.Microsoft_plugin_timedate_time, // Search term
+                    Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(TimestampType.Time, timeExtended, dateExtended)),
+                    Label = Resources.Microsoft_plugin_timedate_time,
+                    Type = TimestampType.Time,
                 },
-                new Result()
+                new AvailableResult()
                 {
-                    Title = dateTimeNow.ToString(GetStringFormat(FormatType.Date)),
-                    SubTitle = $"{Resources.Microsoft_plugin_timedate_date} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                    IcoPath = $"Images\\calendar.{iconTheme}.png",
-                    Action = _ => TryToCopyToClipBoard(dateTimeNow.ToString(GetStringFormat(FormatType.Date))),
-                    ContextData = Resources.Microsoft_plugin_timedate_date, // Search term
+                    Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(TimestampType.Date, timeExtended, dateExtended)),
+                    Label = Resources.Microsoft_plugin_timedate_date,
+                    Type = TimestampType.Date,
                 },
-                new Result()
+                new AvailableResult()
                 {
-                    Title = dateTimeNow.ToString(GetStringFormat(FormatType.DateTime)),
-                    SubTitle = $"{Resources.Microsoft_plugin_timedate_now} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                    IcoPath = $"Images\\timeDate.{iconTheme}.png",
-                    Action = _ => TryToCopyToClipBoard(dateTimeNow.ToString(GetStringFormat(FormatType.DateTime))),
-                    ContextData = Resources.Microsoft_plugin_timedate_now, // Search term
+                    Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(TimestampType.DateTime, timeExtended, dateExtended)),
+                    Label = Resources.Microsoft_plugin_timedate_now,
+                    Type = TimestampType.DateTime,
                 },
             });
 
-            if (isKeywordSearch || !TimeDateSettings.Instance.DateTimeNowGlobalOnly)
+            if (isKeywordSearch || !TimeDateSettings.Instance.OnlyDateTimeNowGlobal)
             {
                 long unixTimestamp = (long)dateTimeNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-                int weekOfMonth = GetWeekOfMonth(dateTimeNow);
+                int weekOfMonth = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow);
                 int weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTimeNow, CultureInfo.CurrentCulture.DateTimeFormat.CalendarWeekRule, CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek);
 
                 results.AddRange(new[]
                 {
-                    new Result()
+                    new AvailableResult()
                     {
-                        Title = unixTimestamp.ToString(),
-                        SubTitle = $"{Resources.Microsoft_plugin_timedate_timeUnix} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                        IcoPath = $"Images\\time.{iconTheme}.png",
-                        Action = _ => TryToCopyToClipBoard(unixTimestamp.ToString()),
-                        ContextData = Resources.Microsoft_plugin_timedate_timeUnix, // Search term
+                        Value = unixTimestamp.ToString(),
+                        Label = Resources.Microsoft_plugin_timedate_timeUnix,
+                        Type = TimestampType.Time,
                     },
-                    new Result()
+                    new AvailableResult()
                     {
-                        Title = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(dateTimeNow.DayOfWeek),
-                        SubTitle = $"{Resources.Microsoft_plugin_timedate_Day} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                        IcoPath = $"Images\\calendar.{iconTheme}.png",
-                        Action = _ => TryToCopyToClipBoard(CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(dateTimeNow.DayOfWeek)),
-                        ContextData = Resources.Microsoft_plugin_timedate_Day, // Search term
+                        Value = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(dateTimeNow.DayOfWeek),
+                        Label = Resources.Microsoft_plugin_timedate_Day,
+                        Type = TimestampType.Date,
                     },
-                    new Result()
+                    new AvailableResult()
                     {
-                        Title = ((int)dateTimeNow.DayOfWeek).ToString(),
-                        SubTitle = $"{Resources.Microsoft_plugin_timedate_DayOfWeek} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                        IcoPath = $"Images\\calendar.{iconTheme}.png",
-                        Action = _ => TryToCopyToClipBoard(((int)dateTimeNow.DayOfWeek).ToString()),
-                        ContextData = Resources.Microsoft_plugin_timedate_DayOfWeek, // Search term
+                        Value = ((int)dateTimeNow.DayOfWeek).ToString(),
+                        Label = Resources.Microsoft_plugin_timedate_DayOfWeek,
+                        Type = TimestampType.Date,
                     },
-                    new Result()
+                    new AvailableResult()
                     {
-                        Title = dateTimeNow.Day.ToString(),
-                        SubTitle = $"{Resources.Microsoft_plugin_timedate_DayOfMonth} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                        IcoPath = $"Images\\calendar.{iconTheme}.png",
-                        Action = _ => TryToCopyToClipBoard(dateTimeNow.Day.ToString()),
-                        ContextData = Resources.Microsoft_plugin_timedate_DayOfMonth, // Search term
+                        Value = dateTimeNow.Day.ToString(),
+                        Label = Resources.Microsoft_plugin_timedate_DayOfMonth,
+                        Type = TimestampType.Date,
                     },
-                    new Result()
+                    new AvailableResult()
                     {
-                        Title = dateTimeNow.DayOfYear.ToString(),
-                        SubTitle = $"{Resources.Microsoft_plugin_timedate_DayOfYear} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                        IcoPath = $"Images\\calendar.{iconTheme}.png",
-                        Action = _ => TryToCopyToClipBoard(dateTimeNow.DayOfYear.ToString()),
-                        ContextData = Resources.Microsoft_plugin_timedate_DayOfYear, // Search term
+                        Value = dateTimeNow.DayOfYear.ToString(),
+                        Label = Resources.Microsoft_plugin_timedate_DayOfYear,
+                        Type = TimestampType.Date,
                     },
-                    new Result()
+                    new AvailableResult()
                     {
-                        Title = weekOfMonth.ToString(),
-                        SubTitle = $"{Resources.Microsoft_plugin_timedate_WeekOfMonth} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                        IcoPath = $"Images\\calendar.{iconTheme}.png",
-                        Action = _ => TryToCopyToClipBoard(weekOfMonth.ToString()),
-                        ContextData = Resources.Microsoft_plugin_timedate_WeekOfMonth, // Search term
+                        Value = weekOfMonth.ToString(),
+                        Label = Resources.Microsoft_plugin_timedate_WeekOfMonth,
+                        Type = TimestampType.Date,
                     },
-                    new Result()
+                    new AvailableResult()
                     {
-                        Title = weekOfYear.ToString(),
-                        SubTitle = $"{Resources.Microsoft_plugin_timedate_WeekOfYear} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                        IcoPath = $"Images\\calendar.{iconTheme}.png",
-                        Action = _ => TryToCopyToClipBoard(weekOfYear.ToString()),
-                        ContextData = Resources.Microsoft_plugin_timedate_WeekOfYear, // Search term
+                        Value = weekOfYear.ToString(),
+                        Label = Resources.Microsoft_plugin_timedate_WeekOfYear,
+                        Type = TimestampType.Date,
                     },
-                    new Result()
+                    new AvailableResult()
                     {
-                        Title = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(dateTimeNow.Month),
-                        SubTitle = $"{Resources.Microsoft_plugin_timedate_Month} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                        IcoPath = $"Images\\calendar.{iconTheme}.png",
-                        Action = _ => TryToCopyToClipBoard(CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(dateTimeNow.Month)),
-                        ContextData = Resources.Microsoft_plugin_timedate_Month, // Search term
+                        Value = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(dateTimeNow.Month),
+                        Label = Resources.Microsoft_plugin_timedate_Month,
+                        Type = TimestampType.Date,
                     },
-                    new Result()
+                    new AvailableResult()
                     {
-                        Title = dateTimeNow.Month.ToString(),
-                        SubTitle = $"{Resources.Microsoft_plugin_timedate_MonthOfYear} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                        IcoPath = $"Images\\calendar.{iconTheme}.png",
-                        Action = _ => TryToCopyToClipBoard(dateTimeNow.Month.ToString()),
-                        ContextData = Resources.Microsoft_plugin_timedate_MonthOfYear, // Search term
+                        Value = dateTimeNow.Month.ToString(),
+                        Label = Resources.Microsoft_plugin_timedate_MonthOfYear,
+                        Type = TimestampType.Date,
                     },
-                    new Result()
+                    new AvailableResult()
                     {
-                        Title = dateTimeNow.Year.ToString(),
-                        SubTitle = $"{Resources.Microsoft_plugin_timedate_Year} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                        IcoPath = $"Images\\calendar.{iconTheme}.png",
-                        Action = _ => TryToCopyToClipBoard(dateTimeNow.Year.ToString()),
-                        ContextData = Resources.Microsoft_plugin_timedate_Year, // Search term
+                        Value = dateTimeNow.Year.ToString(),
+                        Label = Resources.Microsoft_plugin_timedate_Year,
+                        Type = TimestampType.Date,
                     },
                 });
             }
@@ -147,66 +125,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         }
 
         /// <summary>
-        /// Get the format for the time string
-        /// </summary>
-        /// <param name="targetFormat">Type of format</param>
-        /// <returns>String that identifies the time/date format (<see href="https://docs.microsoft.com/en-us/dotnet/api/system.datetime.tostring"/>)</returns>
-        private static string GetStringFormat(FormatType targetFormat)
-        {
-            switch (targetFormat)
-            {
-                case FormatType.Time:
-                    return TimeDateSettings.Instance.TimeWithSeconds ? "T" : "t";
-                case FormatType.Date:
-                    return TimeDateSettings.Instance.DateWithWeekday ? "D" : "d";
-                case FormatType.DateTime:
-                    if (TimeDateSettings.Instance.TimeWithSeconds & TimeDateSettings.Instance.DateWithWeekday)
-                    {
-                        return "F"; // Friday, October 31, 2008 5:04:32 PM
-                    }
-                    else if (TimeDateSettings.Instance.TimeWithSeconds & !TimeDateSettings.Instance.DateWithWeekday)
-                    {
-                        return "G"; // 10/31/2008 5:04:32 PM
-                    }
-                    else if (!TimeDateSettings.Instance.TimeWithSeconds & TimeDateSettings.Instance.DateWithWeekday)
-                    {
-                        return "f"; // Friday, October 31, 2008 5:04 PM
-                    }
-                    else
-                    {
-                        // (!TimeDateSettings.Instance.TimeWithSeconds & !TimeDateSettings.Instance.DateWithWeekday)
-                        return "g"; // 10/31/2008 5:04 PM
-                    }
-
-                default:
-                    return string.Empty; // Windows default based on current culture settings
-            }
-        }
-
-        /// <summary>
-        /// Returns the number week in the month (Used code from 'David Morton' from <see href="https://social.msdn.microsoft.com/Forums/vstudio/en-US/bf504bba-85cb-492d-a8f7-4ccabdf882cb/get-week-number-for-month"/>)
-        /// </summary>
-        /// <param name="date">date</param>
-        /// <returns>Number of week in the month</returns>
-        public static int GetWeekOfMonth(DateTime date)
-        {
-            DateTime beginningOfMonth = new DateTime(date.Year, date.Month, 1);
-
-            while (date.Date.AddDays(1).DayOfWeek != CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek)
-            {
-                date = date.AddDays(1);
-            }
-
-            return (int)Math.Truncate((double)date.Subtract(beginningOfMonth).TotalDays / 7f) + 1;
-        }
-
-        /// <summary>
         /// Copy the given text to the clipboard
         /// </summary>
         /// <param name="text">The text to copy to the clipboard</param>
         /// <returns><see langword="true"/>The text successful copy to the clipboard, otherwise <see langword="false"/></returns>
         /// <remarks>Code copied from TimeZone plugin</remarks>
-        private static bool TryToCopyToClipBoard(in string text)
+        internal static bool CopyToClipBoard(in string text)
         {
             try
             {
@@ -216,19 +140,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
             catch (Exception exception)
             {
-                Log.Exception("Can't copy to clipboard", exception, typeof(Main));
+                Log.Exception("Can't copy to clipboard", exception, typeof(ResultHelper));
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Type of time format
-        /// </summary>
-        private enum FormatType
-        {
-            Time,
-            Date,
-            DateTime,
         }
     }
 }

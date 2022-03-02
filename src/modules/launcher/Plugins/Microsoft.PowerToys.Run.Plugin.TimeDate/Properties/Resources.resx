@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Microsoft_plugin_timedate_copyToClipboard" xml:space="preserve">
-    <value>Select to copy result to the clipboard</value>
+    <value>Select to copy</value>
   </data>
   <data name="Microsoft_plugin_timedate_date" xml:space="preserve">
     <value>Date</value>
@@ -150,11 +150,11 @@
   <data name="Microsoft_plugin_timedate_plugin_name" xml:space="preserve">
     <value>Time and Date</value>
   </data>
-  <data name="Microsoft_plugin_timedate_settingDateTimeGlobalOnly" xml:space="preserve">
-    <value>Show only 'date', 'time' and 'now' result in global results</value>
-  </data>
   <data name="Microsoft_plugin_timedate_settingDateWithWeekday" xml:space="preserve">
     <value>Show date with weekday and name of month</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_settingOnlyDateTimeNowGlobal" xml:space="preserve">
+    <value>Show only 'date', 'time' and 'now' result in global results</value>
   </data>
   <data name="Microsoft_plugin_timedate_settingTimeWithSeconds" xml:space="preserve">
     <value>Show time with seconds</value>

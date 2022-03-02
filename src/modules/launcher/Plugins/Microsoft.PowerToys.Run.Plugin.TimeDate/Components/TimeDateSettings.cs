@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <summary>
         /// Gets a value indicating whether to show only the time and date in global results or not
         /// </summary>
-        internal bool DateTimeNowGlobalOnly { get; private set; }
+        internal bool OnlyDateTimeNowGlobal { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether to show the time with seconds or not
@@ -73,8 +73,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             {
                 new PluginAdditionalOption()
                 {
-                    Key = nameof(DateTimeNowGlobalOnly),
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_settingDateTimeGlobalOnly,
+                    Key = nameof(OnlyDateTimeNowGlobal),
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_settingOnlyDateTimeNowGlobal,
                     Value = true,
                 },
                 new PluginAdditionalOption()
@@ -105,7 +105,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 return;
             }
 
-            DateTimeNowGlobalOnly = GetSettingOrDefault(settings, nameof(DateTimeNowGlobalOnly));
+            OnlyDateTimeNowGlobal = GetSettingOrDefault(settings, nameof(OnlyDateTimeNowGlobal));
             TimeWithSeconds = GetSettingOrDefault(settings, nameof(TimeWithSeconds));
             DateWithWeekday = GetSettingOrDefault(settings, nameof(DateWithWeekday));
         }

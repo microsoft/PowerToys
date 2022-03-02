@@ -20,8 +20,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 
         public string IconTheme { get; set; }
 
-        public bool IsBootedInUefiMode { get; set; }
-
         public string Name => Resources.Microsoft_plugin_timedate_plugin_name;
 
         public string Description => Resources.Microsoft_plugin_timedate_plugin_description;
@@ -52,21 +50,38 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 
             if (!string.IsNullOrEmpty(query.ActionKeyword) && string.IsNullOrWhiteSpace(query.Search))
             {
-                // Because of the predefined order, the important results are shown at the top of the list.
-                return ResultHelper.GetCommandList(true, IconTheme);
+                // List all results on queries with only the keyword
+                var commands = ResultHelper.GetCommandList(true);
+                foreach (var c in commands)
+                {
+                    results.Add(new Result
+                    {
+                        Title = c.Value,
+                        SubTitle = $"{c.Label} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
+                        IcoPath = c.GetIconPath(IconTheme),
+                        Action = _ => ResultHelper.CopyToClipBoard(c.Value),
+                    });
+                }
+
+                return results;
             }
             else
             {
-                var commands = ResultHelper.GetCommandList(!string.IsNullOrEmpty(query.ActionKeyword), IconTheme);
-
+                var commands = ResultHelper.GetCommandList(!string.IsNullOrEmpty(query.ActionKeyword));
                 foreach (var c in commands)
                 {
-                    var resultMatch = StringMatcher.FuzzySearch(query.Search, c.ContextData.ToString());
+                    var resultMatch = StringMatcher.FuzzySearch(query.Search, c.Value);
                     if (resultMatch.Score > 0)
                     {
-                        c.Score = resultMatch.Score;
-                        c.SubTitleHighlightData = resultMatch.MatchData;
-                        results.Add(c);
+                        results.Add(new Result
+                        {
+                            Title = c.Value,
+                            SubTitle = $"{c.Label} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
+                            IcoPath = c.GetIconPath(IconTheme),
+                            Action = _ => ResultHelper.CopyToClipBoard(c.Value),
+                            Score = resultMatch.Score,
+                            SubTitleHighlightData = resultMatch.MatchData,
+                        });
                     }
                 }
 

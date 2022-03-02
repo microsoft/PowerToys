@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select to copy result to the clipboard.
+        ///   Looks up a localized string similar to Select to copy.
         /// </summary>
         internal static string Microsoft_plugin_timedate_copyToClipboard {
             get {
@@ -160,20 +160,20 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show only &apos;date&apos;, &apos;time&apos; and &apos;now&apos; result in global results.
-        /// </summary>
-        internal static string Microsoft_plugin_timedate_settingDateTimeGlobalOnly {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_settingDateTimeGlobalOnly", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Show date with weekday and name of month.
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingDateWithWeekday {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_settingDateWithWeekday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show only &apos;date&apos;, &apos;time&apos; and &apos;now&apos; result in global results.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_settingOnlyDateTimeNowGlobal {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_settingOnlyDateTimeNowGlobal", resourceCulture);
             }
         }
         
