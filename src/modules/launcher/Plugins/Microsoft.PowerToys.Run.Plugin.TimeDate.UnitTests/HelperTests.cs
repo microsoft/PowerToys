@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("time", "10:30 AM")]
         [DataRow("date", "3/2/2022")]
-        [DataRow("now", "3/2/2022 10:30 AM")]
+        [DataRow("date and time", "3/2/2022 10:30 AM")]
         [DataRow("unix", "1646213445")]
         [DataRow("day", "Wednesday")]
         [DataRow("day of week", "3")]

@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("time", "Time -")]
         [DataRow("date", "Date -")]
-        [DataRow("now", "Now (Current date and time) -")]
+        [DataRow("date and time", "Date and time (Current date and time) -")]
         [DataRow("unix", "Unix Timestamp (Current date and time) -")]
         [DataRow("day", "Day -")]
         [DataRow("day of week", "Day of the week -")]

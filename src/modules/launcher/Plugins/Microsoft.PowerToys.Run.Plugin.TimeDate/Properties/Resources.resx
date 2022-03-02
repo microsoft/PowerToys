@@ -123,6 +123,9 @@
   <data name="Microsoft_plugin_timedate_date" xml:space="preserve">
     <value>Date</value>
   </data>
+  <data name="Microsoft_plugin_timedate_DateAndTime" xml:space="preserve">
+    <value>Date and time</value>
+  </data>
   <data name="Microsoft_plugin_timedate_Day" xml:space="preserve">
     <value>Day</value>
   </data>
@@ -141,11 +144,11 @@
   <data name="Microsoft_plugin_timedate_MonthOfYear" xml:space="preserve">
     <value>Month of the year</value>
   </data>
-  <data name="Microsoft_plugin_timedate_now" xml:space="preserve">
+  <data name="Microsoft_plugin_timedate_Now" xml:space="preserve">
     <value>Now (Current date and time)</value>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_description" xml:space="preserve">
-    <value>Provides system time and date values</value>
+    <value>Provides time and date values for the system time or a custom time stamp (Examples: 'day', 'day::2/3/2022', 'time::10:30:45 AM')</value>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_name" xml:space="preserve">
     <value>Time and Date</value>
@@ -162,7 +165,10 @@
   <data name="Microsoft_plugin_timedate_time" xml:space="preserve">
     <value>Time</value>
   </data>
-  <data name="Microsoft_plugin_timedate_timeUnix" xml:space="preserve">
+  <data name="Microsoft_plugin_timedate_unix" xml:space="preserve">
+    <value>Unix Timestamp (Date and time)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_unixNow" xml:space="preserve">
     <value>Unix Timestamp (Current date and time)</value>
   </data>
   <data name="Microsoft_plugin_timedate_WeekOfMonth" xml:space="preserve">

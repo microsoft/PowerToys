@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 new AvailableResult()
                 {
                     Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(TimestampType.DateTime, timeExtended, dateExtended)),
-                    Label = Resources.Microsoft_plugin_timedate_now,
+                    Label = timestamp == null ? Resources.Microsoft_plugin_timedate_Now : Resources.Microsoft_plugin_timedate_DateAndTime,
                     Type = TimestampType.DateTime,
                 },
             });
@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     new AvailableResult()
                     {
                         Value = unixTimestamp.ToString(),
-                        Label = Resources.Microsoft_plugin_timedate_timeUnix,
+                        Label = timestamp == null ? Resources.Microsoft_plugin_timedate_unixNow : Resources.Microsoft_plugin_timedate_unix,
                         Type = TimestampType.DateTime,
                     },
                     new AvailableResult()

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
@@ -62,15 +63,59 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
                         Action = _ => ResultHelper.CopyToClipBoard(c.Value),
                     });
                 }
-
-                return results;
+            }
+            else if ((bool)query.Search.Any(char.IsDigit) && !query.Search.Contains("::"))
+            {
+                // List all results on queries with only a timestamp
+                if (DateTime.TryParse(query.Search, out DateTime timestamp))
+                {
+                    var commands = ResultHelper.GetCommandList(true, null, null, timestamp);
+                    foreach (var c in commands)
+                    {
+                        results.Add(new Result
+                        {
+                            Title = c.Value,
+                            SubTitle = $"{c.Label} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
+                            IcoPath = c.GetIconPath(IconTheme),
+                            Action = _ => ResultHelper.CopyToClipBoard(c.Value),
+                        });
+                    }
+                }
+                else
+                {
+                    // Return empty list if date/time can't be parsed
+                    return results;
+                }
             }
             else
             {
-                var commands = ResultHelper.GetCommandList(!string.IsNullOrEmpty(query.ActionKeyword));
+                // Search for date/time value with system time/date or specified time/date
+                List<AvailableResult> commands;
+                string searchTerm;
+
+                if ((bool)query.Search.Any(char.IsDigit) && query.Search.Contains("::"))
+                {
+                    string[] text = query.Search.Split("::");
+                    if (DateTime.TryParse(text[1], out DateTime timestamp))
+                    {
+                        commands = ResultHelper.GetCommandList(!string.IsNullOrEmpty(query.ActionKeyword), null, null, timestamp);
+                        searchTerm = text[0];
+                    }
+                    else
+                    {
+                        // Return empty list if date/time can't be parsed
+                        return results;
+                    }
+                }
+                else
+                {
+                    commands = ResultHelper.GetCommandList(!string.IsNullOrEmpty(query.ActionKeyword));
+                    searchTerm = query.Search;
+                }
+
                 foreach (var c in commands)
                 {
-                    var resultMatch = StringMatcher.FuzzySearch(query.Search, c.Value);
+                    var resultMatch = StringMatcher.FuzzySearch(searchTerm, c.Label);
                     if (resultMatch.Score > 0)
                     {
                         results.Add(new Result
@@ -84,9 +129,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
                         });
                     }
                 }
-
-                return results;
             }
+
+            return results;
         }
 
         private void UpdateIconTheme(Theme theme)
