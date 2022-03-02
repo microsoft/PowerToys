@@ -2,6 +2,7 @@
 
 #include <FancyZonesLib/LayoutConfigurator.h>
 #include "Settings.h"
+#include "util.h"
 
 namespace FancyZonesDataTypes
 {
@@ -135,7 +136,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      *
      * @returns Boolean indicating if calculation was successful.
      */
-    IFACEMETHOD_(bool, CalculateZones)(RECT workAreaRect, int zoneCount, int spacing) = 0;
+    IFACEMETHOD_(bool, CalculateZones)(FancyZonesUtils::Rect workAreaRect, int zoneCount, int spacing) = 0;
     /**
      * Check if the zone with the specified index is empty. Returns true if the zone with passed zoneIndex does not exist.
      * 
