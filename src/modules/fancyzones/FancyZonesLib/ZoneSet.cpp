@@ -145,7 +145,7 @@ public:
     IFACEMETHODIMP_(void)
     CycleTabs(HWND window, bool reverse) noexcept;
     IFACEMETHODIMP_(bool)
-    CalculateZones(RECT workArea, int zoneCount, int spacing) noexcept;
+    CalculateZones(FancyZonesUtils::Rect workArea, int zoneCount, int spacing) noexcept;
     IFACEMETHODIMP_(bool) IsZoneEmpty(ZoneIndex zoneIndex) const noexcept;
     IFACEMETHODIMP_(ZoneIndexSet) GetCombinedZoneRange(const ZoneIndexSet& initialZones, const ZoneIndexSet& finalZones) const noexcept;
 
@@ -660,7 +660,7 @@ void ZoneSet::InsertTabIntoZone(HWND window, std::optional<size_t> tabSortKeyWit
 }
 
 IFACEMETHODIMP_(bool)
-ZoneSet::CalculateZones(RECT workAreaRect, int zoneCount, int spacing) noexcept
+ZoneSet::CalculateZones(FancyZonesUtils::Rect workAreaRect, int zoneCount, int spacing) noexcept
 {
     Rect workArea(workAreaRect);
     //invalid work area
