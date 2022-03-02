@@ -26,23 +26,12 @@ namespace FancyZonesUnitTests
         FancyZonesDataTypes::DeviceIdData m_uniqueId;
         FancyZonesDataTypes::DeviceIdData m_emptyUniqueId;
 
-        HINSTANCE m_hInst{};
-        HMONITOR m_monitor{};
-
-        void testWorkArea(winrt::com_ptr<IWorkArea> workArea)
-        {
-            Assert::IsNotNull(workArea.get());
-            Assert::IsTrue(m_uniqueId == workArea->UniqueId());
-        }
-
         TEST_METHOD_INITIALIZE(Init)
         {
             m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
             m_uniqueId.width = 1920;
             m_uniqueId.height = 1080;
-            auto vd = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
-            Assert::IsTrue(vd.has_value());
-            m_uniqueId.virtualDesktopId = vd.value();
+            m_uniqueId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value();
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
@@ -56,8 +45,21 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (CreateWorkArea)
         {
-            auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_emptyUniqueId);
-            testWorkArea(workArea);
+            auto workArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, m_emptyUniqueId);
+            Assert::IsFalse(workArea == nullptr);
+            Assert::IsTrue(m_uniqueId == workArea->UniqueId());
+
+            auto* zoneSet{ workArea->ZoneSet() };
+            Assert::IsNotNull(zoneSet);
+            Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
+            Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
+        }
+
+        TEST_METHOD (CreateCombinedWorkArea)
+        {
+            auto workArea = MakeWorkArea({}, {}, m_uniqueId, m_emptyUniqueId);
+            Assert::IsFalse(workArea == nullptr);
+            Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
             auto* zoneSet{ workArea->ZoneSet() };
             Assert::IsNotNull(zoneSet);
@@ -81,10 +83,10 @@ namespace FancyZonesUnitTests
                 .type = ZoneSetLayoutType::Rows,
             };
 
-            auto parentWorkArea = MakeWorkArea(m_hInst, m_monitor, parentUniqueId, m_emptyUniqueId);
+            auto parentWorkArea = MakeWorkArea({}, Mocks::Monitor(), parentUniqueId, m_emptyUniqueId);
             AppliedLayouts::instance().ApplyLayout(parentUniqueId, data);
 
-            auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, parentUniqueId);
+            auto actualWorkArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, parentUniqueId);
 
             Assert::IsNotNull(actualWorkArea->ZoneSet());
 
