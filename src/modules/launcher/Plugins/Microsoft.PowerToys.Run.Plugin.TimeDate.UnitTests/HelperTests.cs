@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Assert
             Assert.AreEqual(result.Value, expectedResult);
 
-            // Finalyze
+            // Finalize
             Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Assert
             Assert.AreEqual(result.Value, expectedResult);
 
-            // Finalyze
+            // Finalize
             Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
@@ -103,7 +103,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Assert
             Assert.AreEqual(result.Value, expectedResult);
 
-            // Finalyze
+            // Finalize
             Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
@@ -134,7 +134,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Assert
             Assert.AreEqual(result.Value, expectedResult);
 
-            // Finalyze
+            // Finalize
             Thread.CurrentThread.CurrentCulture = originalCulture;
         }
     }
