@@ -3,10 +3,10 @@
 #include "VirtualDesktop.h"
 #include "util.h"
 
-winrt::com_ptr<IWorkArea> MonitorWorkAreaHandler::GetWorkArea(const GUID& desktopId, HMONITOR monitor)
+std::shared_ptr<WorkArea> MonitorWorkAreaHandler::GetWorkArea(const GUID& desktopId, HMONITOR monitor)
 {
     auto desktopIt = workAreaMap.find(desktopId);
-    if (desktopIt != std::end(workAreaMap))
+    if (desktopIt != workAreaMap.end())
     {
         auto& perDesktopData = desktopIt->second;
         auto monitorIt = perDesktopData.find(monitor);
@@ -18,7 +18,7 @@ winrt::com_ptr<IWorkArea> MonitorWorkAreaHandler::GetWorkArea(const GUID& deskto
     return nullptr;
 }
 
-winrt::com_ptr<IWorkArea> MonitorWorkAreaHandler::GetWorkAreaFromCursor(const GUID& desktopId)
+std::shared_ptr<WorkArea> MonitorWorkAreaHandler::GetWorkAreaFromCursor(const GUID& desktopId)
 {
     auto allMonitorsWorkArea = GetWorkArea(desktopId, NULL);
     if (allMonitorsWorkArea)
@@ -39,7 +39,7 @@ winrt::com_ptr<IWorkArea> MonitorWorkAreaHandler::GetWorkAreaFromCursor(const GU
     }
 }
 
-winrt::com_ptr<IWorkArea> MonitorWorkAreaHandler::GetWorkArea(HWND window, const GUID& desktopId)
+std::shared_ptr<WorkArea> MonitorWorkAreaHandler::GetWorkArea(HWND window, const GUID& desktopId)
 {
     auto allMonitorsWorkArea = GetWorkArea(desktopId, NULL);
     if (allMonitorsWorkArea)
@@ -55,19 +55,20 @@ winrt::com_ptr<IWorkArea> MonitorWorkAreaHandler::GetWorkArea(HWND window, const
     }
 }
 
-const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& MonitorWorkAreaHandler::GetWorkAreasByDesktopId(const GUID& desktopId)
+const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& MonitorWorkAreaHandler::GetWorkAreasByDesktopId(const GUID& desktopId)
 {
     if (workAreaMap.contains(desktopId))
     {
         return workAreaMap[desktopId];
     }
-    static const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>> empty;
+
+    static const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>> empty{};
     return empty;
 }
 
-std::vector<winrt::com_ptr<IWorkArea>> MonitorWorkAreaHandler::GetAllWorkAreas()
+std::vector<std::shared_ptr<WorkArea>> MonitorWorkAreaHandler::GetAllWorkAreas()
 {
-    std::vector<winrt::com_ptr<IWorkArea>> workAreas{};
+    std::vector<std::shared_ptr<WorkArea>> workAreas{};
     for (const auto& [desktopId, perDesktopData] : workAreaMap)
     {
         std::transform(std::begin(perDesktopData),
@@ -78,7 +79,7 @@ std::vector<winrt::com_ptr<IWorkArea>> MonitorWorkAreaHandler::GetAllWorkAreas()
     return workAreas;
 }
 
-void MonitorWorkAreaHandler::AddWorkArea(const GUID& desktopId, HMONITOR monitor, winrt::com_ptr<IWorkArea>& workArea)
+void MonitorWorkAreaHandler::AddWorkArea(const GUID& desktopId, HMONITOR monitor, std::shared_ptr<WorkArea>& workArea)
 {
     if (!workAreaMap.contains(desktopId))
     {
