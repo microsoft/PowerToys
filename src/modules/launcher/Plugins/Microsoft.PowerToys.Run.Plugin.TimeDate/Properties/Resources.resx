@@ -142,7 +142,7 @@
     <value>Month of the year</value>
   </data>
   <data name="Microsoft_plugin_timedate_now" xml:space="preserve">
-    <value>Now (Date and time)</value>
+    <value>Now (Current date and time)</value>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_description" xml:space="preserve">
     <value>Provides system time and date values</value>
@@ -163,7 +163,7 @@
     <value>Time</value>
   </data>
   <data name="Microsoft_plugin_timedate_timeUnix" xml:space="preserve">
-    <value>Time as Unix Timestamp</value>
+    <value>Unix Timestamp (Current date and time)</value>
   </data>
   <data name="Microsoft_plugin_timedate_WeekOfMonth" xml:space="preserve">
     <value>Week of the month</value>

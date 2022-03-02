@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Now (Date and time).
+        ///   Looks up a localized string similar to Now (Current date and time).
         /// </summary>
         internal static string Microsoft_plugin_timedate_now {
             get {
@@ -196,7 +196,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Time as Unix Timestamp.
+        ///   Looks up a localized string similar to Unix Timestamp (Current date and time).
         /// </summary>
         internal static string Microsoft_plugin_timedate_timeUnix {
             get {

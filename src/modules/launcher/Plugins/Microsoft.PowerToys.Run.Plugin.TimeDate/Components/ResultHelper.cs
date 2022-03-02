@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     {
                         Value = unixTimestamp.ToString(),
                         Label = Resources.Microsoft_plugin_timedate_timeUnix,
-                        Type = TimestampType.Time,
+                        Type = TimestampType.DateTime,
                     },
                     new AvailableResult()
                     {
