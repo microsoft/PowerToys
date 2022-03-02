@@ -398,6 +398,7 @@
                         <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
                         <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
                             <Directory Id="AwakeImagesFolder" Name="Images" />
+                            <Directory Id="AwakeSoundsFolder" Name="Sounds" />
                         </Directory>
 
                         <!-- KBM -->
@@ -854,6 +855,13 @@
             </Component>
         </DirectoryRef>
 
+		<!-- Awake sounds -->
+		<DirectoryRef Id="AwakeSoundsFolder" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\Sounds">
+			<Component Id="Module_Awake_Sounds" >
+				<File Id="Awake_anti_sleep.wav" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\Sounds\anti-sleep.wav" />
+			</Component>
+		</DirectoryRef>
+
         <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
             <?foreach File in $(var.PowerPreviewFiles)?>
                 <Component Id="Module_PowerPreview_$(var.File)" Win64="yes">
@@ -1044,6 +1052,7 @@
 			<ComponentRef Id="Module_ColorPicker_Cursor"/>
             <ComponentRef Id="Module_Awake"/>
             <ComponentRef Id="Module_Awake_Images"/>
+			<ComponentRef Id="Module_Awake_Sounds"/>
             <ComponentRef Id="Module_FindMyMouse"/>
             <ComponentRef Id="Module_MouseHighlighter"/>
             <ComponentRef Id="Module_MousePointerCrosshairs" />
