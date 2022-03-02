@@ -65,4 +65,4 @@ When the time comes, Microsoft will reach out and help make you a formal team me
 
 ## Thank you
 
-Thank you in advance for your contribution! 
+Thank you in advance for your contribution!
