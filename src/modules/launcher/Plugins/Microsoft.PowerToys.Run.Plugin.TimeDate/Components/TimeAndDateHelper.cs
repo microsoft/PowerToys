@@ -69,7 +69,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
     /// <summary>
     /// Type of time/date format
     /// </summary>
-    internal enum TimestampType
+    public enum TimestampType
     {
         Time,
         Date,

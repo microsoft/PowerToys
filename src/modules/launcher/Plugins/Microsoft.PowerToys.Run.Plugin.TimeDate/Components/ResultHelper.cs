@@ -11,7 +11,7 @@ using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
-    internal static class ResultHelper
+    public static class ResultHelper
     {
         /// <summary>
         /// Returns a list with all available commands
@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <param name="dateLong">Required for UnitTest: Show date in long format</param>
         /// <param name="timestamp">Required for UnitTest: Use custom <see cref="DateTime"/> object to calculate results</param>
         /// <returns>List of results</returns>
-        internal static List<AvailableResult> GetCommandList(bool isKeywordSearch, bool? timeLong = null, bool? dateLong = null, DateTime? timestamp = null)
+        public static List<AvailableResult> GetCommandList(bool isKeywordSearch, bool? timeLong = null, bool? dateLong = null, DateTime? timestamp = null)
         {
             List<AvailableResult> results = new List<AvailableResult>();
             DateTime dateTimeNow = timestamp ?? DateTime.Now;

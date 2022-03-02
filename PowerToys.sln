@@ -403,6 +403,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.TimeDate", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeDate\Microsoft.PowerToys.Run.Plugin.TimeDate.csproj", "{5BDBD6C9-A31F-4CEB-871A-5E9E709197EF}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests.csproj", "{FD464B4C-2F68-4D06-91E7-4208146C41F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -1100,6 +1102,14 @@ Global
 		{5BDBD6C9-A31F-4CEB-871A-5E9E709197EF}.Release|x64.Build.0 = Release|x64
 		{5BDBD6C9-A31F-4CEB-871A-5E9E709197EF}.Release|x86.ActiveCfg = Release|x64
 		{5BDBD6C9-A31F-4CEB-871A-5E9E709197EF}.Release|x86.Build.0 = Release|x64
+		{FD464B4C-2F68-4D06-91E7-4208146C41F5}.Debug|x64.ActiveCfg = Debug|x64
+		{FD464B4C-2F68-4D06-91E7-4208146C41F5}.Debug|x64.Build.0 = Debug|x64
+		{FD464B4C-2F68-4D06-91E7-4208146C41F5}.Debug|x86.ActiveCfg = Debug|x64
+		{FD464B4C-2F68-4D06-91E7-4208146C41F5}.Debug|x86.Build.0 = Debug|x64
+		{FD464B4C-2F68-4D06-91E7-4208146C41F5}.Release|x64.ActiveCfg = Release|x64
+		{FD464B4C-2F68-4D06-91E7-4208146C41F5}.Release|x64.Build.0 = Release|x64
+		{FD464B4C-2F68-4D06-91E7-4208146C41F5}.Release|x86.ActiveCfg = Release|x64
+		{FD464B4C-2F68-4D06-91E7-4208146C41F5}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1233,6 +1243,7 @@ Global
 		{04B193D7-3E21-46B8-A958-89B63A8A69DE} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{F44934A8-36F3-49B0-9465-3831BE041CDE} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{5BDBD6C9-A31F-4CEB-871A-5E9E709197EF} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{FD464B4C-2F68-4D06-91E7-4208146C41F5} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

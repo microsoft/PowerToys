@@ -20,24 +20,66 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("shutdown", "Shutdown computer")]
-        [DataRow("restart", "Restart computer")]
-        [DataRow("sign out", "Sign out of computer")]
-        [DataRow("lock", "Lock computer")]
-        [DataRow("sleep", "Put computer to sleep")]
-        [DataRow("hibernate", "Hibernate computer")]
-        [DataRow("empty recycle", "Empty Recycle Bin")]
-        public void xxx(string typedString, string expectedResult)
+        [DataRow("time", 2)]
+        [DataRow("date", 2)]
+        [DataRow("year", 0)]
+        public void CountWithoutPluginKeyword(string typedString, int expectedResultCount)
+        {
+            // Setup
+            Mock<Main> main = new ();
+            Query expectedQuery = new Query(typedString);
+
+            // Act
+            var result = main.Object.Query(expectedQuery).Count;
+
+            // Assert
+            Assert.AreEqual(expectedResultCount, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("(time", 3)]
+        [DataRow("(date", 3)]
+        [DataRow("(year", 1)]
+        [DataRow("(", 13)]
+        public void CountWithPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
             Mock<Main> main = new Mock<Main>();
             Query expectedQuery = new Query(typedString);
 
             // Act
+            var result = main.Object.Query(expectedQuery).Count;
+
+            // Assert
+            Assert.AreEqual(expectedResultCount, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("time", "Time -")]
+        [DataRow("date", "Date -")]
+        [DataRow("now", "Now (Current date and time) -")]
+        [DataRow("unix", "Unix Timestamp (Current date and time) -")]
+        [DataRow("day", "Day -")]
+        [DataRow("day of week", "Day of the week -")]
+        [DataRow("day of months", "Day of the month -")]
+        [DataRow("day of year", "Day of the year -")]
+        [DataRow("week of month", "Week of the month -")]
+        [DataRow("week of year", "Week of the year -")]
+        [DataRow("month", "Month -")]
+        [DataRow("month of year", "Month of the year -")]
+        [DataRow("year", "Year -")]
+        public void CanFindResult(string typedString, string expectedResult)
+        {
+            // Setup
+            Mock<Main> main = new Mock<Main>();
+            string pluginKeyword = "(";
+            Query expectedQuery = new Query(pluginKeyword + typedString);
+
+            // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
 
             // Assert
-            Assert.AreEqual(expectedResult, result);
+            Assert.IsTrue(result.StartsWith(expectedResult), result);
         }
     }
 }

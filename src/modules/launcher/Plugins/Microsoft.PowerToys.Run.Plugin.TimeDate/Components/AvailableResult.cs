@@ -4,7 +4,7 @@
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
-    internal class AvailableResult
+    public class AvailableResult
     {
         /// <summary>
         /// Gets or sets the time/date value
