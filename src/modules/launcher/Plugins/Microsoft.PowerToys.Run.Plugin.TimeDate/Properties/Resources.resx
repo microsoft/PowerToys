@@ -177,6 +177,12 @@
   <data name="Microsoft_plugin_timedate_WeekOfYear" xml:space="preserve">
     <value>Week of the year</value>
   </data>
+  <data name="Microsoft_plugin_timedate_WindowsFileTime" xml:space="preserve">
+    <value>Windows file time (Int64 number)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_WindowsFileTimeNow" xml:space="preserve">
+    <value>Windows file time (Current date and time as Int64 number)</value>
+  </data>
   <data name="Microsoft_plugin_timedate_Year" xml:space="preserve">
     <value>Year</value>
   </data>

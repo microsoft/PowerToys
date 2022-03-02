@@ -241,6 +241,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Windows file time (Int64 number).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_WindowsFileTime {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_WindowsFileTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows file time (Current date and time as Int64 number).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_WindowsFileTimeNow {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_WindowsFileTimeNow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Year.
         /// </summary>
         internal static string Microsoft_plugin_timedate_Year {

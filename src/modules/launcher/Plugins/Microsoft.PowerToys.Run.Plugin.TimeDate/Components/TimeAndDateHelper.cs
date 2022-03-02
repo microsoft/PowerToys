@@ -16,15 +16,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <param name="timeLong">Show date with weekday and name of month (long format)</param>
         /// <param name="dateLong">Show time with seconds (long format)</param>
         /// <returns>String that identifies the time/date format (<see href="https://docs.microsoft.com/en-us/dotnet/api/system.datetime.tostring"/>)</returns>
-        internal static string GetStringFormat(TimestampType targetFormat, bool timeLong, bool dateLong)
+        internal static string GetStringFormat(FormatStringType targetFormat, bool timeLong, bool dateLong)
         {
             switch (targetFormat)
             {
-                case TimestampType.Time:
+                case FormatStringType.Time:
                     return timeLong ? "T" : "t";
-                case TimestampType.Date:
+                case FormatStringType.Date:
                     return dateLong ? "D" : "d";
-                case TimestampType.DateTime:
+                case FormatStringType.DateTime:
                     if (timeLong & dateLong)
                     {
                         return "F"; // Friday, October 31, 2008 5:04:32 PM
@@ -64,12 +64,44 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 
             return (int)Math.Truncate((double)date.Subtract(beginningOfMonth).TotalDays / 7f) + 1;
         }
+
+        /// <summary>
+        /// Convert input string to a <see cref="DateTime"/> object in local time
+        /// </summary>
+        /// <param name="input">String with date/time</param>
+        /// <param name="timestamp">The new <see cref="DateTime"/> object</param>
+        /// <returns>True on success, otherwise false</returns>
+        internal static bool ParseStringAsDateTime(in string input, out DateTime timestamp)
+        {
+            if (DateTime.TryParse(input, out timestamp))
+            {
+                // Known date/time format
+                return true;
+            }
+            else if (int.TryParse(input, out int secondsInt))
+            {
+                // unix time stamp
+                timestamp = new DateTime(1970, 1, 1).AddSeconds(secondsInt).ToLocalTime();
+                return true;
+            }
+            else if (long.TryParse(input, out long secondsLong))
+            {
+                // windows file time
+                timestamp = new DateTime(secondsLong);
+                return true;
+            }
+            else
+            {
+                timestamp = new DateTime(0, 0, 0, 0, 0, 1);
+                return false;
+            }
+        }
     }
 
     /// <summary>
     /// Type of time/date format
     /// </summary>
-    public enum TimestampType
+    public enum FormatStringType
     {
         Time,
         Date,

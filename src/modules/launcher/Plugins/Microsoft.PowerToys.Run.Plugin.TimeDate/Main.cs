@@ -48,6 +48,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
             }
 
             var results = new List<Result>();
+            var inputDelimiter = "::";
 
             if (!string.IsNullOrEmpty(query.ActionKeyword) && string.IsNullOrWhiteSpace(query.Search))
             {
@@ -64,10 +65,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
                     });
                 }
             }
-            else if ((bool)query.Search.Any(char.IsDigit) && !query.Search.Contains("::"))
+            else if ((bool)query.Search.Any(char.IsDigit) && !query.Search.Contains(inputDelimiter))
             {
                 // List all results on queries with only a timestamp
-                if (DateTime.TryParse(query.Search, out DateTime timestamp))
+                if (TimeAndDateHelper.ParseStringAsDateTime(query.Search, out DateTime timestamp))
                 {
                     var commands = ResultHelper.GetCommandList(true, null, null, timestamp);
                     foreach (var c in commands)
@@ -93,10 +94,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
                 List<AvailableResult> commands;
                 string searchTerm;
 
-                if ((bool)query.Search.Any(char.IsDigit) && query.Search.Contains("::"))
+                if ((bool)query.Search.Any(char.IsDigit) && query.Search.Contains(inputDelimiter))
                 {
-                    string[] text = query.Search.Split("::");
-                    if (DateTime.TryParse(text[1], out DateTime timestamp))
+                    string[] text = query.Search.Split(inputDelimiter);
+                    if (TimeAndDateHelper.ParseStringAsDateTime(text[1], out DateTime timestamp))
                     {
                         commands = ResultHelper.GetCommandList(!string.IsNullOrEmpty(query.ActionKeyword), null, null, timestamp);
                         searchTerm = text[0];

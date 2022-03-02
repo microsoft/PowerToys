@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <summary>
         /// Gets or sets a value indicating the type of result
         /// </summary>
-        public TimestampType Type { get; set; }
+        public ResultIconType IconType { get; set; }
 
         /// <summary>
         /// Returns the path to the icon
@@ -28,17 +28,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <returns>Path</returns>
         public string GetIconPath(string theme)
         {
-            switch (Type)
+            switch (IconType)
             {
-                case TimestampType.Time:
+                case ResultIconType.Time:
                     return $"Images\\time.{theme}.png";
-                case TimestampType.Date:
+                case ResultIconType.Date:
                     return $"Images\\calendar.{theme}.png";
-                case TimestampType.DateTime:
+                case ResultIconType.DateTime:
                     return $"Images\\timeDate.{theme}.png";
                 default:
                     return string.Empty;
             }
         }
+    }
+
+    public enum ResultIconType
+    {
+        Time,
+        Date,
+        DateTime,
     }
 }
