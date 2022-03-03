@@ -5,10 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Wox.Infrastructure;
 using Wox.Plugin;
+
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
@@ -35,6 +38,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             bool isKeywordSearch = !string.IsNullOrEmpty(query.ActionKeyword);
             bool isEmptySearchInput = string.IsNullOrEmpty(query.Search);
             string searchTerm = query.Search;
+
+            Wox.Plugin.Logger.Log.Info($"{isKeywordSearch}, {searchTerm}, {query.ActionKeyword}", typeof(SearchController));
 
             // empty search without keyword => return no results
             if (!isKeywordSearch && isEmptySearchInput)
@@ -106,7 +111,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 }
             }
 
-            // If search term is only a number that can't be parsed return an error message
+            // If search term is a number that can't be parsed return an error message
             if (!isEmptySearchInput && results.Count == 0 && searchTerm.Any(char.IsNumber) && Regex.IsMatch(searchTerm, @"\w*\d*$"))
             {
                 results.Add(GetNumberErrorResult(iconTheme));
