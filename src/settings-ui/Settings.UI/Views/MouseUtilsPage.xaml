@@ -7,8 +7,11 @@
     mc:Ignorable="d"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     AutomationProperties.LandmarkType="Main">
-
+    <Page.Resources>
+        <localConverters:FindMyMouseActivationShakeMouseIntToVisibilityConverter x:Key="FindMyMouseActivationShakeMouseIntToVisibilityConverter"/>
+    </Page.Resources>
     <controls:SettingsPageControl x:Uid="MouseUtils"
                                   ModuleImageSource="ms-appx:///Assets/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -28,6 +31,20 @@
                                 <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationDoubleControlPress" />
                                 <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationShakeMouse" />
                             </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                    <controls:Setting x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance" Icon="&#xE847;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationShakeMouseIntToVisibilityConverter}}">
+                        <controls:Setting.ActionContent>
+                            <muxc:NumberBox
+                                Minimum="0"
+                                Maximum="1000000"
+                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseShakingMinimumDistance}"
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                SpinButtonPlacementMode="Compact"
+                                HorizontalAlignment="Left"
+                                SmallChange="100"
+                                LargeChange="1000"
+                            />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" IsExpanded="False" >
