@@ -36,6 +36,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         internal bool DateWithWeekday { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether to hide the number input error message on global results
+        /// </summary>
+        internal bool HideNumberMessageOnGlobalQuery { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TimeDateSettings"/> class.
         /// Private constructor to make sure there is never more than one instance of this class
         /// </summary>
@@ -89,6 +94,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     DisplayLabel = Resources.Microsoft_plugin_timedate_settingDateWithWeekday,
                     Value = false,
                 },
+                new PluginAdditionalOption()
+                {
+                    Key = nameof(HideNumberMessageOnGlobalQuery),
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_settingHideNumberMessageOnGlobalQuery,
+                    Value = false,
+                },
             };
 
             return optionList;
@@ -108,6 +119,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             OnlyDateTimeNowGlobal = GetSettingOrDefault(settings, nameof(OnlyDateTimeNowGlobal));
             TimeWithSeconds = GetSettingOrDefault(settings, nameof(TimeWithSeconds));
             DateWithWeekday = GetSettingOrDefault(settings, nameof(DateWithWeekday));
+            HideNumberMessageOnGlobalQuery = GetSettingOrDefault(settings, nameof(HideNumberMessageOnGlobalQuery));
         }
 
         /// <summary>

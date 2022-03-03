@@ -79,7 +79,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // Known date/time format
                 return true;
             }
-            else if (Regex.IsMatch(input, @"^u\d+") && long.TryParse(input.TrimStart('u'), out long secondsInt))
+            else if (Regex.IsMatch(input, @"^u\d+") && input.Length <= 12 && long.TryParse(input.TrimStart('u'), out long secondsInt))
             {
                 // unix time stamp
                 // we use long instead of int because int ist to small after 03:14:07 UTC 2038-01-19

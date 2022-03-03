@@ -259,6 +259,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hide number input error message on global queries.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_settingHideNumberMessageOnGlobalQuery {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_settingHideNumberMessageOnGlobalQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show only &apos;date&apos;, &apos;time&apos; and &apos;now&apos; result in global results.
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingOnlyDateTimeNowGlobal {

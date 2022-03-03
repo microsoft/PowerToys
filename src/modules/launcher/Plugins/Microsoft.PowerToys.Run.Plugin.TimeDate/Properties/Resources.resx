@@ -187,6 +187,9 @@
   <data name="Microsoft_plugin_timedate_settingDateWithWeekday" xml:space="preserve">
     <value>Show date with weekday and name of month  (Affected results: date, now)</value>
   </data>
+  <data name="Microsoft_plugin_timedate_settingHideNumberMessageOnGlobalQuery" xml:space="preserve">
+    <value>Hide number input error message on global queries</value>
+  </data>
   <data name="Microsoft_plugin_timedate_settingOnlyDateTimeNowGlobal" xml:space="preserve">
     <value>Show only 'date', 'time' and 'now' result in global results</value>
   </data>

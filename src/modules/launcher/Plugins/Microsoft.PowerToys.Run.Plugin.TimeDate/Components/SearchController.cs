@@ -39,8 +39,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             bool isEmptySearchInput = string.IsNullOrEmpty(query.Search);
             string searchTerm = query.Search;
 
-            Wox.Plugin.Logger.Log.Info($"{isKeywordSearch}, {searchTerm}, {query.ActionKeyword}", typeof(SearchController));
-
             // empty search without keyword => return no results
             if (!isKeywordSearch && isEmptySearchInput)
             {
@@ -112,9 +110,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
 
             // If search term is a number that can't be parsed return an error message
-            if (!isEmptySearchInput && results.Count == 0 && searchTerm.Any(char.IsNumber) && Regex.IsMatch(searchTerm, @"\w*\d*$"))
+            if (!isEmptySearchInput && results.Count == 0 && searchTerm.Any(char.IsNumber) && Regex.IsMatch(searchTerm, @"\w+\d+$") &&
+                !searchTerm.Contains(InputDelimiter) && !searchTerm.Any(char.IsWhiteSpace) && !searchTerm.Any(char.IsPunctuation))
             {
-                results.Add(GetNumberErrorResult(iconTheme));
+                // Without plugin key word show only if message is not hidden by setting
+                if (isKeywordSearch || !TimeDateSettings.Instance.HideNumberMessageOnGlobalQuery)
+                {
+                    results.Add(GetNumberErrorResult(iconTheme));
+                }
             }
 
             return results;
