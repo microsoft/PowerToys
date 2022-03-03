@@ -92,11 +92,22 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
                                     _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                                     var vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
-                                    var fileContent = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
+                                    string fileContent;
+                                    using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                                    {
+                                        fileContent = fileReader.ReadToEnd();
+                                        fileReader.Close();
+                                    }
                                     var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
 
+                                    string html;
+
                                     // prepping index html to load in
-                                    var html = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
+                                    using(StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                                    {
+                                        html = htmlFileReader.ReadToEnd();
+                                        htmlFileReader.Close();
+                                    }
 
                                     html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
                                     html = html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
