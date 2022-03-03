@@ -90,7 +90,7 @@
 
     <?define TimeDateComponentFiles=Microsoft.Plugin.TimeDate.deps.json;Microsoft.Plugin.TimeDate.dll;plugin.json;PowerToys.ManagedTelemetry.dll?>
 
-	<?define TimeDateImagesComponentFiles=calendar.dark.png;calendar.light.png;time.dark.png;time.light.png;timeDate.dark.png;timeDate.light.png?>
+	<?define TimeDateImagesComponentFiles=calendar.dark.png;calendar.light.png;time.dark.png;time.light.png;timeDate.dark.png;timeDate.light.png;Warning.dark.png;Warning.light.png?>
 
 	<?define TimeZoneComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json;Microsoft.PowerToys.Run.Plugin.TimeZone.dll;PowerToys.ManagedTelemetry.dll?>
 	

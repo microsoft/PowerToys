@@ -4,13 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Wox.Infrastructure;
 using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate
@@ -47,92 +45,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            var results = new List<Result>();
-            var inputDelimiter = "::";
-
-            if (!string.IsNullOrEmpty(query.ActionKeyword) && string.IsNullOrWhiteSpace(query.Search))
-            {
-                // List all results on queries with only the keyword
-                var commands = ResultHelper.GetCommandList(true);
-                foreach (var c in commands)
-                {
-                    results.Add(new Result
-                    {
-                        Title = c.Value,
-                        SubTitle = $"{c.Label} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                        IcoPath = c.GetIconPath(IconTheme),
-                        Action = _ => ResultHelper.CopyToClipBoard(c.Value),
-                    });
-                }
-            }
-            else if ((bool)query.Search.Any(char.IsDigit) && !query.Search.Contains(inputDelimiter))
-            {
-                // List all results on queries with only a timestamp
-                if (TimeAndDateHelper.ParseStringAsDateTime(query.Search, out DateTime timestamp))
-                {
-                    var commands = ResultHelper.GetCommandList(true, null, null, timestamp);
-                    foreach (var c in commands)
-                    {
-                        results.Add(new Result
-                        {
-                            Title = c.Value,
-                            SubTitle = $"{c.Label} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                            IcoPath = c.GetIconPath(IconTheme),
-                            Action = _ => ResultHelper.CopyToClipBoard(c.Value),
-                        });
-                    }
-                }
-                else
-                {
-                    // Return empty list if date/time can't be parsed
-                    return results;
-                }
-            }
-            else
-            {
-                // Search for date/time value with system time/date or specified time/date
-                List<AvailableResult> commands;
-                string searchTerm;
-
-                if ((bool)query.Search.Any(char.IsDigit) && query.Search.Contains(inputDelimiter))
-                {
-                    string[] text = query.Search.Split(inputDelimiter);
-                    if (TimeAndDateHelper.ParseStringAsDateTime(text[1], out DateTime timestamp))
-                    {
-                        commands = ResultHelper.GetCommandList(!string.IsNullOrEmpty(query.ActionKeyword), null, null, timestamp);
-                        searchTerm = text[0];
-                    }
-                    else
-                    {
-                        // Return empty list if date/time can't be parsed
-                        return results;
-                    }
-                }
-                else
-                {
-                    commands = ResultHelper.GetCommandList(!string.IsNullOrEmpty(query.ActionKeyword));
-                    searchTerm = query.Search;
-                }
-
-                foreach (var c in commands)
-                {
-                    var resultMatch = StringMatcher.FuzzySearch(searchTerm, c.Label);
-                    if (resultMatch.Score > 0)
-                    {
-                        results.Add(new Result
-                        {
-                            Title = c.Value,
-                            SubTitle = $"{c.Label} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
-                            IcoPath = c.GetIconPath(IconTheme),
-                            Action = _ => ResultHelper.CopyToClipBoard(c.Value),
-                            Score = resultMatch.Score,
-                            SubTitleHighlightData = resultMatch.MatchData,
-                        });
-                    }
-                }
-            }
-
-            return results;
+            return SearchController.StartSearch(query, IconTheme);
         }
 
         private void UpdateIconTheme(Theme theme)

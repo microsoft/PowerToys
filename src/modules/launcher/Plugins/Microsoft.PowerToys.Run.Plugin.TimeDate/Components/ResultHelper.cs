@@ -5,42 +5,45 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Wox.Plugin.Logger;
 
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
+
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
-    public static class ResultHelper
+    internal static class ResultHelper
     {
         /// <summary>
-        /// Returns a list with all available commands
+        /// Returns a list with all available date time formats
         /// </summary>
         /// <param name="isKeywordSearch">Is this a search with plugin activation keyword or not</param>
         /// <param name="timeLong">Required for UnitTest: Show time in long format</param>
         /// <param name="dateLong">Required for UnitTest: Show date in long format</param>
         /// <param name="timestamp">Required for UnitTest: Use custom <see cref="DateTime"/> object to calculate results</param>
         /// <returns>List of results</returns>
-        public static List<AvailableResult> GetCommandList(bool isKeywordSearch, bool? timeLong = null, bool? dateLong = null, DateTime? timestamp = null)
+        internal static List<AvailableResult> GetAvailableResults(bool isKeywordSearch, bool? timeLong = null, bool? dateLong = null, DateTime? timestamp = null)
         {
             List<AvailableResult> results = new List<AvailableResult>();
-            DateTime dateTimeNow = timestamp ?? DateTime.Now;
-            DateTime dateTimeNowUtc = dateTimeNow.ToUniversalTime();
             bool timeExtended = timeLong ?? TimeDateSettings.Instance.TimeWithSeconds;
             bool dateExtended = dateLong ?? TimeDateSettings.Instance.DateWithWeekday;
+            DateTime dateTimeNow = timestamp ?? DateTime.Now;
+            DateTime dateTimeNowUtc = dateTimeNow.ToUniversalTime();
 
             results.AddRange(new[]
             {
                 new AvailableResult()
                 {
                     Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended)),
-                    Label = Resources.Microsoft_plugin_timedate_time,
+                    Label = Resources.Microsoft_plugin_timedate_Time,
                     IconType = ResultIconType.Time,
                 },
                 new AvailableResult()
                 {
                     Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Date, timeExtended, dateExtended)),
-                    Label = Resources.Microsoft_plugin_timedate_date,
+                    Label = Resources.Microsoft_plugin_timedate_Date,
                     IconType = ResultIconType.Date,
                 },
                 new AvailableResult()
@@ -53,6 +56,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 
             if (isKeywordSearch || !TimeDateSettings.Instance.OnlyDateTimeNowGlobal)
             {
+                // We use long instead of int  for unix time stamp because int ist to small after 03:14:07 UTC 2038-01-19
                 long unixTimestamp = (long)dateTimeNowUtc.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
                 int weekOfMonth = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow);
                 int weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTimeNow, CultureInfo.CurrentCulture.DateTimeFormat.CalendarWeekRule, CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek);
@@ -61,8 +65,20 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 {
                     new AvailableResult()
                     {
+                        Value = dateTimeNowUtc.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.DateTime, timeExtended, dateExtended)),
+                        Label = timestamp == null ? Resources.Microsoft_plugin_timedate_NowUtc : Resources.Microsoft_plugin_timedate_DateAndTimeUtc,
+                        IconType = ResultIconType.DateTime,
+                    },
+                    new AvailableResult()
+                    {
+                        Value = dateTimeNowUtc.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended)),
+                        Label = Resources.Microsoft_plugin_timedate_TimeUtc,
+                        IconType = ResultIconType.Time,
+                    },
+                    new AvailableResult()
+                    {
                         Value = unixTimestamp.ToString(),
-                        Label = timestamp == null ? Resources.Microsoft_plugin_timedate_unixNow : Resources.Microsoft_plugin_timedate_unix,
+                        Label = timestamp == null ? Resources.Microsoft_plugin_timedate_UnixNow : Resources.Microsoft_plugin_timedate_Unix,
                         IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
@@ -128,37 +144,37 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     new AvailableResult()
                     {
                         Value = dateTimeNowUtc.ToString("u"),
-                        Label = "Universal time format (YYYY-MM-DD hh:mm:ss)",
+                        Label = Resources.Microsoft_plugin_timedate_UniversalTime,
                         IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
                     {
                         Value = dateTimeNow.ToString("s"),
-                        Label = "ISO 8601 (Timestamp)",
+                        Label = Resources.Microsoft_plugin_timedate_Iso8601,
                         IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
                     {
                         Value = dateTimeNowUtc.ToString("yyyy-MM-ddTHH:mm:ss"),
-                        Label = "ISO 8601 UTC (Timestamp)",
+                        Label = Resources.Microsoft_plugin_timedate_Iso8601Utc,
                         IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
                     {
                         Value = dateTimeNow.ToString("yyyy-MM-ddTHH:mm:ssK"),
-                        Label = "ISO 8601 with timezone (Timestamp)",
+                        Label = Resources.Microsoft_plugin_timedate_Iso8601Zone,
                         IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
                     {
                         Value = dateTimeNowUtc.ToString("yyyy-MM-ddTHH:mm:ss'Z'"),
-                        Label = "ISO 8601 UTC with timezone (Timestamp)",
+                        Label = Resources.Microsoft_plugin_timedate_Iso8601ZoneUtc,
                         IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
                     {
                         Value = dateTimeNow.ToString("R"),
-                        Label = "RFC1123 (Date and time)",
+                        Label = Resources.Microsoft_plugin_timedate_Rfc1123,
                         IconType = ResultIconType.DateTime,
                     },
                 });

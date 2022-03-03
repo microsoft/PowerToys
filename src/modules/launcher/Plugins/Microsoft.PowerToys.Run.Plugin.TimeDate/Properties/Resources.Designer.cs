@@ -72,9 +72,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Date.
         /// </summary>
-        internal static string Microsoft_plugin_timedate_date {
+        internal static string Microsoft_plugin_timedate_Date {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_date", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Date", resourceCulture);
             }
         }
         
@@ -84,6 +84,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_DateAndTime {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_DateAndTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date and time UTC.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_DateAndTimeUtc {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DateAndTimeUtc", resourceCulture);
             }
         }
         
@@ -124,6 +133,60 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;u&apos; for Unix Timestamp, &apos;ft&apos; for Windows file time.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_ErrorResultSubTitle {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorResultSubTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error: Can&apos;t parse number. Please use a format prefix..
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_ErrorResultTitle {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorResultTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ISO 8601 (Date and time).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Iso8601 {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Iso8601", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ISO 8601 UTC (Date and time).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Iso8601Utc {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Iso8601Utc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ISO 8601 with time zone (Date and time).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Iso8601Zone {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Iso8601Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ISO 8601 UTC with time zone (Date and time).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Iso8601ZoneUtc {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Iso8601ZoneUtc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Month.
         /// </summary>
         internal static string Microsoft_plugin_timedate_Month {
@@ -151,6 +214,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Now UTC (Current date and time).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_NowUtc {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_NowUtc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Provides time and date values for the system time or a custom time stamp (Examples: &apos;day&apos;, &apos;day::2/3/2022&apos;, &apos;time::10:30:45 AM&apos;).
         /// </summary>
         internal static string Microsoft_plugin_timedate_plugin_description {
@@ -169,7 +241,16 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show date with weekday and name of month.
+        ///   Looks up a localized string similar to RFC1123 (Date and time).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Rfc1123 {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Rfc1123", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show date with weekday and name of month  (Affected results: date, now).
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingDateWithWeekday {
             get {
@@ -187,7 +268,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show time with seconds.
+        ///   Looks up a localized string similar to Show time with seconds  (Affected results: time, now).
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingTimeWithSeconds {
             get {
@@ -198,27 +279,45 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Time.
         /// </summary>
-        internal static string Microsoft_plugin_timedate_time {
+        internal static string Microsoft_plugin_timedate_Time {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_time", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time UTC.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_TimeUtc {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_TimeUtc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Universal time format: YYYY-MM-DD hh:mm:ss (Date and time).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_UniversalTime {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_UniversalTime", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Unix Timestamp (Date and time).
         /// </summary>
-        internal static string Microsoft_plugin_timedate_unix {
+        internal static string Microsoft_plugin_timedate_Unix {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_unix", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Unix", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Unix Timestamp (Current date and time).
         /// </summary>
-        internal static string Microsoft_plugin_timedate_unixNow {
+        internal static string Microsoft_plugin_timedate_UnixNow {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_unixNow", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_UnixNow", resourceCulture);
             }
         }
         
@@ -241,7 +340,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows file time (Int64 number).
+        ///   Looks up a localized string similar to Windows file time (Date and time as Int64 number).
         /// </summary>
         internal static string Microsoft_plugin_timedate_WindowsFileTime {
             get {

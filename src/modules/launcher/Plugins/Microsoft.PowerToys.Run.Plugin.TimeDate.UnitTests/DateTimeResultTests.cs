@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 {
     [TestClass]
-    public class HelperTests
+    public class DateTimeResultTests
     {
         [DataTestMethod]
         [DataRow("time", "10:30 AM")]
@@ -28,15 +28,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month", "March")]
         [DataRow("month of year", "3")]
         [DataRow("year", "2022")]
-        public void ValidateWithShortTimeAndShortDate(string typedString, string expectedResult)
+        public void ValidateWithShortTimeAndShortDate(string formatLable, string expectedResult)
         {
             // Setup
             CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetCommandList(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
-            var result = helperResults.FirstOrDefault(x => x.Label == typedString);
+            var helperResults = ResultHelper.GetAvailableResults(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var result = helperResults.FirstOrDefault(x => x.Label == formatLable);
 
             // Assert
             Assert.AreEqual(result.Value, expectedResult);
@@ -59,15 +59,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month", "March")]
         [DataRow("month of year", "3")]
         [DataRow("year", "2022")]
-        public void ValidateWithShortTimeAndLongDate(string typedString, string expectedResult)
+        public void ValidateWithShortTimeAndLongDate(string formatLable, string expectedResult)
         {
             // Setup
             CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetCommandList(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
-            var result = helperResults.FirstOrDefault(x => x.Label == typedString);
+            var helperResults = ResultHelper.GetAvailableResults(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var result = helperResults.FirstOrDefault(x => x.Label == formatLable);
 
             // Assert
             Assert.AreEqual(result.Value, expectedResult);
@@ -90,15 +90,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month", "March")]
         [DataRow("month of year", "3")]
         [DataRow("year", "2022")]
-        public void ValidateWithLongTimeAndShortDate(string typedString, string expectedResult)
+        public void ValidateWithLongTimeAndShortDate(string formatLable, string expectedResult)
         {
             // Setup
             CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetCommandList(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
-            var result = helperResults.FirstOrDefault(x => x.Label == typedString);
+            var helperResults = ResultHelper.GetAvailableResults(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var result = helperResults.FirstOrDefault(x => x.Label == formatLable);
 
             // Assert
             Assert.AreEqual(result.Value, expectedResult);
@@ -121,15 +121,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month", "March")]
         [DataRow("month of year", "3")]
         [DataRow("year", "2022")]
-        public void ValidateWithLongTimeAndLongDate(string typedString, string expectedResult)
+        public void ValidateWithLongTimeAndLongDate(string formatLable, string expectedResult)
         {
             // Setup
             CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetCommandList(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
-            var result = helperResults.FirstOrDefault(x => x.Label == typedString);
+            var helperResults = ResultHelper.GetAvailableResults(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var result = helperResults.FirstOrDefault(x => x.Label == formatLable);
 
             // Assert
             Assert.AreEqual(result.Value, expectedResult);

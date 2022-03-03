@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
@@ -78,13 +79,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // Known date/time format
                 return true;
             }
-            else if (int.TryParse(input, out int secondsInt))
+            else if (Regex.IsMatch(input, @"^u\d+") && long.TryParse(input.TrimStart('u'), out long secondsInt))
             {
                 // unix time stamp
+                // we use long instead of int because int ist to small after 03:14:07 UTC 2038-01-19
                 timestamp = new DateTime(1970, 1, 1).AddSeconds(secondsInt).ToLocalTime();
                 return true;
             }
-            else if (long.TryParse(input, out long secondsLong))
+            else if (Regex.IsMatch(input, @"^ft\d+") && long.TryParse(input.TrimStart("ft".ToCharArray()), out long secondsLong))
             {
                 // windows file time
                 timestamp = new DateTime(secondsLong);
@@ -92,7 +94,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
             else
             {
-                timestamp = new DateTime(0, 0, 0, 0, 0, 1);
+                timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
         }
@@ -101,7 +103,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
     /// <summary>
     /// Type of time/date format
     /// </summary>
-    public enum FormatStringType
+    internal enum FormatStringType
     {
         Time,
         Date,
