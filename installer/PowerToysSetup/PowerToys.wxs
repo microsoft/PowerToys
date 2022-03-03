@@ -46,11 +46,11 @@
                 Id="DotnetRuntime"
                 DetectCondition="HasDotnet3122"
                 DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/1c14e24b-7f31-42dc-ba3c-83295a2d6f7e/41b93591162dfe556cc160ae44fbe75e/windowsdesktop-runtime-3.1.22-win-x64.exe"
-                InstallCommand="/install /quiet"
-                RepairCommand="/repair /passive"
+                InstallCommand="/install /quiet /norestart"
+                RepairCommand="/repair /passive /norestart"
                 Permanent="yes"
                 PerMachine="yes"
-                UninstallCommand="/uninstall /quiet">
+                UninstallCommand="/uninstall /quiet /norestart">
                 <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
                     Description="Microsoft Windows Desktop Runtime - 3.1.22 (x64)"
@@ -65,11 +65,11 @@
                 Id="DotnetRuntime6"
                 DetectCondition="HasDotnet602"
                 DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/efa32b7a-6eec-4d97-9cdc-c7336a29a749/3df4296170397cf60884dae1be3d103b/windowsdesktop-runtime-6.0.2-win-x64.exe"
-                InstallCommand="/install /quiet"
-                RepairCommand="/repair /passive"
+                InstallCommand="/install /quiet /norestart"
+                RepairCommand="/repair /passive /norestart"
                 Permanent="yes"
                 PerMachine="yes"
-                UninstallCommand="/uninstall /quiet">
+                UninstallCommand="/uninstall /quiet /norestart">
                 <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
                     Description="Microsoft Windows Desktop Runtime - 6.0.2 (x64)"
