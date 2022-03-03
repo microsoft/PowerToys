@@ -143,10 +143,10 @@
     <value>Day of the year</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultSubTitle" xml:space="preserve">
-    <value>'u' for Unix Timestamp, 'ft' for Windows file time</value>
+    <value>Valid prefixes: 'u' for Unix Timestamp, 'ft' for Windows file time</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultTitle" xml:space="preserve">
-    <value>Error: Can't parse number. Please use a format prefix.</value>
+    <value>Error: Failed to parse number input.</value>
   </data>
   <data name="Microsoft_plugin_timedate_Iso8601" xml:space="preserve">
     <value>ISO 8601 (Date and time)</value>

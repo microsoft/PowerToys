@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Mock<Main> main = new Mock<Main>();
             main.Object.IconTheme = "dark";
             string pluginKeyword = "(";
-            Query expectedQuery = new Query(pluginKeyword + typedString);
+            Query expectedQuery = new Query(typedString, pluginKeyword);
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().IcoPath;
@@ -68,7 +68,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Mock<Main> main = new Mock<Main>();
             main.Object.IconTheme = "light";
             string pluginKeyword = "(";
-            Query expectedQuery = new Query(pluginKeyword + typedString);
+            Query expectedQuery = new Query(typedString, pluginKeyword);
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().IcoPath;

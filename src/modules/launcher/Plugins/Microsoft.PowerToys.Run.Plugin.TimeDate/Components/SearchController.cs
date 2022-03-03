@@ -48,11 +48,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // Return all results for system time/date on empty keyword search
                 availableFormats.AddRange(ResultHelper.GetAvailableResults(isKeywordSearch));
             }
-            else if (searchTerm.All(char.IsLetter))
-            {
-                // Search for specified format with system time/date
-                availableFormats.AddRange(ResultHelper.GetAvailableResults(isKeywordSearch));
-            }
             else if (Regex.IsMatch(searchTerm, @".+" + Regex.Escape(InputDelimiter) + @".+"))
             {
                 // Search for specified format with specified time/date value
@@ -69,11 +64,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 availableFormats.AddRange(ResultHelper.GetAvailableResults(isKeywordSearch, null, null, timestamp));
                 searchTerm = string.Empty;
             }
-            else if (searchTerm.Any(char.IsNumber) && !searchTerm.Any(char.IsSymbol))
+            else
             {
-                // If search term contains a number that can't be parsed return an error message
-                results.Add(GetNumberErrorResult(iconTheme));
-                return results;
+                // Search for specified format with system time/date
+                availableFormats.AddRange(ResultHelper.GetAvailableResults(isKeywordSearch));
             }
 
             // Check searchTerm after getting results to select type of result list
@@ -110,6 +104,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                         });
                     }
                 }
+            }
+
+            // If search term is only a number that can't be parsed return an error message
+            if (!isEmptySearchInput && results.Count == 0 && searchTerm.Any(char.IsNumber) && Regex.IsMatch(searchTerm, @"\w*\d*$"))
+            {
+                results.Add(GetNumberErrorResult(iconTheme));
             }
 
             return results;

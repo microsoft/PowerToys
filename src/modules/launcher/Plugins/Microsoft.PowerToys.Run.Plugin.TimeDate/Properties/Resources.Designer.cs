@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;u&apos; for Unix Timestamp, &apos;ft&apos; for Windows file time.
+        ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ft&apos; for Windows file time.
         /// </summary>
         internal static string Microsoft_plugin_timedate_ErrorResultSubTitle {
             get {
@@ -142,7 +142,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error: Can&apos;t parse number. Please use a format prefix..
+        ///   Looks up a localized string similar to Error: Failed to parse number input..
         /// </summary>
         internal static string Microsoft_plugin_timedate_ErrorResultTitle {
             get {

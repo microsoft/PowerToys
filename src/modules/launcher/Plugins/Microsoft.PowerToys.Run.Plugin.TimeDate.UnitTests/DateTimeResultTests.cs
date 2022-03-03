@@ -18,15 +18,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("time", "10:30 AM")]
         [DataRow("date", "3/2/2022")]
         [DataRow("date and time", "3/2/2022 10:30 AM")]
-        [DataRow("unix", "1646213445")]
         [DataRow("day", "Wednesday")]
-        [DataRow("day of week", "3")]
-        [DataRow("day of months", "2")]
-        [DataRow("day of year", "61")]
-        [DataRow("week of month", "1")]
-        [DataRow("week of year", "10")]
+        [DataRow("day of the week", "3")]
+        [DataRow("day of the month", "2")]
+        [DataRow("day of the year", "61")]
+        [DataRow("week of the month", "1")]
+        [DataRow("week of the year", "10")]
         [DataRow("month", "March")]
-        [DataRow("month of year", "3")]
+        [DataRow("month of the year", "3")]
         [DataRow("year", "2022")]
         public void ValidateWithShortTimeAndShortDate(string formatLable, string expectedResult)
         {
@@ -36,10 +35,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
             // Act
             var helperResults = ResultHelper.GetAvailableResults(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
-            var result = helperResults.FirstOrDefault(x => x.Label == formatLable);
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLable, StringComparison.OrdinalIgnoreCase));
 
             // Assert
-            Assert.AreEqual(result.Value, expectedResult);
+            Assert.AreEqual(expectedResult, result?.Value);
 
             // Finalize
             Thread.CurrentThread.CurrentCulture = originalCulture;
@@ -48,16 +47,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("time", "10:30 AM")]
         [DataRow("date", "Wednesday, March 2, 2022")]
-        [DataRow("now", "Wednesday, March 2, 2022 10:30 AM")]
-        [DataRow("unix", "1646213445")]
+        [DataRow("date and time", "Wednesday, March 2, 2022 10:30 AM")]
         [DataRow("day", "Wednesday")]
-        [DataRow("day of week", "3")]
-        [DataRow("day of months", "2")]
-        [DataRow("day of year", "61")]
-        [DataRow("week of month", "1")]
-        [DataRow("week of year", "10")]
+        [DataRow("day of the week", "3")]
+        [DataRow("day of the month", "2")]
+        [DataRow("day of the year", "61")]
+        [DataRow("week of the month", "1")]
+        [DataRow("week of the year", "10")]
         [DataRow("month", "March")]
-        [DataRow("month of year", "3")]
+        [DataRow("month of the year", "3")]
         [DataRow("year", "2022")]
         public void ValidateWithShortTimeAndLongDate(string formatLable, string expectedResult)
         {
@@ -67,10 +65,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
             // Act
             var helperResults = ResultHelper.GetAvailableResults(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
-            var result = helperResults.FirstOrDefault(x => x.Label == formatLable);
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLable, StringComparison.OrdinalIgnoreCase));
 
             // Assert
-            Assert.AreEqual(result.Value, expectedResult);
+            Assert.AreEqual(expectedResult, result?.Value);
 
             // Finalize
             Thread.CurrentThread.CurrentCulture = originalCulture;
@@ -79,16 +77,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("time", "10:30:45 AM")]
         [DataRow("date", "3/2/2022")]
-        [DataRow("now", "3/2/2022 10:30:45 AM")]
-        [DataRow("unix", "1646213445")]
+        [DataRow("date and time", "3/2/2022 10:30:45 AM")]
         [DataRow("day", "Wednesday")]
-        [DataRow("day of week", "3")]
-        [DataRow("day of months", "2")]
-        [DataRow("day of year", "61")]
-        [DataRow("week of month", "1")]
-        [DataRow("week of year", "10")]
+        [DataRow("day of the week", "3")]
+        [DataRow("day of the month", "2")]
+        [DataRow("day of the year", "61")]
+        [DataRow("week of the month", "1")]
+        [DataRow("week of the year", "10")]
         [DataRow("month", "March")]
-        [DataRow("month of year", "3")]
+        [DataRow("month of the year", "3")]
         [DataRow("year", "2022")]
         public void ValidateWithLongTimeAndShortDate(string formatLable, string expectedResult)
         {
@@ -98,10 +95,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
             // Act
             var helperResults = ResultHelper.GetAvailableResults(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
-            var result = helperResults.FirstOrDefault(x => x.Label == formatLable);
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLable, StringComparison.OrdinalIgnoreCase));
 
             // Assert
-            Assert.AreEqual(result.Value, expectedResult);
+            Assert.AreEqual(expectedResult, result?.Value);
 
             // Finalize
             Thread.CurrentThread.CurrentCulture = originalCulture;
@@ -110,16 +107,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("time", "10:30:45 AM")]
         [DataRow("date", "Wednesday, March 2, 2022")]
-        [DataRow("now", "Wednesday, March 2, 2022 10:30:45 AM")]
-        [DataRow("unix", "1646213445")]
+        [DataRow("date and time", "Wednesday, March 2, 2022 10:30:45 AM")]
         [DataRow("day", "Wednesday")]
-        [DataRow("day of week", "3")]
-        [DataRow("day of months", "2")]
-        [DataRow("day of year", "61")]
-        [DataRow("week of month", "1")]
-        [DataRow("week of year", "10")]
+        [DataRow("day of the week", "3")]
+        [DataRow("day of the month", "2")]
+        [DataRow("day of the year", "61")]
+        [DataRow("week of the month", "1")]
+        [DataRow("week of the year", "10")]
         [DataRow("month", "March")]
-        [DataRow("month of year", "3")]
+        [DataRow("month of the year", "3")]
         [DataRow("year", "2022")]
         public void ValidateWithLongTimeAndLongDate(string formatLable, string expectedResult)
         {
@@ -129,10 +125,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
             // Act
             var helperResults = ResultHelper.GetAvailableResults(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
-            var result = helperResults.FirstOrDefault(x => x.Label == formatLable);
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLable, StringComparison.OrdinalIgnoreCase));
 
             // Assert
-            Assert.AreEqual(result.Value, expectedResult);
+            Assert.AreEqual(expectedResult, result?.Value);
 
             // Finalize
             Thread.CurrentThread.CurrentCulture = originalCulture;
