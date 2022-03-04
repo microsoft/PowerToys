@@ -875,7 +875,7 @@ bool ZoneSet::CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, in
 
 bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 {
-    const auto zoneSetSearchResult = CustomLayouts::instance().GetLayout(m_config.Id);
+    const auto zoneSetSearchResult = CustomLayouts::instance().GetCustomLayoutData(m_config.Id);
     if (!zoneSetSearchResult.has_value())
     {
         return false;
