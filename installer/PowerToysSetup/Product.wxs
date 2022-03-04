@@ -475,6 +475,7 @@
                                 </Directory>
                                 <Directory Id="WindowsTerminalPluginFolder" Name="WindowsTerminal">
                                     <Directory Id="WindowsTerminalImagesFolder" Name="Images" />
+                                    <Directory Id="WindowsTerminalLanguagesFolder" Name="Languages" />
                                 </Directory>
                                 <Directory Id="SystemPluginFolder" Name="System">
                                     <Directory Id="SystemImagesFolder" Name="Images" />
