@@ -20,7 +20,7 @@ namespace NonLocalizable
 }
 
 // Placeholder enums since dwmapi.h doesn't have these until SDK 22000.
-// Note: Remove once SDK targets 22000 or above.
+// TODO: Remove once SDK targets 22000 or above.
 enum DWMWINDOWATTRIBUTE_CUSTOM
 {
     DWMWA_WINDOW_CORNER_PREFERENCE = 33
