@@ -35,6 +35,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("excluded_apps")]
         public StringProperty ExcludedApps { get; set; }
 
+        [JsonPropertyName("shaking_minimum_distance")]
+        public IntProperty ShakingMinimumDistance { get; set; }
+
         public FindMyMouseProperties()
         {
             ActivationMethod = new IntProperty(0);
@@ -46,6 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             AnimationDurationMs = new IntProperty(500);
             SpotlightInitialZoom = new IntProperty(9);
             ExcludedApps = new StringProperty();
+            ShakingMinimumDistance = new IntProperty(1000);
         }
     }
 }
