@@ -146,7 +146,7 @@
     <value>Valid prefixes: 'u' for Unix Timestamp, 'ft' for Windows file time</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultTitle" xml:space="preserve">
-    <value>Error: Failed to parse number input.</value>
+    <value>Error: Invalid number input</value>
   </data>
   <data name="Microsoft_plugin_timedate_Iso8601" xml:space="preserve">
     <value>ISO 8601 (Date and time)</value>
@@ -185,16 +185,16 @@
     <value>RFC1123 (Date and time)</value>
   </data>
   <data name="Microsoft_plugin_timedate_settingDateWithWeekday" xml:space="preserve">
-    <value>Show date with weekday and name of month  (Affected results: date, now)</value>
+    <value>Show date with weekday and name of month  (Applies to results: date, now)</value>
   </data>
   <data name="Microsoft_plugin_timedate_settingHideNumberMessageOnGlobalQuery" xml:space="preserve">
-    <value>Hide number input error message on global queries</value>
+    <value>Hide 'Invalid number input' error message on global queries</value>
   </data>
   <data name="Microsoft_plugin_timedate_settingOnlyDateTimeNowGlobal" xml:space="preserve">
-    <value>Show only 'date', 'time' and 'now' result in global results</value>
+    <value>Show only 'date', 'time' and 'now' result on global queries</value>
   </data>
   <data name="Microsoft_plugin_timedate_settingTimeWithSeconds" xml:space="preserve">
-    <value>Show time with seconds  (Affected results: time, now)</value>
+    <value>Show time with seconds  (Applies to results: time, now)</value>
   </data>
   <data name="Microsoft_plugin_timedate_SubTitleNote" xml:space="preserve">
     <value>Select or {0} to copy</value>

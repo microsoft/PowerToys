@@ -153,7 +153,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(ft12..54//8")] // Number contains punctuation and other characters
         [DataRow("(12..54//8")] // Number contains punctuation and other characters
         [DataRow("(ft::1288gg8888")] // Number contains delimiter and other characters
-        public void InvalidNumberInputNotShowsErrorMessage(string typedString)
+        public void InvalidInputNotShowsErrorMessage(string typedString)
         {
             // Setup
             Mock<Main> main = new Mock<Main>();

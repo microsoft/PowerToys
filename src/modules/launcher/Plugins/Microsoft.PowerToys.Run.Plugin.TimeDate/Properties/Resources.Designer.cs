@@ -142,7 +142,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error: Failed to parse number input..
+        ///   Looks up a localized string similar to Error: Invalid number input.
         /// </summary>
         internal static string Microsoft_plugin_timedate_ErrorResultTitle {
             get {
@@ -250,7 +250,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show date with weekday and name of month  (Affected results: date, now).
+        ///   Looks up a localized string similar to Show date with weekday and name of month  (Applies to results: date, now).
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingDateWithWeekday {
             get {
@@ -259,7 +259,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hide number input error message on global queries.
+        ///   Looks up a localized string similar to Hide &apos;Invalid number input&apos; error message on global queries.
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingHideNumberMessageOnGlobalQuery {
             get {
@@ -268,7 +268,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show only &apos;date&apos;, &apos;time&apos; and &apos;now&apos; result in global results.
+        ///   Looks up a localized string similar to Show only &apos;date&apos;, &apos;time&apos; and &apos;now&apos; result on global queries.
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingOnlyDateTimeNowGlobal {
             get {
@@ -277,7 +277,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show time with seconds  (Affected results: time, now).
+        ///   Looks up a localized string similar to Show time with seconds  (Applies to results: time, now).
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingTimeWithSeconds {
             get {

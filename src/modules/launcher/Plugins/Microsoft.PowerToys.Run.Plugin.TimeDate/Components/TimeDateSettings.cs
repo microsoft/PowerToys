@@ -95,12 +95,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 },
                 new PluginAdditionalOption()
                 {
+                    // ToDo: When description property is implemented (#15853), move the note in brackets to description.
                     Key = nameof(TimeWithSeconds),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_settingTimeWithSeconds,
                     Value = false,
                 },
                 new PluginAdditionalOption()
                 {
+                    // ToDo: When description property is implemented (#15853), move the note in brackets to description.
                     Key = nameof(DateWithWeekday),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_settingDateWithWeekday,
                     Value = false,
