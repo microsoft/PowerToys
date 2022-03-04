@@ -125,6 +125,7 @@
     </Compile>
     <Compile Include="Controls\SettingsPageControl\PageLink.cs" />
     <Compile Include="Converters\AwakeModeToIntConverter.cs" />
+    <Compile Include="Converters\FindMyMouseActivationShakeMouseIntToVisibilityConverter.cs" />
     <Compile Include="Converters\ImageResizerFitToStringConverter.cs" />
     <Compile Include="Converters\ImageResizerUnitToStringConverter.cs" />
     <Compile Include="Converters\UpdateStateToBoolConverter.cs" />
