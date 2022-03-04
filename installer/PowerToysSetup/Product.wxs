@@ -475,6 +475,7 @@
                                 </Directory>
                                 <Directory Id="WindowsTerminalPluginFolder" Name="WindowsTerminal">
                                     <Directory Id="WindowsTerminalImagesFolder" Name="Images" />
+                                    <Directory Id="WindowsTerminalLanguagesFolder" Name="Languages" />
                                 </Directory>
                                 <Directory Id="SystemPluginFolder" Name="System">
                                     <Directory Id="SystemImagesFolder" Name="Images" />
@@ -1347,14 +1348,12 @@
                 Directory="Resource$(var.IdSafeLanguage)TimeZonePluginFolder">
                 <File Id="Launcher_TimeZone_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeZone.resources.dll" />
             </Component>
-            <!-- Uncomment after Plugin receives the localization files.
-                <Component 
-                    Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component" 
-                    Guid="$(var.CompGUIDPrefix)15"                
-                    Directory="Resource$(var.IdSafeLanguage)WindowsTerminalFolder">
-                    <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
-                </Component>
-                -->
+            <Component
+                Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component"
+                Guid="$(var.CompGUIDPrefix)15"
+                Directory="Resource$(var.IdSafeLanguage)WindowsTerminalFolder">
+                <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
+            </Component>
             <?undef IdSafeLanguage?>
             <?undef CompGUIDPrefix?>
             <?endforeach?>
