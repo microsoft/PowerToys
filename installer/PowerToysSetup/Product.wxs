@@ -88,7 +88,7 @@
 
 	<?define SystemImagesComponentFiles=lock.dark.png;lock.light.png;logoff.dark.png;logoff.light.png;recyclebin.dark.png;recyclebin.light.png;restart.dark.png;restart.light.png;shutdown.dark.png;shutdown.light.png;sleep.dark.png;sleep.light.png;firmwareSettings.dark.png;firmwareSettings.light.png?>
 
-    <?define TimeDateComponentFiles=Microsoft.Plugin.TimeDate.deps.json;Microsoft.Plugin.TimeDate.dll;plugin.json;PowerToys.ManagedTelemetry.dll?>
+    <?define TimeDateComponentFiles=Microsoft.PowerToys.Run.Plugin.TimeDate.deps.json;Microsoft.PowerToys.Run.Plugin.TimeDate.dll;plugin.json;PowerToys.ManagedTelemetry.dll?>
 
 	<?define TimeDateImagesComponentFiles=calendar.dark.png;calendar.light.png;time.dark.png;time.light.png;timeDate.dark.png;timeDate.light.png;Warning.dark.png;Warning.light.png?>
 
