@@ -527,20 +527,6 @@ void WorkArea::CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) 
 void WorkArea::UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept
 {
     m_zoneSet.copy_from(zoneSet);
-
-    if (m_zoneSet)
-    {
-        wil::unique_cotaskmem_string zoneSetId;
-        if (SUCCEEDED_LOG(StringFromCLSID(m_zoneSet->Id(), &zoneSetId)))
-        {
-            FancyZonesDataTypes::ZoneSetData data{
-                .uuid = zoneSetId.get(),
-                .type = m_zoneSet->LayoutType()
-            };
-
-            AppliedLayouts::instance().ApplyLayout(m_uniqueId, data);
-        }
-    }
 }
 
 LRESULT WorkArea::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
