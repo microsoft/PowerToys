@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
@@ -13,7 +14,7 @@ using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 {
-    public class Main : IPlugin, IPluginI18n, ISettingProvider
+    public class Main : IPlugin, IPluginI18n, ISettingProvider, IContextMenu
     {
         private PluginInitContext _context;
 
@@ -29,6 +30,27 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
             {
                 return TimeDateSettings.GetAdditionalOptions();
             }
+        }
+
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
+        {
+            if (!(selectedResult?.ContextData is AvailableResult data))
+            {
+                return new List<ContextMenuResult>(0);
+            }
+
+            return new List<ContextMenuResult>()
+            {
+                new ContextMenuResult
+                {
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control,
+                    FontFamily = "Segoe MDL2 Assets",
+                    Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
+                    Title = $"{Resources.Microsoft_plugin_timedate_CopyToClipboard} (Ctrl+C)",
+                    Action = _ => ResultHelper.CopyToClipBoard(data.Value),
+                },
+            };
         }
 
         public void Init(PluginInitContext context)

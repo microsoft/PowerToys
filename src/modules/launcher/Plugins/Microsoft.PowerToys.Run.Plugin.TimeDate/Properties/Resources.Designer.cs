@@ -61,11 +61,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select to copy.
+        ///   Looks up a localized string similar to Copy value.
         /// </summary>
-        internal static string Microsoft_plugin_timedate_copyToClipboard {
+        internal static string Microsoft_plugin_timedate_CopyToClipboard {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_copyToClipboard", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_CopyToClipboard", resourceCulture);
             }
         }
         
@@ -282,6 +282,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_settingTimeWithSeconds {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_settingTimeWithSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select or {0} to copy.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SubTitleNote {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SubTitleNote", resourceCulture);
             }
         }
         

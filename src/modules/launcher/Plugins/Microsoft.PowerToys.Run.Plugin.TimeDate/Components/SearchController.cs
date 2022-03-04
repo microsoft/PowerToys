@@ -79,9 +79,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     results.Add(new Result
                     {
                         Title = f.Value,
-                        SubTitle = $"{f.Label} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
+                        SubTitle = $"{f.Label} - {string.Format(Resources.Microsoft_plugin_timedate_SubTitleNote, "Ctrl+C")}",
                         IcoPath = f.GetIconPath(iconTheme),
                         Action = _ => ResultHelper.CopyToClipBoard(f.Value),
+                        ContextData = f,
                     });
                 }
             }
@@ -96,11 +97,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                         results.Add(new Result
                         {
                             Title = f.Value,
-                            SubTitle = $"{f.Label} - {Resources.Microsoft_plugin_timedate_copyToClipboard}",
+                            SubTitle = $"{f.Label} - {string.Format(Resources.Microsoft_plugin_timedate_SubTitleNote, "Ctrl+C")}",
                             IcoPath = f.GetIconPath(iconTheme),
                             Action = _ => ResultHelper.CopyToClipBoard(f.Value),
                             Score = resultMatch.Score,
                             SubTitleHighlightData = resultMatch.MatchData,
+                            ContextData = f,
                         });
                     }
                 }

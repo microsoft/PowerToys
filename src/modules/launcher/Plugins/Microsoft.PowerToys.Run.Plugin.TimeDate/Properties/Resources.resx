@@ -117,8 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Microsoft_plugin_timedate_copyToClipboard" xml:space="preserve">
-    <value>Select to copy</value>
+  <data name="Microsoft_plugin_timedate_CopyToClipboard" xml:space="preserve">
+    <value>Copy value</value>
   </data>
   <data name="Microsoft_plugin_timedate_Date" xml:space="preserve">
     <value>Date</value>
@@ -195,6 +195,10 @@
   </data>
   <data name="Microsoft_plugin_timedate_settingTimeWithSeconds" xml:space="preserve">
     <value>Show time with seconds  (Affected results: time, now)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SubTitleNote" xml:space="preserve">
+    <value>Select or {0} to copy</value>
+    <comment>Do not translate the placeholder '{0}'.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_Time" xml:space="preserve">
     <value>Time</value>
