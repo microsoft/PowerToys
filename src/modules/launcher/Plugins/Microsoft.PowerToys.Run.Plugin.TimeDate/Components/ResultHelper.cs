@@ -65,15 +65,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 {
                     new AvailableResult()
                     {
-                        Value = dateTimeNowUtc.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.DateTime, timeExtended, dateExtended)),
-                        Label = timestamp == null ? Resources.Microsoft_plugin_timedate_NowUtc : Resources.Microsoft_plugin_timedate_DateAndTimeUtc,
-                        IconType = ResultIconType.DateTime,
-                    },
-                    new AvailableResult()
-                    {
                         Value = dateTimeNowUtc.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended)),
                         Label = Resources.Microsoft_plugin_timedate_TimeUtc,
                         IconType = ResultIconType.Time,
+                    },
+                    new AvailableResult()
+                    {
+                        Value = dateTimeNowUtc.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.DateTime, timeExtended, dateExtended)),
+                        Label = timestamp == null ? Resources.Microsoft_plugin_timedate_NowUtc : Resources.Microsoft_plugin_timedate_DateAndTimeUtc,
+                        IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
                     {

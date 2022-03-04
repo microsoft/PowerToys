@@ -117,7 +117,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(time//eeee")]
         [DataRow("(date::12::55")]
         [DataRow("(date::12:aa:55")]
-        public void InvalidInputWithoutResult(string typedString)
+        public void InvalidInputNotShowsResults(string typedString)
         {
             // Setup
             Mock<Main> main = new Mock<Main>();
