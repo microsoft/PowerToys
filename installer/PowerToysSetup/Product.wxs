@@ -1351,7 +1351,7 @@
             <Component
                 Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)15"
-                Directory="Resource$(var.IdSafeLanguage)WindowsTerminalFolder">
+                Directory="Resource$(var.IdSafeLanguage)WindowsTerminalPluginFolder">
                 <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
             </Component>
             <?undef IdSafeLanguage?>
