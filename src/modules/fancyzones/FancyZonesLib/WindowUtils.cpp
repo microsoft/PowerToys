@@ -394,7 +394,7 @@ void FancyZonesWindowUtils::RestoreWindowSize(HWND window) noexcept
         }
 
         // Set window corner preference on Windows 11 to "Default"
-        // Note: Should probably store preference from before snap
+        // TODO: Should probably store preference from before snap
         int corner_preference = DWMWCP_DEFAULT;
         DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &corner_preference, sizeof(corner_preference));
 
