@@ -5,13 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Wox.Infrastructure;
 using Wox.Plugin;
-
-[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {

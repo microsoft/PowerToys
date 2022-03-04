@@ -21,9 +21,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("time", 12)]
-        [DataRow("date", 11)]
-        [DataRow("year", 4)]
+        [DataRow("time", 2)]
+        [DataRow("date", 2)]
+        [DataRow("year", 0)]
         [DataRow("", 0)]
         public void CountWithoutPluginKeyword(string typedString, int expectedResultCount)
         {
@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             var result = main.Object.Query(expectedQuery).Where(x => x.SubTitle.Contains(expectedQuery.Search, StringComparison.OrdinalIgnoreCase)).ToList().Count;
 
             // Assert
-            Assert.AreEqual(expectedResultCount, result);
+            Assert.AreEqual(expectedResultCount, result, "Result depends on default plugin settings!");
         }
 
         [DataTestMethod]

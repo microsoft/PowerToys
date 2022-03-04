@@ -4,8 +4,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
+
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
@@ -19,6 +22,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// An instance of the class <see cref="TimeDateSettings"></see>
         /// </summary>
         private static TimeDateSettings instance;
+
+        /// <summary>
+        /// Are the class properties initialized with default values
+        /// </summary>
+        private static bool initialized = false;
 
         /// <summary>
         /// Gets a value indicating whether to show only the time and date in global results or not
@@ -62,6 +70,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 if (instance == null)
                 {
                     instance = new TimeDateSettings();
+
+                    // Init class properties with default values
+                    instance.UpdateSettings(null);
                 }
 
                 return instance;
@@ -111,7 +122,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <param name="settings">The settings for all power launcher plugins.</param>
         internal void UpdateSettings(PowerLauncherPluginSettings settings)
         {
-            if (settings is null || settings.AdditionalOptions is null)
+            if ((settings is null || settings.AdditionalOptions is null) & initialized)
             {
                 return;
             }
@@ -130,7 +141,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <returns>A settings value.</returns>
         private static bool GetSettingOrDefault(PowerLauncherPluginSettings settings, string name)
         {
-            var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == name);
+            var option = settings?.AdditionalOptions?.FirstOrDefault(x => x.Key == name);
 
             // If a setting isn't available, we use the value defined in the method GetAdditionalOptions() as fallback.
             // We can use First() instead of FirstOrDefault() because the values must exist. Otherwise, we made a mistake when defining the settings.
