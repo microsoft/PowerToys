@@ -77,12 +77,18 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(year", "Year -")]
         [DataRow("(universal", "Universal time format: YYYY-MM-DD hh:mm:ss (Date and time) -")]
         [DataRow("(iso date", "ISO 8601 (Date and time) -")]
-        [DataRow("(iso utc date", "ISO 8601 UTC (Date and time) - ")]
+        [DataRow("(iso utc date", "ISO 8601 UTC (Date and time) -")]
         [DataRow("(iso zone", "ISO 8601 with time zone (Date and time) - ")]
-        [DataRow("(iso utc zone", "ISO 8601 UTC with time zone (Date and time) - ")]
+        [DataRow("(iso utc zone", "ISO 8601 UTC with time zone (Date and time) -")]
         [DataRow("(rfc", "RFC1123 (Date and time) -")]
         [DataRow("(time::12:30", "Time -")]
         [DataRow("(date::10.10.2022", "Date -")]
+        [DataRow("(12:30", "Time -")]
+        [DataRow("(10.10.2022", "Date -")]
+        [DataRow("(u1646408119", "Date and time -")]
+        [DataRow("(time::u1646408119", "Time -")]
+        [DataRow("(ft637820085517321977", "Date and time -")]
+        [DataRow("(time::ft637820085517321977", "Time -")]
         public void CanFindResult(string typedString, string expectedResult)
         {
             // Setup
@@ -94,6 +100,70 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
             // Assert
             Assert.IsNotNull(result, $"Failed for '{typedString}'='{expectedResult}'");
+        }
+
+        // [DataRow("(::")] -> Behaves different to PT Run user interface
+        // [DataRow("(time::")] -> Behaves different to PT Run user interface
+        // [DataRow("(::time")] -> Behaves different to PT Run user interface
+        [DataTestMethod]
+        [DataRow("(abcdefg")]
+        [DataRow("(timmmmeeee")]
+        [DataRow("(10.10.20.aa.22")]
+        [DataRow("(12::55")]
+        [DataRow("(12:aa:55")]
+        [DataRow("(timtaaaetetaae::u1646408119")]
+        [DataRow("(time:eeee")]
+        [DataRow("(time::eeee")]
+        [DataRow("(time//eeee")]
+        [DataRow("(date::12::55")]
+        [DataRow("(date::12:aa:55")]
+        public void InvalidInputWithoutResult(string typedString)
+        {
+            // Setup
+            Mock<Main> main = new Mock<Main>();
+            Query expectedQuery = new Query(typedString, "(");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).FirstOrDefault();
+
+            // Assert
+            Assert.IsNull(result, result?.ToString());
+        }
+
+        [DataTestMethod]
+        [DataRow("(ug1646408119")] // Invalid prefix
+        [DataRow("(u9999999999999")] // Unix number + prefix is longer than 12 characters
+        [DataRow("(0123456")] // Missing prefix
+        [DataRow("(ft63782008ab55173dasdas21977")] // Number contains letters
+        public void InvalidNumberInputShowsErrorMessage(string typedString)
+        {
+            // Setup
+            Mock<Main> main = new Mock<Main>();
+            Query expectedQuery = new Query(typedString, "(");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).FirstOrDefault().Title;
+
+            // Assert
+            Assert.IsTrue(result.StartsWith("Error:"));
+        }
+
+        [DataTestMethod]
+        [DataRow("(ft12..548")] // Number contains punctuation
+        [DataRow("(ft12..54//8")] // Number contains punctuation and other characters
+        [DataRow("(12..54//8")] // Number contains punctuation and other characters
+        [DataRow("(ft::1288gg8888")] // Number contains delimiter and other characters
+        public void InvalidNumberInputNotShowsErrorMessage(string typedString)
+        {
+            // Setup
+            Mock<Main> main = new Mock<Main>();
+            Query expectedQuery = new Query(typedString, "(");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).FirstOrDefault();
+
+            // Assert
+            Assert.IsNull(result);
         }
     }
 }

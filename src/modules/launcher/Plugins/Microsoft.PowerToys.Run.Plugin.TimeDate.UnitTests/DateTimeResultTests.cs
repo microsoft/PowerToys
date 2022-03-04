@@ -16,12 +16,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
     {
         [DataTestMethod]
         [DataRow("time", "10:30 AM")]
-        [DataRow("time utc", "")] // Test only if we get a result, because it can be different based on test time and systems
+
         [DataRow("date", "3/2/2022")]
         [DataRow("date and time", "3/2/2022 10:30 AM")]
-        [DataRow("date and time utc", "")] // Test only if we get a result, because it can be different based on test time and systems
-        [DataRow("Unix Timestamp (Date and time)", "")] // Test only if we get a result, because it can be different based on test time and systems
-        [DataRow("Windows file time (Date and time as Int64 number)", "")] // Test only if we get a result, because it can be different based on test time and systems
+        
         [DataRow("day", "Wednesday")]
         [DataRow("day of the week", "3")]
         [DataRow("day of the month", "2")]
