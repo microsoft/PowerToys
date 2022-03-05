@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         private TimeDateSettings()
         {
             // Init class properties with default values
-            instance.UpdateSettings(null);
+            UpdateSettings(null);
             _initialized = true;
         }
 

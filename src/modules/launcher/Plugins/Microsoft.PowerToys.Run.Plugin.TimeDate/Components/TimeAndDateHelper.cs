@@ -4,7 +4,10 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {

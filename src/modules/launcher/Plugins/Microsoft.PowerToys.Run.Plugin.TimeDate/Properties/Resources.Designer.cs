@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Day.
+        ///   Looks up a localized string similar to Day (Week day).
         /// </summary>
         internal static string Microsoft_plugin_timedate_Day {
             get {
@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Day of the week.
+        ///   Looks up a localized string similar to Day of the week (Week day).
         /// </summary>
         internal static string Microsoft_plugin_timedate_DayOfWeek {
             get {
@@ -223,7 +223,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provides time and date values for the system time or a custom time stamp (Examples: &apos;day&apos;, &apos;day::2/3/2022&apos;, &apos;time::10:30:45 AM&apos;).
+        ///   Looks up a localized string similar to Provides time and date values for the system time or a custom time stamp (Examples: &apos;day&apos;, &apos;day::2/3/2022&apos;, &apos;time::10:30:45 AM&apos;, &apos;calendar week::2/3/2022&apos;).
         /// </summary>
         internal static string Microsoft_plugin_timedate_plugin_description {
             get {
@@ -250,7 +250,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show date with weekday and name of month  (Applies to results: date, now).
+        ///   Looks up a localized string similar to Show date with weekday and name of month (Applies to &apos;Date&apos; and &apos;Now&apos; result).
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingDateWithWeekday {
             get {
@@ -277,7 +277,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show time with seconds  (Applies to results: time, now).
+        ///   Looks up a localized string similar to Show time with seconds (Applies to &apos;Time&apos; and &apos;Now&apos; result).
         /// </summary>
         internal static string Microsoft_plugin_timedate_settingTimeWithSeconds {
             get {
@@ -286,7 +286,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select or {0} to copy.
+        ///   Looks up a localized string similar to Select or press {0} to copy.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SubTitleNote {
             get {
@@ -349,7 +349,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Week of the year.
+        ///   Looks up a localized string similar to Week of the year (Calendar week, Week number).
         /// </summary>
         internal static string Microsoft_plugin_timedate_WeekOfYear {
             get {

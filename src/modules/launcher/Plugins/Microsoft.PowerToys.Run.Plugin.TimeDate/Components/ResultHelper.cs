@@ -34,6 +34,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 
             results.AddRange(new[]
             {
+                // This range is reserved for the following three results: Time, Date, Now
+                // Don't add any new result in this range! For new results, please use the next range.
                 new AvailableResult()
                 {
                     Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended), CultureInfo.CurrentCulture),
