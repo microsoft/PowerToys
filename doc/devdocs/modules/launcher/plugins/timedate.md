@@ -6,6 +6,12 @@ The 'Time and Date' plugin shows the date and time in different formats. For the
 ![Image of Window Walker plugin](/doc/images/launcher/plugins/timedate2.png)
 
 
+**Query examples:**
+- Format: `time`
+- Date/time: `10:30 AM`
+- Format and date/time: `Week number::10/10/2022`
+
+
 ## Formats
 
 The following formats are currently available:
@@ -49,7 +55,7 @@ The following formats are currently available:
 
 ## Optional plugin settings
 - The optional plugin settings are implemented via the [`ISettingProvider`](/src/modules/launcher/Wox.Plugin/ISettingProvider.cs) interface from `Wox.Plugin` project.
-- All available settings for the plugin are defined in the [`TimeDateSettings`](/src/modules/launcher/Plugins/Microsoft.Plugin.TimeDate/Components/TimeDateSettings.cs) class of the plugin. The settings can be accessed everywhere in the plugin code via the static class instance `TimeDateSettings.Instance`.
+- All available settings for the plugin are defined in the [`TimeDateSettings`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeDateSettings.cs) class of the plugin. The settings can be accessed everywhere in the plugin code via the static class instance `TimeDateSettings.Instance`.
 - We have the following settings that the user can configure to change the behavior of the plugin:
 
 	| Key | Default value | Name/Description |
@@ -64,7 +70,7 @@ The following formats are currently available:
 
 ### [`AvailableResult.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/AvailableResult.cs)
 - Each instance of the [`AvailableResult`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/AvailableResult.cs) class represents a time/date result/format that the user can search for.
-- The results/formats are defne in the method `GetAvailableResults()` of the [`ResultHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/ResultHelper.cs) class.
+- The results/formats are defned in the method `GetAvailableResults()` of the [`ResultHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/ResultHelper.cs) class.
 
 ### [`ResultHelper.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/ResultHelper.cs)
 - The [`ResultHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/ResultHelper.cs) class contains a method to create the list of all available formats/results.
@@ -73,7 +79,7 @@ The following formats are currently available:
 ### [`TimeAndDateHelper.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeAndDateHelper.cs)
 - The [`TimeAndDateHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeAndDateHelper.cs) class contains methods to format/convert date and time formats/strings.
 
-### [`TimeDateSettings.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/WindowWalkerSettings.cs)
+### [`TimeDateSettings.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeDateSettings.cs)
 - The [`TimeDateSettings`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeDateSettings.cs) class provides access to all optional plugin settings.
 - The class has a static property called `Instance` that holds an instance of the class itself. This allows us to access the settings from everywhere in the plugin code without having additional parameters in our methods.
 
@@ -92,13 +98,13 @@ We have a [Unit Test project](/src/modules/launcher/Plugins/Microsoft.PowerToys.
 - That we can execute the tests at any time on any machine, we use a specified date/time value and set the thread culture always to `en-us` while executing the tests.
 
 ### [`ImageTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/ImageTests.cs)
-The [`ImageTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/ImageTests.cs) class contains tests to validate that each result shows the expected and correct image.
+- The [`ImageTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/ImageTests.cs) class contains tests to validate that each result shows the expected and correct image.
 
 ### [`PluginSettingsTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/PluginSettingsTests.cs)
-The [`PluginSettingsTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/PluginSettingsTests.cs) class contains tests to validate that all settings exist and that they have the correct default values.
+- The [`PluginSettingsTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/PluginSettingsTests.cs) class contains tests to validate that all settings exist and that they have the correct default values.
 
 ### [`QueryTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/QueryTests.cs)
-The [`QueryTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/QueryTests.cs) class contains tests to validate that the user gets the correct results when searching.
+- The [`QueryTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/QueryTests.cs) class contains tests to validate that the user gets the correct results when searching.
 
 ### [`StringParserTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/StringParserTests.cs)
-The [`StringParserTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/StringParserTests.cs) class contains tests to validate that the typed string gets converted correctly into a `DateTime` object.
+- The [`StringParserTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/StringParserTests.cs) class contains tests to validate that the typed string gets converted correctly into a `DateTime` object.
