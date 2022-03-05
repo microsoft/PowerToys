@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
@@ -79,7 +80,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     results.Add(new Result
                     {
                         Title = f.Value,
-                        SubTitle = $"{f.Label} - {string.Format(Resources.Microsoft_plugin_timedate_SubTitleNote, "Ctrl+C")}",
+                        SubTitle = $"{f.Label} - {string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_SubTitleNote, "Ctrl+C")}",
                         IcoPath = f.GetIconPath(iconTheme),
                         Action = _ => ResultHelper.CopyToClipBoard(f.Value),
                         ContextData = f,
@@ -97,7 +98,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                         results.Add(new Result
                         {
                             Title = f.Value,
-                            SubTitle = $"{f.Label} - {string.Format(Resources.Microsoft_plugin_timedate_SubTitleNote, "Ctrl+C")}",
+                            SubTitle = $"{f.Label} - {string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_SubTitleNote, "Ctrl+C")}",
                             IcoPath = f.GetIconPath(iconTheme),
                             Action = _ => ResultHelper.CopyToClipBoard(f.Value),
                             Score = resultMatch.Score,

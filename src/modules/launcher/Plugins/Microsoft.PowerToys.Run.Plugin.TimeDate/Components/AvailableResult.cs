@@ -31,17 +31,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <returns>Path</returns>
         internal string GetIconPath(string theme)
         {
-            switch (IconType)
+            return IconType switch
             {
-                case ResultIconType.Time:
-                    return $"Images\\time.{theme}.png";
-                case ResultIconType.Date:
-                    return $"Images\\calendar.{theme}.png";
-                case ResultIconType.DateTime:
-                    return $"Images\\timeDate.{theme}.png";
-                default:
-                    return string.Empty;
-            }
+                ResultIconType.Time => $"Images\\time.{theme}.png",
+                ResultIconType.Date => $"Images\\calendar.{theme}.png",
+                ResultIconType.DateTime => $"Images\\timeDate.{theme}.png",
+                _ => string.Empty,
+            };
         }
     }
 

@@ -168,7 +168,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Act
             var helperResults = ResultHelper.GetAvailableResults(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat);
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
@@ -192,7 +192,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Act
             var helperResults = ResultHelper.GetAvailableResults(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat);
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
@@ -216,7 +216,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Act
             var helperResults = ResultHelper.GetAvailableResults(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat);
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
@@ -240,7 +240,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Act
             var helperResults = ResultHelper.GetAvailableResults(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat);
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
@@ -264,7 +264,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             var expectedResult = (long)timeValue.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
             // Assert
-            Assert.AreEqual(expectedResult.ToString(), result?.Value);
+            Assert.AreEqual(expectedResult.ToString(CultureInfo.CurrentCulture), result?.Value);
 
             // Finalize
             Thread.CurrentThread.CurrentCulture = originalCulture;
@@ -282,7 +282,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Act
             var helperResults = ResultHelper.GetAvailableResults(true, false, false, timeValue);
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
-            var expectedResult = timeValue.Ticks.ToString();
+            var expectedResult = timeValue.Ticks.ToString(CultureInfo.CurrentCulture);
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);

@@ -46,13 +46,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void IconThemeDarkTest(string typedString, string subTitleMatch, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new Mock<Main>();
+            Mock<Main> main = new ();
             main.Object.IconTheme = "dark";
             string pluginKeyword = "(";
-            Query expectedQuery = new Query(typedString, pluginKeyword);
+            Query expectedQuery = new (typedString, pluginKeyword);
 
             // Act
-            var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(subTitleMatch)).IcoPath;
+            string result = main.Object.Query(expectedQuery).FirstOrDefault(predicate: x => x.SubTitle.StartsWith(subTitleMatch, System.StringComparison.CurrentCulture)).IcoPath;
 
             // Assert
             Assert.AreEqual(expectedResult, result);
@@ -84,13 +84,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void IconThemeLightTest(string typedString, string subTitleMatch, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new Mock<Main>();
+            Mock<Main> main = new ();
             main.Object.IconTheme = "light";
             string pluginKeyword = "(";
-            Query expectedQuery = new Query(typedString, pluginKeyword);
+            Query expectedQuery = new (typedString, pluginKeyword);
 
             // Act
-            var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(subTitleMatch)).IcoPath;
+            var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(subTitleMatch, System.StringComparison.CurrentCulture)).IcoPath;
 
             // Assert
             Assert.AreEqual(expectedResult, result);

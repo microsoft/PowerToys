@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         {
             // Setup
             Mock<Main> main = new ();
-            Query expectedQuery = new Query(typedString);
+            Query expectedQuery = new (typedString);
 
             // Act
             // using where to get only result with full word match
@@ -47,8 +47,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void CountWithPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
-            Mock<Main> main = new Mock<Main>();
-            Query expectedQuery = new Query(typedString, "(");
+            Mock<Main> main = new ();
+            Query expectedQuery = new (typedString, "(");
 
             // Act
             // using where to get only result with full word match
@@ -92,11 +92,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void CanFindResult(string typedString, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new Mock<Main>();
-            Query expectedQuery = new Query(typedString, "(");
+            Mock<Main> main = new ();
+            Query expectedQuery = new (typedString, "(");
 
             // Act
-            var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(expectedResult));
+            var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(expectedResult, StringComparison.CurrentCulture));
 
             // Assert
             Assert.IsNotNull(result, $"Failed for '{typedString}'='{expectedResult}'");
@@ -120,8 +120,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidInputNotShowsResults(string typedString)
         {
             // Setup
-            Mock<Main> main = new Mock<Main>();
-            Query expectedQuery = new Query(typedString, "(");
+            Mock<Main> main = new ();
+            Query expectedQuery = new (typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();
@@ -138,14 +138,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidNumberInputShowsErrorMessage(string typedString)
         {
             // Setup
-            Mock<Main> main = new Mock<Main>();
-            Query expectedQuery = new Query(typedString, "(");
+            Mock<Main> main = new ();
+            Query expectedQuery = new (typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().Title;
 
             // Assert
-            Assert.IsTrue(result.StartsWith("Error:"));
+            Assert.IsTrue(result.StartsWith("Error:", StringComparison.CurrentCulture));
         }
 
         [DataTestMethod]
@@ -156,8 +156,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void InvalidInputNotShowsErrorMessage(string typedString)
         {
             // Setup
-            Mock<Main> main = new Mock<Main>();
-            Query expectedQuery = new Query(typedString, "(");
+            Mock<Main> main = new ();
+            Query expectedQuery = new (typedString, "(");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();

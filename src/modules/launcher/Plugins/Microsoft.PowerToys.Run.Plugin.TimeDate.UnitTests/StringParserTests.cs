@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedBool, boolResult);
             if (!string.IsNullOrEmpty(expectedString))
             {
-                Assert.AreEqual(expectedString, result.ToString(stringType));
+                Assert.AreEqual(expectedString, result.ToString(stringType, CultureInfo.CurrentCulture));
             }
 
             // Finalize

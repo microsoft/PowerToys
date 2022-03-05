@@ -36,19 +36,19 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             {
                 new AvailableResult()
                 {
-                    Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended)),
+                    Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended), CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_Time,
                     IconType = ResultIconType.Time,
                 },
                 new AvailableResult()
                 {
-                    Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Date, timeExtended, dateExtended)),
+                    Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Date, timeExtended, dateExtended), CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_Date,
                     IconType = ResultIconType.Date,
                 },
                 new AvailableResult()
                 {
-                    Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.DateTime, timeExtended, dateExtended)),
+                    Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.DateTime, timeExtended, dateExtended), CultureInfo.CurrentCulture),
                     Label = timestamp == null ? Resources.Microsoft_plugin_timedate_Now : Resources.Microsoft_plugin_timedate_DateAndTime,
                     IconType = ResultIconType.DateTime,
                 },
@@ -65,19 +65,19 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 {
                     new AvailableResult()
                     {
-                        Value = dateTimeNowUtc.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended)),
+                        Value = dateTimeNowUtc.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended), CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_TimeUtc,
                         IconType = ResultIconType.Time,
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNowUtc.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.DateTime, timeExtended, dateExtended)),
+                        Value = dateTimeNowUtc.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.DateTime, timeExtended, dateExtended), CultureInfo.CurrentCulture),
                         Label = timestamp == null ? Resources.Microsoft_plugin_timedate_NowUtc : Resources.Microsoft_plugin_timedate_DateAndTimeUtc,
                         IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
                     {
-                        Value = unixTimestamp.ToString(),
+                        Value = unixTimestamp.ToString(CultureInfo.CurrentCulture),
                         Label = timestamp == null ? Resources.Microsoft_plugin_timedate_UnixNow : Resources.Microsoft_plugin_timedate_Unix,
                         IconType = ResultIconType.DateTime,
                     },
@@ -89,31 +89,31 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = ((int)dateTimeNow.DayOfWeek).ToString(),
+                        Value = ((int)dateTimeNow.DayOfWeek).ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_DayOfWeek,
                         IconType = ResultIconType.Date,
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNow.Day.ToString(),
+                        Value = dateTimeNow.Day.ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_DayOfMonth,
                         IconType = ResultIconType.Date,
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNow.DayOfYear.ToString(),
+                        Value = dateTimeNow.DayOfYear.ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_DayOfYear,
                         IconType = ResultIconType.Date,
                     },
                     new AvailableResult()
                     {
-                        Value = weekOfMonth.ToString(),
+                        Value = weekOfMonth.ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_WeekOfMonth,
                         IconType = ResultIconType.Date,
                     },
                     new AvailableResult()
                     {
-                        Value = weekOfYear.ToString(),
+                        Value = weekOfYear.ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_WeekOfYear,
                         IconType = ResultIconType.Date,
                     },
@@ -125,19 +125,19 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNow.Month.ToString(),
+                        Value = dateTimeNow.Month.ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_MonthOfYear,
                         IconType = ResultIconType.Date,
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNow.Year.ToString(),
+                        Value = dateTimeNow.Year.ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_Year,
                         IconType = ResultIconType.Date,
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNow.Ticks.ToString(),
+                        Value = dateTimeNow.Ticks.ToString(CultureInfo.CurrentCulture),
                         Label = timestamp == null ? Resources.Microsoft_plugin_timedate_WindowsFileTimeNow : Resources.Microsoft_plugin_timedate_WindowsFileTime,
                         IconType = ResultIconType.DateTime,
                     },
@@ -155,19 +155,19 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNowUtc.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        Value = dateTimeNowUtc.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_Iso8601Utc,
                         IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNow.ToString("yyyy-MM-ddTHH:mm:ssK"),
+                        Value = dateTimeNow.ToString("yyyy-MM-ddTHH:mm:ssK", CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_Iso8601Zone,
                         IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNowUtc.ToString("yyyy-MM-ddTHH:mm:ss'Z'"),
+                        Value = dateTimeNowUtc.ToString("yyyy-MM-ddTHH:mm:ss'Z'", CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_Iso8601ZoneUtc,
                         IconType = ResultIconType.DateTime,
                     },

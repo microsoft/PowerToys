@@ -19,14 +19,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
     internal sealed class TimeDateSettings
     {
         /// <summary>
+        /// Are the class properties initialized with default values
+        /// </summary>
+        private readonly bool _initialized;
+
+        /// <summary>
         /// An instance of the class <see cref="TimeDateSettings"></see>
         /// </summary>
         private static TimeDateSettings instance;
-
-        /// <summary>
-        /// Are the class properties initialized with default values
-        /// </summary>
-        private static bool initialized = false;
 
         /// <summary>
         /// Gets a value indicating whether to show only the time and date in global results or not
@@ -54,6 +54,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// </summary>
         private TimeDateSettings()
         {
+            // Init class properties with default values
+            instance.UpdateSettings(null);
+            _initialized = true;
         }
 
         /// <summary>
@@ -70,9 +73,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 if (instance == null)
                 {
                     instance = new TimeDateSettings();
-
-                    // Init class properties with default values
-                    instance.UpdateSettings(null);
                 }
 
                 return instance;
@@ -124,7 +124,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <param name="settings">The settings for all power launcher plugins.</param>
         internal void UpdateSettings(PowerLauncherPluginSettings settings)
         {
-            if ((settings is null || settings.AdditionalOptions is null) & initialized)
+            if ((settings is null || settings.AdditionalOptions is null) & _initialized)
             {
                 return;
             }
