@@ -76,3 +76,9 @@ The user can switch to the found windows, close them or kill their process.
 
 ### Score
 The window walker plugin uses [`FuzzyMatching`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/FuzzyMatching.cs) to get the matching indices and calculates the score by creating a 2 dimensional array of the window and the query text.
+
+## [Unit Tests](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker.UnitTests)
+We have a [Unit Test project](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker.UnitTests) that executes various test to ensure that the plugin works as expected.
+
+### [`PluginSettingsTests.cs`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker.UnitTests/PluginSettingsTests.cs)
+- The [`PluginSettingsTests.cs`](/src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker.UnitTests/PluginSettingsTests.cs) class contains tests to validate that all settings exist and that they have the correct default values.
