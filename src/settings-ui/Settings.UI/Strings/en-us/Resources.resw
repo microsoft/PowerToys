@@ -1825,6 +1825,12 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Time before the spotlight appears (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
+  <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Header" xml:space="preserve">
+    <value>Shake minimum distance</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Description" xml:space="preserve">
+    <value>The minimum distance for mouse shaking activation, for adjusting sensitivity</value>
+  </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
     <value>Mouse Highlighter</value>
     <comment>Refers to the utility name</comment>

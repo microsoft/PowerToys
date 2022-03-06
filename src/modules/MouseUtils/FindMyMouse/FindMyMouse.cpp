@@ -69,6 +69,7 @@ protected:
     DWORD m_fadeDuration = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
     int m_finalAlphaNumerator = FIND_MY_MOUSE_DEFAULT_OVERLAY_OPACITY;
     std::vector<std::wstring> m_excludedApps;
+    int m_shakeMinimumDistance = FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE;
     static constexpr int FinalAlphaDenominator = 100;
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
 
@@ -403,6 +404,11 @@ void SuperSonar<D>::DetectShake()
         maxY = max(currentY, maxY);
     }
     
+    if (distanceTravelled < m_shakeMinimumDistance)
+    {
+        return;
+    }
+
     // Size of the rectangle the pointer moved in.
     double rectangleWidth = (double)maxX - minX;
     double rectangleHeight = (double)maxY - minY;
@@ -423,7 +429,7 @@ void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
     {
         LONG relativeX = 0;
         LONG relativeY = 0;
-        if ((input.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE)
+        if ((input.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE && (input.data.mouse.lLastX!=0 || input.data.mouse.lLastY!=0))
         {
             // Getting absolute mouse coordinates. Likely inside a VM / RDP session.
             if (m_seenAnAbsoluteMousePosition)
@@ -736,6 +742,7 @@ public:
             m_finalAlphaNumerator = settings.overlayOpacity;
             m_sonarZoomFactor = settings.spotlightInitialZoom;
             m_excludedApps = settings.excludedApps;
+            m_shakeMinimumDistance = settings.shakeMinimumDistance;
         }
         else
         {
@@ -762,6 +769,7 @@ public:
                     m_finalAlphaNumerator = localSettings.overlayOpacity;
                     m_sonarZoomFactor = localSettings.spotlightInitialZoom;
                     m_excludedApps = localSettings.excludedApps;
+                    m_shakeMinimumDistance = localSettings.shakeMinimumDistance;
                     UpdateMouseSnooping(); // For the shake mouse activation method
 
                     // Apply new settings to runtime composition objects.

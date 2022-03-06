@@ -17,10 +17,10 @@ namespace Microsoft.PowerToys.Telemetry
         None = 0,
 
         /// <nodoc/>
-        ProductAndServicePerformance = 0x0u,
+        ProductAndServicePerformance = 1,
 
         /// <nodoc/>
-        ProductAndServiceUsage = 0x0u,
+        ProductAndServiceUsage = 2,
     }
 
     /// <summary>
