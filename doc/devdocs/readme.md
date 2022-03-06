@@ -18,7 +18,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 - Package new ideas into classes or refactor existing ideas into a class as you extend.
 - When adding new classes/methods/changing existing code: add new unit tests or update the existing tests.
 - When adding new .Net projects enable the analyzer in `Recommended` mode. You have to add the following code lines in the first block of the `.csproj` file:
-  ```
+  ```csharp
   <EnableNETAnalyzers>true</EnableNETAnalyzers>
   <AnalysisMode>Recommended</AnalysisMode>
   ```
