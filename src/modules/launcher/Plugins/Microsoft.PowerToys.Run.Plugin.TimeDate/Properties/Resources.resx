@@ -133,6 +133,9 @@
   <data name="Microsoft_plugin_timedate_Day" xml:space="preserve">
     <value>Day (Week day)</value>
   </data>
+  <data name="Microsoft_plugin_timedate_DayMonth" xml:space="preserve">
+    <value>Day and month</value>
+  </data>
   <data name="Microsoft_plugin_timedate_DayOfMonth" xml:space="preserve">
     <value>Day of the month</value>
   </data>
@@ -141,6 +144,12 @@
   </data>
   <data name="Microsoft_plugin_timedate_DayOfYear" xml:space="preserve">
     <value>Day of the year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Era" xml:space="preserve">
+    <value>Era (Of the years)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_EraAbbreviation" xml:space="preserve">
+    <value>Era and era abbreviation (Of the years)</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultSubTitle" xml:space="preserve">
     <value>Valid prefixes: 'u' for Unix Timestamp, 'ft' for Windows file time</value>
@@ -168,6 +177,9 @@
   <data name="Microsoft_plugin_timedate_MonthOfYear" xml:space="preserve">
     <value>Month of the year</value>
   </data>
+  <data name="Microsoft_plugin_timedate_MonthYear" xml:space="preserve">
+    <value>Month and year</value>
+  </data>
   <data name="Microsoft_plugin_timedate_Now" xml:space="preserve">
     <value>Now (Current date and time)</value>
   </data>
@@ -176,8 +188,8 @@
     <comment>'UTC' means here 'Universal Time Convention'</comment>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_description" xml:space="preserve">
-    <value>Provides time and date values for the system time or a custom time stamp (Examples: 'day', 'day::2/3/2022', 'time::10:30:45 AM', 'calendar week::2/3/2022')</value>
-    <comment>The character sequence '::' is a fixed delimiter in plugin code. '2/3/2022' and '10:30:45 AM' are date/time values that should be globalized (Example for Germany: '3/2/2022' -&gt; '02.03.2022', '10:30:45 AM' -&gt; '10:30:45').</comment>
+    <value>Provides time and date values for the system time or a custom time stamp (Examples: 'day', 'day::{0}', 'time::{1}', 'calendar week::{0}')</value>
+    <comment>The character sequence '::' is a fixed delimiter in plugin code. Do not translate the placeholders '{0}' and '{1}' because it will be replaced in code.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_name" xml:space="preserve">
     <value>Time and Date</value>
@@ -199,7 +211,7 @@
   </data>
   <data name="Microsoft_plugin_timedate_SubTitleNote" xml:space="preserve">
     <value>Select or press {0} to copy</value>
-    <comment>Do not translate the placeholder '{0}'. Translate 'press' like 'press shortcut'.</comment>
+    <comment>Do not translate the placeholder '{0}' because it will be replaced in code. Translate 'press' like 'press shortcut'.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_Time" xml:space="preserve">
     <value>Time</value>
@@ -212,10 +224,10 @@
     <value>Universal time format: YYYY-MM-DD hh:mm:ss (Date and time)</value>
   </data>
   <data name="Microsoft_plugin_timedate_Unix" xml:space="preserve">
-    <value>Unix Timestamp (Date and time)</value>
+    <value>Unix epoch time (Date and time)</value>
   </data>
   <data name="Microsoft_plugin_timedate_UnixNow" xml:space="preserve">
-    <value>Unix Timestamp (Current date and time)</value>
+    <value>Unix epoch time (Current date and time)</value>
   </data>
   <data name="Microsoft_plugin_timedate_WeekOfMonth" xml:space="preserve">
     <value>Week of the month</value>

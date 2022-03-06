@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 
 [assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
@@ -67,6 +68,39 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
 
             return (int)Math.Truncate((double)date.Subtract(beginningOfMonth).TotalDays / 7f) + 1;
+        }
+
+        /// <summary>
+        /// Returns the number of the day in the week
+        /// </summary>
+        /// <param name="date">Date</param>
+        /// <returns>Number of the day in the week</returns>
+        internal static int GetNumberOfDayInWeek(DateTime date)
+        {
+            int daysInWeek = 7;
+            int adjustment = 1; // We count from 1 to 7 and not from 0 to 6
+            int formatSettingFirstDayOfWeek = (int)CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
+
+            return ((int)(date.DayOfWeek + daysInWeek - formatSettingFirstDayOfWeek) % daysInWeek) + adjustment;
+        }
+
+        /// <summary>
+        /// Gets the result for the calendar era
+        /// </summary>
+        /// <param name="date">Date</param>
+        /// <param name="calendar">Calendar object</param>
+        /// <returns>Elemnt of the type <see cref="AvailableResult"/>.</returns>
+        internal static AvailableResult GetCalendarEraResult(DateTime date, Calendar calendar)
+        {
+            string era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(date));
+            string eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(date));
+
+            return new AvailableResult()
+            {
+                Value = era == eraShort ? era : $"{era} ({eraShort})",
+                Label = era == eraShort ? Resources.Microsoft_plugin_timedate_Era : Resources.Microsoft_plugin_timedate_EraAbbreviation,
+                IconType = ResultIconType.Date,
+            };
         }
 
         /// <summary>

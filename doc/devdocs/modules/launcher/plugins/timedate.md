@@ -1,20 +1,31 @@
 # 'Time and Date' plugin
 The 'Time and Date' plugin shows the date and time in different formats. For the date and time formats the plugin uses the culture setting in Windows, if the format is not commonly defined. The user can search for the system date/time or a custom date/time. The value of each result can be copied to clipboard.
 
-![Image of Window Walker plugin](/doc/images/launcher/plugins/timedate.png)
-
-![Image of Window Walker plugin](/doc/images/launcher/plugins/timedate2.png)
-
-
 **Query examples:**
 - Format: `time`
 - Date/time: `10:30 AM`
 - Format and date/time: `Week number::10/10/2022`
 
+![Image of Window Walker plugin](/doc/images/launcher/plugins/timedate.png)
+
+![Image of Window Walker plugin](/doc/images/launcher/plugins/timedate2.png)
+
 
 ## Formats
 
+### Available formats
+
+**Remarks**
+- The following formats requires a prefix in the query:
+   - Unix Timestamp: `u`
+   - Windows file time: `ft`
+- On invalid number inputs we shaw a warning that tells the user which prefixes are allowed/required.
+
+**List of available formats**
+
 The following formats are currently available:
+
+// ToDo: Update list
 
 | Format | Example (Based on default settings) | As result | As input |
 |--------------|-----------|------------|------------|
@@ -41,17 +52,11 @@ The following formats are currently available:
 | ISO 8601 UTC with time zone | 2022-03-05T16:23:04Z | x | x |
 | RFC1123 | Sat, 05 Mar 2022 16:23:04 GMT | x | x |
 
-### Remarks
-
-- The following formats requires a prefix in the query:
-   - Unix Timestamp: `u`
-   - Windows file time: `ft`
-- On invalid number inputs we shaw a warning that tells the user which prefixes are allowed/required.
-
-## Adding new formats
+### Add new formats
 - To add a new formats you have to add them in the method `GetAvailableResults()` of the [`ResultHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/ResultHelper.cs) class.
 	- Please add the new formats in the second range. The first one is reserved for the following three main formats (Time, Date, Now).
 - After adding the new formats you have to update the Unit Tests!
+
 
 ## Optional plugin settings
 - The optional plugin settings are implemented via the [`ISettingProvider`](/src/modules/launcher/Wox.Plugin/ISettingProvider.cs) interface from `Wox.Plugin` project.

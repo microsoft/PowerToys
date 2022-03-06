@@ -31,6 +31,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             bool dateExtended = dateLong ?? TimeDateSettings.Instance.DateWithWeekday;
             DateTime dateTimeNow = timestamp ?? DateTime.Now;
             DateTime dateTimeNowUtc = dateTimeNow.ToUniversalTime();
+            Calendar calendar = CultureInfo.CurrentCulture.Calendar;
 
             results.AddRange(new[]
             {
@@ -60,8 +61,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             {
                 // We use long instead of int  for unix time stamp because int ist to small after 03:14:07 UTC 2038-01-19
                 long unixTimestamp = (long)dateTimeNowUtc.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-                int weekOfMonth = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow);
-                int weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTimeNow, CultureInfo.CurrentCulture.DateTimeFormat.CalendarWeekRule, CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek);
+                int weekOfYear = calendar.GetWeekOfYear(dateTimeNow, DateTimeFormatInfo.CurrentInfo.CalendarWeekRule, DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
 
                 results.AddRange(new[]
                 {
@@ -85,13 +85,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(dateTimeNow.DayOfWeek),
+                        Value = DateTimeFormatInfo.CurrentInfo.GetDayName(dateTimeNow.DayOfWeek),
                         Label = Resources.Microsoft_plugin_timedate_Day,
                         IconType = ResultIconType.Date,
                     },
                     new AvailableResult()
                     {
-                        Value = ((int)dateTimeNow.DayOfWeek).ToString(CultureInfo.CurrentCulture),
+                        Value = TimeAndDateHelper.GetNumberOfDayInWeek(dateTimeNow).ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_DayOfWeek,
                         IconType = ResultIconType.Date,
                     },
@@ -109,7 +109,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = weekOfMonth.ToString(CultureInfo.CurrentCulture),
+                        Value = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow).ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_WeekOfMonth,
                         IconType = ResultIconType.Date,
                     },
@@ -121,7 +121,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(dateTimeNow.Month),
+                        Value = DateTimeFormatInfo.CurrentInfo.GetMonthName(dateTimeNow.Month),
                         Label = Resources.Microsoft_plugin_timedate_Month,
                         IconType = ResultIconType.Date,
                     },
@@ -133,8 +133,21 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNow.Year.ToString(CultureInfo.CurrentCulture),
+                        Value = dateTimeNow.ToString("M", CultureInfo.CurrentCulture),
+                        Label = Resources.Microsoft_plugin_timedate_DayMonth,
+                        IconType = ResultIconType.Date,
+                    },
+                    new AvailableResult()
+                    {
+                        Value = calendar.GetYear(dateTimeNow).ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_Year,
+                        IconType = ResultIconType.Date,
+                    },
+                    TimeAndDateHelper.GetCalendarEraResult(dateTimeNow, calendar),
+                    new AvailableResult()
+                    {
+                        Value = dateTimeNow.ToString("Y", CultureInfo.CurrentCulture),
+                        Label = Resources.Microsoft_plugin_timedate_MonthYear,
                         IconType = ResultIconType.Date,
                     },
                     new AvailableResult()
@@ -157,19 +170,19 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNowUtc.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.CurrentCulture),
+                        Value = dateTimeNowUtc.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture),
                         Label = Resources.Microsoft_plugin_timedate_Iso8601Utc,
                         IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNow.ToString("yyyy-MM-ddTHH:mm:ssK", CultureInfo.CurrentCulture),
+                        Value = dateTimeNow.ToString("yyyy-MM-ddTHH:mm:ssK", CultureInfo.InvariantCulture),
                         Label = Resources.Microsoft_plugin_timedate_Iso8601Zone,
                         IconType = ResultIconType.DateTime,
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNowUtc.ToString("yyyy-MM-ddTHH:mm:ss'Z'", CultureInfo.CurrentCulture),
+                        Value = dateTimeNowUtc.ToString("yyyy-MM-ddTHH:mm:ss'Z'", CultureInfo.InvariantCulture),
                         Label = Resources.Microsoft_plugin_timedate_Iso8601ZoneUtc,
                         IconType = ResultIconType.DateTime,
                     },

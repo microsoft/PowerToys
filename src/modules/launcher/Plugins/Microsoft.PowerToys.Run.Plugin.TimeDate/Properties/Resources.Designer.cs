@@ -106,6 +106,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Day and month.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_DayMonth {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DayMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Day of the month.
         /// </summary>
         internal static string Microsoft_plugin_timedate_DayOfMonth {
@@ -129,6 +138,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_DayOfYear {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_DayOfYear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Era (Of the years).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Era {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Era", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Era and era abbreviation (Of the years).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_EraAbbreviation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_EraAbbreviation", resourceCulture);
             }
         }
         
@@ -205,6 +232,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Month and year.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_MonthYear {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_MonthYear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Now (Current date and time).
         /// </summary>
         internal static string Microsoft_plugin_timedate_Now {
@@ -223,7 +259,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provides time and date values for the system time or a custom time stamp (Examples: &apos;day&apos;, &apos;day::2/3/2022&apos;, &apos;time::10:30:45 AM&apos;, &apos;calendar week::2/3/2022&apos;).
+        ///   Looks up a localized string similar to Provides time and date values for the system time or a custom time stamp (Examples: &apos;day&apos;, &apos;day::{0}&apos;, &apos;time::{1}&apos;, &apos;calendar week::{0}&apos;).
         /// </summary>
         internal static string Microsoft_plugin_timedate_plugin_description {
             get {
@@ -322,7 +358,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unix Timestamp (Date and time).
+        ///   Looks up a localized string similar to Unix epoch time (Date and time).
         /// </summary>
         internal static string Microsoft_plugin_timedate_Unix {
             get {
@@ -331,7 +367,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unix Timestamp (Current date and time).
+        ///   Looks up a localized string similar to Unix epoch time (Current date and time).
         /// </summary>
         internal static string Microsoft_plugin_timedate_UnixNow {
             get {

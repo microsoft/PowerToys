@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ManagedCommon;
@@ -22,7 +24,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 
         public string Name => Resources.Microsoft_plugin_timedate_plugin_name;
 
-        public string Description => Resources.Microsoft_plugin_timedate_plugin_description;
+        public string Description => GetTranslatedPluginDescription();
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions
         {
@@ -89,7 +91,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 
         public string GetTranslatedPluginDescription()
         {
-            return Resources.Microsoft_plugin_timedate_plugin_description;
+            string timeExample = DateTime.Now.ToString("T", CultureInfo.CurrentCulture);
+            string dateExample = DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
+            return string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_plugin_description, dateExample, timeExample);
         }
 
         public string GetTranslatedPluginTitle()
