@@ -188,6 +188,6 @@
     <value>Because this is an app process, all instances of the app will be killed. Continue?</value>
   </data>
   <data name="wox_plugin_windowwalker_SettingKillProcessTree" xml:space="preserve">
-    <value>Kill process and it's child processes</value>
+    <value>Kill process and its child processes</value>
   </data>
 </root>

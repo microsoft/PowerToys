@@ -223,7 +223,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Kill process and it&apos;s child processes.
+        ///   Looks up a localized string similar to Kill process and its child processes.
         /// </summary>
         public static string wox_plugin_windowwalker_SettingKillProcessTree {
             get {

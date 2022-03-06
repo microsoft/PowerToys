@@ -8,10 +8,10 @@ The user can switch to the found windows, close them or kill their process.
 ## Remarks
 
 ### UWP Apps
-- The process of an UWP app can't be detected correctly for windows that are minimized while searching. At this time they are assigned to the generic process `ApplicationFrameHost.exe`. If the user searches for such an window while it is not minimized, then the process get's assigned correctly/updated. 
+- The process of an UWP app can't be detected correctly for windows that are minimized while searching. At this time they are assigned to the generic process `ApplicationFrameHost.exe`. If the user searches for such an window while it is not minimized, then the process gets assigned correctly/updated. 
 
 ### Killing processes
-- Killing the Explorer process is only allowed, if each folder window is running in it's own process. (See section `File Explorer setting` below.)
+- Killing the Explorer process is only allowed, if each folder window is running in its own process. (See section `File Explorer setting` below.)
 - You can only kill elevated processes, if you have admin permissions (UAC).
 - If you kill the process of an UWP app window, you kill all instances of the app. All windows are assigned to the same process.
 - Windows of UWP apps don't know their process, until they are searched in non-minimized state.
