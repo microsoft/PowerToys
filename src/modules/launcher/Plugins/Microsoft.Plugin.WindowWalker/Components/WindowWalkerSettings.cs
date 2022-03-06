@@ -4,8 +4,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Plugin.WindowWalker.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
+
+[assembly: InternalsVisibleTo("Microsoft.Plugin.WindowWalker.UnitTests")]
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
@@ -15,6 +18,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// <remarks>Some code parts reused from TimeZone plugin.</remarks>
     internal sealed class WindowWalkerSettings
     {
+        /// <summary>
+        /// Are the class properties initialized with default values
+        /// </summary>
+        private readonly bool _initialized;
+
         /// <summary>
         /// An instance of the class <see cref="WindowWalkerSettings"></see>
         /// </summary>
@@ -67,6 +75,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         private WindowWalkerSettings()
         {
+            // Init class properties with default values
+            UpdateSettings(null);
+            _initialized = true;
         }
 
         /// <summary>
@@ -160,7 +171,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="settings">The settings for all power launcher plugins.</param>
         internal void UpdateSettings(PowerLauncherPluginSettings settings)
         {
-            if (settings is null || settings.AdditionalOptions is null)
+            if ((settings is null || settings.AdditionalOptions is null) & _initialized)
             {
                 return;
             }
@@ -183,7 +194,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>A settings value.</returns>
         private static bool GetSettingOrDefault(PowerLauncherPluginSettings settings, string name)
         {
-            var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == name);
+            var option = settings?.AdditionalOptions?.FirstOrDefault(x => x.Key == name);
 
             // If a setting isn't available, we use the value defined in the method GetAdditionalOptions() as fallback.
             // We can use First() instead of FirstOrDefault() because the values must exist. Otherwise, we made a mistake when defining the settings.
