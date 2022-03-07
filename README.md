@@ -34,7 +34,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Via GitHub with EXE [Recommended]
 
- [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.56.1-x64.exe` to download the PowerToys installer.
+ [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.56.2-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
