@@ -19,7 +19,7 @@
 - [ ] **User docs**:
    - [ ] No updates required
    - [ ] New PR on [Microsoft Docs](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) repository: #xxx
-   - [ ] New issue to do work later: #xxx
+   - [ ] New issue to do work later: #xxx (Assignee: @ xxx)
 - [ ] **Binaries:** Any new files are added to WXS / Signing pipeline / YML
    - [ ] No new binaries
    - [ ] [JSON for signing](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ESRPSigning_core.json) for new binaries
