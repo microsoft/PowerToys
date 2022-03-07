@@ -19,6 +19,21 @@ namespace NonLocalizable
     const wchar_t SystemAppsFolder[] = L"SYSTEMAPPS";
 }
 
+// Placeholder enums since dwmapi.h doesn't have these until SDK 22000.
+// TODO: Remove once SDK targets 22000 or above.
+enum DWMWINDOWATTRIBUTE_CUSTOM
+{
+    DWMWA_WINDOW_CORNER_PREFERENCE = 33
+};
+
+enum DWM_WINDOW_CORNER_PREFERENCE
+{
+    DWMWCP_DEFAULT = 0,
+    DWMWCP_DONOTROUND = 1,
+    DWMWCP_ROUND = 2,
+    DWMWCP_ROUNDSMALL = 3
+};
+
 namespace
 {   
     BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
@@ -316,6 +331,11 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
     ScreenToWorkAreaCoords(window, rect);
 
     placement.rcNormalPosition = rect;
+
+    // Set window corner preference on Windows 11 to "Do not round"
+    int corner_preference = DWMWCP_DONOTROUND;
+    DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &corner_preference, sizeof(corner_preference));
+
     placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
     ::SetWindowPlacement(window, &placement);
@@ -372,6 +392,11 @@ void FancyZonesWindowUtils::RestoreWindowSize(HWND window) noexcept
             rect.bottom = rect.top + windowSize[1];
             SizeWindowToRect(window, rect);
         }
+
+        // Set window corner preference on Windows 11 to "Default"
+        // TODO: Should probably store preference from before snap
+        int corner_preference = DWMWCP_DEFAULT;
+        DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &corner_preference, sizeof(corner_preference));
 
         ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
     }
