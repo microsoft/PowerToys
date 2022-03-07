@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (Current date, now).
+        ///   Looks up a localized string similar to Current date, Now.
         /// </summary>
         internal static string Microsoft_plugin_timedate_DateNowSearchTag {
             get {
@@ -106,7 +106,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (Date).
+        ///   Looks up a localized string similar to Date.
         /// </summary>
         internal static string Microsoft_plugin_timedate_DateSearchTag {
             get {
@@ -178,7 +178,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Year, (Calendar era, current era, current date, now).
+        ///   Looks up a localized string similar to Year , Calendar , Current , Era , Date , Now.
         /// </summary>
         internal static string Microsoft_plugin_timedate_EraNowSearchTag {
             get {
@@ -187,7 +187,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Year, (Calendar era, date).
+        ///   Looks up a localized string similar to Year, Calendar, Era, Date.
         /// </summary>
         internal static string Microsoft_plugin_timedate_EraSearchTag {
             get {
@@ -214,7 +214,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (Current date and time, now).
+        ///   Looks up a localized string similar to Current, Date and time, Time and date, Now.
         /// </summary>
         internal static string Microsoft_plugin_timedate_FormatNowSearchTag {
             get {
@@ -223,7 +223,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (Date and time).
+        ///   Looks up a localized string similar to Date and time, Time and Date.
         /// </summary>
         internal static string Microsoft_plugin_timedate_FormatSearchTag {
             get {
@@ -430,7 +430,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (Current time, now).
+        ///   Looks up a localized string similar to Current Time, Now.
         /// </summary>
         internal static string Microsoft_plugin_timedate_TimeNowSearchTag {
             get {
@@ -439,7 +439,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (Time).
+        ///   Looks up a localized string similar to Time.
         /// </summary>
         internal static string Microsoft_plugin_timedate_TimeSearchTag {
             get {

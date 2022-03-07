@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -97,6 +96,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 {
                     var resultMatch = StringMatcher.FuzzySearch(searchTerm, f.Label);
                     var alternativeMatch = StringMatcher.FuzzySearch(searchTerm, f.AlternativeSearchTag);
+
                     if (resultMatch.Score > 0)
                     {
                         // Subtitle match

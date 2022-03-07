@@ -124,6 +124,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(ft637820085517321977", "Date and time -")]
         [DataRow("(time::ft637820085517321977", "Time -")]
         [DataRow("(year", "Era -")]
+        [DataRow("(date", "Era -")]
         [DataRow("(week day", "Day (Week day) -")]
         [DataRow("(week day", "Day of the week (Week day) -")]
         [DataRow("(cal week", "Week of the year (Calendar week, Week number) -")]
@@ -141,6 +142,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
             // Assert
             Assert.IsNotNull(result, $"Failed for '{typedString}'='{expectedResult}'");
+            Assert.IsTrue(result.Score >= 0, $"Score: {result.Score}");
 
             // Finalize
             Thread.CurrentThread.CurrentCulture = originalCulture;

@@ -132,10 +132,11 @@
     <comment>'UTC' means here 'Universal Time Convention'</comment>
   </data>
   <data name="Microsoft_plugin_timedate_DateNowSearchTag" xml:space="preserve">
-    <value>(Current date, now)</value>
+    <value>Current date, Now</value>
+    <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_DateSearchTag" xml:space="preserve">
-    <value>(Date)</value>
+    <value>Date</value>
   </data>
   <data name="Microsoft_plugin_timedate_Day" xml:space="preserve">
     <value>Day (Week day)</value>
@@ -159,10 +160,12 @@
     <value>Era abbreviation</value>
   </data>
   <data name="Microsoft_plugin_timedate_EraNowSearchTag" xml:space="preserve">
-    <value>Year, (Calendar era, current era, current date, now)</value>
+    <value>Year , Calendar , Current , Era , Date , Now</value>
+    <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_EraSearchTag" xml:space="preserve">
-    <value>Year, (Calendar era, date)</value>
+    <value>Year, Calendar, Era, Date</value>
+    <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultSubTitle" xml:space="preserve">
     <value>Valid prefixes: 'u' for Unix Timestamp, 'ft' for Windows file time</value>
@@ -171,10 +174,11 @@
     <value>Error: Invalid number input</value>
   </data>
   <data name="Microsoft_plugin_timedate_FormatNowSearchTag" xml:space="preserve">
-    <value>(Current date and time, now)</value>
+    <value>Current, Date and time, Time and date, Now</value>
+    <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_FormatSearchTag" xml:space="preserve">
-    <value>(Date and time)</value>
+    <value>Date and time, Time and Date</value>
   </data>
   <data name="Microsoft_plugin_timedate_Hour" xml:space="preserve">
     <value>Hour</value>
@@ -248,10 +252,11 @@
     <value>Time</value>
   </data>
   <data name="Microsoft_plugin_timedate_TimeNowSearchTag" xml:space="preserve">
-    <value>(Current time, now)</value>
+    <value>Current Time, Now</value>
+    <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_TimeSearchTag" xml:space="preserve">
-    <value>(Time)</value>
+    <value>Time</value>
   </data>
   <data name="Microsoft_plugin_timedate_TimeUtc" xml:space="preserve">
     <value>Time UTC</value>
