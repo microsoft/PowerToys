@@ -135,6 +135,11 @@ namespace Wox.Plugin.Common.Win32
         /// Restores the window to its normal position and size.
         /// </summary>
         public const int SC_RESTORE = 0xf120;
+
+        /// <summary>
+        /// Closes the window
+        /// </summary>
+        public const int SC_CLOSE = 0xF060;
     }
 
     public enum HRESULT : uint

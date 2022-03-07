@@ -395,6 +395,7 @@ cursorpos
 customaction
 CUSTOMACTIONTEST
 cvd
+CVirtual
 cwchar
 cwd
 cxfksword
@@ -1829,6 +1830,7 @@ RTLREADING
 ruleset
 RUNACTIVEXCTLS
 runas
+rundll
 rungameid
 RUNLEVEL
 runsettings
@@ -2285,6 +2287,7 @@ vcredist
 VCRT
 vcruntime
 vcvars
+VDesktop
 vdi
 VDId
 vec

@@ -34,7 +34,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the list of all open windows
         /// </summary>
-        public List<Window> Windows
+        internal List<Window> Windows
         {
             get { return new List<Window>(windows); }
         }
@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// the first instance gets created and that all the requests
         /// end up at that one instance
         /// </summary>
-        public static OpenWindows Instance
+        internal static OpenWindows Instance
         {
             get
             {
@@ -69,7 +69,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Updates the list of open windows
         /// </summary>
-        public void UpdateOpenWindowsList()
+        internal void UpdateOpenWindowsList()
         {
             windows.Clear();
             EnumWindowsProc callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
@@ -83,22 +83,21 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="lParam">Value being passed from the caller (we don't use this but might come in handy
         /// in the future</param>
         /// <returns>true to make sure to continue enumeration</returns>
-        public bool WindowEnumerationCallBack(IntPtr hwnd, IntPtr lParam)
+        internal bool WindowEnumerationCallBack(IntPtr hwnd, IntPtr lParam)
         {
             Window newWindow = new Window(hwnd);
 
             if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
                 (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&
-                newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.ProcessInfo.Name != _powerLauncherExe)
+                (newWindow.Desktop.IsVisible || !WindowWalkerSettings.Instance.ResultsFromVisibleDesktopOnly) &&
+                newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.Process.Name != _powerLauncherExe)
             {
-                // To hide (not add) preloaded uwp app windows that are invisible to the user we check the cloak state in DWM to be "none". (Issue #13637.)
-                // (If user asking to see these windows again we can add an optional plugin setting in the future.)
-                // [@htcfreek, 2022-02-01: Removed the IsCloaked check to list windows from virtual desktops other than the current one again (#15887). In a second PR I will fix it re-implement it with improved code again.]
-                // if (!newWindow.IsCloaked)
-                // {
-                windows.Add(newWindow);
-
-                // }
+                // To hide (not add) preloaded uwp app windows that are invisible to the user and other cloaked windows, we check the cloak state. (Issue #13637.)
+                // (If user asking to see cloaked uwp app windows again we can add an optional plugin setting in the future.)
+                if (!newWindow.IsCloaked || newWindow.GetWindowCloakState() == Window.WindowCloakState.OtherDesktop)
+                {
+                    windows.Add(newWindow);
+                }
             }
 
             return true;

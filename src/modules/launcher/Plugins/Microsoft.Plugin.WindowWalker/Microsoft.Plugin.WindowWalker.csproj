@@ -111,6 +111,12 @@
     <None Update="Images\windowwalker.light.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+	  <None Update="Images\info.dark.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Images\info.light.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
   </ItemGroup>
 
 </Project>

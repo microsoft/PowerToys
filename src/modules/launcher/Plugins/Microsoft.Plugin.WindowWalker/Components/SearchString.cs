@@ -16,7 +16,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Gets where is the search string coming from (is it a shortcut
         /// or direct string, etc...)
         /// </summary>
-        public SearchResult.SearchType SearchType
+        internal SearchResult.SearchType SearchType
         {
             get;
             private set;
@@ -25,7 +25,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the actual text we are searching for
         /// </summary>
-        public string SearchText
+        internal string SearchText
         {
             get;
             private set;
@@ -37,7 +37,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         /// <param name="searchText">text from search</param>
         /// <param name="searchType">type of search</param>
-        public SearchString(string searchText, SearchResult.SearchType searchType)
+        internal SearchString(string searchText, SearchResult.SearchType searchType)
         {
             SearchText = searchText;
             SearchType = searchType;
