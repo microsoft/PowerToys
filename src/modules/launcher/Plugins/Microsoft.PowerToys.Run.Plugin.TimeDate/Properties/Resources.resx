@@ -118,7 +118,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Microsoft_plugin_timedate_CopyToClipboard" xml:space="preserve">
-    <value>Copy value</value>
+    <value>Copy value (Ctrl+C)</value>
+    <comment>'Ctrl+C' is a shortcut</comment>
   </data>
   <data name="Microsoft_plugin_timedate_Date" xml:space="preserve">
     <value>Date</value>
@@ -130,11 +131,17 @@
     <value>Date and time UTC</value>
     <comment>'UTC' means here 'Universal Time Convention'</comment>
   </data>
+  <data name="Microsoft_plugin_timedate_DateNowSearchTag" xml:space="preserve">
+    <value>(Current date, now)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DateSearchTag" xml:space="preserve">
+    <value>(Date)</value>
+  </data>
   <data name="Microsoft_plugin_timedate_Day" xml:space="preserve">
     <value>Day (Week day)</value>
   </data>
   <data name="Microsoft_plugin_timedate_DayMonth" xml:space="preserve">
-    <value>Day and month</value>
+    <value>Month and day</value>
   </data>
   <data name="Microsoft_plugin_timedate_DayOfMonth" xml:space="preserve">
     <value>Day of the month</value>
@@ -146,10 +153,16 @@
     <value>Day of the year</value>
   </data>
   <data name="Microsoft_plugin_timedate_Era" xml:space="preserve">
-    <value>Era (Of the years)</value>
+    <value>Era</value>
   </data>
   <data name="Microsoft_plugin_timedate_EraAbbreviation" xml:space="preserve">
-    <value>Era and era abbreviation (Of the years)</value>
+    <value>Era abbreviation</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_EraNowSearchTag" xml:space="preserve">
+    <value>Year, (Calendar era, current era, current date, now)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_EraSearchTag" xml:space="preserve">
+    <value>Year, (Calendar era, date)</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultSubTitle" xml:space="preserve">
     <value>Valid prefixes: 'u' for Unix Timestamp, 'ft' for Windows file time</value>
@@ -157,19 +170,34 @@
   <data name="Microsoft_plugin_timedate_ErrorResultTitle" xml:space="preserve">
     <value>Error: Invalid number input</value>
   </data>
+  <data name="Microsoft_plugin_timedate_FormatNowSearchTag" xml:space="preserve">
+    <value>(Current date and time, now)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_FormatSearchTag" xml:space="preserve">
+    <value>(Date and time)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Hour" xml:space="preserve">
+    <value>Hour</value>
+  </data>
   <data name="Microsoft_plugin_timedate_Iso8601" xml:space="preserve">
-    <value>ISO 8601 (Date and time)</value>
+    <value>ISO 8601</value>
   </data>
   <data name="Microsoft_plugin_timedate_Iso8601Utc" xml:space="preserve">
-    <value>ISO 8601 UTC (Date and time)</value>
+    <value>ISO 8601 UTC</value>
     <comment>'UTC' means here 'Universal Time Convention'</comment>
   </data>
   <data name="Microsoft_plugin_timedate_Iso8601Zone" xml:space="preserve">
-    <value>ISO 8601 with time zone (Date and time)</value>
+    <value>ISO 8601 with time zone</value>
   </data>
   <data name="Microsoft_plugin_timedate_Iso8601ZoneUtc" xml:space="preserve">
-    <value>ISO 8601 UTC with time zone (Date and time)</value>
+    <value>ISO 8601 UTC with time zone</value>
     <comment>'UTC' means here 'Universal Time Convention'</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Millisecond" xml:space="preserve">
+    <value>Millisecond</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Minute" xml:space="preserve">
+    <value>Minute</value>
   </data>
   <data name="Microsoft_plugin_timedate_Month" xml:space="preserve">
     <value>Month</value>
@@ -181,10 +209,10 @@
     <value>Month and year</value>
   </data>
   <data name="Microsoft_plugin_timedate_Now" xml:space="preserve">
-    <value>Now (Current date and time)</value>
+    <value>Now</value>
   </data>
   <data name="Microsoft_plugin_timedate_NowUtc" xml:space="preserve">
-    <value>Now UTC (Current date and time)</value>
+    <value>Now UTC</value>
     <comment>'UTC' means here 'Universal Time Convention'</comment>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_description" xml:space="preserve">
@@ -195,7 +223,10 @@
     <value>Time and Date</value>
   </data>
   <data name="Microsoft_plugin_timedate_Rfc1123" xml:space="preserve">
-    <value>RFC1123 (Date and time)</value>
+    <value>RFC1123</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Second" xml:space="preserve">
+    <value>Second</value>
   </data>
   <data name="Microsoft_plugin_timedate_settingDateWithWeekday" xml:space="preserve">
     <value>Show date with weekday and name of month (Applies to 'Date' and 'Now' result)</value>
@@ -210,24 +241,30 @@
     <value>Show time with seconds (Applies to 'Time' and 'Now' result)</value>
   </data>
   <data name="Microsoft_plugin_timedate_SubTitleNote" xml:space="preserve">
-    <value>Select or press {0} to copy</value>
-    <comment>Do not translate the placeholder '{0}' because it will be replaced in code. Translate 'press' like 'press shortcut'.</comment>
+    <value>Select or press Ctrl+C to copy</value>
+    <comment>'Ctrl+C' is a shortcut</comment>
   </data>
   <data name="Microsoft_plugin_timedate_Time" xml:space="preserve">
     <value>Time</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_TimeNowSearchTag" xml:space="preserve">
+    <value>(Current time, now)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_TimeSearchTag" xml:space="preserve">
+    <value>(Time)</value>
   </data>
   <data name="Microsoft_plugin_timedate_TimeUtc" xml:space="preserve">
     <value>Time UTC</value>
     <comment>'UTC' means here 'Universal Time Convention'</comment>
   </data>
+  <data name="Microsoft_plugin_timedate_ToolTipAlternativeSearchTag" xml:space="preserve">
+    <value>Alternative search tags:</value>
+  </data>
   <data name="Microsoft_plugin_timedate_UniversalTime" xml:space="preserve">
-    <value>Universal time format: YYYY-MM-DD hh:mm:ss (Date and time)</value>
+    <value>Universal time format: YYYY-MM-DD hh:mm:ss</value>
   </data>
   <data name="Microsoft_plugin_timedate_Unix" xml:space="preserve">
-    <value>Unix epoch time (Date and time)</value>
-  </data>
-  <data name="Microsoft_plugin_timedate_UnixNow" xml:space="preserve">
-    <value>Unix epoch time (Current date and time)</value>
+    <value>Unix epoch time</value>
   </data>
   <data name="Microsoft_plugin_timedate_WeekOfMonth" xml:space="preserve">
     <value>Week of the month</value>
@@ -236,10 +273,7 @@
     <value>Week of the year (Calendar week, Week number)</value>
   </data>
   <data name="Microsoft_plugin_timedate_WindowsFileTime" xml:space="preserve">
-    <value>Windows file time (Date and time as Int64 number)</value>
-  </data>
-  <data name="Microsoft_plugin_timedate_WindowsFileTimeNow" xml:space="preserve">
-    <value>Windows file time (Current date and time as Int64 number)</value>
+    <value>Windows file time (Int64 number)</value>
   </data>
   <data name="Microsoft_plugin_timedate_Year" xml:space="preserve">
     <value>Year</value>

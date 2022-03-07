@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Wox.Infrastructure;
 using Wox.Plugin;
@@ -80,7 +81,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     results.Add(new Result
                     {
                         Title = f.Value,
-                        SubTitle = $"{f.Label} - {string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_SubTitleNote, "Ctrl+C")}",
+                        SubTitle = $"{f.Label} - {Resources.Microsoft_plugin_timedate_SubTitleNote}",
+                        ToolTipData = ResultHelper.GetSearchTagToolTip(f, out Visibility v),
+                        ToolTipVisibility = v,
                         IcoPath = f.GetIconPath(iconTheme),
                         Action = _ => ResultHelper.CopyToClipBoard(f.Value),
                         ContextData = f,
@@ -93,16 +96,35 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 foreach (var f in availableFormats)
                 {
                     var resultMatch = StringMatcher.FuzzySearch(searchTerm, f.Label);
+                    var alternativeMatch = StringMatcher.FuzzySearch(searchTerm, f.AlternativeSearchTag);
                     if (resultMatch.Score > 0)
                     {
+                        // Subtitle match
                         results.Add(new Result
                         {
                             Title = f.Value,
-                            SubTitle = $"{f.Label} - {string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_SubTitleNote, "Ctrl+C")}",
+                            SubTitle = $"{f.Label} - {Resources.Microsoft_plugin_timedate_SubTitleNote}",
+                            ToolTipData = ResultHelper.GetSearchTagToolTip(f, out Visibility v),
+                            ToolTipVisibility = v,
                             IcoPath = f.GetIconPath(iconTheme),
                             Action = _ => ResultHelper.CopyToClipBoard(f.Value),
                             Score = resultMatch.Score,
                             SubTitleHighlightData = resultMatch.MatchData,
+                            ContextData = f,
+                        });
+                    }
+                    else if (alternativeMatch.Score > 0)
+                    {
+                        // Alternative search tag match
+                        results.Add(new Result
+                        {
+                            Title = f.Value,
+                            SubTitle = $"{f.Label} - {Resources.Microsoft_plugin_timedate_SubTitleNote}",
+                            ToolTipData = ResultHelper.GetSearchTagToolTip(f, out Visibility v),
+                            ToolTipVisibility = v,
+                            IcoPath = f.GetIconPath(iconTheme),
+                            Action = _ => ResultHelper.CopyToClipBoard(f.Value),
+                            Score = alternativeMatch.Score - 1,
                             ContextData = f,
                         });
                     }

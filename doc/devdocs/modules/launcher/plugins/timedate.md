@@ -6,9 +6,9 @@ The 'Time and Date' plugin shows the date and time in different formats. For the
 - Date/time: `10:30 AM`
 - Format and date/time: `Week number::10/10/2022`
 
-![Image of Window Walker plugin](/doc/images/launcher/plugins/timedate.png)
+!['Time and Date' plugin](/doc/images/launcher/plugins/timedate.png)
 
-![Image of Window Walker plugin](/doc/images/launcher/plugins/timedate2.png)
+![Search for a date in a specified format](/doc/images/launcher/plugins/timedate2.png)
 
 
 ## Formats
@@ -25,8 +25,6 @@ The 'Time and Date' plugin shows the date and time in different formats. For the
 
 The following formats are currently available:
 
-// ToDo: Update list
-
 | Format | Example (Based on default settings) | As result | As input |
 |--------------|-----------|------------|------------|
 | Time | 5:10 PM | x | x |
@@ -35,6 +33,10 @@ The following formats are currently available:
 | Time UTC | 4:10 PM | x | x |
 | Now UTC | 3/5/2022 4:10 PM | x | x |
 | Unix Timestamp | 1646496622 | x | x |
+| Hour | 10 | x | |
+| Minute | 30 | x | |
+| Second | 45 | x | |
+| Millisecond | 678 | x | |
 | Day (Week day) | Saturday | x | |
 | Day of the week | 6 | x | |
 | Day of the month | 5 | x | |
@@ -43,8 +45,12 @@ The following formats are currently available:
 | Week of the year (Calendar week, Week number) | 10 | x | |
 | Month | March | x | |
 | Month of the year | 3 | x | |
+| Month and day | March 7 | x | x |
 | Year | 2022 | x | |
-| Windows file time (Current date and time as Int64 number) | 637820976123938199 | x | x |
+| Era | AD | x | |
+| Era abbreviation | A | x | |
+| Year and month | March 2022 | x | x |
+| Windows file time (As Int64 number) | 637820976123938199 | x | x |
 | Universal time format: YYYY-MM-DD hh:mm:ss| 2022-03-05 16:20:12Z | x | x |
 | ISO 8601 | 2022-03-05T17:23:04 | x | x |
 | ISO 8601 UTC | 2022-03-05T16:23:04 | x | x |

@@ -6,7 +6,6 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 
 [assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
@@ -82,25 +81,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             int formatSettingFirstDayOfWeek = (int)CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
 
             return ((int)(date.DayOfWeek + daysInWeek - formatSettingFirstDayOfWeek) % daysInWeek) + adjustment;
-        }
-
-        /// <summary>
-        /// Gets the result for the calendar era
-        /// </summary>
-        /// <param name="date">Date</param>
-        /// <param name="calendar">Calendar object</param>
-        /// <returns>Elemnt of the type <see cref="AvailableResult"/>.</returns>
-        internal static AvailableResult GetCalendarEraResult(DateTime date, Calendar calendar)
-        {
-            string era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(date));
-            string eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(date));
-
-            return new AvailableResult()
-            {
-                Value = era == eraShort ? era : $"{era} ({eraShort})",
-                Label = era == eraShort ? Resources.Microsoft_plugin_timedate_Era : Resources.Microsoft_plugin_timedate_EraAbbreviation,
-                IconType = ResultIconType.Date,
-            };
         }
 
         /// <summary>
