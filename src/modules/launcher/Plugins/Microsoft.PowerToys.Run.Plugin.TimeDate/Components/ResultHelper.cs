@@ -294,7 +294,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// Create a tool tip for the alternative search tags
         /// </summary>
         /// <param name="result">The <see cref="AvailableResult"/>.</param>
-        /// <returns>New <see cref="ToolTipData"/> elemenet or null if <see cref="AvailableResult.AlternativeSearchTag"/> is empty.</returns>
+        /// <returns>New <see cref="ToolTipData"/> object or null if <see cref="AvailableResult.AlternativeSearchTag"/> is empty.</returns>
         internal static ToolTipData GetSearchTagToolTip(AvailableResult result, out Visibility visibility)
         {
             switch (string.IsNullOrEmpty(result.AlternativeSearchTag))

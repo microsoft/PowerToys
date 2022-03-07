@@ -18,18 +18,26 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("time", "10:30 AM")]
         [DataRow("date", "3/2/2022")]
         [DataRow("date and time", "3/2/2022 10:30 AM")]
+        [DataRow("hour", "10")]
+        [DataRow("minute", "30")]
+        [DataRow("second", "45")]
+        [DataRow("millisecond", "0")]
         [DataRow("day (week day)", "Wednesday")]
-        [DataRow("day of the week (week day)", "3")]
+        [DataRow("day of the week (week day)", "4")]
         [DataRow("day of the month", "2")]
         [DataRow("day of the year", "61")]
         [DataRow("week of the month", "1")]
         [DataRow("week of the year (calendar week, week number)", "10")]
         [DataRow("month", "March")]
         [DataRow("month of the year", "3")]
+        [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
-        [DataRow("ISO 8601 (Date and time)", "2022-03-02T10:30:45")]
-        [DataRow("ISO 8601 with time zone (Date and time)", "2022-03-02T10:30:45")]
-        [DataRow("RFC1123 (Date and time)", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        [DataRow("era", "AD")]
+        [DataRow("era abbreviation", "A")]
+        [DataRow("month and year", "March 2022")]
+        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
         public void LocalFormatsWithShortTimeAndShortDate(string formatLabel, string expectedResult)
         {
             // Setup
@@ -58,18 +66,26 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("time", "10:30 AM")]
         [DataRow("date", "Wednesday, March 2, 2022")]
         [DataRow("date and time", "Wednesday, March 2, 2022 10:30 AM")]
+        [DataRow("hour", "10")]
+        [DataRow("minute", "30")]
+        [DataRow("second", "45")]
+        [DataRow("millisecond", "0")]
         [DataRow("day (week day)", "Wednesday")]
-        [DataRow("day of the week (week day)", "3")]
+        [DataRow("day of the week (week day)", "4")]
         [DataRow("day of the month", "2")]
         [DataRow("day of the year", "61")]
         [DataRow("week of the month", "1")]
         [DataRow("week of the year (calendar week, week number)", "10")]
         [DataRow("month", "March")]
         [DataRow("month of the year", "3")]
+        [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
-        [DataRow("ISO 8601 (Date and time)", "2022-03-02T10:30:45")]
-        [DataRow("ISO 8601 with time zone (Date and time)", "2022-03-02T10:30:45")]
-        [DataRow("RFC1123 (Date and time)", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        [DataRow("era", "AD")]
+        [DataRow("era abbreviation", "A")]
+        [DataRow("month and year", "March 2022")]
+        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
         public void LocalFormatsWithShortTimeAndLongDate(string formatLabel, string expectedResult)
         {
             // Setup
@@ -91,18 +107,26 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("time", "10:30:45 AM")]
         [DataRow("date", "3/2/2022")]
         [DataRow("date and time", "3/2/2022 10:30:45 AM")]
+        [DataRow("hour", "10")]
+        [DataRow("minute", "30")]
+        [DataRow("second", "45")]
+        [DataRow("millisecond", "0")]
         [DataRow("day (week day)", "Wednesday")]
-        [DataRow("day of the week (week day)", "3")]
+        [DataRow("day of the week (week day)", "4")]
         [DataRow("day of the month", "2")]
         [DataRow("day of the year", "61")]
         [DataRow("week of the month", "1")]
         [DataRow("week of the year (calendar week, week number)", "10")]
         [DataRow("month", "March")]
         [DataRow("month of the year", "3")]
+        [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
-        [DataRow("ISO 8601 (Date and time)", "2022-03-02T10:30:45")]
-        [DataRow("ISO 8601 with time zone (Date and time)", "2022-03-02T10:30:45")]
-        [DataRow("RFC1123 (Date and time)", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        [DataRow("era", "AD")]
+        [DataRow("era abbreviation", "A")]
+        [DataRow("month and year", "March 2022")]
+        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
         public void LocalFormatsWithLongTimeAndShortDate(string formatLabel, string expectedResult)
         {
             // Setup
@@ -124,18 +148,26 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("time", "10:30:45 AM")]
         [DataRow("date", "Wednesday, March 2, 2022")]
         [DataRow("date and time", "Wednesday, March 2, 2022 10:30:45 AM")]
+        [DataRow("hour", "10")]
+        [DataRow("minute", "30")]
+        [DataRow("second", "45")]
+        [DataRow("millisecond", "0")]
         [DataRow("day (week day)", "Wednesday")]
-        [DataRow("day of the week (week day)", "3")]
+        [DataRow("day of the week (week day)", "4")]
         [DataRow("day of the month", "2")]
         [DataRow("day of the year", "61")]
         [DataRow("week of the month", "1")]
         [DataRow("week of the year (calendar week, week number)", "10")]
         [DataRow("month", "March")]
         [DataRow("month of the year", "3")]
+        [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
-        [DataRow("ISO 8601 (Date and time)", "2022-03-02T10:30:45")]
-        [DataRow("ISO 8601 with time zone (Date and time)", "2022-03-02T10:30:45")]
-        [DataRow("RFC1123 (Date and time)", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        [DataRow("era", "AD")]
+        [DataRow("era abbreviation", "A")]
+        [DataRow("month and year", "March 2022")]
+        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
         public void LocalFormatsWithLongTimeAndLongDate(string formatLabel, string expectedResult)
         {
             // Setup
@@ -156,9 +188,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("time utc", "t")]
         [DataRow("date and time utc", "g")]
-        [DataRow("ISO 8601 UTC (Date and time)", "yyyy-MM-ddTHH:mm:ss")]
-        [DataRow("ISO 8601 UTC with time zone (Date and time)", "yyyy-MM-ddTHH:mm:ss'Z'")]
-        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss (Date and time)", "u")]
+        [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
+        [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
+        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
         public void UtcFormatsWithShortTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
@@ -180,9 +212,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("time utc", "t")]
         [DataRow("date and time utc", "f")]
-        [DataRow("ISO 8601 UTC (Date and time)", "yyyy-MM-ddTHH:mm:ss")]
-        [DataRow("ISO 8601 UTC with time zone (Date and time)", "yyyy-MM-ddTHH:mm:ss'Z'")]
-        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss (Date and time)", "u")]
+        [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
+        [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
+        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
         public void UtcFormatsWithShortTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
@@ -204,9 +236,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("time utc", "T")]
         [DataRow("date and time utc", "G")]
-        [DataRow("ISO 8601 UTC (Date and time)", "yyyy-MM-ddTHH:mm:ss")]
-        [DataRow("ISO 8601 UTC with time zone (Date and time)", "yyyy-MM-ddTHH:mm:ss'Z'")]
-        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss (Date and time)", "u")]
+        [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
+        [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
+        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
         public void UtcFormatsWithLongTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
@@ -228,9 +260,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("time utc", "T")]
         [DataRow("date and time utc", "F")]
-        [DataRow("ISO 8601 UTC (Date and time)", "yyyy-MM-ddTHH:mm:ss")]
-        [DataRow("ISO 8601 UTC with time zone (Date and time)", "yyyy-MM-ddTHH:mm:ss'Z'")]
-        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss (Date and time)", "u")]
+        [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
+        [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
+        [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
         public void UtcFormatsWithLongTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
@@ -255,7 +287,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
-            string formatLabel = "Unix Timestamp (Date and time)";
+            string formatLabel = "Unix epoch time";
             DateTime timeValue = DateTime.Now.ToUniversalTime();
 
             // Act
@@ -276,7 +308,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
-            string formatLabel = "Windows file time (Date and time as Int64 number)";
+            string formatLabel = "Windows file time (Int64 number)";
             DateTime timeValue = DateTime.Now;
 
             // Act

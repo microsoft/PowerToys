@@ -3,11 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Wox.Infrastructure;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 {
@@ -23,68 +26,95 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("time", 2)]
         [DataRow("date", 2)]
+        [DataRow("now", 3)]
+        [DataRow("current", 3)]
         [DataRow("year", 0)]
         [DataRow("", 0)]
+        [DataRow("(now::10:10:10", 0)]
+        [DataRow("(current::10:10:10", 0)]
         public void CountWithoutPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString);
+            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             // using where to get only result with full word match
-            var result = main.Object.Query(expectedQuery).Where(x => x.SubTitle.Contains(expectedQuery.Search, StringComparison.OrdinalIgnoreCase)).ToList().Count;
+            var result = main.Object.Query(expectedQuery).Count;
 
             // Assert
             Assert.AreEqual(expectedResultCount, result, "Result depends on default plugin settings!");
+
+            // Finalize
+            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
-        [DataRow("(time", 12)]
-        [DataRow("(date", 11)]
-        [DataRow("(year", 4)]
-        [DataRow("(", 22)]
+        [DataRow("(time", 16)]
+        [DataRow("(date", 24)]
+        [DataRow("(year", 7)]
+        [DataRow("(now", 30)]
+        [DataRow("(current", 30)]
+        [DataRow("(", 30)]
+        [DataRow("(now::10:10:10", 1)] // Windows file time
+        [DataRow("(current::10:10:10", 0)]
         public void CountWithPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString, "(");
+            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             // using where to get only result with full word match
-            var result = main.Object.Query(expectedQuery).Where(x => x.SubTitle.Contains(expectedQuery.Search, StringComparison.OrdinalIgnoreCase)).ToList().Count;
+            var result = main.Object.Query(expectedQuery);
+
+            foreach (Result r in result)
+            {
+                Log.Debug(typedString + " : " + r.ToString(), typeof(QueryTests));
+            }
 
             // Assert
-            Assert.AreEqual(expectedResultCount, result);
+            Assert.AreEqual(expectedResultCount, result.Count, result.ToString());
+
+            // Finalize
+            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
         [DataRow("(time", "Time -")]
         [DataRow("(time u", "Time UTC -")]
         [DataRow("(date", "Date -")]
-        [DataRow("(now", "Now (Current date and time) -")]
-        [DataRow("(now u", "Now UTC (Current date and time) -")]
-        [DataRow("(unix", "Unix Timestamp (Current date and time) -")]
-        [DataRow("(file", "Windows file time (Current date and time")]
+        [DataRow("(now", "Now -")]
+        [DataRow("(now u", "Now UTC -")]
+        [DataRow("(unix", "Unix epoch time -")]
+        [DataRow("(file", "Windows file time (Int64 number) ")]
+        [DataRow("(hour", "Hour -")]
+        [DataRow("(minute", "Minute -")]
+        [DataRow("(second", "Second -")]
+        [DataRow("(millisecond", "Millisecond -")]
         [DataRow("(day", "Day (Week day) -")]
-        [DataRow("(week day", "Day (Week day) -")]
         [DataRow("(day of week", "Day of the week (Week day) -")]
-        [DataRow("(week day", "Day of the week (Week day) -")]
         [DataRow("(day of month", "Day of the month -")]
         [DataRow("(day of year", "Day of the year -")]
         [DataRow("(week of month", "Week of the month -")]
         [DataRow("(week of year", "Week of the year (Calendar week, Week number) -")]
-        [DataRow("(cal week", "Week of the year (Calendar week, Week number) -")]
-        [DataRow("(week num", "Week of the year (Calendar week, Week number) -")]
         [DataRow("(month", "Month -")]
         [DataRow("(month of year", "Month of the year -")]
+        [DataRow("(month and d", "Month and day -")]
+        [DataRow("(month and y", "Month and year -")]
         [DataRow("(year", "Year -")]
-        [DataRow("(universal", "Universal time format: YYYY-MM-DD hh:mm:ss (Date and time) -")]
-        [DataRow("(iso date", "ISO 8601 (Date and time) -")]
-        [DataRow("(iso utc date", "ISO 8601 UTC (Date and time) -")]
-        [DataRow("(iso zone", "ISO 8601 with time zone (Date and time) - ")]
-        [DataRow("(iso utc zone", "ISO 8601 UTC with time zone (Date and time) -")]
-        [DataRow("(rfc", "RFC1123 (Date and time) -")]
+        [DataRow("(era", "Era -")]
+        [DataRow("(era a", "Era abbreviation -")]
+        [DataRow("(universal", "Universal time format: YYYY-MM-DD hh:mm:ss -")]
+        [DataRow("(iso", "ISO 8601 -")]
+        [DataRow("(iso utc", "ISO 8601 UTC -")]
+        [DataRow("(iso zone", "ISO 8601 with time zone - ")]
+        [DataRow("(iso utc zone", "ISO 8601 UTC with time zone -")]
+        [DataRow("(rfc", "RFC1123 -")]
         [DataRow("(time::12:30", "Time -")]
         [DataRow("(date::10.10.2022", "Date -")]
         [DataRow("(12:30", "Time -")]
@@ -93,17 +123,27 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(time::u1646408119", "Time -")]
         [DataRow("(ft637820085517321977", "Date and time -")]
         [DataRow("(time::ft637820085517321977", "Time -")]
+        [DataRow("(year", "Era -")]
+        [DataRow("(week day", "Day (Week day) -")]
+        [DataRow("(week day", "Day of the week (Week day) -")]
+        [DataRow("(cal week", "Week of the year (Calendar week, Week number) -")]
+        [DataRow("(week num", "Week of the year (Calendar week, Week number) -")]
         public void CanFindResult(string typedString, string expectedResult)
         {
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString, "(");
+            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(expectedResult, StringComparison.CurrentCulture));
 
             // Assert
             Assert.IsNotNull(result, $"Failed for '{typedString}'='{expectedResult}'");
+
+            // Finalize
+            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         // [DataRow("(::")] -> Behaves different to PT Run user interface
@@ -126,12 +166,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString, "(");
+            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();
 
             // Assert
             Assert.IsNull(result, result?.ToString());
+
+            // Finalize
+            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -144,12 +189,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString, "(");
+            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().Title;
 
             // Assert
             Assert.IsTrue(result.StartsWith("Error:", StringComparison.CurrentCulture));
+
+            // Finalize
+            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -162,12 +212,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString, "(");
+            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();
 
             // Assert
             Assert.IsNull(result);
+
+            // Finalize
+            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
     }
 }
