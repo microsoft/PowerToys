@@ -19,7 +19,7 @@ namespace ColorPicker.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -156,6 +156,33 @@ namespace ColorPicker.Properties {
         public static string Darkest_color {
             get {
                 return ResourceManager.GetString("Darkest_color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export.
+        /// </summary>
+        public static string Export_by {
+            get {
+                return ResourceManager.GetString("Export_by", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grouped by color.
+        /// </summary>
+        public static string Export_by_color {
+            get {
+                return ResourceManager.GetString("Export_by_color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grouped by format.
+        /// </summary>
+        public static string Export_by_format {
+            get {
+                return ResourceManager.GetString("Export_by_format", resourceCulture);
             }
         }
         

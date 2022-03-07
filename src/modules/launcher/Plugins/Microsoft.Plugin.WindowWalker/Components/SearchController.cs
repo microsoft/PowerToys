@@ -34,7 +34,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets or sets the current search text
         /// </summary>
-        public string SearchText
+        internal string SearchText
         {
             get
             {
@@ -51,7 +51,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the open window search results
         /// </summary>
-        public List<SearchResult> SearchMatches
+        internal List<SearchResult> SearchMatches
         {
             get { return new List<SearchResult>(searchMatches).OrderByDescending(x => x.Score).ToList(); }
         }
@@ -59,7 +59,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets singleton Pattern
         /// </summary>
-        public static SearchController Instance
+        internal static SearchController Instance
         {
             get
             {
@@ -84,7 +84,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Event handler for when the search text has been updated
         /// </summary>
-        public void UpdateSearchText(string searchText)
+        internal void UpdateSearchText(string searchText)
         {
             SearchText = searchText;
             SyncOpenWindowsWithModel();
@@ -93,7 +93,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Syncs the open windows with the OpenWindows Model
         /// </summary>
-        public void SyncOpenWindowsWithModel()
+        internal void SyncOpenWindowsWithModel()
         {
             System.Diagnostics.Debug.Print("Syncing WindowSearch result with OpenWindows Model");
 
@@ -126,7 +126,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 foreach (var window in openWindows)
                 {
                     var titleMatch = FuzzyMatching.FindBestFuzzyMatch(window.Title, searchString.SearchText);
-                    var processMatch = FuzzyMatching.FindBestFuzzyMatch(window.ProcessInfo.Name, searchString.SearchText);
+                    var processMatch = FuzzyMatching.FindBestFuzzyMatch(window.Process.Name, searchString.SearchText);
 
                     if ((titleMatch.Count != 0 || processMatch.Count != 0) &&
                                 window.Title.Length != 0)
@@ -145,7 +145,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Event args for a window list update event
         /// </summary>
-        public class SearchResultUpdateEventArgs : EventArgs
+        internal class SearchResultUpdateEventArgs : EventArgs
         {
         }
     }

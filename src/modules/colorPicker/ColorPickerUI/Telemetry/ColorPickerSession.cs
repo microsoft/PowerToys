@@ -29,6 +29,8 @@ namespace ColorPicker.Telemetry
 
         public bool EditorColorAdjusted { get; set; }
 
+        public bool EditorColorsExported { get; set; }
+
         public bool EditorSimilarColorPicked { get; set; }
 
         public bool EditorHistoryColorPicked { get; set; }

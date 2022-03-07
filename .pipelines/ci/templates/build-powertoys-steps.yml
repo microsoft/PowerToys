@@ -133,6 +133,7 @@ steps:
       **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
       **\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests.dll      
       **\Microsoft.Plugin.WindowsTerminal.UnitTests.dll
+      **\Microsoft.Plugin.WindowWalker.UnitTests.dll
       !**\obj\**
       !**\ref\**
 

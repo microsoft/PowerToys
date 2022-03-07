@@ -173,6 +173,18 @@
     <value>Remove</value>
     <comment>Tooltip that shows that the user can remove an item from a list</comment>
   </data>
+  <data name="Export_by" xml:space="preserve">
+    <value>Export</value>
+    <comment>Tooltip that shows the user can export the selected items to a file</comment>
+  </data>
+  <data name="Export_by_color" xml:space="preserve">
+    <value>Grouped by color</value>
+    <comment>Tooltip that shows the user can export the selected items grouped by color to a file</comment>
+  </data>
+  <data name="Export_by_format" xml:space="preserve">
+    <value>Grouped by format</value>
+    <comment>Tooltip that shows the user can export the selected items grouped by format to a file</comment>
+  </data>
   <data name="Saturation_slider" xml:space="preserve">
     <value>Saturation slider</value>
     <comment>Tool tip that appears when hovering over a slider that represents the color saturation (from HSV)</comment>
