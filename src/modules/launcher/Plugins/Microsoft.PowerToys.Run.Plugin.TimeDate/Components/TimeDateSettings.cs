@@ -90,27 +90,27 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 new PluginAdditionalOption()
                 {
                     Key = nameof(OnlyDateTimeNowGlobal),
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_settingOnlyDateTimeNowGlobal,
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal,
                     Value = true,
                 },
                 new PluginAdditionalOption()
                 {
                     // ToDo: When description property is implemented (#15853), move the note in brackets to description.
                     Key = nameof(TimeWithSeconds),
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_settingTimeWithSeconds,
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingTimeWithSeconds,
                     Value = false,
                 },
                 new PluginAdditionalOption()
                 {
                     // ToDo: When description property is implemented (#15853), move the note in brackets to description.
                     Key = nameof(DateWithWeekday),
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_settingDateWithWeekday,
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingDateWithWeekday,
                     Value = false,
                 },
                 new PluginAdditionalOption()
                 {
                     Key = nameof(HideNumberMessageOnGlobalQuery),
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_settingHideNumberMessageOnGlobalQuery,
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery,
                     Value = false,
                 },
             };

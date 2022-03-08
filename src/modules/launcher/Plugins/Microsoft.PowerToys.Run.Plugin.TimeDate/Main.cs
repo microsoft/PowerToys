@@ -69,7 +69,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            return SearchController.StartSearch(query, IconTheme);
+            return SearchController.ExecuteSearch(query, IconTheme);
         }
 
         private void UpdateIconTheme(Theme theme)

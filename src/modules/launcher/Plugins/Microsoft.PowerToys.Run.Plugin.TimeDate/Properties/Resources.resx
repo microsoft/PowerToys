@@ -131,13 +131,6 @@
     <value>Date and time UTC</value>
     <comment>'UTC' means here 'Universal Time Convention'</comment>
   </data>
-  <data name="Microsoft_plugin_timedate_DateNowSearchTag" xml:space="preserve">
-    <value>Current date, Now</value>
-    <comment>Don't change order</comment>
-  </data>
-  <data name="Microsoft_plugin_timedate_DateSearchTag" xml:space="preserve">
-    <value>Date</value>
-  </data>
   <data name="Microsoft_plugin_timedate_Day" xml:space="preserve">
     <value>Day (Week day)</value>
   </data>
@@ -159,26 +152,11 @@
   <data name="Microsoft_plugin_timedate_EraAbbreviation" xml:space="preserve">
     <value>Era abbreviation</value>
   </data>
-  <data name="Microsoft_plugin_timedate_EraNowSearchTag" xml:space="preserve">
-    <value>Year , Calendar , Current , Era , Date , Now</value>
-    <comment>Don't change order</comment>
-  </data>
-  <data name="Microsoft_plugin_timedate_EraSearchTag" xml:space="preserve">
-    <value>Year, Calendar, Era, Date</value>
-    <comment>Don't change order</comment>
-  </data>
   <data name="Microsoft_plugin_timedate_ErrorResultSubTitle" xml:space="preserve">
     <value>Valid prefixes: 'u' for Unix Timestamp, 'ft' for Windows file time</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultTitle" xml:space="preserve">
     <value>Error: Invalid number input</value>
-  </data>
-  <data name="Microsoft_plugin_timedate_FormatNowSearchTag" xml:space="preserve">
-    <value>Current, Date and time, Time and date, Now</value>
-    <comment>Don't change order</comment>
-  </data>
-  <data name="Microsoft_plugin_timedate_FormatSearchTag" xml:space="preserve">
-    <value>Date and time, Time and Date</value>
   </data>
   <data name="Microsoft_plugin_timedate_Hour" xml:space="preserve">
     <value>Hour</value>
@@ -229,19 +207,48 @@
   <data name="Microsoft_plugin_timedate_Rfc1123" xml:space="preserve">
     <value>RFC1123</value>
   </data>
+  <data name="Microsoft_plugin_timedate_SearchTagDate" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagDateNow" xml:space="preserve">
+    <value>Current date, Now</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagEra" xml:space="preserve">
+    <value>Year, Calendar, Era, Date</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagEraNow" xml:space="preserve">
+    <value>Year , Calendar , Current , Era , Date , Now</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagFormat" xml:space="preserve">
+    <value>Date and time, Time and Date</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagFormatNow" xml:space="preserve">
+    <value>Current, Date and time, Time and date, Now</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagTime" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagTimeNow" xml:space="preserve">
+    <value>Current Time, Now</value>
+    <comment>Don't change order</comment>
+  </data>
   <data name="Microsoft_plugin_timedate_Second" xml:space="preserve">
     <value>Second</value>
   </data>
-  <data name="Microsoft_plugin_timedate_settingDateWithWeekday" xml:space="preserve">
+  <data name="Microsoft_plugin_timedate_SettingDateWithWeekday" xml:space="preserve">
     <value>Show date with weekday and name of month (Applies to 'Date' and 'Now' result)</value>
   </data>
-  <data name="Microsoft_plugin_timedate_settingHideNumberMessageOnGlobalQuery" xml:space="preserve">
+  <data name="Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery" xml:space="preserve">
     <value>Hide 'Invalid number input' error message on global queries</value>
   </data>
-  <data name="Microsoft_plugin_timedate_settingOnlyDateTimeNowGlobal" xml:space="preserve">
+  <data name="Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal" xml:space="preserve">
     <value>Show only 'Time', 'Date' and 'Now' result on global queries</value>
   </data>
-  <data name="Microsoft_plugin_timedate_settingTimeWithSeconds" xml:space="preserve">
+  <data name="Microsoft_plugin_timedate_SettingTimeWithSeconds" xml:space="preserve">
     <value>Show time with seconds (Applies to 'Time' and 'Now' result)</value>
   </data>
   <data name="Microsoft_plugin_timedate_SubTitleNote" xml:space="preserve">
@@ -249,13 +256,6 @@
     <comment>'Ctrl+C' is a shortcut</comment>
   </data>
   <data name="Microsoft_plugin_timedate_Time" xml:space="preserve">
-    <value>Time</value>
-  </data>
-  <data name="Microsoft_plugin_timedate_TimeNowSearchTag" xml:space="preserve">
-    <value>Current Time, Now</value>
-    <comment>Don't change order</comment>
-  </data>
-  <data name="Microsoft_plugin_timedate_TimeSearchTag" xml:space="preserve">
     <value>Time</value>
   </data>
   <data name="Microsoft_plugin_timedate_TimeUtc" xml:space="preserve">

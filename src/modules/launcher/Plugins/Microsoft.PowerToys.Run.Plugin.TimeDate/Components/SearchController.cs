@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// </summary>
         /// <param name="query">Search query object</param>
         /// <returns>List of Wox <see cref="Result"/>s.</returns>
-        internal static List<Result> StartSearch(Query query, string iconTheme)
+        internal static List<Result> ExecuteSearch(Query query, string iconTheme)
         {
             List<AvailableResult> availableFormats = new List<AvailableResult>();
             List<Result> results = new List<Result>();
@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             if (isEmptySearchInput)
             {
                 // Return all results for system time/date on empty keyword search
-                availableFormats.AddRange(ResultHelper.GetAvailableResults(isKeywordSearch));
+                availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch));
             }
             else if (Regex.IsMatch(searchTerm, @".+" + Regex.Escape(InputDelimiter) + @".+"))
             {
@@ -55,20 +55,20 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 var userInput = searchTerm.Split(InputDelimiter);
                 if (TimeAndDateHelper.ParseStringAsDateTime(userInput[1], out DateTime timestamp))
                 {
-                    availableFormats.AddRange(ResultHelper.GetAvailableResults(isKeywordSearch, null, null, timestamp));
+                    availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, null, null, timestamp));
                     searchTerm = userInput[0];
                 }
             }
             else if (TimeAndDateHelper.ParseStringAsDateTime(searchTerm, out DateTime timestamp))
             {
                 // Return all formats for specified time/date value
-                availableFormats.AddRange(ResultHelper.GetAvailableResults(isKeywordSearch, null, null, timestamp));
+                availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, null, null, timestamp));
                 searchTerm = string.Empty;
             }
             else
             {
                 // Search for specified format with system time/date
-                availableFormats.AddRange(ResultHelper.GetAvailableResults(isKeywordSearch));
+                availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch));
             }
 
             // Check searchTerm after getting results to select type of result list
@@ -94,12 +94,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // Generate filtered list of results
                 foreach (var f in availableFormats)
                 {
-                    var resultMatch = StringMatcher.FuzzySearch(searchTerm, f.Label);
-                    var alternativeMatch = StringMatcher.FuzzySearch(searchTerm, f.AlternativeSearchTag);
+                    var resultMatch = FindMatch(searchTerm, f.Label, f.AlternativeSearchTag);
 
                     if (resultMatch.Score > 0)
                     {
-                        // Subtitle match
                         results.Add(new Result
                         {
                             Title = f.Value,
@@ -109,22 +107,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                             IcoPath = f.GetIconPath(iconTheme),
                             Action = _ => ResultHelper.CopyToClipBoard(f.Value),
                             Score = resultMatch.Score,
-                            SubTitleHighlightData = resultMatch.MatchData,
-                            ContextData = f,
-                        });
-                    }
-                    else if (alternativeMatch.Score > 0)
-                    {
-                        // Alternative search tag match
-                        results.Add(new Result
-                        {
-                            Title = f.Value,
-                            SubTitle = $"{f.Label} - {Resources.Microsoft_plugin_timedate_SubTitleNote}",
-                            ToolTipData = ResultHelper.GetSearchTagToolTip(f, out Visibility v),
-                            ToolTipVisibility = v,
-                            IcoPath = f.GetIconPath(iconTheme),
-                            Action = _ => ResultHelper.CopyToClipBoard(f.Value),
-                            Score = alternativeMatch.Score - 1,
                             ContextData = f,
                         });
                     }
@@ -138,7 +120,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // Without plugin key word show only if message is not hidden by setting
                 if (isKeywordSearch || !TimeDateSettings.Instance.HideNumberMessageOnGlobalQuery)
                 {
-                    results.Add(GetNumberErrorResult(iconTheme));
+                    results.Add(ResultHelper.CreateNumberErrorResult(iconTheme));
                 }
             }
 
@@ -146,14 +128,22 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         }
 
         /// <summary>
-        /// Gets a result with an error message that only numbers can't be parsed
+        /// Checks the format for a match with the user query.
         /// </summary>
-        /// <returns>Element of type <see cref="Result"/>.</returns>
-        private static Result GetNumberErrorResult(string theme) => new Result()
+        /// <param name="query">The user query.</param>
+        /// <param name="label">The label of the format.</param>
+        /// <param name="tags">The search tag list as string.</param>
+        /// <returns>The <see cref="MatchResult"/>.</returns>
+        private static MatchResult FindMatch(string query, string label, string tags)
         {
-            Title = Resources.Microsoft_plugin_timedate_ErrorResultTitle,
-            SubTitle = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle,
-            IcoPath = $"Images\\Warning.{theme}.png",
-        };
+            var match = StringMatcher.FuzzySearch(query, label);
+            if (match.Score < 1)
+            {
+                // ToDo: Search fer each part of the tag string
+                match = StringMatcher.FuzzySearch(query, tags);
+            }
+
+            return match;
+        }
     }
 }

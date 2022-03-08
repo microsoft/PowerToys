@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 {
     [TestClass]
-    public class DateTimeResultTests
+    public class TimeDateResultTests
     {
         [DataTestMethod]
         [DataRow("time", "10:30 AM")]
@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetAvailableResults(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
 
             // Assert
@@ -93,7 +93,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetAvailableResults(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
 
             // Assert
@@ -134,7 +134,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetAvailableResults(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
 
             // Assert
@@ -175,7 +175,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetAvailableResults(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
 
             // Assert
@@ -198,7 +198,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetAvailableResults(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
             var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
@@ -222,7 +222,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetAvailableResults(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
             var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
@@ -246,7 +246,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetAvailableResults(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
             var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
@@ -270,7 +270,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            var helperResults = ResultHelper.GetAvailableResults(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
             var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
@@ -291,7 +291,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             DateTime timeValue = DateTime.Now.ToUniversalTime();
 
             // Act
-            var helperResults = ResultHelper.GetAvailableResults(true, false, false, timeValue);
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
             var expectedResult = (long)timeValue.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
@@ -312,7 +312,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             DateTime timeValue = DateTime.Now;
 
             // Act
-            var helperResults = ResultHelper.GetAvailableResults(true, false, false, timeValue);
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
             var expectedResult = timeValue.Ticks.ToString(CultureInfo.CurrentCulture);
 
