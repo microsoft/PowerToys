@@ -241,9 +241,9 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             }
 
             // If the desktop name was not changed by the user, it isn't saved to the registry. Then we need the default name for the desktop.
-            var defaultName = string.Format(Resources.VirtualDesktopHelper_Desktop, GetDesktopNumber(desktop));
+            var defaultName = string.Format(System.Globalization.CultureInfo.InvariantCulture, Resources.VirtualDesktopHelper_Desktop, GetDesktopNumber(desktop));
 
-            string registryPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops\\Desktops\\{" + desktop.ToString().ToUpper() + "}";
+            string registryPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops\\Desktops\\{" + desktop.ToString().ToUpper(System.Globalization.CultureInfo.InvariantCulture) + "}";
             RegistryKey deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);
             var desktopName = deskSubKey?.GetValue("Name");
 
