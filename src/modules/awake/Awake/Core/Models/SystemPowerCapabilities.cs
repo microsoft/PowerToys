@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 
 namespace Awake.Core.Models
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This rule does not make sense for structs.")]
     public struct SystemPowerCapabilities
     {
         [MarshalAs(UnmanagedType.U1)]
