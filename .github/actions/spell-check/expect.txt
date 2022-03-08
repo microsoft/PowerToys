@@ -2052,6 +2052,7 @@ stringtable
 stringval
 Strmiids
 strsafe
+structs
 strutil
 sttngs
 Stubless
