@@ -112,10 +112,10 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=6.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=6.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="wox_plugin_folder_plugin_name" xml:space="preserve">
     <value>Folder</value>
@@ -146,11 +146,11 @@
     <value>Fail to open file at</value>
   </data>
   <data name="wox_plugin_folder_select_folder_first_result_subtitle" xml:space="preserve">
-    <value>Use &gt; to search within the directory. Use * to search for file extensions. Or use both &gt;*</value>
+    <value>Tipp: &gt; to list content, * to search file extensions, &gt;* for both.</value>
   </data>
   <data name="wox_plugin_folder_select_folder_first_result_title" xml:space="preserve">
-    <value>Open</value>
-    <comment>Open as a verb.  Open this folder.</comment>
+    <value>Open: {0}</value>
+    <comment>Open as a verb.  Open this folder. Do not translate the placeholder '{0}'.</comment>
   </data>
   <data name="wox_plugin_folder_select_folder_OpenFileOrFolder_error_message" xml:space="preserve">
     <value>Could not start</value>
