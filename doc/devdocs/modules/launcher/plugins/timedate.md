@@ -19,7 +19,7 @@ The 'Time and Date' plugin shows the date and time in different formats. For the
 - The following formats requires a prefix in the query:
    - Unix Timestamp: `u`
    - Windows file time: `ft`
-- On invalid number inputs we shaw a warning that tells the user which prefixes are allowed/required.
+- On invalid number inputs we show a warning that tells the user which prefixes are allowed/required.
 
 **List of available formats**
 
@@ -59,8 +59,8 @@ The following formats are currently available:
 | RFC1123 | Sat, 05 Mar 2022 16:23:04 GMT | x | x |
 
 ### Add new formats
-- To add a new formats you have to add them in the method `GetAvailableResults()` of the [`ResultHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/ResultHelper.cs) class.
-	- Please add the new formats in the second range. The first one is reserved for the following three main formats (Time, Date, Now).
+- To add a new formats you have to add them to the method `GetList()` of the [`AvailableResultsList`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/AvailableResultsList.cs) class.
+	- Please add the new formats in the second range. The first one is reserved for the three main formats (Time, Date, Now).
 - After adding the new formats you have to update the Unit Tests!
 
 
@@ -77,15 +77,21 @@ The following formats are currently available:
 	| `HideNumberMessageOnGlobalQuery` | `false` | Hide 'Invalid number input' error message on global queries |
 	
 
-## Technical details
+## Classes
 
 ### [`AvailableResult.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/AvailableResult.cs)
 - Each instance of the [`AvailableResult`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/AvailableResult.cs) class represents a time/date result/format that the user can search for.
-- The results/formats are defined in the method `GetAvailableResults()` of the [`ResultHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/ResultHelper.cs) class.
+- The results/formats are defined in the `AvailableResultsList` class.
+
+### [`AvailableResultsList.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/AvailableResultsList.cs)
+- The [`AvailableResultsList`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/AvailableResultsList.cs) class contains the list of available formats/results in its method `GetList()`.
 
 ### [`ResultHelper.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/ResultHelper.cs)
-- The [`ResultHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/ResultHelper.cs) class contains a method to create the list of all available formats/results.
-- And it contains the method that copies the result values to the clipboard.
+- The [`ResultHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/ResultHelper.cs) class contains methods for some of the result features (tool tip, copy to clipboard) and the error result on incorrect number input.
+- And it contains the `SelectStringFromResources()` method for getting the resource strings based on the user input.
+	- The method has a parameter for the `stringId` which is the name of the string in the resource file. By default the word `Now` is automatically added at the end to get the string for a system time/date search.
+	- If a different/custom string is needed for a system time/date search the parameter `stringIdNow` can be used to override the default behavior of the method.
+	- If only a string for the system time/date search is required, you can set `stringId` to `string.Empty` and only `stringIdNow` to a valid string id.
 
 ### [`TimeAndDateHelper.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeAndDateHelper.cs)
 - The [`TimeAndDateHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeAndDateHelper.cs) class contains methods to format/convert date and time formats/strings.
@@ -95,29 +101,41 @@ The following formats are currently available:
 - The class has a static property called `Instance` that holds an instance of the class itself. This allows us to access the settings from everywhere in the plugin code without having additional parameters in our methods.
 
 ### [`SearchController.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/SearchController.cs)
-- The [`SearchController`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/SearchController.cs) encapsulates the functions needed to search and find matches.
+- The [`SearchController`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/SearchController.cs) encapsulates the mehtods needed to search and find matches.
+
+
+## Search
+
+### Tags
+- We compare the user input with the label of each results. If it doesn't match we search the tags of the result too.
+- For each result two tag strings are defined. One for a search with system time/date and one for a search with a custom time/date. Most of the results (except the era results) are using one of the generic tag lists: Date, Time or Format
+- The selection of the tag (for "system time/date" or "custom time/date") is happening at search time in the `AvailableResultsList.cs` class.
+- The different tags in a list are splitt by the `;` character.
 
 ### Score
-The plugin uses `FuzzyMatching` to get the matching formats, if the user searches for a specific format. The score is set based on the `FuzzySearch` result.
+- The plugin uses `FuzzyMatching` to get the matching formats, if the user searches for a specific format. The score is set based on the `FuzzySearch` result.
+- For label matches the score is multiplied by `2` for having a higher ranking compared to tag matches.
 
 
 ## [Unit Tests](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests)
 We have a [Unit Test project](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests) that executes various test to ensure that the plugin works as expected.
 
-### [`DateTimeResultTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/DateTimeResultTests.cs)
-- The [`DateTimeResultTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/DateTimeResultTests.cs) class contains tests to validate that the time and date values are correctly formatted/converted.
+### [`TimeDateResultTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/TimeDateResultTests.cs)
+- The [`TimeDateResultTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/TimeDateResultTests.cs) class contains tests to validate that the time and date values are correctly formatted/calculated.
 - That we can execute the tests at any time on any machine, we use a specified date/time value and set the thread culture always to `en-us` while executing the tests.
+- Some tests contain checks that calculate the expected result at runtime instead of using an expected value written fix in the code. This is done to get valid results on every machine at any time.
 
 ### [`ImageTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/ImageTests.cs)
 - The [`ImageTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/ImageTests.cs) class contains tests to validate that each result shows the expected and correct image.
-- That we can execute the tests at any time on any machine, we use a specified date/time value and set the thread culture always to `en-us` while executing the tests.
+- That we can execute the tests at any time on any machine, we set the thread culture always to `en-us` while executing the tests.
 
 ### [`PluginSettingsTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/PluginSettingsTests.cs)
 - The [`PluginSettingsTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/PluginSettingsTests.cs) class contains tests to validate that all settings exist and that they have the correct default values.
 
 ### [`QueryTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/QueryTests.cs)
 - The [`QueryTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/QueryTests.cs) class contains tests to validate that the user gets the correct results when searching.,
-- That we can execute the tests at any time on any machine, we use a specified date/time value and set the thread culture always to `en-us` while executing the tests.
+- That we can execute the tests at any time on any machine, we set the thread culture always to `en-us` while executing the tests.
 
 ### [`StringParserTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/StringParserTests.cs)
 - The [`StringParserTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/StringParserTests.cs) class contains tests to validate that the typed string gets converted correctly into a `DateTime` object.
+- That we can execute the tests at any time on any machine, we set the thread culture always to `en-us` while executing the tests.
