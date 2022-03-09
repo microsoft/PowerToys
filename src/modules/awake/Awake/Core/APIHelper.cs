@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -261,6 +263,44 @@ namespace Awake.Core
                 _log.Info($"Could not get registry key for the build number. Error: {ex.Message}");
                 return string.Empty;
             }
+        }
+
+        public static IEnumerable<IntPtr> EnumerateProcessWindowHandles(int processId)
+        {
+            var handles = new List<IntPtr>();
+
+            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
+            {
+                NativeMethods.EnumThreadWindows(
+                thread.Id,
+                (hWnd, lParam) =>
+                {
+                    handles.Add(hWnd);
+                    return true;
+                },
+                IntPtr.Zero);
+            }
+
+            return handles;
+        }
+
+        public static IEnumerable<IntPtr> EnumerateWindowsForProcess(int processId)
+        {
+            var handles = new List<IntPtr>();
+            IntPtr hCurrentWnd = IntPtr.Zero;
+
+            do
+            {
+                hCurrentWnd = NativeMethods.FindWindowEx(IntPtr.Zero, hCurrentWnd, null, null);
+                NativeMethods.GetWindowThreadProcessId(hCurrentWnd, out uint targetProcessId);
+                if (targetProcessId == processId)
+                {
+                    handles.Add(hCurrentWnd);
+                }
+            }
+            while (hCurrentWnd != IntPtr.Zero);
+
+            return handles;
         }
     }
 }

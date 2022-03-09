@@ -2,7 +2,7 @@
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\Awake</OutputPath>
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
@@ -15,6 +15,7 @@
     <Company>Microsoft Corporation</Company>
     <Version>$(Version).0</Version>
     <ApplicationIcon>Images\Awake.ico</ApplicationIcon>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
