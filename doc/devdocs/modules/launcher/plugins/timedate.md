@@ -101,7 +101,7 @@ The following formats are currently available:
 - The class has a static property called `Instance` that holds an instance of the class itself. This allows us to access the settings from everywhere in the plugin code without having additional parameters in our methods.
 
 ### [`SearchController.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/SearchController.cs)
-- The [`SearchController`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/SearchController.cs) encapsulates the mehtods needed to search and find matches.
+- The [`SearchController`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/SearchController.cs) encapsulates the methods needed to search and find matches.
 
 
 ## Search
@@ -110,7 +110,7 @@ The following formats are currently available:
 - We compare the user input with the label of each results. If it doesn't match we search the tags of the result too.
 - For each result two tag strings are defined. One for a search with system time/date and one for a search with a custom time/date. Most of the results (except the era results) are using one of the generic tag lists: Date, Time or Format
 - The selection of the tag (for "system time/date" or "custom time/date") is happening at search time in the `AvailableResultsList.cs` class.
-- The different tags in a list are splitt by the `;` character.
+- The different tags in a list are split by the `;` character.
 
 ### Score
 - The plugin uses `FuzzyMatching` to get the matching formats, if the user searches for a specific format. The score is set based on the `FuzzySearch` result.
