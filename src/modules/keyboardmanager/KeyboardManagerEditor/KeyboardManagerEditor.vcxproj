@@ -12,6 +12,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <PropertyGroup>
+    <NoWarn>81010002</NoWarn>
+  </PropertyGroup>
   <!-- Props that should be disabled while building on CI server -->
   <ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
     <ClCompile>

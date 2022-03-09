@@ -21,6 +21,7 @@ namespace
     const wchar_t JSON_KEY_ANIMATION_DURATION_MS[] = L"animation_duration_ms";
     const wchar_t JSON_KEY_SPOTLIGHT_INITIAL_ZOOM[] = L"spotlight_initial_zoom";
     const wchar_t JSON_KEY_EXCLUDED_APPS[] = L"excluded_apps";
+    const wchar_t JSON_KEY_SHAKING_MINIMUM_DISTANCE[] = L"shaking_minimum_distance";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -299,6 +300,16 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         catch (...)
         {
             Logger::warn("Failed to initialize Excluded Apps from settings. Will use default value");
+        }
+        try
+        {
+            // Parse Shaking Minimum Distance
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHAKING_MINIMUM_DISTANCE);
+            findMyMouseSettings.shakeMinimumDistance = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Shaking Minimum Distance from settings. Will use default value");
         }
     }
     else

@@ -122,5 +122,14 @@
   </data>
   <data name="FailedToLoadPluginTitle" xml:space="preserve">
     <value>Fail to Load {0} Plugin</value>
+    <comment>Do not translate '{0}' as this is a place holder and will be converted in code.</comment>
+  </data>
+  <data name="VirtualDesktopHelper_AllDesktops" xml:space="preserve">
+    <value>On all Desktops</value>
+    <comment>The window is shown on all desktops.</comment>
+  </data>
+  <data name="VirtualDesktopHelper_Desktop" xml:space="preserve">
+    <value>Desktop {0}</value>
+    <comment>Default name for virtual desktops. Do not translate '{0}' as this is a place holder and will be converted in code.</comment>
   </data>
 </root>

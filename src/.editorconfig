@@ -5,3 +5,6 @@ dotnet_diagnostic.SA1201.severity = none
 
 # CA1303: Do not pass literals as localized parameters
 dotnet_diagnostic.CA1303.severity = suggestion
+
+# CA1051: Do not declare visible instance fields
+dotnet_code_quality.ca1051.exclude_structs = true

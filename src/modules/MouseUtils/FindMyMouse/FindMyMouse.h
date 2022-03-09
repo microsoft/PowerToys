@@ -16,6 +16,7 @@ constexpr int FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS = 100;
 constexpr int FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS = 500;
 constexpr int FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM = 9;
 constexpr FindMyMouseActivationMethod FIND_MY_MOUSE_DEFAULT_ACTIVATION_METHOD = FindMyMouseActivationMethod::DoubleControlKey;
+constexpr int FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE = 1000;
 
 struct FindMyMouseSettings
 {
@@ -27,6 +28,7 @@ struct FindMyMouseSettings
     int spotlightRadius = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS;
     int animationDurationMs = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
     int spotlightInitialZoom = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
+    int shakeMinimumDistance = FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE;
     std::vector<std::wstring> excludedApps;
 };
 
