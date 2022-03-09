@@ -13,6 +13,19 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
     [TestClass]
     public class StringParserTests
     {
+        private CultureInfo originalCulture;
+        private CultureInfo originalUiCulture;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            // Set thread culture
+            originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            originalUiCulture = Thread.CurrentThread.CurrentUICulture;
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");
+        }
+
         [DataTestMethod]
         [DataRow("10/29/2022 17:05:10", true, "G", "10/29/2022 5:05:10 PM")]
         [DataRow("Saturday, October 29, 2022 5:05:10 PM", true, "G", "10/29/2022 5:05:10 PM")]
@@ -25,10 +38,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ft10456", true, "", "")] // Value is UTC and can be different based on system
         public void ConvertStringToDateTime(string typedString, bool expectedBool, string stringType, string expectedString)
         {
-            // Setup
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
-
             // Act
             bool boolResult = TimeAndDateHelper.ParseStringAsDateTime(in typedString, out DateTime result);
 
@@ -38,9 +47,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             {
                 Assert.AreEqual(expectedString, result.ToString(stringType, CultureInfo.CurrentCulture));
             }
+        }
 
-            // Finalize
+        [TestCleanup]
+        public void CleanUp()
+        {
+            // Set thread culture
             Thread.CurrentThread.CurrentCulture = originalCulture;
+            Thread.CurrentThread.CurrentUICulture = originalUiCulture;
         }
     }
 }

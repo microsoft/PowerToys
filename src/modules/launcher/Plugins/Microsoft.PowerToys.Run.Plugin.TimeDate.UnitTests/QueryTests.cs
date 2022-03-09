@@ -10,17 +10,25 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Wox.Infrastructure;
 using Wox.Plugin;
-using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 {
     [TestClass]
     public class QueryTests
     {
+        private CultureInfo originalCulture;
+        private CultureInfo originalUiCulture;
+
         [TestInitialize]
         public void Setup()
         {
             StringMatcher.Instance = new StringMatcher();
+
+            // Set thread culture
+            originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            originalUiCulture = Thread.CurrentThread.CurrentUICulture;
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");
         }
 
         [DataTestMethod]
@@ -37,18 +45,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString);
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            // using where to get only result with full word match
             var result = main.Object.Query(expectedQuery).Count;
 
             // Assert
             Assert.AreEqual(expectedResultCount, result, "Result depends on default plugin settings!");
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -65,23 +67,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString, "(");
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
-            // using where to get only result with full word match
             var result = main.Object.Query(expectedQuery);
-
-            foreach (Result r in result)
-            {
-                Log.Debug(typedString + " : " + r.ToString(), typeof(QueryTests));
-            }
 
             // Assert
             Assert.AreEqual(expectedResultCount, result.Count, result.ToString());
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -117,11 +108,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(rfc", "RFC1123 -")]
         [DataRow("(time::12:30", "Time -")]
         [DataRow("(date::10.10.2022", "Date -")]
-        [DataRow("(12:30", "Time -")]
-        [DataRow("(10.10.2022", "Date -")]
-        [DataRow("(u1646408119", "Date and time -")]
         [DataRow("(time::u1646408119", "Time -")]
-        [DataRow("(ft637820085517321977", "Date and time -")]
         [DataRow("(time::ft637820085517321977", "Time -")]
         [DataRow("(year", "Era -")]
         [DataRow("(date", "Era -")]
@@ -129,23 +116,36 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(week day", "Day of the week (Week day) -")]
         [DataRow("(cal week", "Week of the year (Calendar week, Week number) -")]
         [DataRow("(week num", "Week of the year (Calendar week, Week number) -")]
-        public void CanFindResult(string typedString, string expectedResult)
+        public void CanFindFormatResult(string typedString, string expectedResult)
         {
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString, "(");
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(expectedResult, StringComparison.CurrentCulture));
 
             // Assert
-            Assert.IsNotNull(result, $"Failed for '{typedString}'='{expectedResult}'");
-            Assert.IsTrue(result.Score >= 0, $"Score: {result.Score}");
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result?.Score >= 1, $"Score: {result?.Score}");
+        }
 
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
+        [DataTestMethod]
+        [DataRow("(12:30", "Time -")]
+        [DataRow("(10.10.2022", "Date -")]
+        [DataRow("(u1646408119", "Date and time -")]
+        [DataRow("(ft637820085517321977", "Date and time -")]
+        public void DateTimeNumberOnlyInput(string typedString, string expectedResult)
+        {
+            // Setup
+            Mock<Main> main = new ();
+            Query expectedQuery = new (typedString, "(");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(expectedResult, StringComparison.CurrentCulture));
+
+            // Assert
+            Assert.IsNotNull(result);
         }
 
         // [DataRow("(::")] -> Behaves different to PT Run user interface
@@ -168,17 +168,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString, "(");
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();
 
             // Assert
             Assert.IsNull(result, result?.ToString());
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -191,17 +186,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString, "(");
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().Title;
 
             // Assert
             Assert.IsTrue(result.StartsWith("Error:", StringComparison.CurrentCulture));
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -214,17 +204,20 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString, "(");
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();
 
             // Assert
             Assert.IsNull(result);
+        }
 
-            // Finalize
+        [TestCleanup]
+        public void CleanUp()
+        {
+            // Set thread culture
             Thread.CurrentThread.CurrentCulture = originalCulture;
+            Thread.CurrentThread.CurrentUICulture = originalUiCulture;
         }
     }
 }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ManagedCommon;
@@ -69,6 +70,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
+            // Update culture settings before searching:
+            //  1. Clearing cached culture
+            //  2. In a new thread instance we get current culture set by the user.
+            // Thread.CurrentThread.CurrentCulture.ClearCachedData();
+            // CultureInfo culture = new Thread(() => { }).CurrentCulture;
+            // Thread.CurrentThread.CurrentCulture = culture;
             return SearchController.ExecuteSearch(query, IconTheme);
         }
 

@@ -14,6 +14,19 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
     [TestClass]
     public class TimeDateResultTests
     {
+        private CultureInfo originalCulture;
+        private CultureInfo originalUiCulture;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            // Set thread culture
+            originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            originalUiCulture = Thread.CurrentThread.CurrentUICulture;
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");
+        }
+
         [DataTestMethod]
         [DataRow("time", "10:30 AM")]
         [DataRow("date", "3/2/2022")]
@@ -41,25 +54,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void LocalFormatsWithShortTimeAndShortDate(string formatLabel, string expectedResult)
         {
             // Setup
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            var helperResults = AvailableResultsList.GetList(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
 
             // Act
-            var helperResults = AvailableResultsList.GetList(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
 
             // Assert
-            if (string.IsNullOrEmpty(expectedResult))
-            {
-                Assert.IsNotNull(result);
-            }
-            else
-            {
-                Assert.AreEqual(expectedResult, result?.Value);
-            }
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
+            Assert.AreEqual(expectedResult, result?.Value);
         }
 
         [DataTestMethod]
@@ -89,18 +90,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void LocalFormatsWithShortTimeAndLongDate(string formatLabel, string expectedResult)
         {
             // Setup
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            var helperResults = AvailableResultsList.GetList(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
 
             // Act
-            var helperResults = AvailableResultsList.GetList(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -130,18 +126,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void LocalFormatsWithLongTimeAndShortDate(string formatLabel, string expectedResult)
         {
             // Setup
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            var helperResults = AvailableResultsList.GetList(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
 
             // Act
-            var helperResults = AvailableResultsList.GetList(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -171,18 +162,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void LocalFormatsWithLongTimeAndLongDate(string formatLabel, string expectedResult)
         {
             // Setup
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            var helperResults = AvailableResultsList.GetList(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
 
             // Act
-            var helperResults = AvailableResultsList.GetList(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -194,19 +180,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithShortTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            var helperResults = AvailableResultsList.GetList(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
-            var helperResults = AvailableResultsList.GetList(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -218,19 +199,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithShortTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            var helperResults = AvailableResultsList.GetList(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
-            var helperResults = AvailableResultsList.GetList(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -242,19 +218,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithLongTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            var helperResults = AvailableResultsList.GetList(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
-            var helperResults = AvailableResultsList.GetList(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -266,61 +237,54 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithLongTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            var helperResults = AvailableResultsList.GetList(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
-            var helperResults = AvailableResultsList.GetList(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [TestMethod]
         public void UnixTimestampFormat()
         {
             // Setup
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
             string formatLabel = "Unix epoch time";
             DateTime timeValue = DateTime.Now.ToUniversalTime();
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
+            var expectedResult = (long)timeValue.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
             // Act
-            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
-            var expectedResult = (long)timeValue.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
             // Assert
             Assert.AreEqual(expectedResult.ToString(CultureInfo.CurrentCulture), result?.Value);
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [TestMethod]
         public void WindowsFileTimeFormat()
         {
             // Setup
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
             string formatLabel = "Windows file time (Int64 number)";
             DateTime timeValue = DateTime.Now;
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
+            var expectedResult = timeValue.Ticks.ToString(CultureInfo.CurrentCulture);
 
             // Act
-            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
-            var expectedResult = timeValue.Ticks.ToString(CultureInfo.CurrentCulture);
 
             // Assert
             Assert.AreEqual(expectedResult, result?.Value);
+        }
 
-            // Finalize
+        [TestCleanup]
+        public void CleanUp()
+        {
+            // Set thread culture
             Thread.CurrentThread.CurrentCulture = originalCulture;
+            Thread.CurrentThread.CurrentUICulture = originalUiCulture;
         }
     }
 }

@@ -15,10 +15,19 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
     [TestClass]
     public class ImageTests
     {
+        private CultureInfo originalCulture;
+        private CultureInfo originalUiCulture;
+
         [TestInitialize]
         public void Setup()
         {
             StringMatcher.Instance = new StringMatcher();
+
+            // Set thread culture
+            originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            originalUiCulture = Thread.CurrentThread.CurrentUICulture;
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");
         }
 
         [DataTestMethod]
@@ -58,17 +67,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Mock<Main> main = new ();
             main.Object.IconTheme = "dark";
             Query expectedQuery = new ("(" + typedString, "(");
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             string result = main.Object.Query(expectedQuery).FirstOrDefault(predicate: x => x.SubTitle.StartsWith(subTitleMatch, System.StringComparison.CurrentCulture)).IcoPath;
 
             // Assert
             Assert.AreEqual(expectedResult, result);
-
-            // Finalize
-            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
 
         [DataTestMethod]
@@ -108,17 +112,20 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Mock<Main> main = new ();
             main.Object.IconTheme = "light";
             Query expectedQuery = new ("(" + typedString, "(");
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault(x => x.SubTitle.StartsWith(subTitleMatch, System.StringComparison.CurrentCulture)).IcoPath;
 
             // Assert
             Assert.AreEqual(expectedResult, result);
+        }
 
-            // Finalize
+        [TestCleanup]
+        public void CleanUp()
+        {
+            // Set thread culture
             Thread.CurrentThread.CurrentCulture = originalCulture;
+            Thread.CurrentThread.CurrentUICulture = originalUiCulture;
         }
     }
 }
