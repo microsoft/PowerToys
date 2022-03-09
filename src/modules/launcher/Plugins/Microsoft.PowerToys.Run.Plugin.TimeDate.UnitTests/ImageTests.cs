@@ -23,11 +23,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         {
             StringMatcher.Instance = new StringMatcher();
 
-            // Set thread culture
-            originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
-            originalUiCulture = Thread.CurrentThread.CurrentUICulture;
-            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");
+            // Set culture to 'en-us'
+            originalCulture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = new CultureInfo("en-us");
+            originalUiCulture = CultureInfo.CurrentUICulture;
+            CultureInfo.CurrentUICulture = new CultureInfo("en-us");
         }
 
         [DataTestMethod]
@@ -123,9 +123,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [TestCleanup]
         public void CleanUp()
         {
-            // Set thread culture
-            Thread.CurrentThread.CurrentCulture = originalCulture;
-            Thread.CurrentThread.CurrentUICulture = originalUiCulture;
+            // Set culture to original value
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.CurrentUICulture = originalUiCulture;
         }
     }
 }
