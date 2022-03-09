@@ -61,6 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _findMyMouseAnimationDurationMs = FindMyMouseSettingsConfig.Properties.AnimationDurationMs.Value;
             _findMyMouseSpotlightInitialZoom = FindMyMouseSettingsConfig.Properties.SpotlightInitialZoom.Value;
             _findMyMouseExcludedApps = FindMyMouseSettingsConfig.Properties.ExcludedApps.Value;
+            _findMyMouseShakingMinimumDistance = FindMyMouseSettingsConfig.Properties.ShakingMinimumDistance.Value;
 
             if (mouseHighlighterSettingsRepository == null)
             {
@@ -280,6 +281,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _findMyMouseExcludedApps = value;
                     FindMyMouseSettingsConfig.Properties.ExcludedApps.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public int FindMyMouseShakingMinimumDistance
+        {
+            get
+            {
+                return _findMyMouseShakingMinimumDistance;
+            }
+
+            set
+            {
+                if (value != _findMyMouseShakingMinimumDistance)
+                {
+                    _findMyMouseShakingMinimumDistance = value;
+                    FindMyMouseSettingsConfig.Properties.ShakingMinimumDistance.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
             }
@@ -633,6 +652,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private int _findMyMouseAnimationDurationMs;
         private int _findMyMouseSpotlightInitialZoom;
         private string _findMyMouseExcludedApps;
+        private int _findMyMouseShakingMinimumDistance;
 
         private bool _isMouseHighlighterEnabled;
         private string _highlighterLeftButtonClickColor;

@@ -7,7 +7,6 @@
 #include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
-#include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/util.h>
@@ -320,59 +319,9 @@ bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::DeviceIdData& id
     return iter != m_layouts.end();
 }
 
-bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& layout)
+bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, Layout layout)
 {
-    auto uuid = FancyZonesUtils::GuidFromString(layout.uuid);
-    if (!uuid)
-    {
-        return false;
-    }
-
-    Layout layoutToApply {
-        .uuid = uuid.value(),
-        .type = layout.type,
-        .showSpacing = DefaultValues::ShowSpacing,
-        .spacing = DefaultValues::Spacing,
-        .zoneCount = DefaultValues::ZoneCount,
-        .sensitivityRadius = DefaultValues::SensitivityRadius,
-    };
-
-    // copy layouts properties to the applied-layout
-    auto customLayout = CustomLayouts::instance().GetLayout(layoutToApply.uuid);
-    if (customLayout)
-    {
-        if (customLayout.value().type == FancyZonesDataTypes::CustomLayoutType::Grid)
-        {
-            auto layoutInfo = std::get<FancyZonesDataTypes::GridLayoutInfo>(customLayout.value().info);
-            layoutToApply.sensitivityRadius = layoutInfo.sensitivityRadius();
-            layoutToApply.showSpacing = layoutInfo.showSpacing();
-            layoutToApply.spacing = layoutInfo.spacing();
-            layoutToApply.zoneCount = layoutInfo.zoneCount();
-        }
-        else if (customLayout.value().type == FancyZonesDataTypes::CustomLayoutType::Canvas)
-        {
-            auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(customLayout.value().info);
-            layoutToApply.sensitivityRadius = layoutInfo.sensitivityRadius;
-            layoutToApply.zoneCount = (int)layoutInfo.zones.size();
-        }
-    }
-    else
-    {
-        // check templates only if it wasn't a custom layout, since templates don't have ids yet
-        auto templateLayout = LayoutTemplates::instance().GetLayout(layout.type);
-        if (templateLayout)
-        {
-            auto layoutInfo = templateLayout.value();
-            layoutToApply.sensitivityRadius = layoutInfo.sensitivityRadius;
-            layoutToApply.showSpacing = layoutInfo.showSpacing;
-            layoutToApply.spacing = layoutInfo.spacing;
-            layoutToApply.zoneCount = layoutInfo.zoneCount;
-        }
-    
-    }
-    
-    m_layouts[deviceId] = std::move(layoutToApply);
-
+    m_layouts[deviceId] = std::move(layout);
     return true;
 }
 

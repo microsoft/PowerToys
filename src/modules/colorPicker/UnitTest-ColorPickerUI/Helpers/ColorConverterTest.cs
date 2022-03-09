@@ -191,9 +191,9 @@ namespace Microsoft.ColorPicker.UnitTests
 
             Assert.IsTrue(hexValue.Length >= 6);
 
-            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToHSIColor(color);
@@ -239,9 +239,9 @@ namespace Microsoft.ColorPicker.UnitTests
 
             Assert.IsTrue(hexValue.Length >= 6);
 
-            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToHWBColor(color);
@@ -287,9 +287,9 @@ namespace Microsoft.ColorPicker.UnitTests
 
             Assert.IsTrue(hexValue.Length >= 6);
 
-            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToNaturalColor(color);
@@ -343,9 +343,9 @@ namespace Microsoft.ColorPicker.UnitTests
 
             Assert.IsTrue(hexValue.Length >= 6);
 
-            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToCIELABColor(color);
@@ -400,9 +400,9 @@ namespace Microsoft.ColorPicker.UnitTests
 
             Assert.IsTrue(hexValue.Length >= 6);
 
-            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToCIEXYZColor(color);

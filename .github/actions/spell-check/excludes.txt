@@ -52,3 +52,4 @@ ignore$
 ^\.gitmodules$
 (?:^|/)WindowsSettings\.json$
 (?:^|/)timezones\.json$
+^\Q.pipelines/ESRPSigning_core.json\E$
