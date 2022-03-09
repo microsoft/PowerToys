@@ -11,6 +11,8 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>Recommended</AnalysisMode>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

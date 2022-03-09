@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
             if (unformattedValue == null)
             {
-                throw new NullReferenceException(nameof(unformattedValue));
+                throw new InvalidOperationException($"Cannot proceed when {nameof(unformattedValue)} is null.");
             }
 
             var valueData = key.GetValueKind(valueName) switch
