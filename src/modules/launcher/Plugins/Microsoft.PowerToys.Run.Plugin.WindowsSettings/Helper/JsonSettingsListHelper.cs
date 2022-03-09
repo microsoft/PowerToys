@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 using var stream = assembly.GetManifestResourceStream(resourceName);
                 if (stream is null)
                 {
-                    throw new Exception("stream is null");
+                    throw new ArgumentNullException(nameof(stream), "stream is null");
                 }
 
                 var options = new JsonSerializerOptions();

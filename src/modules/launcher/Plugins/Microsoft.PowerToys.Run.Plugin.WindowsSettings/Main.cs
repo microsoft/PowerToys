@@ -134,7 +134,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
 
                         // Search for Area only on queries with action char.
                         if (area.Contains(query.Search.Replace(":", string.Empty), StringComparison.CurrentCultureIgnoreCase)
-                        && query.Search.EndsWith(":"))
+                        && query.Search.EndsWith(":", StringComparison.CurrentCultureIgnoreCase))
                         {
                             return true;
                         }

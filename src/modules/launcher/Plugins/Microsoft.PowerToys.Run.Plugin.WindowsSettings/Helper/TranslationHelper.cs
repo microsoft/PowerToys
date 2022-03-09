@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
 using Wox.Plugin.Logger;
@@ -31,7 +32,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 // Translate Name
                 if (!string.IsNullOrWhiteSpace(settings.Name))
                 {
-                    var name = Resources.ResourceManager.GetString(settings.Name);
+                    var name = Resources.ResourceManager.GetString(settings.Name, CultureInfo.CurrentUICulture);
                     if (string.IsNullOrEmpty(name))
                     {
                         Log.Warn($"Resource string for [{settings.Name}] not found", typeof(TranslationHelper));
@@ -43,7 +44,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 // Translate Type (App)
                 if (!string.IsNullOrWhiteSpace(settings.Type))
                 {
-                    var type = Resources.ResourceManager.GetString(settings.Type);
+                    var type = Resources.ResourceManager.GetString(settings.Type, CultureInfo.CurrentUICulture);
                     if (string.IsNullOrEmpty(type))
                     {
                         Log.Warn($"Resource string for [{settings.Type}] not found", typeof(TranslationHelper));
@@ -64,7 +65,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                             continue;
                         }
 
-                        var translatedArea = Resources.ResourceManager.GetString(area);
+                        var translatedArea = Resources.ResourceManager.GetString(area, CultureInfo.CurrentUICulture);
                         if (string.IsNullOrEmpty(translatedArea))
                         {
                             Log.Warn($"Resource string for [{area}] not found", typeof(TranslationHelper));
@@ -88,7 +89,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                             continue;
                         }
 
-                        var translatedAltName = Resources.ResourceManager.GetString(altName);
+                        var translatedAltName = Resources.ResourceManager.GetString(altName, CultureInfo.CurrentUICulture);
                         if (string.IsNullOrEmpty(translatedAltName))
                         {
                             Log.Warn($"Resource string for [{altName}] not found", typeof(TranslationHelper));
@@ -103,7 +104,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 // Translate Note
                 if (!string.IsNullOrWhiteSpace(settings.Note))
                 {
-                    var note = Resources.ResourceManager.GetString(settings.Note);
+                    var note = Resources.ResourceManager.GetString(settings.Note, CultureInfo.CurrentUICulture);
                     if (string.IsNullOrEmpty(note))
                     {
                         Log.Warn($"Resource string for [{settings.Note}] not found", typeof(TranslationHelper));
