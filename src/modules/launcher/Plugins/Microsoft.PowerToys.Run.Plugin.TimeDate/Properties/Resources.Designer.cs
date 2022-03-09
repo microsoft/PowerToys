@@ -331,7 +331,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Year; Calendar; Era; Date.
+        ///   Looks up a localized string similar to Year; Calendar era; Date.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SearchTagEra {
             get {

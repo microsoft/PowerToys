@@ -216,7 +216,7 @@
     <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagEra" xml:space="preserve">
-    <value>Year; Calendar; Era; Date</value>
+    <value>Year; Calendar era; Date</value>
     <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagEraNow" xml:space="preserve">
