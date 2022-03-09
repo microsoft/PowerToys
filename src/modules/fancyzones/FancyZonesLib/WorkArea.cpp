@@ -44,7 +44,6 @@ namespace
 
         HWND ExtractWindow()
         {
-            _TRACER_;
             std::unique_lock lock(m_mutex);
 
             if (m_pool.empty())
@@ -84,7 +83,6 @@ namespace
 
         void FreeZonesOverlayWindow(HWND window)
         {
-            _TRACER_;
             Logger::info("Freeing ZonesOverlay window into pool, hWnd = {}", (void*)window);
             SetWindowLongPtrW(window, GWLP_USERDATA, 0);
             ShowWindow(window, SW_HIDE);
@@ -196,6 +194,7 @@ bool WorkArea::Init(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataT
         mi.cbSize = sizeof(mi);
         if (!GetMonitorInfoW(monitor, &mi))
         {
+            Logger::error(L"GetMonitorInfo failed on work area initialization");
             return false;
         }
         workAreaRect = Rect(mi.rcWork);
@@ -212,6 +211,7 @@ bool WorkArea::Init(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataT
 
     if (!m_window)
     {
+        Logger::error(L"No work area window");
         return false;
     }
 
@@ -508,6 +508,7 @@ void WorkArea::CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) 
         }
         else
         {
+            Logger::error(L"CalculateZoneSet: GetMonitorInfo failed");
             return;
         }
     }

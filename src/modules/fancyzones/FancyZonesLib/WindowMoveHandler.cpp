@@ -354,9 +354,15 @@ void WindowMoveHandler::SetWindowTransparency(HWND window) noexcept
                       GWL_EXSTYLE,
                       m_windowTransparencyProperties.draggedWindowExstyle | WS_EX_LAYERED);
 
-        GetLayeredWindowAttributes(window, &m_windowTransparencyProperties.draggedWindowCrKey, &m_windowTransparencyProperties.draggedWindowInitialAlpha, &m_windowTransparencyProperties.draggedWindowDwFlags);
+        if (!GetLayeredWindowAttributes(window, &m_windowTransparencyProperties.draggedWindowCrKey, &m_windowTransparencyProperties.draggedWindowInitialAlpha, &m_windowTransparencyProperties.draggedWindowDwFlags))
+        {
+            Logger::error(L"SetWindowTransparency: GetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+        }
 
-        SetLayeredWindowAttributes(window, 0, (255 * 50) / 100, LWA_ALPHA);
+        if (!SetLayeredWindowAttributes(window, 0, (255 * 50) / 100, LWA_ALPHA))
+        {
+            Logger::error(L"SetWindowTransparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+        }
     }
 }
 
@@ -364,8 +370,16 @@ void WindowMoveHandler::ResetWindowTransparency() noexcept
 {
     if (FancyZonesSettings::settings().makeDraggedWindowTransparent && m_windowTransparencyProperties.draggedWindow != nullptr)
     {
-        SetLayeredWindowAttributes(m_windowTransparencyProperties.draggedWindow, m_windowTransparencyProperties.draggedWindowCrKey, m_windowTransparencyProperties.draggedWindowInitialAlpha, m_windowTransparencyProperties.draggedWindowDwFlags);
-        SetWindowLong(m_windowTransparencyProperties.draggedWindow, GWL_EXSTYLE, m_windowTransparencyProperties.draggedWindowExstyle);
+        if (!SetLayeredWindowAttributes(m_windowTransparencyProperties.draggedWindow, m_windowTransparencyProperties.draggedWindowCrKey, m_windowTransparencyProperties.draggedWindowInitialAlpha, m_windowTransparencyProperties.draggedWindowDwFlags))
+        {
+            Logger::error(L"ResetWindowTransparency: SetLayeredWindowAttributes failed");
+        }
+        
+        if (SetWindowLong(m_windowTransparencyProperties.draggedWindow, GWL_EXSTYLE, m_windowTransparencyProperties.draggedWindowExstyle) == 0)
+        {
+            Logger::error(L"ResetWindowTransparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));
+        }
+
         m_windowTransparencyProperties.draggedWindow = nullptr;
     }
 }

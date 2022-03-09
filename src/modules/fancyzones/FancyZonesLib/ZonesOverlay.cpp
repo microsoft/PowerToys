@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include <common/logger/call_tracer.h>
+#include <common/logger/logger.h>
 
 namespace
 {
@@ -83,7 +83,7 @@ ZonesOverlay::ZonesOverlay(HWND window)
     // Obtain the size of the drawing area.
     if (!GetClientRect(window, &m_clientRect))
     {
-        Logger::error("couldn't initialize ZonesOverlay: GetClientRect failed");
+        Logger::error(L"couldn't initialize ZonesOverlay: GetClientRect failed");
         return;
     }
 
@@ -102,7 +102,7 @@ ZonesOverlay::ZonesOverlay(HWND window)
 
     if (!SUCCEEDED(hr))
     {
-        Logger::error("couldn't initialize ZonesOverlay: CreateHwndRenderTarget failed with {}", hr);
+        Logger::error(L"couldn't initialize ZonesOverlay: CreateHwndRenderTarget failed with {}", hr);
         return;
     }
 
@@ -217,7 +217,6 @@ void ZonesOverlay::RenderLoop()
 
 void ZonesOverlay::Hide()
 {
-    _TRACER_;
     bool shouldHideWindow = true;
     {
         std::unique_lock lock(m_mutex);
@@ -234,7 +233,6 @@ void ZonesOverlay::Hide()
 
 void ZonesOverlay::Show()
 {
-    _TRACER_;
     bool shouldShowWindow = true;
     {
         std::unique_lock lock(m_mutex);
@@ -262,7 +260,6 @@ void ZonesOverlay::Show()
 
 void ZonesOverlay::Flash()
 {
-    _TRACER_;
     bool shouldShowWindow = true;
     {
         std::unique_lock lock(m_mutex);
@@ -285,7 +282,6 @@ void ZonesOverlay::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                                      const Colors::ZoneColors& colors,
                                      const bool showZoneText)
 {
-    _TRACER_;
     std::unique_lock lock(m_mutex);
 
     m_sceneRects = {};

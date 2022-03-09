@@ -2,6 +2,7 @@
 #include "util.h"
 
 #include <common/display/dpi_aware.h>
+#include <common/logger/logger.h>
 #include <common/utils/process_path.h>
 #include <common/utils/window.h>
 #include <common/utils/excluded_apps.h>
@@ -49,6 +50,8 @@ namespace FancyZonesUtils
         {
             ++displayDeviceIdxMap[device];
 
+            Logger::info(L"Get display device: {}", displayDevice.DeviceID);
+
             // Only take active monitors (presented as being "on" by the respective GDI view) and monitors that don't
             // represent a pseudo device used to mirror application drawing.
             if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE) &&
@@ -61,6 +64,7 @@ namespace FancyZonesUtils
 
         if (deviceId.empty())
         {
+            Logger::info(L"Didn't find display device, set default");
             deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
                            L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
                            L"\\\\?\\DISPLAY#LOCALDISPLAY#";

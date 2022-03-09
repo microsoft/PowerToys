@@ -50,8 +50,6 @@ void AppZoneHistory::LoadData()
 
 void AppZoneHistory::SaveData()
 {
-    _TRACER_;
-
     bool dirtyFlag = false;
     std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> updatedHistory;
     if (m_virtualDesktopCheckCallback)
@@ -84,8 +82,6 @@ void AppZoneHistory::SaveData()
 
 bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet)
 {
-    _TRACER_;
-
     if (IsAnotherWindowOfApplicationInstanceZoned(window, deviceId))
     {
         return false;
@@ -96,6 +92,8 @@ bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::Dev
     {
         return false;
     }
+
+    Logger::info(L"Add app zone history, device: {}, layout: {}", deviceId.toString(), zoneSetId);
 
     DWORD processId = 0;
     GetWindowThreadProcessId(window, &processId);
@@ -142,7 +140,7 @@ bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::Dev
 
 bool AppZoneHistory::RemoveAppLastZone(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId)
 {
-    _TRACER_;
+    Logger::info(L"Add app zone history, device: {}, layout: {}", deviceId.toString(), zoneSetId);
 
     auto processPath = get_process_path(window);
     if (!processPath.empty())
@@ -302,12 +300,17 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
 
 void AppZoneHistory::SyncVirtualDesktops(GUID currentVirtualDesktopId)
 {
-    _TRACER_;
     // Explorer persists current virtual desktop identifier to registry on a per session basis,
     // but only after first virtual desktop switch happens. If the user hasn't switched virtual
     // desktops in this session value in registry will be empty and we will use default GUID in
     // that case (00000000-0000-0000-0000-000000000000).
     
+    auto currentVirtualDesktopStr = FancyZonesUtils::GuidToString(currentVirtualDesktopId);
+    if (currentVirtualDesktopStr)
+    {
+        Logger::info(L"AppZoneHistory Sync virtual desktops: current {}", currentVirtualDesktopStr.value());
+    }
+
     bool dirtyFlag = false;
 
     for (auto& [path, perDesktopData] : m_history)
