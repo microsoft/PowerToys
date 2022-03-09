@@ -24,6 +24,8 @@
     <PackageTags>PowerToys</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
     <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>Recommended</AnalysisMode>
   </PropertyGroup>
 
 
