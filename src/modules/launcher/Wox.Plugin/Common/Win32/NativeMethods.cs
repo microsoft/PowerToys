@@ -801,9 +801,9 @@ namespace Wox.Plugin.Common.Win32
             return !r1.Equals(r2);
         }
 
-        public bool Equals(RECT r)
+        public bool Equals(RECT other)
         {
-            return r.Left == Left && r.Top == Top && r.Right == Right && r.Bottom == Bottom;
+            return other.Left == Left && other.Top == Top && other.Right == Right && other.Bottom == Bottom;
         }
 
         public override bool Equals(object obj)

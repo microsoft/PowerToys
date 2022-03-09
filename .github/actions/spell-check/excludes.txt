@@ -46,8 +46,10 @@ ignore$
 ^src/modules/previewpane/PreviewPaneUnitTests/HelperFiles/MarkdownWithHTMLImageTag\.txt$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag.txt$
 ^tools/CleanUp_tool/CleanUp_tool\.vcxproj\.filters$
+^tools/Verification scripts/Check preview handler registration\.ps1$
 ^\.github/
 ^\.github/actions/spell-check/
 ^\.gitmodules$
 (?:^|/)WindowsSettings\.json$
 (?:^|/)timezones\.json$
+^\Q.pipelines/ESRPSigning_core.json\E$

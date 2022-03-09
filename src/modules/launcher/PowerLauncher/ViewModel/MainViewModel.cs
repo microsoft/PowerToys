@@ -27,6 +27,7 @@ using Wox.Plugin.Logger;
 
 namespace PowerLauncher.ViewModel
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase for user facing strings. Each usage is attributed with a comment.")]
     public class MainViewModel : BaseModel, ISavable, IDisposable
     {
         private string _currentQuery;
@@ -1018,7 +1019,7 @@ namespace PowerLauncher.ViewModel
                     if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         // Use the same case as the input query for the matched portion of the string
-                        return query + input.Substring(query.Length);
+                        return string.Concat(query, input.AsSpan(query.Length));
                     }
                 }
             }
@@ -1035,7 +1036,7 @@ namespace PowerLauncher.ViewModel
                     // Using OrdinalIgnoreCase since this is internal
                     if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
-                        return query + input.Substring(query.Length);
+                        return string.Concat(query, input.AsSpan(query.Length));
                     }
                 }
 

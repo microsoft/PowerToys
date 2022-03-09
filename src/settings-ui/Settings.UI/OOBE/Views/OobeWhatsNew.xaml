@@ -9,17 +9,17 @@
       xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
       mc:Ignorable="d"
       Loaded="Page_Loaded">
-    <ScrollViewer
-        VerticalScrollBarVisibility="Auto"
-        Padding="32,24,32,24">
 
-        <StackPanel
-            Orientation="Vertical"
-            VerticalAlignment="Top">
 
+    <Grid Margin="0,24,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="32,0,0,0" Orientation="Vertical" VerticalAlignment="Top">
             <TextBlock
-                x:Name="TitleTxt"
-                Text=""
+                x:Uid="Oobe_WhatsNew"
                 AutomationProperties.HeadingLevel="Level1"
                 Style="{StaticResource TitleTextBlockStyle}" />
             <HyperlinkButton
@@ -30,23 +30,41 @@
                     x:Uid="Oobe_WhatsNew_DetailedReleaseNotesLink"
                     TextWrapping="Wrap" />
             </HyperlinkButton>
-            <muxc:ProgressRing
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="32,24,32,24">
+                <muxc:ProgressRing Grid.Row="1"
                 x:Name="LoadingProgressRing"
                 IsIndeterminate="True"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
                 Visibility="Visible"/>
-            <muxc:InfoBar
+                <muxc:InfoBar
                 Severity="Error"
                 x:Name="ErrorInfoBar"
+                Grid.Row="1"
                 x:Uid="Oobe_WhatsNew_LoadingError"
                 Visibility="Collapsed"
+                VerticalAlignment="Top"
                 IsClosable="False"
                 IsOpen="True"
                 IsTabStop="True" />
-            <toolkitcontrols:MarkdownTextBlock
-                x:Name="ReleaseNotesMarkdown"
-                Visibility="Collapsed"
-                Background="Transparent"
-                LinkClicked="ReleaseNotesMarkdown_LinkClicked"/>
-        </StackPanel>
-    </ScrollViewer>
+                <toolkitcontrols:MarkdownTextBlock x:Name="ReleaseNotesMarkdown"
+                                                   Visibility="Collapsed"
+                                                   Grid.Row="1"
+                                                   Header1FontSize="20"
+                                                   Header2FontSize="17"
+                                                   Header2FontWeight="SemiBold"
+                                                   Header4FontSize="14"
+                                                   Header4FontWeight="SemiBold"
+                                                   Header1Margin="0,16,0,0"
+                                                   HorizontalRuleMargin="24"
+                                                   VerticalAlignment="Top"
+                                                   Background="Transparent"
+                                                   ParagraphMargin="0,0,0,0"
+                                                   TableMargin="24"
+                                                   LinkClicked="ReleaseNotesMarkdown_LinkClicked"/>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
 </Page>
