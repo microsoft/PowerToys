@@ -5,7 +5,6 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -45,8 +44,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month of the year", "3")]
         [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
-        [DataRow("era", "AD")]
-        [DataRow("era abbreviation", "A")]
         [DataRow("month and year", "March 2022")]
         [DataRow("ISO 8601", "2022-03-02T10:30:45")]
         [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
@@ -81,8 +78,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month of the year", "3")]
         [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
-        [DataRow("era", "AD")]
-        [DataRow("era abbreviation", "A")]
         [DataRow("month and year", "March 2022")]
         [DataRow("ISO 8601", "2022-03-02T10:30:45")]
         [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
@@ -117,8 +112,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month of the year", "3")]
         [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
-        [DataRow("era", "AD")]
-        [DataRow("era abbreviation", "A")]
         [DataRow("month and year", "March 2022")]
         [DataRow("ISO 8601", "2022-03-02T10:30:45")]
         [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
@@ -153,8 +146,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month of the year", "3")]
         [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
-        [DataRow("era", "AD")]
-        [DataRow("era abbreviation", "A")]
         [DataRow("month and year", "March 2022")]
         [DataRow("ISO 8601", "2022-03-02T10:30:45")]
         [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
@@ -271,6 +262,38 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             DateTime timeValue = DateTime.Now;
             var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
             var expectedResult = timeValue.Ticks.ToString(CultureInfo.CurrentCulture);
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [TestMethod]
+        public void ValidateEraResult()
+        {
+            // Setup
+            string formatLabel = "Era";
+            DateTime timeValue = DateTime.Now;
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
+            var expectedResult = DateTimeFormatInfo.CurrentInfo.GetEraName(CultureInfo.CurrentCulture.Calendar.GetEra(timeValue));
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult, result?.Value);
+        }
+
+        [TestMethod]
+        public void ValidateEraAbbreviationResult()
+        {
+            // Setup
+            string formatLabel = "Era abbreviation";
+            DateTime timeValue = DateTime.Now;
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
+            var expectedResult = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(CultureInfo.CurrentCulture.Calendar.GetEra(timeValue));
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
