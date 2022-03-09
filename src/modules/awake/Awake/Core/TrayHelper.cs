@@ -7,10 +7,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Awake.Core.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
 using NLog;
 
@@ -96,12 +98,7 @@ namespace Awake.Core
             SetTray(
                 text,
                 settings.Properties.KeepDisplayOn,
-                settings.Properties.Mode,
-                PassiveKeepAwakeCallback(InternalConstants.AppName),
-                IndefiniteKeepAwakeCallback(InternalConstants.AppName),
-                TimedKeepAwakeCallback(InternalConstants.AppName),
-                KeepDisplayOnCallback(InternalConstants.AppName),
-                ExitCallback());
+                settings.Properties.Mode);
         }
 
         private static Action ExitCallback()
@@ -199,11 +196,24 @@ namespace Awake.Core
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1005:Single line comments should begin with single space", Justification = "For debugging purposes - will remove later.")]
-        public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Action passiveKeepAwakeCallback, Action indefiniteKeepAwakeCallback, Action<uint, uint> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
+        public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode)
         {
             TrayMenu = NativeMethods.CreatePopupMenu();
             NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, NativeConstants.WM_USER + 1, "Exit");
-            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, NativeConstants.WM_USER + 2, "Test Item 2");
+            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_SEPARATOR, 0, string.Empty);
+            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (keepDisplayOn ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), NativeConstants.WM_USER + 2, "Keep screen on");
+
+            var awakeTimeMenu = NativeMethods.CreatePopupMenu();
+            NativeMethods.InsertMenu(awakeTimeMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, NativeConstants.WM_USER + 3, "30 minutes");
+            NativeMethods.InsertMenu(awakeTimeMenu, 1, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, NativeConstants.WM_USER + 4, "1 hour");
+            NativeMethods.InsertMenu(awakeTimeMenu, 2, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, NativeConstants.WM_USER + 5, "2 hours");
+
+            var modeMenu = NativeMethods.CreatePopupMenu();
+            NativeMethods.InsertMenu(modeMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (mode == AwakeMode.PASSIVE ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), NativeConstants.WM_USER + 6, "Off (keep using the selected power plan)");
+            NativeMethods.InsertMenu(modeMenu, 1, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (mode == AwakeMode.INDEFINITE ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), NativeConstants.WM_USER + 7, "Keep awake indefinitely");
+
+            NativeMethods.InsertMenu(modeMenu, 2, NativeConstants.MF_BYPOSITION | NativeConstants.MF_POPUP | (mode == AwakeMode.TIMED ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)awakeTimeMenu, "Keep awake temporarily");
+            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_POPUP, (uint)modeMenu, "Mode");
 
             //ContextMenuStrip? contextMenuStrip = new ContextMenuStrip();
 
@@ -307,22 +317,7 @@ namespace Awake.Core
             //    // User is setting the keep-awake to 2 hours.
             //    exitCallback();
             //};
-
-            //timedMenuItem.DropDownItems.Add(halfHourMenuItem);
-            //timedMenuItem.DropDownItems.Add(oneHourMenuItem);
-            //timedMenuItem.DropDownItems.Add(twoHoursMenuItem);
-
-            //operationContextMenu.DropDownItems.Add(passiveMenuItem);
-            //operationContextMenu.DropDownItems.Add(indefiniteMenuItem);
-            //operationContextMenu.DropDownItems.Add(timedMenuItem);
-
-            //contextMenuStrip.Items.Add(operationContextMenu);
-            //contextMenuStrip.Items.Add(displayOnMenuItem);
-            //contextMenuStrip.Items.Add(new ToolStripSeparator());
-            //contextMenuStrip.Items.Add(exitContextMenu);
-
-            //TrayIcon.Text = text;
-            //TrayIcon.ContextMenuStrip = contextMenuStrip;
+            TrayIcon.Text = text;
         }
 
         private class CheckButtonToolStripMenuItemAccessibleObject : ToolStripItem.ToolStripItemAccessibleObject

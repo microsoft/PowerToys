@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -263,25 +265,6 @@ namespace Awake.Core
                 _log.Info($"Could not get registry key for the build number. Error: {ex.Message}");
                 return string.Empty;
             }
-        }
-
-        public static IEnumerable<IntPtr> EnumerateProcessWindowHandles(int processId)
-        {
-            var handles = new List<IntPtr>();
-
-            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
-            {
-                NativeMethods.EnumThreadWindows(
-                thread.Id,
-                (hWnd, lParam) =>
-                {
-                    handles.Add(hWnd);
-                    return true;
-                },
-                IntPtr.Zero);
-            }
-
-            return handles;
         }
 
         public static IEnumerable<IntPtr> EnumerateWindowsForProcess(int processId)
