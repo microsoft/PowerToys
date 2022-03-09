@@ -209,31 +209,34 @@
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagDate" xml:space="preserve">
     <value>Date</value>
+    <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagDateNow" xml:space="preserve">
-    <value>Current date, Now</value>
+    <value>Current date; Now</value>
     <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagEra" xml:space="preserve">
-    <value>Year, Calendar, Era, Date</value>
+    <value>Year; Calendar; Era; Date</value>
     <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagEraNow" xml:space="preserve">
-    <value>Year , Calendar , Current , Era , Date , Now</value>
+    <value>Current year; Current calendar era; Current date; Now</value>
     <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagFormat" xml:space="preserve">
-    <value>Date and time, Time and Date</value>
+    <value>Date and time; Time and Date</value>
+    <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagFormatNow" xml:space="preserve">
-    <value>Current, Date and time, Time and date, Now</value>
+    <value>Current date and time; Current time and date; Now</value>
     <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagTime" xml:space="preserve">
     <value>Time</value>
+    <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagTimeNow" xml:space="preserve">
-    <value>Current Time, Now</value>
+    <value>Current Time; Now</value>
     <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_Second" xml:space="preserve">

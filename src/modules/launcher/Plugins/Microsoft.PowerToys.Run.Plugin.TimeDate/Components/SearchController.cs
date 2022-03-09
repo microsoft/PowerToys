@@ -94,9 +94,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // Generate filtered list of results
                 foreach (var f in availableFormats)
                 {
-                    var resultMatch = FindMatch(searchTerm, f.Label, f.AlternativeSearchTag);
+                    var resultMatchScore = GetMatchScore(searchTerm, f.Label, f.AlternativeSearchTag);
 
-                    if (resultMatch.Score > 0)
+                    if (resultMatchScore > 0)
                     {
                         results.Add(new Result
                         {
@@ -106,7 +106,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                             ToolTipVisibility = v,
                             IcoPath = f.GetIconPath(iconTheme),
                             Action = _ => ResultHelper.CopyToClipBoard(f.Value),
-                            Score = resultMatch.Score,
+                            Score = resultMatchScore,
                             ContextData = f,
                         });
                     }
@@ -128,22 +128,29 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         }
 
         /// <summary>
-        /// Checks the format for a match with the user query.
+        /// Checks the format for a match with the user query and returns the score.
         /// </summary>
         /// <param name="query">The user query.</param>
         /// <param name="label">The label of the format.</param>
         /// <param name="tags">The search tag list as string.</param>
-        /// <returns>The <see cref="MatchResult"/>.</returns>
-        private static MatchResult FindMatch(string query, string label, string tags)
+        /// <returns>The score for the result.</returns>
+        private static int GetMatchScore(string query, string label, string tags)
         {
-            var match = StringMatcher.FuzzySearch(query, label);
-            if (match.Score < 1)
+            int score = StringMatcher.FuzzySearch(query, label).Score * 2;
+
+            if (score < 1)
             {
-                // ToDo: Search fer each part of the tag string
-                match = StringMatcher.FuzzySearch(query, tags);
+                foreach (string t in tags.Split(";"))
+                {
+                    var m = StringMatcher.FuzzySearch(query, t.Trim());
+                    if (m.Score > score)
+                    {
+                        score = m.Score;
+                    }
+                }
             }
 
-            return match;
+            return score;
         }
     }
 }
