@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
 
             // Assert
-            Assert.AreEqual(expectedResult, result?.Value);
+            Assert.AreEqual(expectedResult, result?.Value, $"Culture {CultureInfo.CurrentCulture.Name}, Culture UI: {CultureInfo.CurrentUICulture.Name}, Calendar: {CultureInfo.CurrentCulture.Calendar}, Region: {RegionInfo.CurrentRegion.Name}");
         }
 
         [DataTestMethod]
