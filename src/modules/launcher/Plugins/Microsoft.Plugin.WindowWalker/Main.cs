@@ -24,8 +24,6 @@ namespace Microsoft.Plugin.WindowWalker
 
         public string Name => Properties.Resources.wox_plugin_windowwalker_plugin_name;
 
-        private readonly string _assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-
         public string Description => Properties.Resources.wox_plugin_windowwalker_plugin_description;
 
         internal static readonly VirtualDesktopHelper VirtualDesktopHelperInstance = new VirtualDesktopHelper();
