@@ -27,7 +27,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
             const string schemeRegex = @"^([a-z][a-z0-9+\-.]*):";
             if (input.EndsWith(":", StringComparison.OrdinalIgnoreCase)
                 && !input.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                && !input.Contains("/", StringComparison.OrdinalIgnoreCase)
+                && !input.Contains('/', StringComparison.OrdinalIgnoreCase)
                 && !input.All(char.IsDigit)
                 && Regex.IsMatch(input, schemeRegex))
             {
@@ -60,9 +60,9 @@ namespace Microsoft.Plugin.Uri.UriHelper
                     urlBuilder.Scheme = System.Uri.UriSchemeHttp;
                     isWebUri = true;
                 }
-                else if (input.Contains(":", StringComparison.OrdinalIgnoreCase) &&
+                else if (input.Contains(':', StringComparison.OrdinalIgnoreCase) &&
                         !input.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
-                        !input.Contains("[", StringComparison.OrdinalIgnoreCase))
+                        !input.Contains('[', StringComparison.OrdinalIgnoreCase))
                 {
                     // Do nothing, leave unchanged
                     isWebUri = false;
