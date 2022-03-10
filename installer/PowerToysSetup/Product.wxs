@@ -1370,6 +1370,12 @@
                 Directory="Resource$(var.IdSafeLanguage)WindowsTerminalPluginFolder">
                 <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
             </Component>
+            <Component
+                Id="Launcher_WebSearch_$(var.IdSafeLanguage)_Component"
+                Guid="$(var.CompGUIDPrefix)16"
+                Directory="Resource$(var.IdSafeLanguage)WebSearchPluginFolder">
+                <File Id="Launcher_WebSearch_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\$(var.Language)\Community.PowerToys.Run.Plugin.WebSearch.resources.dll" />
+            </Component>
             <?undef IdSafeLanguage?>
             <?undef CompGUIDPrefix?>
             <?endforeach?>
