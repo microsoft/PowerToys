@@ -146,7 +146,7 @@
     <value>Fail to open file at</value>
   </data>
   <data name="wox_plugin_folder_select_folder_first_result_subtitle" xml:space="preserve">
-    <value>Tip: &gt; to list content, * to search file extensions, &gt;* for both.</value>
+    <value>Tip: &gt; to search in folders, * to search file extensions, &gt;* for both.</value>
   </data>
   <data name="wox_plugin_folder_select_folder_first_result_title" xml:space="preserve">
     <value>Open: {0}</value>

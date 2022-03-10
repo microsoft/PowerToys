@@ -151,7 +151,7 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Tip: &gt; to list content, * to search file extensions, &gt;* for both..
+        ///   Looks up a localized string similar to Tip: &gt; to search in folders, * to search file extensions, &gt;* for both..
         /// </summary>
         public static string wox_plugin_folder_select_folder_first_result_subtitle {
             get {
