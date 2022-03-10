@@ -27,6 +27,11 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
     public class VirtualDesktopHelper
     {
         /// <summary>
+        /// Are we running on Windows 11
+        /// </summary>
+        private static readonly bool _IsWindowsEleven = IsWindowsElevenOrLater();
+
+        /// <summary>
         /// Instance of "Virtual Desktop Manager"
         /// </summary>
         private readonly IVirtualDesktopManager _virtualDesktopManager;
@@ -112,7 +117,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             // Guid for current desktop
             var currentDeskSessionValue = Registry.CurrentUser.OpenSubKey(registrySessionVirtualDesktops, false).GetValue("CurrentVirtualDesktop", null); // Windows 10
             var currentDeskExplorerValue = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false).GetValue("CurrentVirtualDesktop", null); // Windows 11
-            var currentDeskValue = currentDeskSessionValue ?? currentDeskExplorerValue;
+            var currentDeskValue = _IsWindowsEleven ? currentDeskExplorerValue : currentDeskSessionValue;
             if (currentDeskValue != null)
             {
                 currentDesktop = new Guid((byte[])currentDeskValue);
@@ -500,6 +505,22 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 IsAllDesktopsView = isAllDesktops,
                 Position = GetDesktopPositionType(desktop),
             };
+        }
+
+        /// <summary>
+        /// Check if we running on Windows 11 or later.
+        /// </summary>
+        /// <returns><see langword="True"/> if yes and <see langword="false"/> if no.</returns>
+        private static bool IsWindowsElevenOrLater()
+        {
+            var currentBuildString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false).GetValue("CurrentBuild", uint.MinValue);
+            uint currentBuild = uint.TryParse(currentBuildString as string, out var build) ? build : uint.MinValue;
+
+            var currentBuildNumberString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false).GetValue("CurrentBuildNumber", uint.MinValue);
+            uint currentBuildNumber = uint.TryParse(currentBuildNumberString as string, out var buildNumber) ? buildNumber : uint.MinValue;
+
+            uint currentWindowsBuild = currentBuild != uint.MinValue ? currentBuild : currentBuildNumber;
+            return currentWindowsBuild >= 22000;
         }
     }
 
