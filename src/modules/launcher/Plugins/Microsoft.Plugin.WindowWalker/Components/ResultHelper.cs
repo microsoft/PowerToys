@@ -26,7 +26,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             foreach (SearchResult x in searchControllerResults)
             {
-                if (x.Result.Process.Name.ToLower() == "explorer.exe" && x.Result.Process.IsShellProcess)
+                if (x.Result.Process.Name.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "explorer.exe" && x.Result.Process.IsShellProcess)
                 {
                     addExplorerInfo = true;
                 }

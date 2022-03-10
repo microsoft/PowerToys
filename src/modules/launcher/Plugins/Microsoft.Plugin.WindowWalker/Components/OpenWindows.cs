@@ -19,7 +19,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// PowerLauncher main executable
         /// </summary>
-        private static readonly string _powerLauncherExe = Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName);
+        private static readonly string _powerLauncherExe = Path.GetFileName(Environment.ProcessPath);
 
         /// <summary>
         /// List of all the open windows

@@ -187,7 +187,7 @@ namespace Wox.Plugin.Common
 
                     if (string.IsNullOrEmpty(Path))
                     {
-                        throw new Exception("Browser path is null or empty.");
+                        throw new ArgumentOutOfRangeException(nameof(Path), "Browser path is null or empty.");
                     }
                 }
                 catch (Exception e)
@@ -217,7 +217,7 @@ namespace Wox.Plugin.Common
                         return stringBuilder.ToString();
                     }
 
-                    throw new Exception("Could not load indirect string.");
+                    throw new ArgumentNullException(nameof(Path), "Could not load indirect string.");
                 }
             }
         }

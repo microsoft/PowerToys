@@ -62,13 +62,13 @@ namespace PowerToys.Settings
                 if (ShowOobe)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
-                    OobeWindow oobeWindow = new OobeWindow((int)Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModulesEnum.Overview);
+                    OobeWindow oobeWindow = new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModulesEnum.Overview);
                     oobeWindow.Show();
                 }
                 else if (ShowScoobe)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                    OobeWindow scoobeWindow = new OobeWindow((int)Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModulesEnum.WhatsNew);
+                    OobeWindow scoobeWindow = new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModulesEnum.WhatsNew);
                     scoobeWindow.Show();
                 }
             }
