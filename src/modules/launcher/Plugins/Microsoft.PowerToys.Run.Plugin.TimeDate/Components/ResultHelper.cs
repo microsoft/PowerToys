@@ -27,15 +27,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         {
             if (!isSystemTimeDate)
             {
-                return Resources.ResourceManager.GetString(stringId, CultureInfo.CurrentCulture) ?? string.Empty;
+                return Resources.ResourceManager.GetString(stringId, CultureInfo.CurrentUICulture) ?? string.Empty;
             }
             else if (!string.IsNullOrEmpty(stringIdNow))
             {
-                return Resources.ResourceManager.GetString(stringIdNow, CultureInfo.CurrentCulture) ?? string.Empty;
+                return Resources.ResourceManager.GetString(stringIdNow, CultureInfo.CurrentUICulture) ?? string.Empty;
             }
             else
             {
-                return Resources.ResourceManager.GetString(stringId + "Now", CultureInfo.CurrentCulture) ?? string.Empty;
+                return Resources.ResourceManager.GetString(stringId + "Now", CultureInfo.CurrentUICulture) ?? string.Empty;
             }
         }
 
