@@ -106,7 +106,6 @@ public:
 
     void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
     {
-        _TRACER_;
         m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
 
@@ -237,6 +236,7 @@ FancyZones::Run() noexcept
     m_window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
     if (!m_window)
     {
+        Logger::error(L"Failed to create FancyZones window");
         return;
     }
 
@@ -333,8 +333,6 @@ std::pair<winrt::com_ptr<IWorkArea>, ZoneIndexSet> FancyZones::GetAppZoneHistory
 
 void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> workArea, const ZoneIndexSet& zoneIndexSet) noexcept
 {
-    _TRACER_;
-
     if (!AppZoneHistory::instance().IsAnotherWindowOfApplicationInstanceZoned(window, workArea->UniqueId()))
     {
         if (workArea)
@@ -343,6 +341,10 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> workA
         }
         m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, workArea);
         AppZoneHistory::instance().UpdateProcessIdToHandleMap(window, workArea->UniqueId());
+    }
+    else
+    {
+        Logger::info(L"Window was already zoned");
     }
 }
 
@@ -806,7 +808,8 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 
 void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
-    _TRACER_;
+    Logger::info(L"Display changed, type: {}", changeType);
+
     if (changeType == DisplayChangeType::VirtualDesktop ||
         changeType == DisplayChangeType::Initialization)
     {
@@ -852,7 +855,6 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
 void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noexcept
 {
-    _TRACER_;
     if (m_workAreaHandler.IsNewWorkArea(m_currentDesktopId, monitor))
     {
         wil::unique_cotaskmem_string virtualDesktopIdStr;
@@ -978,7 +980,6 @@ void FancyZones::CycleTabs(bool reverse) noexcept
 
 bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept
 {
-    _TRACER_;
     HMONITOR current = WorkAreaKeyFromWindow(window);
 
     std::vector<HMONITOR> monitorInfo = GetMonitorsSorted();
@@ -1213,8 +1214,6 @@ bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle
 
 void FancyZones::RegisterVirtualDesktopUpdates() noexcept
 {
-    _TRACER_;
-
     auto guids = m_virtualDesktop.GetVirtualDesktopIdsFromRegistry();
     if (guids.has_value())
     {
@@ -1367,8 +1366,6 @@ std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
 
 std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
 {
-    _TRACER_;
-    
     std::vector<std::pair<HMONITOR, RECT>> monitorInfo;
     const auto& activeWorkAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId);
     for (const auto& [monitor, workArea] : activeWorkAreaMap)
