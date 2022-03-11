@@ -5,7 +5,6 @@
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using Wox.Plugin.Common.Win32;
 
