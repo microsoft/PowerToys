@@ -497,8 +497,9 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             }
 
             // Can be only detected if method is invoked with window handle parameter.
-            bool isAllDesktops = (hWindow != default) && GetWindowDesktopAssignmentType(hWindow, desktop) == VirtualDesktopAssignmentType.AllDesktops;
-            bool isDesktopVisible = (hWindow != default) ? IsWindowOnVisibleDesktop(hWindow, desktop) : IsDesktopVisible(desktop);
+            VirtualDesktopAssignmentType desktopType = (hWindow != default) ? GetWindowDesktopAssignmentType(hWindow, desktop) : VirtualDesktopAssignmentType.Unknown;
+            bool isAllDesktops = (hWindow != default) && desktopType == VirtualDesktopAssignmentType.AllDesktops;
+            bool isDesktopVisible = (hWindow != default) ? (isAllDesktops || desktopType == VirtualDesktopAssignmentType.CurrentDesktop) : IsDesktopVisible(desktop);
 
             return new VDesktop()
             {
