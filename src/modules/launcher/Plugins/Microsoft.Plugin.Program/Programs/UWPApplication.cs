@@ -350,7 +350,7 @@ namespace Microsoft.Plugin.Program.Programs
                             }
                             else
                             {
-                                ProgramLogger.Exception($"Can't load null or empty result pri {sourceFallback} in uwp location {Package.Location}", new NullReferenceException(), GetType(), Package.Location);
+                                ProgramLogger.Exception($"Can't load null or empty result pri {sourceFallback} in uwp location {Package.Location}", new ArgumentNullException(null), GetType(), Package.Location);
 
                                 return string.Empty;
                             }
@@ -377,7 +377,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        ProgramLogger.Exception($"Can't load null or empty result pri {source} in uwp location {Package.Location}", new NullReferenceException(), GetType(), Package.Location);
+                        ProgramLogger.Exception($"Can't load null or empty result pri {source} in uwp location {Package.Location}", new ArgumentNullException(null), GetType(), Package.Location);
 
                         return string.Empty;
                     }
@@ -595,7 +595,7 @@ namespace Microsoft.Plugin.Program.Programs
             bool isLogoUriSet;
 
             // Using Ordinal since this is used internally with uri
-            if (uri.Contains("\\", StringComparison.Ordinal))
+            if (uri.Contains('\\', StringComparison.Ordinal))
             {
                 path = Path.Combine(Package.Location, uri);
             }
