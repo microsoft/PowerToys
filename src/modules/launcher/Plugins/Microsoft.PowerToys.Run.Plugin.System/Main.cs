@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.System.Components;
@@ -15,9 +17,12 @@ using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.PowerToys.Run.Plugin.System
 {
-    public class Main : IPlugin, IPluginI18n, ISettingProvider
+    public class Main : IPlugin, IPluginI18n, ISettingProvider, IContextMenu
     {
         private PluginInitContext _context;
+
+        private bool _confirmSystemCommands;
+        private bool _localizeSystemCommands;
 
         public string Name => Resources.Microsoft_plugin_sys_plugin_name;
 
@@ -27,13 +32,21 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public bool IsBootedInUefiMode { get; set; }
 
-        public IEnumerable<PluginAdditionalOption> AdditionalOptions
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
-            get
+            new PluginAdditionalOption()
             {
-                return SystemPluginSettings.GetAdditionalOptions();
-            }
-        }
+                Key = "ConfirmSystemCommands",
+                DisplayLabel = Resources.confirm_system_commands,
+                Value = false,
+            },
+            new PluginAdditionalOption()
+            {
+                Key = "LocalizeSystemCommands",
+                DisplayLabel = Resources.Use_localized_system_commands,
+                Value = true,
+            },
+        };
 
         public void Init(PluginInitContext context)
         {
@@ -52,17 +65,18 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
-
-            var commands = Commands.GetSystemCommands(IconTheme, IsBootedInUefiMode);
-            var addresses = Commands.GetNetworkAdapterAdresses(IconTheme);
-            var netCommands = Commands.GetNetworkCommands(query.SecondToEndSearch, IconTheme);
             var results = new List<Result>();
 
-            foreach (var c in commands)
+            if (query == null)
+            {
+                return results;
+            }
+
+            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
+            var systemCommands = Commands.GetSystemCommands(IsBootedInUefiMode, IconTheme, culture, _confirmSystemCommands);
+            var networkConnectionResults = Commands.GetNetworkConnectionResults(IconTheme, culture);
+
+            foreach (var c in systemCommands)
             {
                 var resultMatch = StringMatcher.FuzzySearch(query.Search, c.Title);
                 if (resultMatch.Score > 0)
@@ -73,29 +87,23 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                 }
             }
 
-            foreach (var c in addresses)
+            foreach (var r in networkConnectionResults)
             {
-                var resultMatch = StringMatcher.FuzzySearch(query.Search, c.SubTitle);
+                var resultMatch = StringMatcher.FuzzySearch(query.Search, r.SubTitle);
                 if (resultMatch.Score > 0)
                 {
-                    c.Score = resultMatch.Score;
-                    c.SubTitleHighlightData = resultMatch.MatchData;
-                    results.Add(c);
-                }
-            }
-
-            foreach (var c in netCommands)
-            {
-                var resultMatch = StringMatcher.FuzzySearch(query.Search, c.Title);
-                if (resultMatch.Score > 0)
-                {
-                    c.Score = resultMatch.Score;
-                    c.TitleHighlightData = resultMatch.MatchData;
-                    results.Add(c);
+                    r.Score = resultMatch.Score;
+                    r.SubTitleHighlightData = resultMatch.MatchData;
+                    results.Add(r);
                 }
             }
 
             return results;
+        }
+
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
+        {
+            return ResultHelper.GetContextMenuForresult(selectedResult);
         }
 
         private void UpdateIconTheme(Theme theme)
@@ -132,7 +140,20 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
-            SystemPluginSettings.Instance.UpdateSettings(settings);
+            var confirmSystemCommands = false;
+            var localizeSystemCommands = true;
+
+            if (settings != null && settings.AdditionalOptions != null)
+            {
+                var optionConfirm = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ConfirmSystemCommands");
+                confirmSystemCommands = optionConfirm?.Value ?? confirmSystemCommands;
+
+                var optionLocalize = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LocalizeSystemCommands");
+                localizeSystemCommands = optionLocalize?.Value ?? localizeSystemCommands;
+            }
+
+            _confirmSystemCommands = confirmSystemCommands;
+            _localizeSystemCommands = localizeSystemCommands;
         }
     }
 }
