@@ -28,7 +28,7 @@ namespace Wox.Infrastructure
         {
             if (obj == null)
             {
-                throw new NullReferenceException();
+                throw new ArgumentNullException(nameof(obj));
             }
             else
             {
@@ -40,7 +40,7 @@ namespace Wox.Infrastructure
         {
             if (obj == null)
             {
-                throw new NullReferenceException();
+                throw new ArgumentNullException(nameof(obj));
             }
         }
 

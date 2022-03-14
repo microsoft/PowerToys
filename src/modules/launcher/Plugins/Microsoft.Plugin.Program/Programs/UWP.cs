@@ -188,6 +188,7 @@ namespace Microsoft.Plugin.Program.Programs
             return FamilyName;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase since this is used with FamilyName")]
         public override bool Equals(object obj)
         {
             if (obj is UWP uwp)
