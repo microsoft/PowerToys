@@ -169,6 +169,22 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
+        /// Converts spelling "metre" to "meter"
+        /// </summary>
+        public static void MetreToMeter(ref string[] split)
+        {
+            if (split[1].ToLower() == "metre")
+            {
+                split[1] = "meter";
+            }
+
+            if (split[3].ToLower() == "metre")
+            {
+                split[3] = "meter";
+            }
+        }
+
+        /// <summary>
         /// Choose "UsGallon" or "ImperialGallon" according to current culture when the input contains "gal" or "gallon".
         /// </summary>
         public static void GallonHandler(ref string[] split, CultureInfo culture)
@@ -215,6 +231,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             }
 
             InputInterpreter.DegreePrefixer(ref split);
+            InputInterpreter.MetreToMeter(ref split);
             InputInterpreter.FeetToFt(ref split);
             InputInterpreter.GallonHandler(ref split, CultureInfo.CurrentCulture);
             if (!double.TryParse(split[0], out double value))
