@@ -12,7 +12,7 @@ interface IWorkArea;
 class WindowMoveHandler
 {
 public:
-    WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, const std::function<void()>& keyUpdateCallback);
+    WindowMoveHandler(const std::function<void()>& keyUpdateCallback);
 
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept;
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept;
@@ -63,8 +63,6 @@ private:
 
     void SetWindowTransparency(HWND window) noexcept;
     void ResetWindowTransparency() noexcept;
-
-    winrt::com_ptr<IFancyZonesSettings> m_settings{};
 
     bool m_inDragging{}; // Whether or not a move/size operation is currently active
     HWND m_draggedWindow{}; // The window that is being moved/sized

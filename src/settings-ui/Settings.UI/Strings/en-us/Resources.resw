@@ -617,7 +617,7 @@
     <value>Show recently used strings</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
-    <value>Enable Markdown (.md) preview</value>
+    <value>Enable Markdown preview  (.md, .markdown, .mdown, .mkdn, .mkd, .mdwn, .mdtxt, .mdtext)</value>
     <comment>Do not loc "Markdown".  Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
@@ -1285,47 +1285,44 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_LearnMore.Text" xml:space="preserve">
     <value>Learn more about</value>
   </data>
-  <data name="Oobe_ColorPicker_Description" xml:space="preserve">
+  <data name="Oobe_ColorPicker.Description" xml:space="preserve">
     <value>Color Picker is a system-wide color selection tool for Windows that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.</value>
   </data>
-  <data name="Oobe_FancyZones_Description" xml:space="preserve">
+  <data name="Oobe_FancyZones.Description" xml:space="preserve">
     <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
   </data>
-  <data name="Oobe_FileExplorer_Description" xml:space="preserve">
-    <value>PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md), PDF files (.pdf) and SVG icons (.svg) to be viewed in the preview pane.</value>
+  <data name="Oobe_FileExplorer.Description" xml:space="preserve">
+    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown files (.md), PDF files (.pdf), SVG icons (.svg), STL files (.stl), Gcode files (.gcode) and developer files to be viewed in the preview pane. It introduces file explorer thumbnail support for a number of these file types as well.</value>
   </data>
-  <data name="Oobe_ImageResizer_Description" xml:space="preserve">
+  <data name="Oobe_ImageResizer.Description" xml:space="preserve">
     <value>Image Resizer is a Windows shell extension for simple bulk image-resizing.</value>
   </data>
-  <data name="Oobe_KBM_Description" xml:space="preserve">
+  <data name="Oobe_KBM.Description" xml:space="preserve">
     <value>Keyboard Manager allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.</value>
   </data>
-  <data name="Oobe_PowerRename_Description" xml:space="preserve">
+  <data name="Oobe_PowerRename.Description" xml:space="preserve">
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
   </data>
-  <data name="Oobe_PowerRun_Description" xml:space="preserve">
+  <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
   </data>
-  <data name="Oobe_ShortcutGuide_Description" xml:space="preserve">
+  <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
     <value>Shortcut Guide presents the user with a listing of available shortcuts for the current state of the desktop.</value>
   </data>
-  <data name="Oobe_VideoConference_Description" xml:space="preserve">
+  <data name="Oobe_VideoConference.Description" xml:space="preserve">
     <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
   </data>
-  <data name="Oobe_MouseUtils_Description" xml:space="preserve">
+  <data name="Oobe_MouseUtils.Description" xml:space="preserve">
     <value>A collection of utilities to enhance your mouse.</value>
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
-  <data name="Oobe_Overview_Description.Text" xml:space="preserve">
+  <data name="Oobe_Overview.Description" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
-    
+
 Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
-  </data>
+  </data>    
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Documentation on Microsoft Docs</value>
-  </data>
-  <data name="Oobe_Overview_LatestVersionLink.Text" xml:space="preserve">
-    <value>Release notes</value>
   </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
     <value>Release notes</value>
@@ -1347,7 +1344,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
     <value>Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. 
-From there, simply click on a Markdown file, PDF file or SVG icon in the File Explorer and observe the content on the preview pane!</value>
+From there, simply click on one of the supported files in the File Explorer and observe the content on the preview pane!</value>
   </data>
   <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
     <value>How to create mappings</value>
@@ -1400,43 +1397,53 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="Oobe_VideoConference_ToggleVid.Text" xml:space="preserve">
     <value>to toggle your video</value>
   </data>
-  <data name="Oobe_ColorPicker" xml:space="preserve">
+  <data name="Oobe_ColorPicker.Title" xml:space="preserve">
     <value>Color Picker</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_FancyZones" xml:space="preserve">
+  <data name="Oobe_FancyZones.Title" xml:space="preserve">
     <value>FancyZones</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_ImageResizer" xml:space="preserve">
+  <data name="Oobe_ImageResizer.Title" xml:space="preserve">
     <value>Image Resizer</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_KBM" xml:space="preserve">
+  <data name="Oobe_KBM.Title" xml:space="preserve">
     <value>Keyboard Manager</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_Overview" xml:space="preserve">
-    <value>Overview</value>
-  </data>
-  <data name="Oobe_PowerRename" xml:space="preserve">
+  <data name="Oobe_PowerRename.Title" xml:space="preserve">
     <value>PowerRename</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_Run" xml:space="preserve">
+  <data name="Oobe_Run.Title" xml:space="preserve">
     <value>PowerToys Run</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_ShortcutGuide" xml:space="preserve">
+  <data name="Oobe_ShortcutGuide.Title" xml:space="preserve">
     <value>Shortcut Guide</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_VideoConference" xml:space="preserve">
+  <data name="Oobe_VideoConference.Title" xml:space="preserve">
     <value>Video Conference Mute</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_Welcome" xml:space="preserve">
+  <data name="Oobe_Overview.Title" xml:space="preserve">
     <value>Welcome</value>
+  </data>
+  <data name="Oobe_WhatsNew.Text" xml:space="preserve">
+    <value>What's new</value>
+  </data>
+  <data name="Oobe_WhatsNew_LoadingError.Title" xml:space="preserve">
+    <value>Couldn't load the release notes.</value>
+  </data>
+	  <data name="Oobe_WhatsNew_LoadingError.Message" xml:space="preserve">
+    <value>Please check your internet connection.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DetailedReleaseNotesLink.Text" xml:space="preserve">
+    <value>See more detailed release notes on GitHub</value>
+    <comment>Don't loc "GitHub", it's the name of a product</comment>
   </data>
   <data name="OOBE_Settings.Content" xml:space="preserve">
     <value>Open Settings</value>
@@ -1488,11 +1495,11 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="Awake_TemporaryKeepAwake_Minutes.Header" xml:space="preserve">
     <value>Minutes</value>
   </data>
-  <data name="Oobe_Awake" xml:space="preserve">
+  <data name="Oobe_Awake.Title" xml:space="preserve">
     <value>Awake</value>
     <comment>Module name, do not loc</comment>
   </data>
-  <data name="Oobe_Awake_Description" xml:space="preserve">
+  <data name="Oobe_Awake.Description" xml:space="preserve">
     <value>Awake is a Windows tool designed to keep your PC awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that your PC does not go to sleep or turn off its screens.</value>
   </data>
   <data name="Oobe_Awake_HowToUse.Text" xml:space="preserve">
@@ -1635,11 +1642,11 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Learn more about Video Conference Mute</value>
     <comment>Video Conference Mute is a product name, do not loc</comment>
   </data>
-  <data name="Oobe_FileExplorer" xml:space="preserve">
+  <data name="Oobe_FileExplorer.Title" xml:space="preserve">
     <value>File Explorer add-ons</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_MouseUtils" xml:space="preserve">
+  <data name="Oobe_MouseUtils.Title" xml:space="preserve">
     <value>Mouse utilities</value>
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
@@ -1648,7 +1655,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
   <data name="Oobe_MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
-    <value>Press the left Ctrl key twice to focus the mouse pointer.</value>
+    <value>Shake the mouse or press the left Ctrl key twice to focus the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral. Key as in a keyboard key</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter.Text" xml:space="preserve">
@@ -1757,12 +1764,32 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when pressing the left Ctrl key twice.</value>
+    <value>Find My Mouse highlights the position of the cursor when shaking the mouse or pressing the left Ctrl key twice.</value>
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
     <value>Enable Find My Mouse</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationMethod.Header" xml:space="preserve">
+    <value>Activation method</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationDoubleControlPress.Content" xml:space="preserve">
+    <value>Press Left Control twice</value>
+    <comment>Left control is the physical key on the keyboard.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationShakeMouse.Content" xml:space="preserve">
+    <value>Shake mouse</value>
+    <comment>Mouse is the hardware peripheral.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ExcludedApps.Description" xml:space="preserve">
+    <value>Prevents module activation when an excluded application is the foreground application</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ExcludedApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ExcludedApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
   </data>
   <data name="MouseUtils_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
@@ -1794,6 +1821,12 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Description" xml:space="preserve">
     <value>Time before the spotlight appears (ms)</value>
     <comment>ms = milliseconds</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Header" xml:space="preserve">
+    <value>Shake minimum distance</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Description" xml:space="preserve">
+    <value>The minimum distance for mouse shaking activation, for adjusting sensitivity</value>
   </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
     <value>Mouse Highlighter</value>
@@ -1993,11 +2026,11 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Customize the shortcut to pin or unpin an app window</value>
     <comment>"Always On Top" is the name of the utility</comment>
   </data>
-  <data name="Oobe_AlwaysOnTop" xml:space="preserve">
+  <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
     <comment>"Always On Top" is the name of the utility</comment>
   </data>
-  <data name="Oobe_AlwaysOnTop_Description" xml:space="preserve">
+  <data name="Oobe_AlwaysOnTop.Description" xml:space="preserve">
     <value>Always On Top improves your multitasking workflow by pinning an application window so it's always in front - even when focus changes to another window after that.</value>
     <comment>"Always On Top" is the name of the utility</comment>
   </data>
@@ -2023,5 +2056,16 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="FileExplorerPreview_ToggleSwitch_Wrap_Text.Content" xml:space="preserve">
     <value>Wrap text</value>
     <comment>Feature on or off</comment>
+  <data name="FancyZones_AllowPopupWindowSnap.Description" xml:space="preserve">
+    <value>This setting can affect all popup windows including notifications</value>
+  </data>
+  <data name="FancyZones_AllowPopupWindowSnap.Header" xml:space="preserve">
+    <value>Allow popup windows snapping</value>
+  </data>
+  <data name="FancyZones_AllowChildWindowSnap.Content" xml:space="preserve">
+    <value>Allow child windows snapping</value>
+  </data>
+  <data name="Shell_WhatsNew.Content" xml:space="preserve">
+    <value>What's new</value>
   </data>
 </root>

@@ -15,7 +15,7 @@ namespace FancyZonesEditor.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public delegate void MonitorChangedEventHandler(MonitorChangedEventArgs args);
+        public delegate void MonitorChangedEvent(MonitorChangedEventArgs args);
 
         public ObservableCollection<MonitorInfoModel> MonitorInfoForViewModel { get; set; }
 

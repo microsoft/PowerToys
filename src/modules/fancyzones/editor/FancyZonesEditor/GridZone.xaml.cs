@@ -23,8 +23,6 @@ namespace FancyZonesEditor
         private const string GridZoneBackgroundBrushID = "GridZoneBackgroundBrush";
         private const string SecondaryForegroundBrushID = "SecondaryForegroundBrush";
         private const string AccentColorBrushID = "SystemControlBackgroundAccentBrush";
-        private const string CanvasCanvasZoneBorderBrushID = "CanvasCanvasZoneBorderBrush";
-
         public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
 
         public event SplitEventHandler Split;

@@ -7,21 +7,16 @@
       xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
       mc:Ignorable="d">
 
-    <controls:OOBEPageControl ModuleTitle="{x:Bind ViewModel.ModuleName}"
-                                  ModuleImageSource="{x:Bind ViewModel.PreviewImageSource}">
+    <controls:OOBEPageControl x:Uid="Oobe_Overview"
+                              HeroImage="ms-appx:///Assets/Modules/OOBE/OOBEPTHero.png">
 
-        <controls:OOBEPageControl.ModuleContent>
+        <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
-                <TextBlock Margin="0,4,0,8"
-                           x:Uid="Oobe_Overview_Description"
-                           TextWrapping="Wrap"/>
-                <HyperlinkButton NavigateUri="{x:Bind ViewModel.DescriptionLink}" Style="{StaticResource TextButtonStyle}">
-                    <TextBlock x:Uid="Oobe_Overview_DescriptionLinkText"
-                               TextWrapping="Wrap" />
-                </HyperlinkButton>
+                <TextBlock x:Uid="Oobe_HowToUse"
+                           Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}" Style="{StaticResource TextButtonStyle}">
-                    <TextBlock x:Uid="Oobe_Overview_LatestVersionLink"
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview" Style="{StaticResource TextButtonStyle}">
+                    <TextBlock x:Uid="Oobe_Overview_DescriptionLinkText"
                                TextWrapping="Wrap" />
                 </HyperlinkButton>
 
@@ -30,6 +25,6 @@
                             Click="SettingsLaunchButton_Click"/>
                 </StackPanel>
             </StackPanel>
-        </controls:OOBEPageControl.ModuleContent>
+        </controls:OOBEPageControl.PageContent>
     </controls:OOBEPageControl>
 </Page>

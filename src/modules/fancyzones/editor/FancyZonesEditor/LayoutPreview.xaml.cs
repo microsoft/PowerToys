@@ -21,8 +21,6 @@ namespace FancyZonesEditor
         private const string PropertyZoneCountID = "ZoneCount";
         private const string PropertyShowSpacingID = "ShowSpacing";
         private const string PropertySpacingID = "Spacing";
-        private const string PropertyZoneBackgroundID = "ZoneBackground";
-        private const string PropertyZoneBorderID = "ZoneBorder";
         private const string ObjectDependencyID = "IsActualSize";
 
         public static readonly DependencyProperty IsActualSizeProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(LayoutPreview), new PropertyMetadata(false));

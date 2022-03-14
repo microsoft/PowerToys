@@ -260,7 +260,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 DWORD g_settings_process_id = 0;
 
-void run_settings_window(bool show_oobe_window, std::optional<std::wstring> settings_window)
+void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window)
 {
     g_isLaunchInProgress = true;
 
@@ -327,6 +327,9 @@ void run_settings_window(bool show_oobe_window, std::optional<std::wstring> sett
     // Arg 8: should oobe window be shown
     std::wstring settings_showOobe = show_oobe_window ? L"true" : L"false";
 
+    // Arg 9: should scoobe window be shown
+    std::wstring settings_showScoobe = show_scoobe_window ? L"true" : L"false";
+
     // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
@@ -347,6 +350,8 @@ void run_settings_window(bool show_oobe_window, std::optional<std::wstring> sett
     executable_args.append(settings_isUserAnAdmin);
     executable_args.append(L" ");
     executable_args.append(settings_showOobe);
+    executable_args.append(L" ");
+    executable_args.append(settings_showScoobe);
 
     if (settings_window.has_value())
     {
@@ -490,7 +495,7 @@ void open_settings_window(std::optional<std::wstring> settings_window)
         if (!g_isLaunchInProgress)
         {
             std::thread([settings_window]() {
-                run_settings_window(false, settings_window);
+                run_settings_window(false, false, settings_window);
             }).detach();
         }
     }
@@ -511,7 +516,14 @@ void close_settings_window()
 void open_oobe_window()
 {
     std::thread([]() {
-        run_settings_window(true, std::nullopt);
+        run_settings_window(true, false, std::nullopt);
+    }).detach();
+}
+
+void open_scoobe_window()
+{
+    std::thread([]() {
+        run_settings_window(false, true, std::nullopt);
     }).detach();
 }
 

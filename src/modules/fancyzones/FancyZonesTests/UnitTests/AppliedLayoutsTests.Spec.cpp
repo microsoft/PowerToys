@@ -279,15 +279,26 @@ namespace FancyZonesUnitTests
             };
 
             // test
-            FancyZonesDataTypes::ZoneSetData expectedZoneSetData {
-                .uuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}",
-                .type = FancyZonesDataTypes::ZoneSetLayoutType::Focus
+            Layout expectedLayout {
+                .uuid = FancyZonesUtils::GuidFromString(L"{33A2B101-06E0-437B-A61E-CDBECF502906}").value(),
+                .type = FancyZonesDataTypes::ZoneSetLayoutType::Focus,
+                .showSpacing = true,
+                .spacing = 10,
+                .zoneCount = 15,
+                .sensitivityRadius = 30
             };
 
-            AppliedLayouts::instance().ApplyLayout(deviceId, expectedZoneSetData);
+            AppliedLayouts::instance().ApplyLayout(deviceId, expectedLayout);
 
             Assert::IsFalse(AppliedLayouts::instance().GetAppliedLayoutMap().empty());
             Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(deviceId).has_value());
+
+            auto actual = AppliedLayouts::instance().GetAppliedLayoutMap().find(deviceId)->second;
+            Assert::IsTrue(expectedLayout.type == actual.type);
+            Assert::AreEqual(expectedLayout.showSpacing, actual.showSpacing);
+            Assert::AreEqual(expectedLayout.spacing, actual.spacing);
+            Assert::AreEqual(expectedLayout.zoneCount, actual.zoneCount);
+            Assert::AreEqual(expectedLayout.sensitivityRadius, actual.sensitivityRadius);
         }
 
         TEST_METHOD (ApplyLayoutReplace)
@@ -322,19 +333,27 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().LoadData();
 
             // test
-            FancyZonesDataTypes::ZoneSetData expectedZoneSetData {
-                .uuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}",
-                .type = FancyZonesDataTypes::ZoneSetLayoutType::Focus
+            Layout expectedLayout{
+                .uuid = FancyZonesUtils::GuidFromString(L"{33A2B101-06E0-437B-A61E-CDBECF502906}").value(),
+                .type = FancyZonesDataTypes::ZoneSetLayoutType::Focus,
+                .showSpacing = true,
+                .spacing = 10,
+                .zoneCount = 15,
+                .sensitivityRadius = 30
             };
 
-            AppliedLayouts::instance().ApplyLayout(deviceId, expectedZoneSetData);
+            AppliedLayouts::instance().ApplyLayout(deviceId, expectedLayout);
 
             Assert::AreEqual((size_t)1, AppliedLayouts::instance().GetAppliedLayoutMap().size());
             Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(deviceId).has_value());
 
             auto actual = AppliedLayouts::instance().GetAppliedLayoutMap().find(deviceId)->second;
-            Assert::AreEqual(expectedZoneSetData.uuid.c_str(), FancyZonesUtils::GuidToString(actual.uuid).value().c_str());
-            Assert::IsTrue(expectedZoneSetData.type == actual.type);
+            Assert::AreEqual(FancyZonesUtils::GuidToString(expectedLayout.uuid).value().c_str(), FancyZonesUtils::GuidToString(actual.uuid).value().c_str());
+            Assert::IsTrue(expectedLayout.type == actual.type);
+            Assert::AreEqual(expectedLayout.showSpacing, actual.showSpacing);
+            Assert::AreEqual(expectedLayout.spacing, actual.spacing);
+            Assert::AreEqual(expectedLayout.zoneCount, actual.zoneCount);
+            Assert::AreEqual(expectedLayout.sensitivityRadius, actual.sensitivityRadius);
         }
 
         TEST_METHOD (ApplyDefaultLayout)

@@ -21,4 +21,6 @@ namespace PTSettingsHelper
 
     bool get_oobe_opened_state();
     void save_oobe_opened_state();
+    std::wstring get_last_version_run();
+    void save_last_version_run(const std::wstring& version);
 }

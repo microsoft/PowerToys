@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Reflection;
 using System.Windows.Forms;
+using Common;
 
 namespace PreviewHandlerCommon
 {
@@ -52,7 +53,7 @@ namespace PreviewHandlerCommon
             {
                 object result;
 
-                if (name != null && name.Equals(DISPIDAMBIENTDLCONTROL, StringComparison.CurrentCulture))
+                if (name != null && name.Equals(DISPIDAMBIENTDLCONTROL, StringComparison.Ordinal))
                 {
                     // Using InvariantCulture since this is used for web browser configurations
                     result = Convert.ToInt32(

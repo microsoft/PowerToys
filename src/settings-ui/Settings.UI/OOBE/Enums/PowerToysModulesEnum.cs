@@ -19,5 +19,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         Run,
         ShortcutGuide,
         VideoConference,
+        WhatsNew,
     }
 }

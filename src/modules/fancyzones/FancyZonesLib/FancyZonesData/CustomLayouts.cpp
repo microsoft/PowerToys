@@ -216,7 +216,43 @@ void CustomLayouts::LoadData()
     }
 }
 
-std::optional<FancyZonesDataTypes::CustomLayoutData> CustomLayouts::GetLayout(const GUID& id) const noexcept
+std::optional<Layout> CustomLayouts::GetLayout(const GUID& id) const noexcept
+{
+    auto iter = m_layouts.find(id);
+    if (iter == m_layouts.end())
+    {
+        return std::nullopt;
+    }
+    
+    FancyZonesDataTypes::CustomLayoutData customLayout = iter->second;
+    Layout layout{
+        .uuid = id,
+        .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom,
+        .showSpacing = DefaultValues::ShowSpacing,
+        .spacing = DefaultValues::Spacing,
+        .zoneCount = DefaultValues::ZoneCount,
+        .sensitivityRadius = DefaultValues::SensitivityRadius
+    };
+
+    if (customLayout.type == FancyZonesDataTypes::CustomLayoutType::Grid)
+    {
+        auto layoutInfo = std::get<FancyZonesDataTypes::GridLayoutInfo>(customLayout.info);
+        layout.sensitivityRadius = layoutInfo.sensitivityRadius();
+        layout.showSpacing = layoutInfo.showSpacing();
+        layout.spacing = layoutInfo.spacing();
+        layout.zoneCount = layoutInfo.zoneCount();
+    }
+    else if (customLayout.type == FancyZonesDataTypes::CustomLayoutType::Canvas)
+    {
+        auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(customLayout.info);
+        layout.sensitivityRadius = layoutInfo.sensitivityRadius;
+        layout.zoneCount = (int)layoutInfo.zones.size();
+    }
+
+    return layout;
+}
+
+std::optional<FancyZonesDataTypes::CustomLayoutData> CustomLayouts::GetCustomLayoutData(const GUID& id) const noexcept
 {
     auto iter = m_layouts.find(id);
     if (iter != m_layouts.end())

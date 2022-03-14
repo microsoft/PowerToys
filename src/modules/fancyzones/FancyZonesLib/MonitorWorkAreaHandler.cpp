@@ -3,6 +3,8 @@
 #include "VirtualDesktop.h"
 #include "util.h"
 
+#include <common/logger/logger.h>
+
 winrt::com_ptr<IWorkArea> MonitorWorkAreaHandler::GetWorkArea(const GUID& desktopId, HMONITOR monitor)
 {
     auto desktopIt = workAreaMap.find(desktopId);
@@ -83,6 +85,12 @@ void MonitorWorkAreaHandler::AddWorkArea(const GUID& desktopId, HMONITOR monitor
     if (!workAreaMap.contains(desktopId))
     {
         workAreaMap[desktopId] = {};
+
+        auto desktopIdStr = FancyZonesUtils::GuidToString(desktopId);
+        if (desktopIdStr)
+        {
+            Logger::info(L"Add work area on the desktop {}", desktopIdStr.value()); 
+        }
     }
     auto& perDesktopData = workAreaMap[desktopId];
     perDesktopData[monitor] = std::move(workArea);
@@ -128,26 +136,4 @@ void MonitorWorkAreaHandler::RegisterUpdates(const std::vector<GUID>& active)
 void MonitorWorkAreaHandler::Clear()
 {
     workAreaMap.clear();
-}
-
-void MonitorWorkAreaHandler::UpdateZoneColors(const ZoneColors& colors)
-{
-    for (const auto& workArea : workAreaMap)
-    {
-        for (const auto& workAreaPtr : workArea.second)
-        {
-            workAreaPtr.second->SetZoneColors(colors);
-        }
-    }
-}
-
-void MonitorWorkAreaHandler::UpdateOverlappingAlgorithm(OverlappingZonesAlgorithm overlappingAlgorithm)
-{
-    for (const auto& workArea : workAreaMap)
-    {
-        for (const auto& workAreaPtr : workArea.second)
-        {
-            workAreaPtr.second->SetOverlappingZonesAlgorithm(overlappingAlgorithm);
-        }
-    }
 }

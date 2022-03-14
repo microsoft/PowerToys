@@ -137,7 +137,7 @@ jobs:
     displayName: Build BugReportTool
     inputs:
       solution: '**/tools/BugReportTool/BugReportTool.sln'
-      vsVersion: 16.0
+      vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -334,14 +334,54 @@ jobs:
     displayName: Component Detection
 
   - task: CopyFiles@2
+    displayName: Copying files for symbols
+    inputs:
+      contents: >-
+        **/*.pdb
+      flattenFolders: True
+      targetFolder: $(Build.ArtifactStagingDirectory)/Symbols/
+   
+  - task: PowerShell@2
+    displayName: 'Remove unneeded files from ArtifactStagingDirectory'
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd $(Build.ArtifactStagingDirectory)/Symbols/
+        Remove-Item vc143.pdb
+        Remove-Item *test*
+
+  - task: PublishSymbols@2
+    displayName: Publish symbols path
+    continueOnError: True
+    inputs:
+      SearchPattern: |
+        $(Build.ArtifactStagingDirectory)/Symbols/**/*.*
+      IndexSources: false
+      SymbolServerType: TeamServices
+      
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: Symbols'
+    inputs:
+      PathtoPublish: $(System.ArtifactsDirectory)/Symbols/
+      ArtifactName: Symbols
+
+  - task: DeleteFiles@1
+    displayName: 'Remove symbols from ArtifactStagingDirectory'
+    inputs:
+      Contents: '*'
+      SourceFolder: $(Build.ArtifactStagingDirectory)/Symbols/
+      RemoveSourceFolder: True
+
+  - task: CopyFiles@2
+    displayName: Copying setup file over
     inputs:
       contents: '**/PowerToysSetup-*.exe'
       flattenFolders: True
       targetFolder: $(Build.ArtifactStagingDirectory)
-
+      
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: PowerToySetup'
     inputs:
       PathtoPublish: $(System.ArtifactsDirectory)
-      ArtifactName: BuildArtifacts
+      ArtifactName: setup-$(BuildPlatform)
 ...

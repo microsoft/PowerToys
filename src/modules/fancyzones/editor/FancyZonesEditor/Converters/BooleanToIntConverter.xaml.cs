@@ -11,9 +11,9 @@ namespace FancyZonesEditor.Converters
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if (value is bool)
+            if (value is bool valueBool)
             {
-                return (bool)value == true ? 1 : 0;
+                return valueBool == true ? 1 : 0;
             }
 
             return 0;
@@ -21,9 +21,9 @@ namespace FancyZonesEditor.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if (value is int)
+            if (value is int valueInt)
             {
-                return (int)value == 1;
+                return valueInt == 1;
             }
 
             return false;

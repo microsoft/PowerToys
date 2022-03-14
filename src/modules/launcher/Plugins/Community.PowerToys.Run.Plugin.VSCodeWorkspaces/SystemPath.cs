@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
@@ -15,7 +16,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
             if (WindowsPath.IsMatch(path))
             {
                 string windowsPath = path.Replace("/", "\\");
-                return $"{windowsPath[0]}".ToUpper() + windowsPath.Remove(0, 1);
+                return $"{windowsPath[0]}".ToUpperInvariant() + windowsPath.Remove(0, 1);
             }
             else
             {

@@ -102,11 +102,15 @@
       <AdditionalDependencies>$(OutDir)VideoConferenceShared.lib;Windowscodecs.lib;Wtsapi32.lib;mfplat.lib;WindowsApp.lib;Mfsensorgroup.lib;Mf.lib;Shlwapi.lib;Strmiids.lib;%(AdditionalDependencies);</AdditionalDependencies>
       <ModuleDefinitionFile>module.def</ModuleDefinitionFile>
     </Link>
+    <ResourceCompile>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">_WIN64;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="DirectShowUtils.h" />
     <ClInclude Include="VideoCaptureDevice.h" />
     <ClInclude Include="VideoCaptureProxyFilter.h" />
+    <ClInclude Include="Generated Files/resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DirectShowUtils.cpp" />
@@ -118,6 +122,13 @@
   <ItemGroup>
     <None Include="module.def" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource.x86.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="VideoConferenceProxyFilter.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VideoConferenceShared\VideoConferenceShared.vcxproj">

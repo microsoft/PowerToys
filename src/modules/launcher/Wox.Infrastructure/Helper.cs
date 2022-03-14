@@ -28,7 +28,7 @@ namespace Wox.Infrastructure
         {
             if (obj == null)
             {
-                throw new NullReferenceException();
+                throw new ArgumentNullException(nameof(obj));
             }
             else
             {
@@ -40,7 +40,7 @@ namespace Wox.Infrastructure
         {
             if (obj == null)
             {
-                throw new NullReferenceException();
+                throw new ArgumentNullException(nameof(obj));
             }
         }
 
@@ -126,13 +126,14 @@ namespace Wox.Infrastructure
             return Process.Start(processStartInfo);
         }
 
-        public static bool OpenInShell(string path, string arguments = null, string workingDir = null, bool runAsAdmin = false)
+        public static bool OpenInShell(string path, string arguments = null, string workingDir = null, bool runAsAdmin = false, bool runWithHiddenWindow = false)
         {
             using (var process = new Process())
             {
                 process.StartInfo.FileName = path;
                 process.StartInfo.WorkingDirectory = string.IsNullOrWhiteSpace(workingDir) ? string.Empty : workingDir;
                 process.StartInfo.Arguments = string.IsNullOrWhiteSpace(arguments) ? string.Empty : arguments;
+                process.StartInfo.WindowStyle = runWithHiddenWindow ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal;
 
                 if (runAsAdmin)
                 {

@@ -125,7 +125,7 @@ namespace PowerToys.Settings
                 // open oobe
                 ShellPage.SetOpenOobeCallback(() =>
                 {
-                    var oobe = new OobeWindow();
+                    var oobe = new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModulesEnum.Overview);
                     oobe.Show();
                 });
 

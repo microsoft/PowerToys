@@ -6,11 +6,13 @@
 #include <thread>
 #include <common/utils/logger_helper.h>
 #include <common/utils/color.h>
+#include <common/utils/string_utils.h>
 
 namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_VALUE[] = L"value";
+    const wchar_t JSON_KEY_ACTIVATION_METHOD[] = L"activation_method";
     const wchar_t JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE[] = L"do_not_activate_on_game_mode";
     const wchar_t JSON_KEY_BACKGROUND_COLOR[] = L"background_color";
     const wchar_t JSON_KEY_SPOTLIGHT_COLOR[] = L"spotlight_color";
@@ -18,6 +20,8 @@ namespace
     const wchar_t JSON_KEY_SPOTLIGHT_RADIUS[] = L"spotlight_radius";
     const wchar_t JSON_KEY_ANIMATION_DURATION_MS[] = L"animation_duration_ms";
     const wchar_t JSON_KEY_SPOTLIGHT_INITIAL_ZOOM[] = L"spotlight_initial_zoom";
+    const wchar_t JSON_KEY_EXCLUDED_APPS[] = L"excluded_apps";
+    const wchar_t JSON_KEY_SHAKING_MINIMUM_DISTANCE[] = L"shaking_minimum_distance";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -173,6 +177,20 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
     {
         try
         {
+            // Parse Activation Method
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_METHOD);
+            UINT value = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            if (value < (int)FindMyMouseActivationMethod::EnumElements)
+            {
+                findMyMouseSettings.activationMethod = (FindMyMouseActivationMethod)value;
+            }
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Activation Method from settings. Will use default value");
+        }
+        try
+        {
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE);
             findMyMouseSettings.doNotActivateOnGameMode = (bool)jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
         }
@@ -257,6 +275,41 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         catch (...)
         {
             Logger::warn("Failed to initialize Spotlight Initial Zoom from settings. Will use default value");
+        }
+        try
+        {
+            // Parse Excluded Apps
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_EXCLUDED_APPS);
+            std::wstring apps = jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE).c_str();
+            std::vector<std::wstring> excludedApps;
+            auto excludedUppercase = apps;
+            CharUpperBuffW(excludedUppercase.data(), (DWORD)excludedUppercase.length());
+            std::wstring_view view(excludedUppercase);
+            view = left_trim<wchar_t>(trim<wchar_t>(view));
+
+            while (!view.empty())
+            {
+                auto pos = (std::min)(view.find_first_of(L"\r\n"), view.length());
+                excludedApps.emplace_back(view.substr(0, pos));
+                view.remove_prefix(pos);
+                view = left_trim<wchar_t>(trim<wchar_t>(view));
+            }
+
+            findMyMouseSettings.excludedApps = excludedApps;
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Excluded Apps from settings. Will use default value");
+        }
+        try
+        {
+            // Parse Shaking Minimum Distance
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHAKING_MINIMUM_DISTANCE);
+            findMyMouseSettings.shakeMinimumDistance = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Shaking Minimum Distance from settings. Will use default value");
         }
     }
     else
