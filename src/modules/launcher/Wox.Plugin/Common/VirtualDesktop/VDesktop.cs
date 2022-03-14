@@ -73,7 +73,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                     Id = Guid.Empty,
                     Name = string.Empty,
                     Number = 0,
-                    IsVisible = false,
+                    IsVisible = true, // Setting this always to true to simulate a visible desktop
                     IsAllDesktopsView = false,
                     Position = VirtualDesktopPosition.NotApplicable,
                 };

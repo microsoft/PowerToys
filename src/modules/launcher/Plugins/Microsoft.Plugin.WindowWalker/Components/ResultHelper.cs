@@ -126,7 +126,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     $"Is ShellProcess: {window.Process.IsShellProcess}\n" +
                     $"Is window cloaked: {window.IsCloaked}\n" +
                     $"Window cloak state: {window.GetWindowCloakState()}\n" +
-                    $"Desktop name: {window.Desktop.Name}" +
+                    $"Desktop id: {window.Desktop.Id}\n" +
+                    $"Desktop name: {window.Desktop.Name}\n" +
                     $"Desktop number: {window.Desktop.Number}\n" +
                     $"Desktop is visible: {window.Desktop.IsVisible}\n" +
                     $"Desktop position: {window.Desktop.Position}\n" +

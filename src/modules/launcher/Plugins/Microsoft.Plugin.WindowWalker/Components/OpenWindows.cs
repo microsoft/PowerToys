@@ -5,7 +5,6 @@
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using Wox.Plugin.Common.Win32;
 
@@ -89,7 +88,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
                 (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&
-                (newWindow.Desktop.IsVisible || !WindowWalkerSettings.Instance.ResultsFromVisibleDesktopOnly) &&
+                (newWindow.Desktop.IsVisible || !WindowWalkerSettings.Instance.ResultsFromVisibleDesktopOnly || Main.VirtualDesktopHelperInstance.GetDesktopCount() < 2) &&
                 newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.Process.Name != _powerLauncherExe)
             {
                 // To hide (not add) preloaded uwp app windows that are invisible to the user and other cloaked windows, we check the cloak state. (Issue #13637.)
