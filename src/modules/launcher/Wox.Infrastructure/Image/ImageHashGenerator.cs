@@ -16,9 +16,9 @@ namespace Wox.Infrastructure.Image
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5350:Do Not Use Weak Cryptographic Algorithms", Justification = "Level of protection needed for the image data does not require a security guarantee")]
-        public string GetHashFromImage(ImageSource imageSource)
+        public string GetHashFromImage(ImageSource image)
         {
-            if (!(imageSource is BitmapSource image))
+            if (!(image is BitmapSource bitmapSource))
             {
                 return null;
             }
@@ -30,7 +30,7 @@ namespace Wox.Infrastructure.Image
                     // PngBitmapEncoder enc2 = new PngBitmapEncoder();
                     // enc2.Frames.Add(BitmapFrame.Create(tt));
                     var enc = new JpegBitmapEncoder();
-                    var bitmapFrame = BitmapFrame.Create(image);
+                    var bitmapFrame = BitmapFrame.Create(bitmapSource);
                     bitmapFrame.Freeze();
                     enc.Frames.Add(bitmapFrame);
                     enc.Save(outStream);

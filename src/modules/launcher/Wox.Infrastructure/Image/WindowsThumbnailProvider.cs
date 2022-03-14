@@ -123,7 +123,7 @@ namespace Wox.Infrastructure.Image
                 return hBitmap;
             }
 
-            throw new COMException($"Error while extracting thumbnail for {fileName}", Marshal.GetExceptionForHR((int)hr));
+            throw new InvalidComObjectException($"Error while extracting thumbnail for {fileName}", Marshal.GetExceptionForHR((int)hr));
         }
     }
 }
