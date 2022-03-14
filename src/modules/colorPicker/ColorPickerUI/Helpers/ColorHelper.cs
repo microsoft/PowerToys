@@ -179,9 +179,9 @@ namespace ColorPicker.Helpers
             double bLinear = (b > 0.04045) ? Math.Pow((b + 0.055) / 1.055, 2.4) : (b / 12.92);
 
             return (
-                (rLinear * 0.4124) + (gLinear * 0.3576) + (bLinear * 0.1805),
-                (rLinear * 0.2126) + (gLinear * 0.7152) + (bLinear * 0.0722),
-                (rLinear * 0.0193) + (gLinear * 0.1192) + (bLinear * 0.9505)
+                (rLinear * 0.41239079926595948) + (gLinear * 0.35758433938387796) + (bLinear * 0.18048078840183429),
+                (rLinear * 0.21263900587151036) + (gLinear * 0.71516867876775593) + (bLinear * 0.07219231536073372),
+                (rLinear * 0.01933081871559185) + (gLinear * 0.11919477979462599) + (bLinear * 0.95053215224966058)
             );
         }
 
