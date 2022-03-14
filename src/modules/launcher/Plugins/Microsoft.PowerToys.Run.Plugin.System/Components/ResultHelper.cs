@@ -54,12 +54,12 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         {
             var contextMenu = new List<ContextMenuResult>();
 
-            if (!(result?.ContextData is SystemCommandResultContext contextData))
+            if (!(result?.ContextData is SystemPluginContext contextData))
             {
                 return contextMenu;
             }
 
-            if (contextData.Type == SystemCommandResultType.IpResult || contextData.Type == SystemCommandResultType.MacResult)
+            if (contextData.Type == ResultContextType.IpResult || contextData.Type == ResultContextType.MacResult)
             {
                 contextMenu.Add(new ContextMenuResult()
                 {
@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 });
             }
 
-            if (contextData.Type == SystemCommandResultType.IpResult)
+            if (contextData.Type == ResultContextType.IpResult)
             {
                 contextMenu.Add(new ContextMenuResult()
                 {

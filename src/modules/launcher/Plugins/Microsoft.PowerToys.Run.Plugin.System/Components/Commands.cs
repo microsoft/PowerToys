@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Windows;
 using System.Windows.Interop;
@@ -15,6 +16,9 @@ using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.System.Components
 {
+    /// <summary>
+    /// This class holds all available results
+    /// </summary>
     internal static class Commands
     {
         internal const int EWXLOGOFF = 0x00000000;
@@ -24,6 +28,14 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         internal const int EWXPOWEROFF = 0x00000008;
         internal const int EWXFORCEIFHUNG = 0x00000010;
 
+        /// <summary>
+        /// Returns a list with all sytsem command results
+        /// </summary>
+        /// <param name="isUefi">Value indicating if the system is booted in uefi mode</param>
+        /// <param name="iconTheme">The current theme to use for the icons</param>
+        /// <param name="culture">The culture to use for the result's title and sub title</param>
+        /// <param name="confirmCommands">A value indicating if the user should confirm the system commands</param>
+        /// <returns>A list of all results</returns>
         internal static List<Result> GetSystemCommands(bool isUefi, string iconTheme, CultureInfo culture, bool confirmCommands)
         {
             var results = new List<Result>();
@@ -132,54 +144,57 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
             return results;
         }
 
+        /// <summary>
+        /// Rerturns a list of all ip and mac results
+        /// </summary>
+        /// <param name="iconTheme">The theme to use for the icons</param>
+        /// <param name="culture">The culture to use for the result's title and sub title</param>
+        /// <returns>The list of available results</returns>
         internal static List<Result> GetNetworkConnectionResults(string iconTheme, CultureInfo culture)
         {
-            var adapters = NetworkInterface.GetAllNetworkInterfaces();
             var results = new List<Result>();
 
-            foreach (NetworkInterface a in adapters)
+            var interfaces = NetworkInterface.GetAllNetworkInterfaces().Where(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.GetPhysicalAddress() != null);
+            foreach (NetworkInterface i in interfaces)
             {
-                string mac = a.GetPhysicalAddress().ToString();
-                var ips = NetworkInfoHelper.GetMainIpsForConnection(a);
-                string connectionDetails = NetworkInfoHelper.GetConnectionDetails(a);
-                string adapterDetails = NetworkInfoHelper.GetAdapterDetails(a);
+                NetworkConnectionProperties intInfo = new NetworkConnectionProperties(i);
 
-                if (!string.IsNullOrEmpty(ips["IpV4"]))
+                if (!string.IsNullOrEmpty(intInfo.IPv4))
                 {
                     results.Add(new Result()
                     {
-                        Title = ips["IpV4"],
-                        SubTitle = "IPv4 address of " + a.Name + " - Press enter to copy",
+                        Title = intInfo.IPv4,
+                        SubTitle = "IP v4 address of " + intInfo.ConnectionName + " - Select to copy",
                         IcoPath = $"Images\\network.{iconTheme}.png",
-                        ToolTipData = new ToolTipData("Connection details", string.Format(CultureInfo.InvariantCulture, connectionDetails, ips["IpV4"], ips["IpV6"]) + "\n\nFor detailed IP information please use the ipconfig command!"),
-                        ContextData = new SystemCommandResultContext { Type = SystemCommandResultType.IpResult, Data = connectionDetails },
-                        Action = _ => ResultHelper.CopyToClipBoard(ips["IpV4"]),
+                        ToolTipData = new ToolTipData("Connection details", intInfo.GetConnectionDetails()),
+                        ContextData = new SystemPluginContext { Type = ResultContextType.IpResult, Data = intInfo.GetConnectionDetails() },
+                        Action = _ => ResultHelper.CopyToClipBoard(intInfo.IPv4),
                     });
                 }
 
-                if (!string.IsNullOrEmpty(ips["IpV6"]))
+                if (!string.IsNullOrEmpty(intInfo.IPv6Primary))
                 {
                     results.Add(new Result()
                     {
-                        Title = ips["IpV6"],
-                        SubTitle = "IPv6 address of " + a.Name + " - Press enter to copy",
+                        Title = intInfo.IPv6Primary,
+                        SubTitle = "IP v6 address of " + intInfo.ConnectionName + " - Select to copy",
                         IcoPath = $"Images\\network.{iconTheme}.png",
-                        ToolTipData = new ToolTipData("Connection details", string.Format(CultureInfo.InvariantCulture, connectionDetails, ips["IpV4"], ips["IpV6"]) + "\n\nFor detailed IP information please use the ipconfig command!"),
-                        ContextData = new SystemCommandResultContext { Type = SystemCommandResultType.IpResult, Data = connectionDetails },
-                        Action = _ => ResultHelper.CopyToClipBoard(ips["IpV6"]),
+                        ToolTipData = new ToolTipData("Connection details", intInfo.GetConnectionDetails()),
+                        ContextData = new SystemPluginContext { Type = ResultContextType.IpResult, Data = intInfo.GetConnectionDetails() },
+                        Action = _ => ResultHelper.CopyToClipBoard(intInfo.IPv6Primary),
                     });
                 }
 
-                if (!string.IsNullOrEmpty(mac))
+                if (!string.IsNullOrEmpty(intInfo.PhysicalAddress))
                 {
                     results.Add(new Result()
                     {
-                        Title = mac,
-                        SubTitle = "MAC address of " + a.Name + " - Press enter to copy",
+                        Title = intInfo.PhysicalAddress,
+                        SubTitle = $"MAC address of {intInfo.Adapter} ({intInfo.ConnectionName}) - Select to copy",
                         IcoPath = $"Images\\networkCard.{iconTheme}.png",
-                        ToolTipData = new ToolTipData("Adapter details", adapterDetails),
-                        ContextData = new SystemCommandResultContext { Type = SystemCommandResultType.MacResult, Data = adapterDetails },
-                        Action = _ => ResultHelper.CopyToClipBoard(mac),
+                        ToolTipData = new ToolTipData("Adapter details", intInfo.GetAdapterDetails()),
+                        ContextData = new SystemPluginContext { Type = ResultContextType.MacResult, Data = intInfo.GetAdapterDetails() },
+                        Action = _ => ResultHelper.CopyToClipBoard(intInfo.PhysicalAddress),
                     });
                 }
             }

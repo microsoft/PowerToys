@@ -4,12 +4,12 @@
 
 namespace Microsoft.PowerToys.Run.Plugin.System.Components
 {
-    internal class SystemCommandResultContext
+    internal class SystemPluginContext
     {
         /// <summary>
         /// Gets or sets the type of the result
         /// </summary>
-        public SystemCommandResultType Type { get; set; }
+        public ResultContextType Type { get; set; }
 
         /// <summary>
         /// Gets or sets the context data for the command/results
@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         public string Data { get; set; }
     }
 
-    internal enum SystemCommandResultType
+    internal enum ResultContextType
     {
         Command,
         IpResult,
