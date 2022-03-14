@@ -173,12 +173,12 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// </summary>
         public static void MetreToMeter(ref string[] split)
         {
-            if (split[1].ToLower() == "metre")
+            if (split[1].ToLowerInvariant() == "metre")
             {
                 split[1] = "meter";
             }
 
-            if (split[3].ToLower() == "metre")
+            if (split[3].ToLowerInvariant() == "metre")
             {
                 split[3] = "meter";
             }
