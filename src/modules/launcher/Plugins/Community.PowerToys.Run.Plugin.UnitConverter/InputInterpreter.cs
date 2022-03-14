@@ -107,7 +107,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// </summary>
         public static void DegreePrefixer(ref string[] split)
         {
-            switch (split[1].ToLower())
+            switch (split[1].ToLower(CultureInfo.CurrentCulture))
             {
                 case "celsius":
                     split[1] = "DegreeCelsius";
@@ -129,7 +129,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
             }
 
-            switch (split[3].ToLower())
+            switch (split[3].ToLower(CultureInfo.CurrentCulture))
             {
                 case "celsius":
                     split[3] = "DegreeCelsius";
@@ -157,12 +157,12 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// </summary>
         public static void FeetToFt(ref string[] split)
         {
-            if (split[1].ToLower() == "feet")
+            if (split[1].ToLowerInvariant() == "feet")
             {
                 split[1] = "ft";
             }
 
-            if (split[3].ToLower() == "feet")
+            if (split[3].ToLowerInvariant() == "feet")
             {
                 split[3] = "ft";
             }
@@ -173,12 +173,12 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// </summary>
         public static void MetreToMeter(ref string[] split)
         {
-            if (split[1].ToLower() == "metre")
+            if (split[1].ToLowerInvariant() == "metre")
             {
                 split[1] = "meter";
             }
 
-            if (split[3].ToLower() == "metre")
+            if (split[3].ToLowerInvariant() == "metre")
             {
                 split[3] = "meter";
             }
@@ -190,7 +190,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         public static void GallonHandler(ref string[] split, CultureInfo culture)
         {
             HashSet<string> britishCultureNames = new HashSet<string>() { "en-AI", "en-VG", "en-GB", "en-KY", "en-MS", "en-AG", "en-DM", "en-GD", "en-KN", "en-LC", "en-VC", "en-IE", "en-GY", "en-AE" };
-            if (split[1].ToLower() == "gal" || split[1].ToLower() == "gallon")
+            if (split[1].ToLowerInvariant() == "gal" || split[1].ToLowerInvariant() == "gallon")
             {
                 if (britishCultureNames.Contains(culture.Name))
                 {
@@ -202,7 +202,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 }
             }
 
-            if (split[3].ToLower() == "gal" || split[3].ToLower() == "gallon")
+            if (split[3].ToLowerInvariant() == "gal" || split[3].ToLowerInvariant() == "gallon")
             {
                 if (britishCultureNames.Contains(culture.Name))
                 {
