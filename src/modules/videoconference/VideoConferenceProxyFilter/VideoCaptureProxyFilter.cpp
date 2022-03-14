@@ -867,6 +867,13 @@ VideoCaptureProxyFilter::~VideoCaptureProxyFilter()
 
     _worker_cv.notify_one();
     _worker_thread.join();
+    if (_settingsUpdateChannel)
+    {
+        _settingsUpdateChannel->access([](auto settingsMemory) {
+            auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory._data);
+            settings->cameraInUse = false;
+        });
+    }
 }
 
 VideoCaptureProxyFilter::SyncedSettings VideoCaptureProxyFilter::SyncCurrentSettings()

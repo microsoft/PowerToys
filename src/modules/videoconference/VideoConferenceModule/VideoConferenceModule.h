@@ -79,7 +79,7 @@ private:
 
     bool _mic_muted_state_during_disconnect = false;
     bool _controllingAllMics = false;
-    std::vector<MicrophoneDevice> _controlledMicrophones;
+    std::vector<std::unique_ptr<MicrophoneDevice>> _controlledMicrophones;
     MicrophoneDevice* _microphoneTrackedInUI = nullptr;
 
     std::optional<SerializedSharedMemory> _imageOverlayChannel;

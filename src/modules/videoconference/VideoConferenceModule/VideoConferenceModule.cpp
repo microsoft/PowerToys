@@ -52,8 +52,8 @@ void VideoConferenceModule::reverseMicrophoneMute()
     bool muted = false;
     for (auto& controlledMic : instance->_controlledMicrophones)
     {
-        const bool was_muted = controlledMic.muted();
-        controlledMic.toggle_muted();
+        const bool was_muted = controlledMic->muted();
+        controlledMic->toggle_muted();
         muted = muted || !was_muted;
     }
     if (muted)
@@ -283,20 +283,20 @@ void VideoConferenceModule::onMicrophoneConfigurationChanged()
     std::unordered_set<std::wstring_view> currentlyTrackedMicsIds;
     for (const auto& controlledMic : _controlledMicrophones)
     {
-        currentlyTrackedMicsIds.emplace(controlledMic.id());
+        currentlyTrackedMicsIds.emplace(controlledMic->id());
     }
 
     auto allMics = MicrophoneDevice::getAllActive();
     for (auto& newMic : allMics)
     {
-        if (currentlyTrackedMicsIds.contains(newMic.id()))
+        if (currentlyTrackedMicsIds.contains(newMic->id()))
         {
             continue;
         }
 
         if (mutedStateForNewMics)
         {
-            newMic.set_muted(true);
+            newMic->set_muted(true);
         }
 
         _controlledMicrophones.emplace_back(std::move(newMic));
@@ -431,7 +431,7 @@ void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view 
 {
     for (auto& controlledMic : _controlledMicrophones)
     {
-        controlledMic.set_muted(false);
+        controlledMic->set_muted(false);
     }
     _controlledMicrophones.clear();
     _microphoneTrackedInUI = nullptr;
@@ -447,10 +447,10 @@ void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view 
         _controllingAllMics = false;
         for (auto& controlledMic : allMics)
         {
-            if (controlledMic.name() == new_mic)
+            if (controlledMic->name() == new_mic)
             {
                 _controlledMicrophones.emplace_back(std::move(controlledMic));
-                _microphoneTrackedInUI = &_controlledMicrophones[0];
+                _microphoneTrackedInUI = _controlledMicrophones[0].get();
                 break;
             }
         }
@@ -471,9 +471,9 @@ MicrophoneDevice* VideoConferenceModule::controlledDefaultMic()
     {
         for (auto& controlledMic : _controlledMicrophones)
         {
-            if (controlledMic.id() == defaultMic->id())
+            if (controlledMic->id() == defaultMic->id())
             {
-                return &controlledMic;
+                return controlledMic.get();
             }
         }
     }
