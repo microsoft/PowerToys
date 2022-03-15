@@ -67,7 +67,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     AcceleratorModifiers = ModifierKeys.Control,
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
-                    Title = "Copy details",
+                    Title = Resources.Microsoft_plugin_sys_CopyDetails,
                     Action = _ => ResultHelper.CopyToClipBoard(contextData.Data),
                 });
             }
@@ -80,7 +80,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     AcceleratorModifiers = ModifierKeys.Control,
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xE756",                       // E756 => Symbol: CommandPrompt
-                    Title = "Execute 'ipconfig /all'",
+                    Title = Resources.Microsoft_plugin_sys_ExecuteIpconfig,
                     Action = _ => Helper.OpenInShell("cmd.exe", "/k ipconfig /all"),
                 });
             }

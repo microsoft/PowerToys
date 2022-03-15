@@ -164,9 +164,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     results.Add(new Result()
                     {
                         Title = intInfo.IPv4,
-                        SubTitle = "IP v4 address of " + intInfo.ConnectionName + " - Select to copy",
+                        SubTitle = string.Format(CultureInfo.InvariantCulture, Resources.ResourceManager.GetString("Microsoft_plugin_sys_ip4_description", culture), intInfo.ConnectionName) + " - " + Resources.ResourceManager.GetString("Microsoft_plugin_sys_CopyHint", culture),
                         IcoPath = $"Images\\network.{iconTheme}.png",
-                        ToolTipData = new ToolTipData("Connection details", intInfo.GetConnectionDetails()),
+                        ToolTipData = new ToolTipData(Resources.Microsoft_plugin_sys_ConnectionDetails, intInfo.GetConnectionDetails()),
                         ContextData = new SystemPluginContext { Type = ResultContextType.IpResult, Data = intInfo.GetConnectionDetails() },
                         Action = _ => ResultHelper.CopyToClipBoard(intInfo.IPv4),
                     });
@@ -177,9 +177,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     results.Add(new Result()
                     {
                         Title = intInfo.IPv6Primary,
-                        SubTitle = "IP v6 address of " + intInfo.ConnectionName + " - Select to copy",
+                        SubTitle = string.Format(CultureInfo.InvariantCulture, Resources.ResourceManager.GetString("Microsoft_plugin_sys_ip6_description", culture), intInfo.ConnectionName) + " - " + Resources.ResourceManager.GetString("Microsoft_plugin_sys_CopyHint", culture),
                         IcoPath = $"Images\\network.{iconTheme}.png",
-                        ToolTipData = new ToolTipData("Connection details", intInfo.GetConnectionDetails()),
+                        ToolTipData = new ToolTipData(Resources.Microsoft_plugin_sys_ConnectionDetails, intInfo.GetConnectionDetails()),
                         ContextData = new SystemPluginContext { Type = ResultContextType.IpResult, Data = intInfo.GetConnectionDetails() },
                         Action = _ => ResultHelper.CopyToClipBoard(intInfo.IPv6Primary),
                     });
@@ -190,9 +190,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     results.Add(new Result()
                     {
                         Title = intInfo.PhysicalAddress,
-                        SubTitle = $"MAC address of {intInfo.Adapter} ({intInfo.ConnectionName}) - Select to copy",
-                        IcoPath = $"Images\\networkCard.{iconTheme}.png",
-                        ToolTipData = new ToolTipData("Adapter details", intInfo.GetAdapterDetails()),
+                        SubTitle = string.Format(CultureInfo.InvariantCulture, Resources.ResourceManager.GetString("Microsoft_plugin_sys_mac_description", culture), intInfo.Adapter, intInfo.ConnectionName) + " - " + Resources.ResourceManager.GetString("Microsoft_plugin_sys_CopyHint", culture),
+                        IcoPath = $"Images\\network.{iconTheme}.png",
+                        ToolTipData = new ToolTipData(Resources.Microsoft_plugin_sys_AdapterDetails, intInfo.GetAdapterDetails()),
                         ContextData = new SystemPluginContext { Type = ResultContextType.MacResult, Data = intInfo.GetAdapterDetails() },
                         Action = _ => ResultHelper.CopyToClipBoard(intInfo.PhysicalAddress),
                     });

@@ -2,9 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using Microsoft.PowerToys.Run.Plugin.System.Properties;
 
 namespace Microsoft.PowerToys.Run.Plugin.System.Components
 {
@@ -91,17 +94,22 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <summary>
         /// Gets the list of gateway IPs as string
         /// </summary>
-        internal string Gateways { get; private set; }
+        internal List<string> Gateways { get; private set; } = new List<string>();
 
         /// <summary>
         /// Gets the list of DHCP server IPs as string
         /// </summary>
-        internal string DhcpServers { get; private set; }
+        internal List<string> DhcpServers { get; private set; } = new List<string>();
 
         /// <summary>
         /// Gets the list of DNS server IPs as string
         /// </summary>
-        internal string DnsServers { get; private set; }
+        internal List<string> DnsServers { get; private set; } = new List<string>();
+
+        /// <summary>
+        /// Gets the list of WINS server IPs as string
+        /// </summary>
+        internal List<string> WinsServers { get; private set; } = new List<string>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NetworkConnectionProperties"/> class.
@@ -131,12 +139,12 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <returns>String with the details</returns>
         internal string GetAdapterDetails()
         {
-            return $"Name: {Adapter}" +
-                $"\nPhysical address (MAC): {PhysicalAddress}" +
-                $"\nSpeed: {GetFormattedSpeedValue(Speed)}" +
-                $"\nType: {GetAdapterType(Type)}" +
-                $"\nState: " + (State == OperationalStatus.Up ? "Connected" : "Disconnected") +
-                $"\nConnection: {ConnectionName}";
+            return $"{Resources.Microsoft_plugin_sys_AdapterName}: {Adapter}" +
+                $"\n{Resources.Microsoft_plugin_sys_PhysicalAddress}: {PhysicalAddress}" +
+                $"\n{Resources.Microsoft_plugin_sys_Speed}: {GetFormattedSpeedValue(Speed)}" +
+                $"\n{Resources.Microsoft_plugin_sys_Type}: {GetAdapterTypeAsString(Type)}" +
+                $"\n{Resources.Microsoft_plugin_sys_State}: " + (State == OperationalStatus.Up ? Resources.Microsoft_plugin_sys_Connected : Resources.Microsoft_plugin_sys_Disconnected) +
+                $"\n{Resources.Microsoft_plugin_sys_ConnectionName}: {ConnectionName}";
         }
 
         /// <summary>
@@ -145,23 +153,24 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <returns>String with the details</returns>
         internal string GetConnectionDetails()
         {
-            return $"Name: {ConnectionName}" +
-                $"\nState: " + (State == OperationalStatus.Up ? "Connected" : "Disconnected") +
-                $"\nType: {GetAdapterType(Type)}" +
-                $"\nSuffix: {Suffix}" +
-                $"\nIP v4 address: {IPv4}" +
-                $"\nIP v4 subnet mask: {IPv4Mask}" +
-                $"\nIP v6 address: {IPv6Global}" +
-                $"\nIP v6 temporary address: {IPv6Temporary}" +
-                $"\nIP v6 link local address: {IPv6LinkLocal}" +
-                $"\nIP v6 site local address: {IPv6SiteLocal}" +
-                $"\nIP v6 unique local address: {IPv6UniqueLocal}" +
-                $"\nGateway addresses: {Gateways}" +
-                $"\nDHCP server addresses: {DhcpServers}" +
-                $"\nDNS server addresses: {DnsServers}" +
-                $"\n\nAdapter: {Adapter}" +
-                $"\nPhysical address (MAC): {PhysicalAddress}" +
-                $"\nSpeed: {GetFormattedSpeedValue(Speed)}";
+            return $"{Resources.Microsoft_plugin_sys_ConnectionName}: {ConnectionName}" +
+                $"\n{Resources.Microsoft_plugin_sys_State}: " + (State == OperationalStatus.Up ? Resources.Microsoft_plugin_sys_Connected : Resources.Microsoft_plugin_sys_Disconnected) +
+                $"\n{Resources.Microsoft_plugin_sys_Type}: {GetAdapterTypeAsString(Type)}" +
+                $"\n{Resources.Microsoft_plugin_sys_Suffix}: {Suffix}" +
+                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip4Address}: ", IPv4) +
+                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip4SubnetMask}: ", IPv4Mask) +
+                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip6Address}:\n\t", IPv6Global) +
+                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip6Temp}:\n\t", IPv6Temporary) +
+                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip6Link}:\n\t", IPv6LinkLocal) +
+                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip6Site}:\n\t", IPv6SiteLocal) +
+                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip6Unique}:\n\t", IPv6UniqueLocal) +
+                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Gateways}:\n\t", Gateways) +
+                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Dhcp}:\n\t", DhcpServers) +
+                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Dns}:\n\t", DnsServers) +
+                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Wins}:\n\t", WinsServers) +
+                $"\n\n{Resources.Microsoft_plugin_sys_AdapterName}: {Adapter}" +
+                $"\n{Resources.Microsoft_plugin_sys_PhysicalAddress}: {PhysicalAddress}" +
+                $"\n{Resources.Microsoft_plugin_sys_Speed}: {GetFormattedSpeedValue(Speed)}";
         }
 
         /// <summary>
@@ -211,17 +220,22 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
 
             foreach (var ip in properties.GatewayAddresses)
             {
-                Gateways += "\n\t" + ip.Address.ToString();
+                Gateways.Add(ip.Address.ToString());
             }
 
             foreach (var ip in properties.DhcpServerAddresses)
             {
-                DhcpServers += "\n\t" + ip.ToString();
+                DhcpServers.Add(ip.ToString());
             }
 
             foreach (var ip in properties.DnsAddresses)
             {
-                DnsServers += "\n\t" + ip.ToString();
+                DnsServers.Add(ip.ToString());
+            }
+
+            foreach (var ip in properties.WinsServersAddresses)
+            {
+                WinsServers.Add(ip.ToString());
             }
         }
 
@@ -230,24 +244,24 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// </summary>
         /// <param name="type">The type to convert</param>
         /// <returns>A string indicating the interface type</returns>
-        private string GetAdapterType(NetworkInterfaceType type)
+        private string GetAdapterTypeAsString(NetworkInterfaceType type)
         {
             switch (type)
             {
                 case NetworkInterfaceType.Wman:
                 case NetworkInterfaceType.Wwanpp:
                 case NetworkInterfaceType.Wwanpp2:
-                    return "Mobile broadband";
+                    return Resources.Microsoft_plugin_sys_MobileBroadband;
                 case NetworkInterfaceType.Wireless80211:
-                    return "Wireless";
+                    return Resources.Microsoft_plugin_sys_WirelessLan;
                 case NetworkInterfaceType.Loopback:
-                    return "Loopback";
+                    return Resources.Microsoft_plugin_sys_Loopback;
                 case NetworkInterfaceType.Tunnel:
-                    return "Tunnel connection";
+                    return Resources.Microsoft_plugin_sys_TunnelConnection;
                 case NetworkInterfaceType.Unknown:
-                    return "Unknown";
+                    return Resources.Microsoft_plugin_sys_Unknown;
                 default:
-                    return "Cable";
+                    return Resources.Microsoft_plugin_sys_Cable;
             }
         }
 
@@ -257,7 +271,34 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <returns>A formatted string like `100 MB/s`</returns>
         private static string GetFormattedSpeedValue(long speed)
         {
-            return (speed >= 1000000000) ? (speed / 1000000000) + " Gb/s" : (speed / 1000000) + " Mb/s";
+            return (speed >= 1000000000) ? string.Format(CultureInfo.InvariantCulture, Resources.Microsoft_plugin_sys_mbps, speed / 1000000000) : string.Format(CultureInfo.InvariantCulture, Resources.Microsoft_plugin_sys_mbps, speed / 1000000);
+        }
+
+        /// <summary>
+        /// Returns IP info or an empty string
+        /// </summary>
+        /// <param name="title">Descriptive header for the information.</param>
+        /// <param name="property">IP value as <see cref="string"/> or <see cref="List{String}"/>.</param>
+        /// <returns>Formatted string or an empty string.</returns>
+        /// <exception cref="ArgumentException">If the parameter <paramref name="property"/> is not of the type <see cref="string"/> or <see cref="List{String}"/>.</exception>
+        private static string CreateIpInfoForToolTip(string title, dynamic property)
+        {
+            if (property is string)
+            {
+                return $"\n{title}{property}";
+            }
+            else if (property is List<string> list)
+            {
+                return list.Count == 0 ? string.Empty : $"\n{title}{string.Join("\n\t", property)}";
+            }
+            else if (property is null)
+            {
+                return string.Empty;
+            }
+            else
+            {
+                throw new ArgumentException("Parameter is not of type 'string' or 'List<string>'.", nameof(property));
+            }
         }
     }
 }
