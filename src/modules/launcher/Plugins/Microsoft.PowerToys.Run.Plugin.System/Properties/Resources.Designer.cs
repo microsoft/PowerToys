@@ -216,9 +216,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         /// <summary>
         ///   Looks up a localized string similar to {0} Gbps.
         /// </summary>
-        internal static string Microsoft_plugin_sys_gbps {
+        internal static string Microsoft_plugin_sys_Gbps {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_gbps", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_sys_Gbps", resourceCulture);
             }
         }
         
@@ -378,9 +378,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         /// <summary>
         ///   Looks up a localized string similar to {0} Mbps.
         /// </summary>
-        internal static string Microsoft_plugin_sys_mbps {
+        internal static string Microsoft_plugin_sys_Mbps {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_mbps", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_sys_Mbps", resourceCulture);
             }
         }
         

@@ -271,7 +271,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <returns>A formatted string like `100 MB/s`</returns>
         private static string GetFormattedSpeedValue(long speed)
         {
-            return (speed >= 1000000000) ? string.Format(CultureInfo.InvariantCulture, Resources.Microsoft_plugin_sys_mbps, speed / 1000000000) : string.Format(CultureInfo.InvariantCulture, Resources.Microsoft_plugin_sys_mbps, speed / 1000000);
+            return (speed >= 1000000000) ? string.Format(CultureInfo.InvariantCulture, Resources.Microsoft_plugin_sys_Gbps, speed / 1000000000) : string.Format(CultureInfo.InvariantCulture, Resources.Microsoft_plugin_sys_Mbps, speed / 1000000);
         }
 
         /// <summary>

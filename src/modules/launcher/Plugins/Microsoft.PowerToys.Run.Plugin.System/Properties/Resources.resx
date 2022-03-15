@@ -173,7 +173,7 @@
   <data name="Microsoft_plugin_sys_Gateways" xml:space="preserve">
     <value>Default Gateway</value>
   </data>
-  <data name="Microsoft_plugin_sys_gbps" xml:space="preserve">
+  <data name="Microsoft_plugin_sys_Gbps" xml:space="preserve">
     <value>{0} Gbps</value>
     <comment>Abbreviation of 'Gbits per seconds'. Don't translate the placeholder '{0}' as it is replaced in code.</comment>
   </data>
@@ -244,7 +244,7 @@
     <value>MAC address of {0} ({1})</value>
     <comment>Don't translate the placeholders '{0}' and '{1}' as they are replaced in code.</comment>
   </data>
-  <data name="Microsoft_plugin_sys_mbps" xml:space="preserve">
+  <data name="Microsoft_plugin_sys_Mbps" xml:space="preserve">
     <value>{0} Mbps</value>
     <comment>Abbreviation of 'Mbits per seconds'. Don't translate the placeholder '{0}' as it is replaced in code.</comment>
   </data>
