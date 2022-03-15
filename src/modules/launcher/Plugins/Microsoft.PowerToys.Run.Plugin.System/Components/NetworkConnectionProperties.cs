@@ -297,7 +297,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
             }
             else
             {
-                throw new ArgumentException("Parameter is not of type 'string' or 'List<string>'.", nameof(property));
+                throw new ArgumentException($"'{property}' is not of type 'string' or 'List<string>'.", nameof(property));
             }
         }
     }
