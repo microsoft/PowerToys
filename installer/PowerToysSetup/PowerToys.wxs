@@ -27,6 +27,8 @@
 
         <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles64Folder]PowerToys" bal:Overridable="yes"/>
 
+        <Variable Name="MsiLogFolder" Type="string" Value="[LocalAppDataFolder]\Microsoft\PowerToys\" /> 
+        <Log Disable="no" Prefix='powertoys-bootstrapper-msi-$(var.Version)' Extension=".log" />
 
       <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys, to handle the case in which PowerToys was installed from old MSI (before WiX bootstrapper was used) -->
       <!-- If the previous installation is a bundle installation, just let WiX run its logic. -->
