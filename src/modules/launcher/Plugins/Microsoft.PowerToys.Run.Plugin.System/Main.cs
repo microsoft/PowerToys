@@ -103,7 +103,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            return ResultHelper.GetContextMenuForresult(selectedResult);
+            return ResultHelper.GetContextMenuForResult(selectedResult);
         }
 
         private void UpdateIconTheme(Theme theme)

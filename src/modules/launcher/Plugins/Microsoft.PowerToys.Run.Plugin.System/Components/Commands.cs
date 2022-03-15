@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         internal const int EWXFORCEIFHUNG = 0x00000010;
 
         /// <summary>
-        /// Returns a list with all sytsem command results
+        /// Returns a list with all system command results
         /// </summary>
         /// <param name="isUefi">Value indicating if the system is booted in uefi mode</param>
         /// <param name="iconTheme">The current theme to use for the icons</param>
@@ -145,7 +145,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         }
 
         /// <summary>
-        /// Rerturns a list of all ip and mac results
+        /// Returns a list of all ip and mac results
         /// </summary>
         /// <param name="iconTheme">The theme to use for the icons</param>
         /// <param name="culture">The culture to use for the result's title and sub title</param>

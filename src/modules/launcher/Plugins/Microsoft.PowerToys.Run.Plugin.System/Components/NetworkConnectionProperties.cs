@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         internal string PhysicalAddress { get; private set; }
 
         /// <summary>
-        /// Gets a value indicatin the interface type
+        /// Gets a value indicating the interface type
         /// </summary>
         internal NetworkInterfaceType Type { get; private set; }
 

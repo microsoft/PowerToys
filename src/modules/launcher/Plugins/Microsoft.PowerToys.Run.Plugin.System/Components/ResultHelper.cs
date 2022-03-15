@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
             }
         }
 
-        internal static List<ContextMenuResult> GetContextMenuForresult(Result result)
+        internal static List<ContextMenuResult> GetContextMenuForResult(Result result)
         {
             var contextMenu = new List<ContextMenuResult>();
 
