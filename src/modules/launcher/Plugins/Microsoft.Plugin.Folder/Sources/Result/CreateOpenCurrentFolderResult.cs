@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.IO;
 using Wox.Plugin;
 
@@ -28,10 +29,10 @@ namespace Microsoft.Plugin.Folder.Sources.Result
         {
             return new Wox.Plugin.Result
             {
-                Title = string.Format(Properties.Resources.wox_plugin_folder_select_folder_first_result_title, new DirectoryInfo(Search).Name),
+                Title = string.Format(CultureInfo.InvariantCulture, Properties.Resources.wox_plugin_folder_select_folder_first_result_title, new DirectoryInfo(Search).Name),
                 QueryTextDisplay = Search,
                 SubTitle = Properties.Resources.wox_plugin_folder_select_folder_first_result_subtitle,
-                ToolTipData = new ToolTipData(string.Format(Properties.Resources.wox_plugin_folder_select_folder_first_result_title, new DirectoryInfo(Search).Name), Properties.Resources.wox_plugin_folder_select_folder_first_result_subtitle),
+                ToolTipData = new ToolTipData(string.Format(CultureInfo.InvariantCulture, Properties.Resources.wox_plugin_folder_select_folder_first_result_title, new DirectoryInfo(Search).Name), Properties.Resources.wox_plugin_folder_select_folder_first_result_subtitle),
                 IcoPath = Search,
                 Score = 500,
                 Action = c => _shellAction.ExecuteSanitized(Search, contextApi),
