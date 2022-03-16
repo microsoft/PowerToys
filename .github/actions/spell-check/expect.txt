@@ -411,7 +411,6 @@ depersist
 deprioritized
 deps
 deref
-deseralization
 deserialization
 deserialize
 deserialized

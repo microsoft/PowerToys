@@ -159,7 +159,7 @@ namespace PowerLauncher
                         // current file and replace it with a correct json value.
                         _settingsUtils.DeleteSettings(PowerLauncherSettings.ModuleName);
                         CreateSettingsIfNotExists();
-                        ErrorReporting.ShowMessageBox(Properties.Resources.deseralization_error_title, Properties.Resources.deseralization_error_message);
+                        ErrorReporting.ShowMessageBox(Properties.Resources.deserialization_error_title, Properties.Resources.deserialization_error_message);
                     }
                     else
                     {
