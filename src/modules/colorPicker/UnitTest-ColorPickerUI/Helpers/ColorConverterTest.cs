@@ -305,8 +305,8 @@ namespace Microsoft.ColorPicker.UnitTests
         }
 
         [TestMethod]
-        [DaraRow("FFFFFF", 100.00, 0.00, -0.00)] // white
-        [DaraRow("808080", 53.59, -0.00, 0.00)] // gray
+        [DaraRow("FFFFFF", 100.00, 0.00, 0.00)] // white
+        [DaraRow("808080", 53.59, 0.00, 0.00)] // gray
         [DaraRow("000000", 0.00, 0.00, 0.00)] // black
         [DaraRow("FF0000", 53.24, 80.09, 67.20)] // red
         [DaraRow("008000", 46.23, -51.70, 49.90)] // green
