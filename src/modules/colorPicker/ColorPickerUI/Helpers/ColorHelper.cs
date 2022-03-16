@@ -188,7 +188,7 @@ namespace ColorPicker.Helpers
         }
 
         /// <summary>
-        /// Convert a CIE XYZ color <see cref="double"/> to a CIE LAB color (LAB)
+        /// Convert a CIE XYZ color <see cref="double"/> to a CIE LAB color (LAB) adapted to sRGB D65 white point
         /// The constants of the formula used come from this wikipedia page:
         /// https://en.wikipedia.org/wiki/CIELAB_color_space#Converting_between_CIELAB_and_CIEXYZ_coordinates
         /// </summary>
@@ -199,10 +199,11 @@ namespace ColorPicker.Helpers
         private static (double lightness, double chromaticityA, double chromaticityB)
             GetCIELABColorFromCIEXYZ(double x, double y, double z)
         {
-            // sRGB reference white (x=0.3127, y=0.3290, Y=1.0) converted to XYZ using the formula:
-            // X = x * (Y / y)
-            // Y = Y
-            // Z = (1 - x - y) * (Y / y)
+            // sRGB reference white (x=0.3127, y=0.3290, Y=1.0), actually CIE Standard Illuminant D65 truncated to 4 decimal places,
+            // then converted to XYZ using the formula:
+            //   X = x * (Y / y)
+            //   Y = Y
+            //   Z = (1 - x - y) * (Y / y)
             double x_n = 0.9504559270516717;
             double y_n = 1.0;
             double z_n = 1.0890577507598784;
