@@ -17,7 +17,7 @@
    - [ ] [YML for build pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ci/templates/build-powertoys-steps.yml) for new test projects
 
 ### Note
-Please ensure that all strings can be localized, the [.Net Analyzer](/doc/devdocs/readme.md#rules) is enabled on .Net projects and the [user docs](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) are updated or you have created and issue for the user docs.
+Please ensure that all strings can be localized and the [user docs](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) are updated or you have created an issue for the user docs.
 
 ## Contributor License Agreement (CLA)
 A CLA must be signed. If not, go over [here](https://cla.opensource.microsoft.com/microsoft/PowerToys) and sign the CLA.
