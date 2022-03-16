@@ -21,12 +21,14 @@
         </BootstrapperApplicationRef>
 
         <util:FileSearch Variable="HasDotnet3122" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\3.1.22\System.Xaml.dll" Result="exists" />
-        <util:FileSearch Variable="HasDotnet602" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\6.0.2\System.Xaml.dll" Result="exists" />
+        <util:FileSearch Variable="HasDotnet603" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\6.0.3\System.Xaml.dll" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
         <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles64Folder]PowerToys" bal:Overridable="yes"/>
 
+        <Variable Name="MsiLogFolder" Type="string" Value="[LocalAppDataFolder]\Microsoft\PowerToys\" /> 
+        <Log Disable="no" Prefix='powertoys-bootstrapper-msi-$(var.Version)' Extension=".log" />
 
       <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys, to handle the case in which PowerToys was installed from old MSI (before WiX bootstrapper was used) -->
       <!-- If the previous installation is a bundle installation, just let WiX run its logic. -->
@@ -60,11 +62,11 @@
                     Hash="08EF2F6CFDB33946061884B1CE13FA867EFBD576" />
             </ExePackage>
             <ExePackage
-                Name="windowsdesktop-runtime-6.0.2-win-x64.exe"
+                Name="windowsdesktop-runtime-6.0.3-win-x64.exe"
                 Compressed="no"
                 Id="DotnetRuntime6"
-                DetectCondition="HasDotnet602"
-                DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/efa32b7a-6eec-4d97-9cdc-c7336a29a749/3df4296170397cf60884dae1be3d103b/windowsdesktop-runtime-6.0.2-win-x64.exe"
+                DetectCondition="HasDotnet603"
+                DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/7f3a766e-9516-4579-aaf2-2b150caa465c/d57665f880cdcce816b278a944092965/windowsdesktop-runtime-6.0.3-win-x64.exe"
                 InstallCommand="/install /quiet /norestart"
                 RepairCommand="/repair /passive /norestart"
                 Permanent="yes"
@@ -72,11 +74,11 @@
                 UninstallCommand="/uninstall /quiet /norestart">
                 <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
-                    Description="Microsoft Windows Desktop Runtime - 6.0.2 (x64)"
-                    ProductName="Microsoft Windows Desktop Runtime - 6.0.2 (x64)"
-                    Size="57296456"
-                    Version="6.0.2.30914"
-                    Hash="EA8DB9D01555D0EA2A3D3CD41D56A28199A064F5" />
+                    Description="Microsoft Windows Desktop Runtime - 6.0.3 (x64)"
+                    ProductName="Microsoft Windows Desktop Runtime - 6.0.3 (x64)"
+                    Size="57153808"
+                    Version="6.0.3.31024"
+                    Hash="85EB71B760EBA108348824A4928ED2BA9775BE76" />
             </ExePackage>
             <ExePackage
                 Name="MicrosoftEdgeWebview2Setup.exe"

@@ -184,7 +184,7 @@ void ReportWindowsVersion(const filesystem::path& tmpDir)
         versionReport << "MinorVersion: " << osInfo.dwMinorVersion << endl;
         versionReport << "BuildNumber: " << osInfo.dwBuildNumber << endl;
     }
-    catch(...)
+    catch (...)
     {
         printf("Failed to write to %s\n", versionReportPath.string().c_str());
     }
@@ -197,7 +197,7 @@ void ReportWindowsSettings(const filesystem::path& tmpDir)
     try
     {
         const auto lang = winrt::Windows::System::UserProfile::GlobalizationPreferences::Languages().GetAt(0);
-        userLanguage = winrt::Windows::Globalization::Language{lang}.DisplayName().c_str();
+        userLanguage = winrt::Windows::Globalization::Language{ lang }.DisplayName().c_str();
         wchar_t localeName[LOCALE_NAME_MAX_LENGTH]{};
         if (!LCIDToLocaleName(GetThreadLocale(), localeName, LOCALE_NAME_MAX_LENGTH, 0))
         {
@@ -217,11 +217,10 @@ void ReportWindowsSettings(const filesystem::path& tmpDir)
         settingsReport << "Preferred user language: " << userLanguage << endl;
         settingsReport << "User locale: " << userLocale << endl;
     }
-    catch(...)
+    catch (...)
     {
         printf("Failed to write windows settings\n");
     }
-
 }
 
 void ReportDotNetInstallationInfo(const filesystem::path& tmpDir)
@@ -251,6 +250,27 @@ void ReportVCMLogs(const filesystem::path& tmpDir, const filesystem::path& repor
     error_code ec;
     copy(tmpDir / "PowerToysVideoConference_x86.log", reportDir, ec);
     copy(tmpDir / "PowerToysVideoConference_x64.log", reportDir, ec);
+}
+
+void ReportInstallerLogs(const filesystem::path& tmpDir, const filesystem::path& reportDir)
+{
+    const char* logFilePrefix = "powertoys-bootstrapper-msi-";
+
+    for (auto& entry : directory_iterator{ tmpDir })
+    {
+        std::error_code ec;
+        if (entry.is_directory(ec) || !entry.path().has_filename())
+        {
+            continue;
+        }
+
+        const auto fileName = entry.path().filename().string();
+        if (!fileName.starts_with(logFilePrefix))
+        {
+            continue;
+        }
+        copy(entry.path(), reportDir / fileName, ec);
+    }
 }
 
 int wmain(int argc, wchar_t* argv[], wchar_t*)
@@ -289,7 +309,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     try
     {
         copy(settingsRootPath, reportDir, copy_options::recursive);
-        
+
         // Remove updates folder contents
         DeleteFolder(reportDir / "Updates");
     }
@@ -328,6 +348,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     EventViewer::ReportEventViewerInfo(reportDir);
 
     ReportVCMLogs(tempDir, reportDir);
+    
+    ReportInstallerLogs(tempDir, reportDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
