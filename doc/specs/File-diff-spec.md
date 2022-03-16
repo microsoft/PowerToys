@@ -1,19 +1,19 @@
-# New PowerToys utility: File comparsion tool
+# New PowerToys utility: File comparison tool
 
-<img align="right" src="./images/Logo.png" />
+<img align="right" height="200px" src="https://github.com/microsoft/PowerToys/blob/user/aaron-junker/diff-spec/doc/images/icons/PowerToys%20icon/PNG/1440x2160.png" />
 
-- **What is it:** File comparsion tool
+- **What is it:** File comparison tool
 - **Authors:** [Aaron Junker](https://github.com/aaron-junker)
 - **Spec Status:** Draft
 - **GitHub issue:** [#14950](https://github.com/microsoft/PowerToys/issues/14950)
 
 ## 1 Overview
 
-This utility will add a tool to view diffrences between two files.
+This utility will add a tool to view differences between two files.
 
 ### 1.1 Technical implementation
 
-This utility will use [Microsoft Monaco Render engine](https://microsoft.github.io/monaco-editor/) which is currently implemented in the source code previewer. We will have to move the Monaco Editor source code and the corrsponding helper classes to a new centralised 
+This utility will use [Microsoft Monaco Render engine](https://microsoft.github.io/monaco-editor/) which is currently implemented in the source code previewer. We will have to move the Monaco Editor source code and the corresponding helper classes to a new centralised 
 
 ### 1.2 Use cases
 
@@ -25,7 +25,7 @@ This utility will use [Microsoft Monaco Render engine](https://microsoft.github.
 
 ### 2.2 Non-goals
 
-* Shipping a crasshing product
+* Shipping a crashing product
 
 ## 3. Priorities
 
