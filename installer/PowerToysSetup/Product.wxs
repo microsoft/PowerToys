@@ -79,6 +79,8 @@
 	<?define VSCWrkCompFiles=plugin.json;Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll?>
 
 	<?define WindowWlkrCompFiles=plugin.json;Microsoft.Plugin.WindowWalker.deps.json;Microsoft.Plugin.WindowWalker.dll;PowerToys.ManagedTelemetry.dll?>
+	
+	<?define WindowWlkrImagesCompFiles=windowwalker.dark.png;windowwalker.light.png;info.dark.png;info.light.png?>
 
 	<?define RegistryComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;PowerToys.ManagedTelemetry.dll?>
 
@@ -86,10 +88,10 @@
 
 	<?define SystemComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.System.deps.json;Microsoft.PowerToys.Run.Plugin.System.dll?>
 
-    <?define TimeZoneComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json;Microsoft.PowerToys.Run.Plugin.TimeZone.dll;PowerToys.ManagedTelemetry.dll?>
-
 	<?define SystemImagesComponentFiles=lock.dark.png;lock.light.png;logoff.dark.png;logoff.light.png;recyclebin.dark.png;recyclebin.light.png;restart.dark.png;restart.light.png;shutdown.dark.png;shutdown.light.png;sleep.dark.png;sleep.light.png;firmwareSettings.dark.png;firmwareSettings.light.png?>
 
+    <?define TimeZoneComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json;Microsoft.PowerToys.Run.Plugin.TimeZone.dll;PowerToys.ManagedTelemetry.dll?>
+	
 	<?define WinSetCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;PowerToys.ManagedTelemetry.dll?>
 
 	<?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
@@ -1354,6 +1356,18 @@
                 Directory="Resource$(var.IdSafeLanguage)WindowsTerminalPluginFolder">
                 <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
             </Component>
+            <Component
+                Id="Launcher_WebSearch_$(var.IdSafeLanguage)_Component"
+                Guid="$(var.CompGUIDPrefix)16"
+                Directory="Resource$(var.IdSafeLanguage)WebSearchPluginFolder">
+                <File Id="Launcher_WebSearch_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\$(var.Language)\Community.PowerToys.Run.Plugin.WebSearch.resources.dll" />
+            </Component>
+            <Component
+                Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_Component"
+                Guid="$(var.CompGUIDPrefix)17"
+                Directory="Resource$(var.IdSafeLanguage)UnitConverterPluginFolder">
+                <File Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\$(var.Language)\Community.PowerToys.Run.Plugin.UnitConverter.resources.dll" />
+            </Component>
             <?undef IdSafeLanguage?>
             <?undef CompGUIDPrefix?>
             <?endforeach?>
@@ -1516,12 +1530,11 @@
 				    <File Id="WindowWlkrCompFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\$(var.File)" />
 			    </Component>
 			<?endforeach?>
-			<Component Id="WindowWalkerImagesComponentLight" Directory="WindowWalkerImagesFolder" >
-                <File Id="WindowWalkerLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\windowwalker.light.png" />
-            </Component>
-			<Component Id="WindowWalkerImagesComponentDark" Directory="WindowWalkerImagesFolder" >
-			    <File Id="WindowWalkerDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\windowwalker.dark.png" />
-			</Component>
+			<?foreach File in $(var.WindowWlkrImagesCompFiles)?>
+			    <Component Id="WindowWalkerImagesComp_$(var.File)" Win64="yes" Directory="WindowWalkerImagesFolder">
+				    <File Id="WindowWalkerImagesComp_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\$(var.File)" />
+			    </Component>
+			<?endforeach?>
 
             <!-- Registry Plugin -->
 			<?foreach File in $(var.RegistryComponentFiles)?>

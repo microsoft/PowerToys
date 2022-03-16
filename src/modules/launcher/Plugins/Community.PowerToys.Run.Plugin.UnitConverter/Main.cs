@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -61,10 +62,10 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             return new Result
             {
                 ContextData = result,
-                Title = string.Format("{0} {1}", result.ConvertedValue, result.UnitName),
+                Title = $"{result.ConvertedValue} {result.UnitName}",
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = string.Format(Properties.Resources.copy_to_clipboard, result.QuantityType),
+                SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.copy_to_clipboard, result.QuantityType),
                 Action = c =>
                 {
                     var ret = false;
@@ -72,7 +73,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     {
                         try
                         {
-                            Clipboard.SetText(result.ConvertedValue.ToString());
+                            Clipboard.SetText(result.ConvertedValue.ToString(CultureInfo.CurrentCulture));
                             ret = true;
                         }
                         catch (ExternalException)
@@ -104,7 +105,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     {
                         try
                         {
-                            Clipboard.SetText(result.ConvertedValue.ToString());
+                            Clipboard.SetText(result.ConvertedValue.ToString(CultureInfo.CurrentCulture));
                             ret = true;
                         }
                         catch (ExternalException)

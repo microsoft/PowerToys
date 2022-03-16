@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -106,7 +107,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// </summary>
         public static void DegreePrefixer(ref string[] split)
         {
-            switch (split[1].ToLower())
+            switch (split[1].ToLower(CultureInfo.CurrentCulture))
             {
                 case "celsius":
                     split[1] = "DegreeCelsius";
@@ -128,7 +129,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
             }
 
-            switch (split[3].ToLower())
+            switch (split[3].ToLower(CultureInfo.CurrentCulture))
             {
                 case "celsius":
                     split[3] = "DegreeCelsius";
@@ -151,6 +152,69 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             }
         }
 
+        /// <summary>
+        /// The plural form "feet" is not recognized by UniteNets. Replace it with "ft".
+        /// </summary>
+        public static void FeetToFt(ref string[] split)
+        {
+            if (split[1].ToLowerInvariant() == "feet")
+            {
+                split[1] = "ft";
+            }
+
+            if (split[3].ToLowerInvariant() == "feet")
+            {
+                split[3] = "ft";
+            }
+        }
+
+        /// <summary>
+        /// Converts spelling "metre" to "meter"
+        /// </summary>
+        public static void MetreToMeter(ref string[] split)
+        {
+            if (split[1].ToLowerInvariant() == "metre")
+            {
+                split[1] = "meter";
+            }
+
+            if (split[3].ToLowerInvariant() == "metre")
+            {
+                split[3] = "meter";
+            }
+        }
+
+        /// <summary>
+        /// Choose "UsGallon" or "ImperialGallon" according to current culture when the input contains "gal" or "gallon".
+        /// </summary>
+        public static void GallonHandler(ref string[] split, CultureInfo culture)
+        {
+            HashSet<string> britishCultureNames = new HashSet<string>() { "en-AI", "en-VG", "en-GB", "en-KY", "en-MS", "en-AG", "en-DM", "en-GD", "en-KN", "en-LC", "en-VC", "en-IE", "en-GY", "en-AE" };
+            if (split[1].ToLowerInvariant() == "gal" || split[1].ToLowerInvariant() == "gallon")
+            {
+                if (britishCultureNames.Contains(culture.Name))
+                {
+                    split[1] = "ImperialGallon";
+                }
+                else
+                {
+                    split[1] = "UsGallon";
+                }
+            }
+
+            if (split[3].ToLowerInvariant() == "gal" || split[3].ToLowerInvariant() == "gallon")
+            {
+                if (britishCultureNames.Contains(culture.Name))
+                {
+                    split[3] = "ImperialGallon";
+                }
+                else
+                {
+                    split[3] = "UsGallon";
+                }
+            }
+        }
+
         public static ConvertModel Parse(Query query)
         {
             string[] split = query.Search.Split(' ');
@@ -167,6 +231,9 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             }
 
             InputInterpreter.DegreePrefixer(ref split);
+            InputInterpreter.MetreToMeter(ref split);
+            InputInterpreter.FeetToFt(ref split);
+            InputInterpreter.GallonHandler(ref split, CultureInfo.CurrentCulture);
             if (!double.TryParse(split[0], out double value))
             {
                 return null;

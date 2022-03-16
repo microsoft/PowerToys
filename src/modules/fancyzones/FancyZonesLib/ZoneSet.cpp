@@ -12,6 +12,7 @@
 
 #include <common/logger/logger.h>
 #include <common/display/dpi_aware.h>
+#include <common/utils/winapi_error.h>
 
 #include <limits>
 #include <map>
@@ -304,6 +305,11 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
         return;
     }
 
+    if (!zoneIds.empty())
+    {
+        Logger::trace(L"Move window into zones {} - {}", zoneIds.front(), zoneIds.back());
+    }
+    
     // Always clear the info related to SelectManyZones if it's not being used
     if (!m_inExtendWindow)
     {
@@ -460,6 +466,10 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND workAreaWind
             }
         }
     }
+    else
+    {
+        Logger::error(L"GetWindowRect failed, {}", get_last_error_or_default(GetLastError()));
+    }
 
     return false;
 }
@@ -545,6 +555,10 @@ ZoneSet::ExtendWindowByDirectionAndPosition(HWND window, HWND workAreaWindow, DW
             m_inExtendWindow = false;
             return true;
         }
+    }
+    else
+    {
+        Logger::error(L"GetWindowRect failed, {}", get_last_error_or_default(GetLastError()));
     }
 
     return false;
@@ -666,12 +680,14 @@ ZoneSet::CalculateZones(RECT workAreaRect, int zoneCount, int spacing) noexcept
     //invalid work area
     if (workArea.width() == 0 || workArea.height() == 0)
     {
+        Logger::error(L"CalculateZones: invalid work area");
         return false;
     }
 
     //invalid zoneCount, may cause division by zero
     if (zoneCount <= 0 && m_config.LayoutType != FancyZonesDataTypes::ZoneSetLayoutType::Custom)
     {
+        Logger::error(L"CalculateZones: invalid zone count");
         return false;
     }
 

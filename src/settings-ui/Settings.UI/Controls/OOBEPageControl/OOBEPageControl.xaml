@@ -17,7 +17,7 @@
         </Grid.RowDefinitions>
 
         <Image x:Name="HeaderImage"
-               Source="{x:Bind ModuleImageSource}"
+               Source="{x:Bind HeroImage}"
                Stretch="UniformToFill" />
 
         <ScrollViewer Grid.Row="1"
@@ -27,18 +27,18 @@
                         VerticalAlignment="Top">
                 
                 <TextBlock x:Name="TitleTxt"
-                           Text="{x:Bind ModuleTitle}"
+                           Text="{x:Bind Title}"
                            AutomationProperties.HeadingLevel="Level1"
                            Style="{StaticResource TitleTextBlockStyle}" />
 
                 <TextBlock x:Name="DescriptionTxt"
                            Margin="0,8,0,0"
-                           Text="{x:Bind ModuleDescription}"
+                           Text="{x:Bind Description}"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            TextWrapping="Wrap" />
 
                 <ContentPresenter x:Name="ModuleContentPresenter"
-                                  Content="{x:Bind ModuleContent}"
+                                  Content="{x:Bind PageContent}"
                                   HorizontalAlignment="Stretch"
                                   HorizontalContentAlignment="Stretch"
                                   Margin="0,12,0,0"/>

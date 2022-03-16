@@ -107,7 +107,7 @@ namespace Common.Utilities
 
             if (buffer == null)
             {
-                throw new NullReferenceException("buffer is null");
+                throw new ArgumentNullException(nameof(buffer), "buffer is null");
             }
 
             if (offset < 0 || count < 0 || (offset + count) > buffer.Length)

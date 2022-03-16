@@ -273,22 +273,34 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     }
                 });
 
-                t.Wait(1000, ts.Token);
+                var completedInTime = t.Wait(3000, ts.Token);
                 ts.Cancel();
                 ts.Dispose();
 
-                if (!readSuccessfully)
+                if (readSuccessfully)
+                {
+                    FilterRemapKeysList(_profile?.RemapKeys?.InProcessRemapKeys);
+                }
+                else
                 {
                     success = false;
                 }
 
-                FilterRemapKeysList(_profile?.RemapKeys?.InProcessRemapKeys);
+                if (!completedInTime)
+                {
+                    Logger.LogError($"Timeout encountered when loading {PowerToyName} profile");
+                }
             }
             catch (Exception e)
             {
                 // Failed to load the configuration.
                 Logger.LogError($"Exception encountered when loading {PowerToyName} profile", e);
                 success = false;
+            }
+
+            if (!success)
+            {
+                Logger.LogError($"Couldn't load {PowerToyName} profile");
             }
 
             return success;
