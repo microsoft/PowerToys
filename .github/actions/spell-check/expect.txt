@@ -168,7 +168,6 @@ BNumber
 Bokm
 BOKMAL
 boolalpha
-Boostrapper
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
 Bopomofo
