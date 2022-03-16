@@ -113,7 +113,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 }
             }
 
-            // If search term is a number that can't be parsed return an error message
+            // If search term is only a number that can't be parsed return an error message
             if (!isEmptySearchInput && results.Count == 0 && searchTerm.Any(char.IsNumber) && Regex.IsMatch(searchTerm, @"\w+\d+$") &&
                 !searchTerm.Contains(InputDelimiter) && !searchTerm.Any(char.IsWhiteSpace) && !searchTerm.Any(char.IsPunctuation))
             {
@@ -136,16 +136,16 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <returns>The score for the result.</returns>
         private static int GetMatchScore(string query, string label, string tags)
         {
-            int score = StringMatcher.FuzzySearch(query, label).Score * 2;
+            int score = StringMatcher.FuzzySearch(query, label).Score;
 
             if (score < 1)
             {
                 foreach (string t in tags.Split(";"))
                 {
-                    var m = StringMatcher.FuzzySearch(query, t.Trim());
-                    if (m.Score > score)
+                    var tagScore = StringMatcher.FuzzySearch(query, t.Trim()).Score / 2;
+                    if (tagScore > score)
                     {
-                        score = m.Score;
+                        score = tagScore / 2;
                     }
                 }
             }

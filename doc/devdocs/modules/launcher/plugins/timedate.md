@@ -114,7 +114,7 @@ The following formats are currently available:
 
 ### Score
 - The plugin uses `FuzzyMatching` to get the matching formats, if the user searches for a specific format. The score is set based on the `FuzzySearch` result.
-- For label matches the score is multiplied by `2` for having a higher ranking compared to tag matches.
+- To achieve a better balance between sub title matches and tag matches the score of tag matches is divided by two.
 
 
 ## [Unit Tests](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests)
