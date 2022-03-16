@@ -134,19 +134,15 @@ AYUV
 backend
 backtracer
 BADD
-BAEC
-BAF
 bak
 Bashkortostan
 Bayan
 bbwe
 bck
 Bcl
-BEEE
 Belarus
 betadele
 betsegaw
-BFB
 BGR
 bgra
 BGSOUNDS
@@ -212,7 +208,6 @@ CAtl
 cch
 CCom
 CContext
-CDBECF
 cdecl
 CDeclaration
 CDEF
@@ -385,8 +380,6 @@ Datavalue
 DATAW
 davidegiacometti
 Dayof
-DBCD
-DBDA
 Dbg
 Dbghelp
 DBLCLKS
@@ -516,9 +509,6 @@ dwrite
 dxgi
 dxgiformat
 dxguid
-EAF
-EBA
-EBE
 ecount
 ededf
 EDITKEYBOARD
@@ -595,10 +585,7 @@ FANCYZONESEDITOR
 Farbraum
 Faroe
 FARPROC
-FBF
-FCCD
 fdw
-FEEBD
 feimage
 ffaa
 fff

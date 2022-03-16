@@ -19,8 +19,8 @@ publicKeyToken=(['"]|)[0-9a-f]+\g{-1}
 (['"])data:.*?\g{-1}
 data:[-a-zA-Z=;:/0-9+]*,\S*
 
-# uuid:
-L?(["']|[-<({>]|\b)[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}(?:\g{-1}|[<})>])
+# uuid: (or CompGUIDPrefix)
+L?(["']|[-<({>]|\b)[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{10,12}(?:\g{-1}|[<})>])
 
 # c99 hex digits (not the full format, just one I've seen)
 0x[0-9a-fA-F](?:\.[0-9a-fA-F]*|)[pP]
