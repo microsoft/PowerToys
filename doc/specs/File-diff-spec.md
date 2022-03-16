@@ -37,5 +37,5 @@ This utility will use [Microsoft Monaco Render engine](https://microsoft.github.
 ## 4. Open questions
 
 * Will this be a standalone utility or under another PowerToys utility?
-* Can you launch this as standalone application
+* Can you launch this as standalone application?
   * If yes Should we add this function also to other utilities?
