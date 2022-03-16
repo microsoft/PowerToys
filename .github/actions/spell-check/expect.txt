@@ -187,7 +187,6 @@ Bto
 buf
 BUFSIZE
 bugreport
-Buid
 BUILDARCH
 buildtransitive
 Burkina
