@@ -307,7 +307,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 case (int)DwmWindowCloakStates.CloakedApp:
                     return WindowCloakState.App;
                 case (int)DwmWindowCloakStates.CloakedShell:
-                    return Main.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(hwnd) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
+                    return Main.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(hwnd, Desktop.Id) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
                 case (int)DwmWindowCloakStates.CloakedInherited:
                     return WindowCloakState.Inherited;
                 default:

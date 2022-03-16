@@ -182,6 +182,7 @@ namespace Microsoft.Plugin.Program.Storage
         }
 
         // When a URL application is deleted, we can no longer get the HashCode directly from the path because the FullPath a Url app is the URL obtained from reading the file
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase since application names could be dependent on currentculture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190")]
         private Win32Program GetAppWithSameNameAndExecutable(string name, string executableName)
         {
             foreach (Win32Program app in Items)
