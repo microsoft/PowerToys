@@ -25,6 +25,9 @@ L?(["']|[-<({>]|\b)[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}(?:\g{-1}
 # c99 hex digits (not the full format, just one I've seen)
 0x[0-9a-fA-F](?:\.[0-9a-fA-F]*|)[pP]
 
+# URL escaped characters
+\%[0-9A-F]{2}
+
 # wregex
 std::wregex\(L"[^"]*"\)
 

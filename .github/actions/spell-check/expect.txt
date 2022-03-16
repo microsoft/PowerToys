@@ -30,7 +30,6 @@ AFeature
 AFX
 AGGREGATABLE
 AHybrid
-Aissue
 Akrotiri
 Aktobe
 ALarger
@@ -45,7 +44,6 @@ altform
 alwaysontop
 amd
 AMF
-Amicrosoft
 AModifier
 AMPROPERTY
 AMPROPSETID
@@ -56,7 +54,6 @@ ansicolor
 ANull
 AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
-Aopen
 APARTMENTTHREADED
 APeriod
 api
@@ -638,7 +635,6 @@ FORCEMINIMIZE
 FORCEOFFLINE
 foreach
 formatetc
-FPower
 FRAMECHANGED
 FRAMEDOWNLOAD
 franky
