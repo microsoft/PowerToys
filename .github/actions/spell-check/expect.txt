@@ -10,7 +10,6 @@ accctrl
 Acceleratorkeys
 ACCEPTFILES
 ACCESSDENIED
-accessibile
 accessibilityinsights
 Acl
 aclapi
