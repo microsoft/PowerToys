@@ -155,7 +155,8 @@ inline registry::ChangeSet getSvgThumbnailHandlerChangeSet(const std::wstring in
                                   registry::DOTNET_COMPONENT_CATEGORY_CLSID,
                                   L"Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider",
                                   L"Svg Thumbnail Provider",
-                                  NonLocalizable::ExtSVG);
+                                  NonLocalizable::ExtSVG,
+                                  L"Picture");
 }
 
 inline registry::ChangeSet getPdfThumbnailHandlerChangeSet(const std::wstring installationDir, const bool perUser)
