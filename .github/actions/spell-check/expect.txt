@@ -196,7 +196,6 @@ bytearray
 Caiguna
 CALG
 callbackptr
-Camer
 Cangjie
 CANRENAME
 CAPTURECHANGED
