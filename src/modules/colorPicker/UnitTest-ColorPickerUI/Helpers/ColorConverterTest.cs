@@ -360,8 +360,14 @@ namespace Microsoft.ColorPicker.UnitTests
             Assert.AreEqual(Math.Round(result.chromaticityB, 2), chromaticityB);
         }
 
-        // The following results are computed using LittleCMS2
-        // If we have the same results, then it means our algorithm is accurate
+        // The following results are computed using LittleCMS2, an open-source color management engine,
+        // with the following command-line arguments:
+        //   echo 0xFF 0xFF 0xFF | transicc -i "*sRGB" -o "*XYZ" -t 3 -d 0
+        // where "0xFF 0xFF 0xFF" are filled in with the hexadecimal red/green/blue values;
+        // "-t 3" means using absolute colorimetric intent, in other words, disabling white point scaling;
+        // "-d 0" means disabling chromatic adaptation, otherwise it will output CIEXYZ-D50 instead of D65.
+        //
+        // If we have the same results as the reference output listed below, it means our algorithm is accurate.
         [TestMethod]
         [DataRow("FFFFFF", 95.0456, 100.0000, 108.9058)] // white
         [DataRow("808080", 20.5166, 21.5861, 23.5085)] // gray
