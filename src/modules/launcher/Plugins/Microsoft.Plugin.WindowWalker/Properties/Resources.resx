@@ -140,10 +140,10 @@
     <value>Show only results from visible desktop</value>
   </data>
   <data name="wox_plugin_windowwalker_SettingSubtitleDesktopName" xml:space="preserve">
-    <value>Show desktop name in subtitle (If two or more desktops exist)</value>
+    <value>Show desktop name in the subtitle (If two or more desktops exist)</value>
   </data>
   <data name="wox_plugin_windowwalker_SettingSubtitlePid" xml:space="preserve">
-    <value>Show process id in subtitle</value>
+    <value>Show process id in the subtitle</value>
   </data>
   <data name="wox_plugin_windowwalker_SettingOpenAfterKillAndClose" xml:space="preserve">
     <value>Stay open after closing windows and killing processes (Not working with kill process confirmation)</value>

@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.WindowWalker.Components;
@@ -23,8 +22,6 @@ namespace Microsoft.Plugin.WindowWalker
         private PluginInitContext Context { get; set; }
 
         public string Name => Properties.Resources.wox_plugin_windowwalker_plugin_name;
-
-        private readonly string _assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 
         public string Description => Properties.Resources.wox_plugin_windowwalker_plugin_description;
 
