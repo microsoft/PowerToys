@@ -162,8 +162,10 @@ namespace ColorPicker.Helpers
 
         /// <summary>
         /// Convert a given <see cref="Color"/> to a CIE XYZ color (XYZ)
-        /// The constants of the formula used come from this wikipedia page:
+        /// The constants of the formula matches this Wikipedia page, but at a higher precision:
         /// https://en.wikipedia.org/wiki/SRGB#The_reverse_transformation_(sRGB_to_CIE_XYZ)
+        /// This page provides a method to calculate the constants:
+        /// http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The X [0..1], Y [0..1] and Z [0..1]</returns>
@@ -197,10 +199,18 @@ namespace ColorPicker.Helpers
         private static (double lightness, double chromaticityA, double chromaticityB)
             GetCIELABColorFromCIEXYZ(double x, double y, double z)
         {
-            // These values are based on the D65 Illuminant
-            x = x * 100 / 95.0489;
-            y = y * 100 / 100.0;
-            z = z * 100 / 108.8840;
+            // sRGB reference white (x=0.3127, y=0.3290, Y=1.0) converted to XYZ using the formula:
+            // X = x * (Y / y)
+            // Y = Y
+            // Z = (1 - x - y) * (Y / y)
+            double x_n = 0.9504559270516717;
+            double y_n = 1.0;
+            double z_n = 1.0890577507598784;
+
+            // Scale XYZ values relative to reference white
+            x /= x_n;
+            y /= y_n;
+            z /= z_n;
 
             // XYZ to CIELab transformation
             double delta = 6d / 29;

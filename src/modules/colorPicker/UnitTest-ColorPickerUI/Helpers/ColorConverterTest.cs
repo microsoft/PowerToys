@@ -305,35 +305,35 @@ namespace Microsoft.ColorPicker.UnitTests
         }
 
         [TestMethod]
-        [DataRow("FFFFFF", 100.00, 0.00, -0.01)] // white
-        [DataRow("808080", 53.59, 0.00, -0.01)] // gray
-        [DataRow("000000", 0.00, 0.00, 0.00)] // black
-        [DataRow("FF0000", 53.23, 80.11, 67.22)] // red
-        [DataRow("008000", 46.23, -51.70, 49.90)] // green
-        [DataRow("80FFFF", 93.16, -35.23, -10.87)] // cyan
-        [DataRow("8080FF", 59.20, 33.1, -63.47)] // blue
-        [DataRow("BF40BF", 50.10, 65.51, -41.49)] // magenta
-        [DataRow("BFBF00", 75.04, -17.35, 76.03)] // yellow
-        [DataRow("008000", 46.23, -51.70, 49.90)] // green
-        [DataRow("8080FF", 59.20, 33.1, -63.47)] // blue
-        [DataRow("BF40BF", 50.10, 65.51, -41.49)] // magenta
-        [DataRow("0048BA", 34.35, 27.94, -64.81)] // absolute zero
-        [DataRow("B0BF1A", 73.91, -23.39, 71.15)] // acid green
-        [DataRow("D0FF14", 93.87, -40.21, 88.97)] // arctic lime
-        [DataRow("1B4D3E", 29.13, -20.97, 3.95)] // brunswick green
-        [DataRow("FFEF00", 93.01, -13.86, 91.48)] // canary yellow
-        [DataRow("FFA600", 75.16, 23.41, 79.11)] // cheese
-        [DataRow("1A2421", 13.18, -5.23, 0.56)] // dark jungle green
-        [DataRow("003399", 25.77, 28.89, -59.10)] // dark powder blue
-        [DataRow("D70A53", 46.03, 71.91, 18.02)] // debian red
-        [DataRow("80FFD5", 92.09, -45.08, 9.28)] // fathom secret green
-        [DataRow("EFDFBB", 89.26, -0.13, 19.64)] // dutch white
-        [DataRow("5218FA", 36.65, 75.63, -97.71)] // han purple
-        [DataRow("FF496C", 59.07, 69.90, 21.79)] // infra red
-        [DataRow("545AA7", 41.20, 19.32, -42.35)] // liberty
-        [DataRow("E6A8D7", 75.91, 30.13, -14.80)] // light orchid
-        [DataRow("ADDFAD", 84.32, -25.67, 19.36)] // light moss green
-        [DataRow("E3F988", 94.25, -23.70, 51.57)] // mindaro
+        [DaraRow("FFFFFF", 100.00, 0.00, -0.00)] // white
+        [DaraRow("808080", 53.59, -0.00, 0.00)] // gray
+        [DaraRow("000000", 0.00, 0.00, 0.00)] // black
+        [DaraRow("FF0000", 53.24, 80.09, 67.20)] // red
+        [DaraRow("008000", 46.23, -51.70, 49.90)] // green
+        [DaraRow("80FFFF", 93.16, -35.23, -10.87)] // cyan
+        [DaraRow("8080FF", 59.20, 33.10, -63.46)] // blue
+        [DaraRow("BF40BF", 50.10, 65.50, -41.48)] // magenta
+        [DaraRow("BFBF00", 75.04, -17.35, 76.03)] // yellow
+        [DaraRow("008000", 46.23, -51.70, 49.90)] // green
+        [DaraRow("8080FF", 59.20, 33.10, -63.46)] // blue
+        [DaraRow("BF40BF", 50.10, 65.50, -41.48)] // magenta
+        [DaraRow("0048BA", 34.35, 27.94, -64.80)] // absolute zero
+        [DaraRow("B0BF1A", 73.91, -23.39, 71.15)] // acid green
+        [DaraRow("D0FF14", 93.87, -40.20, 88.97)] // arctic lime
+        [DaraRow("1B4D3E", 29.13, -20.96, 3.95)] // brunswick green
+        [DaraRow("FFEF00", 93.01, -13.86, 91.48)] // canary yellow
+        [DaraRow("FFA600", 75.16, 23.41, 79.10)] // cheese
+        [DaraRow("1A2421", 13.18, -5.23, 0.56)] // dark jungle green
+        [DaraRow("003399", 25.76, 28.89, -59.09)] // dark powder blue
+        [DaraRow("D70A53", 46.03, 71.90, 18.03)] // debian red
+        [DaraRow("80FFD5", 92.09, -45.08, 9.29)] // fathom secret green
+        [DaraRow("EFDFBB", 89.26, -0.13, 19.65)] // dutch white
+        [DaraRow("5218FA", 36.65, 75.63, -97.70)] // han purple
+        [DaraRow("FF496C", 59.08, 69.89, 21.80)] // infra red
+        [DaraRow("545AA7", 41.20, 19.32, -42.34)] // liberty
+        [DaraRow("E6A8D7", 75.91, 30.13, -14.79)] // light orchid
+        [DaraRow("ADDFAD", 84.32, -25.67, 19.37)] // light moss green
+        [DaraRow("E3F988", 94.25, -23.70, 51.58)] // mindaro
         public void ColorRGBtoCIELABTest(string hexValue, double lightness, double chromaticityA, double chromaticityB)
         {
             if (string.IsNullOrWhiteSpace(hexValue))
@@ -360,37 +360,38 @@ namespace Microsoft.ColorPicker.UnitTests
             Assert.AreEqual(Math.Round(result.chromaticityB, 2), chromaticityB);
         }
 
+        // The following results are computed using LittleCMS2
+        // If we have the same results, then it means our algorithm is accurate
         [TestMethod]
-        [DataRow("FFFFFF", 95.0500, 100.0000, 108.9000)] // white
-        [DataRow("808080", 20.5175, 21.5861, 23.5072)] // gray
-        [DataRow("000000", 0.0000, 0.0000, 0.0000)] // black
-        [DataRow("FF0000", 41.2400, 21.2600, 1.9300)] // red
-        [DataRow("008000", 7.7192, 15.4383, 2.5731)] // green
-        [DataRow("80FFFF", 62.7121, 83.3292, 107.3866)] // cyan
-        [DataRow("8080FF", 34.6713, 27.2475, 98.0397)] // blue
-        [DataRow("BF40BF", 32.7232, 18.5047, 51.1373)] // magenta
-        [DataRow("BFBF00", 40.1167, 48.3380, 7.2158)] // yellow
-        [DataRow("008000", 7.7192, 15.4383, 2.5731)] // green
-        [DataRow("80FFFF", 62.7121, 83.3292, 107.3866)] // cyan
-        [DataRow("8080FF", 34.6713, 27.2475, 98.0397)] // blue
-        [DataRow("BF40BF", 32.7232, 18.5047, 51.1373)] // magenta
-        [DataRow("0048BA", 11.1803, 8.1799, 47.4440)] // absolute zero
-        [DataRow("B0BF1A", 36.7218, 46.5663, 8.0300)] // acid green
-        [DataRow("D0FF14", 61.8987, 84.9804, 13.8023)] // arctic lime
-        [DataRow("1B4D3E", 3.9754, 5.8886, 5.4845)] // brunswick green
-        [DataRow("FFEF00", 72.1065, 82.9930, 12.2188)] // canary yellow
-        [DataRow("FFA600", 54.8762, 48.5324, 6.4754)] // cheese
-        [DataRow("1A2421", 1.3314, 1.5912, 1.6758)] // dark jungle green
-        [DataRow("003399", 6.9336, 4.6676, 30.6725)] // dark powder blue
-        [DataRow("D70A53", 29.6942, 15.2887, 9.5696)] // debian red
-        [DataRow("80FFD5", 56.6723, 80.9133, 75.5817)] // fathom secret green
-        [DataRow("EFDFBB", 70.9539, 74.7139, 57.6953)] // dutch white
-        [DataRow("5218FA", 21.0616, 9.3492, 91.1370)] // han purple
-        [DataRow("FF496C", 46.3293, 27.1078, 16.9779)] // infra red
-        [DataRow("545AA7", 14.2874, 11.9872, 38.1199)] // liberty
-        [DataRow("E6A8D7", 58.9015, 49.7346, 70.7853)] // light orchid
-        [DataRow("ADDFAD", 51.1641, 64.6767, 49.3224)] // light moss green
-        [DataRow("E3F988", 69.9982, 85.8598, 36.1759)] // mindaro
+        [DaraRow("FFFFFF", 95.0456, 100.0000, 108.9058)] // white
+        [DaraRow("808080", 20.5166, 21.5861, 23.5085)] // gray
+        [DaraRow("000000", 0.0000, 0.0000, 0.0000)] // black
+        [DaraRow("FF0000", 41.2391, 21.2639, 1.9331)] // red
+        [DaraRow("008000", 7.7188, 15.4377, 2.5729)] // green
+        [DaraRow("80FFFF", 62.7084, 83.3261, 107.3900)] // cyan
+        [DaraRow("8080FF", 34.6688, 27.2469, 98.0434)] // blue
+        [DaraRow("BF40BF", 32.7217, 18.5062, 51.1405)] // magenta
+        [DaraRow("BFBF00", 40.1154, 48.3384, 7.2171)] // yellow
+        [DaraRow("008000", 7.7188, 15.4377, 2.5729)] // green
+        [DaraRow("8080FF", 34.6688, 27.2469, 98.0434)] // blue
+        [DaraRow("BF40BF", 32.7217, 18.5062, 51.1405)] // magenta
+        [DaraRow("0048BA", 11.1792, 8.1793, 47.4455)] // absolute zero
+        [DaraRow("B0BF1A", 36.7205, 46.5663, 8.0311)] // acid green
+        [DaraRow("D0FF14", 61.8965, 84.9797, 13.8037)] // arctic lime
+        [DaraRow("1B4D3E", 3.9752, 5.8883, 5.4847)] // brunswick green
+        [DaraRow("FFEF00", 72.1042, 82.9942, 12.2215)] // canary yellow
+        [DaraRow("FFA600", 54.8747, 48.5351, 6.4783)] // cheese
+        [DaraRow("1A2421", 1.3313, 1.5911, 1.6759)] // dark jungle green
+        [DaraRow("003399", 6.9329, 4.6672, 30.6735)] // dark powder blue
+        [DaraRow("D70A53", 29.6934, 15.2913, 9.5719)] // debian red
+        [DaraRow("80FFD5", 56.6693, 80.9105, 75.5840)] // fathom secret green
+        [DaraRow("EFDFBB", 70.9510, 74.7146, 57.6991)] // dutch white
+        [DaraRow("5218FA", 21.0597, 9.3488, 91.1403)] // han purple
+        [DaraRow("FF496C", 46.3280, 27.1114, 16.9814)] // infra red
+        [DaraRow("545AA7", 14.2864, 11.9869, 38.1214)] // liberty
+        [DaraRow("E6A8D7", 58.8989, 49.7359, 70.7897)] // light orchid
+        [DaraRow("ADDFAD", 51.1617, 64.6757, 49.3246)] // light moss green
+        [DaraRow("E3F988", 69.9955, 85.8597, 36.1785)] // mindaro
         public void ColorRGBtoCIEXYZTest(string hexValue, double x, double y, double z)
         {
             if (string.IsNullOrWhiteSpace(hexValue))
