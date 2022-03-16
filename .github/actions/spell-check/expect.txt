@@ -367,7 +367,6 @@ cxxopts
 cyberrex
 CYSMICON
 CYVIRTUALSCREEN
-czf
 cziplib
 Dac
 dacl

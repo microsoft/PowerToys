@@ -86,3 +86,6 @@ TestCase\("[^"]+"
 // #no-spell-check.*$
 
 http://tes/
+
+# tar arguments
+\b(?:\\n|)tar(?:\s+-[a-zA-Z]+|\s[a-z]+)+
