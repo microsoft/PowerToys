@@ -6,12 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
-using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources.Result;
-using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources
 {
@@ -85,21 +83,21 @@ namespace Microsoft.Plugin.Folder.Sources
             return (search, incompleteName);
         }
 
-        public IEnumerable<IItemResult> Query(string querySearch)
+        public IEnumerable<IItemResult> Query(string search)
         {
-            if (querySearch == null)
+            if (search == null)
             {
-                throw new ArgumentNullException(nameof(querySearch));
+                throw new ArgumentNullException(nameof(search));
             }
 
-            var processed = Process(querySearch);
+            var processed = Process(search);
 
             if (processed == default)
             {
                 yield break;
             }
 
-            var (search, incompleteName) = processed;
+            var (querySearch, incompleteName) = processed;
             var isRecursive = RecursiveSearch(incompleteName);
 
             if (isRecursive)
@@ -111,22 +109,22 @@ namespace Microsoft.Plugin.Folder.Sources
                 }
                 else
                 {
-                    incompleteName = "*" + incompleteName.Substring(1);
+                    incompleteName = string.Concat("*", incompleteName.AsSpan(1));
                 }
             }
 
-            yield return new CreateOpenCurrentFolderResult(search);
+            yield return new CreateOpenCurrentFolderResult(querySearch);
 
             // Note: Take 1000 is so that you don't search the whole system before you discard
-            var lookup = _queryFileSystemInfo.MatchFileSystemInfo(search, incompleteName, isRecursive)
+            var lookup = _queryFileSystemInfo.MatchFileSystemInfo(querySearch, incompleteName, isRecursive)
                 .Take(1000)
                 .ToLookup(r => r.Type);
 
             var folderList = lookup[DisplayType.Directory].ToImmutableArray();
             var fileList = lookup[DisplayType.File].ToImmutableArray();
 
-            var fileSystemResult = GenerateFolderResults(search, folderList)
-                .Concat<IItemResult>(GenerateFileResults(search, fileList))
+            var fileSystemResult = GenerateFolderResults(querySearch, folderList)
+                .Concat<IItemResult>(GenerateFileResults(querySearch, fileList))
                 .ToImmutableArray();
 
             foreach (var result in fileSystemResult)
