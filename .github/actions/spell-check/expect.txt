@@ -515,7 +515,6 @@ endif
 endl
 endpointvolume
 endregion
-Enque
 ENTERSIZEMOVE
 entrypoint
 ENU
