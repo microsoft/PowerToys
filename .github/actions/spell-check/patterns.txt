@@ -58,6 +58,8 @@ TestCase\("[^"]+"
 \\netstandard
 \\notifications
 \\recyclebin
+\\Registry
+\\registry
 \\reinstall
 \\Resize
 \\resource

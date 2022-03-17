@@ -503,7 +503,6 @@ editorconfig
 EDITSHORTCUTS
 editshortcutswindow
 EFile
-egistry
 ekus
 elif
 elseif
@@ -1634,7 +1633,6 @@ regex
 REGFILTER
 REGFILTERPINS
 REGISTERCLASSFAILED
-Registery
 registrypath
 regkey
 REGPINTYPES
