@@ -89,6 +89,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             {
                 new PluginAdditionalOption()
                 {
+                    // ToDo: When description property is implemented (#15853), move the note in brackets to description.
                     Key = nameof(OnlyDateTimeNowGlobal),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal,
                     Value = true,

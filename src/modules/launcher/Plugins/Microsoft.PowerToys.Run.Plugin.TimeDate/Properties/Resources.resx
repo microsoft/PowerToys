@@ -253,7 +253,8 @@
     <value>Hide 'Invalid number input' error message on global queries</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal" xml:space="preserve">
-    <value>Show only 'Time', 'Date' and 'Now' result on global queries</value>
+    <value>Show only 'Time', 'Date' and 'Now' result on global queries
+(Regardless of this setting, on global queries the first search word has to be a full match.)</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingTimeWithSeconds" xml:space="preserve">
     <value>Show time with seconds (Applies to 'Time' and 'Now' result)</value>
