@@ -214,6 +214,15 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This message is only shown, when searching with direct activation command..
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingExplorerSettingInfo_Description {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingExplorerSettingInfo_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hide &quot;kill process&quot; button if additional permissions required.
         /// </summary>
         public static string wox_plugin_windowwalker_SettingHideKillProcess {
@@ -232,11 +241,29 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Stay open after closing windows and killing processes (Not working with kill process confirmation).
+        ///   Looks up a localized string similar to Be careful when activating this..
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingKillProcessTree_Description {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingKillProcessTree_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stay open after closing windows and killing processes.
         /// </summary>
         public static string wox_plugin_windowwalker_SettingOpenAfterKillAndClose {
             get {
                 return ResourceManager.GetString("wox_plugin_windowwalker_SettingOpenAfterKillAndClose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This feature isn&apos;t working, if the kill process confirmation is enabled..
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingOpenAfterKillAndClose_Description {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingOpenAfterKillAndClose_Description", resourceCulture);
             }
         }
         
@@ -250,11 +277,20 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show desktop name in the subtitle (If two or more desktops exist).
+        ///   Looks up a localized string similar to Show desktop name in the subtitle.
         /// </summary>
         public static string wox_plugin_windowwalker_SettingSubtitleDesktopName {
             get {
                 return ResourceManager.GetString("wox_plugin_windowwalker_SettingSubtitleDesktopName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name is only shown in the subtitle and tool tip, if more than one desktop exists..
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingSubtitleDesktopName_Description {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingSubtitleDesktopName_Description", resourceCulture);
             }
         }
         
