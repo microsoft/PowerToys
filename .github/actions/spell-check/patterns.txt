@@ -85,6 +85,9 @@ TestCase\("[^"]+"
 # TestCase strings intentionally have non dictionary items
 \[TestCase\(new string.*\]
 
+# D2D
+D2D
+
 # marker for ignoring a comment to the end of the line
 ^.*/\* #no-spell-check-line \*/.*$
 // #no-spell-check.*$
