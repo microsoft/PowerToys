@@ -373,6 +373,7 @@ DARKYELLOW
 datareader
 Datavalue
 DATAW
+David
 davidegiacometti
 Dayof
 Dbg
@@ -1214,6 +1215,7 @@ MONITORINFOEXW
 monitorinfof
 Monthand
 Moq
+Morton
 MOUSEACTIVATE
 MOUSEHWHEEL
 MOUSEINPUT
@@ -1925,6 +1927,7 @@ subquery
 substr
 Sul
 Superbar
+supressions
 Suri
 sut
 SVE
@@ -1992,6 +1995,7 @@ testzones
 TEXCOORD
 textblock
 TEXTINCLUDE
+THH
 THICKFRAME
 THISCOMPONENT
 THotkey
