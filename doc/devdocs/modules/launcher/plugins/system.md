@@ -15,6 +15,7 @@ Available commands:
 * Hibernate
 * Empty Recycle Bin
 * UEFI Firmware Settings (Only available on systems, that boot in UEFI mode.)
+* IP / MAC / Address => Show informations about network connections.
 
 ## Optional plugin settings
 
@@ -35,12 +36,43 @@ Available commands:
 
 * While parsing, the plugin uses [`FuzzyMatch`](/src/modules/launcher/Wox.Infrastructure/StringMatcher.cs) to get characters matching a result in the list.
 
+### [`Commands.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/Commands.cs)
+- The [`Commands`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/Commands.cs) class contains the definition of all available commands/results.
+
+### [`ResultHelper.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/ResultHelper.cs)
+- The [`ResultHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/ResultHelper.cs) class contains methods for working with the results and some of the result features (tool tip, copy to clipboard, execute command).
+
+### [`NetworkConnectionProperties.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/NetworkConnectionProperties.cs)
+- The [`NetworkConnectionProperties`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/NetworkConnectionProperties.cs) class contains methods to get the properties of a network interface/connection.
+- An instance of this class collects/provides all required informations about one connection/adapter.
+
+### [`SystemPluginContext.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/SystemPluginContext.cs)
+- An instance of the class [`SystemPluginContext`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/SystemPluginContext.cs) contains/defines the context data of a system plugin result. We select the context menu based on the defined properties.
+- It is used for the `ContextData` propertie of the [`Wox.Plugin.Result`](/src/modules/launcher/Wox.Plugin/Restult.cs).
+
+
 ### UEFI command
 
 * The UEFI command is only available on systems, that boot in UEFI mode.
 
 * This is validated by checking the result of the method [`GetSystemFirmwareType`](/src/modules/launcher/Wox.Plugin/Common/Win32/Win32Helpers.cs), which uses the native method [`GetFirmwareType`](/src/modules/launcher/Wox.Plugin/Common/Win32/NativeMethods.cs) in `kernel32.dll`.
 
+## Search
+
 ### Score
 
 * [`CalculateSearchScore`](/src/modules/launcher/Wox.Infrastructure/StringMatcher.cs) A match found near the beginning of a string is scored more than a match found near the end. A match is scored more if the characters in the patterns are closer to each other, while the score is lower if they are more spread out.
+* For network results (IP address and MAC address) the score is reduced by 25 percent.
+
+### Network results on global queries
+- The network results (IP and MAC address) are only shown on global queries, if the search term starts with either IP, MAC or Address. (We compare case-insensitive.)
+
+## [Unit Tests](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System.UnitTests)
+We have a [Unit Test project](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System.UnitTests) that executes various test to ensure that the plugin works as expected.
+
+### [`ImageTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System.UnitTests/ImageTests.cs)
+- The [`ImageTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System.UnitTests/ImageTests.cs) class contains tests to validate that each result shows the expected and correct image.
+
+### [`QueryTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System.UnitTests/QueryTests.cs)
+- The [`QueryTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System.UnitTests/QueryTests.cs) class contains tests to validate that the user gets the correct results when searching.
+
