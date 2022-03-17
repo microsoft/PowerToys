@@ -39,7 +39,7 @@ namespace RemappingLogicTests
 
         // Tests for shortcut to shortcut remappings
 
-        // Test if correct keyboard states are set for a 2 key shortcut remap wih different modifiers key down
+        // Test if correct keyboard states are set for a 2 key shortcut remap with different modifiers key down
         TEST_METHOD (RemappedTwoKeyShortcutWithDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
             // Remap Ctrl+A to Alt+V
@@ -197,7 +197,7 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
         }
 
-        // Test if correct keyboard states are set for a 3 key shortcut remap wih different modifiers key down
+        // Test if correct keyboard states are set for a 3 key shortcut remap with different modifiers key down
         TEST_METHOD (RemappedThreeKeyShortcutWithDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
             // Remap Ctrl+Shift+A to Alt+LWin+V
@@ -232,7 +232,7 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), true);
         }
 
-        // Test if correct keyboard states are set for a 3 key shortcut remap wih partially different modifiers key down
+        // Test if correct keyboard states are set for a 3 key shortcut remap with partially different modifiers key down
         TEST_METHOD (RemappedThreeKeyShortcutWithPartiallyDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
             // Remap Ctrl+Shift+A to Alt+Ctrl+V
