@@ -48,7 +48,7 @@ Available commands:
 
 ### [`SystemPluginContext.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/SystemPluginContext.cs)
 - An instance of the class [`SystemPluginContext`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/SystemPluginContext.cs) contains/defines the context data of a system plugin result. We select the context menu based on the defined properties.
-- It is used for the `ContextData` propertie of the [`Wox.Plugin.Result`](/src/modules/launcher/Wox.Plugin/Restult.cs).
+- It is used for the `ContextData` property of the [`Wox.Plugin.Result`](/src/modules/launcher/Wox.Plugin/Result.cs).
 
 
 ### UEFI command
