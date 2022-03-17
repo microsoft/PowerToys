@@ -38,8 +38,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("current", 3)]
         [DataRow("year", 0)]
         [DataRow("", 0)]
-        [DataRow("(now::10:10:10", 0)]
-        [DataRow("(current::10:10:10", 0)]
+        [DataRow("time::10:10:10", 2)]
+        [DataRow("date::10/10/10", 2)]
         public void CountWithoutPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
@@ -67,6 +67,26 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             Mock<Main> main = new ();
             Query expectedQuery = new (typedString, "(");
+
+            // Act
+            var result = main.Object.Query(expectedQuery);
+
+            // Assert
+            Assert.AreEqual(expectedResultCount, result.Count, result.ToString());
+        }
+
+        [DataTestMethod]
+        [DataRow("time", 2)] // Match if first word is a full word match
+        [DataRow("ime", 0)] // Don't match if first word is not a full macth
+        [DataRow("and", 0)] // Don't match for only conjunctions
+        [DataRow("and time", 1)] // match if term is conjuction and other words
+        [DataRow("date and time", 1)] // Match if first word is a full word match
+        [DataRow("ate and time", 0)] // Don't match if first word is not a full word match
+        public void ValidateBehaviorOnGlobalQueries(string typedString, int expectedResultCount)
+        {
+            // Setup
+            Mock<Main> main = new ();
+            Query expectedQuery = new (typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery);
