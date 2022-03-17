@@ -146,9 +146,6 @@
     <value>Copy details (Ctrl+C)</value>
     <comment>'Ctrl+C' is a shortcut</comment>
   </data>
-  <data name="Microsoft_plugin_sys_CopyHint" xml:space="preserve">
-    <value>Select to copy</value>
-  </data>
   <data name="Microsoft_plugin_sys_Dhcp" xml:space="preserve">
     <value>DHCP servers</value>
   </data>
@@ -274,6 +271,9 @@
     <value>Restart computer</value>
     <comment>This should align to the action in Windows of a restarting your computer.</comment>
   </data>
+  <data name="Microsoft_plugin_sys_Search_NetworkKeywordList" xml:space="preserve">
+    <value>ip; mac; address</value>
+  </data>
   <data name="Microsoft_plugin_sys_shutdown_computer" xml:space="preserve">
     <value>Shutdown</value>
     <comment>This should align to the action in Windows of a shutting down your computer.</comment>
@@ -315,6 +315,9 @@
   </data>
   <data name="Microsoft_plugin_sys_State" xml:space="preserve">
     <value>State</value>
+  </data>
+  <data name="Microsoft_plugin_sys_SubTitle_CopyHint" xml:space="preserve">
+    <value>Select to copy</value>
   </data>
   <data name="Microsoft_plugin_sys_Suffix" xml:space="preserve">
     <value>DNS Suffix</value>

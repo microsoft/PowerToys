@@ -28,6 +28,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         [DataRow("hibernate", "Images\\sleep.dark.png")]
         [DataRow("empty recycle", "Images\\recyclebin.dark.png")]
         [DataRow("uefi firmware settings", "Images\\firmwareSettings.dark.png")]
+        [DataRow("ip v4 addr", "Images\\networkAdapter.dark.png")]
+        [DataRow("ip v6 addr", "Images\\networkAdapter.dark.png")]
+        [DataRow("mac addr", "Images\\networkAdapter.dark.png")]
         public void IconThemeDarkTest(string typedString, string expectedResult)
         {
             // Setup
@@ -52,6 +55,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         [DataRow("hibernate", "Images\\sleep.light.png")]
         [DataRow("empty recycle", "Images\\recyclebin.light.png")]
         [DataRow("uefi firmware settings", "Images\\firmwareSettings.light.png")]
+        [DataRow("ip v4 addr", "Images\\networkAdapter.light.png")]
+        [DataRow("ip v6 addr", "Images\\networkAdapter.light.png")]
+        [DataRow("mac addr", "Images\\networkAdapter.light.png")]
         public void IconThemeLightTest(string typedString, string expectedResult)
         {
             // Setup

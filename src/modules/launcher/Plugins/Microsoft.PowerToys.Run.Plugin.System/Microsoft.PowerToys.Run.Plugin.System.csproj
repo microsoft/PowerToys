@@ -124,10 +124,10 @@
 	<None Update="Images\firmwareSettings.dark.png">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</None>
-	  <None Update="Images\network.light.png">
+	  <None Update="Images\networkAdapter.light.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
-	  <None Update="Images\network.dark.png">
+	  <None Update="Images\networkAdapter.dark.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
   </ItemGroup>

@@ -59,7 +59,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 return contextMenu;
             }
 
-            if (contextData.Type == ResultContextType.IpResult || contextData.Type == ResultContextType.MacResult)
+            if (contextData.Type == ResultContextType.NetworkAdapterInfo)
             {
                 contextMenu.Add(new ContextMenuResult()
                 {
@@ -69,19 +69,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     Title = Resources.Microsoft_plugin_sys_CopyDetails,
                     Action = _ => ResultHelper.CopyToClipBoard(contextData.Data),
-                });
-            }
-
-            if (contextData.Type == ResultContextType.IpResult)
-            {
-                contextMenu.Add(new ContextMenuResult()
-                {
-                    AcceleratorKey = Key.I,
-                    AcceleratorModifiers = ModifierKeys.Control,
-                    FontFamily = "Segoe MDL2 Assets",
-                    Glyph = "\xE756",                       // E756 => Symbol: CommandPrompt
-                    Title = Resources.Microsoft_plugin_sys_ExecuteIpconfig,
-                    Action = _ => Helper.OpenInShell("cmd.exe", "/k ipconfig /all"),
                 });
             }
 

@@ -1183,7 +1183,6 @@ MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
 Mbits
-Mbps
 MBs
 mdtext
 mdtxt

@@ -49,6 +49,7 @@ TestCase\("[^"]+"
 \\native
 \\netcoreapp
 \\netstandard
+\\network
 \\notifications
 \\recyclebin
 \\reinstall

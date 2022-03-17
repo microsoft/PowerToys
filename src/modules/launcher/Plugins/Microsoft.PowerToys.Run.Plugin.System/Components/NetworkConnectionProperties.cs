@@ -268,6 +268,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <summary>
         /// Gets the speed as formatted text value
         /// </summary>
+        /// <param name="speed">The adapter speed as <see langword="long"/>.</param>
         /// <returns>A formatted string like `100 MB/s`</returns>
         private static string GetFormattedSpeedValue(long speed)
         {

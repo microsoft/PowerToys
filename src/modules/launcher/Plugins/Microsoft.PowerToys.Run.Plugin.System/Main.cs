@@ -89,10 +89,20 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
             foreach (var r in networkConnectionResults)
             {
+                // On global queries the first word has to be 'ip', 'mac' or 'address'
+                if (string.IsNullOrEmpty(query.ActionKeyword))
+                {
+                    string[] keywordList = Resources.ResourceManager.GetString("Microsoft_plugin_sys_Search_NetworkKeywordList", culture).Split("; ");
+                    if (!keywordList.Any(x => query.Search.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)))
+                    {
+                        continue;
+                    }
+                }
+
                 var resultMatch = StringMatcher.FuzzySearch(query.Search, r.SubTitle);
                 if (resultMatch.Score > 0)
                 {
-                    r.Score = resultMatch.Score;
+                    r.Score = (int)(resultMatch.Score * 75 / 100); // Adjust score to improve user experience and priority order
                     r.SubTitleHighlightData = resultMatch.MatchData;
                     results.Add(r);
                 }

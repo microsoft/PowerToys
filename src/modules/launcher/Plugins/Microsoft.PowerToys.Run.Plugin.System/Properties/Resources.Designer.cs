@@ -142,15 +142,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select to copy.
-        /// </summary>
-        internal static string Microsoft_plugin_sys_CopyHint {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_CopyHint", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to DHCP servers.
         /// </summary>
         internal static string Microsoft_plugin_sys_Dhcp {
@@ -448,6 +439,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ip; mac; address.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_Search_NetworkKeywordList {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_Search_NetworkKeywordList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Shutdown.
         /// </summary>
         internal static string Microsoft_plugin_sys_shutdown_computer {
@@ -543,6 +543,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         internal static string Microsoft_plugin_sys_State {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_State", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select to copy.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_SubTitle_CopyHint {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_SubTitle_CopyHint", resourceCulture);
             }
         }
         

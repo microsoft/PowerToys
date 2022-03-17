@@ -19,8 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
 
     internal enum ResultContextType
     {
-        Command,
-        IpResult,
-        MacResult,
+        Command, // Reserved for later usage
+        NetworkAdapterInfo,
     }
 }

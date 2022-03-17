@@ -164,10 +164,10 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     results.Add(new Result()
                     {
                         Title = intInfo.IPv4,
-                        SubTitle = string.Format(CultureInfo.InvariantCulture, Resources.ResourceManager.GetString("Microsoft_plugin_sys_ip4_description", culture), intInfo.ConnectionName) + " - " + Resources.ResourceManager.GetString("Microsoft_plugin_sys_CopyHint", culture),
-                        IcoPath = $"Images\\network.{iconTheme}.png",
+                        SubTitle = string.Format(CultureInfo.InvariantCulture, Resources.ResourceManager.GetString("Microsoft_plugin_sys_ip4_description", culture), intInfo.ConnectionName) + " - " + Resources.ResourceManager.GetString("Microsoft_plugin_sys_SubTitle_CopyHint", culture),
+                        IcoPath = $"Images\\networkAdapter.{iconTheme}.png",
                         ToolTipData = new ToolTipData(Resources.Microsoft_plugin_sys_ConnectionDetails, intInfo.GetConnectionDetails()),
-                        ContextData = new SystemPluginContext { Type = ResultContextType.IpResult, Data = intInfo.GetConnectionDetails() },
+                        ContextData = new SystemPluginContext { Type = ResultContextType.NetworkAdapterInfo, Data = intInfo.GetConnectionDetails() },
                         Action = _ => ResultHelper.CopyToClipBoard(intInfo.IPv4),
                     });
                 }
@@ -177,10 +177,10 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     results.Add(new Result()
                     {
                         Title = intInfo.IPv6Primary,
-                        SubTitle = string.Format(CultureInfo.InvariantCulture, Resources.ResourceManager.GetString("Microsoft_plugin_sys_ip6_description", culture), intInfo.ConnectionName) + " - " + Resources.ResourceManager.GetString("Microsoft_plugin_sys_CopyHint", culture),
-                        IcoPath = $"Images\\network.{iconTheme}.png",
+                        SubTitle = string.Format(CultureInfo.InvariantCulture, Resources.ResourceManager.GetString("Microsoft_plugin_sys_ip6_description", culture), intInfo.ConnectionName) + " - " + Resources.ResourceManager.GetString("Microsoft_plugin_sys_SubTitle_CopyHint", culture),
+                        IcoPath = $"Images\\networkAdapter.{iconTheme}.png",
                         ToolTipData = new ToolTipData(Resources.Microsoft_plugin_sys_ConnectionDetails, intInfo.GetConnectionDetails()),
-                        ContextData = new SystemPluginContext { Type = ResultContextType.IpResult, Data = intInfo.GetConnectionDetails() },
+                        ContextData = new SystemPluginContext { Type = ResultContextType.NetworkAdapterInfo, Data = intInfo.GetConnectionDetails() },
                         Action = _ => ResultHelper.CopyToClipBoard(intInfo.IPv6Primary),
                     });
                 }
@@ -190,10 +190,10 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     results.Add(new Result()
                     {
                         Title = intInfo.PhysicalAddress,
-                        SubTitle = string.Format(CultureInfo.InvariantCulture, Resources.ResourceManager.GetString("Microsoft_plugin_sys_mac_description", culture), intInfo.Adapter, intInfo.ConnectionName) + " - " + Resources.ResourceManager.GetString("Microsoft_plugin_sys_CopyHint", culture),
-                        IcoPath = $"Images\\network.{iconTheme}.png",
+                        SubTitle = string.Format(CultureInfo.InvariantCulture, Resources.ResourceManager.GetString("Microsoft_plugin_sys_mac_description", culture), intInfo.Adapter, intInfo.ConnectionName) + " - " + Resources.ResourceManager.GetString("Microsoft_plugin_sys_SubTitle_CopyHint", culture),
+                        IcoPath = $"Images\\networkAdapter.{iconTheme}.png",
                         ToolTipData = new ToolTipData(Resources.Microsoft_plugin_sys_AdapterDetails, intInfo.GetAdapterDetails()),
-                        ContextData = new SystemPluginContext { Type = ResultContextType.MacResult, Data = intInfo.GetAdapterDetails() },
+                        ContextData = new SystemPluginContext { Type = ResultContextType.NetworkAdapterInfo, Data = intInfo.GetAdapterDetails() },
                         Action = _ => ResultHelper.CopyToClipBoard(intInfo.PhysicalAddress),
                     });
                 }
