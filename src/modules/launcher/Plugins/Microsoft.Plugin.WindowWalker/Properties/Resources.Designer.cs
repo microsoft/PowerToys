@@ -214,7 +214,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This message is only shown, when searching with direct activation command..
+        ///   Looks up a localized string similar to This message is only shown when searching with a direct activation command..
         /// </summary>
         public static string wox_plugin_windowwalker_SettingExplorerSettingInfo_Description {
             get {
@@ -241,7 +241,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Be careful when activating this..
+        ///   Looks up a localized string similar to Be careful when activating this. Killing the whole process tree can lead to problematic application crashes..
         /// </summary>
         public static string wox_plugin_windowwalker_SettingKillProcessTree_Description {
             get {
@@ -259,7 +259,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This feature isn&apos;t working, if the kill process confirmation is enabled..
+        ///   Looks up a localized string similar to This feature won&apos;t work if the kill process confirmation is enabled..
         /// </summary>
         public static string wox_plugin_windowwalker_SettingOpenAfterKillAndClose_Description {
             get {
@@ -286,7 +286,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The name is only shown in the subtitle and tool tip, if more than one desktop exists..
+        ///   Looks up a localized string similar to This information is only shown in subtitle and tool tip, if you have at least two desktops..
         /// </summary>
         public static string wox_plugin_windowwalker_SettingSubtitleDesktopName_Description {
             get {
