@@ -16,14 +16,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
     public class Settings
     {
 
-        private static SettingsUtils ModuleSettings = new SettingsUtils();
+        private static SettingsUtils moduleSettings = new SettingsUtils();
 
         /// <summary>
         /// Word warping. Set by PT settings.
         /// </summary>
         public bool Wrap
         {
-            get => ModuleSettings.GetSettings<PowerPreviewSettings>("File Explorer").Properties.EnableMonacoPreviewWordWrap;
+            get => moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.EnableMonacoPreviewWordWrap;
         }
 
         /// <summary>
