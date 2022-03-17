@@ -116,7 +116,8 @@ The following formats are currently available:
 - The plugin uses `FuzzyMatching` to get the matching formats, if the user searches for a specific format. The score is set based on the `FuzzySearch` result.
 - To achieve a better balance between sub title matches and tag matches the score of tag matches is divided by two.
 
-### Match requirements for global searches
+### Match requirements for global queries
+On global queries the high score returned by `FuzzySearch` has negative impacts on the user experience and the search results priority/order of other plugins. To mitigate this we defined some matching requirements:
 - If the query is a word of the following conjunction list, we don't return any results: for, and, nor, but, or, so
    - We don't have 'yet' (synonym of 'now') on the list, because this could block results in some languages.
 - The first word of the query has to be a full match with a word in the label or tag list. 
