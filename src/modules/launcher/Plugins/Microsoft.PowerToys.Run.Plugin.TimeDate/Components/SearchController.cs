@@ -25,6 +25,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         private const string InputDelimiter = "::";
 
         /// <summary>
+        /// A list of conjunctions that we ignore on search
+        /// </summary>
+        private static readonly string[] _conjunctionList = Resources.Microsoft_plugin_timedate_Search_ConjunctionList.Split("; ");
+
+        /// <summary>
         /// Searches for results
         /// </summary>
         /// <param name="query">Search query object</param>
@@ -37,8 +42,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             bool isEmptySearchInput = string.IsNullOrEmpty(query.Search);
             string searchTerm = query.Search;
 
-            // empty search without keyword => return no results
+            // Empty search without keyword => return no results
             if (!isKeywordSearch && isEmptySearchInput)
+            {
+                return results;
+            }
+
+            // Conjunction search without keyword => return no results
+            // (This improves the results on global queries.)
+            if (!isKeywordSearch && _conjunctionList.Any(x => x.Equals(searchTerm, StringComparison.CurrentCultureIgnoreCase)))
             {
                 return results;
             }
@@ -94,7 +106,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // Generate filtered list of results
                 foreach (var f in availableFormats)
                 {
-                    var resultMatchScore = GetMatchScore(searchTerm, f.Label, f.AlternativeSearchTag);
+                    var resultMatchScore = GetMatchScore(searchTerm, f.Label, f.AlternativeSearchTag, !isKeywordSearch);
 
                     if (resultMatchScore > 0)
                     {
@@ -133,11 +145,25 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <param name="query">The user query.</param>
         /// <param name="label">The label of the format.</param>
         /// <param name="tags">The search tag list as string.</param>
+        /// <param name="isGlobalSearch">Is this a global search?</param>
         /// <returns>The score for the result.</returns>
-        private static int GetMatchScore(string query, string label, string tags)
+        private static int GetMatchScore(string query, string label, string tags, bool isGlobalSearch)
         {
-            int score = StringMatcher.FuzzySearch(query, label).Score;
+            // The query is global and the first word don't match any word in the label or tags => Return score of zero
+            if (isGlobalSearch)
+            {
+                char[] chars = new char[] { ' ', ',', ';', '(', ')' };
+                string queryFirstWord = query.Split(chars)[0];
+                string[] words = $"{label} {tags}".Split(chars);
 
+                if (!words.Any(x => x.Trim().Equals(queryFirstWord, StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    return 0;
+                }
+            }
+
+            // Get match for label (or for tags if label score is <1)
+            int score = StringMatcher.FuzzySearch(query, label).Score;
             if (score < 1)
             {
                 foreach (string t in tags.Split(";"))

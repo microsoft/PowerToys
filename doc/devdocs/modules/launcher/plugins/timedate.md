@@ -116,6 +116,12 @@ The following formats are currently available:
 - The plugin uses `FuzzyMatching` to get the matching formats, if the user searches for a specific format. The score is set based on the `FuzzySearch` result.
 - To achieve a better balance between sub title matches and tag matches the score of tag matches is divided by two.
 
+### Match requirements for global searches
+- If the query is a word of the following conjunction list, we don't return any results: for, and, nor, but, or, so
+   - We don't have 'yet' as synonym of 'now' on the list, because this could block results in some languages.
+- The first word of the query has to be a full match with a word in the label or tag list. 
+- For both requirements we compare case-insensitive.
+
 
 ## [Unit Tests](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests)
 We have a [Unit Test project](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests) that executes various test to ensure that the plugin works as expected.

@@ -313,6 +313,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to for; and; nor; but; or; so.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Search_ConjunctionList {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Search_ConjunctionList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Date.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SearchTagDate {
