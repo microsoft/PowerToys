@@ -187,15 +187,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Execute &apos;ipconfig /all&apos; (Ctrl+I).
-        /// </summary>
-        internal static string Microsoft_plugin_sys_ExecuteIpconfig {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_ExecuteIpconfig", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Default Gateway.
         /// </summary>
         internal static string Microsoft_plugin_sys_Gateways {
