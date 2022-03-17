@@ -118,7 +118,7 @@ The following formats are currently available:
 
 ### Match requirements for global searches
 - If the query is a word of the following conjunction list, we don't return any results: for, and, nor, but, or, so
-   - We don't have 'yet' as synonym of 'now' on the list, because this could block results in some languages.
+   - We don't have 'yet' (synonym of 'now') on the list, because this could block results in some languages.
 - The first word of the query has to be a full match with a word in the label or tag list. 
 - For both requirements we compare case-insensitive.
 
