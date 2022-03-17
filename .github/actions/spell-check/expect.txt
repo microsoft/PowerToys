@@ -10,7 +10,6 @@ accctrl
 Acceleratorkeys
 ACCEPTFILES
 ACCESSDENIED
-accessibile
 accessibilityinsights
 Acl
 aclapi
@@ -30,7 +29,6 @@ AFeature
 AFX
 AGGREGATABLE
 AHybrid
-Aissue
 Akrotiri
 Aktobe
 ALarger
@@ -45,7 +43,6 @@ altform
 alwaysontop
 amd
 AMF
-Amicrosoft
 AModifier
 AMPROPERTY
 AMPROPSETID
@@ -56,7 +53,6 @@ ansicolor
 ANull
 AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
-Aopen
 APARTMENTTHREADED
 APeriod
 api
@@ -137,19 +133,15 @@ AYUV
 backend
 backtracer
 BADD
-BAEC
-BAF
 bak
 Bashkortostan
 Bayan
 bbwe
 bck
 Bcl
-BEEE
 Belarus
 betadele
 betsegaw
-BFB
 BGR
 bgra
 BGSOUNDS
@@ -176,7 +168,6 @@ BNumber
 Bokm
 BOKMAL
 boolalpha
-Boostrapper
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
 Bopomofo
@@ -196,7 +187,6 @@ Bto
 buf
 BUFSIZE
 bugreport
-Buid
 BUILDARCH
 buildtransitive
 Burkina
@@ -206,7 +196,6 @@ bytearray
 Caiguna
 CALG
 callbackptr
-Camer
 Cangjie
 CANRENAME
 CAPTURECHANGED
@@ -215,7 +204,6 @@ CAtl
 cch
 CCom
 CContext
-CDBECF
 cdecl
 CDeclaration
 CDEF
@@ -375,7 +363,6 @@ cxxopts
 cyberrex
 CYSMICON
 CYVIRTUALSCREEN
-czf
 cziplib
 Dac
 dacl
@@ -388,8 +375,6 @@ Datavalue
 DATAW
 davidegiacometti
 Dayof
-DBCD
-DBDA
 Dbg
 Dbghelp
 DBLCLKS
@@ -426,7 +411,6 @@ depersist
 deprioritized
 deps
 deref
-deseralization
 deserialization
 deserialize
 deserialized
@@ -442,7 +426,6 @@ devenum
 DEVMON
 devpkey
 DEVSOURCE
-DFactory
 dhcp
 diffing
 difftime
@@ -472,24 +455,19 @@ doctype
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
-DOverlay
 DOWNLOADONLY
 DPICHANGED
 DPIs
 DPolicy
-DPopup
 DPSAPI
 DQTAT
 DQTYPE
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
-DRect
 drivedetectionwarning
 dshow
 dst
-DSVG
-DText
 dutil
 DVASPECT
 DVASPECTINFO
@@ -499,7 +477,6 @@ dvr
 DVSD
 DVSL
 DVTARGETDEVICE
-DWindow
 DWINRT
 dwm
 dwmapi
@@ -519,18 +496,13 @@ dwrite
 dxgi
 dxgiformat
 dxguid
-EAF
-EBA
-EBE
 ecount
-ededf
 EDITKEYBOARD
 editkeyboardwindow
 editorconfig
 EDITSHORTCUTS
 editshortcutswindow
 EFile
-egistry
 ekus
 elif
 elseif
@@ -542,7 +514,6 @@ endif
 endl
 endpointvolume
 endregion
-Enque
 ENTERSIZEMOVE
 entrypoint
 ENU
@@ -598,10 +569,7 @@ FANCYZONESEDITOR
 Farbraum
 Faroe
 FARPROC
-FBF
-FCCD
 fdw
-FEEBD
 feimage
 ffaa
 fff
@@ -638,7 +606,6 @@ FORCEMINIMIZE
 FORCEOFFLINE
 foreach
 formatetc
-FPower
 FRAMECHANGED
 FRAMEDOWNLOAD
 franky
@@ -1465,7 +1432,6 @@ OWNDC
 PACL
 pagos
 PAINTSTRUCT
-PAIT
 PALEBLUE
 PALETTEWINDOW
 paramref
@@ -1667,7 +1633,6 @@ regex
 REGFILTER
 REGFILTERPINS
 REGISTERCLASSFAILED
-Registery
 registrypath
 regkey
 REGPINTYPES
@@ -2062,7 +2027,6 @@ tracelogging
 traies
 transcoded
 Transnistria
-transparrent
 TRAYMOUSEMESSAGE
 triaging
 TRK
@@ -2238,7 +2202,6 @@ Whichdoes
 whitespaces
 WIC
 wifi
-wih
 wiki
 wikipedia
 wil
