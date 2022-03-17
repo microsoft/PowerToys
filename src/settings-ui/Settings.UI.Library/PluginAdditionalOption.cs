@@ -10,6 +10,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public string DisplayLabel { get; set; }
 
+        public string DisplayDescription { get; set; }
+
         public bool Value { get; set; }
     }
 }
