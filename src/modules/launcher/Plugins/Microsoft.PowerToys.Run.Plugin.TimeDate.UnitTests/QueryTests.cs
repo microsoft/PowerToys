@@ -77,9 +77,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
         [DataTestMethod]
         [DataRow("time", 2)] // Match if first word is a full word match
-        [DataRow("ime", 0)] // Don't match if first word is not a full macth
+        [DataRow("ime", 0)] // Don't match if first word is not a full match
         [DataRow("and", 0)] // Don't match for only conjunctions
-        [DataRow("and time", 1)] // match if term is conjuction and other words
+        [DataRow("and time", 1)] // match if term is conjunction and other words
         [DataRow("date and time", 1)] // Match if first word is a full word match
         [DataRow("ate and time", 0)] // Don't match if first word is not a full word match
         public void ValidateBehaviorOnGlobalQueries(string typedString, int expectedResultCount)
