@@ -5,6 +5,7 @@
 #include <memory>
 #include <optional>
 
+#include <FancyZonesLib/FancyZonesData/Layout.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/ModuleConstants.h>
@@ -63,7 +64,8 @@ public:
 
     void LoadData();
 
-    std::optional<FancyZonesDataTypes::CustomLayoutData> GetLayout(const GUID& id) const noexcept;
+    std::optional<Layout> GetLayout(const GUID& id) const noexcept;
+    std::optional<FancyZonesDataTypes::CustomLayoutData> GetCustomLayoutData(const GUID& id) const noexcept;
     const TCustomLayoutMap& GetAllLayouts() const noexcept;
 
 private:

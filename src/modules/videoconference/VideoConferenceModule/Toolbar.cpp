@@ -281,11 +281,11 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
             GetModuleHandleW(nullptr),
             nullptr);
 
-        auto transparrentColorKey = RGB(0, 0, 255);
-        HBRUSH brush = CreateSolidBrush(transparrentColorKey);
+        auto transparentColorKey = RGB(0, 0, 255);
+        HBRUSH brush = CreateSolidBrush(transparentColorKey);
         SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)brush);
 
-        SetLayeredWindowAttributes(hwnd, transparrentColorKey, 0, LWA_COLORKEY);
+        SetLayeredWindowAttributes(hwnd, transparentColorKey, 0, LWA_COLORKEY);
 
         SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 

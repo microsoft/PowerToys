@@ -5,7 +5,7 @@
     <Company>Microsoft Corporation</Company>
     <AssemblyDescription>PowerToys ColorPicker</AssemblyDescription>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corporation</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\ColorPicker</OutputPath>
@@ -14,6 +14,8 @@
     <UseWPF>true</UseWPF>
     <Platforms>x64</Platforms>
     <StartupObject>ColorPicker.Program</StartupObject>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>Recommended</AnalysisMode>
   </PropertyGroup>
   <PropertyGroup>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
@@ -50,9 +52,9 @@
     <Resource Include="Shaders\GridShader.cso" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />

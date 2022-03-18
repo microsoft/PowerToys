@@ -7,7 +7,6 @@
 #include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
-#include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/util.h>
@@ -174,8 +173,6 @@ void AppliedLayouts::LoadData()
 
 void AppliedLayouts::SaveData()
 {
-    _TRACER_;
-
     bool dirtyFlag = false;
     TAppliedLayoutsMap updatedMap;
     if (m_virtualDesktopCheckCallback)
@@ -210,11 +207,16 @@ void AppliedLayouts::SetVirtualDesktopCheckCallback(std::function<bool(GUID)> ca
 
 void AppliedLayouts::SyncVirtualDesktops(GUID currentVirtualDesktopId)
 {
-    _TRACER_;
     // Explorer persists current virtual desktop identifier to registry on a per session basis,
     // but only after first virtual desktop switch happens. If the user hasn't switched virtual
     // desktops in this session value in registry will be empty and we will use default GUID in
     // that case (00000000-0000-0000-0000-000000000000).
+
+    auto currentVirtualDesktopStr = FancyZonesUtils::GuidToString(currentVirtualDesktopId);
+    if (currentVirtualDesktopStr)
+    {
+        Logger::info(L"AppliedLayouts Sync virtual desktops: current {}", currentVirtualDesktopStr.value());
+    }    
 
     bool dirtyFlag = false;
 
@@ -320,59 +322,9 @@ bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::DeviceIdData& id
     return iter != m_layouts.end();
 }
 
-bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& layout)
+bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, Layout layout)
 {
-    auto uuid = FancyZonesUtils::GuidFromString(layout.uuid);
-    if (!uuid)
-    {
-        return false;
-    }
-
-    Layout layoutToApply {
-        .uuid = uuid.value(),
-        .type = layout.type,
-        .showSpacing = DefaultValues::ShowSpacing,
-        .spacing = DefaultValues::Spacing,
-        .zoneCount = DefaultValues::ZoneCount,
-        .sensitivityRadius = DefaultValues::SensitivityRadius,
-    };
-
-    // copy layouts properties to the applied-layout
-    auto customLayout = CustomLayouts::instance().GetLayout(layoutToApply.uuid);
-    if (customLayout)
-    {
-        if (customLayout.value().type == FancyZonesDataTypes::CustomLayoutType::Grid)
-        {
-            auto layoutInfo = std::get<FancyZonesDataTypes::GridLayoutInfo>(customLayout.value().info);
-            layoutToApply.sensitivityRadius = layoutInfo.sensitivityRadius();
-            layoutToApply.showSpacing = layoutInfo.showSpacing();
-            layoutToApply.spacing = layoutInfo.spacing();
-            layoutToApply.zoneCount = layoutInfo.zoneCount();
-        }
-        else if (customLayout.value().type == FancyZonesDataTypes::CustomLayoutType::Canvas)
-        {
-            auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(customLayout.value().info);
-            layoutToApply.sensitivityRadius = layoutInfo.sensitivityRadius;
-            layoutToApply.zoneCount = (int)layoutInfo.zones.size();
-        }
-    }
-    else
-    {
-        // check templates only if it wasn't a custom layout, since templates don't have ids yet
-        auto templateLayout = LayoutTemplates::instance().GetLayout(layout.type);
-        if (templateLayout)
-        {
-            auto layoutInfo = templateLayout.value();
-            layoutToApply.sensitivityRadius = layoutInfo.sensitivityRadius;
-            layoutToApply.showSpacing = layoutInfo.showSpacing;
-            layoutToApply.spacing = layoutInfo.spacing;
-            layoutToApply.zoneCount = layoutInfo.zoneCount;
-        }
-    
-    }
-    
-    m_layouts[deviceId] = std::move(layoutToApply);
-
+    m_layouts[deviceId] = std::move(layout);
     return true;
 }
 

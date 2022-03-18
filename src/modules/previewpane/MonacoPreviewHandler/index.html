@@ -14,7 +14,11 @@
 		var wrap = ([[PT_WRAP]] == 1) ? true : false;
 
 		var base64code = "[[PT_CODE]]";
-		var code = [atob(base64code)].join('\n');
+		
+		// Code taken from https://stackoverflow.com/a/30106551/14774889
+		var code = decodeURIComponent(atob(base64code).split('').map(function(c) {
+			return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+		}).join(''));
 	</script>
 	<!-- Set browser to Edge-->
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -41,8 +45,8 @@
 		} 
 	</style>
 </head>
-<!-- This oncontextmenu disables the browser context menu -->
-<body oncontextmenu="return false;">
+
+<body>
 <!-- Container for the editor -->
 <div id="container"></div>
 <!-- Script -->

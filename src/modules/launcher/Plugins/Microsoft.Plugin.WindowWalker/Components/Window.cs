@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+using Wox.Plugin.Common.VirtualDesktop.Helper;
+using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.WindowWalker.Components
@@ -16,7 +18,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// <summary>
     /// Represents a specific open window
     /// </summary>
-    public class Window
+    internal class Window
     {
         /// <summary>
         /// The handle to the window
@@ -35,9 +37,14 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private readonly WindowProcess processInfo;
 
         /// <summary>
+        /// An instance of <see cref="VDesktop"/> that contains the desktop information for the window
+        /// </summary>
+        private readonly VDesktop desktopInfo;
+
+        /// <summary>
         /// Gets the title of the window (the string displayed at the top of the window)
         /// </summary>
-        public string Title
+        internal string Title
         {
             get
             {
@@ -63,7 +70,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the handle to the window
         /// </summary>
-        public IntPtr Hwnd
+        internal IntPtr Hwnd
         {
             get { return hwnd; }
         }
@@ -71,15 +78,23 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the object of with the process information of the window
         /// </summary>
-        public WindowProcess ProcessInfo
+        internal WindowProcess Process
         {
             get { return processInfo; }
         }
 
         /// <summary>
+        /// Gets the object of with the desktop information of the window
+        /// </summary>
+        internal VDesktop Desktop
+        {
+            get { return desktopInfo; }
+        }
+
+        /// <summary>
         /// Gets the name of the class for the window represented
         /// </summary>
-        public string ClassName
+        internal string ClassName
         {
             get
             {
@@ -90,7 +105,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets a value indicating whether the window is visible (might return false if it is a hidden IE tab)
         /// </summary>
-        public bool Visible
+        internal bool Visible
         {
             get
             {
@@ -102,7 +117,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Gets a value indicating whether the window is cloaked (true) or not (false).
         /// (A cloaked window is not visible to the user. But the window is still composed by DWM.)
         /// </summary>
-        public bool IsCloaked
+        internal bool IsCloaked
         {
             get
             {
@@ -113,7 +128,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets a value indicating whether the specified window handle identifies an existing window.
         /// </summary>
-        public bool IsWindow
+        internal bool IsWindow
         {
             get
             {
@@ -124,33 +139,33 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets a value indicating whether the window is a toolwindow
         /// </summary>
-        public bool IsToolWindow
+        internal bool IsToolWindow
         {
             get
             {
-                return (NativeMethods.GetWindowLong(Hwnd, NativeMethods.GWL_EXSTYLE) &
-                    (uint)NativeMethods.ExtendedWindowStyles.WS_EX_TOOLWINDOW) ==
-                    (uint)NativeMethods.ExtendedWindowStyles.WS_EX_TOOLWINDOW;
+                return (NativeMethods.GetWindowLong(Hwnd, Win32Constants.GWL_EXSTYLE) &
+                    (uint)ExtendedWindowStyles.WS_EX_TOOLWINDOW) ==
+                    (uint)ExtendedWindowStyles.WS_EX_TOOLWINDOW;
             }
         }
 
         /// <summary>
         /// Gets a value indicating whether the window is an appwindow
         /// </summary>
-        public bool IsAppWindow
+        internal bool IsAppWindow
         {
             get
             {
-                return (NativeMethods.GetWindowLong(Hwnd, NativeMethods.GWL_EXSTYLE) &
-                    (uint)NativeMethods.ExtendedWindowStyles.WS_EX_APPWINDOW) ==
-                    (uint)NativeMethods.ExtendedWindowStyles.WS_EX_APPWINDOW;
+                return (NativeMethods.GetWindowLong(Hwnd, Win32Constants.GWL_EXSTYLE) &
+                    (uint)ExtendedWindowStyles.WS_EX_APPWINDOW) ==
+                    (uint)ExtendedWindowStyles.WS_EX_APPWINDOW;
             }
         }
 
         /// <summary>
         /// Gets a value indicating whether the window has ITaskList_Deleted property
         /// </summary>
-        public bool TaskListDeleted
+        internal bool TaskListDeleted
         {
             get
             {
@@ -161,18 +176,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets a value indicating whether the specified windows is the owner (i.e. doesn't have an owner)
         /// </summary>
-        public bool IsOwner
+        internal bool IsOwner
         {
             get
             {
-                return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) == IntPtr.Zero;
+                return NativeMethods.GetWindow(Hwnd, GetWindowCmd.GW_OWNER) == IntPtr.Zero;
             }
         }
 
         /// <summary>
         /// Gets a value indicating whether the window is minimized
         /// </summary>
-        public bool Minimized
+        internal bool Minimized
         {
             get
             {
@@ -185,17 +200,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Initializes a new Window representation
         /// </summary>
         /// <param name="hwnd">the handle to the window we are representing</param>
-        public Window(IntPtr hwnd)
+        internal Window(IntPtr hwnd)
         {
             // TODO: Add verification as to whether the window handle is valid
             this.hwnd = hwnd;
             processInfo = CreateWindowProcessInstance(hwnd);
+            desktopInfo = Main.VirtualDesktopHelperInstance.GetWindowDesktop(hwnd);
         }
 
         /// <summary>
         /// Switches desktop focus to the window
         /// </summary>
-        public void SwitchToWindow()
+        internal void SwitchToWindow()
         {
             // The following block is necessary because
             // 1) There is a weird flashing behavior when trying
@@ -208,14 +224,27 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
             else
             {
-                if (!NativeMethods.ShowWindow(Hwnd, NativeMethods.ShowWindowCommands.Restore))
+                if (!NativeMethods.ShowWindow(Hwnd, ShowWindowCommand.Restore))
                 {
                     // ShowWindow doesn't work if the process is running elevated: fallback to SendMessage
-                    _ = NativeMethods.SendMessage(Hwnd, NativeMethods.WM_SYSCOMMAND, NativeMethods.SC_RESTORE);
+                    _ = NativeMethods.SendMessage(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_RESTORE);
                 }
             }
 
             NativeMethods.FlashWindow(Hwnd, true);
+        }
+
+        /// <summary>
+        /// Closes the window
+        /// </summary>
+        internal void CloseThisWindow(bool switchBeforeClose)
+        {
+            if (switchBeforeClose)
+            {
+                SwitchToWindow();
+            }
+
+            _ = NativeMethods.SendMessage(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_CLOSE);
         }
 
         /// <summary>
@@ -232,18 +261,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Returns what the window size is
         /// </summary>
         /// <returns>The state (minimized, maximized, etc..) of the window</returns>
-        public WindowSizeState GetWindowSizeState()
+        internal WindowSizeState GetWindowSizeState()
         {
-            NativeMethods.GetWindowPlacement(Hwnd, out NativeMethods.WINDOWPLACEMENT placement);
+            NativeMethods.GetWindowPlacement(Hwnd, out WINDOWPLACEMENT placement);
 
             switch (placement.ShowCmd)
             {
-                case NativeMethods.ShowWindowCommands.Normal:
+                case ShowWindowCommand.Normal:
                     return WindowSizeState.Normal;
-                case NativeMethods.ShowWindowCommands.Minimize:
-                case NativeMethods.ShowWindowCommands.ShowMinimized:
+                case ShowWindowCommand.Minimize:
+                case ShowWindowCommand.ShowMinimized:
                     return WindowSizeState.Minimized;
-                case NativeMethods.ShowWindowCommands.Maximize: // No need for ShowMaximized here since its also of value 3
+                case ShowWindowCommand.Maximize: // No need for ShowMaximized here since its also of value 3
                     return WindowSizeState.Maximized;
                 default:
                     // throw new Exception("Don't know how to handle window state = " + placement.ShowCmd);
@@ -254,7 +283,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Enum to simplify the state of the window
         /// </summary>
-        public enum WindowSizeState
+        internal enum WindowSizeState
         {
             Normal,
             Minimized,
@@ -267,19 +296,19 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// (A cloaked window is not visible to the user. But the window is still composed by DWM.)
         /// </summary>
         /// <returns>The state (none, app, ...) of the window</returns>
-        public WindowCloakState GetWindowCloakState()
+        internal WindowCloakState GetWindowCloakState()
         {
-            _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)NativeMethods.DwmWindowAttribute.Cloaked, out int isCloakedState, sizeof(uint));
+            _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)DwmWindowAttributes.Cloaked, out int isCloakedState, sizeof(uint));
 
             switch (isCloakedState)
             {
-                case (int)NativeMethods.DwmWindowCloakState.None:
+                case (int)DwmWindowCloakStates.None:
                     return WindowCloakState.None;
-                case (int)NativeMethods.DwmWindowCloakState.CloakedApp:
+                case (int)DwmWindowCloakStates.CloakedApp:
                     return WindowCloakState.App;
-                case (int)NativeMethods.DwmWindowCloakState.CloakedShell:
-                    return WindowCloakState.Shell;
-                case (int)NativeMethods.DwmWindowCloakState.CloakedInherited:
+                case (int)DwmWindowCloakStates.CloakedShell:
+                    return Main.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(hwnd, Desktop.Id) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
+                case (int)DwmWindowCloakStates.CloakedInherited:
                     return WindowCloakState.Inherited;
                 default:
                     return WindowCloakState.Unknown;
@@ -289,12 +318,13 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Enum to simplify the cloak state of the window
         /// </summary>
-        public enum WindowCloakState
+        internal enum WindowCloakState
         {
             None,
             App,
             Shell,
             Inherited,
+            OtherDesktop,
             Unknown,
         }
 
@@ -357,7 +387,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     new Task(() =>
                     {
-                        NativeMethods.CallBackPtr callbackptr = new NativeMethods.CallBackPtr((IntPtr hwnd, IntPtr lParam) =>
+                        EnumWindowsProc callbackptr = new EnumWindowsProc((IntPtr hwnd, IntPtr lParam) =>
                         {
                             // Every uwp app main window has at least three child windows. Only the one we are interested in has a class starting with "Windows.UI.Core." and is assigned to the real app process.
                             // (The other ones have a class name that begins with the string "ApplicationFrame".)

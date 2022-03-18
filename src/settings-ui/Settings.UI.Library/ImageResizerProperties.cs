@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             if (resourceLoader == null)
             {
-                throw new NullReferenceException("Resource loader is null");
+                throw new ArgumentNullException(nameof(resourceLoader), "Resource loader is null");
             }
 
             ImageresizerSizes = new ImageResizerSizes(new ObservableCollection<ImageSize>()

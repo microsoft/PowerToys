@@ -54,7 +54,7 @@ public:
 
     bool IsLayoutApplied(const FancyZonesDataTypes::DeviceIdData& id) const noexcept;
 
-    bool ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& layout);
+    bool ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, Layout layout);
     bool ApplyDefaultLayout(const FancyZonesDataTypes::DeviceIdData& deviceId);
     bool CloneLayout(const FancyZonesDataTypes::DeviceIdData& srcId, const FancyZonesDataTypes::DeviceIdData& dstId);
 

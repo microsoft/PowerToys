@@ -130,8 +130,10 @@ steps:
       **\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.dll
       **\Microsoft.Plugin.Uri.UnitTests.dll
       **\Wox.Test.dll
-      **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll     
+      **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
+      **\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests.dll      
       **\Microsoft.Plugin.WindowsTerminal.UnitTests.dll
+      **\Microsoft.Plugin.WindowWalker.UnitTests.dll
       !**\obj\**
       !**\ref\**
 

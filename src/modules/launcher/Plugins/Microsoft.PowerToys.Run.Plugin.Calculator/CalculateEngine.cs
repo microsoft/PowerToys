@@ -21,12 +21,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public const int RoundingDigits = 10;
 
-        public CalculateResult Interpret(string input)
-        {
-            // Using CurrentCulture this is user facing
-            return Interpret(input, CultureInfo.CurrentCulture);
-        }
-
+        /// <summary>
+        /// Interpret
+        /// </summary>
+        /// <param name="cultureInfo">Use CultureInfo.CurrentCulture if something is user facing</param>
         public CalculateResult Interpret(string input, CultureInfo cultureInfo)
         {
             if (!CalculateHelper.InputValid(input))

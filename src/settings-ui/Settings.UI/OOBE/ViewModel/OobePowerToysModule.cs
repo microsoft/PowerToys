@@ -17,20 +17,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
 
         public bool IsNew { get; set; }
 
-        public string Image { get; set; }
-
-        public string Icon { get; set; }
-
-        public string FluentIcon { get; set; }
-
-        public string PreviewImageSource { get; set; }
-
-        public string Description { get; set; }
-
-        public string Link { get; set; }
-
-        public string DescriptionLink { get; set; }
-
         public OobePowerToysModule()
         {
         }
@@ -45,13 +31,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             ModuleName = other.ModuleName;
             Tag = other.Tag;
             IsNew = other.IsNew;
-            Image = other.Image;
-            Icon = other.Icon;
-            FluentIcon = other.FluentIcon;
-            PreviewImageSource = other.PreviewImageSource;
-            Description = other.Description;
-            Link = other.Link;
-            DescriptionLink = other.DescriptionLink;
             timeOpened = other.timeOpened;
         }
 

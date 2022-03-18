@@ -8,6 +8,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class FindMyMouseProperties
     {
+        [JsonPropertyName("activation_method")]
+        public IntProperty ActivationMethod { get; set; }
+
         [JsonPropertyName("do_not_activate_on_game_mode")]
         public BoolProperty DoNotActivateOnGameMode { get; set; }
 
@@ -29,8 +32,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("spotlight_initial_zoom")]
         public IntProperty SpotlightInitialZoom { get; set; }
 
+        [JsonPropertyName("excluded_apps")]
+        public StringProperty ExcludedApps { get; set; }
+
+        [JsonPropertyName("shaking_minimum_distance")]
+        public IntProperty ShakingMinimumDistance { get; set; }
+
         public FindMyMouseProperties()
         {
+            ActivationMethod = new IntProperty(0);
             DoNotActivateOnGameMode = new BoolProperty(true);
             BackgroundColor = new StringProperty("#000000");
             SpotlightColor = new StringProperty("#FFFFFF");
@@ -38,6 +48,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SpotlightRadius = new IntProperty(100);
             AnimationDurationMs = new IntProperty(500);
             SpotlightInitialZoom = new IntProperty(9);
+            ExcludedApps = new StringProperty();
+            ShakingMinimumDistance = new IntProperty(1000);
         }
     }
 }

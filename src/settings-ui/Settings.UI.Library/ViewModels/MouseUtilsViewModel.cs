@@ -47,6 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             FindMyMouseSettingsConfig = findMyMouseSettingsRepository.SettingsConfig;
+            _findMyMouseActivationMethod = FindMyMouseSettingsConfig.Properties.ActivationMethod.Value;
             _findMyMouseDoNotActivateOnGameMode = FindMyMouseSettingsConfig.Properties.DoNotActivateOnGameMode.Value;
 
             string backgroundColor = FindMyMouseSettingsConfig.Properties.BackgroundColor.Value;
@@ -59,6 +60,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _findMyMouseSpotlightRadius = FindMyMouseSettingsConfig.Properties.SpotlightRadius.Value;
             _findMyMouseAnimationDurationMs = FindMyMouseSettingsConfig.Properties.AnimationDurationMs.Value;
             _findMyMouseSpotlightInitialZoom = FindMyMouseSettingsConfig.Properties.SpotlightInitialZoom.Value;
+            _findMyMouseExcludedApps = FindMyMouseSettingsConfig.Properties.ExcludedApps.Value;
+            _findMyMouseShakingMinimumDistance = FindMyMouseSettingsConfig.Properties.ShakingMinimumDistance.Value;
 
             if (mouseHighlighterSettingsRepository == null)
             {
@@ -114,6 +117,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
 
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public int FindMyMouseActivationMethod
+        {
+            get
+            {
+                return _findMyMouseActivationMethod;
+            }
+
+            set
+            {
+                if (value != _findMyMouseActivationMethod)
+                {
+                    _findMyMouseActivationMethod = value;
+                    FindMyMouseSettingsConfig.Properties.ActivationMethod.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
             }
@@ -242,6 +263,42 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _findMyMouseSpotlightInitialZoom = value;
                     FindMyMouseSettingsConfig.Properties.SpotlightInitialZoom.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public string FindMyMouseExcludedApps
+        {
+            get
+            {
+                return _findMyMouseExcludedApps;
+            }
+
+            set
+            {
+                if (value != _findMyMouseExcludedApps)
+                {
+                    _findMyMouseExcludedApps = value;
+                    FindMyMouseSettingsConfig.Properties.ExcludedApps.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public int FindMyMouseShakingMinimumDistance
+        {
+            get
+            {
+                return _findMyMouseShakingMinimumDistance;
+            }
+
+            set
+            {
+                if (value != _findMyMouseShakingMinimumDistance)
+                {
+                    _findMyMouseShakingMinimumDistance = value;
+                    FindMyMouseSettingsConfig.Properties.ShakingMinimumDistance.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
             }
@@ -586,6 +643,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         private bool _isFindMyMouseEnabled;
+        private int _findMyMouseActivationMethod;
         private bool _findMyMouseDoNotActivateOnGameMode;
         private string _findMyMouseBackgroundColor;
         private string _findMyMouseSpotlightColor;
@@ -593,6 +651,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private int _findMyMouseSpotlightRadius;
         private int _findMyMouseAnimationDurationMs;
         private int _findMyMouseSpotlightInitialZoom;
+        private string _findMyMouseExcludedApps;
+        private int _findMyMouseShakingMinimumDistance;
 
         private bool _isMouseHighlighterEnabled;
         private string _highlighterLeftButtonClickColor;

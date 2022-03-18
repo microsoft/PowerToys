@@ -7,8 +7,11 @@
     mc:Ignorable="d"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     AutomationProperties.LandmarkType="Main">
-
+    <Page.Resources>
+        <localConverters:FindMyMouseActivationShakeMouseIntToVisibilityConverter x:Key="FindMyMouseActivationShakeMouseIntToVisibilityConverter"/>
+    </Page.Resources>
     <controls:SettingsPageControl x:Uid="MouseUtils"
                                   ModuleImageSource="ms-appx:///Assets/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -22,16 +25,46 @@
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+                    <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" IsExpanded="True" >
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="MouseUtils_FindMyMouse_ActivationMethod"  Icon="&#xE961;" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}">
+                                <controls:Setting.ActionContent>
+                                    <ComboBox SelectedIndex="{x:Bind Path=ViewModel.FindMyMouseActivationMethod, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                        <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationDoubleControlPress" />
+                                        <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationShakeMouse" />
+                                    </ComboBox>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel>
+                                <controls:Setting x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance"  Style="{StaticResource ExpanderContentSettingStyle}" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationShakeMouseIntToVisibilityConverter}}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox
+                                            Minimum="0"
+                                            Maximum="1000000"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseShakingMinimumDistance}"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            SpinButtonPlacementMode="Compact"
+                                            HorizontalAlignment="Left"
+                                            SmallChange="100"
+                                            LargeChange="1000"
+                                        />
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                <CheckBox x:Uid="MouseUtils_Prevent_Activation_On_Game_Mode"
+                                          IsChecked="{x:Bind ViewModel.FindMyMouseDoNotActivateOnGameMode, Mode=TwoWay}"
+                                          Margin="{StaticResource ExpanderSettingMargin}"
+                                          IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" />
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
-                                <CheckBox x:Uid="MouseUtils_Prevent_Activation_On_Game_Mode"
-                                          IsChecked="{x:Bind ViewModel.FindMyMouseDoNotActivateOnGameMode, Mode=TwoWay}"
-                                          Margin="{StaticResource ExpanderSettingMargin}"
-                                          IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" />
                                 <controls:Setting x:Uid="MouseUtils_FindMyMouse_OverlayOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <Slider Minimum="1"
@@ -83,6 +116,23 @@
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                             </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                    <controls:SettingExpander IsExpanded="False">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="MouseUtils_FindMyMouse_ExcludedApps" Icon="&#xECE4;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <TextBox x:Uid="MouseUtils_FindMyMouse_ExcludedApps_TextBoxControl"
+                                    Margin="{StaticResource ExpanderSettingMargin}"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                    ScrollViewer.VerticalScrollBarVisibility ="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    TextWrapping="Wrap"
+                                    AcceptsReturn="True"
+                                    MinWidth="240"
+                                    MinHeight="160" />
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
                 </controls:SettingsGroup>

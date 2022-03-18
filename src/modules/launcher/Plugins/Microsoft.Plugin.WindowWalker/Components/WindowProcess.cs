@@ -5,13 +5,15 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Wox.Infrastructure;
+using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
     /// <summary>
     /// Represents the process data of an open window. This class is used in the process cache and for the process object of the open window
     /// </summary>
-    public class WindowProcess
+    internal class WindowProcess
     {
         /// <summary>
         /// Maximum size of a file name
@@ -26,7 +28,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the id of the process
         /// </summary>
-        public uint ProcessID
+        internal uint ProcessID
         {
             get; private set;
         }
@@ -34,7 +36,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the id of the thread
         /// </summary>
-        public uint ThreadID
+        internal uint ThreadID
         {
             get; private set;
         }
@@ -42,7 +44,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the name of the process
         /// </summary>
-        public string Name
+        internal string Name
         {
             get; private set;
         }
@@ -50,7 +52,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets a value indicating whether the window belongs to an 'Universal Windows Platform (UWP)' process
         /// </summary>
-        public bool IsUwpApp
+        internal bool IsUwpApp
         {
             get { return _isUwpApp; }
         }
@@ -59,7 +61,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Gets a value indicating whether this is the shell process or not
         /// The shell process (like explorer.exe) hosts parts of the user interface (like taskbar, start menu, ...)
         /// </summary>
-        public bool IsShellProcess
+        internal bool IsShellProcess
         {
             get
             {
@@ -71,7 +73,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets a value indicating whether the process exists on the machine
         /// </summary>
-        public bool DoesExist
+        internal bool DoesExist
         {
             get
             {
@@ -97,7 +99,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets a value indicating whether full access to the process is denied or not
         /// </summary>
-        public bool IsFullAccessDenied
+        internal bool IsFullAccessDenied
         {
             get; private set;
         }
@@ -108,7 +110,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="pid">New process id.</param>
         /// <param name="tid">New thread id.</param>
         /// <param name="name">New process name.</param>
-        public WindowProcess(uint pid, uint tid, string name)
+        internal WindowProcess(uint pid, uint tid, string name)
         {
             UpdateProcessInfo(pid, tid, name);
             _isUwpApp = Name.ToUpperInvariant().Equals("APPLICATIONFRAMEHOST.EXE", StringComparison.Ordinal);
@@ -120,7 +122,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="pid">New process id.</param>
         /// <param name="tid">New thread id.</param>
         /// <param name="name">New process name.</param>
-        public void UpdateProcessInfo(uint pid, uint tid, string name)
+        internal void UpdateProcessInfo(uint pid, uint tid, string name)
         {
             // TODO: Add verification as to wether the process id and thread id is valid
             ProcessID = pid;
@@ -136,7 +138,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         /// <param name="hwnd">The handle to the window</param>
         /// <returns>The process ID</returns>
-        public static uint GetProcessIDFromWindowHandle(IntPtr hwnd)
+        internal static uint GetProcessIDFromWindowHandle(IntPtr hwnd)
         {
             _ = NativeMethods.GetWindowThreadProcessId(hwnd, out uint processId);
             return processId;
@@ -147,7 +149,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         /// <param name="hwnd">The handle to the window</param>
         /// <returns>The thread ID</returns>
-        public static uint GetThreadIDFromWindowHandle(IntPtr hwnd)
+        internal static uint GetThreadIDFromWindowHandle(IntPtr hwnd)
         {
             uint threadId = NativeMethods.GetWindowThreadProcessId(hwnd, out _);
             return threadId;
@@ -158,20 +160,37 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         /// <param name="pid">The id of the process/param>
         /// <returns>A string representing the process name or an empty string if the function fails</returns>
-        public static string GetProcessNameFromProcessID(uint pid)
+        internal static string GetProcessNameFromProcessID(uint pid)
         {
-            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.QueryLimitedInformation, true, (int)pid);
+            IntPtr processHandle = NativeMethods.OpenProcess(ProcessAccessFlags.QueryLimitedInformation, true, (int)pid);
             StringBuilder processName = new StringBuilder(MaximumFileNameLength);
 
             if (NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
             {
-                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
                 return processName.ToString().Split('\\').Reverse().ToArray()[0];
             }
             else
             {
-                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
                 return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Kills the process by it's id. If permissions are required, they will be requested.
+        /// </summary>
+        /// <param name="killProcessTree">Kill process and sub processes.</param>
+        internal void KillThisProcess(bool killProcessTree)
+        {
+            if (IsFullAccessDenied)
+            {
+                string killTree = killProcessTree ? " /t" : string.Empty;
+                Helper.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, true, true);
+            }
+            else
+            {
+                Process.GetProcessById((int)ProcessID).Kill(killProcessTree);
             }
         }
 
@@ -182,17 +201,17 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>True if denied and false if not.</returns>
         private static bool TestProcessAccessUsingAllAccessFlag(uint pid)
         {
-            IntPtr processHandle = NativeMethods.OpenProcess(NativeMethods.ProcessAccessFlags.AllAccess, true, (int)pid);
+            IntPtr processHandle = NativeMethods.OpenProcess(ProcessAccessFlags.AllAccess, true, (int)pid);
 
-            if (NativeMethods.GetLastWin32Error() == 5)
+            if (Win32Helpers.GetLastError() == 5)
             {
                 // Error 5 = ERROR_ACCESS_DENIED
-                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
                 return true;
             }
             else
             {
-                _ = NativeMethods.CloseHandleIfNotNull(processHandle);
+                _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
                 return false;
             }
         }

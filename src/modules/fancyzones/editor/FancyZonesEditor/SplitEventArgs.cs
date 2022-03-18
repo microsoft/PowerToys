@@ -24,5 +24,7 @@ namespace FancyZonesEditor
         public int Offset { get; }
     }
 
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Causes warning in another class if fixed)
     public delegate void SplitEventHandler(object sender, SplitEventArgs args);
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 }

@@ -560,7 +560,11 @@ void VideoConferenceModule::disable()
             }
         }
 
-        instance->unmuteAll();
+        if (getVirtualCameraMuteState())
+        {
+            reverseVirtualCameraMuteState();
+        }
+
         toolbar.hide();
 
         _enabled = false;

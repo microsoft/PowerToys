@@ -118,7 +118,7 @@ void AlwaysOnTopSettings::LoadSettings()
             auto val = *jsonVal;
             if (m_settings.frameThickness != val)
             {
-                m_settings.frameThickness = static_cast<float>(val);
+                m_settings.frameThickness = val;
                 NotifyObservers(SettingId::FrameThickness);
             }
         }

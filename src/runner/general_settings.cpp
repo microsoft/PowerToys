@@ -85,6 +85,7 @@ GeneralSettings get_general_settings()
 
 void apply_general_settings(const json::JsonObject& general_configs, bool save)
 {
+    Logger::info(L"apply_general_settings: {}", std::wstring{ general_configs.ToString() });
     run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
 
     download_updates_automatically = general_configs.GetNamedBoolean(L"download_updates_automatically", true);
@@ -100,6 +101,7 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
             {
                 if (startup == true && settings.isStartupEnabled == false)
                 {
+                    Logger::info("PowerToys run at startup disabled manually");
                     startup_disabled_manually = true;
                 }
             }
@@ -158,10 +160,12 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
             }
             if (target_enabled)
             {
+                Logger::info(L"apply_general_settings: Enabling powertoy {}", name);
                 powertoy->enable();
             }
             else
             {
+                Logger::info(L"apply_general_settings: Disabling powertoy {}", name);
                 powertoy->disable();
             }
             // Sync the hotkey state with the module state, so it can be removed for disabled modules.
@@ -205,11 +209,13 @@ void start_enabled_powertoys()
                 // Disable explicitly disabled modules
                 if (!disabled_element.Value().GetBoolean())
                 {
+                    Logger::info(L"start_enabled_powertoys: Powertoy {} explicitly disabled", disable_module_name);
                     powertoys_to_disable.emplace(std::move(disable_module_name));
                 }
                 // If module was scheduled for disable, but it's enabled in the settings - override default value
                 else if (auto it = powertoys_to_disable.find(disable_module_name); it != end(powertoys_to_disable))
                 {
+                    Logger::info(L"start_enabled_powertoys: Overriding default enabled value for {} powertoy", disable_module_name);
                     powertoys_to_disable.erase(it);
                 }
             }
@@ -223,6 +229,7 @@ void start_enabled_powertoys()
     {
         if (!powertoys_to_disable.contains(name))
         {
+            Logger::info(L"start_enabled_powertoys: Enabling powertoy {}", name);
             powertoy->enable();
             powertoy.UpdateHotkeyEx();
         }

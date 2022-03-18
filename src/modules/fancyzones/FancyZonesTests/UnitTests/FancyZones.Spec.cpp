@@ -16,44 +16,29 @@ namespace FancyZonesUnitTests
     TEST_CLASS (FancyZonesUnitTests)
     {
         HINSTANCE m_hInst;
-        winrt::com_ptr<IFancyZonesSettings> m_settings;
-        const std::wstring_view m_moduleName = L"FancyZonesUnitTests";
-        const std::wstring_view m_modulekey = L"FancyZonesUnitTests";
 
         TEST_METHOD_INITIALIZE(Init)
-            {
-                m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-                m_settings = MakeFancyZonesSettings(m_hInst, m_moduleName.data(), m_modulekey.data());
-                Assert::IsTrue(m_settings != nullptr);
-            }
-
-        TEST_METHOD_CLEANUP(CleanUp)
         {
-            std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
+            m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
         }
 
-            TEST_METHOD (Create)
-            {
-                auto actual = MakeFancyZones(m_hInst, m_settings, nullptr);
-                Assert::IsNotNull(actual.get());
-            }
-            TEST_METHOD (CreateWithEmptyHinstance)
-            {
-                auto actual = MakeFancyZones({}, m_settings, nullptr);
-                Assert::IsNotNull(actual.get());
-            }
+        TEST_METHOD (Create)
+        {
+            auto actual = MakeFancyZones(m_hInst, nullptr);
+            Assert::IsNotNull(actual.get());
+        }
 
-            TEST_METHOD (CreateWithNullHinstance)
-            {
-                auto actual = MakeFancyZones(nullptr, m_settings, nullptr);
-                Assert::IsNotNull(actual.get());
-            }
+        TEST_METHOD (CreateWithEmptyHinstance)
+        {
+            auto actual = MakeFancyZones({}, nullptr);
+            Assert::IsNotNull(actual.get());
+        }
 
-            TEST_METHOD (CreateWithNullSettings)
-            {
-                auto actual = MakeFancyZones(m_hInst, nullptr, nullptr);
-                Assert::IsNull(actual.get());
-            }
+        TEST_METHOD (CreateWithNullHinstance)
+        {
+            auto actual = MakeFancyZones(nullptr, nullptr);
+            Assert::IsNotNull(actual.get());
+        }
     };
 
     TEST_CLASS (FancyZonesIFancyZonesCallbackUnitTests)
@@ -61,7 +46,6 @@ namespace FancyZonesUnitTests
         HINSTANCE m_hInst{};
         std::wstring m_moduleName = L"FancyZonesUnitTests";
         std::wstring m_moduleKey = L"FancyZonesUnitTests";
-        winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         winrt::com_ptr<IFancyZonesCallback> m_fzCallback = nullptr;
 
         std::wstring serializedPowerToySettings(const Settings& settings)
@@ -112,10 +96,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD_INITIALIZE(Init)
         {
             m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-            m_settings = MakeFancyZonesSettings(m_hInst, m_moduleName.c_str(), m_moduleKey.c_str());
-            Assert::IsTrue(m_settings != nullptr);
-
-            auto fancyZones = MakeFancyZones(m_hInst, m_settings, nullptr);
+            auto fancyZones = MakeFancyZones(m_hInst, nullptr);
             Assert::IsTrue(fancyZones != nullptr);
 
             m_fzCallback = fancyZones.as<IFancyZonesCallback>();

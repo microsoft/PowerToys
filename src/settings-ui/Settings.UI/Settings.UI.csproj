@@ -7,7 +7,7 @@
     <AssemblyTitle>Microsoft.PowerToys.Settings.UI</AssemblyTitle>
     <AssemblyDescription>PowerToys Settings UI</AssemblyDescription>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corp.</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corp.</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
@@ -125,6 +125,7 @@
     </Compile>
     <Compile Include="Controls\SettingsPageControl\PageLink.cs" />
     <Compile Include="Converters\AwakeModeToIntConverter.cs" />
+    <Compile Include="Converters\FindMyMouseActivationShakeMouseIntToVisibilityConverter.cs" />
     <Compile Include="Converters\ImageResizerFitToStringConverter.cs" />
     <Compile Include="Converters\ImageResizerUnitToStringConverter.cs" />
     <Compile Include="Converters\UpdateStateToBoolConverter.cs" />
@@ -166,6 +167,9 @@
     </Compile>
     <Compile Include="OOBE\Views\OobeMouseUtils.xaml.cs">
       <DependentUpon>OobeMouseUtils.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeWhatsNew.xaml.cs">
+      <DependentUpon>OobeWhatsNew.xaml</DependentUpon>
     </Compile>
     <Compile Include="OOBE\Views\OobeOverview.xaml.cs">
       <DependentUpon>OobeOverview.xaml</DependentUpon>
@@ -302,19 +306,19 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.12</Version>
+      <Version>6.2.13</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI">
-      <Version>7.0.2</Version>
+      <Version>7.1.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
-      <Version>7.0.2</Version>
+      <Version>7.1.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Win32.UI.XamlApplication">
       <Version>6.1.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.7.0-prerelease.210913003</Version>
+      <Version>2.7.1-prerelease.211026002</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
@@ -324,10 +328,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
-      <Version>3.3.0</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -409,6 +412,10 @@
     <Page Include="OOBE\Views\OobeMouseUtils.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeWhatsNew.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="OOBE\Views\OobeOverview.xaml">
       <SubType>Designer</SubType>

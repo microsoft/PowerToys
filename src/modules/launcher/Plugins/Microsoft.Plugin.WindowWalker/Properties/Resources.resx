@@ -123,7 +123,71 @@
   <data name="wox_plugin_windowwalker_plugin_description" xml:space="preserve">
     <value>Switches between open windows.</value>
   </data>
-  <data name="wox_plugin_windowwalker_running" xml:space="preserve">
+  <data name="wox_plugin_windowwalker_Running" xml:space="preserve">
     <value>Running</value>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingConfirmKillProcess" xml:space="preserve">
+    <value>Request confirmation when killing a process</value>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingExplorerSettingInfo" xml:space="preserve">
+    <value>Hide Explorer process information</value>
+    <comment>Explorer is here the program File Explorer</comment>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingHideKillProcess" xml:space="preserve">
+    <value>Hide "kill process" button if additional permissions required</value>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingResultsVisibleDesktop" xml:space="preserve">
+    <value>Show only results from visible desktop</value>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingSubtitleDesktopName" xml:space="preserve">
+    <value>Show desktop name in the subtitle (If two or more desktops exist)</value>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingSubtitlePid" xml:space="preserve">
+    <value>Show process id in the subtitle</value>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingOpenAfterKillAndClose" xml:space="preserve">
+    <value>Stay open after closing windows and killing processes (Not working with kill process confirmation)</value>
+  </data>
+  <data name="wox_plugin_windowwalker_Desktop" xml:space="preserve">
+    <value>Desktop</value>
+  </data>
+  <data name="wox_plugin_windowwalker_Number" xml:space="preserve">
+    <value>No.</value>
+    <comment>Short version of "Number"</comment>
+  </data>
+  <data name="wox_plugin_windowwalker_Process" xml:space="preserve">
+    <value>Process name</value>
+  </data>
+  <data name="wox_plugin_windowwalker_ProcessId" xml:space="preserve">
+    <value>Process id</value>
+  </data>
+  <data name="wox_plugin_windowwalker_ExplorerInfoSubTitle" xml:space="preserve">
+    <value>Folder windows doesn't run in separate processes. (Klick to open Explorer properties.)</value>
+    <comment>Explorer is here the program File Explorer</comment>
+  </data>
+  <data name="wox_plugin_windowwalker_ExplorerInfoTitle" xml:space="preserve">
+    <value>Info: Killing the Explorer process isn't possible.</value>
+    <comment>Explorer is here the program File Explorer</comment>
+  </data>
+  <data name="wox_plugin_windowwalker_Close" xml:space="preserve">
+    <value>Close window</value>
+  </data>
+  <data name="wox_plugin_windowwalker_Kill" xml:space="preserve">
+    <value>Kill process</value>
+  </data>
+  <data name="wox_plugin_windowwalker_KillMessage" xml:space="preserve">
+    <value>Your are going to kill the following process:</value>
+  </data>
+  <data name="wox_plugin_windowwalker_KillMessageQuestion" xml:space="preserve">
+    <value>Continue?</value>
+  </data>
+  <data name="wox_plugin_windowwalker_KillMessageTitle" xml:space="preserve">
+    <value>Kill process confirmation</value>
+  </data>
+  <data name="wox_plugin_windowwalker_KillMessageUwp" xml:space="preserve">
+    <value>Because this is an app process, all instances of the app will be killed. Continue?</value>
+  </data>
+  <data name="wox_plugin_windowwalker_SettingKillProcessTree" xml:space="preserve">
+    <value>Kill process and its child processes</value>
   </data>
 </root>

@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => engine.Interpret(input));
+            Assert.ThrowsException<ArgumentNullException>(() => engine.Interpret(input, CultureInfo.CurrentCulture));
         }
 
         [DataTestMethod]
@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
-            var result = engine.Interpret(input);
+            var result = engine.Interpret(input, CultureInfo.CurrentCulture);
 
             // Assert
             Assert.AreEqual(default(CalculateResult), result);

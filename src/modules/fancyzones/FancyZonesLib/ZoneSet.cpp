@@ -7,10 +7,12 @@
 #include "FancyZonesWindowProperties.h"
 #include "Settings.h"
 #include "Zone.h"
-#include "util.h"
+#include <FancyZonesLib/util.h>
+#include <FancyZonesLib/WindowUtils.h>
 
 #include <common/logger/logger.h>
 #include <common/display/dpi_aware.h>
+#include <common/utils/winapi_error.h>
 
 #include <limits>
 #include <map>
@@ -303,6 +305,11 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
         return;
     }
 
+    if (!zoneIds.empty())
+    {
+        Logger::trace(L"Move window into zones {} - {}", zoneIds.front(), zoneIds.back());
+    }
+    
     // Always clear the info related to SelectManyZones if it's not being used
     if (!m_inExtendWindow)
     {
@@ -344,10 +351,10 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
     {
         if (!suppressMove)
         {
-            SaveWindowSizeAndOrigin(window);
+            FancyZonesWindowUtils::SaveWindowSizeAndOrigin(window);
 
-            auto rect = AdjustRectForSizeWindowToRect(window, size, workAreaWindow);
-            SizeWindowToRect(window, rect);
+            auto rect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, size, workAreaWindow);
+            FancyZonesWindowUtils::SizeWindowToRect(window, rect);
         }
 
         FancyZonesWindowProperties::StampZoneIndexProperty(window, indexSet);
@@ -459,6 +466,10 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND workAreaWind
             }
         }
     }
+    else
+    {
+        Logger::error(L"GetWindowRect failed, {}", get_last_error_or_default(GetLastError()));
+    }
 
     return false;
 }
@@ -545,6 +556,10 @@ ZoneSet::ExtendWindowByDirectionAndPosition(HWND window, HWND workAreaWindow, DW
             return true;
         }
     }
+    else
+    {
+        Logger::error(L"GetWindowRect failed, {}", get_last_error_or_default(GetLastError()));
+    }
 
     return false;
 }
@@ -597,7 +612,7 @@ ZoneSet::CycleTabs(HWND window, bool reverse) noexcept
             continue;
         }
 
-        SwitchToWindow(next);
+        FancyZonesWindowUtils::SwitchToWindow(next);
 
         break;
     }
@@ -665,12 +680,14 @@ ZoneSet::CalculateZones(RECT workAreaRect, int zoneCount, int spacing) noexcept
     //invalid work area
     if (workArea.width() == 0 || workArea.height() == 0)
     {
+        Logger::error(L"CalculateZones: invalid work area");
         return false;
     }
 
     //invalid zoneCount, may cause division by zero
     if (zoneCount <= 0 && m_config.LayoutType != FancyZonesDataTypes::ZoneSetLayoutType::Custom)
     {
+        Logger::error(L"CalculateZones: invalid zone count");
         return false;
     }
 
@@ -874,7 +891,7 @@ bool ZoneSet::CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, in
 
 bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 {
-    const auto zoneSetSearchResult = CustomLayouts::instance().GetLayout(m_config.Id);
+    const auto zoneSetSearchResult = CustomLayouts::instance().GetCustomLayoutData(m_config.Id);
     if (!zoneSetSearchResult.has_value())
     {
         return false;

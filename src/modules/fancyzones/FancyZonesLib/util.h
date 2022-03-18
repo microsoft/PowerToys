@@ -1,12 +1,6 @@
 #pragma once
 
-#include "gdiplus.h"
 #include <common/utils/string_utils.h>
-
-namespace FancyZonesDataTypes
-{
-    struct DeviceIdData;
-}
 
 namespace FancyZonesUtils
 {
@@ -39,16 +33,6 @@ namespace FancyZonesUtils
     private:
         RECT m_rect{};
     };
-
-    inline void MakeWindowTransparent(HWND window)
-    {
-        int const pos = -GetSystemMetrics(SM_CXVIRTUALSCREEN) - 8;
-        if (wil::unique_hrgn hrgn{ CreateRectRgn(pos, 0, (pos + 1), 1) })
-        {
-            DWM_BLURBEHIND bh = { DWM_BB_ENABLE | DWM_BB_BLURREGION, TRUE, hrgn.get(), FALSE };
-            DwmEnableBlurBehindWindow(window, &bh);
-        }
-    }
 
     inline void InitRGB(_Out_ RGBQUAD* quad, BYTE alpha, COLORREF color)
     {
@@ -189,23 +173,6 @@ namespace FancyZonesUtils
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept;
     void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);
 
-    // Parameter rect is in windowOfRect coordinates
-    RECT AdjustRectForSizeWindowToRect(HWND window, RECT rect, HWND windowOfRect) noexcept;
-
-    // Parameter rect must be in screen coordinates (e.g. obtained from GetWindowRect)
-    void SizeWindowToRect(HWND window, RECT rect) noexcept;
-
-    void SwitchToWindow(HWND window) noexcept;
-
-    bool HasNoVisibleOwner(HWND window) noexcept;
-    bool IsStandardWindow(HWND window);
-    bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
-
-    bool IsWindowMaximized(HWND window) noexcept;
-    void SaveWindowSizeAndOrigin(HWND window) noexcept;
-    void RestoreWindowSize(HWND window) noexcept;
-    void RestoreWindowOrigin(HWND window) noexcept;
-
     bool IsValidGuid(const std::wstring& str);
     std::optional<GUID> GuidFromString(const std::wstring& str) noexcept;
     std::optional<std::wstring> GuidToString(const GUID& guid) noexcept;
@@ -215,10 +182,5 @@ namespace FancyZonesUtils
     std::wstring TrimDeviceId(const std::wstring& deviceId);
 
     RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept;
-    size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
-
-    // If HWND is already dead, we assume it wasn't elevated
-    bool IsProcessOfWindowElevated(HWND window);
-
-    bool IsSplashScreen(HWND window);
+    size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;    
 }

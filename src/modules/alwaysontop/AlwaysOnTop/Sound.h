@@ -27,7 +27,7 @@ public:
             success = PlaySound(TEXT("Media\\Speech On.wav"), NULL, SND_FILENAME | SND_ASYNC);
             break;
         case Type::Off:
-            success = PlaySound(TEXT("Media\\Speech Off.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            success = PlaySound(TEXT("Media\\Speech Sleep.wav"), NULL, SND_FILENAME | SND_ASYNC);
             break;
         default:
             break;

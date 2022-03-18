@@ -11,7 +11,7 @@
 #include "Zone.h"
 #include "ZoneSet.h"
 #include "FancyZones.h"
-#include "ZoneColors.h"
+#include "Colors.h"
 
 class ZonesOverlay
 {
@@ -68,6 +68,6 @@ public:
     void Flash();
     void DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                            const ZoneIndexSet& highlightZones,
-                           const ZoneColors& colors,
+                           const Colors::ZoneColors& colors,
                            const bool showZoneText);
 };
