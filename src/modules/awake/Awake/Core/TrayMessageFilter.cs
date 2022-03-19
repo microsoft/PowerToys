@@ -2,7 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
+using System.Text.Json;
 using System.Windows.Forms;
+using Awake.Core.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
 
 #pragma warning disable CS8603 // Possible null reference return.
@@ -24,11 +28,11 @@ namespace Awake.Core
         {
             switch (m.Msg)
             {
-                case NativeConstants.WM_COMMAND:
+                case (int)NativeConstants.WM_COMMAND:
                     switch (m.WParam.ToInt64() & 0xFFFF)
                     {
-                        case NativeConstants.WM_USER + 1:
-                            // TODO
+                        case (long)TrayCommands.TC_EXIT:
+                            ExitCommandHandler();
                             break;
                         case NativeConstants.WM_USER + 2:
                             // TODO
@@ -39,6 +43,87 @@ namespace Awake.Core
             }
 
             return false;
+        }
+
+        private static void ExitCommandHandler()
+        {
+            Environment.Exit(Environment.ExitCode);
+        }
+
+        private static void KeepDisplayOnCommandHandler(string moduleName)
+        {
+            AwakeSettings currentSettings;
+
+            try
+            {
+                currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
+            }
+            catch (FileNotFoundException)
+            {
+                currentSettings = new AwakeSettings();
+            }
+
+            currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
+
+            ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+        }
+
+        private static void TimedKeepAwakeCommandHandler(string moduleName, int seconds)
+        {
+            TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
+
+            AwakeSettings currentSettings;
+
+            try
+            {
+                currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
+            }
+            catch (FileNotFoundException)
+            {
+                currentSettings = new AwakeSettings();
+            }
+
+            currentSettings.Properties.Mode = AwakeMode.TIMED;
+            currentSettings.Properties.Hours = (uint)timeSpan.Hours;
+            currentSettings.Properties.Minutes = (uint)timeSpan.Minutes;
+
+            ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+        }
+
+        private static void PassiveKeepAwakeCommandHandler(string moduleName)
+        {
+            AwakeSettings currentSettings;
+
+            try
+            {
+                currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
+            }
+            catch (FileNotFoundException)
+            {
+                currentSettings = new AwakeSettings();
+            }
+
+            currentSettings.Properties.Mode = AwakeMode.PASSIVE;
+
+            ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+        }
+
+        private static void IndefiniteKeepAwakeCommandHandler(string moduleName)
+        {
+            AwakeSettings currentSettings;
+
+            try
+            {
+                currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
+            }
+            catch (FileNotFoundException)
+            {
+                currentSettings = new AwakeSettings();
+            }
+
+            currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
+
+            ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
         }
     }
 }

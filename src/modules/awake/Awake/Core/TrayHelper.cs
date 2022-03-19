@@ -5,11 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Awake.Core.Models;
@@ -69,21 +67,25 @@ namespace Awake.Core
                 }, TrayIcon);
         }
 
+        /// <summary>
+        /// Function used to construct the context menu in the tray natively.
+        /// </summary>
+        /// <remarks>
+        /// We need to use the Windows API here instead of the common control exposed
+        /// by NotifyIcon because the one that is built into the Windows Forms stack
+        /// hasn't been updated in a while and is looking like Office XP. That introduces
+        /// scalability and coloring changes on any OS past Windows XP.
+        /// </remarks>
+        /// <param name="sender">The sender that triggers the handler.</param>
+        /// <param name="e">MouseEventArgs instance containing mouse click event information.</param>
         private static void TrayClickHandler(object? sender, MouseEventArgs e)
         {
-            IEnumerable<IntPtr> windowHandles = APIHelper.EnumerateWindowsForProcess(Process.GetCurrentProcess().Id);
-            var domain = AppDomain.CurrentDomain.GetHashCode().ToString("x");
-            string targetClass = $"{InternalConstants.TrayWindowId}{domain}";
+            IntPtr windowHandle = APIHelper.GetHiddenWindow();
 
-            foreach (var handle in windowHandles)
+            if (windowHandle != IntPtr.Zero)
             {
-                StringBuilder className = new (256);
-                NativeMethods.GetClassName(handle, className, className.Capacity);
-                if (className.ToString().StartsWith(targetClass))
-                {
-                    NativeMethods.TrackPopupMenuEx(TrayMenu, 0, Cursor.Position.X, Cursor.Position.Y, handle, IntPtr.Zero);
-                    break;
-                }
+                NativeMethods.SetForegroundWindow(windowHandle);
+                NativeMethods.TrackPopupMenuEx(TrayMenu, 0, Cursor.Position.X, Cursor.Position.Y, windowHandle, IntPtr.Zero);
             }
         }
 
@@ -101,116 +103,23 @@ namespace Awake.Core
                 settings.Properties.Mode);
         }
 
-        private static Action ExitCallback()
-        {
-            return () =>
-            {
-                Environment.Exit(Environment.ExitCode);
-            };
-        }
-
-        private static Action KeepDisplayOnCallback(string moduleName)
-        {
-            return () =>
-            {
-                AwakeSettings currentSettings;
-
-                try
-                {
-                    currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
-                }
-                catch (FileNotFoundException)
-                {
-                    currentSettings = new AwakeSettings();
-                }
-
-                currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
-
-                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
-            };
-        }
-
-        private static Action<uint, uint> TimedKeepAwakeCallback(string moduleName)
-        {
-            return (hours, minutes) =>
-            {
-                AwakeSettings currentSettings;
-
-                try
-                {
-                    currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
-                }
-                catch (FileNotFoundException)
-                {
-                    currentSettings = new AwakeSettings();
-                }
-
-                currentSettings.Properties.Mode = AwakeMode.TIMED;
-                currentSettings.Properties.Hours = hours;
-                currentSettings.Properties.Minutes = minutes;
-
-                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
-            };
-        }
-
-        private static Action PassiveKeepAwakeCallback(string moduleName)
-        {
-            return () =>
-            {
-                AwakeSettings currentSettings;
-
-                try
-                {
-                    currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
-                }
-                catch (FileNotFoundException)
-                {
-                    currentSettings = new AwakeSettings();
-                }
-
-                currentSettings.Properties.Mode = AwakeMode.PASSIVE;
-
-                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
-            };
-        }
-
-        private static Action IndefiniteKeepAwakeCallback(string moduleName)
-        {
-            return () =>
-            {
-                AwakeSettings currentSettings;
-
-                try
-                {
-                    currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
-                }
-                catch (FileNotFoundException)
-                {
-                    currentSettings = new AwakeSettings();
-                }
-
-                currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
-
-                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
-            };
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1005:Single line comments should begin with single space", Justification = "For debugging purposes - will remove later.")]
+        [SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1005:Single line comments should begin with single space", Justification = "For debugging purposes - will remove later.")]
         public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode)
         {
             TrayMenu = NativeMethods.CreatePopupMenu();
-            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, NativeConstants.WM_USER + 1, "Exit");
+            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_EXIT, "Exit");
             NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_SEPARATOR, 0, string.Empty);
-            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (keepDisplayOn ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), NativeConstants.WM_USER + 2, "Keep screen on");
+            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (keepDisplayOn ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)TrayCommands.TC_DISPLAY_SETTING, "Keep screen on");
 
+            // TODO: Make sure that this loads from JSON instead of being hard-coded.
             var awakeTimeMenu = NativeMethods.CreatePopupMenu();
-            NativeMethods.InsertMenu(awakeTimeMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, NativeConstants.WM_USER + 3, "30 minutes");
-            NativeMethods.InsertMenu(awakeTimeMenu, 1, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, NativeConstants.WM_USER + 4, "1 hour");
-            NativeMethods.InsertMenu(awakeTimeMenu, 2, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, NativeConstants.WM_USER + 5, "2 hours");
+            NativeMethods.InsertMenu(awakeTimeMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_TIME, "30 minutes");
+            NativeMethods.InsertMenu(awakeTimeMenu, 1, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_TIME, "1 hour");
+            NativeMethods.InsertMenu(awakeTimeMenu, 2, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_TIME, "2 hours");
 
             var modeMenu = NativeMethods.CreatePopupMenu();
-            NativeMethods.InsertMenu(modeMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (mode == AwakeMode.PASSIVE ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), NativeConstants.WM_USER + 6, "Off (keep using the selected power plan)");
-            NativeMethods.InsertMenu(modeMenu, 1, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (mode == AwakeMode.INDEFINITE ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), NativeConstants.WM_USER + 7, "Keep awake indefinitely");
+            NativeMethods.InsertMenu(modeMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (mode == AwakeMode.PASSIVE ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, "Off (keep using the selected power plan)");
+            NativeMethods.InsertMenu(modeMenu, 1, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (mode == AwakeMode.INDEFINITE ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, "Keep awake indefinitely");
 
             NativeMethods.InsertMenu(modeMenu, 2, NativeConstants.MF_BYPOSITION | NativeConstants.MF_POPUP | (mode == AwakeMode.TIMED ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)awakeTimeMenu, "Keep awake temporarily");
             NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_POPUP, (uint)modeMenu, "Mode");

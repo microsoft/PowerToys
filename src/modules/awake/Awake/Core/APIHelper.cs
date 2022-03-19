@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Awake.Core.Models;
@@ -185,6 +186,26 @@ namespace Awake.Core
             }
         }
 
+        internal static void CompleteExit(int exitCode, bool force = false)
+        {
+            APIHelper.SetNoKeepAwake();
+            TrayHelper.ClearTray();
+
+            // Because we are running a message loop for the tray, we can't just use Environment.Exit,
+            // but have to make sure that we properly send the termination message.
+            IntPtr windowHandle = APIHelper.GetHiddenWindow();
+
+            if (windowHandle != IntPtr.Zero)
+            {
+                NativeMethods.SendMessage(windowHandle, NativeConstants.WM_CLOSE, 0, string.Empty);
+            }
+
+            if (force)
+            {
+                Environment.Exit(exitCode);
+            }
+        }
+
         private static bool RunTimedLoop(uint seconds, bool keepDisplayOn = true)
         {
             bool success = false;
@@ -284,6 +305,25 @@ namespace Awake.Core
             while (hCurrentWnd != IntPtr.Zero);
 
             return handles;
+        }
+
+        public static IntPtr GetHiddenWindow()
+        {
+            IEnumerable<IntPtr> windowHandles = EnumerateWindowsForProcess(Process.GetCurrentProcess().Id);
+            var domain = AppDomain.CurrentDomain.GetHashCode().ToString("x");
+            string targetClass = $"{InternalConstants.TrayWindowId}{domain}";
+
+            foreach (var handle in windowHandles)
+            {
+                StringBuilder className = new (256);
+                NativeMethods.GetClassName(handle, className, className.Capacity);
+                if (className.ToString().StartsWith(targetClass))
+                {
+                    return handle;
+                }
+            }
+
+            return IntPtr.Zero;
         }
     }
 }

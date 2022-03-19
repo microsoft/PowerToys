@@ -159,18 +159,7 @@ namespace Awake
         {
             _log.Info(message);
 
-            APIHelper.SetNoKeepAwake();
-            TrayHelper.ClearTray();
-
-            // Because we are running a message loop for the tray, we can't just use Environment.Exit,
-            // but have to make sure that we properly send the termination message.
-            bool cwResult = System.Diagnostics.Process.GetCurrentProcess().CloseMainWindow();
-            _log.Info($"Request to close main window status: {cwResult}");
-
-            if (force)
-            {
-                Environment.Exit(exitCode);
-            }
+            APIHelper.CompleteExit(exitCode, force);
         }
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid)

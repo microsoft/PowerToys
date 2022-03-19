@@ -8,13 +8,14 @@ namespace Awake.Core
 {
     internal class NativeConstants
     {
-        internal const int WM_COMMAND = 0x111;
-        internal const int WM_USER = 0x400;
+        internal const uint WM_COMMAND = 0x111;
+        internal const uint WM_USER = 0x400;
         internal const uint WM_GETTEXT = 0x000D;
+        internal const uint WM_CLOSE = 0x0010;
 
         // Popup menu constants.
-        internal const int MF_BYPOSITION = 1024;
-        internal const int MF_STRING = 0;
+        internal const uint MF_BYPOSITION = 1024;
+        internal const uint MF_STRING = 0;
         internal const uint MF_MENUBREAK = 0x00000040;
         internal const uint MF_SEPARATOR = 0x00000800;
         internal const uint MF_POPUP = 0x00000010;
