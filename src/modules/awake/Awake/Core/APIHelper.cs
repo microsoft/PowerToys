@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -288,6 +289,7 @@ namespace Awake.Core
             }
         }
 
+        [SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Function returns DWORD value that identifies the current thread, but we do not need it.")]
         public static IEnumerable<IntPtr> EnumerateWindowsForProcess(int processId)
         {
             var handles = new List<IntPtr>();
@@ -307,17 +309,18 @@ namespace Awake.Core
             return handles;
         }
 
+        [SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "In this context, the string is only converted to a hex value.")]
         public static IntPtr GetHiddenWindow()
         {
-            IEnumerable<IntPtr> windowHandles = EnumerateWindowsForProcess(Process.GetCurrentProcess().Id);
+            IEnumerable<IntPtr> windowHandles = EnumerateWindowsForProcess(Environment.ProcessId);
             var domain = AppDomain.CurrentDomain.GetHashCode().ToString("x");
             string targetClass = $"{InternalConstants.TrayWindowId}{domain}";
 
             foreach (var handle in windowHandles)
             {
                 StringBuilder className = new (256);
-                NativeMethods.GetClassName(handle, className, className.Capacity);
-                if (className.ToString().StartsWith(targetClass))
+                int classQueryResult = NativeMethods.GetClassName(handle, className, className.Capacity);
+                if (classQueryResult != 0 && className.ToString().StartsWith(targetClass, StringComparison.InvariantCultureIgnoreCase))
                 {
                     return handle;
                 }
