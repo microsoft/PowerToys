@@ -149,8 +149,8 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                         }
 
                         // intersect the title with the query
-                        var intersection = Convert.ToInt32(x.Title.ToLowerInvariant().Intersect(query.Search.ToLowerInvariant()).Count() * query.Search.Count());
-                        var differenceWithQuery = Convert.ToInt32((x.Title.Count() - intersection) * query.Search.Count() * 0.7);
+                        var intersection = Convert.ToInt32(x.Title.ToLowerInvariant().Intersect(query.Search.ToLowerInvariant()).Count() * query.Search.Length);
+                        var differenceWithQuery = Convert.ToInt32((x.Title.Length - intersection) * query.Search.Length * 0.7);
                         x.Score = x.Score - differenceWithQuery + intersection;
 
                         // if is a remote machine give it 12 extra points

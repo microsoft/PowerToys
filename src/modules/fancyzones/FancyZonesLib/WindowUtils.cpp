@@ -2,7 +2,9 @@
 #include "WindowUtils.h"
 
 #include <common/display/dpi_aware.h>
+#include <common/logger/logger.h>
 #include <common/utils/process_path.h>
+#include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
 #include <common/utils/excluded_apps.h>
 
@@ -292,14 +294,20 @@ void FancyZonesWindowUtils::SwitchToWindow(HWND window) noexcept
     if (IsIconic(window))
     {
         // Show the window since SetForegroundWindow fails on minimized windows
-        ShowWindow(window, SW_RESTORE);
+        if (!ShowWindow(window, SW_RESTORE))
+        {
+            Logger::error(L"ShowWindow failed");
+        }
     }
 
     // This is a hack to bypass the restriction on setting the foreground window
     INPUT inputs[1] = { { .type = INPUT_MOUSE } };
     SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
 
-    SetForegroundWindow(window);
+    if (!SetForegroundWindow(window))
+    {
+        Logger::error(L"SetForegroundWindow failed");
+    }
 }
 
 void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
@@ -338,10 +346,19 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
 
     placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
-    ::SetWindowPlacement(window, &placement);
+    auto result = ::SetWindowPlacement(window, &placement);
+    if (!result)
+    {
+        Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
+    }
+    
     // Do it again, allowing Windows to resize the window and set correct scaling
     // This fixes Issue #365
-    ::SetWindowPlacement(window, &placement);
+    result = ::SetWindowPlacement(window, &placement);
+    if (!result)
+    {
+        Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
+    }
 }
 
 void FancyZonesWindowUtils::SaveWindowSizeAndOrigin(HWND window) noexcept
@@ -390,6 +407,7 @@ void FancyZonesWindowUtils::RestoreWindowSize(HWND window) noexcept
         {
             rect.right = rect.left + windowSize[0];
             rect.bottom = rect.top + windowSize[1];
+            Logger::info("Restore window size");
             SizeWindowToRect(window, rect);
         }
 
@@ -423,6 +441,8 @@ void FancyZonesWindowUtils::RestoreWindowOrigin(HWND window) noexcept
             rect.right += xOffset;
             rect.top += yOffset;
             rect.bottom += yOffset;
+
+            Logger::info("Restore window origin");
             SizeWindowToRect(window, rect);
         }
 

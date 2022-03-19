@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Interop;
 using interop;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Windows.ApplicationModel.Resources;
@@ -20,7 +21,7 @@ namespace PowerToys.Settings
     {
         private static Window inst;
         private OobeShellPage shellPage;
-        private int initialModule;
+        private PowerToysModulesEnum initialModule;
 
         public static bool IsOpened
         {
@@ -30,7 +31,7 @@ namespace PowerToys.Settings
             }
         }
 
-        public OobeWindow(int initialModule)
+        public OobeWindow(PowerToysModulesEnum initialModule)
         {
             InitializeComponent();
             Utils.FitToScreen(this);

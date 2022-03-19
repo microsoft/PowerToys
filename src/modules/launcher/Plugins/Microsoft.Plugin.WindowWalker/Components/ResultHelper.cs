@@ -26,7 +26,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             foreach (SearchResult x in searchControllerResults)
             {
-                if (x.Result.Process.Name.ToLower() == "explorer.exe" && x.Result.Process.IsShellProcess)
+                if (x.Result.Process.Name.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "explorer.exe" && x.Result.Process.IsShellProcess)
                 {
                     addExplorerInfo = true;
                 }
@@ -126,7 +126,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     $"Is ShellProcess: {window.Process.IsShellProcess}\n" +
                     $"Is window cloaked: {window.IsCloaked}\n" +
                     $"Window cloak state: {window.GetWindowCloakState()}\n" +
-                    $"Desktop name: {window.Desktop.Name}" +
+                    $"Desktop id: {window.Desktop.Id}\n" +
+                    $"Desktop name: {window.Desktop.Name}\n" +
                     $"Desktop number: {window.Desktop.Number}\n" +
                     $"Desktop is visible: {window.Desktop.IsVisible}\n" +
                     $"Desktop position: {window.Desktop.Position}\n" +

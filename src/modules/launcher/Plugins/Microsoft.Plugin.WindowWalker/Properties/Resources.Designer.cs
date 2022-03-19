@@ -250,7 +250,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show desktop name in subtitle (If two or more desktops exist).
+        ///   Looks up a localized string similar to Show desktop name in the subtitle (If two or more desktops exist).
         /// </summary>
         public static string wox_plugin_windowwalker_SettingSubtitleDesktopName {
             get {
@@ -259,7 +259,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show process id in subtitle.
+        ///   Looks up a localized string similar to Show process id in the subtitle.
         /// </summary>
         public static string wox_plugin_windowwalker_SettingSubtitlePid {
             get {

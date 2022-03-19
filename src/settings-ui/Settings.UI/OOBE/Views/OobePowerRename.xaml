@@ -7,10 +7,10 @@
       xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
       xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
       mc:Ignorable="d">
-    <controls:OOBEPageControl ModuleTitle="{x:Bind ViewModel.ModuleName}"
-                                  ModuleImageSource="{x:Bind ViewModel.PreviewImageSource}"
-                                  ModuleDescription="{x:Bind ViewModel.Description}">
-        <controls:OOBEPageControl.ModuleContent>
+    <controls:OOBEPageControl x:Uid="Oobe_PowerRename"
+                              HeroImage="ms-appx:///Assets/Modules/OOBE/PowerRename.gif">
+        
+        <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
 
                 <TextBlock x:Uid="Oobe_HowToUse"
@@ -26,12 +26,12 @@
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                     <Button x:Uid="OOBE_Settings"
                             Click="SettingsLaunchButton_Click"/>
-                    <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}" Style="{StaticResource TextButtonStyle}">
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerRename" Style="{StaticResource TextButtonStyle}">
                         <TextBlock x:Uid="LearnMore_PowerRename"
                                TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>
-        </controls:OOBEPageControl.ModuleContent>
+        </controls:OOBEPageControl.PageContent>
     </controls:OOBEPageControl>
 </Page>

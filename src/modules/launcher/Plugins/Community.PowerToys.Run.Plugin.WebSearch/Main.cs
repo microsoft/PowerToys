@@ -152,7 +152,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
             {
                 if (input.EndsWith(":", StringComparison.OrdinalIgnoreCase)
                     && !input.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                    && !input.Contains("/", StringComparison.OrdinalIgnoreCase)
+                    && !input.Contains('/', StringComparison.OrdinalIgnoreCase)
                     && !input.All(char.IsDigit)
                     && System.Text.RegularExpressions.Regex.IsMatch(input, @"^([a-z][a-z0-9+\-.]*):"))
                 {
