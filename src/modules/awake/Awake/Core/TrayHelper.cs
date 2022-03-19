@@ -4,10 +4,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
-using System.Text;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Awake.Core.Models;
@@ -100,8 +100,10 @@ namespace Awake.Core
         }
 
         [SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1005:Single line comments should begin with single space", Justification = "For debugging purposes - will remove later.")]
-        public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, List<KeyValuePair<string, int>> trayTimeShortcuts)
+        public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts)
         {
+            Marshal.FreeHGlobal(TrayMenu);
+
             TrayMenu = NativeMethods.CreatePopupMenu();
             NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_EXIT, "Exit");
             NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_SEPARATOR, 0, string.Empty);
@@ -118,7 +120,7 @@ namespace Awake.Core
             var awakeTimeMenu = NativeMethods.CreatePopupMenu();
             for (int i = 0; i < trayTimeShortcuts.Count; i++)
             {
-                NativeMethods.InsertMenu(awakeTimeMenu, (uint)i, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts[i].Key);
+                NativeMethods.InsertMenu(awakeTimeMenu, (uint)i, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
             }
 
             var modeMenu = NativeMethods.CreatePopupMenu();

@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Windows.Forms;
 using Awake.Core.Models;
@@ -56,7 +57,7 @@ namespace Awake.Core
                             }
 
                             int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
-                            var targetTime = settings.Properties.TrayTimeShortcuts[index].Value;
+                            var targetTime = settings.Properties.TrayTimeShortcuts.ElementAt(index).Value;
                             TimedKeepAwakeCommandHandler(InternalConstants.AppName, targetTime);
                             break;
                     }

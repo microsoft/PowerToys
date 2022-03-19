@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Mode = AwakeMode.PASSIVE;
             Hours = 0;
             Minutes = 0;
-            TrayTimeShortcuts = new List<KeyValuePair<string, int>>();
+            TrayTimeShortcuts = new Dictionary<string, int>();
         }
 
         [JsonPropertyName("awake_keep_display_on")]
@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public uint Minutes { get; set; }
 
         [JsonPropertyName("tray_times")]
-        public List<KeyValuePair<string, int>> TrayTimeShortcuts { get; set; }
+        public Dictionary<string, int> TrayTimeShortcuts { get; set; }
     }
 
     public enum AwakeMode

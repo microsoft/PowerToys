@@ -326,12 +326,12 @@ namespace Awake.Core
             return IntPtr.Zero;
         }
 
-        public static List<KeyValuePair<string, int>> GetDefaultTrayOptions()
+        public static Dictionary<string, int> GetDefaultTrayOptions()
         {
-            List<KeyValuePair<string, int>> optionsList = new List<KeyValuePair<string, int>>();
-            optionsList.Add(new KeyValuePair<string, int>("30 minutes", 1800));
-            optionsList.Add(new KeyValuePair<string, int>("1 hour", 3600));
-            optionsList.Add(new KeyValuePair<string, int>("2 hours", 7200));
+            Dictionary<string, int> optionsList = new Dictionary<string, int>();
+            optionsList.Add("30 minutes", 1800);
+            optionsList.Add("1 hour", 3600);
+            optionsList.Add("2 hours", 7200);
             return optionsList;
         }
     }
