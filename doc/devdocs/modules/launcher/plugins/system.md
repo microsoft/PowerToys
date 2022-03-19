@@ -25,6 +25,7 @@ Available commands:
 	|--------------|-----------|------------|
 	| `ConfirmSystemCommands` | `false` | Show a dialog to confirm system commands |
 	| `LocalizeSystemCommands` | `true` | Use localized system commands instead of English ones |
+	| `ReduceNetworkResultScore` | `true` | Reduce the priority of 'IP' and 'MAC' results to improve the order in the global results |
 
 * The optional plugin settings are implemented via the [`ISettingProvider`](/src/modules/launcher/Wox.Plugin/ISettingProvider.cs) interface from `Wox.Plugin` project. All available settings for the plugin are defined in the [`Main`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Main.cs) class of the plugin.
 
