@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         private bool _confirmSystemCommands;
         private bool _localizeSystemCommands;
+        private bool _reduceNetworkResultScore;
 
         public string Name => Resources.Microsoft_plugin_sys_plugin_name;
 
@@ -44,6 +45,12 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             {
                 Key = "LocalizeSystemCommands",
                 DisplayLabel = Resources.Use_localized_system_commands,
+                Value = true,
+            },
+            new PluginAdditionalOption()
+            {
+                Key = "ReduceNetworkResultScore",
+                DisplayLabel = Resources.Reduce_Network_Result_Score,
                 Value = true,
             },
         };
@@ -89,7 +96,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
             foreach (var r in networkConnectionResults)
             {
-                // On global queries the first word has to be 'ip', 'mac' or 'address'
+                // On global queries the first word/part has to be 'ip', 'mac' or 'address'
                 if (string.IsNullOrEmpty(query.ActionKeyword))
                 {
                     string[] keywordList = Resources.ResourceManager.GetString("Microsoft_plugin_sys_Search_NetworkKeywordList", culture).Split("; ");
@@ -102,7 +109,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                 var resultMatch = StringMatcher.FuzzySearch(query.Search, r.SubTitle);
                 if (resultMatch.Score > 0)
                 {
-                    r.Score = (int)(resultMatch.Score * 75 / 100); // Adjust score to improve user experience and priority order
+                    r.Score = _reduceNetworkResultScore ? (int)(resultMatch.Score * 65 / 100) : resultMatch.Score; // Adjust score to improve user experience and priority order
                     r.SubTitleHighlightData = resultMatch.MatchData;
                     results.Add(r);
                 }
@@ -152,6 +159,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         {
             var confirmSystemCommands = false;
             var localizeSystemCommands = true;
+            var reduceNetworkResultScore = true;
 
             if (settings != null && settings.AdditionalOptions != null)
             {
@@ -160,10 +168,14 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
                 var optionLocalize = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LocalizeSystemCommands");
                 localizeSystemCommands = optionLocalize?.Value ?? localizeSystemCommands;
+
+                var optionNetworkScore = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ReduceNetworkResultScore");
+                reduceNetworkResultScore = optionNetworkScore?.Value ?? reduceNetworkResultScore;
             }
 
             _confirmSystemCommands = confirmSystemCommands;
             _localizeSystemCommands = localizeSystemCommands;
+            _reduceNetworkResultScore = reduceNetworkResultScore;
         }
     }
 }

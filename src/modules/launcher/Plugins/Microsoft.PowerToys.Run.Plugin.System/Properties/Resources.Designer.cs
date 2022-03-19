@@ -628,6 +628,16 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reduce the priority of &apos;IP&apos; and &apos;MAC&apos; results to improve the order in the global results
+        ///(With this setting enabled, you have to type more characters to find the results.).
+        /// </summary>
+        internal static string Reduce_Network_Result_Score {
+            get {
+                return ResourceManager.GetString("Reduce_Network_Result_Score", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use localized system commands instead of English ones.
         /// </summary>
         internal static string Use_localized_system_commands {

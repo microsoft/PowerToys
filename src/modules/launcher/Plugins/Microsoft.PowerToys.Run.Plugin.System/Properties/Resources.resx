@@ -339,6 +339,10 @@
   <data name="Microsoft_plugin_sys_WirelessLan" xml:space="preserve">
     <value>Wireless LAN</value>
   </data>
+  <data name="Reduce_Network_Result_Score" xml:space="preserve">
+    <value>Reduce the priority of 'IP' and 'MAC' results to improve the order in the global results
+(With this setting enabled, you have to type more characters to find the results.)</value>
+  </data>
   <data name="Use_localized_system_commands" xml:space="preserve">
     <value>Use localized system commands instead of English ones</value>
   </data>
