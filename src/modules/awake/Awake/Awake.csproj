@@ -18,6 +18,8 @@
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <PackageProjectUrl>https://awake.den.dev</PackageProjectUrl>
     <RepositoryUrl>https://github.com/microsoft/powertoys</RepositoryUrl>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>Recommended</AnalysisMode>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

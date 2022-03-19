@@ -80,10 +80,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private int FilterRemapKeysList(List<KeysDataModel> remapKeysList)
         {
-            CombineRemappings(remapKeysList, (uint)VirtualKey.LeftControl, (uint)VirtualKey.RightControl, (uint)VirtualKey.Control);
-            CombineRemappings(remapKeysList, (uint)VirtualKey.LeftMenu, (uint)VirtualKey.RightMenu, (uint)VirtualKey.Menu);
-            CombineRemappings(remapKeysList, (uint)VirtualKey.LeftShift, (uint)VirtualKey.RightShift, (uint)VirtualKey.Shift);
-            CombineRemappings(remapKeysList, (uint)VirtualKey.LeftWindows, (uint)VirtualKey.RightWindows, Helper.VirtualKeyWindows);
+            if (remapKeysList != null)
+            {
+                CombineRemappings(remapKeysList, (uint)VirtualKey.LeftControl, (uint)VirtualKey.RightControl, (uint)VirtualKey.Control);
+                CombineRemappings(remapKeysList, (uint)VirtualKey.LeftMenu, (uint)VirtualKey.RightMenu, (uint)VirtualKey.Menu);
+                CombineRemappings(remapKeysList, (uint)VirtualKey.LeftShift, (uint)VirtualKey.RightShift, (uint)VirtualKey.Shift);
+                CombineRemappings(remapKeysList, (uint)VirtualKey.LeftWindows, (uint)VirtualKey.RightWindows, Helper.VirtualKeyWindows);
+            }
 
             return 0;
         }

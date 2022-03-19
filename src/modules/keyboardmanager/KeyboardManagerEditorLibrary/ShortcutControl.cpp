@@ -177,7 +177,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             shortcutRemapBuffer[rowIndex].second = targetAppTextBox.Text().c_str();
         }
 
-        // To set the accessibile name of the target app text box when focus is lost
+        // To set the accessible name of the target app text box when focus is lost
         ShortcutControl::SetAccessibleNameForTextBox(targetAppTextBox, rowIndex + 1);
     });
 

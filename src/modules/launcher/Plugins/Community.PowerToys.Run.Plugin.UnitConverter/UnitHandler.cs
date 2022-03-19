@@ -37,7 +37,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// <returns>Corresponding enum or null.</returns>
         private static Enum GetUnitEnum(string unit, QuantityInfo unitInfo)
         {
-            UnitInfo first = Array.Find(unitInfo.UnitInfos, info => info.Name.ToLower() == unit.ToLower());
+            UnitInfo first = Array.Find(unitInfo.UnitInfos, info => info.Name.ToLowerInvariant() == unit.ToLowerInvariant());
             if (first != null)
             {
                 return first.Value;

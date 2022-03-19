@@ -31,7 +31,7 @@ protected:
     virtual void init() = 0;
     // resize - when called, window_width and window_height will have current window size
     virtual void resize() = 0;
-    // render - called on WM_PAIT, BeginPaint/EndPaint is handled by D2DWindow
+    // render - called on WM_PAINT, BeginPaint/EndPaint is handled by D2DWindow
     virtual void render(ID2D1DeviceContext5* d2d_dc) = 0;
     // on_show, on_hide - called when the window is about to be shown or about to be hidden
     virtual void on_show() = 0;

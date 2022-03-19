@@ -190,7 +190,7 @@
                         Width="642" 
                         Background="Transparent"
                         ToolTipService.BetweenShowDelay="0"
-                        ToolTipService.InitialShowDelay="0">
+                        ToolTipService.InitialShowDelay="1000">
                         <Behaviors:Interaction.Triggers>
                             <Behaviors:EventTrigger EventName="MouseEnter">
                                 <Behaviors:InvokeCommandAction Command="{Binding ActivateContextButtonsHoverCommand}"/>
