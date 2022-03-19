@@ -26,16 +26,28 @@ namespace Awake.Core
 
         public bool PreFilterMessage(ref Message m)
         {
+            var trayCommandsSize = Enum.GetNames(typeof(TrayCommands)).Length;
+
             switch (m.Msg)
             {
                 case (int)NativeConstants.WM_COMMAND:
-                    switch (m.WParam.ToInt64() & 0xFFFF)
+                    var targetCommandIndex = m.WParam.ToInt64() & 0xFFFF;
+                    switch (targetCommandIndex)
                     {
                         case (long)TrayCommands.TC_EXIT:
                             ExitCommandHandler();
                             break;
-                        case NativeConstants.WM_USER + 2:
-                            // TODO
+                        case (long)TrayCommands.TC_DISPLAY_SETTING:
+                            DisplaySettingCommandHandler(InternalConstants.AppName);
+                            break;
+                        case (long)TrayCommands.TC_MODE_INDEFINITE:
+                            IndefiniteKeepAwakeCommandHandler(InternalConstants.AppName);
+                            break;
+                        case (long)TrayCommands.TC_MODE_PASSIVE:
+                            PassiveKeepAwakeCommandHandler(InternalConstants.AppName);
+                            break;
+                        case var _ when targetCommandIndex >= trayCommandsSize:
+                            // This is the block where we handle time allocations.
                             break;
                     }
 
@@ -47,10 +59,10 @@ namespace Awake.Core
 
         private static void ExitCommandHandler()
         {
-            Environment.Exit(Environment.ExitCode);
+            APIHelper.CompleteExit(0, true);
         }
 
-        private static void KeepDisplayOnCommandHandler(string moduleName)
+        private static void DisplaySettingCommandHandler(string moduleName)
         {
             AwakeSettings currentSettings;
 

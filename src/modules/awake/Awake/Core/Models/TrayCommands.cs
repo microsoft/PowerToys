@@ -8,8 +8,7 @@ namespace Awake.Core.Models
     {
         TC_DISPLAY_SETTING = NativeConstants.WM_USER + 1,
         TC_MODE_PASSIVE = NativeConstants.WM_USER + 2,
-        TC_MODE_INDEFINITE = NativeConstants.WM_USER + 2,
-        TC_MODE_TIMED = NativeConstants.WM_USER + 3,
+        TC_MODE_INDEFINITE = NativeConstants.WM_USER + 3,
         TC_EXIT = NativeConstants.WM_USER + 4,
         TC_TIME = NativeConstants.WM_USER + 5,
     }
