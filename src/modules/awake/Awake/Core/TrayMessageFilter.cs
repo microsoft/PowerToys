@@ -47,7 +47,8 @@ namespace Awake.Core
                             PassiveKeepAwakeCommandHandler(InternalConstants.AppName);
                             break;
                         case var _ when targetCommandIndex >= trayCommandsSize:
-                            // This is the block where we handle time allocations.
+                            // Format for the timer block:
+                            // TrayCommands.TC_TIME + ZERO_BASED_INDEX_IN_SETTINGS
                             break;
                     }
 

@@ -31,15 +31,10 @@ namespace Awake.Core
 
         private static NotifyIcon TrayIcon { get => _trayIcon; set => _trayIcon = value; }
 
-        private static SettingsUtils? _moduleSettings;
-
-        private static SettingsUtils ModuleSettings { get => _moduleSettings; set => _moduleSettings = value; }
-
         static TrayHelper()
         {
             _log = LogManager.GetCurrentClassLogger();
             TrayIcon = new NotifyIcon();
-            ModuleSettings = new SettingsUtils();
         }
 
         public static void InitializeTray(string text, Icon icon, ContextMenuStrip? contextMenu = null)
@@ -100,22 +95,33 @@ namespace Awake.Core
             SetTray(
                 text,
                 settings.Properties.KeepDisplayOn,
-                settings.Properties.Mode);
+                settings.Properties.Mode,
+                settings.Properties.TrayTimeShortcuts);
         }
 
         [SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1005:Single line comments should begin with single space", Justification = "For debugging purposes - will remove later.")]
-        public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode)
+        public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, List<KeyValuePair<string, int>> trayTimeShortcuts)
         {
             TrayMenu = NativeMethods.CreatePopupMenu();
             NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_EXIT, "Exit");
             NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_SEPARATOR, 0, string.Empty);
             NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (keepDisplayOn ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)TrayCommands.TC_DISPLAY_SETTING, "Keep screen on");
 
+            // In case there are no tray shortcuts defined for the application default to a
+            // reasonable initial set.
+            if (trayTimeShortcuts.Count == 0)
+            {
+                trayTimeShortcuts.Add(new KeyValuePair<string, int>("30 minutes", 1800));
+                trayTimeShortcuts.Add(new KeyValuePair<string, int>("1 hour", 3600));
+                trayTimeShortcuts.Add(new KeyValuePair<string, int>("2 hours", 7200));
+            }
+
             // TODO: Make sure that this loads from JSON instead of being hard-coded.
             var awakeTimeMenu = NativeMethods.CreatePopupMenu();
-            NativeMethods.InsertMenu(awakeTimeMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_TIME, "30 minutes");
-            NativeMethods.InsertMenu(awakeTimeMenu, 1, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_TIME, "1 hour");
-            NativeMethods.InsertMenu(awakeTimeMenu, 2, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_TIME, "2 hours");
+            for (int i = 0; i < trayTimeShortcuts.Count; i++)
+            {
+                NativeMethods.InsertMenu(awakeTimeMenu, (uint)i, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts[i].Key);
+            }
 
             var modeMenu = NativeMethods.CreatePopupMenu();
             NativeMethods.InsertMenu(modeMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (mode == AwakeMode.PASSIVE ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, "Off (keep using the selected power plan)");
@@ -124,108 +130,6 @@ namespace Awake.Core
             NativeMethods.InsertMenu(modeMenu, 2, NativeConstants.MF_BYPOSITION | NativeConstants.MF_POPUP | (mode == AwakeMode.TIMED ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)awakeTimeMenu, "Keep awake temporarily");
             NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_POPUP, (uint)modeMenu, "Mode");
 
-            //ContextMenuStrip? contextMenuStrip = new ContextMenuStrip();
-
-            //// Main toolstrip.
-            //ToolStripMenuItem? operationContextMenu = new ToolStripMenuItem
-            //{
-            //    Text = "Mode",
-            //};
-
-            //// No keep-awake menu item.
-            //CheckButtonToolStripMenuItem? passiveMenuItem = new CheckButtonToolStripMenuItem
-            //{
-            //    Text = "Off (Keep using the selected power plan)",
-            //};
-
-            //passiveMenuItem.Checked = mode == AwakeMode.PASSIVE;
-
-            //passiveMenuItem.Click += (e, s) =>
-            //{
-            //    // User opted to set the mode to indefinite, so we need to write new settings.
-            //    passiveKeepAwakeCallback();
-            //};
-
-            //// Indefinite keep-awake menu item.
-            //CheckButtonToolStripMenuItem? indefiniteMenuItem = new CheckButtonToolStripMenuItem
-            //{
-            //    Text = "Keep awake indefinitely",
-            //};
-
-            //indefiniteMenuItem.Checked = mode == AwakeMode.INDEFINITE;
-
-            //indefiniteMenuItem.Click += (e, s) =>
-            //{
-            //    // User opted to set the mode to indefinite, so we need to write new settings.
-            //    indefiniteKeepAwakeCallback();
-            //};
-
-            //CheckButtonToolStripMenuItem? displayOnMenuItem = new CheckButtonToolStripMenuItem
-            //{
-            //    Text = "Keep screen on",
-            //};
-
-            //displayOnMenuItem.Checked = keepDisplayOn;
-
-            //displayOnMenuItem.Click += (e, s) =>
-            //{
-            //    // User opted to set the display mode directly.
-            //    keepDisplayOnCallback();
-            //};
-
-            //// Timed keep-awake menu item
-            //ToolStripMenuItem? timedMenuItem = new ToolStripMenuItem
-            //{
-            //    Text = "Keep awake temporarily",
-            //};
-
-            //timedMenuItem.Checked = mode == AwakeMode.TIMED;
-            //timedMenuItem.AccessibleName = timedMenuItem.Text + (timedMenuItem.Checked ? ". Checked. " : ". UnChecked. ");
-
-            //ToolStripMenuItem? halfHourMenuItem = new ToolStripMenuItem
-            //{
-            //    Text = "30 minutes",
-            //};
-
-            //halfHourMenuItem.Click += (e, s) =>
-            //{
-            //    // User is setting the keep-awake to 30 minutes.
-            //    timedKeepAwakeCallback(0, 30);
-            //};
-
-            //ToolStripMenuItem? oneHourMenuItem = new ToolStripMenuItem
-            //{
-            //    Text = "1 hour",
-            //};
-
-            //oneHourMenuItem.Click += (e, s) =>
-            //{
-            //    // User is setting the keep-awake to 1 hour.
-            //    timedKeepAwakeCallback(1, 0);
-            //};
-
-            //ToolStripMenuItem? twoHoursMenuItem = new ToolStripMenuItem
-            //{
-            //    Text = "2 hours",
-            //};
-
-            //twoHoursMenuItem.Click += (e, s) =>
-            //{
-            //    // User is setting the keep-awake to 2 hours.
-            //    timedKeepAwakeCallback(2, 0);
-            //};
-
-            //// Exit menu item.
-            //ToolStripMenuItem? exitContextMenu = new ToolStripMenuItem
-            //{
-            //    Text = "Exit",
-            //};
-
-            //exitContextMenu.Click += (e, s) =>
-            //{
-            //    // User is setting the keep-awake to 2 hours.
-            //    exitCallback();
-            //};
             TrayIcon.Text = text;
         }
 

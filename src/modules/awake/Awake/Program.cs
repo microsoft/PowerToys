@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
@@ -282,6 +283,8 @@ namespace Awake
 
                 if (settings != null)
                 {
+                    _log.Info($"Identified custom time shortcuts for the tray: {settings.Properties.TrayTimeShortcuts.Count}");
+
                     switch (settings.Properties.Mode)
                     {
                         case AwakeMode.PASSIVE:
