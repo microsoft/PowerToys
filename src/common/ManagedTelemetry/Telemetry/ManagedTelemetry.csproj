@@ -9,7 +9,6 @@
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>PowerToys Telemetry</Description>
-    <PackageTags>PowerToys</PackageTags>
     <AssemblyName>PowerToys.ManagedTelemetry</AssemblyName>
   </PropertyGroup>
 

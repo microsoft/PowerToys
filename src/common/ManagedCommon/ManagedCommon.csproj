@@ -10,7 +10,6 @@
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>PowerToys ManagedCommon</Description>
-    <PackageTags>PowerToys</PackageTags>
     <AssemblyName>PowerToys.ManagedCommon</AssemblyName>
   </PropertyGroup>
 
