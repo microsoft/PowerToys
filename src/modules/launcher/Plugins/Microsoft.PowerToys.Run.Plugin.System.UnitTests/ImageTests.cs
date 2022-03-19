@@ -55,8 +55,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         [DataRow("hibernate", "Images\\sleep.light.png")]
         [DataRow("empty recycle", "Images\\recyclebin.light.png")]
         [DataRow("uefi firmware settings", "Images\\firmwareSettings.light.png")]
-        [DataRow("ip v4 addr", "Images\\networkAdapter.light.png")]
-        [DataRow("ip v6 addr", "Images\\networkAdapter.light.png")]
+        [DataRow("ipv4 addr", "Images\\networkAdapter.light.png")]
+        [DataRow("ipv6 addr", "Images\\networkAdapter.light.png")]
         [DataRow("mac addr", "Images\\networkAdapter.light.png")]
         public void IconThemeLightTest(string typedString, string expectedResult)
         {

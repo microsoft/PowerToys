@@ -232,7 +232,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IP v4 address of {0}.
+        ///   Looks up a localized string similar to IPv4 address of {0}.
         /// </summary>
         internal static string Microsoft_plugin_sys_ip4_description {
             get {
@@ -241,7 +241,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IP v4 address.
+        ///   Looks up a localized string similar to IPv4 address.
         /// </summary>
         internal static string Microsoft_plugin_sys_Ip4Address {
             get {
@@ -250,7 +250,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IP v4 subnet mask.
+        ///   Looks up a localized string similar to IPv4 subnet mask.
         /// </summary>
         internal static string Microsoft_plugin_sys_Ip4SubnetMask {
             get {
@@ -259,7 +259,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IP v6 address of {0}.
+        ///   Looks up a localized string similar to IPv6 address of {0}.
         /// </summary>
         internal static string Microsoft_plugin_sys_ip6_description {
             get {
@@ -268,7 +268,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IP v6 Address.
+        ///   Looks up a localized string similar to IPv6 Address.
         /// </summary>
         internal static string Microsoft_plugin_sys_Ip6Address {
             get {
@@ -277,7 +277,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IP v6 link local address.
+        ///   Looks up a localized string similar to IPv6 link-local address.
         /// </summary>
         internal static string Microsoft_plugin_sys_Ip6Link {
             get {
@@ -286,7 +286,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IP v6 site local address.
+        ///   Looks up a localized string similar to IPv6 site-local address.
         /// </summary>
         internal static string Microsoft_plugin_sys_Ip6Site {
             get {
@@ -295,7 +295,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IP v6 temporary address.
+        ///   Looks up a localized string similar to IPv6 temporary address.
         /// </summary>
         internal static string Microsoft_plugin_sys_Ip6Temp {
             get {
@@ -304,7 +304,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IP v6 unique local address.
+        ///   Looks up a localized string similar to IPv6 unique local address.
         /// </summary>
         internal static string Microsoft_plugin_sys_Ip6Unique {
             get {

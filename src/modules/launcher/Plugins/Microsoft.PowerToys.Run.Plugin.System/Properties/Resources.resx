@@ -183,40 +183,33 @@
     <comment>This should align to the action in Windows of a hibernating your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_Ip4Address" xml:space="preserve">
-    <value>IP v4 address</value>
-    <comment>'v4' is the protocol version.</comment>
+    <value>IPv4 address</value>
   </data>
   <data name="Microsoft_plugin_sys_Ip4SubnetMask" xml:space="preserve">
-    <value>IP v4 subnet mask</value>
-    <comment>'v4' is the protocol version.</comment>
+    <value>IPv4 subnet mask</value>
   </data>
   <data name="Microsoft_plugin_sys_ip4_description" xml:space="preserve">
-    <value>IP v4 address of {0}</value>
-    <comment>'v4' is the protocol version. Don't translate the placeholder '{0}' as it is replaced in code.</comment>
+    <value>IPv4 address of {0}</value>
+    <comment>Don't translate the placeholder '{0}' as it is replaced in code.</comment>
   </data>
   <data name="Microsoft_plugin_sys_Ip6Address" xml:space="preserve">
-    <value>IP v6 Address</value>
-    <comment>'v6' is the protocol version.</comment>
+    <value>IPv6 Address</value>
   </data>
   <data name="Microsoft_plugin_sys_Ip6Link" xml:space="preserve">
-    <value>IP v6 link local address</value>
-    <comment>'v6' is the protocol version.</comment>
+    <value>IPv6 link-local address</value>
   </data>
   <data name="Microsoft_plugin_sys_Ip6Site" xml:space="preserve">
-    <value>IP v6 site local address</value>
-    <comment>'v6' is the protocol version.</comment>
+    <value>IPv6 site-local address</value>
   </data>
   <data name="Microsoft_plugin_sys_Ip6Temp" xml:space="preserve">
-    <value>IP v6 temporary address</value>
-    <comment>'v6' is the protocol version.</comment>
+    <value>IPv6 temporary address</value>
   </data>
   <data name="Microsoft_plugin_sys_Ip6Unique" xml:space="preserve">
-    <value>IP v6 unique local address</value>
-    <comment>'v6' is the protocol version.</comment>
+    <value>IPv6 unique local address</value>
   </data>
   <data name="Microsoft_plugin_sys_ip6_description" xml:space="preserve">
-    <value>IP v6 address of {0}</value>
-    <comment>'v6' is the protocol version. Don't translate the placeholder '{0}' as it is replaced in code.</comment>
+    <value>IPv6 address of {0}</value>
+    <comment>Don't translate the placeholder '{0}' as it is replaced in code.</comment>
   </data>
   <data name="Microsoft_plugin_sys_lock" xml:space="preserve">
     <value>Lock</value>
@@ -269,6 +262,7 @@
   </data>
   <data name="Microsoft_plugin_sys_Search_NetworkKeywordList" xml:space="preserve">
     <value>ip; mac; address</value>
+    <comment>Translate 'ip' as 'ip' and not as 'ip address'. Same for 'mac'.)</comment>
   </data>
   <data name="Microsoft_plugin_sys_shutdown_computer" xml:space="preserve">
     <value>Shutdown</value>

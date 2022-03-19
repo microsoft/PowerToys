@@ -52,42 +52,42 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         internal string Suffix { get; private set; }
 
         /// <summary>
-        /// Gets the IP v4 address
+        /// Gets the IPv4 address
         /// </summary>
         internal string IPv4 { get; private set; }
 
         /// <summary>
-        /// Gets the IP v4 subnet mask
+        /// Gets the IPv4 subnet mask
         /// </summary>
         internal string IPv4Mask { get; private set; }
 
         /// <summary>
-        /// Gets the primarily used IP v6 address
+        /// Gets the primarily used IPv6 address
         /// </summary>
         internal string IPv6Primary { get; private set; }
 
         /// <summary>
-        /// Gets the global IP v6 address
+        /// Gets the global IPv6 address
         /// </summary>
         internal string IPv6Global { get; private set; }
 
         /// <summary>
-        /// Gets the temporary IP v6 address
+        /// Gets the temporary IPv6 address
         /// </summary>
         internal string IPv6Temporary { get; private set; }
 
         /// <summary>
-        /// Gets the link local IP v6 address
+        /// Gets the link local IPv6 address
         /// </summary>
         internal string IPv6LinkLocal { get; private set; }
 
         /// <summary>
-        /// Gets the site local IP v6 address
+        /// Gets the site local IPv6 address
         /// </summary>
         internal string IPv6SiteLocal { get; private set; }
 
         /// <summary>
-        /// Gets the unique local IP v6 address
+        /// Gets the unique local IPv6 address
         /// </summary>
         internal string IPv6UniqueLocal { get; private set; }
 
@@ -157,17 +157,17 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 $"\n{Resources.Microsoft_plugin_sys_State}: " + (State == OperationalStatus.Up ? Resources.Microsoft_plugin_sys_Connected : Resources.Microsoft_plugin_sys_Disconnected) +
                 $"\n{Resources.Microsoft_plugin_sys_Type}: {GetAdapterTypeAsString(Type)}" +
                 $"\n{Resources.Microsoft_plugin_sys_Suffix}: {Suffix}" +
-                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip4Address}: ", IPv4) +
-                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip4SubnetMask}: ", IPv4Mask) +
-                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip6Address}:\n\t", IPv6Global) +
-                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip6Temp}:\n\t", IPv6Temporary) +
-                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip6Link}:\n\t", IPv6LinkLocal) +
-                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip6Site}:\n\t", IPv6SiteLocal) +
-                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Ip6Unique}:\n\t", IPv6UniqueLocal) +
-                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Gateways}:\n\t", Gateways) +
-                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Dhcp}:\n\t", DhcpServers) +
-                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Dns}:\n\t", DnsServers) +
-                CreateIpInfoForToolTip($"{Resources.Microsoft_plugin_sys_Wins}:\n\t", WinsServers) +
+                CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip4Address}: ", IPv4) +
+                CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip4SubnetMask}: ", IPv4Mask) +
+                CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip6Address}:\n\t", IPv6Global) +
+                CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip6Temp}:\n\t", IPv6Temporary) +
+                CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip6Link}:\n\t", IPv6LinkLocal) +
+                CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip6Site}:\n\t", IPv6SiteLocal) +
+                CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip6Unique}:\n\t", IPv6UniqueLocal) +
+                CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Gateways}:\n\t", Gateways) +
+                CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Dhcp}:\n\t", DhcpServers) +
+                CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Dns}:\n\t", DnsServers) +
+                CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Wins}:\n\t", WinsServers) +
                 $"\n\n{Resources.Microsoft_plugin_sys_AdapterName}: {Adapter}" +
                 $"\n{Resources.Microsoft_plugin_sys_PhysicalAddress}: {PhysicalAddress}" +
                 $"\n{Resources.Microsoft_plugin_sys_Speed}: {GetFormattedSpeedValue(Speed)}";
@@ -282,7 +282,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <param name="property">IP value as <see cref="string"/> or <see cref="List{String}"/>.</param>
         /// <returns>Formatted string or an empty string.</returns>
         /// <exception cref="ArgumentException">If the parameter <paramref name="property"/> is not of the type <see cref="string"/> or <see cref="List{String}"/>.</exception>
-        private static string CreateIpInfoForToolTip(string title, dynamic property)
+        private static string CreateIpInfoForDetailsText(string title, dynamic property)
         {
             if (property is string)
             {
