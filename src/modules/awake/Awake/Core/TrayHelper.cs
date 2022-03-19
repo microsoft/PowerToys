@@ -111,9 +111,7 @@ namespace Awake.Core
             // reasonable initial set.
             if (trayTimeShortcuts.Count == 0)
             {
-                trayTimeShortcuts.Add(new KeyValuePair<string, int>("30 minutes", 1800));
-                trayTimeShortcuts.Add(new KeyValuePair<string, int>("1 hour", 3600));
-                trayTimeShortcuts.Add(new KeyValuePair<string, int>("2 hours", 7200));
+                trayTimeShortcuts.AddRange(APIHelper.GetDefaultTrayOptions());
             }
 
             // TODO: Make sure that this loads from JSON instead of being hard-coded.

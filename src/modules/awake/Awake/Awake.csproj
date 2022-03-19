@@ -16,6 +16,8 @@
     <Version>$(Version).0</Version>
     <ApplicationIcon>Images\Awake.ico</ApplicationIcon>
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <PackageProjectUrl>https://awake.den.dev</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/microsoft/powertoys</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

@@ -49,6 +49,15 @@ namespace Awake.Core
                         case var _ when targetCommandIndex >= trayCommandsSize:
                             // Format for the timer block:
                             // TrayCommands.TC_TIME + ZERO_BASED_INDEX_IN_SETTINGS
+                            AwakeSettings settings = ModuleSettings.GetSettings<AwakeSettings>(InternalConstants.AppName);
+                            if (settings.Properties.TrayTimeShortcuts.Count == 0)
+                            {
+                                settings.Properties.TrayTimeShortcuts.AddRange(APIHelper.GetDefaultTrayOptions());
+                            }
+
+                            int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
+                            var targetTime = settings.Properties.TrayTimeShortcuts[index].Value;
+                            TimedKeepAwakeCommandHandler(InternalConstants.AppName, targetTime);
                             break;
                     }
 
