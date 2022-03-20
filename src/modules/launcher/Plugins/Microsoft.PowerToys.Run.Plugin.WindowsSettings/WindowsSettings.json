@@ -572,7 +572,7 @@
       "Name": "LockScreen",
       "Areas": [ "AreaPersonalization" ],
       "Type": "AppSettingsApp",
-      "AltNames": [ "Image", "Picture" ],
+      "AltNames": [ "Image", "Picture", "ScreenSaver" ],
       "Command": "ms-settings:lockscreen"
     },
     {
@@ -1766,6 +1766,19 @@
       "Type": "AppControlPanel",
       "AltNames": [ "UserEnvironmentVariables", "UserVariables", "EnvVars", "UserEnvVars", "sysdm.cpl" ],
       "Command": "rundll32.exe sysdm.cpl,EditEnvironmentVariables"
+    },
+    {
+      "Name": "ChangeScreenSaver",
+      "Type": "AppControlPanel",
+      "AltNames": [ "TurnScreenSaverOnOff", "Timeout", "desk.cpl" ],
+      "Command": "control desk.cpl,,@screensaver"
+    },
+    {
+      "Name": "ConnectWirelessDisplay",
+      "Areas": [ "AreaSystem" ],
+      "Type": "AppSettingsApp",
+      "AltNames": [ "ConnectPanel", "ConnectableDevices", "ConnectWirelessAudio", "DeviceDiscovery" ],
+      "Command": "ms-settings-connectabledevices:devicediscovery"
     }
   ]
 }
