@@ -192,6 +192,7 @@ buildtransitive
 Burkina
 Buryatia
 BValue
+BYPOSITION
 bytearray
 Caiguna
 CALG
@@ -211,6 +212,7 @@ cdpx
 CENTERALIGN
 cguid
 changecursor
+Changelog
 Changemove
 charconv
 chdir
@@ -373,7 +375,6 @@ DARKYELLOW
 datareader
 Datavalue
 DATAW
-David
 davidegiacometti
 Dayof
 Dbg
@@ -818,6 +819,7 @@ IFile
 IFilter
 ifndef
 IFolder
+IFormat
 ifstream
 IGraph
 iid
@@ -841,6 +843,7 @@ IMarkdown
 ime
 IMedia
 IMem
+IMessage
 imeutil
 iminstall
 IMoniker
@@ -1102,6 +1105,7 @@ LPSTR
 lpsz
 lpt
 LPTOP
+lptpm
 LPTSTR
 LPVOID
 LPW
@@ -1147,9 +1151,6 @@ MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
 MBs
-mdtext
-mdtxt
-mdwn
 MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
@@ -1159,12 +1160,16 @@ MCST
 MDICHILD
 MDL
 mdpreviewhandler
+mdtext
+mdtxt
+mdwn
 MEDIASUBTYPE
 mediatype
 Melman
 memcmp
 memcpy
 memset
+MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 messageboxes
@@ -1215,7 +1220,6 @@ MONITORINFOEXW
 monitorinfof
 Monthand
 Moq
-Morton
 MOUSEACTIVATE
 MOUSEHWHEEL
 MOUSEINPUT
@@ -1373,6 +1377,7 @@ ntdll
 NTFS
 NTSTATUS
 nuget
+nuint
 nullopt
 nullptr
 numberbox
@@ -1431,6 +1436,7 @@ overlaywindow
 Overridable
 Oversampling
 OWNDC
+OWNERDRAW
 PACL
 pagos
 PAINTSTRUCT
@@ -1453,7 +1459,6 @@ pcb
 pch
 PCIDLIST
 PCWSTR
-
 pdb
 pdbonly
 pdfpreviewhandler
@@ -1722,6 +1727,7 @@ safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
 SAVEFAILED
+scalability
 scancode
 scanled
 schedtasks
@@ -1957,8 +1963,8 @@ SYSKEYUP
 SYSLIB
 syslog
 SYSMENU
-systemd
 SYSTEMAPPS
+systemd
 SYSTEMTIME
 Tadele
 Tajikistan
@@ -2018,7 +2024,6 @@ Toolchain
 toolkitcontrols
 toolkitconverters
 Toolset
-toolstrip
 toolwindow
 TOPDOWNDIB
 toplevel
@@ -2175,8 +2180,8 @@ vsonline
 vstemplate
 VSTHRD
 VSTT
-vtable
 VTABLE
+vtable
 Vtbl
 WBounds
 wca
