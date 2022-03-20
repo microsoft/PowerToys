@@ -67,5 +67,8 @@ namespace Awake.Core
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, nuint wParam, string lParam);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool DestroyMenu(IntPtr hMenu);
     }
 }

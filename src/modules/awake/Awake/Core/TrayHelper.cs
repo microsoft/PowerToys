@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Awake.Core.Models;
@@ -102,7 +101,14 @@ namespace Awake.Core
         [SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1005:Single line comments should begin with single space", Justification = "For debugging purposes - will remove later.")]
         public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts)
         {
-            Marshal.FreeHGlobal(TrayMenu);
+            if (TrayMenu != IntPtr.Zero)
+            {
+                var destructionStatus = NativeMethods.DestroyMenu(TrayMenu);
+                if (destructionStatus != true)
+                {
+                    _log.Error("Failed to destroy tray menu and free up memory.");
+                }
+            }
 
             TrayMenu = NativeMethods.CreatePopupMenu();
             NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_EXIT, "Exit");

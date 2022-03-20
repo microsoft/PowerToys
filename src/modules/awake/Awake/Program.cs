@@ -15,6 +15,7 @@ using System.Reactive.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Awake.Core;
 using Awake.Core.Models;
 using interop;
@@ -72,6 +73,12 @@ namespace Awake
             _log.Info($"Build: {BuildId}");
             _log.Info($"OS: {Environment.OSVersion}");
             _log.Info($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
+
+            TaskScheduler.UnobservedTaskException += (sender, args) =>
+            {
+                Trace.WriteLine($"Task scheduler error: {args.Exception.Message}"); // somebody forgot to check!
+                args.SetObserved();
+            };
 
             // To make it easier to diagnose future issues, let's get the
             // system power capabilities and aggregate them in the log.
@@ -194,7 +201,8 @@ namespace Awake
                         }
                     }).Start();
 
-                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("modules/awake/images/awake.ico"));
+                    // TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("modules/awake/images/awake.ico"));
+                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("images/awake.ico"));
 
                     string? settingsPath = _settingsUtils.GetSettingsFilePath(InternalConstants.AppName);
                     _log.Info($"Reading configuration file: {settingsPath}");

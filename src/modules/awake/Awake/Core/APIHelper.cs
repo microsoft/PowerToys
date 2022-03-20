@@ -4,10 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -105,9 +102,16 @@ namespace Awake.Core
             _tokenSource = new CancellationTokenSource();
             _threadToken = _tokenSource.Token;
 
-            _runnerThread = Task.Run(() => RunIndefiniteLoop(keepDisplayOn), _threadToken)
-                .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
-                .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
+            try
+            {
+                _runnerThread = Task.Run(() => RunIndefiniteLoop(keepDisplayOn), _threadToken)
+                    .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
+                    .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex.Message);
+            }
         }
 
         public static void SetNoKeepAwake()
