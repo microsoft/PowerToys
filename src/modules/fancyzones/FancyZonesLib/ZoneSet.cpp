@@ -3,20 +3,11 @@
 #include "ZoneSet.h"
 
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
-#include "FancyZonesDataTypes.h"
-#include "FancyZonesWindowProperties.h"
-#include "Settings.h"
-#include "Zone.h"
-#include <FancyZonesLib/util.h>
+#include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/WindowUtils.h>
 
 #include <common/logger/logger.h>
-#include <common/display/dpi_aware.h>
 #include <common/utils/winapi_error.h>
-
-#include <limits>
-#include <map>
-#include <utility>
 
 using namespace FancyZonesUtils;
 
@@ -590,7 +581,6 @@ ZoneSet::CalculateZones(RECT workAreaRect, int zoneCount, int spacing) noexcept
         return false;
     }
 
-    bool success = true;
     switch (m_config.LayoutType)
     {
     case FancyZonesDataTypes::ZoneSetLayoutType::Focus:
