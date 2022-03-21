@@ -498,6 +498,7 @@ dxgi
 dxgiformat
 dxguid
 ecount
+EData
 EDITKEYBOARD
 editkeyboardwindow
 editorconfig
@@ -527,6 +528,7 @@ EREOF
 EResize
 ERRORMESSAGE
 ERRORTITLE
+ERole
 ESettings
 esize
 esrp
@@ -1551,6 +1553,7 @@ programdata
 PROGRAMFILES
 projectname
 PROPBAG
+PROPERTYKEY
 propkey
 propvarutil
 prvpane
