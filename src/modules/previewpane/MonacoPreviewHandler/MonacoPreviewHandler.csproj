@@ -75,15 +75,27 @@
       </None>
   </ItemGroup>
   
-  <ItemGroup>
-      <None Update="monacoSRC\**\*.*">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-  </ItemGroup>
+    <ItemGroup>
+        <None Update="monacoSRC\**\*.*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+		<None Update="costumLanguages\**\*.*">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
   <ItemGroup>
       <None Update="monaco_languages.json">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
   </ItemGroup>
+
+	<ItemGroup>
+		<None Update="monacoSpecialLanguages.js">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 </Project>
