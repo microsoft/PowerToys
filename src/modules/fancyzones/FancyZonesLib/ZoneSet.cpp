@@ -22,89 +22,7 @@ using namespace FancyZonesUtils;
 
 namespace
 {
-    constexpr int C_MULTIPLIER = 10000;
     constexpr int OVERLAPPING_CENTERS_SENSITIVITY = 75;
-
-    // PriorityGrid layout is unique for zoneCount <= 11. For zoneCount > 11 PriorityGrid is same as Grid
-    FancyZonesDataTypes::GridLayoutInfo predefinedPriorityGridLayouts[11] = {
-        /* 1 */
-        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-            .rows = 1,
-            .columns = 1,
-            .rowsPercents = { 10000 },
-            .columnsPercents = { 10000 },
-            .cellChildMap = { { 0 } } }),
-        /* 2 */
-        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-            .rows = 1,
-            .columns = 2,
-            .rowsPercents = { 10000 },
-            .columnsPercents = { 6667, 3333 },
-            .cellChildMap = { { 0, 1 } } }),
-        /* 3 */
-        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-            .rows = 1,
-            .columns = 3,
-            .rowsPercents = { 10000 },
-            .columnsPercents = { 2500, 5000, 2500 },
-            .cellChildMap = { { 0, 1, 2 } } }),
-        /* 4 */
-        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-            .rows = 2,
-            .columns = 3,
-            .rowsPercents = { 5000, 5000 },
-            .columnsPercents = { 2500, 5000, 2500 },
-            .cellChildMap = { { 0, 1, 2 }, { 0, 1, 3 } } }),
-        /* 5 */
-        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-            .rows = 2,
-            .columns = 3,
-            .rowsPercents = { 5000, 5000 },
-            .columnsPercents = { 2500, 5000, 2500 },
-            .cellChildMap = { { 0, 1, 2 }, { 3, 1, 4 } } }),
-        /* 6 */
-        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-            .rows = 3,
-            .columns = 3,
-            .rowsPercents = { 3333, 3334, 3333 },
-            .columnsPercents = { 2500, 5000, 2500 },
-            .cellChildMap = { { 0, 1, 2 }, { 0, 1, 3 }, { 4, 1, 5 } } }),
-        /* 7 */
-        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-            .rows = 3,
-            .columns = 3,
-            .rowsPercents = { 3333, 3334, 3333 },
-            .columnsPercents = { 2500, 5000, 2500 },
-            .cellChildMap = { { 0, 1, 2 }, { 3, 1, 4 }, { 5, 1, 6 } } }),
-        /* 8 */
-        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-            .rows = 3,
-            .columns = 4,
-            .rowsPercents = { 3333, 3334, 3333 },
-            .columnsPercents = { 2500, 2500, 2500, 2500 },
-            .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 2, 5 }, { 6, 1, 2, 7 } } }),
-        /* 9 */
-        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-            .rows = 3,
-            .columns = 4,
-            .rowsPercents = { 3333, 3334, 3333 },
-            .columnsPercents = { 2500, 2500, 2500, 2500 },
-            .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 2, 5 }, { 6, 1, 7, 8 } } }),
-        /* 10 */
-        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-            .rows = 3,
-            .columns = 4,
-            .rowsPercents = { 3333, 3334, 3333 },
-            .columnsPercents = { 2500, 2500, 2500, 2500 },
-            .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 5, 6 }, { 7, 1, 8, 9 } } }),
-        /* 11 */
-        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
-            .rows = 3,
-            .columns = 4,
-            .rowsPercents = { 3333, 3334, 3333 },
-            .columnsPercents = { 2500, 2500, 2500, 2500 },
-            .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 5, 6 }, { 7, 8, 9, 10 } } }),
-    };
 }
 
 struct ZoneSet : winrt::implements<ZoneSet, IZoneSet>
@@ -125,7 +43,6 @@ public:
     Id() const noexcept { return m_config.Id; }
     IFACEMETHODIMP_(FancyZonesDataTypes::ZoneSetLayoutType)
     LayoutType() const noexcept { return m_config.LayoutType; }
-    IFACEMETHODIMP AddZone(winrt::com_ptr<IZone> zone) noexcept;
     IFACEMETHODIMP_(ZoneIndexSet) ZonesFromPoint(POINT pt) const noexcept;
     IFACEMETHODIMP_(ZoneIndexSet) GetZoneIndexSetFromWindow(HWND window) const noexcept;
     IFACEMETHODIMP_(ZonesMap) GetZones()const noexcept override { return m_zones; }
@@ -151,12 +68,6 @@ public:
     IFACEMETHODIMP_(ZoneIndexSet) GetCombinedZoneRange(const ZoneIndexSet& initialZones, const ZoneIndexSet& finalZones) const noexcept;
 
 private:
-    bool CalculateFocusLayout(Rect workArea, int zoneCount) noexcept;
-    bool CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
-    bool CalculateGridLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
-    bool CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, int spacing) noexcept;
-    bool CalculateCustomLayout(Rect workArea, int spacing) noexcept;
-    bool CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing);
     HWND GetNextTab(ZoneIndexSet indexSet, HWND current, bool reverse) noexcept;
     void InsertTabIntoZone(HWND window, std::optional<size_t> tabSortKeyWithinZone, const ZoneIndexSet& indexSet);
     ZoneIndexSet ZoneSelectSubregion(const ZoneIndexSet& capturedZones, POINT pt) const;
@@ -177,18 +88,6 @@ private:
 
     ZoneSetConfig m_config;
 };
-
-IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
-{
-    auto zoneId = zone->Id();
-    if (m_zones.contains(zoneId))
-    {
-        return S_FALSE;
-    }
-    m_zones[zoneId] = zone;
-
-    return S_OK;
-}
 
 IFACEMETHODIMP_(ZoneIndexSet)
 ZoneSet::ZonesFromPoint(POINT pt) const noexcept
@@ -695,22 +594,37 @@ ZoneSet::CalculateZones(RECT workAreaRect, int zoneCount, int spacing) noexcept
     switch (m_config.LayoutType)
     {
     case FancyZonesDataTypes::ZoneSetLayoutType::Focus:
-        success = CalculateFocusLayout(workArea, zoneCount);
+        m_zones = LayoutConfigurator::Focus(workArea, zoneCount);
         break;
     case FancyZonesDataTypes::ZoneSetLayoutType::Columns:
+        m_zones = LayoutConfigurator::Columns(workArea, zoneCount, spacing);
+        break;
     case FancyZonesDataTypes::ZoneSetLayoutType::Rows:
-        success = CalculateColumnsAndRowsLayout(workArea, m_config.LayoutType, zoneCount, spacing);
+        m_zones = LayoutConfigurator::Rows(workArea, zoneCount, spacing);
         break;
     case FancyZonesDataTypes::ZoneSetLayoutType::Grid:
+        m_zones = LayoutConfigurator::Grid(workArea, zoneCount, spacing);
+        break;
     case FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid:
-        success = CalculateGridLayout(workArea, m_config.LayoutType, zoneCount, spacing);
+        m_zones = LayoutConfigurator::PriorityGrid(workArea, zoneCount, spacing);
         break;
     case FancyZonesDataTypes::ZoneSetLayoutType::Custom:
-        success = CalculateCustomLayout(workArea, spacing);
-        break;
+    {
+        const auto zoneSetSearchResult = CustomLayouts::instance().GetCustomLayoutData(m_config.Id);
+        if (zoneSetSearchResult.has_value())
+        {
+            m_zones = LayoutConfigurator::Custom(workArea, m_config.Monitor, zoneSetSearchResult.value(), spacing);
+        }
+        else
+        {
+            Logger::error(L"Custom layout not found");
+            m_zones.clear();
+        }
+    }
+    break;
     }
 
-    return success;
+    return m_zones.size() == zoneCount;
 }
 
 bool ZoneSet::IsZoneEmpty(ZoneIndex zoneIndex) const noexcept
@@ -720,296 +634,6 @@ bool ZoneSet::IsZoneEmpty(ZoneIndex zoneIndex) const noexcept
         if (find(begin(zones), end(zones), zoneIndex) != end(zones))
         {
             return false;
-        }
-    }
-
-    return true;
-}
-
-bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
-{
-    long left{ 100 };
-    long top{ 100 };
-    long right{ left + long(workArea.width() * 0.4) };
-    long bottom{ top + long(workArea.height() * 0.4) };
-
-    RECT focusZoneRect{ left, top, right, bottom };
-
-    long focusRectXIncrement = (zoneCount <= 1) ? 0 : 50;
-    long focusRectYIncrement = (zoneCount <= 1) ? 0 : 50;
-
-    for (int i = 0; i < zoneCount; i++)
-    {
-        auto zone = MakeZone(focusZoneRect, m_zones.size());
-        if (zone)
-        {
-            AddZone(zone);
-        }
-        else
-        {
-            // All zones within zone set should be valid in order to use its functionality.
-            m_zones.clear();
-            return false;
-        }
-        focusZoneRect.left += focusRectXIncrement;
-        focusZoneRect.right += focusRectXIncrement;
-        focusZoneRect.bottom += focusRectYIncrement;
-        focusZoneRect.top += focusRectYIncrement;
-    }
-
-    return true;
-}
-
-bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
-{
-    long totalWidth;
-    long totalHeight;
-
-    if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
-    {
-        totalWidth = workArea.width() - (spacing * (zoneCount + 1));
-        totalHeight = workArea.height() - (spacing * 2);
-    }
-    else
-    { //Rows
-        totalWidth = workArea.width() - (spacing * 2);
-        totalHeight = workArea.height() - (spacing * (zoneCount + 1));
-    }
-
-    long top = spacing;
-    long left = spacing;
-    long bottom;
-    long right;
-
-    // Note: The expressions below are NOT equal to total{Width|Height} / zoneCount and are done
-    // like this to make the sum of all zones' sizes exactly total{Width|Height}.
-    for (int zoneIndex = 0; zoneIndex < zoneCount; ++zoneIndex)
-    {
-        if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
-        {
-            right = left + (zoneIndex + 1) * totalWidth / zoneCount - zoneIndex * totalWidth / zoneCount;
-            bottom = totalHeight + spacing;
-        }
-        else
-        { //Rows
-            right = totalWidth + spacing;
-            bottom = top + (zoneIndex + 1) * totalHeight / zoneCount - zoneIndex * totalHeight / zoneCount;
-        }
-
-
-        auto zone = MakeZone(RECT{ left, top, right, bottom }, m_zones.size());
-        if (zone)
-        {
-            AddZone(zone);
-        }
-        else
-        {
-            // All zones within zone set should be valid in order to use its functionality.
-            m_zones.clear();
-            return false;
-        }
-
-        if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
-        {
-            left = right + spacing;
-        }
-        else
-        { //Rows
-            top = bottom + spacing;
-        }
-    }
-
-    return true;
-}
-
-bool ZoneSet::CalculateGridLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
-{
-    const auto count = sizeof(predefinedPriorityGridLayouts) / sizeof(FancyZonesDataTypes::GridLayoutInfo);
-    if (type == FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid && zoneCount < count)
-    {
-        return CalculateUniquePriorityGridLayout(workArea, zoneCount, spacing);
-    }
-
-    int rows = 1, columns = 1;
-    while (zoneCount / rows >= rows)
-    {
-        rows++;
-    }
-    rows--;
-    columns = zoneCount / rows;
-    if (zoneCount % rows == 0)
-    {
-        // even grid
-    }
-    else
-    {
-        columns++;
-    }
-
-    FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Minimal{ .rows = rows, .columns = columns });
-
-    // Note: The expressions below are NOT equal to C_MULTIPLIER / {rows|columns} and are done
-    // like this to make the sum of all percents exactly C_MULTIPLIER
-    for (int row = 0; row < rows; row++)
-    {
-        gridLayoutInfo.rowsPercents()[row] = C_MULTIPLIER * (row + 1) / rows - C_MULTIPLIER * row / rows;
-    }
-    for (int col = 0; col < columns; col++)
-    {
-        gridLayoutInfo.columnsPercents()[col] = C_MULTIPLIER * (col + 1) / columns - C_MULTIPLIER * col / columns;
-    }
-
-    for (int i = 0; i < rows; ++i)
-    {
-        gridLayoutInfo.cellChildMap()[i] = std::vector<int>(columns);
-    }
-
-    int index = 0;
-    for (int row = 0; row < rows; row++)
-    {
-        for (int col = 0; col < columns; col++)
-        {
-            gridLayoutInfo.cellChildMap()[row][col] = index++;
-            if (index == zoneCount)
-            {
-                index--;
-            }
-        }
-    }
-    return CalculateGridZones(workArea, gridLayoutInfo, spacing);
-}
-
-bool ZoneSet::CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, int spacing) noexcept
-{
-    if (zoneCount <= 0 || zoneCount >= sizeof(predefinedPriorityGridLayouts))
-    {
-        return false;
-    }
-
-    return CalculateGridZones(workArea, predefinedPriorityGridLayouts[zoneCount - 1], spacing);
-}
-
-bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
-{
-    const auto zoneSetSearchResult = CustomLayouts::instance().GetCustomLayoutData(m_config.Id);
-    if (!zoneSetSearchResult.has_value())
-    {
-        return false;
-    }
-
-    const auto& zoneSet = *zoneSetSearchResult;
-    if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Canvas && std::holds_alternative<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info))
-    {
-        const auto& zoneSetInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info);
-        for (const auto& zone : zoneSetInfo.zones)
-        {
-            int x = zone.x;
-            int y = zone.y;
-            int width = zone.width;
-            int height = zone.height;
-
-            DPIAware::Convert(m_config.Monitor, x, y);
-            DPIAware::Convert(m_config.Monitor, width, height);
-
-            auto zone = MakeZone(RECT{ x, y, x + width, y + height }, m_zones.size());
-            if (zone)
-            {
-                AddZone(zone);
-            }
-            else
-            {
-                // All zones within zone set should be valid in order to use its functionality.
-                m_zones.clear();
-                return false;
-            }
-        }
-
-        return true;
-    }
-    else if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Grid && std::holds_alternative<FancyZonesDataTypes::GridLayoutInfo>(zoneSet.info))
-    {
-        const auto& info = std::get<FancyZonesDataTypes::GridLayoutInfo>(zoneSet.info);
-        return CalculateGridZones(workArea, info, spacing);
-    }
-
-    return false;
-}
-
-bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing)
-{
-    long totalWidth = workArea.width();
-    long totalHeight = workArea.height();
-    struct Info
-    {
-        long Extent;
-        long Start;
-        long End;
-    };
-    std::vector<Info> rowInfo(gridLayoutInfo.rows());
-    std::vector<Info> columnInfo(gridLayoutInfo.columns());
-
-    // Note: The expressions below are carefully written to 
-    // make the sum of all zones' sizes exactly total{Width|Height}
-    int totalPercents = 0;
-    for (int row = 0; row < gridLayoutInfo.rows(); row++)
-    {
-        rowInfo[row].Start = totalPercents * totalHeight / C_MULTIPLIER;
-        totalPercents += gridLayoutInfo.rowsPercents()[row];
-        rowInfo[row].End = totalPercents * totalHeight / C_MULTIPLIER;
-        rowInfo[row].Extent = rowInfo[row].End - rowInfo[row].Start;
-    }
-
-    totalPercents = 0;
-    for (int col = 0; col < gridLayoutInfo.columns(); col++)
-    {
-        columnInfo[col].Start = totalPercents * totalWidth / C_MULTIPLIER;
-        totalPercents += gridLayoutInfo.columnsPercents()[col];
-        columnInfo[col].End = totalPercents * totalWidth / C_MULTIPLIER;
-        columnInfo[col].Extent = columnInfo[col].End - columnInfo[col].Start;
-    }
-
-    for (int row = 0; row < gridLayoutInfo.rows(); row++)
-    {
-        for (int col = 0; col < gridLayoutInfo.columns(); col++)
-        {
-            int i = gridLayoutInfo.cellChildMap()[row][col];
-            if (((row == 0) || (gridLayoutInfo.cellChildMap()[row - 1][col] != i)) &&
-                ((col == 0) || (gridLayoutInfo.cellChildMap()[row][col - 1] != i)))
-            {
-                long left = columnInfo[col].Start;
-                long top = rowInfo[row].Start;
-
-                int maxRow = row;
-                while (((maxRow + 1) < gridLayoutInfo.rows()) && (gridLayoutInfo.cellChildMap()[maxRow + 1][col] == i))
-                {
-                    maxRow++;
-                }
-                int maxCol = col;
-                while (((maxCol + 1) < gridLayoutInfo.columns()) && (gridLayoutInfo.cellChildMap()[row][maxCol + 1] == i))
-                {
-                    maxCol++;
-                }
-
-                long right = columnInfo[maxCol].End;
-                long bottom = rowInfo[maxRow].End;
-
-                top += row == 0 ? spacing : spacing / 2;
-                bottom -= maxRow == gridLayoutInfo.rows() - 1 ? spacing : spacing / 2;
-                left += col == 0 ? spacing : spacing / 2;
-                right -= maxCol == gridLayoutInfo.columns() - 1 ? spacing : spacing / 2;
-
-                auto zone = MakeZone(RECT{ left, top, right, bottom }, i);
-                if (zone)
-                {
-                    AddZone(zone);
-                }
-                else
-                {
-                    // All zones within zone set should be valid in order to use its functionality.
-                    m_zones.clear();
-                    return false;
-                }
-            }
         }
     }
 
