@@ -6,7 +6,7 @@ export async function registerAdditionalLanguages(monaco){
     await languageDefinitions();
     registerAdditionalLanguage("cppExt", [".ino", ".pde"], "cpp", monaco)
     registerAdditionalLanguage("xmlExt", [".xsl", ".xsd", ".wsdl"], "xml", monaco)
-    registerAdditionalLanguage("razorExt", [".razor"], "xml", monaco)
+    registerAdditionalLanguage("razorExt", [".razor"], "razor", monaco)
     registerAdditionalNewLanguage("reg", [".reg"], regDefinition(), monaco)
 }
 
