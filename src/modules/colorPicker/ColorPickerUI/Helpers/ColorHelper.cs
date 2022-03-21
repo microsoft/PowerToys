@@ -162,8 +162,10 @@ namespace ColorPicker.Helpers
 
         /// <summary>
         /// Convert a given <see cref="Color"/> to a CIE XYZ color (XYZ)
-        /// The constants of the formula used come from this wikipedia page:
+        /// The constants of the formula matches this Wikipedia page, but at a higher precision:
         /// https://en.wikipedia.org/wiki/SRGB#The_reverse_transformation_(sRGB_to_CIE_XYZ)
+        /// This page provides a method to calculate the constants:
+        /// http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The X [0..1], Y [0..1] and Z [0..1]</returns>
@@ -179,14 +181,14 @@ namespace ColorPicker.Helpers
             double bLinear = (b > 0.04045) ? Math.Pow((b + 0.055) / 1.055, 2.4) : (b / 12.92);
 
             return (
-                (rLinear * 0.4124) + (gLinear * 0.3576) + (bLinear * 0.1805),
-                (rLinear * 0.2126) + (gLinear * 0.7152) + (bLinear * 0.0722),
-                (rLinear * 0.0193) + (gLinear * 0.1192) + (bLinear * 0.9505)
+                (rLinear * 0.41239079926595948) + (gLinear * 0.35758433938387796) + (bLinear * 0.18048078840183429),
+                (rLinear * 0.21263900587151036) + (gLinear * 0.71516867876775593) + (bLinear * 0.07219231536073372),
+                (rLinear * 0.01933081871559185) + (gLinear * 0.11919477979462599) + (bLinear * 0.95053215224966058)
             );
         }
 
         /// <summary>
-        /// Convert a CIE XYZ color <see cref="double"/> to a CIE LAB color (LAB)
+        /// Convert a CIE XYZ color <see cref="double"/> to a CIE LAB color (LAB) adapted to sRGB D65 white point
         /// The constants of the formula used come from this wikipedia page:
         /// https://en.wikipedia.org/wiki/CIELAB_color_space#Converting_between_CIELAB_and_CIEXYZ_coordinates
         /// </summary>
@@ -197,10 +199,19 @@ namespace ColorPicker.Helpers
         private static (double lightness, double chromaticityA, double chromaticityB)
             GetCIELABColorFromCIEXYZ(double x, double y, double z)
         {
-            // These values are based on the D65 Illuminant
-            x = x * 100 / 95.0489;
-            y = y * 100 / 100.0;
-            z = z * 100 / 108.8840;
+            // sRGB reference white (x=0.3127, y=0.3290, Y=1.0), actually CIE Standard Illuminant D65 truncated to 4 decimal places,
+            // then converted to XYZ using the formula:
+            //   X = x * (Y / y)
+            //   Y = Y
+            //   Z = (1 - x - y) * (Y / y)
+            double x_n = 0.9504559270516717;
+            double y_n = 1.0;
+            double z_n = 1.0890577507598784;
+
+            // Scale XYZ values relative to reference white
+            x /= x_n;
+            y /= y_n;
+            z /= z_n;
 
             // XYZ to CIELab transformation
             double delta = 6d / 29;

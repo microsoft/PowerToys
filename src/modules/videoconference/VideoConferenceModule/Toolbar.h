@@ -6,6 +6,8 @@
 
 #include <common/Display/monitors.h>
 
+#include "AudioDeviceNotificationClient.h"
+
 struct ToolbarImages
 {
     Gdiplus::Image* camOnMicOn = nullptr;
@@ -43,6 +45,7 @@ private:
 
     ToolbarImages darkImages;
     ToolbarImages lightImages;
+    AudioDeviceNotificationClient audioConfChangesNotifier;
 
     bool cameraMuted = false;
     bool cameraInUse = false;

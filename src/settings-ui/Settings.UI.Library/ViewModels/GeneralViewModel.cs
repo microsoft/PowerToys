@@ -465,42 +465,46 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public void RefreshUpdatingState()
         {
-            var config = UpdatingSettings.LoadSettings();
-
-            // Retry loading if failed
-            for (int i = 0; i < 3 && config == null; i++)
+            object oLock = new object();
+            lock (oLock)
             {
-                System.Threading.Thread.Sleep(100);
-                config = UpdatingSettings.LoadSettings();
+                var config = UpdatingSettings.LoadSettings();
+
+                // Retry loading if failed
+                for (int i = 0; i < 3 && config == null; i++)
+                {
+                    System.Threading.Thread.Sleep(100);
+                    config = UpdatingSettings.LoadSettings();
+                }
+
+                if (config == null)
+                {
+                    return;
+                }
+
+                UpdatingSettingsConfig = config;
+
+                if (PowerToysUpdatingState != config.State)
+                {
+                    IsNewVersionDownloading = false;
+                }
+                else
+                {
+                    bool dateChanged = UpdateCheckedDate == UpdatingSettingsConfig.LastCheckedDateLocalized;
+                    bool fileDownloaded = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+                    IsNewVersionDownloading = !(dateChanged || fileDownloaded);
+                }
+
+                PowerToysUpdatingState = UpdatingSettingsConfig.State;
+                PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
+                PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
+                UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
+
+                _isNewVersionChecked = PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate && !IsNewVersionDownloading;
+                NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
+
+                NotifyPropertyChanged(nameof(IsDownloadAllowed));
             }
-
-            if (config == null || config.ToJsonString() == UpdatingSettingsConfig.ToJsonString())
-            {
-                return;
-            }
-
-            UpdatingSettingsConfig = config;
-
-            if (PowerToysUpdatingState != config.State)
-            {
-                IsNewVersionDownloading = false;
-            }
-            else
-            {
-                bool dateChanged = UpdateCheckedDate == UpdatingSettingsConfig.LastCheckedDateLocalized;
-                bool fileDownloaded = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
-                IsNewVersionDownloading = !(dateChanged || fileDownloaded);
-            }
-
-            PowerToysUpdatingState = UpdatingSettingsConfig.State;
-            PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
-            PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
-            UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
-
-            _isNewVersionChecked = PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate && !IsNewVersionDownloading;
-            NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
-
-            NotifyPropertyChanged(nameof(IsDownloadAllowed));
         }
     }
 }

@@ -76,34 +76,34 @@ void MicrophoneDevice::set_mute_changed_callback(mute_changed_cb_t callback) noe
     _endpoint->RegisterControlChangeNotify(_notifier.get());
 }
 
-std::optional<MicrophoneDevice> MicrophoneDevice::getDefault()
+std::unique_ptr<MicrophoneDevice> MicrophoneDevice::getDefault()
 {
     auto deviceEnumerator = wil::CoCreateInstanceNoThrow<MMDeviceEnumerator, IMMDeviceEnumerator>();
     if (!deviceEnumerator)
     {
         LOG("MicrophoneDevice::getDefault MMDeviceEnumerator returned null");
-        return std::nullopt;
+        return nullptr;
     }
     wil::com_ptr_nothrow<IMMDevice> captureDevice;
     deviceEnumerator->GetDefaultAudioEndpoint(eCapture, eCommunications, &captureDevice);
     if (!captureDevice)
     {
         LOG("MicrophoneDevice::getDefault captureDevice is null");
-        return std::nullopt;
+        return nullptr;
     }
     wil::com_ptr_nothrow<IAudioEndpointVolume> microphoneEndpoint;
     captureDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_INPROC_SERVER, nullptr, reinterpret_cast<LPVOID*>(&microphoneEndpoint));
     if (!microphoneEndpoint)
     {
         LOG("MicrophoneDevice::getDefault captureDevice is null");
-        return std::nullopt;
+        return nullptr;
     }
-    return std::make_optional<MicrophoneDevice>(std::move(captureDevice), std::move(microphoneEndpoint));
+    return std::make_unique<MicrophoneDevice>(std::move(captureDevice), std::move(microphoneEndpoint));
 }
 
-std::vector<MicrophoneDevice> MicrophoneDevice::getAllActive()
+std::vector<std::unique_ptr<MicrophoneDevice>> MicrophoneDevice::getAllActive()
 {
-    std::vector<MicrophoneDevice> microphoneDevices;
+    std::vector<std::unique_ptr<MicrophoneDevice>> microphoneDevices;
     auto deviceEnumerator = wil::CoCreateInstanceNoThrow<MMDeviceEnumerator, IMMDeviceEnumerator>();
     if (!deviceEnumerator)
     {
@@ -135,7 +135,7 @@ std::vector<MicrophoneDevice> MicrophoneDevice::getAllActive()
         {
             continue;
         }
-        microphoneDevices.emplace_back(std::move(device), std::move(microphoneEndpoint));
+        microphoneDevices.push_back(std::make_unique<MicrophoneDevice>(std::move(device), std::move(microphoneEndpoint)));
     }
     return microphoneDevices;
 }
@@ -147,6 +147,8 @@ MicrophoneDevice::VolumeNotifier::VolumeNotifier(MicrophoneDevice* subscribedDev
 
 HRESULT __stdcall MicrophoneDevice::VolumeNotifier::OnNotify(PAUDIO_VOLUME_NOTIFICATION_DATA data)
 {
-    _subscribedDevice->_mute_changed_callback(data->bMuted);
+    if (_subscribedDevice && _subscribedDevice->_mute_changed_callback)
+        _subscribedDevice->_mute_changed_callback(data->bMuted);
+
     return S_OK;
 }

@@ -124,6 +124,12 @@
 	<None Update="Images\firmwareSettings.dark.png">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</None>
+	  <None Update="Images\networkAdapter.light.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Images\networkAdapter.dark.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
   </ItemGroup>
 
   <ItemGroup>

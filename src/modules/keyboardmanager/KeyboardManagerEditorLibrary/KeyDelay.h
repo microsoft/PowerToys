@@ -40,7 +40,7 @@ public:
         _onLongPressReleased(onLongPressReleased),
         _delayThread(&KeyDelay::DelayThread, this){};
 
-    // Enque new KeyTimedEvent and notify the condition variable.
+    // Enqueue new KeyTimedEvent and notify the condition variable.
     void KeyEvent(LowlevelKeyboardEvent* ev);
     ~KeyDelay();
 

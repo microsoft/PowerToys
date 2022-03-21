@@ -93,11 +93,11 @@ namespace Microsoft.Plugin.Folder.UnitTests
             // Assert
             if (hasValues)
             {
-                Assert.IsTrue(results.Count() > 0);
+                Assert.IsTrue(results.Any());
             }
             else
             {
-                Assert.IsTrue(results.Count() == 0);
+                Assert.IsFalse(results.Any());
             }
         }
     }
