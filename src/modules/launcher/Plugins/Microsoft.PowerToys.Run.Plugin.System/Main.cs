@@ -51,6 +51,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             {
                 Key = "ReduceNetworkResultScore",
                 DisplayLabel = Resources.Reduce_Network_Result_Score,
+                DisplayDescription = Resources.Reduce_Network_Result_Score_Description,
                 Value = true,
             },
         };
