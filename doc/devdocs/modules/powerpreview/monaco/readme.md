@@ -17,6 +17,8 @@ Developer preview is based on [Microsofts Monaco Editor](https://microsoft.githu
 
 After you updated monaco editor or adding a new language you should update the [`monaco_languages.json`](/src/modules/previewpane/MonacoPreviewHandler/monaco_languages.json) file.
 
+You have to run the file on a local webserver!
+
 1. Build monaco in debug mode.
 2. Open [generateLanguagesJson.html](/src/modules/previewpane/MonacoPreviewHandler/generateLanguagesJson.html) in a browser.
 3. Replace the old JSON file.
