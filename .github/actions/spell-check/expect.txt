@@ -453,6 +453,7 @@ dllhost
 dllmain
 dlls
 DNLEN
+Dns
 doctype
 DONOTROUND
 DONTVALIDATEPATH
@@ -629,6 +630,8 @@ gabime
 GAC
 gacutil
 GBarm
+Gbits
+Gbps
 GBs
 GCLP
 gcnew
@@ -1150,6 +1153,7 @@ Mato
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
+Mbits
 MBs
 mdtext
 mdtxt
@@ -2083,6 +2087,7 @@ UNCPRIORITY
 undef
 UNDNAME
 unescape
+Unicast
 Unindent
 Uninitialize
 uninstall
@@ -2267,6 +2272,7 @@ WIXUI
 WKSG
 Wlkr
 wmain
+Wman
 WMKEYDOWN
 WMKEYUP
 wmp
@@ -2309,6 +2315,7 @@ WTSAT
 Wubi
 WVC
 Wwan
+Wwanpp
 xamarin
 XAttribute
 xbf
