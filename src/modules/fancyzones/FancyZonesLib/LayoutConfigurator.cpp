@@ -373,7 +373,8 @@ ZonesMap LayoutConfigurator::PriorityGrid(FancyZonesUtils::Rect workArea, int zo
         return {};
     }
 
-    if (zoneCount < sizeof(predefinedPriorityGridLayouts))
+    constexpr int predefinedLayoutsCount = sizeof(predefinedPriorityGridLayouts) / sizeof(FancyZonesDataTypes::GridLayoutInfo);
+    if (zoneCount < predefinedLayoutsCount)
     {
         return CalculateGridZones(workArea, predefinedPriorityGridLayouts[zoneCount - 1], spacing); 
     }
