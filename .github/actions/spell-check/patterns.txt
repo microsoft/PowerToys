@@ -12,6 +12,10 @@ https?://(?:(?:www\.|)youtube\.com|youtu.be)/[-a-zA-Z0-9?&=]*
 # msdn
 \b(?:download\.visualstudio|docs|msdn)\.microsoft\.com/[-_a-zA-Z0-9()=./]*
 
+# medium
+link\.medium\.com/[a-zA-Z0-9]+
+\bmedium\.com/\@[^/]+/[-\w]+
+
 publicKeyToken=(['"]|)[0-9a-f]+\g{-1}
 \@sha256:[0-9a-f]{64}\b
 
@@ -19,11 +23,14 @@ publicKeyToken=(['"]|)[0-9a-f]+\g{-1}
 (['"])data:.*?\g{-1}
 data:[-a-zA-Z=;:/0-9+]*,\S*
 
-# uuid:
-L?(["']|[-<({>]|\b)[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}(?:\g{-1}|[<})>])
+# uuid: (or CompGUIDPrefix)
+L?(["']|[-<({>]|\b)[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{10,12}(?:\g{-1}|[<})>])
 
 # c99 hex digits (not the full format, just one I've seen)
 0x[0-9a-fA-F](?:\.[0-9a-fA-F]*|)[pP]
+
+# URL escaped characters
+\%[0-9A-F]{2}
 
 # wregex
 std::wregex\(L"[^"]*"\)
@@ -45,12 +52,18 @@ TestCase\("[^"]+"
 \[DataRow\("[0-9A-F]{6}", \d{3}.\d{1}, \d{3}.\d{1}, \d{3}.\d{1}\)\]
 \[DataRow\("[0-9A-F]{6}", "[BCGMRY]\d\d?", \d{3}, \d{3}\)\]
 
+# version suffix <word>v#
+[Vv]\d+(?:\b|(?=[a-zA-Z_]))
+
 # Windows paths
 \\native
 \\netcoreapp
 \\netstandard
+\\network
 \\notifications
 \\recyclebin
+\\Registry
+\\registry
 \\reinstall
 \\Resize
 \\resource
@@ -78,8 +91,14 @@ TestCase\("[^"]+"
 # TestCase strings intentionally have non dictionary items
 \[TestCase\(new string.*\]
 
+# D2D
+D2D
+
 # marker for ignoring a comment to the end of the line
 ^.*/\* #no-spell-check-line \*/.*$
 // #no-spell-check.*$
 
 http://tes/
+
+# tar arguments
+\b(?:\\n|)tar(?:\s+-[a-zA-Z]+|\s[a-z]+)+

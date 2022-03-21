@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -27,6 +28,11 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         [DataRow("sleep", "Put computer to sleep")]
         [DataRow("hibernate", "Hibernate computer")]
         [DataRow("empty recycle", "Empty Recycle Bin")]
+        [DataRow("ip", "IPv4 address of")]
+        [DataRow("address", "IPv4 address of")] // searching for address should show ipv4 first
+        [DataRow("ip v4", "IPv4 address of")]
+        [DataRow("ip v6", "IPv6 address of")]
+        [DataRow("mac addr", "MAC address of")]
         public void EnvironmentIndependentQueryResults(string typedString, string expectedResult)
         {
             // Setup
@@ -37,7 +43,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
             var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
 
             // Assert
-            Assert.AreEqual(expectedResult, result);
+            Assert.IsTrue(result.StartsWith(expectedResult, StringComparison.OrdinalIgnoreCase));
         }
 
         [TestMethod]

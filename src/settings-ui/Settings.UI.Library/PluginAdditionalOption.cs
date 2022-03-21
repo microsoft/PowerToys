@@ -10,6 +10,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public string DisplayLabel { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value to show a description of this setting in the settings ui. (Optional)
+        /// </summary>
+        public string DisplayDescription { get; set; }
+
         public bool Value { get; set; }
     }
 }

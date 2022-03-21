@@ -38,8 +38,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void CheckBoxSubTextControl_Loaded(object sender, RoutedEventArgs e)
         {
             StackPanel panel = new StackPanel() { Orientation = Orientation.Vertical };
-            panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 10, 0, 0), Text = Header });
-            panel.Children.Add(new IsEnabledTextBlock() { Style = (Style)App.Current.Resources["SecondaryIsEnabledTextBlockStyle"], Text = Description });
+
+            // Add text box only if the description is not empty. Required for additional plugin options.
+            if (!string.IsNullOrWhiteSpace(Description))
+            {
+                panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 10, 0, 0), Text = Header });
+                panel.Children.Add(new IsEnabledTextBlock() { Style = (Style)App.Current.Resources["SecondaryIsEnabledTextBlockStyle"], Text = Description });
+            }
+            else
+            {
+                panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 0, 0, 0), Text = Header });
+            }
+
             _checkBoxSubTextControl.Content = panel;
         }
 

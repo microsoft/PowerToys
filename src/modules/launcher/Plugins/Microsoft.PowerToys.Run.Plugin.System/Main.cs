@@ -6,10 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Interop;
 using ManagedCommon;
+using Microsoft.PowerToys.Run.Plugin.System.Components;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
@@ -18,42 +17,40 @@ using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.PowerToys.Run.Plugin.System
 {
-    public class Main : IPlugin, IPluginI18n, ISettingProvider
+    public class Main : IPlugin, IPluginI18n, ISettingProvider, IContextMenu
     {
         private PluginInitContext _context;
-        private const string ConfirmSystemCommands = nameof(ConfirmSystemCommands);
-        private const string LocalizeSystemCommands = nameof(LocalizeSystemCommands);
 
-        internal const int EWXLOGOFF = 0x00000000;
-        internal const int EWXSHUTDOWN = 0x00000001;
-        internal const int EWXREBOOT = 0x00000002;
-        internal const int EWXFORCE = 0x00000004;
-        internal const int EWXPOWEROFF = 0x00000008;
-        internal const int EWXFORCEIFHUNG = 0x00000010;
-
-        public string IconTheme { get; set; }
-
-        public bool IsBootedInUefiMode { get; set; }
+        private bool _confirmSystemCommands;
+        private bool _localizeSystemCommands;
+        private bool _reduceNetworkResultScore;
 
         public string Name => Resources.Microsoft_plugin_sys_plugin_name;
 
         public string Description => Resources.Microsoft_plugin_sys_plugin_description;
 
-        private bool _confirmSystemCommands;
-        private bool _localizeSystemCommands;
+        public string IconTheme { get; set; }
+
+        public bool IsBootedInUefiMode { get; set; }
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
             new PluginAdditionalOption()
             {
-                Key = ConfirmSystemCommands,
+                Key = "ConfirmSystemCommands",
                 DisplayLabel = Resources.confirm_system_commands,
                 Value = false,
             },
             new PluginAdditionalOption()
             {
-                Key = LocalizeSystemCommands,
+                Key = "LocalizeSystemCommands",
                 DisplayLabel = Resources.Use_localized_system_commands,
+                Value = true,
+            },
+            new PluginAdditionalOption()
+            {
+                Key = "ReduceNetworkResultScore",
+                DisplayLabel = Resources.Reduce_Network_Result_Score,
                 Value = true,
             },
         };
@@ -75,140 +72,55 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
-
-            var commands = Commands();
             var results = new List<Result>();
 
-            foreach (var c in commands)
+            if (query == null)
             {
-                var titleMatch = StringMatcher.FuzzySearch(query.Search, c.Title);
-                if (titleMatch.Score > 0)
+                return results;
+            }
+
+            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
+            var systemCommands = Commands.GetSystemCommands(IsBootedInUefiMode, IconTheme, culture, _confirmSystemCommands);
+            var networkConnectionResults = Commands.GetNetworkConnectionResults(IconTheme, culture);
+
+            foreach (var c in systemCommands)
+            {
+                var resultMatch = StringMatcher.FuzzySearch(query.Search, c.Title);
+                if (resultMatch.Score > 0)
                 {
-                    c.Score = titleMatch.Score;
-                    c.TitleHighlightData = titleMatch.MatchData;
+                    c.Score = resultMatch.Score;
+                    c.TitleHighlightData = resultMatch.MatchData;
                     results.Add(c);
+                }
+            }
+
+            foreach (var r in networkConnectionResults)
+            {
+                // On global queries the first word/part has to be 'ip', 'mac' or 'address'
+                if (string.IsNullOrEmpty(query.ActionKeyword))
+                {
+                    string[] keywordList = Resources.ResourceManager.GetString("Microsoft_plugin_sys_Search_NetworkKeywordList", culture).Split("; ");
+                    if (!keywordList.Any(x => query.Search.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)))
+                    {
+                        continue;
+                    }
+                }
+
+                var resultMatch = StringMatcher.FuzzySearch(query.Search, r.SubTitle);
+                if (resultMatch.Score > 0)
+                {
+                    r.Score = _reduceNetworkResultScore ? (int)(resultMatch.Score * 65 / 100) : resultMatch.Score; // Adjust score to improve user experience and priority order
+                    r.SubTitleHighlightData = resultMatch.MatchData;
+                    results.Add(r);
                 }
             }
 
             return results;
         }
 
-        private List<Result> Commands()
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            CultureInfo culture = CultureInfo.CurrentUICulture;
-
-            if (!_localizeSystemCommands)
-            {
-                culture = new CultureInfo("en-US");
-            }
-
-            var results = new List<Result>();
-            results.AddRange(new[]
-            {
-                new Result
-                {
-                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_shutdown_computer), culture),
-                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_shutdown_computer_description), culture),
-                    IcoPath = $"Images\\shutdown.{IconTheme}.png",
-                    Action = c =>
-                    {
-                        return ExecuteCommand(Resources.Microsoft_plugin_sys_shutdown_computer_confirmation, () => Helper.OpenInShell("shutdown", "/s /hybrid /t 0"));
-                    },
-                },
-                new Result
-                {
-                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_restart_computer), culture),
-                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_restart_computer_description), culture),
-                    IcoPath = $"Images\\restart.{IconTheme}.png",
-                    Action = c =>
-                    {
-                        return ExecuteCommand(Resources.Microsoft_plugin_sys_restart_computer_confirmation, () => Helper.OpenInShell("shutdown", "/r /t 0"));
-                    },
-                },
-                new Result
-                {
-                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_sign_out), culture),
-                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_sign_out_description), culture),
-                    IcoPath = $"Images\\logoff.{IconTheme}.png",
-                    Action = c =>
-                    {
-                        return ExecuteCommand(Resources.Microsoft_plugin_sys_sign_out_confirmation, () => NativeMethods.ExitWindowsEx(EWXLOGOFF, 0));
-                    },
-                },
-                new Result
-                {
-                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_lock), culture),
-                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_lock_description), culture),
-                    IcoPath = $"Images\\lock.{IconTheme}.png",
-                    Action = c =>
-                    {
-                        return ExecuteCommand(Resources.Microsoft_plugin_sys_lock_confirmation, () => NativeMethods.LockWorkStation());
-                    },
-                },
-                new Result
-                {
-                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_sleep), culture),
-                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_sleep_description), culture),
-                    IcoPath = $"Images\\sleep.{IconTheme}.png",
-                    Action = c =>
-                    {
-                        return ExecuteCommand(Resources.Microsoft_plugin_sys_sleep_confirmation, () => NativeMethods.SetSuspendState(false, true, true));
-                    },
-                },
-                new Result
-                {
-                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_hibernate), culture),
-                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_hibernate_description), culture),
-                    IcoPath = $"Images\\sleep.{IconTheme}.png", // Icon change needed
-                    Action = c =>
-                    {
-                        return ExecuteCommand(Resources.Microsoft_plugin_sys_hibernate_confirmation, () => NativeMethods.SetSuspendState(true, true, true));
-                    },
-                },
-                new Result
-                {
-                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_emptyrecyclebin), culture),
-                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_emptyrecyclebin_description), culture),
-                    IcoPath = $"Images\\recyclebin.{IconTheme}.png",
-                    Action = c =>
-                    {
-                        // http://www.pinvoke.net/default.aspx/shell32/SHEmptyRecycleBin.html
-                        // FYI, couldn't find documentation for this but if the recycle bin is already empty, it will return -2147418113 (0x8000FFFF (E_UNEXPECTED))
-                        // 0 for nothing
-                        var result = NativeMethods.SHEmptyRecycleBin(new WindowInteropHelper(Application.Current.MainWindow).Handle, 0);
-                        if (result != (uint)HRESULT.S_OK && result != 0x8000FFFF)
-                        {
-                            var name = "Plugin: " + Resources.Microsoft_plugin_sys_plugin_name;
-                            var message = $"Error emptying recycle bin, error code: {result}\n" +
-                                          "please refer to https://msdn.microsoft.com/en-us/library/windows/desktop/aa378137";
-                            _context.API.ShowMsg(name, message);
-                        }
-
-                        return true;
-                    },
-                },
-            });
-
-            // UEFI command/result. It is only available on systems booted in UEFI mode.
-            if (IsBootedInUefiMode)
-            {
-                results.Add(new Result
-                {
-                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_uefi), culture),
-                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_uefi_description), culture),
-                    IcoPath = $"Images\\firmwareSettings.{IconTheme}.png",
-                    Action = c =>
-                    {
-                        return ExecuteCommand(Resources.Microsoft_plugin_sys_uefi_confirmation, () => Helper.OpenInShell("shutdown", "/r /fw /t 0", null, true));
-                    },
-                });
-            }
-
-            return results;
+            return ResultHelper.GetContextMenuForResult(selectedResult);
         }
 
         private void UpdateIconTheme(Theme theme)
@@ -238,26 +150,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             return Resources.Microsoft_plugin_sys_plugin_name;
         }
 
-        private bool ExecuteCommand(string confirmationMessage, Action command)
-        {
-            if (_confirmSystemCommands)
-            {
-                MessageBoxResult messageBoxResult = MessageBox.Show(
-                    confirmationMessage,
-                    Resources.Microsoft_plugin_sys_confirmation,
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-                if (messageBoxResult == MessageBoxResult.No)
-                {
-                    return false;
-                }
-            }
-
-            command();
-            return true;
-        }
-
         public Control CreateSettingPanel()
         {
             throw new NotImplementedException();
@@ -267,18 +159,23 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         {
             var confirmSystemCommands = false;
             var localizeSystemCommands = true;
+            var reduceNetworkResultScore = true;
 
             if (settings != null && settings.AdditionalOptions != null)
             {
-                var optionConfirm = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ConfirmSystemCommands);
-                confirmSystemCommands = optionConfirm?.Value ?? false;
+                var optionConfirm = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ConfirmSystemCommands");
+                confirmSystemCommands = optionConfirm?.Value ?? confirmSystemCommands;
 
-                var optionLocalize = settings.AdditionalOptions.FirstOrDefault(x => x.Key == LocalizeSystemCommands);
-                localizeSystemCommands = optionLocalize?.Value ?? true;
+                var optionLocalize = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LocalizeSystemCommands");
+                localizeSystemCommands = optionLocalize?.Value ?? localizeSystemCommands;
+
+                var optionNetworkScore = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ReduceNetworkResultScore");
+                reduceNetworkResultScore = optionNetworkScore?.Value ?? reduceNetworkResultScore;
             }
 
             _confirmSystemCommands = confirmSystemCommands;
             _localizeSystemCommands = localizeSystemCommands;
+            _reduceNetworkResultScore = reduceNetworkResultScore;
         }
     }
 }

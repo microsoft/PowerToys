@@ -88,9 +88,13 @@
 
 	<?define SystemComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.System.deps.json;Microsoft.PowerToys.Run.Plugin.System.dll?>
 
-	<?define SystemImagesComponentFiles=lock.dark.png;lock.light.png;logoff.dark.png;logoff.light.png;recyclebin.dark.png;recyclebin.light.png;restart.dark.png;restart.light.png;shutdown.dark.png;shutdown.light.png;sleep.dark.png;sleep.light.png;firmwareSettings.dark.png;firmwareSettings.light.png?>
+	<?define SystemImagesComponentFiles=lock.dark.png;lock.light.png;logoff.dark.png;logoff.light.png;recyclebin.dark.png;recyclebin.light.png;restart.dark.png;restart.light.png;shutdown.dark.png;shutdown.light.png;sleep.dark.png;sleep.light.png;firmwareSettings.dark.png;firmwareSettings.light.png;networkAdapter.dark.png;networkAdapter.light.png?>
 
-    <?define TimeZoneComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json;Microsoft.PowerToys.Run.Plugin.TimeZone.dll;PowerToys.ManagedTelemetry.dll?>
+    <?define TimeDateComponentFiles=Microsoft.PowerToys.Run.Plugin.TimeDate.deps.json;Microsoft.PowerToys.Run.Plugin.TimeDate.dll;plugin.json;PowerToys.ManagedTelemetry.dll?>
+
+	<?define TimeDateImagesComponentFiles=calendar.dark.png;calendar.light.png;time.dark.png;time.light.png;timeDate.dark.png;timeDate.light.png;Warning.dark.png;Warning.light.png?>
+
+	<?define TimeZoneComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json;Microsoft.PowerToys.Run.Plugin.TimeZone.dll;PowerToys.ManagedTelemetry.dll?>
 	
 	<?define WinSetCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;PowerToys.ManagedTelemetry.dll?>
 
@@ -481,6 +485,10 @@
                                 </Directory>
                                 <Directory Id="SystemPluginFolder" Name="System">
                                     <Directory Id="SystemImagesFolder" Name="Images" />
+                                </Directory>
+								<Directory Id="TimeDatePluginFolder" Name="TimeDate">
+                                    <Directory Id="TimeDateImagesFolder" Name="Images" />
+                                    <Directory Id="TimeDateLanguagesFolder" Name="Languages" />
                                 </Directory>
                                 <Directory Id="TimeZonePluginFolder" Name="TimeZone">
                                     <Directory Id="TimeZoneImagesFolder" Name="Images" />
@@ -1094,7 +1102,7 @@
     <Fragment>
         <!-- Resource directories should be added only if the installer is built on the build farm -->
         <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
             <!-- Resource file directories -->
             <?foreach Language in $(var.LocLanguageList)?>
@@ -1368,6 +1376,12 @@
                 Directory="Resource$(var.IdSafeLanguage)UnitConverterPluginFolder">
                 <File Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\$(var.Language)\Community.PowerToys.Run.Plugin.UnitConverter.resources.dll" />
             </Component>
+			<Component
+                Id="Launcher_TimeDate_$(var.IdSafeLanguage)_Component"
+                Guid="$(var.CompGUIDPrefix)18"
+                Directory="Resource$(var.IdSafeLanguage)TimeDatePluginFolder">
+                <File Id="Launcher_TimeDate_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeDate\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeDate.resources.dll" />
+            </Component>
             <?undef IdSafeLanguage?>
             <?undef CompGUIDPrefix?>
             <?endforeach?>
@@ -1571,6 +1585,18 @@
 			<?foreach File in $(var.SystemImagesComponentFiles)?>
 			    <Component Id="SystemImagesComponent_$(var.File)" Win64="yes" Directory="SystemImagesFolder">
 				    <File Id="SystemImagesComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\$(var.File)" />
+			    </Component>
+			<?endforeach?>
+			
+			<!-- TimeDate Plugin -->
+			<?foreach File in $(var.TimeDateComponentFiles)?>
+			    <Component Id="TimeDateComponent_$(var.File)" Win64="yes" Directory="TimeDatePluginFolder">
+				    <File Id="TimeDateComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeDate\$(var.File)" />
+			    </Component>
+			<?endforeach?>
+			<?foreach File in $(var.TimeDateImagesComponentFiles)?>
+			    <Component Id="TimeDateImagesComponent_$(var.File)" Win64="yes" Directory="TimeDateImagesFolder">
+				    <File Id="TimeDateImagesComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeDate\Images\$(var.File)" />
 			    </Component>
 			<?endforeach?>
       

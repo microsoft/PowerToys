@@ -111,6 +111,7 @@ xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AudioDeviceNotificationClient.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Toolbar.h" />
     <ClInclude Include="pch.h" />
@@ -118,6 +119,7 @@ xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
     <ClInclude Include="VideoConferenceModule.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AudioDeviceNotificationClient.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="Toolbar.cpp" />
