@@ -205,7 +205,7 @@ struct ZoneSetConfig
     HMONITOR Monitor{};
     int SensitivityRadius;
     OverlappingZonesAlgorithm SelectionAlgorithm = OverlappingZonesAlgorithm::Smallest;
-    ZoneTitleBarStyle ZoneTitleBarStyle = ZoneTitleBarStyle::Numbers;
+    ZoneTitleBarStyle ZoneTitleBarStyle = ZoneTitleBarStyle::None;
 };
 
 winrt::com_ptr<IZoneSet> MakeZoneSet(HINSTANCE hinstance, ZoneSetConfig const& config) noexcept;

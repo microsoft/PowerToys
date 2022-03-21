@@ -103,6 +103,7 @@
                                         <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Numbers" />
                                         <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Icons" />
                                         <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Tabs" />
+                                        <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Labels" />
                                     </ComboBox>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>

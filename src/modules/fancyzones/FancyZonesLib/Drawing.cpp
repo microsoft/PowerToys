@@ -264,7 +264,7 @@ void Drawing::DrawTextW(std::wstring text, IDWriteTextFormat* textFormat, const 
     }
 }
 
-void Drawing::DrawTextTrim(std::wstring text, IDWriteTextFormat* textFormat, const D2D1_RECT_F& rect, D2D1_COLOR_F color)
+void Drawing::DrawTextTrim(std::wstring text, IDWriteTextFormat* textFormat, const D2D1_RECT_F& rect, D2D1_COLOR_F color, bool hasUnderline)
 {
     if (!*this || !textFormat)
     {
@@ -290,18 +290,33 @@ void Drawing::DrawTextTrim(std::wstring text, IDWriteTextFormat* textFormat, con
         textFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
         textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
         textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-        m_renderTarget->DrawTextW(text.c_str(), (UINT32)text.size(), textFormat, rect, brush.get());
+
+        auto width = rect.right - rect.left;
+        auto height = rect.bottom - rect.top;
+        auto textSize = (UINT32)text.size();
+
+        winrt::com_ptr<IDWriteTextLayout> textLayout;
+        writeFactory->CreateTextLayout(text.c_str(), textSize, textFormat, width, height, textLayout.put());
+
+        if (textLayout)
+        {
+            DWRITE_TEXT_RANGE range = { 0, textSize };
+            textLayout->SetUnderline(hasUnderline, range);
+
+            auto origin = D2D1::Point2F(rect.left, rect.top);
+            m_renderTarget->DrawTextLayout(origin, textLayout.get(), brush.get());
+        }
     }
 }
 
-void Drawing::DrawBitmap(const D2D1_RECT_F& rect, ID2D1Bitmap* bitmap)
+void Drawing::DrawBitmap(const D2D1_RECT_F& rect, ID2D1Bitmap* bitmap, float opacity)
 {
     if (!*this)
     {
         return;
     }
 
-    m_renderTarget->DrawBitmap(bitmap, rect);
+    m_renderTarget->DrawBitmap(bitmap, rect, opacity);
 }
 
 void Drawing::EndDraw()

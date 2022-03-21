@@ -1189,6 +1189,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_ZoneTitleBarStyle_Tabs.Content" xml:space="preserve">
     <value>Tabs</value>
   </data>
+  <data name="FancyZones_ZoneTitleBarStyle_Labels.Content" xml:space="preserve">
+    <value>Labels</value>
+  </data>
   <data name="FancyZones_ZoneTitleBar_AutoHide.Header" xml:space="preserve">
     <value>Auto hide</value>
   </data>

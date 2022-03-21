@@ -49,6 +49,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             AutoHideIcons = 5,
             Tabs = 6,
             AutoHideTabs = 7,
+            Labels = 8,
+            AutoHideLabels = 9,
         }
 
         public FancyZonesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")

@@ -62,7 +62,7 @@ static HWND GetWindowAboveAllOthers(const std::vector<HWND>& windows)
     return max;
 }
 
-static void DrawWindowIcon(Drawing& drawing, const D2D1_RECT_F& rect, HWND window)
+static void DrawWindowIcon(Drawing& drawing, const D2D1_RECT_F& rect, HWND window, float opacity = 1.f)
 {
     HICON icon = nullptr;
     if (!SendMessageTimeout(window, WM_GETICON, ICON_BIG, 0, 0, 100, (PDWORD_PTR)&icon) || icon == nullptr)
@@ -73,7 +73,7 @@ static void DrawWindowIcon(Drawing& drawing, const D2D1_RECT_F& rect, HWND windo
     if (icon != nullptr)
     {
         auto bitmap = drawing.CreateIcon(icon);
-        drawing.DrawBitmap(rect, bitmap.get());
+        drawing.DrawBitmap(rect, bitmap.get(), opacity);
     }
 }
 
@@ -316,9 +316,9 @@ public:
     }
 };
 
-class TabsZoneTitleBar : public IZoneTitleBar
+class ThickZoneTitleBar : public IZoneTitleBar
 {
-private:
+protected:
     static constexpr int c_style = WS_OVERLAPPED | WS_CAPTION | WS_THICKFRAME;
     static constexpr int c_exStyle = WS_EX_NOREDIRECTIONBITMAP;
     float GetWidthFactor() const
@@ -338,7 +338,7 @@ private:
     }
 
 public:
-    TabsZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi, bool isOverlay) noexcept :
+    ThickZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi, bool isOverlay) noexcept :
         m_isOverlay(isOverlay),
         m_hiddenWindow(hinstance),
         m_zoneCurrentWindow(NULL),
@@ -491,11 +491,69 @@ protected:
         {
             pos->hwndInsertAfter = m_zoneCurrentWindow;
         }
+        pos->flags |= SWP_NOACTIVATE;
 
         return true;
     }
 
-    void Render(HWND hwnd)
+    virtual void Render(HWND hwnd) = 0;
+
+    void Click(HWND hwnd, BOOL doubleClick, int x, int y, UINT keyFlags)
+    {
+        auto len = m_height;
+        if (len == 0 || x < len)
+        {
+            return;
+        }
+
+        auto i = int((x - len) / (len * GetWidthFactor()));
+
+        if (i < m_zoneWindows.size())
+        {
+            SwitchToWindow(m_zoneWindows[i]);
+        }
+    }
+
+    HWND GetZoneCurrentWindow()
+    {
+        return GetWindowAboveAllOthers(m_zoneWindows);
+    }
+
+    Rect ResetRect(Rect zone)
+    {
+        m_zone = zone;
+
+        RECT rect{};
+        AdjustWindowRectExForDpi(&rect, c_style, FALSE, c_exStyle, m_dpi);
+
+        auto height = -rect.top;
+        m_height = height > zone.height() ? 0 : height;
+
+        return zone;
+    }
+
+protected:
+    bool m_isOverlay;
+    HiddenWindow m_hiddenWindow;
+    HWND m_zoneCurrentWindow;
+    UINT m_dpi;
+    Rect m_zone;
+    int m_height;
+    std::vector<HWND> m_zoneWindows;
+    CompositionDrawing m_drawing;
+    Window m_window;
+};
+
+class TabsZoneTitleBar : public ThickZoneTitleBar
+{
+public:
+    TabsZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi, bool isOverlay) noexcept :
+        ThickZoneTitleBar(hinstance, zone, dpi, isOverlay)
+    {
+    }
+
+protected:
+    void Render(HWND hwnd) override
     {
         constexpr DWORD DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
 
@@ -574,51 +632,110 @@ protected:
 
         EndPaint(m_window, &paint);
     }
+};
 
-    void Click(HWND hwnd, BOOL doubleClick, int x, int y, UINT keyFlags)
+class LabelsZoneTitleBar : public ThickZoneTitleBar
+{
+
+public:
+    LabelsZoneTitleBar(HINSTANCE hinstance, Rect zone, UINT dpi, bool isOverlay) noexcept :
+        ThickZoneTitleBar(hinstance, zone, dpi, isOverlay)
     {
-        auto len = m_height;
-        if (len == 0 || x < len)
-        {
-            return;
-        }
-
-        auto i = int((x - len) / (len * GetWidthFactor()));
-
-        if (i < m_zoneWindows.size())
-        {
-            SwitchToWindow(m_zoneWindows[i]);
-        }
-    }
-
-    HWND GetZoneCurrentWindow()
-    {
-        return GetWindowAboveAllOthers(m_zoneWindows);
-    }
-
-    Rect ResetRect(Rect zone)
-    {
-        m_zone = zone;
-
-        RECT rect{};
-        AdjustWindowRectExForDpi(&rect, c_style, FALSE, c_exStyle, m_dpi);
-
-        auto height = -rect.top;
-        m_height = height > zone.height() ? 0 : height;
-
-        return zone;
     }
 
 protected:
-    bool m_isOverlay;
-    HiddenWindow m_hiddenWindow;
-    HWND m_zoneCurrentWindow;
-    UINT m_dpi;
-    Rect m_zone;
-    int m_height;
-    std::vector<HWND> m_zoneWindows;
-    CompositionDrawing m_drawing;
-    Window m_window;
+    void Render(HWND hwnd) override
+    {
+        constexpr DWORD DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+
+        BOOL isDarkMode = WindowsColors::is_dark_mode();
+        if (FAILED(DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &isDarkMode, sizeof(isDarkMode))))
+        {
+            isDarkMode = false;
+        }
+
+        ZoneTitleBarColors colors(isDarkMode);
+
+        PAINTSTRUCT paint;
+        BeginPaint(m_window, &paint);
+
+        auto captionHeight = GetSystemMetricsForDpi(SM_CYCAPTION, m_dpi);
+
+        auto zoneCurrentWindow = GetZoneCurrentWindow();
+
+        NONCLIENTMETRICS metrics{};
+        metrics.cbSize = sizeof(metrics);
+        SystemParametersInfoForDpi(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &metrics, 0, m_dpi);
+        TCHAR text[100]{};
+
+        if (m_drawing)
+        {
+            m_drawing.BeginDraw();
+
+            {
+                auto widthFactor = GetWidthFactor();
+                auto textFormat = m_drawing.CreateTextFormat(
+                    metrics.lfCaptionFont.lfFaceName,
+                    float(-metrics.lfCaptionFont.lfHeight),
+                    (DWRITE_FONT_WEIGHT)metrics.lfCaptionFont.lfWeight);
+
+                auto textColor = isDarkMode ? colors.frameColor : Drawing::ConvertColor(WindowsColors::get_gray_text_color());
+                auto highlightTextColor = isDarkMode ? colors.highlightTextColor : colors.textColor;
+
+                for (auto i = 0; i < m_zoneWindows.size(); ++i)
+                {
+                    auto xOffset = m_height * (1 + widthFactor * i);
+                    auto yOffset = 0;
+                    auto xSize = m_height * widthFactor;
+                    auto ySize = m_height;
+
+                    auto sepHeight = captionHeight * .7f;
+                    auto sepWidth = sepHeight * .05f;
+                    auto sepMargin = (ySize - sepHeight) * .5f;
+                    if (i != 0)
+                    {
+                        auto sepRect = D2D1::RectF(
+                            float(xOffset - sepWidth * .5f),
+                            float(yOffset + sepMargin),
+                            float(xOffset + sepWidth * .5f),
+                            float(yOffset + ySize - sepMargin));
+                        m_drawing.FillRectangle(sepRect, textColor);
+                    }
+
+                    auto isFrontWindow = m_zoneWindows[i] == zoneCurrentWindow;
+                    auto xMargin = sepHeight * .9f;
+
+                    auto iconMargin = (ySize - captionHeight) * .5f;
+                    auto iconRect = D2D1::RectF(
+                        xOffset + xMargin,
+                        yOffset + iconMargin,
+                        xOffset + xMargin + captionHeight,
+                        yOffset + iconMargin + captionHeight);
+                    DrawWindowIcon(m_drawing, iconRect, m_zoneWindows[i], isFrontWindow ? 1.f : .4f);
+
+                    auto xSizeIcon = 0;
+
+                    if (textFormat)
+                    {
+                        auto textMargin = (ySize - captionHeight) * .5f;
+                        auto textRect = D2D1::RectF(
+                            float(xOffset + xMargin + captionHeight * 1.1f),
+                            float(yOffset + textMargin),
+                            float(xOffset + xSize - xMargin),
+                            float(yOffset + ySize - textMargin));
+
+                        text[0] = TEXT('\0');
+                        GetWindowText(m_zoneWindows[i], text, ARRAYSIZE(text));
+                        m_drawing.DrawTextTrim(text, textFormat.get(), textRect, isFrontWindow ? highlightTextColor : textColor, isFrontWindow);
+                    }
+                }
+            }
+
+            m_drawing.EndDraw();
+        }
+
+        EndPaint(m_window, &paint);
+    }
 };
 
 class AutoHideZoneTitleBar : public IZoneTitleBar
@@ -650,6 +767,10 @@ public:
 
                 case ZoneTitleBarStyle::Tabs:
                     m_zoneTitleBar = std::make_unique<TabsZoneTitleBar>(m_hinstance, m_zone, m_dpi, true);
+                    break;
+
+                case ZoneTitleBarStyle::Labels:
+                    m_zoneTitleBar = std::make_unique<LabelsZoneTitleBar>(m_hinstance, m_zone, m_dpi, true);
                     break;
 
                 case ZoneTitleBarStyle::None:
@@ -718,6 +839,9 @@ std::unique_ptr<IZoneTitleBar> MakeZoneTitleBar(ZoneTitleBarStyle style, HINSTAN
 
     case ZoneTitleBarStyle::Tabs:
         return std::make_unique<TabsZoneTitleBar>(hinstance, zone, dpi, false);
+
+    case ZoneTitleBarStyle::Labels:
+        return std::make_unique<LabelsZoneTitleBar>(hinstance, zone, dpi, false);
 
     case ZoneTitleBarStyle::None:
     default:

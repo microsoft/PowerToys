@@ -25,11 +25,11 @@ public:
 
     void FillRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color);
     void FillRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color);
-    void DrawRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color, float strokeWidth = 1.0f);
-    void DrawRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color, float strokeWidth = 1.0f);
+    void DrawRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color, float strokeWidth = 1.f);
+    void DrawRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color, float strokeWidth = 1.f);
     void DrawTextW(std::wstring text, IDWriteTextFormat* format, const D2D1_RECT_F& rect, D2D1_COLOR_F color);
-    void DrawTextTrim(std::wstring text, IDWriteTextFormat* format, const D2D1_RECT_F& rect, D2D1_COLOR_F color);
-    void DrawBitmap(const D2D1_RECT_F& rect, ID2D1Bitmap* bitmap);
+    void DrawTextTrim(std::wstring text, IDWriteTextFormat* format, const D2D1_RECT_F& rect, D2D1_COLOR_F color, bool hasUnderline = false);
+    void DrawBitmap(const D2D1_RECT_F& rect, ID2D1Bitmap* bitmap, float opacity = 1.f);
 
     void EndDraw();
 
