@@ -178,6 +178,7 @@ bpp
 bricelam
 BRIGHTGREEN
 Browsable
+brucelindbloom
 bsd
 bstr
 bti
@@ -523,6 +524,7 @@ enum
 EOAC
 eol
 epicgames
+Eqn
 ERASEBKGND
 EREOF
 EResize
@@ -2033,6 +2035,7 @@ towupper
 tracelogging
 traies
 transcoded
+transicc
 Transnistria
 TRAYMOUSEMESSAGE
 triaging
