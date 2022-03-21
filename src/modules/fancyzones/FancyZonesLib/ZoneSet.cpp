@@ -618,7 +618,7 @@ ZoneSet::CalculateZones(RECT workAreaRect, int zoneCount, int spacing) noexcept
         else
         {
             Logger::error(L"Custom layout not found");
-            m_zones.clear();
+            return false;
         }
     }
     break;
