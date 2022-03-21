@@ -9,6 +9,7 @@
 
 - [ ] **Linked issue:** #xxx
 - [ ] **Tests:** Added/updated and all pass
+- [ ] **Localization:** All end user facing strings can be localized
 - [ ] **Dev docs:** Added/updated
 - [ ] **New binaries:** Added on the required places
    - [ ] No new binaries
@@ -16,8 +17,8 @@
    - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/main/installer/PowerToysSetup/Product.wxs) for new binaries and localization folder
    - [ ] [YML for build pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ci/templates/build-powertoys-steps.yml) for new test projects
 
-### Note
-Please ensure that all strings can be localized and the [user docs](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) are updated or you have created an issue for the user docs.
+### End-user docs
+Please ensure that the [end-user documentation](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) is up to date. You can create a PR in the docs repository or you can create an issue here in the PowerToys repository with the remaining tasks.
 
 ## Contributor License Agreement (CLA)
 A CLA must be signed. If not, go over [here](https://cla.opensource.microsoft.com/microsoft/PowerToys) and sign the CLA.
