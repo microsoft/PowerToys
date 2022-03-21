@@ -115,7 +115,7 @@ namespace Microsoft.Plugin.Program.Storage
                 }
                 else if (appType == Win32Program.ApplicationType.InternetShortcutApplication)
                 {
-                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp.FullPath };
+                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp?.FullPath };
                 }
                 else
                 {
@@ -132,7 +132,7 @@ namespace Microsoft.Plugin.Program.Storage
             {
                 if (string.IsNullOrWhiteSpace(oldApp.Name) || string.IsNullOrWhiteSpace(oldApp.ExecutableName) || string.IsNullOrWhiteSpace(oldApp.FullPath))
                 {
-                    Log.Error($"Old app was not initialized properly. OldFullPath: {e.OldFullPath}; OldName: {e.OldName}; FullPath: {e.FullPath}", GetType());
+                    Log.Warn($"Old app data was not initialized properly for removal after file renaming. This likely means it was not a valid app to begin with and removal is not needed. OldFullPath: {e.OldFullPath}; OldName: {e.OldName}; FullPath: {e.FullPath}", GetType());
                 }
                 else
                 {
