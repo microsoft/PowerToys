@@ -146,11 +146,11 @@
     <value>Fail to open file at</value>
   </data>
   <data name="wox_plugin_folder_select_folder_first_result_subtitle" xml:space="preserve">
-    <value>Use &gt; to search within the directory. Use * to search for file extensions. Or use both &gt;*</value>
+    <value>Tip: Use &gt; to search in folders, * to search file by mask, &gt;* for both.</value>
   </data>
   <data name="wox_plugin_folder_select_folder_first_result_title" xml:space="preserve">
-    <value>Open</value>
-    <comment>Open as a verb.  Open this folder.</comment>
+    <value>Open: {0}</value>
+    <comment>Open as a verb.  Open this folder. Do not translate the placeholder '{0}'.</comment>
   </data>
   <data name="wox_plugin_folder_select_folder_OpenFileOrFolder_error_message" xml:space="preserve">
     <value>Could not start</value>
