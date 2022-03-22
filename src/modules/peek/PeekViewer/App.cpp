@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "resource.h"
 #pragma comment(lib, "d2d1")
-#include "FileTypeUtils.h"
+#include "PeekFileUtils/FileTypeUtils.h"
 #include "App.h"
 
 // The main window class name.
@@ -598,8 +598,8 @@ HRESULT App::LoadThumbnail(__RPC__deref_out_opt HBITMAP* hBitmap)
     HRESULT hr = S_OK;
 
     auto extension = GetFileInfoAt(m_currentItem).extension;
-    bool isMedia = FileTypeUtils::IsMedia(extension);
-    bool isDocument = FileTypeUtils::IsDocument(extension);
+    bool isMedia = FileUtils::IsMedia(extension);
+    bool isDocument = FileUtils::IsDocument(extension);
 
     bool shouldLoadImageThumbnail = isMedia || isDocument;
     if (shouldLoadImageThumbnail)
@@ -974,8 +974,8 @@ void App::UpdateWindowSize()
     else
     {
         auto extension = GetFileInfoAt(m_currentItem).extension;
-        bool isMedia = FileTypeUtils::IsMedia(extension);
-        bool isDocument = FileTypeUtils::IsDocument(extension);
+        bool isMedia = FileUtils::IsMedia(extension);
+        bool isDocument = FileUtils::IsDocument(extension);
 
         if (isMedia)
         {
