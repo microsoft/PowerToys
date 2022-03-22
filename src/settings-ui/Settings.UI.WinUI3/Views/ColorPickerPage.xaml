@@ -1,0 +1,158 @@
+<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.WinUI3.Views.ColorPickerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.WinUI3.Controls"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
+    mc:Ignorable="d"
+    x:Name="RootPage"
+    AutomationProperties.LandmarkType="Main">
+
+    <controls:SettingsPageControl x:Uid="ColorPicker"
+                                  ModuleImageSource="ms-appx:///Assets/Modules/ColorPicker.png">
+        <controls:SettingsPageControl.ModuleContent>
+
+        <StackPanel Orientation="Vertical"
+                    x:Name="ColorPickerView">
+
+                <controls:Setting x:Uid="ColorPicker_EnableColorPicker">
+                    <controls:Setting.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" ShowAsMonochrome="False" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch" />
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
+
+                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;">
+                        <controls:Setting.ActionContent>
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                      HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                            <controls:Setting x:Uid="ColorPicker_ActivationAction" Icon="&#xEC4E;" >
+                                <controls:Setting.ActionContent>
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                      SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}" >
+                                        <ComboBoxItem x:Uid="EditorFirst"/>
+                                        <ComboBoxItem x:Uid="ColorPickerFirst"/>
+                                        <ComboBoxItem x:Uid="ColorPickerOnly"/>
+                                    </ComboBox>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:Setting x:Uid="ColorPicker_CopiedColorRepresentation" Icon="&#xF0E3;">
+                                <controls:Setting.ActionContent>
+                                    <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                              x:Name="ColorPicker_ComboBox"
+                                              HorizontalAlignment="Left"
+                                              DisplayMemberPath="Value"
+                                              ItemsSource="{Binding SelectableColorRepresentations}"
+                                              Loaded="ColorPicker_ComboBox_Loaded"
+                                              SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
+                                              SelectedValuePath="Key" />    
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+
+
+                    <controls:Setting x:Uid="ColorPicker_ShowColorName">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{Binding ShowColorName, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                    <!--
+            Disabling this until we have a safer way to reset cursor as 
+            we can hit a state where the cursor doesn't reset
+           
+            <CheckBox x:Uid="ColorPicker_ChangeCursor" 
+                          IsChecked="{Binding ChangeCursor, Mode=TwoWay}"
+                          Margin="{StaticResource SmallTopMargin}"
+                          IsEnabled="{Binding IsEnabled}"/>
+                          -->
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:Setting x:Name="ColorFormatsSetting" x:Uid="ColorPicker_ColorFormats" Icon="&#xE14C;"/>
+
+                    <!-- Disabled reordering by dragging -->
+                    <!-- CanReorderItems="True" AllowDrop="True" -->
+                    <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
+                              AutomationProperties.Name="{Binding ElementName=ColorFormatsSetting, Path=Header}"
+                              SelectionMode="None"
+                              HorizontalAlignment="Stretch">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ColorFormatModel">
+                                <Grid AutomationProperties.Name="{x:Bind Name}"
+                                      HorizontalAlignment="Stretch"
+                                      Background="{ThemeResource CardBackgroundBrush}"
+                                      BorderThickness="{ThemeResource CardBorderThickness}"
+                                      BorderBrush="{ThemeResource CardBorderBrush}"
+                                      CornerRadius="{ThemeResource ControlCornerRadius}"
+                                      Padding="0,0,16,0"
+                                      MinHeight="68">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock FontWeight="SemiBold"
+                                       FontSize="16"
+                                       Margin="56,8,0,0"
+                                       Text="{x:Bind Name}"/>
+                                    <TextBlock Style="{StaticResource SecondaryTextStyle}"
+                                       Text="{x:Bind Example}"
+                                       Grid.Row="1"
+                                       Margin="56,0,0,8"/>
+                                    <ToggleSwitch IsOn="{x:Bind IsShown, Mode=TwoWay}"
+                                                  OnContent=""
+                                                  OffContent=""
+                                                  Grid.RowSpan="2"
+                                                  x:Uid="Enable_ColorFormat"
+                                                  AutomationProperties.HelpText="{x:Bind Name}"
+                                                  HorizontalAlignment="Right"
+                                                  Margin="0,0,56,0"/>
+
+                                    <Button Background="Transparent"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Grid.RowSpan="2"
+                                            x:Uid="More_Options_Button"
+                                            Content="&#xE10C;">
+                                        <Button.Flyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem IsEnabled="{x:Bind CanMoveUp}" Icon="Up" x:Uid="MoveUp" Click="ReorderButtonUp_Click"/>
+                                                <MenuFlyoutItem IsEnabled="{x:Bind CanMoveDown}" x:Uid="MoveDown" Click="ReorderButtonDown_Click">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE1FD;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                            </MenuFlyout>
+                                        </Button.Flyout>
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="More_Options_ButtonTooltip" />
+                                        </ToolTipService.ToolTip>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </controls:SettingsGroup>
+            </StackPanel>
+
+</controls:SettingsPageControl.ModuleContent>
+
+<controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_ColorPicker" Link="https://aka.ms/PowerToysOverview_ColorPicker"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+<controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Text="Martin Chrzan's Color Picker" Link="https://github.com/martinchrzan/ColorPicker/"/>
+            <controls:PageLink Text="Niels Laute's UX concept" Link="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c"/>
+</controls:SettingsPageControl.SecondaryLinks>
+</controls:SettingsPageControl>
+</Page>

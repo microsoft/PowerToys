@@ -1,0 +1,107 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.WinUI3.Views.PowerPreviewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.WinUI3.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    AutomationProperties.LandmarkType="Main">
+
+    <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+    </Page.Resources>
+
+    <controls:SettingsPageControl x:Uid="FileExplorerPreview"
+                                  ModuleImageSource="ms-appx:///Assets/Modules/PowerPreview.png">
+        <controls:SettingsPageControl.ModuleContent>
+            
+            <StackPanel Orientation="Vertical">
+
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE91B;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}"
+                                          x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD" Icon="&#xE943;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MDRenderIsEnabled}"
+                                          x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Monaco" Icon="&#xE99A;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoRenderIsEnabled}"
+                                          x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF" Icon="&#xEA90;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}"
+                                          x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_GCODE" Icon="&#xE81E;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODERenderIsEnabled}"
+                                          x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
+                    <muxc:InfoBar Severity="Informational"
+                                   x:Uid="FileExplorerPreview_RebootRequired"
+                                   IsOpen="True"
+                                   IsTabStop="True"
+                                   IsClosable="False"
+                                   />
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail" Icon="&#xE91B;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}"
+                                          x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_PDF_Thumbnail" Icon="&#xEA90;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFThumbnailIsEnabled}"
+                                          x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail" Icon="&#xE81E;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODEThumbnailIsEnabled}"
+                                          x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                  <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_STL_Thumbnail" Icon="&#xF158;">
+                      <controls:Setting.ActionContent>
+                          <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.STLThumbnailIsEnabled}"
+                                        x:Uid="ToggleSwitch"/>
+                      </controls:Setting.ActionContent>
+                  </controls:Setting>
+                </controls:SettingsGroup>
+                
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_PowerPreview" Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Text="Aaron Junker's work on developer file preview" Link="https://blog.aaron-junker.ch" />
+            <controls:PageLink Text="Pedro Lamas's work on G-Code and STL" Link="https://www.pedrolamas.com" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
+</Page>

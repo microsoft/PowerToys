@@ -1,0 +1,129 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.WinUI3.Views.AlwaysOnTopPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.WinUI3.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"     
+    mc:Ignorable="d"
+    AutomationProperties.LandmarkType="Main">
+
+    <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
+        <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+    </Page.Resources>
+
+    <controls:SettingsPageControl x:Uid="AlwaysOnTop" IsTabStop="False"
+                                  ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
+                
+                <controls:Setting x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText">
+                    <controls:Setting.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png" ShowAsMonochrome="False" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
+
+                <controls:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                 
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="AlwaysOnTop_ActivationShortcut" Icon="&#xEDA7;">
+                            <controls:Setting.ActionContent>
+                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}"/>
+                            </controls:Setting.ActionContent>
+                        </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel>
+                                <CheckBox IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DoNotActivateOnGameMode}" x:Uid="AlwaysOnTop_GameMode" Margin="{StaticResource ExpanderSettingMargin}"/>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting Icon="&#xE790;" Style="{StaticResource ExpanderHeaderSettingStyle}" x:Uid="AlwaysOnTop_FrameEnabled">
+                                <controls:Setting.ActionContent>
+                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FrameEnabled}" x:Uid="ToggleSwitch"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel>
+
+                                <controls:Setting x:Uid="AlwaysOnTop_FrameColor_Mode" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                                    <controls:Setting.ActionContent>
+                                        <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                            <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Custom_Color"/>
+                                            <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Windows_Default"/>
+                                        </ComboBox>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+
+                                <controls:Setting x:Uid="AlwaysOnTop_FrameColor" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource FalseToVisibleConverter}}">
+                                    <controls:Setting.ActionContent>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FrameColor, Mode=TwoWay}" />
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+
+                                <controls:Setting x:Uid="AlwaysOnTop_FrameThickness" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                                    <controls:Setting.ActionContent>
+                                        <Slider Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}"
+                                                Minimum="0"
+                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                HorizontalAlignment="Right"
+                                                Maximum="30"
+                                                SmallChange="1" 
+                                                LargeChange="5"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting Style="{StaticResource ExpanderHeaderSettingStyle}" x:Uid="AlwaysOnTop_SoundTitle" Icon="&#xE7F3;"/>
+                            </controls:SettingExpander.Header>
+                                <controls:SettingExpander.Content>
+                            <StackPanel>
+                                <CheckBox IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SoundEnabled}" x:Uid="AlwaysOnTop_Sound" Margin="{StaticResource ExpanderSettingMargin}"/>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                </controls:SettingsGroup>
+                
+                <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="AlwaysOnTop_ExcludedApps" Icon="&#xECE4;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <TextBox x:Uid="AlwaysOnTop_ExcludedApps_TextBoxControl"
+                                 Margin="{StaticResource ExpanderSettingMargin}"
+                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                         ScrollViewer.VerticalScrollBarVisibility ="Visible"
+                                         ScrollViewer.VerticalScrollMode="Enabled"
+                                         ScrollViewer.IsVerticalRailEnabled="True"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         MinWidth="240"
+                                         MinHeight="160" />
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_AlwaysOnTop" Link="https://aka.ms/PowerToysOverview_AlwaysOnTop"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
+</Page>
