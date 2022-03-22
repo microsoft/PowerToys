@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public PeekProperties()
         {
-            ActivationShortcut = new HotkeySettings(true, false, false, true, 0x43);
+            ActivationShortcut = new HotkeySettings(false, true, false, false, 0x20);
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
