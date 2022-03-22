@@ -68,6 +68,8 @@ private:
 
     Hotkey m_hotkey;
 
+    HANDLE m_hProcess;
+
     // Load the settings file.
     void init_settings()
     {
@@ -140,6 +142,11 @@ private:
         }
     }
 
+    bool is_viewer_running()
+    {
+        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
+    }
+
     void launch_viewer()
     {
         Logger::trace(L"Starting PeekViewer process");
@@ -159,6 +166,8 @@ private:
         {
             Logger::error(L"PeekViewer failed to start. {}", get_last_error_or_default(GetLastError()));
         }
+
+        m_hProcess = sei.hProcess;
     }
 
 public:
@@ -325,9 +334,12 @@ public:
         {
             Logger::trace(L"Peek hotkey pressed");
             
-            // check file selected in file explorer
-            // TODO: check for existing process to only launch it once if continuous press
-            launch_viewer();
+            // TODO: fix VK_SPACE DestroyWindow in viewer app
+            if (!is_viewer_running())
+            {
+                // check file selected in file explorer
+                launch_viewer();            
+            }
 
             return true;
         }
