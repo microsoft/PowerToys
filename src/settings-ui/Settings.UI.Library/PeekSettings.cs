@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -11,10 +12,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const string ModuleName = "Peek";
         public const string ModuleVersion = "0.0.1";
 
+        [JsonPropertyName("properties")]
+        public PeekProperties Properties { get; set; }
+
         public PeekSettings()
         {
             Name = ModuleName;
             Version = ModuleVersion;
+            Properties = new PeekProperties();
         }
 
         public string GetModuleName()
