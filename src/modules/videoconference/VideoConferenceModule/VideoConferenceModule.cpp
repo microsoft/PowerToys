@@ -8,6 +8,7 @@
 #include <shellapi.h>
 
 #include <filesystem>
+#include <unordered_set>
 
 #include <common/debug_control.h>
 #include <common/SettingsAPI/settings_helpers.h>
@@ -51,20 +52,22 @@ void VideoConferenceModule::reverseMicrophoneMute()
     bool muted = false;
     for (auto& controlledMic : instance->_controlledMicrophones)
     {
-        const bool was_muted = controlledMic.muted();
-        controlledMic.toggle_muted();
+        const bool was_muted = controlledMic->muted();
+        controlledMic->toggle_muted();
         muted = muted || !was_muted;
     }
     if (muted)
     {
         Trace::MicrophoneMuted();
     }
+    instance->_mic_muted_state_during_disconnect = !instance->_mic_muted_state_during_disconnect;
+
     toolbar.setMicrophoneMute(muted);
 }
 
 bool VideoConferenceModule::getMicrophoneMuteState()
 {
-    return instance->_microphoneTrackedInUI ? instance->_microphoneTrackedInUI->muted() : false;
+    return instance->_microphoneTrackedInUI ? instance->_microphoneTrackedInUI->muted() : instance->_mic_muted_state_during_disconnect;
 }
 
 void VideoConferenceModule::reverseVirtualCameraMuteState()
@@ -268,6 +271,46 @@ void VideoConferenceModule::onModuleSettingsChanged()
     }
 }
 
+void VideoConferenceModule::onMicrophoneConfigurationChanged()
+{
+    if (!_controllingAllMics)
+    {
+        // Don't care if we don't control all the mics
+        return;
+    }
+
+    const bool mutedStateForNewMics = _microphoneTrackedInUI ? _microphoneTrackedInUI->muted() : _mic_muted_state_during_disconnect;
+    std::unordered_set<std::wstring_view> currentlyTrackedMicsIds;
+    for (const auto& controlledMic : _controlledMicrophones)
+    {
+        currentlyTrackedMicsIds.emplace(controlledMic->id());
+    }
+
+    auto allMics = MicrophoneDevice::getAllActive();
+    for (auto& newMic : allMics)
+    {
+        if (currentlyTrackedMicsIds.contains(newMic->id()))
+        {
+            continue;
+        }
+
+        if (mutedStateForNewMics)
+        {
+            newMic->set_muted(true);
+        }
+
+        _controlledMicrophones.emplace_back(std::move(newMic));
+    }
+    // Restore invalidated pointer
+    _microphoneTrackedInUI = controlledDefaultMic();
+    if (_microphoneTrackedInUI)
+    {
+        _microphoneTrackedInUI->set_mute_changed_callback([](const bool muted) {
+            toolbar.setMicrophoneMute(muted);
+        });
+    }
+}
+
 VideoConferenceModule::VideoConferenceModule() :
     _generalSettingsWatcher{ PTSettingsHelper::get_powertoys_general_save_file_location(), [this] {
                                 toolbar.scheduleGeneralSettingsUpdate();
@@ -388,45 +431,54 @@ void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view 
 {
     for (auto& controlledMic : _controlledMicrophones)
     {
-        controlledMic.set_muted(false);
+        controlledMic->set_muted(false);
     }
     _controlledMicrophones.clear();
     _microphoneTrackedInUI = nullptr;
     auto allMics = MicrophoneDevice::getAllActive();
     if (new_mic == L"[All]")
     {
+        _controllingAllMics = true;
         _controlledMicrophones = std::move(allMics);
-        if (auto defaultMic = MicrophoneDevice::getDefault())
-        {
-            for (auto& controlledMic : _controlledMicrophones)
-            {
-                if (controlledMic.id() == defaultMic->id())
-                {
-                    _microphoneTrackedInUI = &controlledMic;
-                    break;
-                }
-            }
-        }
+        _microphoneTrackedInUI = controlledDefaultMic();
     }
     else
     {
+        _controllingAllMics = false;
         for (auto& controlledMic : allMics)
         {
-            if (controlledMic.name() == new_mic)
+            if (controlledMic->name() == new_mic)
             {
                 _controlledMicrophones.emplace_back(std::move(controlledMic));
-                _microphoneTrackedInUI = &_controlledMicrophones[0];
+                _microphoneTrackedInUI = _controlledMicrophones[0].get();
                 break;
             }
         }
     }
+
     if (_microphoneTrackedInUI)
     {
-        _microphoneTrackedInUI->set_mute_changed_callback([&](const bool muted) {
+        _microphoneTrackedInUI->set_mute_changed_callback([](const bool muted) {
             toolbar.setMicrophoneMute(muted);
         });
         toolbar.setMicrophoneMute(_microphoneTrackedInUI->muted());
     }
+}
+
+MicrophoneDevice* VideoConferenceModule::controlledDefaultMic()
+{
+    if (auto defaultMic = MicrophoneDevice::getDefault())
+    {
+        for (auto& controlledMic : _controlledMicrophones)
+        {
+            if (controlledMic->id() == defaultMic->id())
+            {
+                return controlledMic.get();
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 void toggleProxyCamRegistration(const bool enable)

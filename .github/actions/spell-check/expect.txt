@@ -178,6 +178,7 @@ bpp
 bricelam
 BRIGHTGREEN
 Browsable
+brucelindbloom
 bsd
 bstr
 bti
@@ -453,6 +454,7 @@ dllhost
 dllmain
 dlls
 DNLEN
+Dns
 doctype
 DONOTROUND
 DONTVALIDATEPATH
@@ -499,6 +501,7 @@ dxgi
 dxgiformat
 dxguid
 ecount
+EData
 EDITKEYBOARD
 editkeyboardwindow
 editorconfig
@@ -523,11 +526,13 @@ enum
 EOAC
 eol
 epicgames
+Eqn
 ERASEBKGND
 EREOF
 EResize
 ERRORMESSAGE
 ERRORTITLE
+ERole
 ESettings
 esize
 esrp
@@ -626,6 +631,8 @@ gabime
 GAC
 gacutil
 GBarm
+Gbits
+Gbps
 GBs
 GCLP
 gcnew
@@ -1150,6 +1157,7 @@ Mato
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
+Mbits
 MBs
 MBUTTON
 MBUTTONDBLCLK
@@ -1556,6 +1564,7 @@ programdata
 PROGRAMFILES
 projectname
 PROPBAG
+PROPERTYKEY
 propkey
 propvarutil
 prvpane
@@ -2035,6 +2044,7 @@ towupper
 tracelogging
 traies
 transcoded
+transicc
 Transnistria
 TRAYMOUSEMESSAGE
 triaging
@@ -2082,6 +2092,7 @@ UNCPRIORITY
 undef
 UNDNAME
 unescape
+Unicast
 Unindent
 Uninitialize
 uninstall
@@ -2265,6 +2276,7 @@ WIXUI
 WKSG
 Wlkr
 wmain
+Wman
 WMKEYDOWN
 WMKEYUP
 wmp
@@ -2307,6 +2319,7 @@ WTSAT
 Wubi
 WVC
 Wwan
+Wwanpp
 xamarin
 XAttribute
 xbf

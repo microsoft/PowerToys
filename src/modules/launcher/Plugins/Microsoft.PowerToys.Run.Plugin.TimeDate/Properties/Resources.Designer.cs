@@ -403,11 +403,20 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show date with weekday and name of month (Applies to &apos;Date&apos; and &apos;Now&apos; result).
+        ///   Looks up a localized string similar to Show date with weekday and name of month.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SettingDateWithWeekday {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_SettingDateWithWeekday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This setting applies to the &apos;Date&apos; and &apos;Now&apos; result..
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingDateWithWeekday_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingDateWithWeekday_Description", resourceCulture);
             }
         }
         
@@ -421,8 +430,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show only &apos;Time&apos;, &apos;Date&apos; and &apos;Now&apos; result on global queries
-        ///(Regardless of this setting, on global queries the first search word has to be a full match.).
+        ///   Looks up a localized string similar to Show only &apos;Time&apos;, &apos;Date&apos; and &apos;Now&apos; result on global queries.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal {
             get {
@@ -431,11 +439,29 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show time with seconds (Applies to &apos;Time&apos; and &apos;Now&apos; result).
+        ///   Looks up a localized string similar to Regardless of this setting, for global queries the first word of the query has to be a complete match..
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show time with seconds.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SettingTimeWithSeconds {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_SettingTimeWithSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This setting applies to the &apos;Time&apos; and &apos;Now&apos; result..
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingTimeWithSeconds_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingTimeWithSeconds_Description", resourceCulture);
             }
         }
         

@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -853,6 +853,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Change screen saver.
+        /// </summary>
+        internal static string ChangeScreenSaver {
+            get {
+                return ResourceManager.GetString("ChangeScreenSaver", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Change User Account Control settings.
         /// </summary>
         internal static string ChangeUACSettings {
@@ -934,11 +943,47 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Connectable devices.
+        /// </summary>
+        internal static string ConnectableDevices {
+            get {
+                return ResourceManager.GetString("ConnectableDevices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Connected Devices.
         /// </summary>
         internal static string ConnectedDevices {
             get {
                 return ResourceManager.GetString("ConnectedDevices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connect panel.
+        /// </summary>
+        internal static string ConnectPanel {
+            get {
+                return ResourceManager.GetString("ConnectPanel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connect to a wireless audio device.
+        /// </summary>
+        internal static string ConnectWirelessAudio {
+            get {
+                return ResourceManager.GetString("ConnectWirelessAudio", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connect to a wireless display.
+        /// </summary>
+        internal static string ConnectWirelessDisplay {
+            get {
+                return ResourceManager.GetString("ConnectWirelessDisplay", resourceCulture);
             }
         }
         
@@ -1137,6 +1182,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string deuteranopia {
             get {
                 return ResourceManager.GetString("deuteranopia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Device discovery.
+        /// </summary>
+        internal static string DeviceDiscovery {
+            get {
+                return ResourceManager.GetString("DeviceDiscovery", resourceCulture);
             }
         }
         
@@ -3130,6 +3184,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Screen saver.
+        /// </summary>
+        internal static string ScreenSaver {
+            get {
+                return ResourceManager.GetString("ScreenSaver", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Scroll bars.
         /// </summary>
         internal static string ScrollBars {
@@ -3571,6 +3634,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Timeout.
+        /// </summary>
+        internal static string Timeout {
+            get {
+                return ResourceManager.GetString("Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Touch.
         /// </summary>
         internal static string Touch {
@@ -3630,6 +3702,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string TruePlay {
             get {
                 return ResourceManager.GetString("TruePlay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turn screen saver on or off.
+        /// </summary>
+        internal static string TurnScreenSaverOnOff {
+            get {
+                return ResourceManager.GetString("TurnScreenSaverOnOff", resourceCulture);
             }
         }
         
