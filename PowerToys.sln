@@ -414,6 +414,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Peek", "src\modules\peek\pe
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PeekFileUtils", "src\modules\peek\PeekFileUtils\PeekFileUtils.vcxproj", "{51950544-5B60-4DB9-AC5C-D7755143A801}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PeekViewer", "src\modules\peek\PeekViewer\PeekViewer.vcxproj", "{538A72C9-0D18-4B17-9AB0-04A477E0A01B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -1143,6 +1145,14 @@ Global
 		{51950544-5B60-4DB9-AC5C-D7755143A801}.Release|x64.Build.0 = Release|x64
 		{51950544-5B60-4DB9-AC5C-D7755143A801}.Release|x86.ActiveCfg = Release|Win32
 		{51950544-5B60-4DB9-AC5C-D7755143A801}.Release|x86.Build.0 = Release|Win32
+		{538A72C9-0D18-4B17-9AB0-04A477E0A01B}.Debug|x64.ActiveCfg = Debug|x64
+		{538A72C9-0D18-4B17-9AB0-04A477E0A01B}.Debug|x64.Build.0 = Debug|x64
+		{538A72C9-0D18-4B17-9AB0-04A477E0A01B}.Debug|x86.ActiveCfg = Debug|Win32
+		{538A72C9-0D18-4B17-9AB0-04A477E0A01B}.Debug|x86.Build.0 = Debug|Win32
+		{538A72C9-0D18-4B17-9AB0-04A477E0A01B}.Release|x64.ActiveCfg = Release|x64
+		{538A72C9-0D18-4B17-9AB0-04A477E0A01B}.Release|x64.Build.0 = Release|x64
+		{538A72C9-0D18-4B17-9AB0-04A477E0A01B}.Release|x86.ActiveCfg = Release|Win32
+		{538A72C9-0D18-4B17-9AB0-04A477E0A01B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1281,6 +1291,7 @@ Global
 		{645D21DE-8EE5-4D7F-9FA2-4B80CE5EC884} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{A1425B53-3D61-4679-8623-E64A0D3D0A48} = {645D21DE-8EE5-4D7F-9FA2-4B80CE5EC884}
 		{51950544-5B60-4DB9-AC5C-D7755143A801} = {645D21DE-8EE5-4D7F-9FA2-4B80CE5EC884}
+		{538A72C9-0D18-4B17-9AB0-04A477E0A01B} = {645D21DE-8EE5-4D7F-9FA2-4B80CE5EC884}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
