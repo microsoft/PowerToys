@@ -405,7 +405,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.TimeDate", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeDate\Microsoft.PowerToys.Run.Plugin.TimeDate.csproj", "{5BDBD6C9-A31F-4CEB-871A-5E9E709197EF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests.csproj", "{FD464B4C-2F68-4D06-91E7-4208146C41F5}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.WindowWalker.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.WindowWalker.UnitTests\Microsoft.Plugin.WindowWalker.UnitTests.csproj", "{8FE5A5EE-1B59-401C-9FB3-B04ECD3E29C1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Settings.UI.WinUI3", "src\settings-ui\Settings.UI.WinUI3\Settings.UI.WinUI3.csproj", "{020A7474-3601-4160-A159-D7B70B77B15F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1120,6 +1123,14 @@ Global
 		{8FE5A5EE-1B59-401C-9FB3-B04ECD3E29C1}.Release|x64.Build.0 = Release|x64
 		{8FE5A5EE-1B59-401C-9FB3-B04ECD3E29C1}.Release|x86.ActiveCfg = Release|x64
 		{8FE5A5EE-1B59-401C-9FB3-B04ECD3E29C1}.Release|x86.Build.0 = Release|x64
+		{020A7474-3601-4160-A159-D7B70B77B15F}.Debug|x64.ActiveCfg = Debug|x64
+		{020A7474-3601-4160-A159-D7B70B77B15F}.Debug|x64.Build.0 = Debug|x64
+		{020A7474-3601-4160-A159-D7B70B77B15F}.Debug|x86.ActiveCfg = Debug|x64
+		{020A7474-3601-4160-A159-D7B70B77B15F}.Debug|x86.Build.0 = Debug|x64
+		{020A7474-3601-4160-A159-D7B70B77B15F}.Release|x64.ActiveCfg = Release|x64
+		{020A7474-3601-4160-A159-D7B70B77B15F}.Release|x64.Build.0 = Release|x64
+		{020A7474-3601-4160-A159-D7B70B77B15F}.Release|x86.ActiveCfg = Release|x64
+		{020A7474-3601-4160-A159-D7B70B77B15F}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1255,6 +1266,7 @@ Global
 		{5BDBD6C9-A31F-4CEB-871A-5E9E709197EF} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{FD464B4C-2F68-4D06-91E7-4208146C41F5} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{8FE5A5EE-1B59-401C-9FB3-B04ECD3E29C1} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{020A7474-3601-4160-A159-D7B70B77B15F} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
