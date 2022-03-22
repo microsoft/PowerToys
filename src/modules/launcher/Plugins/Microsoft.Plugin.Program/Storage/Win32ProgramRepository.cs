@@ -115,7 +115,7 @@ namespace Microsoft.Plugin.Program.Storage
                 }
                 else if (appType == Win32Program.ApplicationType.InternetShortcutApplication)
                 {
-                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp?.FullPath };
+                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp?.FullPath ?? oldPath };
                 }
                 else
                 {
