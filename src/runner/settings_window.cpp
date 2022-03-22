@@ -277,7 +277,7 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // Arg 1: executable path.
     std::wstring executable_path = get_module_folderpath();
 
-    executable_path.append(L"\\Settings\\PowerToys.Settings.exe");
+    executable_path.append(L"\\SettingsUI\\net6.0-windows10.0.19041.0\\win10-x64\\Settings.UI.WinUI3.exe");
 
     // Args 2,3: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
     std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
