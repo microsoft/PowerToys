@@ -2,13 +2,33 @@
     x:Class="Microsoft.PowerToys.Settings.UI.WinUI3.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.WinUI3">
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.WinUI3"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.WinUI3.Controls">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="/Controls/KeyVisual/KeyVisual.xaml" />
+                <ResourceDictionary Source="/Controls/IsEnabledTextBlock/IsEnabledTextBlock.xaml" />
+                <ResourceDictionary Source="/Styles/TextBlock.xaml" />
+                <ResourceDictionary Source="/Styles/Button.xaml"/>
+                <ResourceDictionary Source="/Themes/Colors.xaml"/>
+                <ResourceDictionary Source="/Themes/SettingsExpanderStyles.xaml"/>
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
+
+            <Thickness x:Key="InfoBarIconMargin">6,16,16,16</Thickness>
+            <Thickness x:Key="InfoBarContentRootPadding">16,0,0,0</Thickness>
+            <x:Double x:Key="SettingActionControlMinWidth">240</x:Double>
+
+            <Style TargetType="ListViewItem">
+                <Setter Property="Margin" Value="0,0,0,2" />
+                <Setter Property="Padding" Value="0,0,0,0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="IsTabStop" Value="False"/>
+            </Style>
+
+            <Style TargetType="controls:CheckBoxWithDescriptionControl" BasedOn="{StaticResource DefaultCheckBoxStyle}" />
             <!-- Other app resources here -->
         </ResourceDictionary>
     </Application.Resources>
