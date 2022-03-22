@@ -1,1 +1,0 @@
-get-process | where name -like 'powertoys*' | stop-process
