@@ -326,7 +326,7 @@ public:
             Logger::trace(L"Peek hotkey pressed");
             
             // check file selected in file explorer
-            // launch spacebar_peek
+            // TODO: check for existing process to only launch it once if continuous press
             launch_viewer();
 
             return true;
