@@ -2180,7 +2180,6 @@ vsonline
 vstemplate
 VSTHRD
 VSTT
-VTABLE
 vtable
 Vtbl
 WBounds
