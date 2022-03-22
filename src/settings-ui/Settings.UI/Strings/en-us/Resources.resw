@@ -227,6 +227,10 @@
     <value>PowerRename</value>
     <comment>Product name: Navigation view item name for PowerRename</comment>
   </data>
+  <data name="Shell_Peek.Content" xml:space="preserve">
+    <value>Peek</value>
+    <comment>Product name: Navigation view item name for Peek</comment>
+  </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
     <value>Shortcut Guide</value>
     <comment>Product name: Navigation view item name for Shortcut Guide</comment>
