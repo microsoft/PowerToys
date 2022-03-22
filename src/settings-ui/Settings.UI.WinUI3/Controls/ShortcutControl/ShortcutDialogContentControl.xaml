@@ -1,0 +1,94 @@
+﻿<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.WinUI3.Controls.ShortcutDialogContentControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.WinUI3.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    mc:Ignorable="d"
+    x:Name="ShortcutContentControl">
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="boolToVisibilityConverter" FalseValue="Collapsed" TrueValue="Visible" />
+    </UserControl.Resources>
+    <Grid MinWidth="498" MinHeight="220">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition MinHeight="110"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Uid="Activation_Shortcut_Description" Grid.Row="0" />
+
+        <ItemsControl x:Name="KeysControl"
+                              Height="56"
+                              Grid.Row="1"
+                              Margin="0,64,0,0"
+                              HorizontalContentAlignment="Center"
+                              ItemsSource="{x:Bind Keys, Mode=OneWay}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Top">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="8"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <local:KeyVisual AutomationProperties.AccessibilityView="Raw"
+                                         Height="56"
+                                         VisualType="Large"
+                                         IsError="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                                         IsTabStop="False"
+                                         Content="{Binding}" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel Orientation="Vertical"
+                    Grid.Row="2"
+                    Spacing="8"
+                    
+                    Margin="0,24,0,0"
+                    VerticalAlignment="Top">
+            <Grid Height="36">
+                
+            <Border x:Name="WarningBanner"
+                    Background="{ThemeResource InfoBarErrorSeverityBackgroundBrush}"
+                    CornerRadius="{ThemeResource ControlCornerRadius}"
+                    BorderBrush="{ThemeResource InfoBarBorderBrush}"
+                    BorderThickness="{ThemeResource InfoBarBorderThickness}"
+                    Padding="8"
+                    Margin="-2,0,0,0"
+                    Visibility="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay, Converter={StaticResource boolToVisibilityConverter}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--TODO(stefan) InfoBadge not available
+                        <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
+                                        Margin="2,0,12,0"
+                                        Style="{StaticResource CriticalIconInfoBadgeStyle}" />
+                    -->
+
+                    <TextBlock x:Name="InvalidShortcutWarningLabel"
+                               x:Uid="InvalidShortcut"
+                               VerticalAlignment="Center"
+                               Margin="0,-1,0,0"
+                               Foreground="{ThemeResource InfoBarTitleForeground}"
+                               FontWeight="{ThemeResource InfoBarTitleFontWeight}"
+                               Grid.Column="1" />
+                </Grid>
+            </Border>
+            </Grid>
+            <toolkitcontrols:MarkdownTextBlock x:Uid="InvalidShortcutWarningLabel"
+                                               FontSize="12"
+                                               Background="Transparent"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

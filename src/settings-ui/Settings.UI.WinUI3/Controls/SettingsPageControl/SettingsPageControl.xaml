@@ -1,0 +1,118 @@
+﻿<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.WinUI3.Controls.SettingsPageControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.WinUI3.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="UserControl_Loaded"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <converters:DoubleToVisibilityConverter x:Name="doubleToVisibilityConverter" GreaterThan="0" TrueValue="Visible" FalseValue="Collapsed" />
+    </UserControl.Resources>
+
+    <Grid RowSpacing="24" Padding="20,0,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*"/>
+ 
+        </Grid.RowDefinitions>
+        
+        <TextBlock x:Name="Header"
+                   Text="{x:Bind ModuleTitle}"
+                   AutomationProperties.HeadingLevel="1"
+                   Style="{StaticResource TitleTextBlockStyle}"
+                   Margin="0,44,0,0"
+                   VerticalAlignment="Stretch"/>
+
+        <ScrollViewer Grid.Row="1">
+            <Grid RowSpacing="24"
+                  Padding="0,0,20,48" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition MaxWidth="1048" Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Top panel -->
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160"/>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border CornerRadius="4" VerticalAlignment="Top">
+                        <Image AutomationProperties.AccessibilityView="Raw">
+                            <Image.Source>
+                                <BitmapImage UriSource="{x:Bind ModuleImageSource}" />
+                            </Image.Source>
+                        </Image>
+                    </Border>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock x:Name="AboutDescription"
+                                   Text="{x:Bind ModuleDescription}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
+
+                        <ItemsControl x:Name="PrimaryLinksControl" ItemsSource="{x:Bind PrimaryLinks}" IsTabStop="False" Margin="0,8,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="local:PageLink">
+                                    <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
+                                        <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
+                                    </HyperlinkButton>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:WrapPanel Orientation="Horizontal" HorizontalSpacing="24"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+
+                </Grid>
+
+                <!-- Content panel -->
+                <ContentPresenter x:Name="ModuleContentPresenter"
+                                      HorizontalAlignment="Stretch"
+                                      HorizontalContentAlignment="Stretch"
+                                      Content="{x:Bind ModuleContent}"
+                                      MaxWidth="1048"
+                                      Margin="0,12,0,0" Grid.Row="1"/>
+
+                <!-- Bottom panel -->
+                <StackPanel x:Name="SecondaryLinksPanel"
+                            Grid.Row="2"
+                            Visibility="{x:Bind SecondaryLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}"
+                            Orientation="Vertical">
+                    <TextBlock Text="{x:Bind SecondaryLinksHeader}"
+                               Style="{ThemeResource BodyStrongTextBlockStyle}"
+                               Margin="2,8,0,0"
+                               AutomationProperties.HeadingLevel="Level2"/>
+
+                    <ItemsControl x:Name="SecondaryLinksItemControl" IsTabStop="False" Margin="2,0,0,0" ItemsSource="{x:Bind SecondaryLinks}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:PageLink">
+                                <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
+                                    <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
+                                </HyperlinkButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <controls:WrapPanel Orientation="Horizontal" HorizontalSpacing="24"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

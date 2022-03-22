@@ -1,0 +1,50 @@
+﻿<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.WinUI3.Controls.ShortcutControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.WinUI3.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    x:Name="LayoutRoot"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid HorizontalAlignment="Right">
+        <StackPanel Orientation="Horizontal">
+            <Button x:Name="EditButton"
+                    Padding="0"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Click="OpenDialogButton_Click" >
+                <StackPanel Orientation="Horizontal"
+                            Margin="6,0,6,0"
+                            Spacing="16">
+                    <ItemsControl x:Name="PreviewKeysControl"
+                                  IsEnabled="{Binding ElementName=EditButton, Path=IsEnabled}"
+                                  VerticalAlignment="Center"
+                                  IsTabStop="False">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <local:KeyVisual IsTabStop="False"
+                                                 AutomationProperties.AccessibilityView="Raw"
+                                                 VisualType="Small"
+                                                 VerticalAlignment="Center"
+                                                 Content="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <FontIcon Glyph="&#xE104;"
+                              FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                              FontSize="14"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>
