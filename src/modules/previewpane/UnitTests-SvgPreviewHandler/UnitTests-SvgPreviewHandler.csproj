@@ -3,17 +3,10 @@
     <Platforms>x64</Platforms>
     <AssemblyTitle>UnitTests-SvgPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-SvgPreviewHandler</AssemblyDescription>
-    <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corporation</AssemblyCopyright>
-    <AssemblyProduct>PowerToys</AssemblyProduct>
     <AssemblyTitle>UnitTests-SvgPreviewHandler</AssemblyTitle>
-    <Company>Microsoft Corporation</Company>
-    <Product>PowerToys</Product>
-    <NeutralLanguage>en-US</NeutralLanguage>
     <Description>PowerToys UnitTests-SvgPreviewHandler</Description>
-    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <ProjectGuid>{060D75DA-2D1C-48E6-A4A1-6F0718B64661}</ProjectGuid>
     <RootNamespace>SvgPreviewHandlerUnitTests</RootNamespace>
@@ -26,7 +19,7 @@
   </PropertyGroup>
 
   <Import Project="..\..\..\Version.props" />
- 
+
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>

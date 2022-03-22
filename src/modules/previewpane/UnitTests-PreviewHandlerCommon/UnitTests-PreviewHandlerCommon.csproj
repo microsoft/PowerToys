@@ -3,17 +3,10 @@
     <Platforms>x64</Platforms>
     <AssemblyTitle>UnitTests-PreviewHandlerCommon</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-PreviewHandlerCommon</AssemblyDescription>
-    <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corporation</AssemblyCopyright>
-    <AssemblyProduct>PowerToys</AssemblyProduct>
     <AssemblyTitle>UnitTests-PreviewHandlerCommon</AssemblyTitle>
-    <Company>Microsoft Corporation</Company>
-    <Product>PowerToys</Product>
-    <NeutralLanguage>en-US</NeutralLanguage>
     <Description>PowerToys UnitTests-PreviewHandlerCommon</Description>
-    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <ProjectGuid>{748417CA-F17E-487F-9411-CAFB6D3F4877}</ProjectGuid>
     <RootNamespace>PreviewHandlerCommonUnitTests</RootNamespace>
