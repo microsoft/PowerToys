@@ -128,7 +128,6 @@
                                     ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
-                <!--
 
                 <muxc:NavigationViewItem x:Uid="Shell_ShortcutGuide"
                                          helpers:NavHelper.NavigateTo="views:ShortcutGuidePage">
@@ -146,9 +145,8 @@
                                     ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
--->
+
             </muxc:NavigationView.MenuItems>
-            <!--
             <muxc:NavigationView.PaneFooter>
                 <StackPanel Orientation="Vertical">
                     <muxc:NavigationViewItem x:Uid="OOBE_NavViewItem"
@@ -170,7 +168,6 @@
                     <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
                 </ic:EventTriggerBehavior>
             </i:Interaction.Behaviors>
-            -->
             <Frame x:Name="shellFrame" />
         </muxc:NavigationView>
     </Grid>

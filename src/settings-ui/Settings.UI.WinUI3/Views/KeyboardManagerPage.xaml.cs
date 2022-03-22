@@ -23,14 +23,14 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Views
     {
         private const string PowerToyName = "Keyboard Manager";
 
-        private readonly CoreDispatcher dispatcher;
+        // private readonly CoreDispatcher dispatcher;
         private readonly IFileSystemWatcher watcher;
 
         public KeyboardManagerViewModel ViewModel { get; }
 
         public KeyboardManagerPage()
         {
-            dispatcher = Window.Current.Dispatcher;
+            // dispatcher = Window.Current.Dispatcher;
 
             var settingsUtils = new SettingsUtils();
             ViewModel = new KeyboardManagerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, FilterRemapKeysList);
@@ -44,16 +44,16 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Views
             DataContext = ViewModel;
         }
 
-        private async void OnConfigFileUpdate()
+        private void OnConfigFileUpdate()
         {
             // Note: FileSystemWatcher raise notification multiple times for single update operation.
             // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration everytime since we will be updating the UI only if something is changed.
             if (ViewModel.LoadProfile())
             {
-                await dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                {
+                //await dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                //{
                     ViewModel.NotifyFileChanged();
-                });
+                //});
             }
         }
 

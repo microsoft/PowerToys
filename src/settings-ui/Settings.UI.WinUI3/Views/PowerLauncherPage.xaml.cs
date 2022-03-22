@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Views
                 }
             });
 
-            var loader = ResourceLoader.GetForCurrentView();
+            var loader = ResourceLoader.GetForViewIndependentUse();
 
             searchResultPreferencesOptions = new ObservableCollection<Tuple<string, string>>();
             searchResultPreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchResultPreference_AlphabeticalOrder"), "alphabetical_order"));

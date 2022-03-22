@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Views
         {
             InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            var resourceLoader = ResourceLoader.GetForCurrentView();
+            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
             Func<string, string> loader = (string name) =>
             {
                 return resourceLoader.GetString(name);

@@ -1,7 +1,8 @@
 {
   "profiles": {
     "Settings.UI.WinUI3 (Unpackaged)": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "nativeDebugging": true
     }
   }
 }

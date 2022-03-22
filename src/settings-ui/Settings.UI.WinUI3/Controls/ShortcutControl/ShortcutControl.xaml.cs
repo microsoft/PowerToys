@@ -88,7 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Controls
 
             this.Unloaded += ShortcutControl_Unloaded;
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
-            ResourceLoader resourceLoader = ResourceLoader.GetForCurrentView();
+            ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
             // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
             shortcutDialog = new ContentDialog
