@@ -20,6 +20,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\Program\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <Optimize>false</Optimize>
     <DebugType>full</DebugType>
   </PropertyGroup>
 

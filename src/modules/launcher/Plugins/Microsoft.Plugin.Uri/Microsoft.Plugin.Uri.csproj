@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Version.props" />
 
   <PropertyGroup>
@@ -19,6 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\Uri\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <Optimize>false</Optimize>
     <DebugType>full</DebugType>
   </PropertyGroup>
 
