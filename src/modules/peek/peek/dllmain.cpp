@@ -1,7 +1,10 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
+#include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
+#include <common/utils/winapi_error.h>
+#include <filesystem>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -22,6 +25,17 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         break;
     }
     return TRUE;
+}
+
+namespace
+{
+    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_WIN[] = L"win";
+    const wchar_t JSON_KEY_ALT[] = L"alt";
+    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
+    const wchar_t JSON_KEY_SHIFT[] = L"shift";
+    const wchar_t JSON_KEY_CODE[] = L"code";
+    const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ActivationShortcut";
 }
 
 // The PowerToy name that will be shown in the settings.
@@ -52,8 +66,100 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
 
-    // Load initial settings from the persisted values.
-    void init_settings();
+    Hotkey m_hotkey;
+
+    // Load the settings file.
+    void init_settings()
+    {
+        try
+        {
+            // Load and parse the settings file for this PowerToy.
+            PowerToysSettings::PowerToyValues settings =
+                PowerToysSettings::PowerToyValues::load_from_settings_file(Peek::get_name());
+
+            parse_hotkey(settings);
+
+            // Load a bool property.
+            //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
+            //  g_settings.bool_prop = *v;
+            //}
+
+            // Load an int property.
+            //if (auto v = settings.get_int_value(L"int_spinner_1")) {
+            //  g_settings.int_prop = *v;
+            //}
+
+            // Load a string property.
+            //if (auto v = settings.get_string_value(L"string_text_1")) {
+            //  g_settings.string_prop = *v;
+            //}
+
+            // Load a color property.
+            //if (auto v = settings.get_string_value(L"color_picker_1")) {
+            //  g_settings.color_prop = *v;
+            //}
+        }
+        catch (std::exception&)
+        {
+            // Error while loading from the settings file. Let default values stay as they are.
+        }
+    }
+
+    void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
+    {
+        auto settingsObject = settings.get_raw_json();
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
+                m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize Peek start shortcut");
+            }
+        }
+        else
+        {
+            Logger::info("Peek settings are empty");
+        }
+
+        if (!m_hotkey.key)
+        {
+            Logger::info("Peek is going to use default shortcut");
+            m_hotkey.win = false;
+            m_hotkey.alt = false;
+            m_hotkey.shift = false;
+            m_hotkey.ctrl = true;
+            m_hotkey.key = ' ';
+        }
+    }
+
+    void launch_viewer()
+    {
+        Logger::trace(L"Starting PeekViewer process");
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
+        sei.lpVerb = L"open";
+        sei.lpFile = L"modules\\Peek\\SpacebarPreview\\SpacebarPreview.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        auto absolute = std::filesystem::absolute(L"..\\..\\src\\modules\\peek\\test\\andrew-lakersnoi-hq6EG8GdnZw-unsplash.jpg");
+        sei.lpParameters = absolute.c_str();
+        if (ShellExecuteExW(&sei))
+        {
+            Logger::trace("Successfully started the PeekViewer process");
+        }
+        else
+        {
+            Logger::error(L"PeekViewer failed to start. {}", get_last_error_or_default(GetLastError()));
+        }
+    }
 
 public:
     // Constructor
@@ -195,42 +301,40 @@ public:
     {
         return m_enabled;
     }
+
+    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
+    {
+        if (m_hotkey.key)
+        {
+            if (hotkeys && buffer_size >= 1)
+            {
+                hotkeys[0] = m_hotkey;
+            }
+
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    virtual bool on_hotkey(size_t hotkeyId) override
+    {
+        if (m_enabled)
+        {
+            Logger::trace(L"Peek hotkey pressed");
+            
+            // check file selected in file explorer
+            // launch spacebar_peek
+            launch_viewer();
+
+            return true;
+        }
+
+        return false;
+    }
 };
-
-// Load the settings file.
-void Peek::init_settings()
-{
-    try
-    {
-        // Load and parse the settings file for this PowerToy.
-        PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(Peek::get_name());
-
-        // Load a bool property.
-        //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
-        //  g_settings.bool_prop = *v;
-        //}
-
-        // Load an int property.
-        //if (auto v = settings.get_int_value(L"int_spinner_1")) {
-        //  g_settings.int_prop = *v;
-        //}
-
-        // Load a string property.
-        //if (auto v = settings.get_string_value(L"string_text_1")) {
-        //  g_settings.string_prop = *v;
-        //}
-
-        // Load a color property.
-        //if (auto v = settings.get_string_value(L"color_picker_1")) {
-        //  g_settings.color_prop = *v;
-        //}
-    }
-    catch (std::exception&)
-    {
-        // Error while loading from the settings file. Let default values stay as they are.
-    }
-}
 
 // This method of saving the module settings is only required if you need to do any
 // custom processing of the settings before saving them to disk.
