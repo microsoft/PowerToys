@@ -1,0 +1,87 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.WinUI3.Views.AwakePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.WinUI3.Converters"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.WinUI3.Controls"
+    mc:Ignorable="d"
+    AutomationProperties.LandmarkType="Main">
+
+    <Page.Resources>
+        <converters:AwakeModeToIntConverter x:Key="AwakeModeToIntConverter" />
+    </Page.Resources>
+
+    <controls:SettingsPageControl x:Uid="Awake" IsTabStop="False"
+                                  ModuleImageSource="ms-appx:///Assets/Modules/Awake.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
+
+                <controls:Setting x:Uid="Awake_EnableAwake">
+                    <controls:Setting.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAwake.png" ShowAsMonochrome="False" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch" HorizontalAlignment="Right"/>
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
+
+                <controls:SettingsGroup x:Uid="Awake_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                 
+                    <controls:Setting x:Uid="Awake_Mode" Icon="&#xEC4E;" >
+                        <controls:Setting.ActionContent>
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                      SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
+                                <ComboBoxItem x:Uid="Awake_NoKeepAwake"/>
+                                <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwake"/>
+                                <ComboBoxItem x:Uid="Awake_TemporaryKeepAwake"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="Awake_TimeBeforeAwake" Icon="&#xE916;" Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
+                        <controls:Setting.ActionContent>
+                            <StackPanel
+                                                Orientation="Horizontal">
+                                <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Hours"
+                                                Value="{x:Bind ViewModel.Hours, Mode=TwoWay}"
+                                                Minimum="0"
+                                                SpinButtonPlacementMode="Compact"
+                                                HorizontalAlignment="Left"
+                                                Width="96"
+                                                SmallChange="1" 
+                                                LargeChange="5"/>
+                                <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Minutes"
+                                                Value="{x:Bind ViewModel.Minutes, Mode=TwoWay}"
+                                                Minimum="0"
+                                                SpinButtonPlacementMode="Compact"
+                                                Margin="8,0,0,0"
+                                                HorizontalAlignment="Left"
+                                                Width="96"
+                                                Maximum="60"
+                                                SmallChange="1" 
+                                                LargeChange="5"/>
+                            </StackPanel>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="Awake_EnableDisplayKeepAwake" Icon="&#xE7FB;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" x:Uid="ToggleSwitch" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_Awake" Link="https://aka.ms/PowerToysOverview_Awake"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Text="Den Delimarsky's work on creating Awake" Link="https://Awake.den.dev"/>
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
+</Page>
