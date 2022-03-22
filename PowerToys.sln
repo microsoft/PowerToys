@@ -412,7 +412,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "peek", "peek", "{645D21DE-8
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Peek", "src\modules\peek\peek\peek.vcxproj", "{A1425B53-3D61-4679-8623-E64A0D3D0A48}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpacebarPreview", "src\modules\peek\SpacebarPreview\SpacebarPreview.vcxproj", "{538A72C9-0D18-4B17-9AB0-04A477E0A01B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PeekViewer", "src\modules\peek\PeekViewer\PeekViewer.vcxproj", "{538A72C9-0D18-4B17-9AB0-04A477E0A01B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

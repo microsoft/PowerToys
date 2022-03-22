@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{538a72c9-0d18-4b17-9ab0-04a477e0a01b}</ProjectGuid>
-    <RootNamespace>SpacebarPreview</RootNamespace>
+    <RootNamespace>PeekViewer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -160,19 +160,19 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ViewerApp.cpp" />
+    <ClCompile Include="App.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileTypeUtils.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="ViewerApp.h" />
+    <ClInclude Include="App.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="spacebar.ico" />
+    <Image Include="PeekViewer.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SpacebarPreview.rc" />
+    <ResourceCompile Include="PeekViewer.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

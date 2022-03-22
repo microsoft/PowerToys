@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ViewerApp.h">
+    <ClInclude Include="App.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -29,7 +29,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ViewerApp.cpp">
+    <ClCompile Include="App.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -40,22 +40,22 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="spacebar.ico">
+    <Image Include="PeekViewer.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SpacebarPreview.rc">
+    <ResourceCompile Include="PeekViewer.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="spacebar.ico">
+    <Image Include="PeekViewer.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SpacebarPreview.rc">
+    <ResourceCompile Include="PeekViewer.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

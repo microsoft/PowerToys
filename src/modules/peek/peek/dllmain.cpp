@@ -125,7 +125,19 @@ private:
         else
         {
             Logger::info("Peek settings are empty");
+
+            set_default_settings();
         }
+    }
+
+    void set_default_settings()
+    {
+        Logger::info("Peek is going to use default settings");
+        m_hotkey.win = false;
+        m_hotkey.alt = false;
+        m_hotkey.shift = false;
+        m_hotkey.ctrl = true;
+        m_hotkey.key = ' ';
     }
 
     void parse_hotkey(winrt::Windows::Data::Json::JsonObject& jsonHotkeyObject)
@@ -166,7 +178,7 @@ private:
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
         sei.lpVerb = L"open";
-        sei.lpFile = L"modules\\Peek\\SpacebarPreview\\SpacebarPreview.exe";
+        sei.lpFile = L"modules\\Peek\\PeekViewer\\PeekViewer.exe";
         sei.nShow = SW_SHOWNORMAL;
         auto absolute = std::filesystem::absolute(L"..\\..\\src\\modules\\peek\\test\\andrew-lakersnoi-hq6EG8GdnZw-unsplash.jpg");
         sei.lpParameters = absolute.c_str();

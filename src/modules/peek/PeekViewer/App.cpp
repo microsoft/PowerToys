@@ -2,7 +2,7 @@
 #include "resource.h"
 #pragma comment(lib, "d2d1")
 #include "FileTypeUtils.h"
-#include "ViewerApp.h"
+#include "App.h"
 
 // The main window class name.
 static TCHAR szWindowClass[] = _T("Spacebar");
@@ -181,7 +181,7 @@ HRESULT App::ParseFileNames()
     LPWSTR* szArglist;
     int nArgs;
 
-    // First argument is SpacebarPreview.exe
+    // First argument is PeekViewer.exe
     szArglist = CommandLineToArgvW(GetCommandLine(), &nArgs);
 
     if (NULL == szArglist || nArgs == 1)
@@ -316,7 +316,7 @@ FileInfo App::ParseFileInfo(std::filesystem::directory_entry entry)
 
 HRESULT App::Initialize(HINSTANCE hInstance)
 {
-    m_singleInstanceMutex = CreateMutex(NULL, TRUE, L"SpacebarPreview");
+    m_singleInstanceMutex = CreateMutex(NULL, TRUE, L"PeekViewer");
     if (m_singleInstanceMutex == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
     {
         HWND existingApp = FindWindow(szWindowClass, NULL);
