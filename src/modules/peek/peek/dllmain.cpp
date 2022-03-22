@@ -5,6 +5,7 @@
 #include "trace.h"
 #include <common/utils/winapi_error.h>
 #include <filesystem>
+#include <common/interop/shared_constants.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -69,6 +70,8 @@ private:
     Hotkey m_hotkey;
 
     HANDLE m_hProcess;
+
+    HANDLE m_hInvokeEvent;
 
     // Load the settings file.
     void init_settings()
@@ -173,12 +176,13 @@ private:
 
     void launch_viewer()
     {
-        Logger::trace(L"Starting PeekViewer process");
+        Logger::trace(L"Starting PeekUI process");
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
+
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
         sei.lpVerb = L"open";
-        sei.lpFile = L"modules\\Peek\\PeekViewer\\PeekViewer.exe";
+        sei.lpFile = L"modules\\Peek\\PeekUI\\PeekUI.exe";
         sei.nShow = SW_SHOWNORMAL;
         auto absolute = std::filesystem::absolute(L"..\\..\\src\\modules\\peek\\test\\andrew-lakersnoi-hq6EG8GdnZw-unsplash.jpg");
         sei.lpParameters = absolute.c_str();
@@ -198,6 +202,8 @@ public:
     Peek()
     {
         init_settings();
+
+        m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_PEEK_SHARED_EVENT);
     };
 
     ~Peek()
@@ -327,12 +333,20 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        ResetEvent(m_hInvokeEvent);
+        launch_viewer();
         m_enabled = true;
     }
 
     // Disable the powertoy
     virtual void disable()
     {
+        if (m_enabled)
+        {
+            ResetEvent(m_hInvokeEvent);
+            TerminateProcess(m_hProcess, 1);
+        }
+
         m_enabled = false;
     }
 
