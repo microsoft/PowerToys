@@ -46,21 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
-                    NotifyPropertyChanged();
                 }
-            }
-        }
-
-        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            OnPropertyChanged(propertyName);
-            if (SendConfigMSG != null)
-            {
-                SndPeekSettings outsettings = new SndPeekSettings(Settings);
-                SndModuleSettings<SndPeekSettings> ipcMessage = new SndModuleSettings<SndPeekSettings>(outsettings);
-
-                string targetMessage = ipcMessage.ToJsonString();
-                SendConfigMSG(targetMessage);
             }
         }
 
