@@ -79,7 +79,7 @@ private:
             PowerToysSettings::PowerToyValues settings =
                 PowerToysSettings::PowerToyValues::load_from_settings_file(Peek::get_name());
 
-            parse_hotkey(settings);
+            parse_settings(settings);
 
             // Load a bool property.
             //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
@@ -107,7 +107,7 @@ private:
         }
     }
 
-    void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
+    void parse_settings(PowerToysSettings::PowerToyValues& settings)
     {
         auto settingsObject = settings.get_raw_json();
         if (settingsObject.GetView().Size())
@@ -115,20 +115,32 @@ private:
             try
             {
                 auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
-                m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-                m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-                m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-                m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-                m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                parse_hotkey(jsonHotkeyObject);
             }
             catch (...)
             {
-                Logger::error("Failed to initialize Peek start shortcut");
+                Logger::error("Failed to initialize Peek start settings");
             }
         }
         else
         {
             Logger::info("Peek settings are empty");
+        }
+    }
+
+    void parse_hotkey(winrt::Windows::Data::Json::JsonObject& jsonHotkeyObject)
+    {
+        try
+        {
+            m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+            m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+            m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+            m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+            m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+        }
+        catch (...)
+        {
+            Logger::error("Failed to initialize Peek start shortcut");
         }
 
         if (!m_hotkey.key)
@@ -171,10 +183,17 @@ private:
     }
 
 public:
-    // Constructor
     Peek()
     {
         init_settings();
+    };
+
+    ~Peek()
+    {
+        if (m_enabled)
+        {
+        }
+        m_enabled = false;
     };
 
     // Destroy the powertoy and free memory
