@@ -4,7 +4,6 @@
     <AssemblyTitle>PowerToys.MonacoPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys MonacoPreviewHandler</AssemblyDescription>
     <Description>PowerToys MonacoPreviewHandler</Description>
-    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

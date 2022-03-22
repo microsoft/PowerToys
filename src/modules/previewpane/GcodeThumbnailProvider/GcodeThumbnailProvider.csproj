@@ -10,8 +10,6 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Company>Microsoft Corporation</Company>
-    <Product>PowerToys</Product>
     <Description>PowerToys GcodePreviewHandler</Description>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

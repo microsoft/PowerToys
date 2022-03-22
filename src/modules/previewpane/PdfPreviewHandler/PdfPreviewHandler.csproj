@@ -5,7 +5,6 @@
     <AssemblyTitle>PowerToys.PdfPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys PdfPreviewHandler</AssemblyDescription>
     <Description>PowerToys PdfPreviewHandler</Description>
-    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
     <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\PdfPreviewPaneDocumentation.xml</DocumentationFile>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
