@@ -436,6 +436,9 @@
   <data name="ChangePrograms" xml:space="preserve">
     <value>Change programs</value>
   </data>
+  <data name="ChangeScreenSaver" xml:space="preserve">
+    <value>Change screen saver</value>
+  </data>
   <data name="ChangeUACSettings" xml:space="preserve">
     <value>Change User Account Control settings</value>
   </data>
@@ -471,9 +474,21 @@
     <value>Command</value>
     <comment>The command to direct start a setting</comment>
   </data>
+  <data name="ConnectableDevices" xml:space="preserve">
+    <value>Connectable devices</value>
+  </data>
   <data name="ConnectedDevices" xml:space="preserve">
     <value>Connected Devices</value>
     <comment>Area Device</comment>
+  </data>
+  <data name="ConnectPanel" xml:space="preserve">
+    <value>Connect panel</value>
+  </data>
+  <data name="ConnectWirelessAudio" xml:space="preserve">
+    <value>Connect to a wireless audio device</value>
+  </data>
+  <data name="ConnectWirelessDisplay" xml:space="preserve">
+    <value>Connect to a wireless display</value>
   </data>
   <data name="Contacts" xml:space="preserve">
     <value>Contacts</value>
@@ -557,6 +572,9 @@
   <data name="deuteranopia" xml:space="preserve">
     <value>deuteranopia</value>
     <comment>Medical: Mean you don't can see red colors</comment>
+  </data>
+  <data name="DeviceDiscovery" xml:space="preserve">
+    <value>Device discovery</value>
   </data>
   <data name="DeviceManager" xml:space="preserve">
     <value>Device manager</value>
@@ -1385,6 +1403,9 @@
     <value>Screen rotation</value>
     <comment>Area System</comment>
   </data>
+  <data name="ScreenSaver" xml:space="preserve">
+    <value>Screen saver</value>
+  </data>
   <data name="ScrollBars" xml:space="preserve">
     <value>Scroll bars</value>
   </data>
@@ -1571,6 +1592,9 @@
   <data name="Timeline" xml:space="preserve">
     <value>Timeline</value>
   </data>
+  <data name="Timeout" xml:space="preserve">
+    <value>Timeout</value>
+  </data>
   <data name="Touch" xml:space="preserve">
     <value>Touch</value>
   </data>
@@ -1595,6 +1619,9 @@
   <data name="TruePlay" xml:space="preserve">
     <value>TruePlay</value>
     <comment>Area Gaming</comment>
+  </data>
+  <data name="TurnScreenSaverOnOff" xml:space="preserve">
+    <value>Turn screen saver on or off</value>
   </data>
   <data name="Typing" xml:space="preserve">
     <value>Typing</value>
