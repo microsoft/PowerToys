@@ -202,7 +202,7 @@
   <data name="VideoConference_Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
   </data>
-  <data name="VideoConference_CameraOverlayImageAlt.AutomationProperties.Name" xml:space="preserve">
+  <data name="VideoConference_CameraOverlayImageAlt.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Camera overlay image preview</value>
   </data>
   <data name="VideoConference_CameraOverlayImageBrowse.Content" xml:space="preserve">
@@ -286,7 +286,7 @@
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
-  <data name="KeyboardManager_RemapKeyboardButton_Accessible.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_RemapKeyboardButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
@@ -298,7 +298,7 @@
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
-  <data name="KeyboardManager_RemapShortcutsButton_Accessible.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_RemapShortcutsButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
@@ -312,30 +312,30 @@
   <data name="Shortcut.Header" xml:space="preserve">
     <value>Shortcut</value>
   </data>
-  <data name="RemapKeysList.AutomationProperties.Name" xml:space="preserve">
+  <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
   </data>
-  <data name="RemapShortcutsList.AutomationProperties.Name" xml:space="preserve">
+  <data name="RemapShortcutsList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current Shortcut Remappings</value>
   </data>
-  <data name="KeyboardManager_RemappedKeysListItem.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_RemappedKeysListItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Key Remapping</value>
     <comment>key as in keyboard key</comment>
   </data>
-  <data name="KeyboardManager_RemappedShortcutsListItem.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_RemappedShortcutsListItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Remapping</value>
   </data>
-  <data name="KeyboardManager_RemappedTo.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_RemappedTo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remapped to</value>
   </data>
-  <data name="KeyboardManager_ShortcutRemappedTo.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_ShortcutRemappedTo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remapped to</value>
   </data>
-  <data name="KeyboardManager_TargetApp.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_TargetApp.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>For Target Application</value>
     <comment>What computer application would this be for</comment>
   </data>
-  <data name="KeyboardManager_Image.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Keyboard Manager</value>
     <comment>do not loc, product name</comment>
   </data>
@@ -424,7 +424,7 @@
   <data name="Appearance_GroupSettings.Text" xml:space="preserve">
     <value>Appearance</value>
   </data>
-  <data name="Fancyzones_ImageHyperlinkToDocs.AutomationProperties.Name" xml:space="preserve">
+  <data name="Fancyzones_ImageHyperlinkToDocs.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>FancyZones windows</value>
     <comment>do not loc the Product name</comment>
   </data>
@@ -471,17 +471,17 @@
   <data name="FancyZones_HotkeyPrevTabControl.Description" xml:space="preserve">
     <value>Shortcut for switching to the previous window in the current zone</value>
   </data>
-  <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
+  <data name="SettingsPage_SetShortcut.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut setting</value>
   </data>
-  <data name="SettingsPage_SetShortcut_Glyph.AutomationProperties.Name" xml:space="preserve">
+  <data name="SettingsPage_SetShortcut_Glyph.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Information Symbol</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Header" xml:space="preserve">
     <value>Launch layout editor</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
-  <data name="FancyZones_LaunchEditorButton_Accessible.AutomationProperties.Name" xml:space="preserve">
+  <data name="FancyZones_LaunchEditorButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Launch layout editor</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
@@ -726,10 +726,10 @@
     <value>Enable Image Resizer</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
-  <data name="ImagesSizesListView.AutomationProperties.Name" xml:space="preserve">
+  <data name="ImagesSizesListView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Image Size</value>
   </data>
-  <data name="ImageResizer_Configurations.AutomationProperties.Name" xml:space="preserve">
+  <data name="ImageResizer_Configurations.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Configurations</value>
   </data>
   <data name="ImageResizer_Name.Header" xml:space="preserve">
@@ -747,11 +747,11 @@
   <data name="ImageResizer_Size.Header" xml:space="preserve">
     <value>Unit</value>
   </data>
-  <data name="RemoveButton.AutomationProperties.Name" xml:space="preserve">
+  <data name="RemoveButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remove</value>
     <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
-  <data name="ImageResizer_Image.AutomationProperties.Name" xml:space="preserve">
+  <data name="ImageResizer_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Image Resizer</value>
   </data>
   <data name="ImageResizer_AddSizeButton.Content" xml:space="preserve">
@@ -881,7 +881,7 @@
   <data name="FileExplorerPreview.ModuleTitle" xml:space="preserve">
     <value>File Explorer</value>
   </data>
-  <data name="FileExplorerPreview_Image.AutomationProperties.Name" xml:space="preserve">
+  <data name="FileExplorerPreview_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>File Explorer</value>
     <comment>Use same translation as Windows does for File Explorer</comment>
   </data>
@@ -897,21 +897,21 @@
   <data name="PowerLauncher.ModuleTitle" xml:space="preserve">
     <value>PowerToys Run</value>
   </data>
-  <data name="PowerToys_Run_Image.AutomationProperties.Name" xml:space="preserve">
+  <data name="PowerToys_Run_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>PowerToys Run</value>
   </data>
   <data name="PowerRename.ModuleTitle" xml:space="preserve">
     <value>PowerRename</value>
     <comment>do not loc the product name</comment>
   </data>
-  <data name="PowerRename_Image.AutomationProperties.Name" xml:space="preserve">
+  <data name="PowerRename_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>PowerRename</value>
     <comment>do not loc</comment>
   </data>
   <data name="ShortcutGuide.ModuleTitle" xml:space="preserve">
     <value>Shortcut Guide</value>
   </data>
-  <data name="Shortcut_Guide_Image.AutomationProperties.Name" xml:space="preserve">
+  <data name="Shortcut_Guide_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Guide</value>
   </data>
   <data name="General_Repository.Text" xml:space="preserve">
@@ -923,7 +923,7 @@
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
   </data>
-  <data name="General_Version.AutomationProperties.Name" xml:space="preserve">
+  <data name="General_Version.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>
   </data>
   <data name="Admin_mode.Header" xml:space="preserve">
@@ -1024,7 +1024,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
   </data>
-  <data name="ImageResizer_FilenameParameters.AutomationProperties.Name" xml:space="preserve">
+  <data name="ImageResizer_FilenameParameters.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Filename parameters</value>
   </data>
   <data name="Radio_Theme_Dark.Content" xml:space="preserve">
@@ -1130,10 +1130,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Small</value>
     <comment>The size of the image</comment>
   </data>
-  <data name="FancyZones_MoveWindowBasedOnRelativePosition_Accessible.AutomationProperties.Name" xml:space="preserve">
+  <data name="FancyZones_MoveWindowBasedOnRelativePosition_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Windows key + Up, down, left or right arrow key to move windows based on relative position</value>
   </data>
-  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible.AutomationProperties.Name" xml:space="preserve">
+  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Windows key + Left or right arrow keys to move windows based on zone index</value>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition_Description.Text" xml:space="preserve">
@@ -1187,7 +1187,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PowerLauncher_IncludeInGlobalResultDescription.Text" xml:space="preserve">
     <value>Show results on queries without direct activation command</value>
   </data>
-  <data name="PowerLauncher_EnablePluginToggle.AutomationProperties.Name" xml:space="preserve">
+  <data name="PowerLauncher_EnablePluginToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Enable plugin</value>
   </data>
   <data name="PowerLauncher_EnablePluginToggle.OnContent" xml:space="preserve">
@@ -1240,10 +1240,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Run_PluginsLoading.Text" xml:space="preserve">
     <value>Plugins are loading...</value>
   </data>
-  <data name="ColorPicker_ButtonDown.AutomationProperties.Name" xml:space="preserve">
+  <data name="ColorPicker_ButtonDown.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Move the color down</value>
   </data>
-  <data name="ColorPicker_ButtonUp.AutomationProperties.Name" xml:space="preserve">
+  <data name="ColorPicker_ButtonUp.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Move the color up</value>
   </data>
   <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
@@ -1559,10 +1559,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="ImageResizer_Unit_Pixel" xml:space="preserve">
     <value>Pixels</value>
   </data>
-  <data name="EditButton.AutomationProperties.Name" xml:space="preserve">
+  <data name="EditButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Edit</value>
   </data>
-  <data name="ImageResizer_EditSize.AutomationProperties.Name" xml:space="preserve">
+  <data name="ImageResizer_EditSize.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Edit size</value>
   </data>
   <data name="No" xml:space="preserve">
@@ -1585,10 +1585,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="ExcludedApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
   </data>
-  <data name="Enable_ColorFormat.AutomationProperties.Name" xml:space="preserve">
+  <data name="Enable_ColorFormat.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Enable colorformat</value>
   </data>
-  <data name="More_Options_Button.AutomationProperties.Name" xml:space="preserve">
+  <data name="More_Options_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More options</value>
   </data>
   <data name="More_Options_ButtonTooltip.Text" xml:space="preserve">
@@ -1680,7 +1680,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Launch_ShortcutGuide.Content" xml:space="preserve">
     <value>Launch Shortcut Guide</value>
   </data>
-  <data name="ColorPicker_ColorFormat_ToggleSwitch.AutomationProperties.Name" xml:space="preserve">
+  <data name="ColorPicker_ColorFormat_ToggleSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Show format in editor</value>
   </data>
   <data name="GeneralPage_Documentation.Text" xml:space="preserve">
@@ -1689,7 +1689,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="PowerLauncher_SearchList.PlaceholderText" xml:space="preserve">
     <value>Search this list</value>
   </data>
-  <data name="PowerLauncher_SearchList.AutomationProperties.Name" xml:space="preserve">
+  <data name="PowerLauncher_SearchList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Search this list</value>
   </data>
   <data name="Awake.SecondaryLinksHeader" xml:space="preserve">
