@@ -6,6 +6,8 @@
 #include <common/utils/winapi_error.h>
 #include <filesystem>
 
+#include "PeekFileUtils/FileUtils.h"
+
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 BOOL APIENTRY DllMain(HMODULE hModule, 
@@ -171,7 +173,7 @@ private:
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
-    void launch_viewer()
+    void launch_viewer(String filepath)
     {
         Logger::trace(L"Starting PeekViewer process");
 
@@ -180,7 +182,8 @@ private:
         sei.lpVerb = L"open";
         sei.lpFile = L"modules\\Peek\\PeekViewer\\PeekViewer.exe";
         sei.nShow = SW_SHOWNORMAL;
-        auto absolute = std::filesystem::absolute(L"..\\..\\src\\modules\\peek\\test\\andrew-lakersnoi-hq6EG8GdnZw-unsplash.jpg");
+
+        auto absolute = std::filesystem::absolute(filepath);
         sei.lpParameters = absolute.c_str();
         if (ShellExecuteExW(&sei))
         {
@@ -368,8 +371,13 @@ public:
             // TODO: fix VK_SPACE DestroyWindow in viewer app
             if (!is_viewer_running())
             {
-                // check file selected in file explorer
-                launch_viewer();            
+                String filepath;
+                HRESULT result = FileUtils::GetSelectedFile(filepath);
+
+                if (result == S_OK)
+                {
+                    launch_viewer(filepath);
+                }
             }
 
             return true;

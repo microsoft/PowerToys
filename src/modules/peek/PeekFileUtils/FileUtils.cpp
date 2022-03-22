@@ -5,7 +5,6 @@
 
 #include <shlobj.h>
 #include <shlwapi.h>
-#include <WinUser.h>
 
 namespace FileUtils
 {
@@ -62,33 +61,39 @@ namespace FileUtils
                                                 if (!SHGetPathFromIDList(pidlFolder, szPath))
                                                 {
                                                     lstrcpyn(szPath, TEXT("<not a directory>"), MAX_PATH);
+                                                    Logger::info(L"Could not resolve path to a valid directory");
                                                 }
-
-                                                int iFocus;
-                                                if (SUCCEEDED(pfv->GetFocusedItem(&iFocus)))
+                                                else
                                                 {
-                                                    LPITEMIDLIST pidlItem;
-                                                    if (SUCCEEDED(pfv->Item(iFocus, &pidlItem)))
+                                                    int iFocus;
+                                                    if (SUCCEEDED(pfv->GetFocusedItem(&iFocus)))
                                                     {
-                                                        IShellFolder* psf;
-                                                        if (SUCCEEDED(ppf2->QueryInterface(IID_IShellFolder, (void**)&psf)))
+                                                        LPITEMIDLIST pidlItem;
+                                                        if (SUCCEEDED(pfv->Item(iFocus, &pidlItem)))
                                                         {
-                                                            STRRET str;
-                                                            if (SUCCEEDED(psf->GetDisplayNameOf(pidlItem, SHGDN_INFOLDER, &str)))
+                                                            IShellFolder* psf;
+                                                            if (SUCCEEDED(ppf2->QueryInterface(IID_IShellFolder, (void**)&psf)))
                                                             {
-                                                                StrRetToBuf(&str, pidlItem, szItem, MAX_PATH);
+                                                                STRRET str;
+                                                                if (SUCCEEDED(psf->GetDisplayNameOf(pidlItem, SHGDN_INFOLDER, &str)))
+                                                                {
+                                                                    StrRetToBuf(&str, pidlItem, szItem, MAX_PATH);
 
-                                                                filepath.append(szPath);
-                                                                filepath.append(L"\\");
-                                                                filepath.append(szItem);
+                                                                    filepath.append(szPath);
+                                                                    filepath.append(L"\\");
+                                                                    filepath.append(szItem);
 
-                                                                hr = S_OK;
+                                                                    Logger::info(L"Selected file: {}", filepath);
+
+                                                                    hr = S_OK;
+                                                                }
+                                                                psf->Release();
                                                             }
-                                                            psf->Release();
+                                                            CoTaskMemFree(pidlItem);
                                                         }
-                                                        CoTaskMemFree(pidlItem);
                                                     }
                                                 }
+                                                
                                                 CoTaskMemFree(pidlFolder);
                                             }
                                             ppf2->Release();
