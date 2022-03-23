@@ -98,12 +98,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                         fileContent = fileReader.ReadToEnd();
                                         fileReader.Close();
                                     }
+
                                     var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
 
                                     string html;
 
                                     // prepping index html to load in
-                                    using(StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                                    using (StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                                     {
                                         html = htmlFileReader.ReadToEnd();
                                         htmlFileReader.Close();
