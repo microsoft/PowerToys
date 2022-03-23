@@ -6,6 +6,8 @@
 
 namespace FileUtils
 {
+    bool IsViewable(String const& filepath);
+
     bool IsMedia(String const& extension);
     bool IsImage(String const& extension);
     bool IsVideo(String const& extension);

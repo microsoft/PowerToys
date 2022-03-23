@@ -3,6 +3,18 @@
 
 namespace FileUtils
 {
+    bool IsViewable(String const& filepath)
+    {
+        LPCWSTR path = filepath.c_str();
+        DWORD attrib = GetFileAttributes(path);
+        if (attrib & FILE_ATTRIBUTE_HIDDEN && attrib & FILE_ATTRIBUTE_SYSTEM)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     bool IsMedia(std::wstring const& extension)
     {
         return IsImage(extension) || IsVideo(extension);
