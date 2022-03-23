@@ -182,7 +182,7 @@ private:
 
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
         sei.lpVerb = L"open";
-        sei.lpFile = L"modules\\Peek\\PeekUI\\PeekUI.exe";
+        sei.lpFile = L"modules\\Peek\\PeekUI\\Powertoys.PeekUI.exe";
         sei.nShow = SW_SHOWNORMAL;
         auto absolute = std::filesystem::absolute(L"..\\..\\src\\modules\\peek\\test\\andrew-lakersnoi-hq6EG8GdnZw-unsplash.jpg");
         sei.lpParameters = absolute.c_str();
