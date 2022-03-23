@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <common/interop/shared_constants.h>
 
+#include "PeekFileUtils/FileUtils.h"
+
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 BOOL APIENTRY DllMain(HMODULE hModule, 
@@ -184,8 +186,7 @@ private:
         sei.lpVerb = L"open";
         sei.lpFile = L"modules\\Peek\\PeekUI\\Powertoys.PeekUI.exe";
         sei.nShow = SW_SHOWNORMAL;
-        auto absolute = std::filesystem::absolute(L"..\\..\\src\\modules\\peek\\test\\andrew-lakersnoi-hq6EG8GdnZw-unsplash.jpg");
-        sei.lpParameters = absolute.c_str();
+
         if (ShellExecuteExW(&sei))
         {
             Logger::trace("Successfully started the PeekViewer process");
@@ -379,12 +380,15 @@ public:
         {
             Logger::trace(L"Peek hotkey pressed");
             
+            // TODO: fix VK_SPACE DestroyWindow in viewer app
             if (!is_viewer_running())
             {
                 launch_viewer();
             }
 
             SetEvent(m_hInvokeEvent);
+
+            return true;
         }
 
         return false;
