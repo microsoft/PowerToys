@@ -7,8 +7,10 @@
 
 namespace FileUtils
 {
-    HRESULT GetSelectedFile(String& filepath)
+    wchar_t* GetSelectedFile()
     {
+        std::wstring filePath;
+
         HRESULT hr = S_FALSE;
 
         TCHAR szPath[MAX_PATH];
@@ -78,13 +80,12 @@ namespace FileUtils
                                                                 {
                                                                     StrRetToBuf(&str, pidlItem, szItem, MAX_PATH);
 
-                                                                    filepath.append(szPath);
-                                                                    filepath.append(L"\\");
-                                                                    filepath.append(szItem);
+                                                                    
+                                                                    filePath.append(szPath);
+                                                                    filePath.append(L"\\");
+                                                                    filePath.append(szItem);
 
-                                                                    Logger::info(L"Selected file: {}", filepath);
-
-                                                                    hr = S_OK;
+                                                                    Logger::info(L"Selected file: {}", filePath);
                                                                 }
                                                                 psf->Release();
                                                             }
@@ -113,6 +114,6 @@ namespace FileUtils
             psw->Release();
         }
 
-        return hr;
+        return filePath.data();
     }
 }

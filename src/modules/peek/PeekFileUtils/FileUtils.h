@@ -6,5 +6,5 @@
 
 namespace FileUtils
 {
-    HRESULT GetSelectedFile(String& filepath);
+    extern "C" __declspec(dllexport) wchar_t* GetSelectedFile();
 };

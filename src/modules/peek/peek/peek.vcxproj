@@ -122,9 +122,6 @@
     <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\PeekFileUtils\PeekFileUtils.vcxproj">
-      <Project>{51950544-5b60-4db9-ac5c-d7755143a801}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="peek.rc" />

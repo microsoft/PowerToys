@@ -6,10 +6,10 @@
 
 namespace FileUtils
 {
-    bool IsMedia(String const& extension);
-    bool IsImage(String const& extension);
-    bool IsVideo(String const& extension);
-    bool IsDocument(String const& extension);
+    bool IsMedia(std::wstring const& extension);
+    bool IsImage(std::wstring const& extension);
+    bool IsVideo(std::wstring const& extension);
+    bool IsDocument(std::wstring const& extension);
 
     namespace FileUtilsInternal
     {

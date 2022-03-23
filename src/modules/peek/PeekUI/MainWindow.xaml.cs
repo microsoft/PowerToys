@@ -1,5 +1,7 @@
 ﻿using interop;
 using PeekUI.ViewModels;
+using System;
+using System.Runtime.InteropServices;
 using System.Windows;
 
 namespace PeekUI
@@ -9,7 +11,11 @@ namespace PeekUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly MainViewModel _viewModel;
+        [DllImport("PeekFileUtils.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.LPWStr)]
+        private static extern string GetSelectedFile();
+
+        private readonly MainViewModel _viewModel; 
 
         public MainWindow()
         {
@@ -26,7 +32,12 @@ namespace PeekUI
             // put window in focus and in foreground
             // get file
             // if file valid toggle/update file displayed and bring to foreground
-            _viewModel.MainWindowVisibility = _viewModel.MainWindowVisibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
+            var filePath = GetSelectedFile();
+
+            if(!string.IsNullOrWhiteSpace(filePath))
+            {
+                _viewModel.MainWindowVisibility = _viewModel.MainWindowVisibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         //private void BringProcessToForeground()

@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <ProjectReference Include="..\PeekFileUtils\PeekFileUtils.vcxproj" />
   </ItemGroup>
 
 </Project>
