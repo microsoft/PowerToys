@@ -229,14 +229,18 @@ HRESULT App::ParseFileNames()
             // Also does not handle navigating files in icon view in File Explorer
             for (const auto& entry : std::filesystem::directory_iterator(path))
             {
-                m_fileList.emplace_back(ParseFileInfo(entry));
-                    
-                // found the file the user is trying to access
-                if (std::filesystem::equivalent(entry.path(), files[0]))
+                if (FileUtils::IsViewable(entry.path().c_str()))
                 {
-                    m_currentItem = index;
+                    m_fileList.emplace_back(ParseFileInfo(entry));
+
+                    // found the file the user is trying to access
+                    if (std::filesystem::equivalent(entry.path(), files[0]))
+                    {
+                        m_currentItem = index;
+                    }
+
+                    index++;
                 }
-                index++;
             }
         }
         else

@@ -74,13 +74,11 @@ namespace FileUtils
                                                             if (SUCCEEDED(ppf2->QueryInterface(IID_IShellFolder, (void**)&psf)))
                                                             {
                                                                 STRRET str;
-                                                                if (SUCCEEDED(psf->GetDisplayNameOf(pidlItem, SHGDN_INFOLDER, &str)))
+                                                                if (SUCCEEDED(psf->GetDisplayNameOf(pidlItem, SHGDN_FORPARSING, &str)))
                                                                 {
                                                                     StrRetToBuf(&str, pidlItem, szItem, MAX_PATH);
 
-                                                                    filepath.append(szPath);
-                                                                    filepath.append(L"\\");
-                                                                    filepath.append(szItem);
+                                                                    filepath.assign(szItem);
 
                                                                     Logger::info(L"Selected file: {}", filepath);
 
