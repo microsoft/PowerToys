@@ -122,9 +122,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 },
                 new PluginAdditionalOption
                 {
-                    // ToDo: When description property is implemented (#15853), move the note in brackets to description and update to: "The information is only shown, if more than one desktop exists."
                     Key = nameof(SubtitleShowDesktopName),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingSubtitleDesktopName,
+                    DisplayDescription = Resources.wox_plugin_windowwalker_SettingSubtitleDesktopName_Description,
                     Value = true,
                 },
                 new PluginAdditionalOption
@@ -135,16 +135,16 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 },
                 new PluginAdditionalOption
                 {
-                    // ToDo: When description property is implemented (#15853), add description: "Be careful when activating this."
                     Key = nameof(KillProcessTree),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingKillProcessTree,
+                    DisplayDescription = Resources.wox_plugin_windowwalker_SettingKillProcessTree_Description,
                     Value = false,
                 },
                 new PluginAdditionalOption
                 {
-                    // ToDo: When description property is implemented (#15853), move the note in brackets to description.
                     Key = nameof(OpenAfterKillAndClose),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingOpenAfterKillAndClose,
+                    DisplayDescription = Resources.wox_plugin_windowwalker_SettingOpenAfterKillAndClose_Description,
                     Value = false,
                 },
                 new PluginAdditionalOption
@@ -155,9 +155,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 },
                 new PluginAdditionalOption
                 {
-                   // ToDo: When description property is implemented (#15853), add description: "Message is only shown when searching with direct activation command."
                     Key = nameof(HideExplorerSettingInfo),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingExplorerSettingInfo,
+                    DisplayDescription = Resources.wox_plugin_windowwalker_SettingExplorerSettingInfo_Description,
                     Value = false,
                 },
             };

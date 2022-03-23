@@ -52,10 +52,14 @@ TestCase\("[^"]+"
 \[DataRow\("[0-9A-F]{6}", \d{3}.\d{1}, \d{3}.\d{1}, \d{3}.\d{1}\)\]
 \[DataRow\("[0-9A-F]{6}", "[BCGMRY]\d\d?", \d{3}, \d{3}\)\]
 
+# version suffix <word>v#
+[Vv]\d+(?:\b|(?=[a-zA-Z_]))
+
 # Windows paths
 \\native
 \\netcoreapp
 \\netstandard
+\\network
 \\notifications
 \\recyclebin
 \\Registry

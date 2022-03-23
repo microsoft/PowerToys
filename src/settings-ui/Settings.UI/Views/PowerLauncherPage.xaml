@@ -253,7 +253,7 @@
                                                         <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
                                                             <StackPanel Orientation="Vertical">
                                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                                                <CheckBox Content="{x:Bind Path=DisplayLabel}" 
+                                                                <controls:CheckBoxWithDescriptionControl Header="{x:Bind Path=DisplayLabel}" Description="{x:Bind Path=DisplayDescription}"
                                                                       IsChecked="{x:Bind Path=Value, Mode=TwoWay}"
                                                                       Margin="{StaticResource ExpanderSettingMargin}"/>
                                                             </StackPanel>

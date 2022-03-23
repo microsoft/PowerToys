@@ -132,7 +132,7 @@ public
             auto names = gcnew List<String ^>();
             for (const auto& device : MicrophoneDevice::getAllActive())
             {
-                names->Add(gcnew String(device.name().data()));
+                names->Add(gcnew String(device->name().data()));
             }
             return names;
         }
