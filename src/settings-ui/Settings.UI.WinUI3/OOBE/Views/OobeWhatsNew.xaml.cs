@@ -22,9 +22,7 @@ using CommunityToolkit.WinUI.UI.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
 {
-#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
     public sealed partial class OobeWhatsNew : Page
-#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     {
         // Contains information for a release. Used to deserialize release JSON info from GitHub.
         private class PowerToysReleaseInfo
@@ -47,7 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
         public OobeWhatsNew()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModulesEnum.WhatsNew]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.WhatsNew]);
             DataContext = ViewModel;
         }
 

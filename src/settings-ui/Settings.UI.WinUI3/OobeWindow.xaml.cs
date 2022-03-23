@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
     public sealed partial class OobeWindow : Window
     {
         private static Window inst;
-        private PowerToysModulesEnum initialModule;
+        private PowerToysModules initialModule;
 
         public static bool IsOpened
         {
@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
             }
         }
 
-        public OobeWindow(PowerToysModulesEnum initialModule)
+        public OobeWindow(PowerToysModules initialModule)
         {
             this.InitializeComponent();
 

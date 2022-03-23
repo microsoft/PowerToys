@@ -4,9 +4,7 @@
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Enums
 {
-#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-    public enum PowerToysModulesEnum
-#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
+    public enum PowerToysModules
     {
         Overview = 0,
         AlwaysOnTop,
