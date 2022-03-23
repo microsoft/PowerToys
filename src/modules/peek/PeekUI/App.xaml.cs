@@ -13,5 +13,6 @@ namespace PeekUI
     /// </summary>
     public partial class App : Application
     {
+        // TODO: remove Application inheritance and start like launcher
     }
 }

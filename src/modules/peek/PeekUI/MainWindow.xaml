@@ -10,10 +10,7 @@
     d:DataContext="{d:DesignInstance vm:MainViewModel}"
     Loaded="OnLoaded"
     ResizeMode="NoResize"
-    ShowInTaskbar="False"
-    Topmost="True"
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-    WindowStyle="None"
     mc:Ignorable="d">
     <Grid />
 </Window>

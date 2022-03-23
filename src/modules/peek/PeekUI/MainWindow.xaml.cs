@@ -24,6 +24,8 @@ namespace PeekUI
         private void TogglePeek()
         {
             // put window in focus and in foreground
+            // get file
+            // if file valid toggle/update file displayed and bring to foreground
             _viewModel.MainWindowVisibility = _viewModel.MainWindowVisibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
         }
 
