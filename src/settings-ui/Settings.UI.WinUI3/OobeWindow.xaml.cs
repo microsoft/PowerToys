@@ -1,12 +1,13 @@
-﻿using Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Enums;
-using Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views;
-using Microsoft.UI.Xaml;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using interop;
+using Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Enums;
+using Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views;
+using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Resources;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3
 {
@@ -31,7 +32,6 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
             this.InitializeComponent();
 
             /* todo(Stefan): Is needed
-             * 
              * Utils.FitToScreen(this);
             */
 

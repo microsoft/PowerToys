@@ -3,15 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.PowerToys.Settings.UI.WinUI3.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Windows.ApplicationModel.Resources;
-using Windows.UI.Core;
+using Microsoft.PowerToys.Settings.UI.WinUI3.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Windows.ApplicationModel.Resources;
 using Windows.System;
+using Windows.UI.Core;
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3.Controls
 {

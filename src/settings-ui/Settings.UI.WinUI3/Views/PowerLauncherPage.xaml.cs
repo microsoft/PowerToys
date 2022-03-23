@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Views
                     _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
                     DataContext = ViewModel = new PowerLauncherViewModel(powerLauncherSettings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
-                        this.Bindings.Update();
+                    this.Bindings.Update();
                     });
                 }
             });

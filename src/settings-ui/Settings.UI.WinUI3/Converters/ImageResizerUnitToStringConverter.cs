@@ -4,8 +4,8 @@
 
 using System;
 using System.Globalization;
-using Windows.ApplicationModel.Resources;
 using Microsoft.UI.Xaml.Data;
+using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3.Converters
 {

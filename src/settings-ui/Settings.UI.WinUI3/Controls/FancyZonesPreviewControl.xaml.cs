@@ -6,10 +6,10 @@ using System.ComponentModel;
 using System.IO;
 using System.Text;
 using Microsoft.PowerToys.Settings.UI.WinUI3.Helpers;
-using Windows.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3.Controls
 {

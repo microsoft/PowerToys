@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.PowerToys.Settings.UI.WinUI3.Services;
 using Microsoft.PowerToys.Settings.UI.WinUI3.ViewModels;
-using Windows.Data.Json;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.Resources;
+using Windows.Data.Json;
 using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3.Views

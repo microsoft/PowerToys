@@ -50,9 +50,8 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Helpers
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
-#pragma warning disable CA1838 // Avoid 'StringBuilder' parameters for P/Invokes
+
         internal static extern bool SystemParametersInfo(int uiAction, int uiParam, StringBuilder pvParam, int fWinIni);
-#pragma warning restore CA1838 // Avoid 'StringBuilder' parameters for P/Invokes
 
         public static void SetPopupStyle(IntPtr hwnd)
         {
