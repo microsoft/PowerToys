@@ -4,7 +4,6 @@
 #include <common/logger/logger.h>
 
 #include <shlobj.h>
-#include <shlwapi.h>
 
 namespace FileUtils
 {
