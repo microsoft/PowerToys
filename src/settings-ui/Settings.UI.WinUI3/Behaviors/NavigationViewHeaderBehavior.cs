@@ -3,11 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.PowerToys.Settings.UI.WinUI3.Services;
-using Microsoft.Xaml.Interactivity;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.Xaml.Interactivity;
 
 using WinUI = Microsoft.UI.Xaml.Controls;
 

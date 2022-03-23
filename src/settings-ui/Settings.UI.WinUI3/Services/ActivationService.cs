@@ -6,12 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Microsoft.PowerToys.Settings.UI.WinUI3.Activation;
-
-using Windows.ApplicationModel.Activation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel.Activation;
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3.Services
 {

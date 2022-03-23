@@ -12,13 +12,13 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.ViewModel;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.UI.Core;
-using CommunityToolkit.WinUI.UI.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
 {
@@ -42,6 +42,9 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
 
         public OobePowerToysModule ViewModel { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OobeWhatsNew"/> class.
+        /// </summary>
         public OobeWhatsNew()
         {
             this.InitializeComponent();
@@ -107,11 +110,13 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
         }
 
+        /// <inheritdoc/>
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             ViewModel.LogClosingModuleEvent();

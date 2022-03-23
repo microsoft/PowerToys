@@ -1,16 +1,15 @@
-﻿using Microsoft.UI.Xaml;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
-using System.Globalization;
-using Microsoft.PowerToys.Settings.UI.WinUI3.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library;
-using Windows.UI.ViewManagement;
 using System.Diagnostics;
-using System.Windows;
+using System.Globalization;
 using interop;
 using ManagedCommon;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI.Xaml;
+using Windows.UI.ViewManagement;
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3
 {
@@ -52,8 +51,10 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
         public Type StartupPage { get; set; } = typeof(Views.GeneralPage);
 
         public static Action<string> IPCMessageReceivedCallback { get; set; }
+
         /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
+        /// Initializes a new instance of the <see cref="App"/> class.
+        /// Initializes the singleton application object. This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
         /// </summary>
         public App()
@@ -63,17 +64,18 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
 
         public void OpenSettingsWindow(Type type)
         {
-            if (m_window == null)
+            if (window == null)
             {
-                m_window = new MainWindow();
+                window = new MainWindow();
             }
+
             /*else if (settingsWindow.WindowState == WindowState.Minimized)
             {
                 settingsWindow.WindowState = WindowState.Normal;
             }
 */
-            m_window.Activate();
-            m_window.NavigateToSection(type);
+            window.Activate();
+            window.NavigateToSection(type);
         }
 
         /// <summary>
@@ -83,8 +85,8 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            m_window = new MainWindow();
-            m_window.Activate();
+            window = new MainWindow();
+            window.Activate();
 
             var cmdArgs = Environment.GetCommandLineArgs();
 
@@ -118,8 +120,8 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
                         case "VideoConference": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.WinUI3.Views.VideoConferencePage); break;
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
-                    m_window.NavigateToSection(StartupPage);
 
+                    window.NavigateToSection(StartupPage);
                 }
 
                 RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
@@ -131,22 +133,24 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
                 {
                     if (IPCMessageReceivedCallback != null && message.Length > 0)
                     {
-                        //Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
-                        //{
-                            IPCMessageReceivedCallback(message);
-                        //}));
+                        // Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
+                        // {
+                        // }));
+                        IPCMessageReceivedCallback(message);
                     }
                 });
                 ipcmanager.Start();
             }
             else
             {
-/*                MessageBox.Show(
+/* todo(stefan)
+ *                  MessageBox.Show(
                     "The application cannot be run as a standalone process. Please start the application through the runner.",
                     "Forbidden",
                     MessageBoxButton.OK);
                 app.Shutdown();
-*/            }
+*/
+            }
         }
 
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()
@@ -164,6 +168,6 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
 
         private static ISettingsUtils settingsUtils = new SettingsUtils();
 
-        private MainWindow m_window;
+        private MainWindow window;
     }
 }

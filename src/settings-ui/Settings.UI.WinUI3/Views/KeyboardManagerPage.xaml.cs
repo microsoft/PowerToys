@@ -2,17 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Abstractions;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
-using Windows.System;
-using Windows.UI.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3.Views
 {
@@ -30,8 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Views
 
         public KeyboardManagerPage()
         {
-            // dispatcher = Window.Current.Dispatcher;
-
+            // todo(Stefan)dispatcher = Window.Current.Dispatcher;
             var settingsUtils = new SettingsUtils();
             ViewModel = new KeyboardManagerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, FilterRemapKeysList);
 
@@ -50,10 +46,10 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Views
             // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration everytime since we will be updating the UI only if something is changed.
             if (ViewModel.LoadProfile())
             {
-                //await dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                //{
-                    ViewModel.NotifyFileChanged();
-                //});
+                // todo(Stefan) await dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                // {
+                // });
+                ViewModel.NotifyFileChanged();
             }
         }
 
