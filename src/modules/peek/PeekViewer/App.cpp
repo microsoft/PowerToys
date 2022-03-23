@@ -252,6 +252,10 @@ HRESULT App::ParseFileNames()
             m_fileList.emplace_back(ParseFileInfo(entry));
         }
     }
+    else
+    {
+        hr = E_FAIL;
+    }
 
     if (SUCCEEDED(hr) && !m_fileList.empty())
     {
@@ -330,7 +334,6 @@ HRESULT App::Initialize(HINSTANCE hInstance)
     auto initAsync = std::async([this] { return this->InitializeResources(); });
 
     HRESULT hr = ParseFileNames();
-    auto fileName = GetFilePathAt(m_currentItem);
 
     if (SUCCEEDED(hr))
     {
@@ -339,6 +342,8 @@ HRESULT App::Initialize(HINSTANCE hInstance)
 
     if (SUCCEEDED(initAsync.get()) && SUCCEEDED(hr))
     {
+        auto fileName = GetFilePathAt(m_currentItem);
+
         auto createAsync = std::async([this] { return this->CreateDeviceResources(); });
         if (!m_fileList.empty() && SUCCEEDED(hr))
         {

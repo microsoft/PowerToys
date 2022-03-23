@@ -183,8 +183,12 @@ private:
         sei.lpFile = L"modules\\Peek\\PeekViewer\\PeekViewer.exe";
         sei.nShow = SW_SHOWNORMAL;
 
-        auto absolute = std::filesystem::absolute(filepath);
-        sei.lpParameters = absolute.c_str();
+        // Append quotes around file path so that spaces do not parse into different args
+        String quotedPath = L"\"";
+        quotedPath.append(filepath);
+        quotedPath.append(L"\"");
+
+        sei.lpParameters = quotedPath.c_str();
         if (ShellExecuteExW(&sei))
         {
             Logger::trace("Successfully started the PeekViewer process");
