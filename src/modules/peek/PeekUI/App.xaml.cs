@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using interop;
+using Microsoft.UI.Dispatching;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -18,13 +19,6 @@ namespace PeekUI
         public App()
         {
             InitializeComponent();
-
-            NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnShowPeek);
-        }
-
-        private void OnShowPeek()
-        {
-            m_window.Activate();
         }
 
         /// <summary>

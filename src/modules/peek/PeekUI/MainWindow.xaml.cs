@@ -1,14 +1,12 @@
 ﻿using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using System;
-using System.Runtime.InteropServices;
+using interop;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace PeekUI
 {
-
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -17,6 +15,12 @@ namespace PeekUI
         public MainWindow()
         {
             InitializeComponent();
+            NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnShowPeek, DispatcherQueue);
+        }
+
+        private void OnShowPeek()
+        {
+            Activate();
         }
 
         private void myButton_Click(object sender, RoutedEventArgs e)

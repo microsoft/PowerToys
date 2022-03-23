@@ -379,14 +379,12 @@ public:
         {
             Logger::trace(L"Peek hotkey pressed");
             
-            // TODO: fix VK_SPACE DestroyWindow in viewer app
             if (!is_viewer_running())
             {
-                // check file selected in file explorer
-                launch_viewer();            
+                launch_viewer();
             }
 
-            return true;
+            SetEvent(m_hInvokeEvent);
         }
 
         return false;
