@@ -57,73 +57,73 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
             UpdateUITheme();
             Modules = new ObservableCollection<OobePowerToysModule>();
 
-            Modules.Insert((int)PowerToysModulesEnum.Overview, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.Overview, new OobePowerToysModule()
             {
                 ModuleName = "Overview",
                 IsNew = false,
             });
-            Modules.Insert((int)PowerToysModulesEnum.AlwaysOnTop, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.AlwaysOnTop, new OobePowerToysModule()
             {
                 ModuleName = "AlwaysOnTop",
                 IsNew = true,
             });
-            Modules.Insert((int)PowerToysModulesEnum.Awake, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.Awake, new OobePowerToysModule()
             {
                 ModuleName = "Awake",
                 IsNew = false,
             });
-            Modules.Insert((int)PowerToysModulesEnum.ColorPicker, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.ColorPicker, new OobePowerToysModule()
             {
                 ModuleName = "ColorPicker",
                 IsNew = false,
             });
-            Modules.Insert((int)PowerToysModulesEnum.FancyZones, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.FancyZones, new OobePowerToysModule()
             {
                 ModuleName = "FancyZones",
                 IsNew = false,
             });
-            Modules.Insert((int)PowerToysModulesEnum.FileExplorer, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.FileExplorer, new OobePowerToysModule()
             {
                 ModuleName = "FileExplorer",
                 IsNew = false,
             });
-            Modules.Insert((int)PowerToysModulesEnum.ImageResizer, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.ImageResizer, new OobePowerToysModule()
             {
                 ModuleName = "ImageResizer",
                 IsNew = false,
             });
-            Modules.Insert((int)PowerToysModulesEnum.KBM, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.KBM, new OobePowerToysModule()
             {
                 ModuleName = "KBM",
                 IsNew = false,
             });
-            Modules.Insert((int)PowerToysModulesEnum.MouseUtils, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.MouseUtils, new OobePowerToysModule()
             {
                 ModuleName = "MouseUtils",
                 IsNew = true,
             });
-            Modules.Insert((int)PowerToysModulesEnum.PowerRename, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.PowerRename, new OobePowerToysModule()
             {
                 ModuleName = "PowerRename",
                 IsNew = false,
             });
-            Modules.Insert((int)PowerToysModulesEnum.Run, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.Run, new OobePowerToysModule()
             {
                 ModuleName = "Run",
                 IsNew = false,
             });
-            Modules.Insert((int)PowerToysModulesEnum.ShortcutGuide, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.ShortcutGuide, new OobePowerToysModule()
             {
                 ModuleName = "ShortcutGuide",
                 IsNew = false,
             });
 
-            Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.VideoConference, new OobePowerToysModule()
             {
                 ModuleName = "VideoConference",
                 IsNew = true,
             });
-            Modules.Insert((int)PowerToysModulesEnum.WhatsNew, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.WhatsNew, new OobePowerToysModule()
             {
                 ModuleName = "WhatsNew",
                 IsNew = false,
@@ -135,13 +135,13 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
             Microsoft.UI.Xaml.Controls.NavigationViewItem selectedItem = this.NavigationView.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
             if (selectedItem != null)
             {
-                Modules[(int)(PowerToysModulesEnum)Enum.Parse(typeof(PowerToysModulesEnum), (string)selectedItem.Tag, true)].LogClosingModuleEvent();
+                Modules[(int)(PowerToysModules)Enum.Parse(typeof(PowerToysModules), (string)selectedItem.Tag, true)].LogClosingModuleEvent();
             }
         }
 
-        public void NavigateToModule(PowerToysModulesEnum selectedModule)
+        public void NavigateToModule(PowerToysModules selectedModule)
         {
-            if (selectedModule == PowerToysModulesEnum.WhatsNew)
+            if (selectedModule == PowerToysModules.WhatsNew)
             {
                 NavigationView.SelectedItem = NavigationView.FooterMenuItems[0];
             }

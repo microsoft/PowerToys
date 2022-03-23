@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
         public OobeImageResizer()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModulesEnum.ImageResizer]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.ImageResizer]);
             DataContext = ViewModel;
         }
 

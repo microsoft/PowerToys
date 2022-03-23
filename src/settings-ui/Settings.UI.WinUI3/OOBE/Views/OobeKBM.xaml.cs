@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
         public OobeKBM()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModulesEnum.KBM]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.KBM]);
             DataContext = ViewModel;
         }
 

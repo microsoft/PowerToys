@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
         public OobeShortcutGuide()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModulesEnum.ShortcutGuide]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.ShortcutGuide]);
             DataContext = ViewModel;
         }
 

@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
         public OobeVideoConference()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModulesEnum.VideoConference]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.VideoConference]);
             DataContext = ViewModel;
         }
 

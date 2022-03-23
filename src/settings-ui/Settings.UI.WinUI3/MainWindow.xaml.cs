@@ -59,7 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
             // open oobe
             ShellPage.SetOpenOobeCallback(() =>
             {
-                var oobe = new OobeWindow(Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Enums.PowerToysModulesEnum.Overview);
+                var oobe = new OobeWindow(Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Enums.PowerToysModules.Overview);
                 oobe.Activate();
             });
 
