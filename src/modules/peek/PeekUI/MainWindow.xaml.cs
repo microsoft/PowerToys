@@ -30,7 +30,6 @@ namespace PeekUI
 
             _viewModel = new MainViewModel();
             DataContext = _viewModel;
-
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), TogglePeek);
 
             Closing += MainWindow_Closing;
@@ -47,7 +46,8 @@ namespace PeekUI
             // if files are selected, open peek with those files (optimization: recognize already opened files)
             // else if window is in focus, close peek
 
-            var selectedItems = FileExplorerHelper.GetSelectedItems();
+            var handle = FileExplorerHelper.GetForegroundWindow();
+            var selectedItems = FileExplorerHelper.GetSelectedItems(handle);
 
             if(_viewModel.MainWindowVisibility == Visibility.Visible)
             {
@@ -60,12 +60,28 @@ namespace PeekUI
 
             if (!string.IsNullOrWhiteSpace(selectedItems.FirstOrDefault()))
             {
-                // TODO: put window in focus and in foreground
-                _viewModel.MainWindowVisibility = _viewModel.MainWindowVisibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
-
                 // TODO: load image (image control?)
                 await _viewModel.LoadImageAsync(selectedItems.FirstOrDefault()!);
+
                 // TODO: center & resize window
+                var screen = WpfScreenHelper.Screen.FromHandle(handle);
+
+                var percentage = 0.75;
+
+                // max working area
+                var maxWidth = screen.WpfBounds.Width * percentage;
+                var maxwHeight= screen.WpfBounds.Height * percentage;
+
+                var maxLeft = screen.WpfBounds.Left + (screen.WpfBounds.Right - screen.WpfBounds.Left - maxWidth) / 2;
+                var maxTop = screen.WpfBounds.Top + (screen.WpfBounds.Bottom - screen.WpfBounds.Top - maxwHeight) / 2;
+
+                _viewModel.WindowWidth = maxWidth;
+                _viewModel.WindowHeight = maxwHeight;
+                _viewModel.WindowLeft = maxLeft;
+                _viewModel.WindowTop = maxTop;
+
+                // TODO: put window in focus and in foreground
+                _viewModel.MainWindowVisibility = _viewModel.MainWindowVisibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 

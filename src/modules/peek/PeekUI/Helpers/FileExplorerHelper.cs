@@ -7,12 +7,10 @@ namespace PeekUI.Helpers
     public static class FileExplorerHelper
     {
         [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
+        internal static extern IntPtr GetForegroundWindow();
 
-        public static IEnumerable<string> GetSelectedItems()
+        public static IEnumerable<string> GetSelectedItems(IntPtr handle)
         {
-            IntPtr handle = GetForegroundWindow();
-
             var selectedItems = new List<string>();
             var shell = new Shell32.Shell();
             foreach (SHDocVw.InternetExplorer window in shell.Windows())

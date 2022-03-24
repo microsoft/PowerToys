@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />
+    <PackageReference Include="WpfScreenHelper" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
