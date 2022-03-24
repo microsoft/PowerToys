@@ -3,11 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Reflection;
 using System.Threading;
 using System.Windows;
 
-namespace PeekUI
+namespace PeekUI.Helpers
 {
     public static class NativeEventWaiter
     {
