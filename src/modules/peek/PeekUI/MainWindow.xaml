@@ -21,6 +21,6 @@
     WindowStartupLocation="Manual"
     mc:Ignorable="d">
     <Grid>
-        <Image Source="{Binding Bitmap, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+        <Image x:Name="ImageControl" Source="{Binding Bitmap, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
     </Grid>
 </Window>
