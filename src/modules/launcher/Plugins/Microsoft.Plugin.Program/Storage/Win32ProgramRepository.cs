@@ -158,7 +158,7 @@ namespace Microsoft.Plugin.Program.Storage
                     app = GetAppWithSameLnkResolvedPath(path);
                     if (app == null)
                     {
-                        // Cancelled links won't be have a resolved path.
+                        // Cancelled links won't have a resolved path.
                         app = GetAppWithSameNameAndExecutable(Path.GetFileNameWithoutExtension(path), Path.GetFileName(path));
                     }
                 }
