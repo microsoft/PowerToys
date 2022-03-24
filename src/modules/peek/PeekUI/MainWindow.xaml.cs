@@ -18,6 +18,8 @@ namespace PeekUI
         public MainWindow()
         {
             InitializeComponent();
+
+            //todo: put in method
             IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
             var attribute = InteropHelper.DWMWINDOWATTRIBUTE.DWMWAWINDOWCORNERPREFERENCE;
             var preference = InteropHelper.DWMWINDOWCORNERPREFERENCE.DWMWCPROUND;
@@ -40,9 +42,8 @@ namespace PeekUI
 
         private void TogglePeek()
         {
-            // put window in focus and in foreground
-            // get file
-            // if file valid toggle/update file displayed and bring to foreground
+            // if files are selected, open peek with those files (optimization: recognize already opened files)
+            // else if window is in focus, close peek
 
             var selectedItems = FileExplorerHelper.GetSelectedItems();
 
@@ -57,7 +58,11 @@ namespace PeekUI
 
             if (!string.IsNullOrWhiteSpace(selectedItems.FirstOrDefault()))
             {
+                // TODO: put window in focus and in foreground
                 _viewModel.MainWindowVisibility = _viewModel.MainWindowVisibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
+
+                // TODO: load image (image control?)
+                // TODO: center & resize window
             }
         }
 

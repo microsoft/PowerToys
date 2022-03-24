@@ -173,11 +173,6 @@
   <ItemGroup>
     <ResourceCompile Include="PeekViewer.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PeekFileUtils\PeekFileUtils.vcxproj">
-      <Project>{51950544-5b60-4db9-ac5c-d7755143a801}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
