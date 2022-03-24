@@ -373,16 +373,16 @@ void FancyZonesWindowUtils::SaveWindowSizeAndOrigin(HWND window) noexcept
     RECT rect;
     if (GetWindowRect(window, &rect))
     {
-        int width = rect.right - rect.left;
-        int height = rect.bottom - rect.top;
-        int originX = rect.left;
-        int originY = rect.top;
+        float width = static_cast<float>(rect.right - rect.left);
+        float height = static_cast<float>(rect.bottom - rect.top);
+        float originX = static_cast<float>(rect.left);
+        float originY = static_cast<float>(rect.top);
 
         DPIAware::InverseConvert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), width, height);
         DPIAware::InverseConvert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), originX, originY);
 
-        std::array<int, 2> windowSizeData = { width, height };
-        std::array<int, 2> windowOriginData = { originX, originY };
+        std::array<int, 2> windowSizeData = { static_cast<int>(width), static_cast<int>(height) };
+        std::array<int, 2> windowOriginData = { static_cast<int>(originX), static_cast<int>(originY) };
         HANDLE rawData;
         memcpy(&rawData, windowSizeData.data(), sizeof rawData);
         SetPropW(window, ZonedWindowProperties::PropertyRestoreSizeID, rawData);
@@ -399,8 +399,10 @@ void FancyZonesWindowUtils::RestoreWindowSize(HWND window) noexcept
         std::array<int, 2> windowSize;
         memcpy(windowSize.data(), &windowSizeData, sizeof windowSize);
 
+        float windowWidth = static_cast<float>(windowSize[0]), windowHeight = static_cast<float>(windowSize[1]);
+
         // {width, height}
-        DPIAware::Convert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), windowSize[0], windowSize[1]);
+        DPIAware::Convert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), windowWidth, windowHeight);
 
         RECT rect;
         if (GetWindowRect(window, &rect))
@@ -428,8 +430,10 @@ void FancyZonesWindowUtils::RestoreWindowOrigin(HWND window) noexcept
         std::array<int, 2> windowOrigin;
         memcpy(windowOrigin.data(), &windowOriginData, sizeof windowOrigin);
 
+        float windowWidth = static_cast<float>(windowOrigin[0]), windowHeight = static_cast<float>(windowOrigin[1]);
+
         // {width, height}
-        DPIAware::Convert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), windowOrigin[0], windowOrigin[1]);
+        DPIAware::Convert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), windowWidth, windowHeight);
 
         RECT rect;
         if (GetWindowRect(window, &rect))

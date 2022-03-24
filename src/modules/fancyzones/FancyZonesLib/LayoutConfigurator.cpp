@@ -389,21 +389,22 @@ ZonesMap LayoutConfigurator::Custom(FancyZonesUtils::Rect workArea, HMONITOR mon
         ZonesMap zones;
         const auto& zoneSetInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info);
 
-        int width = workArea.width();
-        int height = workArea.height();
+        float width = static_cast<float>(workArea.width());
+        float height = static_cast<float>(workArea.height());
+
         DPIAware::InverseConvert(monitor, width, height);
 
         for (const auto& zone : zoneSetInfo.zones)
         {
-            int x = zone.x * width / zoneSetInfo.lastWorkAreaWidth;
-            int y = zone.y * height / zoneSetInfo.lastWorkAreaHeight;
-            int zoneWidth = zone.width * width / zoneSetInfo.lastWorkAreaWidth;
-            int zoneHeight = zone.height * height / zoneSetInfo.lastWorkAreaHeight;
+            float x = static_cast<float>(zone.x) * width / zoneSetInfo.lastWorkAreaWidth;
+            float y = static_cast<float>(zone.y) * height / zoneSetInfo.lastWorkAreaHeight;
+            float zoneWidth = static_cast<float>(zone.width) * width / zoneSetInfo.lastWorkAreaWidth;
+            float zoneHeight = static_cast<float>(zone.height) * height / zoneSetInfo.lastWorkAreaHeight;
 
             DPIAware::Convert(monitor, x, y);
             DPIAware::Convert(monitor, zoneWidth, zoneHeight);
             
-            auto zone = MakeZone(RECT{ x, y, x + zoneWidth, y + zoneHeight }, zones.size());
+            auto zone = MakeZone(RECT{ static_cast<long>(x), static_cast<long>(y), static_cast<long>(x + zoneWidth), static_cast<long>(y + zoneHeight) }, zones.size());
             if (zone)
             {
                 if (!AddZone(zone, zones))
