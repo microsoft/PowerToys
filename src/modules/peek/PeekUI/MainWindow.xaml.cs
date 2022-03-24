@@ -1,10 +1,12 @@
 ﻿using interop;
+using PeekUI.Extensions;
 using PeekUI.Helpers;
 using PeekUI.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 
@@ -60,6 +62,23 @@ namespace PeekUI
         {
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
             e.Cancel = true;
+        }
+
+        private void OnArrowKeyPress(object? sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (_viewModel.CurrentSelectedFilePath != null)
+            {
+                switch (e.Key)
+                {
+                    case Key.Left:
+                        _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetPreviousOrLast();
+                        break;
+                    case Key.Right:
+                        _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetNextOrFirst();
+                        break;
+                    default: break;
+                }
+            }
         }
 
         private void OnPeekHotkey()
