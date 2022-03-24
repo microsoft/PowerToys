@@ -10,23 +10,14 @@
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>PowerToys Settings UI Runner</Description>
-    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
-    <Company>Microsoft Corporation</Company>
     <PackageIcon>logo.png</PackageIcon>
-    <PackageIconUrl />
-    <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
-    <RepositoryType>Github</RepositoryType>
-    <PackageTags>PowerToys</PackageTags>
-    <NeutralLanguage>en-US</NeutralLanguage>
     <Version>$(Version).0</Version>
     <Platforms>x64</Platforms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Win32Resource />
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    
+
     <!-- crutkas TODO: added for fallback, may need to be removed for WinUI3 -->
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
   </PropertyGroup>
@@ -43,10 +34,6 @@
     <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
     <Optimize>true</Optimize>
   </PropertyGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
-  </ItemGroup>
 
   <ItemGroup>
     <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json" Link="StyleCop.json" />

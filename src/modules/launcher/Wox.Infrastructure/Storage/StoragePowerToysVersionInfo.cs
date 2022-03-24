@@ -99,7 +99,7 @@ namespace Wox.Infrastructure.Storage
                 suffix = jsonSuffix;
             }
 
-            string filePath = associatedFilePath.Substring(0, associatedFilePath.Length - suffix.Length) + "_version.txt";
+            string filePath = string.Concat(associatedFilePath.AsSpan(0, associatedFilePath.Length - suffix.Length), "_version.txt");
             return filePath;
         }
 

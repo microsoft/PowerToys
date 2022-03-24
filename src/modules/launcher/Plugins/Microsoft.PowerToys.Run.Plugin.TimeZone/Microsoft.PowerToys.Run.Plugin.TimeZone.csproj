@@ -1,16 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Version.props" />
   <PropertyGroup>
-	<TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.TimeZone</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.TimeZone</AssemblyName>
     <Version>$(Version).0</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Platforms>x64</Platforms>
-    <NeutralLanguage>en-US</NeutralLanguage>
-    <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -18,12 +17,7 @@
     <OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\TimeZone\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -31,18 +25,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Languages\**" />
-    <EmbeddedResource Remove="Languages\**" />
-    <None Remove="Languages\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">

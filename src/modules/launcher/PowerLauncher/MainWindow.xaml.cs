@@ -205,6 +205,10 @@ namespace PowerLauncher
                     UpdatePosition();
                     BringProcessToForeground();
 
+                    // HACK: Setting focus here again fixes some focus issues, like on first run or after showing a message box.
+                    SearchBox.QueryTextBox.Focus();
+                    Keyboard.Focus(SearchBox.QueryTextBox);
+
                     if (!_viewModel.LastQuerySelected)
                     {
                         _viewModel.LastQuerySelected = true;

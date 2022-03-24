@@ -150,8 +150,9 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     // Perhaps add a task to the Dispatcher every X circles to clean up.
 
     // Get back on top in case other Window is now the topmost.
+    // HACK: Draw with 1 pixel off. Otherwise Windows glitches the task bar transparency when a transparent window fill the whole screen.
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN),
-        GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
+        GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN)-1, 0);
 }
 
 void Highlighter::UpdateDrawingPointPosition(MouseButton button)
@@ -259,8 +260,10 @@ void Highlighter::StartDrawing()
     Logger::info("Starting draw mode.");
     Trace::StartHighlightingSession();
     m_visible = true;
+
+    // HACK: Draw with 1 pixel off. Otherwise Windows glitches the task bar transparency when a transparent window fill the whole screen.
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN),
-        GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
+        GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN)-1, 0);
     ClearDrawing();
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);

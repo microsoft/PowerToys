@@ -61,10 +61,14 @@ public:
 
     void onGeneralSettingsChanged();
     void onModuleSettingsChanged();
+    void onMicrophoneConfigurationChanged();
+
 private:
 
     void init_settings();
     void updateControlledMicrophones(const std::wstring_view new_mic);
+    MicrophoneDevice* controlledDefaultMic();
+
     //  all callback methods and used by callback have to be static
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
     static bool isKeyPressed(unsigned int keyCode);
@@ -73,7 +77,9 @@ private:
     static HHOOK hook_handle;
     bool _enabled = false;
 
-    std::vector<MicrophoneDevice> _controlledMicrophones;
+    bool _mic_muted_state_during_disconnect = false;
+    bool _controllingAllMics = false;
+    std::vector<std::unique_ptr<MicrophoneDevice>> _controlledMicrophones;
     MicrophoneDevice* _microphoneTrackedInUI = nullptr;
 
     std::optional<SerializedSharedMemory> _imageOverlayChannel;

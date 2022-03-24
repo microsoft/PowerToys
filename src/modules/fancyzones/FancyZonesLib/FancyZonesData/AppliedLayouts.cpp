@@ -173,8 +173,6 @@ void AppliedLayouts::LoadData()
 
 void AppliedLayouts::SaveData()
 {
-    _TRACER_;
-
     bool dirtyFlag = false;
     TAppliedLayoutsMap updatedMap;
     if (m_virtualDesktopCheckCallback)
@@ -209,11 +207,16 @@ void AppliedLayouts::SetVirtualDesktopCheckCallback(std::function<bool(GUID)> ca
 
 void AppliedLayouts::SyncVirtualDesktops(GUID currentVirtualDesktopId)
 {
-    _TRACER_;
     // Explorer persists current virtual desktop identifier to registry on a per session basis,
     // but only after first virtual desktop switch happens. If the user hasn't switched virtual
     // desktops in this session value in registry will be empty and we will use default GUID in
     // that case (00000000-0000-0000-0000-000000000000).
+
+    auto currentVirtualDesktopStr = FancyZonesUtils::GuidToString(currentVirtualDesktopId);
+    if (currentVirtualDesktopStr)
+    {
+        Logger::info(L"AppliedLayouts Sync virtual desktops: current {}", currentVirtualDesktopStr.value());
+    }    
 
     bool dirtyFlag = false;
 

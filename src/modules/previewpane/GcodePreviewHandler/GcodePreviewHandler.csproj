@@ -4,15 +4,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>PowerToys.GcodePreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys GcodePreviewHandler</AssemblyDescription>
-    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2022 Microsoft Corporation</AssemblyCopyright>
-    <AssemblyProduct>PowerToys</AssemblyProduct>
-    <Company>Microsoft Corp.</Company>
-    <Product>PowerToys</Product>
-    <NeutralLanguage>en-US</NeutralLanguage>
     <Description>PowerToys GcodePreviewHandler</Description>
-    <Copyright>Copyright (C) 2022 Microsoft Corporation</Copyright>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\GcodePreviewPaneDocumentation.xml</DocumentationFile>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -20,7 +12,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AssemblyName>PowerToys.GcodePreviewHandler</AssemblyName>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <ProjectGuid>{805306FF-A562-4415-8DEF-E493BDC45918}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Gcode</RootNamespace>
@@ -28,9 +20,9 @@
     <EnableComHosting>true</EnableComHosting>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
   </PropertyGroup>
-  
+
   <Import Project="..\..\..\Version.props" />
-  
+
   <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
     <Compile Update="GcodePreviewHandlerControl.cs" />
@@ -40,7 +32,7 @@
       <DependentUpon>Resource.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -52,18 +44,18 @@
     <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
     <PackageReference Include="System.Runtime.WindowsRuntime" Version="4.7.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
   </ItemGroup>
-   
+
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resource.resx">
       <Generator>ResXFileCodeGenerator</Generator>

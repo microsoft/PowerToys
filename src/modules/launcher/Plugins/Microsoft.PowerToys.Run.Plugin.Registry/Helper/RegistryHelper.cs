@@ -167,7 +167,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                         continue;
                     }
 
-                    if (string.Equals(subKey, searchSubKey, StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(subKey, searchSubKey, StringComparison.OrdinalIgnoreCase))
                     {
                         var key = parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree);
                         if (key != null)

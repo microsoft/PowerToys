@@ -3,8 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Awake.Core.Models;
@@ -99,9 +102,16 @@ namespace Awake.Core
             _tokenSource = new CancellationTokenSource();
             _threadToken = _tokenSource.Token;
 
-            _runnerThread = Task.Run(() => RunIndefiniteLoop(keepDisplayOn), _threadToken)
-                .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
-                .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
+            try
+            {
+                _runnerThread = Task.Run(() => RunIndefiniteLoop(keepDisplayOn), _threadToken)
+                    .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
+                    .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex.Message);
+            }
         }
 
         public static void SetNoKeepAwake()
@@ -178,6 +188,26 @@ namespace Awake.Core
                 // Task was clearly cancelled.
                 _log.Info($"Background thread termination: {NativeMethods.GetCurrentThreadId()}. Message: {ex.Message}");
                 return success;
+            }
+        }
+
+        internal static void CompleteExit(int exitCode, bool force = false)
+        {
+            APIHelper.SetNoKeepAwake();
+            TrayHelper.ClearTray();
+
+            // Because we are running a message loop for the tray, we can't just use Environment.Exit,
+            // but have to make sure that we properly send the termination message.
+            IntPtr windowHandle = APIHelper.GetHiddenWindow();
+
+            if (windowHandle != IntPtr.Zero)
+            {
+                NativeMethods.SendMessage(windowHandle, NativeConstants.WM_CLOSE, 0, string.Empty);
+            }
+
+            if (force)
+            {
+                Environment.Exit(exitCode);
             }
         }
 
@@ -261,6 +291,55 @@ namespace Awake.Core
                 _log.Info($"Could not get registry key for the build number. Error: {ex.Message}");
                 return string.Empty;
             }
+        }
+
+        [SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Function returns DWORD value that identifies the current thread, but we do not need it.")]
+        public static IEnumerable<IntPtr> EnumerateWindowsForProcess(int processId)
+        {
+            var handles = new List<IntPtr>();
+            IntPtr hCurrentWnd = IntPtr.Zero;
+
+            do
+            {
+                hCurrentWnd = NativeMethods.FindWindowEx(IntPtr.Zero, hCurrentWnd, null, null);
+                NativeMethods.GetWindowThreadProcessId(hCurrentWnd, out uint targetProcessId);
+                if (targetProcessId == processId)
+                {
+                    handles.Add(hCurrentWnd);
+                }
+            }
+            while (hCurrentWnd != IntPtr.Zero);
+
+            return handles;
+        }
+
+        [SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "In this context, the string is only converted to a hex value.")]
+        public static IntPtr GetHiddenWindow()
+        {
+            IEnumerable<IntPtr> windowHandles = EnumerateWindowsForProcess(Environment.ProcessId);
+            var domain = AppDomain.CurrentDomain.GetHashCode().ToString("x");
+            string targetClass = $"{InternalConstants.TrayWindowId}{domain}";
+
+            foreach (var handle in windowHandles)
+            {
+                StringBuilder className = new (256);
+                int classQueryResult = NativeMethods.GetClassName(handle, className, className.Capacity);
+                if (classQueryResult != 0 && className.ToString().StartsWith(targetClass, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return handle;
+                }
+            }
+
+            return IntPtr.Zero;
+        }
+
+        public static Dictionary<string, int> GetDefaultTrayOptions()
+        {
+            Dictionary<string, int> optionsList = new Dictionary<string, int>();
+            optionsList.Add("30 minutes", 1800);
+            optionsList.Add("1 hour", 3600);
+            optionsList.Add("2 hours", 7200);
+            return optionsList;
         }
     }
 }

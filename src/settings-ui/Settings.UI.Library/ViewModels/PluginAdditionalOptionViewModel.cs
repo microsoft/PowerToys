@@ -18,6 +18,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public string DisplayLabel { get => _additionalOption.DisplayLabel; }
 
+        public string DisplayDescription { get => _additionalOption.DisplayDescription; }
+
         public bool Value
         {
             get => _additionalOption.Value;

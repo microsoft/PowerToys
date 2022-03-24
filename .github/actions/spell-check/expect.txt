@@ -10,7 +10,6 @@ accctrl
 Acceleratorkeys
 ACCEPTFILES
 ACCESSDENIED
-accessibile
 accessibilityinsights
 Acl
 aclapi
@@ -30,7 +29,6 @@ AFeature
 AFX
 AGGREGATABLE
 AHybrid
-Aissue
 Akrotiri
 Aktobe
 ALarger
@@ -45,7 +43,6 @@ altform
 alwaysontop
 amd
 AMF
-Amicrosoft
 AModifier
 AMPROPERTY
 AMPROPSETID
@@ -56,7 +53,6 @@ ansicolor
 ANull
 AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
-Aopen
 APARTMENTTHREADED
 APeriod
 api
@@ -137,19 +133,15 @@ AYUV
 backend
 backtracer
 BADD
-BAEC
-BAF
 bak
 Bashkortostan
 Bayan
 bbwe
 bck
 Bcl
-BEEE
 Belarus
 betadele
 betsegaw
-BFB
 BGR
 bgra
 BGSOUNDS
@@ -176,7 +168,6 @@ BNumber
 Bokm
 BOKMAL
 boolalpha
-Boostrapper
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
 Bopomofo
@@ -187,6 +178,7 @@ bpp
 bricelam
 BRIGHTGREEN
 Browsable
+brucelindbloom
 bsd
 bstr
 bti
@@ -196,17 +188,16 @@ Bto
 buf
 BUFSIZE
 bugreport
-Buid
 BUILDARCH
 buildtransitive
 Burkina
 Buryatia
 BValue
+BYPOSITION
 bytearray
 Caiguna
 CALG
 callbackptr
-Camer
 Cangjie
 CANRENAME
 CAPTURECHANGED
@@ -215,7 +206,6 @@ CAtl
 cch
 CCom
 CContext
-CDBECF
 cdecl
 CDeclaration
 CDEF
@@ -223,6 +213,7 @@ cdpx
 CENTERALIGN
 cguid
 changecursor
+Changelog
 Changemove
 charconv
 chdir
@@ -375,7 +366,6 @@ cxxopts
 cyberrex
 CYSMICON
 CYVIRTUALSCREEN
-czf
 cziplib
 Dac
 dacl
@@ -388,8 +378,6 @@ Datavalue
 DATAW
 davidegiacometti
 Dayof
-DBCD
-DBDA
 Dbg
 Dbghelp
 DBLCLKS
@@ -426,7 +414,6 @@ depersist
 deprioritized
 deps
 deref
-deseralization
 deserialization
 deserialize
 deserialized
@@ -442,7 +429,6 @@ devenum
 DEVMON
 devpkey
 DEVSOURCE
-DFactory
 dhcp
 diffing
 difftime
@@ -468,28 +454,24 @@ dllhost
 dllmain
 dlls
 DNLEN
+Dns
 doctype
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
-DOverlay
 DOWNLOADONLY
 DPICHANGED
 DPIs
 DPolicy
-DPopup
 DPSAPI
 DQTAT
 DQTYPE
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
-DRect
 drivedetectionwarning
 dshow
 dst
-DSVG
-DText
 dutil
 DVASPECT
 DVASPECTINFO
@@ -499,7 +481,6 @@ dvr
 DVSD
 DVSL
 DVTARGETDEVICE
-DWindow
 DWINRT
 dwm
 dwmapi
@@ -519,18 +500,14 @@ dwrite
 dxgi
 dxgiformat
 dxguid
-EAF
-EBA
-EBE
 ecount
-ededf
+EData
 EDITKEYBOARD
 editkeyboardwindow
 editorconfig
 EDITSHORTCUTS
 editshortcutswindow
 EFile
-egistry
 ekus
 elif
 elseif
@@ -542,7 +519,6 @@ endif
 endl
 endpointvolume
 endregion
-Enque
 ENTERSIZEMOVE
 entrypoint
 ENU
@@ -550,11 +526,13 @@ enum
 EOAC
 eol
 epicgames
+Eqn
 ERASEBKGND
 EREOF
 EResize
 ERRORMESSAGE
 ERRORTITLE
+ERole
 ESettings
 esize
 esrp
@@ -598,10 +576,7 @@ FANCYZONESEDITOR
 Farbraum
 Faroe
 FARPROC
-FBF
-FCCD
 fdw
-FEEBD
 feimage
 ffaa
 fff
@@ -638,7 +613,6 @@ FORCEMINIMIZE
 FORCEOFFLINE
 foreach
 formatetc
-FPower
 FRAMECHANGED
 FRAMEDOWNLOAD
 franky
@@ -657,6 +631,8 @@ gabime
 GAC
 gacutil
 GBarm
+Gbits
+Gbps
 GBs
 GCLP
 gcnew
@@ -850,6 +826,7 @@ IFile
 IFilter
 ifndef
 IFolder
+IFormat
 ifstream
 IGraph
 iid
@@ -873,6 +850,7 @@ IMarkdown
 ime
 IMedia
 IMem
+IMessage
 imeutil
 iminstall
 IMoniker
@@ -1134,6 +1112,7 @@ LPSTR
 lpsz
 lpt
 LPTOP
+lptpm
 LPTSTR
 LPVOID
 LPW
@@ -1178,10 +1157,8 @@ Mato
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
+Mbits
 MBs
-mdtext
-mdtxt
-mdwn
 MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
@@ -1191,12 +1168,16 @@ MCST
 MDICHILD
 MDL
 mdpreviewhandler
+mdtext
+mdtxt
+mdwn
 MEDIASUBTYPE
 mediatype
 Melman
 memcmp
 memcpy
 memset
+MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 messageboxes
@@ -1404,6 +1385,7 @@ ntdll
 NTFS
 NTSTATUS
 nuget
+nuint
 nullopt
 nullptr
 numberbox
@@ -1462,10 +1444,10 @@ overlaywindow
 Overridable
 Oversampling
 OWNDC
+OWNERDRAW
 PACL
 pagos
 PAINTSTRUCT
-PAIT
 PALEBLUE
 PALETTEWINDOW
 paramref
@@ -1485,7 +1467,6 @@ pcb
 pch
 PCIDLIST
 PCWSTR
-
 pdb
 pdbonly
 pdfpreviewhandler
@@ -1583,6 +1564,7 @@ programdata
 PROGRAMFILES
 projectname
 PROPBAG
+PROPERTYKEY
 propkey
 propvarutil
 prvpane
@@ -1667,7 +1649,6 @@ regex
 REGFILTER
 REGFILTERPINS
 REGISTERCLASSFAILED
-Registery
 registrypath
 regkey
 REGPINTYPES
@@ -1755,6 +1736,7 @@ safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
 SAVEFAILED
+scalability
 scancode
 scanled
 schedtasks
@@ -1960,6 +1942,7 @@ subquery
 substr
 Sul
 Superbar
+supressions
 Suri
 sut
 SVE
@@ -1989,8 +1972,8 @@ SYSKEYUP
 SYSLIB
 syslog
 SYSMENU
-systemd
 SYSTEMAPPS
+systemd
 SYSTEMTIME
 Tadele
 Tajikistan
@@ -2027,6 +2010,7 @@ testzones
 TEXCOORD
 textblock
 TEXTINCLUDE
+THH
 THICKFRAME
 THISCOMPONENT
 THotkey
@@ -2049,7 +2033,6 @@ Toolchain
 toolkitcontrols
 toolkitconverters
 Toolset
-toolstrip
 toolwindow
 TOPDOWNDIB
 toplevel
@@ -2061,8 +2044,8 @@ towupper
 tracelogging
 traies
 transcoded
+transicc
 Transnistria
-transparrent
 TRAYMOUSEMESSAGE
 triaging
 TRK
@@ -2109,6 +2092,7 @@ UNCPRIORITY
 undef
 UNDNAME
 unescape
+Unicast
 Unindent
 Uninitialize
 uninstall
@@ -2208,7 +2192,6 @@ vstemplate
 VSTHRD
 VSTT
 vtable
-VTABLE
 Vtbl
 WBounds
 wca
@@ -2238,7 +2221,6 @@ Whichdoes
 whitespaces
 WIC
 wifi
-wih
 wiki
 wikipedia
 wil
@@ -2294,6 +2276,7 @@ WIXUI
 WKSG
 Wlkr
 wmain
+Wman
 WMKEYDOWN
 WMKEYUP
 wmp
@@ -2336,6 +2319,7 @@ WTSAT
 Wubi
 WVC
 Wwan
+Wwanpp
 xamarin
 XAttribute
 xbf

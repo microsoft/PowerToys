@@ -312,7 +312,7 @@ jobs:
       script: '.\installer\packages\WiX.3.11.2\tools\insignia.exe -ab installer\engine.exe installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe'
 
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
-    displayName: Sign Boostrapper
+    displayName: Sign Bootstrapper
     inputs:
       ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
       FolderPath: 'installer/PowerToysSetup/$(BuildPlatform)\$(BuildConfiguration)'

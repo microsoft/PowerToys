@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.System.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
 namespace Wox.Infrastructure
 {
@@ -101,7 +102,9 @@ namespace Wox.Infrastructure
                 {
                     var fullStringToCompare = fullStringToCompareWithoutCase[compareStringIndex].ToString();
                     var querySubstring = currentQuerySubstring[currentQuerySubstringCharacterIndex].ToString();
+#pragma warning disable CA1309 // Use ordinal string comparison (We are looking for a fuzzy match here)
                     compareResult = string.Compare(fullStringToCompare, querySubstring, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) != 0;
+#pragma warning restore CA1309 // Use ordinal string comparison
                 }
                 else
                 {
@@ -262,12 +265,13 @@ namespace Wox.Infrastructure
                 }
             }
 
-            // Using CurrentCultureIgnoreCase since this relates to queries input by user
+#pragma warning disable CA1309 // Use ordinal string comparison (Using CurrentCultureIgnoreCase since this relates to queries input by user)
             if (string.Equals(query, stringToCompare, StringComparison.CurrentCultureIgnoreCase))
             {
                 var bonusForExactMatch = 10;
                 score += bonusForExactMatch;
             }
+#pragma warning restore CA1309 // Use ordinal string comparison
 
             return score;
         }

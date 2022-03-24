@@ -758,7 +758,7 @@ namespace Microsoft.Plugin.Program.Programs
             return IndexPath(suffixes, indexLocation);
         }
 
-        private static IEnumerable<string> RegisteryAppProgramPaths(IList<string> suffixes)
+        private static IEnumerable<string> RegistryAppProgramPaths(IList<string> suffixes)
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
             const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
@@ -788,9 +788,9 @@ namespace Microsoft.Plugin.Program.Programs
         private static IEnumerable<string> GetPathsFromRegistry(RegistryKey root)
             => root
                 .GetSubKeyNames()
-                .Select(x => GetPathFromRegisterySubkey(root, x));
+                .Select(x => GetPathFromRegistrySubkey(root, x));
 
-        private static string GetPathFromRegisterySubkey(RegistryKey root, string subkey)
+        private static string GetPathFromRegistrySubkey(RegistryKey root, string subkey)
         {
             var path = string.Empty;
             try
@@ -909,7 +909,7 @@ namespace Microsoft.Plugin.Program.Programs
                     (true, () => CustomProgramPaths(settings.ProgramSources, settings.ProgramSuffixes)),
                     (settings.EnableStartMenuSource, () => StartMenuProgramPaths(settings.ProgramSuffixes)),
                     (settings.EnableDesktopSource, () => DesktopProgramPaths(settings.ProgramSuffixes)),
-                    (settings.EnableRegistrySource, () => RegisteryAppProgramPaths(settings.ProgramSuffixes)),
+                    (settings.EnableRegistrySource, () => RegistryAppProgramPaths(settings.ProgramSuffixes)),
                 };
 
                 // Run commands are always set as AppType "RunCommand"

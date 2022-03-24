@@ -12,33 +12,22 @@
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<Platforms>x64</Platforms>
-	</PropertyGroup>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 		<DebugSymbols>true</DebugSymbols>
-		<OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\VSCodeWorkspaces\</OutputPath>
+		<OutputPath>..\..\..\..\..\x64\$(Configuration)\modules\launcher\Plugins\VSCodeWorkspaces\</OutputPath>
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
 		<DebugType>full</DebugType>
-		<PlatformTarget>x64</PlatformTarget>
-		<LangVersion>7.3</LangVersion>
-		<ErrorReport>prompt</ErrorReport>
-		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-		<WarningLevel>4</WarningLevel>
 		<Optimize>false</Optimize>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-		<OutputPath>..\..\..\..\..\x64\Release\modules\launcher\Plugins\VSCodeWorkspaces\</OutputPath>
+		<OutputPath>..\..\..\..\..\x64\$(Configuration)\modules\launcher\Plugins\VSCodeWorkspaces\</OutputPath>
 		<DefineConstants>TRACE</DefineConstants>
 		<Optimize>true</Optimize>
 		<DebugType>pdbonly</DebugType>
-		<PlatformTarget>x64</PlatformTarget>
-		<LangVersion>7.3</LangVersion>
-		<ErrorReport>prompt</ErrorReport>
-		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-		<WarningLevel>4</WarningLevel>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>

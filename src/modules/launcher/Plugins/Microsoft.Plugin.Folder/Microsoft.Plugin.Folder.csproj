@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-<Import Project="..\..\..\..\Version.props" />
-  
+  <Import Project="..\..\..\..\Version.props" />
+
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
     <ProjectGuid>{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}</ProjectGuid>
@@ -12,7 +12,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Platforms>x64</Platforms>
-    <NeutralLanguage>en-US</NeutralLanguage>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -20,13 +20,7 @@
     <OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\Folder\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -34,19 +28,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Languages\**" />
-    <EmbeddedResource Remove="Languages\**" />
-    <None Remove="Languages\**" />
-  </ItemGroup>
-  
   <ItemGroup>
     <None Include="plugin.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

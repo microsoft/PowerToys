@@ -179,10 +179,10 @@
   <data name="Title" xml:space="preserve">
     <value>Title</value>
   </data>
-  <data name="deseralization_error_title" xml:space="preserve">
+  <data name="deserialization_error_title" xml:space="preserve">
     <value>PowerToys Run deserialization error</value>
   </data>
-  <data name="deseralization_error_message" xml:space="preserve">
+  <data name="deserialization_error_message" xml:space="preserve">
     <value>Settings will be reset to default and program will continue to function.</value>
   </data>
   <data name="FailedToInitializePluginsDescription" xml:space="preserve">
