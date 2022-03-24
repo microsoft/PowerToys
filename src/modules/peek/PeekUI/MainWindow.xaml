@@ -17,5 +17,7 @@
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <Grid />
+    <Grid>
+        <Image Source="{Binding Bitmap, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+    </Grid>
 </Window>

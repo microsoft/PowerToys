@@ -3,8 +3,10 @@ using PeekUI.Helpers;
 using PeekUI.ViewModels;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media.Imaging;
 
 namespace PeekUI
 {
@@ -40,7 +42,7 @@ namespace PeekUI
             e.Cancel = true;
         }
 
-        private void TogglePeek()
+        private async void TogglePeek()
         {
             // if files are selected, open peek with those files (optimization: recognize already opened files)
             // else if window is in focus, close peek
@@ -62,6 +64,7 @@ namespace PeekUI
                 _viewModel.MainWindowVisibility = _viewModel.MainWindowVisibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
 
                 // TODO: load image (image control?)
+                await _viewModel.LoadImageAsync(selectedItems.FirstOrDefault()!);
                 // TODO: center & resize window
             }
         }
