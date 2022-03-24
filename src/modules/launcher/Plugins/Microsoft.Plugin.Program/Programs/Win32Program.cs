@@ -501,7 +501,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (System.IO.FileLoadException e)
             {
-                ProgramLogger.Warn($"|Couldn't load the link file at {path}. This might be caused by a new link being created and locked by the OS.", e, MethodBase.GetCurrentMethod().DeclaringType, path);
+                ProgramLogger.Warn($"Couldn't load the link file at {path}. This might be caused by a new link being created and locked by the OS.", e, MethodBase.GetCurrentMethod().DeclaringType, path);
                 return InvalidProgram;
             }
 
