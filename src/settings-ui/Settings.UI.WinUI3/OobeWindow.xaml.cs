@@ -6,6 +6,8 @@ using System;
 using interop;
 using Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Resources;
 
@@ -16,24 +18,17 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
     /// </summary>
     public sealed partial class OobeWindow : Window
     {
-        private static Window inst;
         private PowerToysModules initialModule;
-
-        public static bool IsOpened
-        {
-            get
-            {
-                return inst != null;
-            }
-        }
 
         public OobeWindow(PowerToysModules initialModule)
         {
             this.InitializeComponent();
 
-            /* todo(Stefan): Is needed
-             * Utils.FitToScreen(this);
-            */
+            // Set window icon
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+            appWindow.SetIcon("icon.ico");
 
             this.initialModule = initialModule;
 
@@ -42,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
 
             if (shellPage != null)
             {
-                shellPage.NavigateToModule(initialModule);
+                shellPage.NavigateToModule(this.initialModule);
             }
 
             OobeShellPage.SetRunSharedEventCallback(() =>
@@ -57,53 +52,13 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
 
             OobeShellPage.SetOpenMainWindowCallback((Type type) =>
             {
-                ((App)Application.Current).OpenSettingsWindow(type);
+                App.OpenSettingsWindow(type);
             });
         }
 
-        private void Window_Closed(object sender, EventArgs e)
+        private void Window_Closed(object sender, WindowEventArgs args)
         {
-            if (shellPage != null)
-            {
-                shellPage.OnClosing();
-            }
-
-            inst = null;
-            MainWindow.CloseHiddenWindow();
+            App.ClearOobeWindow();
         }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (inst != null)
-            {
-                inst.Close();
-            }
-
-            inst = this;
-        }
-
-        /*
-         todo(Stefan): XAML ISLAND
-
-         *        private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
-                {
-                    if (sender == null)
-                    {
-                        return;
-                    }
-
-                    WindowsXamlHost windowsXamlHost = sender as WindowsXamlHost;
-                    shellPage = windowsXamlHost.GetUwpInternalObject() as OobeShellPage;
-
-                }
-
-
-         *      protected override void OnSourceInitialized(EventArgs e)
-                {
-                    base.OnSourceInitialized(e);
-                    var hwnd = new WindowInteropHelper(this).Handle;
-                    NativeMethods.SetPopupStyle(hwnd);
-                }
-        */
     }
 }
