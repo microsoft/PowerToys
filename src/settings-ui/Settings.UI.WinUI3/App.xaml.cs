@@ -5,11 +5,15 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading.Tasks;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.WinUI3.Helpers;
 using Microsoft.UI.Xaml;
+using Windows.UI.Popups;
 using Windows.UI.ViewManagement;
+using WinRT.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.WinUI3
 {
@@ -133,9 +137,6 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
                 {
                     if (IPCMessageReceivedCallback != null && message.Length > 0)
                     {
-                        // Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
-                        // {
-                        // }));
                         IPCMessageReceivedCallback(message);
                     }
                 });
@@ -143,14 +144,26 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
             }
             else
             {
-/* todo(stefan)
- *                  MessageBox.Show(
-                    "The application cannot be run as a standalone process. Please start the application through the runner.",
-                    "Forbidden",
-                    MessageBoxButton.OK);
-                app.Shutdown();
-*/
+                ShowMessageDialog("The application cannot be run as a standalone process. Please start the application through the runner.", "Forbidden");
             }
+        }
+
+        private async void ShowMessageDialog(string content, string title = null)
+        {
+            await ShowDialogAsync(content, title);
+        }
+
+        public static Task<IUICommand> ShowDialogAsync(string content, string title = null)
+        {
+            var dlg = new MessageDialog(content, title ?? string.Empty);
+            var handle = NativeMethods.GetActiveWindow();
+            if (handle == IntPtr.Zero)
+            {
+                return (Task<IUICommand>)Task.CompletedTask;
+            }
+
+            InitializeWithWindow.Initialize(dlg, handle);
+            return dlg.ShowAsync().AsTask<IUICommand>();
         }
 
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()

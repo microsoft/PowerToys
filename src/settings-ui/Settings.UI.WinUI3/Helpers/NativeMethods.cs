@@ -17,6 +17,9 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Helpers
         internal const int SW_SHOWMAXIMIZED = 3;
 
         [DllImport("user32.dll")]
+        internal static extern IntPtr GetActiveWindow();
+
+        [DllImport("user32.dll")]
         internal static extern bool SetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
         [DllImport("user32.dll")]
