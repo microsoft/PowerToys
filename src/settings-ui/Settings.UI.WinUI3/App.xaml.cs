@@ -66,20 +66,15 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
             this.InitializeComponent();
         }
 
-        public void OpenSettingsWindow(Type type)
+        public static void OpenSettingsWindow(Type type)
         {
-            if (window == null)
+            if (settingsWindow == null)
             {
-                window = new MainWindow();
+                settingsWindow = new MainWindow();
             }
 
-            /*else if (settingsWindow.WindowState == WindowState.Minimized)
-            {
-                settingsWindow.WindowState = WindowState.Normal;
-            }
-*/
-            window.Activate();
-            window.NavigateToSection(type);
+            settingsWindow.Activate();
+            settingsWindow.NavigateToSection(type);
         }
 
         /// <summary>
@@ -89,8 +84,8 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            window = new MainWindow();
-            window.Activate();
+            settingsWindow = new MainWindow();
+            settingsWindow.Activate();
 
             var cmdArgs = Environment.GetCommandLineArgs();
 
@@ -125,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
 
-                    window.NavigateToSection(StartupPage);
+                    settingsWindow.NavigateToSection(StartupPage);
                 }
 
                 RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
@@ -181,6 +176,27 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
 
         private static ISettingsUtils settingsUtils = new SettingsUtils();
 
-        private MainWindow window;
+        private static MainWindow settingsWindow;
+        private static OobeWindow oobeWindow;
+
+        public static void ClearSettingsWindow()
+        {
+            settingsWindow = null;
+        }
+
+        public static OobeWindow GetOobeWindow()
+        {
+            return oobeWindow;
+        }
+
+        public static void SetOobeWindow(OobeWindow window)
+        {
+            oobeWindow = window;
+        }
+
+        public static void ClearOobeWindow()
+        {
+            oobeWindow = null;
+        }
     }
 }
