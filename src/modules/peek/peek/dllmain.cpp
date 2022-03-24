@@ -7,8 +7,6 @@
 #include <filesystem>
 #include <common/interop/shared_constants.h>
 
-#include "PeekFileUtils/FileUtils.h"
-
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 BOOL APIENTRY DllMain(HMODULE hModule, 
@@ -125,6 +123,8 @@ private:
             catch (...)
             {
                 Logger::error("Failed to initialize Peek start settings");
+
+                set_default_settings();
             }
         }
         else
@@ -176,7 +176,7 @@ private:
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
-    void launch_viewer()
+    void launch_process()
     {
         Logger::trace(L"Starting PeekUI process");
 
@@ -335,7 +335,7 @@ public:
     virtual void enable()
     {
         ResetEvent(m_hInvokeEvent);
-        launch_viewer();
+        launch_process();
         m_enabled = true;
     }
 
@@ -383,7 +383,7 @@ public:
             // TODO: fix VK_SPACE DestroyWindow in viewer app
             if (!is_viewer_running())
             {
-                launch_viewer();
+                launch_process();
             }
 
             SetEvent(m_hInvokeEvent);

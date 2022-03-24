@@ -2,6 +2,7 @@
 using PeekUI.Helpers;
 using PeekUI.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Interop;
@@ -21,17 +22,38 @@ namespace PeekUI
             InitializeComponent();
 
             //todo: put in method
-            IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
+            IntPtr hWnd = new System.Windows.Interop.WindowInteropHelper(GetWindow(this)).EnsureHandle();
             var attribute = InteropHelper.DWMWINDOWATTRIBUTE.DWMWAWINDOWCORNERPREFERENCE;
             var preference = InteropHelper.DWMWINDOWCORNERPREFERENCE.DWMWCPROUND;
             InteropHelper.DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
 
 
             _viewModel = new MainViewModel();
+            _viewModel.PropertyChanged += MainViewModel_PropertyChanged;
             DataContext = _viewModel;
-            NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), TogglePeek);
+            NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
             Closing += MainWindow_Closing;
+        }
+
+        private async void MainViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch(e.PropertyName)
+            {
+                case nameof(MainViewModel.CurrentSelectedFilePath):
+                    if (_viewModel.CurrentSelectedFilePath != null)
+                    {
+                        await _viewModel.RenderImageToWindowAsync(_viewModel.CurrentSelectedFilePath.Value, ImageControl);
+
+                        _viewModel.MainWindowVisibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        _viewModel.MainWindowVisibility = Visibility.Collapsed;
+                    }
+                    break;
+
+            }
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -40,48 +62,38 @@ namespace PeekUI
             e.Cancel = true;
         }
 
-        private async void TogglePeek()
+        private void OnPeekHotkey()
         {
             // if files are selected, open peek with those files (optimization: recognize already opened files)
             // else if window is in focus, close peek
 
-            _viewModel.ForegroundWindowHandle = FileExplorerHelper.GetForegroundWindow();
-            var selectedItems = FileExplorerHelper.GetSelectedItems(_viewModel.ForegroundWindowHandle);
-
-            if(_viewModel.MainWindowVisibility == Visibility.Visible)
+            if (IsActive)
             {
-
+                _viewModel.ClearSelection();
             }
             else
             {
-
+                _viewModel.TryUpdateSelectedFilePaths();
             }
 
-            if (!string.IsNullOrWhiteSpace(selectedItems.FirstOrDefault()))
-            {
-                await _viewModel.RenderImageToWindowAsync(selectedItems.FirstOrDefault()!, ImageControl);
-
-                // TODO: put window in focus and in foreground
-                _viewModel.MainWindowVisibility = _viewModel.MainWindowVisibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
-            }
+            BringProcessToForeground();
         }
 
-        //private void BringProcessToForeground()
-        //{
-        //    // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
-        //    WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { Type = WindowsInteropHelper.INPUTTYPE.INPUTMOUSE, Data = { } };
-        //    WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
+        private void BringProcessToForeground()
+        {
+            // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
+            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { Type = WindowsInteropHelper.INPUTTYPE.INPUTMOUSE, Data = { } };
+            WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
 
-        //    // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
-        //    _ = NativeMethods.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
-        //    Activate();
-        //}
+            // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
+            _ = InteropHelper.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
+
+            Activate();
+        }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
-
-            //BringProcessToForeground();
         }
 
         protected override void OnSourceInitialized(EventArgs e)

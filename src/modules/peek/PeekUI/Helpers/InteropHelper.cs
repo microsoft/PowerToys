@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Interop;
+using static PeekUI.Helpers.WindowsInteropHelper;
 
 namespace PeekUI.Helpers
 {
@@ -43,5 +45,14 @@ namespace PeekUI.Helpers
             var hwnd = new WindowInteropHelper(win).Handle;
             _ = SetWindowLong(hwnd, GWL_EX_STYLE, GetWindowLong(hwnd, GWL_EX_STYLE) | WS_EX_TOOLWINDOW);
         }
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        internal static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        internal static extern int GetWindowThreadProcessId(IntPtr handle, out int processId);
+
+        [DllImport("user32.dll")]
+        internal static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
     }
 }

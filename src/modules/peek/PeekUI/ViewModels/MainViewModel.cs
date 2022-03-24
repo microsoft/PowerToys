@@ -1,4 +1,7 @@
-﻿using System;
+﻿using PeekUI.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,6 +13,26 @@ namespace PeekUI.ViewModels
 {
     public class MainViewModel : ViewModel
     {
+        public LinkedList<string> SelectedFilePaths { get; set; } = new LinkedList<string>();
+
+        private LinkedListNode<string>? _currentSelectedFilePath;
+        public LinkedListNode<string>? CurrentSelectedFilePath
+        {
+            get
+            {
+                return _currentSelectedFilePath;
+            }
+
+            set
+            {
+                if (_currentSelectedFilePath != value)
+                {
+                    _currentSelectedFilePath = value;
+                    OnPropertyChanged(nameof(CurrentSelectedFilePath));
+                }
+            }
+        }
+
         private const double ImageScale = 0.75;
 
         public IntPtr ForegroundWindowHandle { get; internal set; }
@@ -122,6 +145,28 @@ namespace PeekUI.ViewModels
                     OnPropertyChanged(nameof(MainWindowVisibility));
                 }
             }
+        }
+
+        public void ClearSelection()
+        {
+            SelectedFilePaths.Clear();
+            CurrentSelectedFilePath = null;
+        }
+
+        public bool TryUpdateSelectedFilePaths()
+        {
+            ForegroundWindowHandle = FileExplorerHelper.GetForegroundWindow();
+            var selectedItems = FileExplorerHelper.GetSelectedItems(ForegroundWindowHandle);
+
+            var isDifferentSelectedItems = !SelectedFilePaths.SequenceEqual(selectedItems);
+
+            if (isDifferentSelectedItems)
+            {
+                SelectedFilePaths = new LinkedList<string>(selectedItems);
+                CurrentSelectedFilePath = SelectedFilePaths.First;
+            }
+
+            return isDifferentSelectedItems;
         }
 
         public async Task RenderImageToWindowAsync(string filename, Image imageControl)
