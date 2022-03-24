@@ -5,12 +5,17 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PeekUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:vm="clr-namespace:PeekUI.ViewModels"
-    Title="MainWindow"
+    Title="Peek"
     d:DataContext="{d:DesignInstance vm:MainViewModel}"
+    ui:TitleBar.ExtendViewIntoTitleBar="True"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    BorderThickness="1"
     Loaded="OnLoaded"
     ResizeMode="NoResize"
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+    WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Grid />
 </Window>
