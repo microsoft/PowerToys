@@ -20,10 +20,11 @@ namespace PeekUI.Helpers
                     Shell32.FolderItems items = ((Shell32.IShellFolderViewDual2)window.Document).SelectedItems();
                     if (items != null && items.Count > 0)
                     {
-                        if (items.Count == 1)
-                        {
-                            items = ((Shell32.IShellFolderViewDual2)window.Document).Folder.Items();
-                        }
+                        // TODO: file navigation should be done with .NET API or another API for better perf
+                        //if (items.Count == 1)
+                        //{
+                        //    items = ((Shell32.IShellFolderViewDual2)window.Document).Folder.Items();
+                        //}
                         foreach (Shell32.FolderItem item in items)
                         {
                             selectedItems.Add(item.Path);
