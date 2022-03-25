@@ -84,15 +84,17 @@ namespace PeekUI.Helpers
             PerceivedFlag flag;
             bool isPerceivedType = false;
 
-            AssocGetPerceivedType(extension, out perceived, out flag, IntPtr.Zero);
-            isPerceivedType = perceived == perceivedType;
+            if (AssocGetPerceivedType(extension, out perceived, out flag, IntPtr.Zero) == HResult.Ok)
+            {
+                isPerceivedType = perceived == perceivedType;
+            };
 
             return isPerceivedType;
         }
 
 
         [DllImport("Shlwapi.dll", ExactSpelling = true, PreserveSig = false)]
-        static extern void AssocGetPerceivedType(
+        static extern HResult AssocGetPerceivedType(
             [MarshalAs(UnmanagedType.LPWStr)] string extension,
             out PerceivedType perceivedType,
             out PerceivedFlag perceivedFlags,
