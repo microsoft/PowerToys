@@ -185,8 +185,9 @@ namespace Microsoft.Plugin.Program
 
                 runProcess(info);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ProgramLogger.Exception($"Unable to start ", ex, System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, info?.FileName);
                 var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
                 var message = $"{Properties.Resources.powertoys_run_plugin_program_start_failed}: {info?.FileName}";
                 _context.API.ShowMsg(name, message, string.Empty);
