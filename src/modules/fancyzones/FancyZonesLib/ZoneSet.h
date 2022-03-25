@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zone.h"
+#include <FancyZonesLib/LayoutConfigurator.h>
 #include "Settings.h"
 
 namespace FancyZonesDataTypes
@@ -13,9 +13,6 @@ namespace FancyZonesDataTypes
  */
 interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : public IUnknown
 {
-    // Mapping zone id to zone
-    using ZonesMap = std::map<ZoneIndex, winrt::com_ptr<IZone>>;
-
     /**
      * @returns Unique identifier of zone layout.
      */
@@ -24,12 +21,6 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * @returns Type of the zone layout. Layout type can be focus, columns, rows, grid, priority grid or custom.
      */
     IFACEMETHOD_(FancyZonesDataTypes::ZoneSetLayoutType, LayoutType)() const = 0;
-    /**
-     * Add zone to the zone layout.
-     *
-     * @param   zone Zone object (defining coordinates of the zone).
-     */
-    IFACEMETHOD(AddZone)(winrt::com_ptr<IZone> zone) = 0;
     /**
      * Get zones from cursor coordinates.
      *

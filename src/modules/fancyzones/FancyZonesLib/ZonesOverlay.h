@@ -66,7 +66,7 @@ public:
     void Hide();
     void Show();
     void Flash();
-    void DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
+    void DrawActiveZoneSet(const ZonesMap& zones,
                            const ZoneIndexSet& highlightZones,
                            const Colors::ZoneColors& colors,
                            const bool showZoneText);

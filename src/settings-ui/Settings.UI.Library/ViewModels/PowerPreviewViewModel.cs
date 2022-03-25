@@ -50,6 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
             _mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
             _monacoRenderIsEnabled = Settings.Properties.EnableMonacoPreview;
+            _monacoWrapText = Settings.Properties.EnableMonacoPreviewWordWrap;
             _pdfRenderIsEnabled = Settings.Properties.EnablePdfPreview;
             _gcodeRenderIsEnabled = Settings.Properties.EnableGcodePreview;
             _pdfThumbnailIsEnabled = Settings.Properties.EnablePdfThumbnail;
@@ -60,6 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _svgRenderIsEnabled;
         private bool _mdRenderIsEnabled;
         private bool _monacoRenderIsEnabled;
+        private bool _monacoWrapText;
         private bool _pdfRenderIsEnabled;
         private bool _gcodeRenderIsEnabled;
         private bool _svgThumbnailIsEnabled;
@@ -134,6 +136,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _monacoRenderIsEnabled = value;
                     Settings.Properties.EnableMonacoPreview = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool MonacoWrapText
+        {
+            get
+            {
+                return _monacoWrapText;
+            }
+
+            set
+            {
+                if (_monacoWrapText != value)
+                {
+                    _monacoWrapText = value;
+                    Settings.Properties.EnableMonacoPreviewWordWrap = value;
                     RaisePropertyChanged();
                 }
             }
