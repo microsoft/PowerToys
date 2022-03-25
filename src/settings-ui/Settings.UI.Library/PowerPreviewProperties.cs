@@ -80,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool enablePdfPreview = false;
+        private bool enablePdfPreview;
 
         [JsonPropertyName("pdf-previewer-toggle-setting")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool enablePdfThumbnail = false;
+        private bool enablePdfThumbnail;
 
         [JsonPropertyName("pdf-thumbnail-toggle-setting")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
