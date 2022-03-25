@@ -18,10 +18,17 @@ namespace PeekUI.Helpers
                 if (window.HWND == (int)handle)
                 {
                     Shell32.FolderItems items = ((Shell32.IShellFolderViewDual2)window.Document).SelectedItems();
-                    foreach (Shell32.FolderItem item in items)
+                    if (items != null && items.Count > 0)
                     {
-                        selectedItems.Add(item.Path);
-                    }
+                        if (items.Count == 1)
+                        {
+                            items = ((Shell32.IShellFolderViewDual2)window.Document).Folder.Items();
+                        }
+                        foreach (Shell32.FolderItem item in items)
+                        {
+                            selectedItems.Add(item.Path);
+                        }
+                    } 
                 }
             }
 
