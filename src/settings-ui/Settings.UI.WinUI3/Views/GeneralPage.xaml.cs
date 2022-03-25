@@ -37,9 +37,12 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Views
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
             var settingsUtils = new SettingsUtils();
 
-            Action stateUpdatingAction = async () =>
+            Action stateUpdatingAction = () =>
             {
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, ViewModel.RefreshUpdatingState);
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ViewModel.RefreshUpdatingState();
+                });
             };
 
             ViewModel = new GeneralViewModel(
