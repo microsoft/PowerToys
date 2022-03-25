@@ -19,6 +19,7 @@
     Top="{Binding WindowTop, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     WindowStartupLocation="Manual"
+    KeyDown="KeyIsDown"
     mc:Ignorable="d">
     <Grid>
         <Image x:Name="ImageControl" Source="{Binding Bitmap, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />

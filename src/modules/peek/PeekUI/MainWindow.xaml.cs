@@ -64,7 +64,7 @@ namespace PeekUI
             e.Cancel = true;
         }
 
-        private void OnArrowKeyPress(object? sender, System.Windows.Input.KeyEventArgs e)
+        private void KeyIsDown(object? sender, KeyEventArgs e)
         {
             if (_viewModel.CurrentSelectedFilePath != null)
             {
