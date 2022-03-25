@@ -1,12 +1,16 @@
 ﻿using interop;
+using ModernWpf.Controls;
+using PeekUI.Extensions;
 using PeekUI.Helpers;
 using PeekUI.ViewModels;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 
@@ -36,6 +40,7 @@ namespace PeekUI
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
             Closing += MainWindow_Closing;
+            KeyDown += KeyIsDown;
         }
 
         private async void MainViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -45,9 +50,13 @@ namespace PeekUI
                 case nameof(MainViewModel.CurrentSelectedFilePath):
                     if (_viewModel.CurrentSelectedFilePath != null)
                     {
-                        // todo: add quick load indicator
-                        // Clear loaded bool
-                        await _viewModel.RenderImageToWindowAsync(_viewModel.CurrentSelectedFilePath.Value, ImageControl);
+                        var filePath = _viewModel.CurrentSelectedFilePath.Value;
+                        var title = Path.GetFileName(filePath);
+                        _viewModel.WindowTitle = title;
+
+                        var titleBarHeight = TitleBar.GetHeight(this);
+
+                        await _viewModel.RenderImageToWindowAsync(filePath, ImageControl, titleBarHeight);
                     }
                     break;
             }
@@ -57,6 +66,25 @@ namespace PeekUI
         {
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
             e.Cancel = true;
+        }
+
+        private void KeyIsDown(object? sender, KeyEventArgs e)
+        {
+            if (!e.IsRepeat && _viewModel.CurrentSelectedFilePath != null)
+            {
+                switch (e.Key)
+                {
+                    case Key.Left:
+                        _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetPreviousOrLast();
+                        e.Handled = true;
+                        break;
+                    case Key.Right:
+                        _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetNextOrFirst();
+                        e.Handled = true;
+                        break;
+                    default: break;
+                }
+            }
         }
 
         private void OnPeekHotkey()

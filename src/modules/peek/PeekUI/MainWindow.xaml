@@ -7,13 +7,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:vm="clr-namespace:PeekUI.ViewModels"
-    Title="Peek"
+    Title="{Binding WindowTitle, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
     Width="{Binding WindowWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     Height="{Binding WindowHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     MinWidth="500"
     MinHeight="500"
     d:DataContext="{d:DesignInstance vm:MainViewModel}"
-    ui:TitleBar.ExtendViewIntoTitleBar="True"
     ui:WindowHelper.UseModernWindowStyle="True"
     BorderThickness="1"
     Left="{Binding WindowLeft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -22,6 +21,7 @@
     Top="{Binding WindowTop, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     WindowStartupLocation="Manual"
+    KeyDown="KeyIsDown"
     mc:Ignorable="d">
     <Grid>
         <Image
