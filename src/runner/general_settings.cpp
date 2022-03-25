@@ -14,7 +14,6 @@
 
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
-static bool startup_disabled_manually = false;
 static bool run_as_elevated = false;
 static bool download_updates_automatically = true;
 
@@ -94,20 +93,7 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     {
         const bool startup = general_configs.GetNamedBoolean(L"startup");
 
-        auto settings = get_general_settings();
-        static std::once_flag once_flag;
-        std::call_once(once_flag, [settings, startup, general_configs] {
-            if (json::has(general_configs, L"startup", json::JsonValueType::Boolean))
-            {
-                if (startup == true && settings.isStartupEnabled == false)
-                {
-                    Logger::info("PowerToys run at startup disabled manually");
-                    startup_disabled_manually = true;
-                }
-            }
-        });
-
-        if (startup && !startup_disabled_manually)
+        if (startup)
         {
             if (is_process_elevated())
             {
@@ -133,7 +119,6 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
         else
         {
             delete_auto_start_task_for_this_user();
-            startup_disabled_manually = false;
         }
     }
     if (json::has(general_configs, L"enabled"))
