@@ -491,8 +491,18 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                     }
                 }
+                else
+                {
+                    // If the link points nowhere, consider it invalid.
+                    return InvalidProgram;
+                }
 
                 return program;
+            }
+            catch (System.IO.FileLoadException e)
+            {
+                ProgramLogger.Warn($"Couldn't load the link file at {path}. This might be caused by a new link being created and locked by the OS.", e, MethodBase.GetCurrentMethod().DeclaringType, path);
+                return InvalidProgram;
             }
 
             // Only do a catch all in production. This is so make developer aware of any unhandled exception and add the exception handling in.
