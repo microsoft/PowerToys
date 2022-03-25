@@ -37,6 +37,24 @@ namespace PeekUI.ViewModels
 
         public IntPtr ForegroundWindowHandle { get; internal set; }
 
+        private String _windowTitle = "Peek";
+        public String WindowTitle
+        {
+            get
+            {
+                return _windowTitle;
+            }
+
+            set
+            {
+                if (_windowTitle != value)
+                {
+                    _windowTitle = value;
+                    OnPropertyChanged(nameof(WindowTitle));
+                }
+            }
+        }
+
         private double _windowLeft;
         public double WindowLeft
         {
@@ -169,16 +187,18 @@ namespace PeekUI.ViewModels
             return isDifferentSelectedItems;
         }
 
-        public async Task RenderImageToWindowAsync(string filename, Image imageControl)
+        public async Task RenderImageToWindowAsync(string filename, Image imageControl, double titlebarHeight)
         {
             var screen = Screen.FromHandle(ForegroundWindowHandle);
-            var maxWindowWidth = screen.WpfBounds.Width * ImageScale;
-            var maxWindowHeight = screen.WpfBounds.Height * ImageScale;
 
-            var bitmap = await LoadBitmapImageAsync(filename, maxWindowWidth, maxWindowHeight);
+            var maxWindowWidth = screen.WpfBounds.Width * ImageScale;
+            var maxWindowHeight = (screen.WpfBounds.Height * ImageScale);
+
+            // need to take titlebar into account
+            var bitmap = await LoadBitmapImageAsync(filename);
             Bitmap = bitmap;
 
-            var imageRectangle = CalculateScaledImageRectangle(bitmap, screen, maxWindowWidth, maxWindowHeight);
+            var imageRectangle = CalculateScaledImageRectangle(bitmap, screen, maxWindowWidth, maxWindowHeight, titlebarHeight);
 
             if (Bitmap.PixelWidth > maxWindowWidth || Bitmap.PixelHeight > maxWindowHeight)
             {
@@ -190,25 +210,29 @@ namespace PeekUI.ViewModels
             }
 
             WindowWidth = imageRectangle.Width;
-            WindowHeight = imageRectangle.Height;
+            WindowHeight = imageRectangle.Height + titlebarHeight;
             WindowLeft = imageRectangle.Left;
             WindowTop = imageRectangle.Top;
         }
 
-        private static Rect CalculateScaledImageRectangle(BitmapImage bitmap, Screen screen, double maxWindowWidth, double maxWindowHeight)
+        private static Rect CalculateScaledImageRectangle(BitmapImage bitmap, Screen screen, double maxWindowWidth, double maxWindowHeight, double titlebarHeight)
         {
             var resultingWidth = (maxWindowHeight * bitmap.PixelWidth) / bitmap.PixelHeight;
             var resultingHeight = (maxWindowWidth * bitmap.PixelHeight) / bitmap.PixelWidth;
 
+            var renderableWindowHeight = maxWindowHeight - titlebarHeight;
+            var heightScale = renderableWindowHeight / maxWindowHeight;
+
             // Adjust dimensions to fit inside client area
             if (resultingWidth > maxWindowWidth)
             {
-                resultingWidth = maxWindowWidth;
+                resultingWidth = maxWindowWidth * heightScale;
                 resultingHeight = (resultingWidth * bitmap.PixelHeight) / bitmap.PixelWidth;
+
             }
             else
             {
-                resultingHeight = maxWindowHeight;
+                resultingHeight = maxWindowHeight * heightScale;
                 resultingWidth = (resultingHeight * bitmap.PixelWidth) / bitmap.PixelHeight;
             }
 
@@ -225,7 +249,7 @@ namespace PeekUI.ViewModels
             return new Rect(resultingLeft, resultingTop, resultingWidth, resultingHeight);
         }
 
-        private static async Task<BitmapImage> LoadBitmapImageAsync(string filename, double maxWindowWidth, double maxWindowHeight)
+        private static async Task<BitmapImage> LoadBitmapImageAsync(string filename)
         {
             return await Task.Run(() =>
             {
