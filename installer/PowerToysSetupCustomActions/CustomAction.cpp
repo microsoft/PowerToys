@@ -75,7 +75,7 @@ UINT __stdcall ApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get installFolder.");
 
-    for (const auto& changeSet : getAllModulesChangeSets(installationFolder))
+    for (const auto& changeSet : getAllOnByDefaultModulesChangeSets(installationFolder))
     {
         if (!changeSet.apply())
         {

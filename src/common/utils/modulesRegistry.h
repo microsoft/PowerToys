@@ -201,6 +201,18 @@ inline registry::ChangeSet getStlThumbnailHandlerChangeSet(const std::wstring in
                                   NonLocalizable::ExtSTL);
 }
 
+inline std::vector<registry::ChangeSet> getAllOnByDefaultModulesChangeSets(const std::wstring installationDir)
+{
+    constexpr bool PER_USER = true;
+    return { getSvgPreviewHandlerChangeSet(installationDir, PER_USER),
+             getMdPreviewHandlerChangeSet(installationDir, PER_USER),
+             getMonacoPreviewHandlerChangeSet(installationDir, PER_USER),
+             getGcodePreviewHandlerChangeSet(installationDir, PER_USER),
+             getSvgThumbnailHandlerChangeSet(installationDir, PER_USER),
+             getGcodeThumbnailHandlerChangeSet(installationDir, PER_USER),
+             getStlThumbnailHandlerChangeSet(installationDir, PER_USER) };
+}
+
 inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstring installationDir)
 {
     constexpr bool PER_USER = true;
