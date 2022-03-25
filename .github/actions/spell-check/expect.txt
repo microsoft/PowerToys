@@ -1938,6 +1938,7 @@ Subdir
 subfolder
 subkey
 SUBLANG
+submenu
 subquery
 substr
 Sul

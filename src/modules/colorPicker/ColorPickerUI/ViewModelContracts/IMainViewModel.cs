@@ -27,5 +27,7 @@ namespace ColorPicker.ViewModelContracts
         /// Gets a value indicating whether gets the show color name
         /// </summary>
         bool ShowColorName { get; }
+
+        void RegisterWindowHandle(System.Windows.Interop.HwndSource hwndSource);
     }
 }
