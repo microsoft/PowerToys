@@ -38,6 +38,7 @@ namespace PeekUI
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
             Closing += MainWindow_Closing;
+            KeyDown += KeyIsDown;
         }
 
         private async void MainViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -74,15 +75,17 @@ namespace PeekUI
 
         private void KeyIsDown(object? sender, KeyEventArgs e)
         {
-            if (_viewModel.CurrentSelectedFilePath != null)
+            if (!e.IsRepeat && _viewModel.CurrentSelectedFilePath != null)
             {
                 switch (e.Key)
                 {
                     case Key.Left:
                         _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetPreviousOrLast();
+                        e.Handled = true;
                         break;
                     case Key.Right:
                         _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetNextOrFirst();
+                        e.Handled = true;
                         break;
                     default: break;
                 }
