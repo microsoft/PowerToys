@@ -80,6 +80,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool monacoPreviewWordWrap = true;
+
+        [JsonPropertyName("monaco-previewer-toggle-setting-word-wrap")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableMonacoPreviewWordWrap
+        {
+            get => monacoPreviewWordWrap;
+            set
+            {
+                if (value != monacoPreviewWordWrap)
+                {
+                    LogTelemetryEvent(value);
+                    monacoPreviewWordWrap = value;
+                }
+            }
+        }
+
         private bool enablePdfPreview = true;
 
         [JsonPropertyName("pdf-previewer-toggle-setting")]
