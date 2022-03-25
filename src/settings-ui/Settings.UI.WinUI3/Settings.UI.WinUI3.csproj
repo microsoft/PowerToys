@@ -20,7 +20,7 @@
     <NoWarn></NoWarn>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\SettingsUI</OutputPath>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
     <Optimize>false</Optimize>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
@@ -31,7 +31,7 @@
     <NoWarn></NoWarn>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\SettingsUI</OutputPath>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
     <Optimize>true</Optimize>
   </PropertyGroup>
 
