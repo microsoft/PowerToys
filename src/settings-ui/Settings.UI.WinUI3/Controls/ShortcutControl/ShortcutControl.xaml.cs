@@ -237,50 +237,47 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Controls
             return true;
         }
 
-        private async void Hotkey_KeyDown(int key)
+        private void Hotkey_KeyDown(int key)
         {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            KeyEventHandler(key, true, key);
+
+            c.Keys = internalSettings.GetKeysList();
+
+            if (internalSettings.GetKeysList().Count == 0)
             {
-                KeyEventHandler(key, true, key);
+                // Empty, disable save button
+                shortcutDialog.IsPrimaryButtonEnabled = false;
+            }
+            else if (internalSettings.GetKeysList().Count == 1)
+            {
+                // 1 key, disable save button
+                shortcutDialog.IsPrimaryButtonEnabled = false;
 
-                c.Keys = internalSettings.GetKeysList();
-
-                if (internalSettings.GetKeysList().Count == 0)
+                // Check if the one key is a hotkey
+                if (internalSettings.Shift || internalSettings.Win || internalSettings.Alt || internalSettings.Ctrl)
                 {
-                    // Empty, disable save button
-                    shortcutDialog.IsPrimaryButtonEnabled = false;
+                    c.IsError = false;
                 }
-                else if (internalSettings.GetKeysList().Count == 1)
+                else
                 {
-                    // 1 key, disable save button
-                    shortcutDialog.IsPrimaryButtonEnabled = false;
-
-                    // Check if the one key is a hotkey
-                    if (internalSettings.Shift || internalSettings.Win || internalSettings.Alt || internalSettings.Ctrl)
-                    {
-                        c.IsError = false;
-                    }
-                    else
-                    {
-                        c.IsError = true;
-                    }
+                    c.IsError = true;
                 }
+            }
 
-                // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
-                if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
+            // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
+            if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
+            {
+                lastValidSettings = internalSettings.Clone();
+
+                if (!ComboIsValid(lastValidSettings))
                 {
-                    lastValidSettings = internalSettings.Clone();
-
-                    if (!ComboIsValid(lastValidSettings))
-                    {
-                        DisableKeys();
-                    }
-                    else
-                    {
-                        EnableKeys();
-                    }
+                    DisableKeys();
                 }
-            });
+                else
+                {
+                    EnableKeys();
+                }
+            }
         }
 
         private void EnableKeys()
@@ -299,12 +296,9 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Controls
             // WarningLabel.Style = (Style)App.Current.Resources["SecondaryWarningTextStyle"];
         }
 
-        private async void Hotkey_KeyUp(int key)
+        private void Hotkey_KeyUp(int key)
         {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                KeyEventHandler(key, false, 0);
-            });
+            KeyEventHandler(key, false, 0);
         }
 
         private bool Hotkey_IsActive()

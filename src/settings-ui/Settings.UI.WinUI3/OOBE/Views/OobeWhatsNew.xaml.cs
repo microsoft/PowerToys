@@ -89,24 +89,16 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.OOBE.Views
             {
                 string releaseNotesMarkdown = await GetReleaseNotesMarkdown();
 
-                // Make sure we run in the UI thread. await doesn't seem to guarantee it.
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                {
-                    ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
-                    ReleaseNotesMarkdown.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                    LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-                });
+                ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
+                ReleaseNotesMarkdown.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
             }
             catch (Exception ex)
             {
                 Logger.LogError("Exception when loading the release notes", ex);
 
-                // Make sure we run in the UI thread. await doesn't seem to guarantee it.
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                {
-                    LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-                    ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                });
+                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
             }
         }
 

@@ -42,10 +42,10 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3.Views
 
                 if (powerLauncherSettings != null && !ViewModel.IsUpToDate(powerLauncherSettings))
                 {
-                    _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    this.DispatcherQueue.TryEnqueue(() =>
                     {
-                    DataContext = ViewModel = new PowerLauncherViewModel(powerLauncherSettings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
-                    this.Bindings.Update();
+                        DataContext = ViewModel = new PowerLauncherViewModel(powerLauncherSettings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
+                        this.Bindings.Update();
                     });
                 }
             });
