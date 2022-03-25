@@ -96,14 +96,28 @@ namespace PeekUI.Helpers
 
         internal static bool IsPerceivedType(string extension, PerceivedType perceivedType)
         {
+            if (string.IsNullOrEmpty(extension))
+            {
+                return false;
+            }
+
             PerceivedType perceived;
             PerceivedFlag flag;
             bool isPerceivedType = false;
 
-            if (AssocGetPerceivedType(extension, out perceived, out flag, IntPtr.Zero) == HResult.Ok)
+            try
             {
-                isPerceivedType = perceived == perceivedType;
-            };
+                if (AssocGetPerceivedType(extension, out perceived, out flag, IntPtr.Zero) == HResult.Ok)
+                {
+                    isPerceivedType = perceived == perceivedType;
+                }
+            }
+            catch (Exception)
+            {
+                // TODO: AssocGetPerceivedType throws on some file types (json, ps1, exe, etc.)
+                // Properly handle these
+                return false;
+            }
 
             return isPerceivedType;
         }
