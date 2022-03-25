@@ -3,7 +3,9 @@ using PeekUI.Helpers;
 using PeekUI.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -43,6 +45,7 @@ namespace PeekUI
                 case nameof(MainViewModel.CurrentSelectedFilePath):
                     if (_viewModel.CurrentSelectedFilePath != null)
                     {
+                        // todo: add quick load indicator
                         await _viewModel.RenderImageToWindowAsync(_viewModel.CurrentSelectedFilePath.Value, ImageControl);
 
                         _viewModel.MainWindowVisibility = Visibility.Visible;
@@ -52,7 +55,6 @@ namespace PeekUI
                         _viewModel.MainWindowVisibility = Visibility.Collapsed;
                     }
                     break;
-
             }
         }
 
@@ -67,7 +69,7 @@ namespace PeekUI
             // if files are selected, open peek with those files (optimization: recognize already opened files)
             // else if window is in focus, close peek
 
-            if (IsActive)
+            if (IsActive && _viewModel.MainWindowVisibility == Visibility.Visible)
             {
                 _viewModel.ClearSelection();
             }

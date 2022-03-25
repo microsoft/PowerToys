@@ -10,17 +10,24 @@
     Title="Peek"
     Width="{Binding WindowWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     Height="{Binding WindowHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+    MinWidth="500"
+    MinHeight="500"
     d:DataContext="{d:DesignInstance vm:MainViewModel}"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
     ui:WindowHelper.UseModernWindowStyle="True"
     BorderThickness="1"
     Left="{Binding WindowLeft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     Loaded="OnLoaded"
+    ResizeMode="NoResize"
     Top="{Binding WindowTop, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     WindowStartupLocation="Manual"
     mc:Ignorable="d">
     <Grid>
-        <Image x:Name="ImageControl" Source="{Binding Bitmap, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+        <Image
+            x:Name="ImageControl"
+            Source="{Binding Bitmap, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+            Stretch="Uniform"
+            StretchDirection="DownOnly" />
     </Grid>
 </Window>
