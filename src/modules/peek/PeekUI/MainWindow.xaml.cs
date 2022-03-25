@@ -1,8 +1,10 @@
 ﻿using interop;
+using ModernWpf.Controls;
 using PeekUI.Extensions;
 using PeekUI.Helpers;
 using PeekUI.ViewModels;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -45,7 +47,13 @@ namespace PeekUI
                 case nameof(MainViewModel.CurrentSelectedFilePath):
                     if (_viewModel.CurrentSelectedFilePath != null)
                     {
-                        await _viewModel.RenderImageToWindowAsync(_viewModel.CurrentSelectedFilePath.Value, ImageControl);
+                        var filePath = _viewModel.CurrentSelectedFilePath.Value;
+                        var title = Path.GetFileName(filePath);
+                        _viewModel.WindowTitle = title;
+
+                        var titleBarHeight = TitleBar.GetHeight(this);
+
+                        await _viewModel.RenderImageToWindowAsync(filePath, ImageControl, titleBarHeight);
 
                         _viewModel.MainWindowVisibility = Visibility.Visible;
                     }
