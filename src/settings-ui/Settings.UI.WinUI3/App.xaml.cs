@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.WinUI3.Helpers;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Windows.UI.Popups;
 using Windows.UI.ViewManagement;
@@ -84,9 +86,6 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            settingsWindow = new MainWindow();
-            settingsWindow.Activate();
-
             var cmdArgs = Environment.GetCommandLineArgs();
 
             if (cmdArgs != null && cmdArgs.Length >= RequiredArgumentsQty)
@@ -119,8 +118,6 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
                         case "VideoConference": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.WinUI3.Views.VideoConferencePage); break;
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
-
-                    settingsWindow.NavigateToSection(StartupPage);
                 }
 
                 RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
@@ -136,9 +133,40 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
                     }
                 });
                 ipcmanager.Start();
+
+                settingsWindow = new MainWindow();
+                if (!ShowOobe && !ShowScoobe)
+                {
+                    settingsWindow.Activate();
+                    settingsWindow.NavigateToSection(StartupPage);
+                }
+                else
+                {
+                    // Create the Settings window so that it's fully initialized and
+                    // it will be ready to receive the notification if the user opens
+                    // the Settings from the tray icon.
+                    if (ShowOobe)
+                    {
+                        PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
+                        OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview);
+                        oobeWindow.Activate();
+                        SetOobeWindow(oobeWindow);
+                    }
+                    else if (ShowScoobe)
+                    {
+                        PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
+                        OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
+                        scoobeWindow.Activate();
+                        SetOobeWindow(scoobeWindow);
+                    }
+                }
             }
             else
             {
+                // For debugging purposes
+                // Window is also needed to show MessageDialog
+                settingsWindow = new MainWindow();
+                settingsWindow.Activate();
                 ShowMessageDialog("The application cannot be run as a standalone process. Please start the application through the runner.", "Forbidden");
             }
         }
@@ -154,7 +182,7 @@ namespace Microsoft.PowerToys.Settings.UI.WinUI3
             var handle = NativeMethods.GetActiveWindow();
             if (handle == IntPtr.Zero)
             {
-                return (Task<IUICommand>)Task.CompletedTask;
+                throw new InvalidOperationException();
             }
 
             InitializeWithWindow.Initialize(dlg, handle);
