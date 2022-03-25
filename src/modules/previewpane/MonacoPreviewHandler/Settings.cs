@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private static SettingsUtils moduleSettings = new SettingsUtils();
 
         /// <summary>
-        /// Word warping. Set by PT settings.
+        /// Gets a value indicating whether word wrapping should be applied. Set by PT settings.
         /// </summary>
         public bool Wrap
         {
