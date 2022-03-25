@@ -102,12 +102,12 @@ namespace PeekUI.Helpers
 
         }
 
-        public static BitmapSource GetThumbnail(string fileName)
+        public static BitmapSource GetThumbnail(string fileName, bool iconFallback)
         {
             IntPtr hbitmap;
             HResult hr = GetThumbnailImpl(Path.GetFullPath(fileName), out hbitmap);
 
-            if (hr != HResult.Ok)
+            if (hr != HResult.Ok && iconFallback)
             {
                 return GetIcon(fileName);
             }

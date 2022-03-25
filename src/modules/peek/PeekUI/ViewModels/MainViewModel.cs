@@ -6,19 +6,23 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WpfScreenHelper;
 using Size = System.Windows.Size;
 
 namespace PeekUI.ViewModels
 {
-    public class MainViewModel : ViewModel
+    public class MainViewModel : ViewModel, IDisposable
     {
         private const double ImageScale = 0.75;
-        private bool _dimensionFound;
+
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
         public LinkedList<string> SelectedFilePaths { get; set; } = new LinkedList<string>();
 
@@ -157,8 +161,11 @@ namespace PeekUI.ViewModels
 
         public void ClearSelection()
         {
-            SelectedFilePaths.Clear();
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new CancellationTokenSource();
+
             CurrentSelectedFilePath = null;
+            MainWindowVisibility = Visibility.Collapsed;
         }
 
         public bool TryUpdateSelectedFilePaths()
@@ -171,17 +178,15 @@ namespace PeekUI.ViewModels
             if (isDifferentSelectedItems)
             {
                 SelectedFilePaths = new LinkedList<string>(selectedItems);
-                CurrentSelectedFilePath = SelectedFilePaths.First;
             }
+
+            CurrentSelectedFilePath = SelectedFilePaths.First;
 
             return isDifferentSelectedItems;
         }
 
         public async Task RenderImageToWindowAsync(string filename, System.Windows.Controls.Image imageControl)
         {
-            var screen = Screen.FromHandle(ForegroundWindowHandle);
-            Size maxWindowSize = new Size(screen.WpfBounds.Width * ImageScale, screen.WpfBounds.Height* ImageScale);
-
             // if IsSupportedImage()
             //      then load dimensions
             //      then resize window
@@ -194,37 +199,127 @@ namespace PeekUI.ViewModels
             //      then resize window
             //      load icon (fallback error)
 
+            var screen = Screen.FromHandle(ForegroundWindowHandle);
+            Size maxWindowSize = new Size(screen.WpfBounds.Width * ImageScale, screen.WpfBounds.Height * ImageScale);
 
-            BitmapSource bitmap;
-            Size? dimensions = await LoadDimensionsAsync(filename);
-            _dimensionFound = dimensions.HasValue;
-
-            if (_dimensionFound)
+            if (IsSupportedImage(filename))
             {
-                var windowRect = CalculateScaledImageRectangle(dimensions.Value, screen, maxWindowSize);
-
-                WindowWidth = windowRect.Width;
-                WindowHeight = windowRect.Height;
-                WindowLeft = windowRect.Left;
-                WindowTop = windowRect.Top;
-
-                // todo: load full image as well
-                await LoadThumbnailAsync(filename, imageControl);
+                await RenderSupportedImageToWindowAsync(filename, screen, maxWindowSize, imageControl);
+            }
+            else if (IsMedia(filename) || IsDocument(filename))
+            {
+                await RenderMediaOrDocumentToWindowAsync(filename, screen, maxWindowSize);
             }
             else
             {
-                bitmap = await LoadThumbnailAsync(filename, imageControl);
-
-                var windowRect = CalculateScaledImageRectangle(new Size(bitmap.PixelWidth, bitmap.PixelHeight), screen, maxWindowSize);
-
-                WindowWidth = windowRect.Width;
-                WindowHeight = windowRect.Height;
-                WindowLeft = windowRect.Left;
-                WindowTop = windowRect.Top;
+                await RenderUnsupportedFileToWindowAsync(filename, screen, maxWindowSize);
             }
         }
 
-        private static Task<Size?> LoadDimensionsAsync(string filename)
+        private async Task RenderSupportedImageToWindowAsync(string filename, Screen screen, Size maxWindowSize, System.Windows.Controls.Image imageControl)
+        {
+            DimensionData dimensionData = await LoadDimensionsAsync(filename);
+            var windowRect = CalculateScaledImageRectangle(dimensionData.Size!.Value, screen, maxWindowSize);
+            WindowWidth = windowRect.Width;
+            WindowHeight = windowRect.Height;
+            WindowLeft = windowRect.Left;
+            WindowTop = windowRect.Top;
+
+            if (dimensionData.Size!.Value.Width > WindowWidth || dimensionData.Size!.Value.Height > WindowHeight)
+            {
+                imageControl.StretchDirection = StretchDirection.Both;
+            }
+            else
+            {
+                imageControl.StretchDirection = StretchDirection.DownOnly;
+            }
+
+
+            await LoadImageAsync(filename, imageControl, dimensionData.Rotation, CancellationToken);
+            _cancellationTokenSource.TryReset();
+        }
+
+        private async Task RenderMediaOrDocumentToWindowAsync(string filename, Screen screen, Size maxWindowSize)
+        {
+            var bitmap = await LoadThumbnailAsync(filename, true);
+            Bitmap = bitmap;
+
+            var windowRect = CalculateScaledImageRectangle(new Size(bitmap.PixelWidth, bitmap.PixelHeight), screen, maxWindowSize);
+            WindowWidth = windowRect.Width;
+            WindowHeight = windowRect.Height;
+            WindowLeft = windowRect.Left;
+            WindowTop = windowRect.Top;
+        }
+
+        private async Task RenderUnsupportedFileToWindowAsync(string filename, Screen screen, Size maxWindowSize)
+        {
+            var windowRect = CalculateScaledImageRectangle(new Size(0, 0), screen, maxWindowSize);
+            WindowWidth = windowRect.Width;
+            WindowHeight = windowRect.Height;
+            WindowLeft = windowRect.Left;
+            WindowTop = windowRect.Top;
+
+            var bitmap = await LoadIconAsync(filename);
+            Bitmap = bitmap;
+        }
+
+        private Task LoadImageAsync(string filename, System.Windows.Controls.Image imageControl, Rotation rotation, CancellationToken cancellationToken)
+        {
+            bool isFullImageLoaded = false;
+            bool isThumbnailLoaded = false;
+            var thumbnailLoadTask = imageControl.Dispatcher.Invoke(async () =>
+            {
+                var bitmap = await LoadThumbnailAsync(filename, false);
+                isThumbnailLoaded = true;
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (!isFullImageLoaded)
+                {
+                    Bitmap = bitmap;
+                    MainWindowVisibility = Visibility.Visible;
+                }
+            });
+
+            var fullImageLoadTask = imageControl.Dispatcher.Invoke(async () =>
+            {
+                var bitmap = await LoadFullImageAsync(filename, rotation);
+                isFullImageLoaded = true;
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                Bitmap = bitmap;
+                if (!isThumbnailLoaded)
+                {
+                    MainWindowVisibility = Visibility.Visible;
+                }
+            });
+
+            return Task.WhenAll(thumbnailLoadTask, fullImageLoadTask);
+        }
+
+        private static bool IsDocument(string filename)
+        {
+            return filename.Length > 0;
+        }
+
+        private static bool IsMedia(string filename)
+        {
+            return filename.Length > 0;
+        }
+
+        private static bool IsSupportedImage(string filename)
+        {
+            return filename.Length > 0;
+        }
+
+        private static Task<DimensionData> LoadDimensionsAsync(string filename)
         {
             return Task.Run(() =>
             {
@@ -238,7 +333,8 @@ namespace PeekUI.ViewModels
                         {
                             using (System.Drawing.Image sourceImage = System.Drawing.Image.FromStream(stream, false, false))
                             {
-                                if (IsDimensionFlipped(sourceImage))
+                                var rotation = EvaluateRotationToApply(sourceImage);
+                                if (rotation == Rotation.Rotate90 || rotation == Rotation.Rotate270)
                                 {
                                     size = new Size(sourceImage.Height, sourceImage.Width);
                                 }
@@ -247,19 +343,19 @@ namespace PeekUI.ViewModels
                                     size = new Size(sourceImage.Width, sourceImage.Height);
                                 }
 
-                                return Task.FromResult(size);
+                                return Task.FromResult(new DimensionData { Size = size, Rotation = rotation });
                             }
                         }
                         else
                         {
-                            return Task.FromResult(size);
+                            return Task.FromResult(new DimensionData { Size = size, Rotation = Rotation.Rotate0 });
                         }
 
                     }
                 }
                 catch (Exception)
                 {
-                    return Task.FromResult(size);
+                    return Task.FromResult(new DimensionData { Size = size, Rotation = Rotation.Rotate0 });
                 }
             });
         }
@@ -329,14 +425,12 @@ namespace PeekUI.ViewModels
             return new Rect(resultingLeft, resultingTop, resultingWidth, resultingHeight);
         }
 
-        private async Task<BitmapSource> LoadThumbnailAsync(string filename, System.Windows.Controls.Image imageControl)
+        private static async Task<BitmapSource> LoadThumbnailAsync(string filename, bool iconFallback)
         {
-
             var thumbnail =  await Task.Run(() =>
             {
-                var bitmapSource = WindowsThumbnailProvider.GetThumbnail(filename);
+                var bitmapSource = WindowsThumbnailProvider.GetThumbnail(filename, iconFallback);
                 bitmapSource.Freeze();
-                Bitmap = bitmapSource;
                 return bitmapSource;
             });
 
@@ -344,31 +438,69 @@ namespace PeekUI.ViewModels
 
         }
 
-        private async Task LoadFullImageAsync(string filename)
+        private static Task<BitmapSource> LoadIconAsync(string filename)
         {
-            await Task.Run(() =>
+            return Task.Run(() =>
             {
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(filename);
-                bitmap.EndInit();
-                bitmap.Freeze();
-                Bitmap = bitmap;
+                var bitmapSource = WindowsThumbnailProvider.GetIcon(filename);
+                bitmapSource.Freeze();
+                return bitmapSource;
             });
         }
 
-        public static bool IsDimensionFlipped(System.Drawing.Image image)
+
+        private static Task<BitmapImage> LoadFullImageAsync(string filename, Rotation rotation)
+        {
+            return Task.Run(() =>
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.UriSource = new Uri(filename);
+                bitmap.Rotation = rotation;
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return bitmap;
+            });
+        }
+
+        private static Rotation EvaluateRotationToApply(System.Drawing.Image image)
         {
             PropertyItem? property = image.PropertyItems?.FirstOrDefault(p => p.Id == 274);
 
             if (property != null && property.Value != null && property.Value.Length > 0)
             {
                 int orientation = property.Value[0];
-                if (orientation == 6 || orientation == 8)
-                    return true;
+
+                if (orientation == 6)
+                {
+                    return Rotation.Rotate90;
+                }
+
+                if (orientation == 3)
+                {
+                    return Rotation.Rotate180;
+                }
+
+                if (orientation == 8)
+                {
+                    return Rotation.Rotate270;
+                }
             }
 
-            return false;
+            return Rotation.Rotate0;
         }
+
+        public void Dispose()
+        {
+            _cancellationTokenSource.Dispose();
+            GC.SuppressFinalize(this);
+        }
+    }
+
+    internal class DimensionData
+    {
+        public Size? Size { get; set; }
+        public Rotation Rotation { get; set; }
     }
 }

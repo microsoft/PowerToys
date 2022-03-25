@@ -15,7 +15,7 @@ namespace PeekUI
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, IDisposable
     {
         private readonly MainViewModel _viewModel; 
 
@@ -46,13 +46,8 @@ namespace PeekUI
                     if (_viewModel.CurrentSelectedFilePath != null)
                     {
                         // todo: add quick load indicator
+                        // Clear loaded bool
                         await _viewModel.RenderImageToWindowAsync(_viewModel.CurrentSelectedFilePath.Value, ImageControl);
-
-                        _viewModel.MainWindowVisibility = Visibility.Visible;
-                    }
-                    else
-                    {
-                        _viewModel.MainWindowVisibility = Visibility.Collapsed;
                     }
                     break;
             }
@@ -102,6 +97,12 @@ namespace PeekUI
         {
             base.OnSourceInitialized(e);
             InteropHelper.SetToolWindowStyle(this);
+        }
+
+        public void Dispose()
+        {
+            _viewModel.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
