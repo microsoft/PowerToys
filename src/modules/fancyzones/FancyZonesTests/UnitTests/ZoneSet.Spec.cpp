@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include "FancyZonesLib\FancyZonesDataTypes.h"
 #include "FancyZonesLib\ZoneIndexSetBitmask.h"
@@ -19,18 +20,23 @@ namespace FancyZonesUnitTests
     TEST_CLASS (ZoneSetUnitTests)
     {
         GUID m_id;
-        const ZoneSetLayoutType m_layoutType = ZoneSetLayoutType::Custom;
+        const ZoneSetLayoutType m_layoutType = ZoneSetLayoutType::Grid;
 
         winrt::com_ptr<IZoneSet> m_set;
 
         TEST_METHOD_INITIALIZE(Init)
-            {
-                auto hres = CoCreateGuid(&m_id);
-                Assert::AreEqual(S_OK, hres);
+        {
+            auto hres = CoCreateGuid(&m_id);
+            Assert::AreEqual(S_OK, hres);
 
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius, OverlappingZonesAlgorithm::Smallest);
-                m_set = MakeZoneSet(m_config);
-            }
+            ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius, OverlappingZonesAlgorithm::Smallest);
+            m_set = MakeZoneSet(m_config);
+        }
+
+        TEST_METHOD_CLEANUP(CleanUp)
+        {
+            std::filesystem::remove_all(CustomLayouts::CustomLayoutsFileName());
+        }
 
             void compareZones(const winrt::com_ptr<IZone>& expected, const winrt::com_ptr<IZone>& actual)
             {
@@ -39,6 +45,40 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual(expected->GetZoneRect().right, actual->GetZoneRect().right);
                 Assert::AreEqual(expected->GetZoneRect().top, actual->GetZoneRect().top);
                 Assert::AreEqual(expected->GetZoneRect().bottom, actual->GetZoneRect().bottom);
+            }
+
+            void saveCustomLayout(const std::vector<RECT>& zones)
+            {
+                json::JsonObject root{};
+                json::JsonArray layoutsArray{};
+
+                json::JsonObject canvasLayoutJson{};
+                canvasLayoutJson.SetNamedValue(NonLocalizable::CustomLayoutsIds::UuidID, json::value(FancyZonesUtils::GuidToString(m_id).value()));
+                canvasLayoutJson.SetNamedValue(NonLocalizable::CustomLayoutsIds::NameID, json::value(L"Custom canvas layout"));
+                canvasLayoutJson.SetNamedValue(NonLocalizable::CustomLayoutsIds::TypeID, json::value(NonLocalizable::CustomLayoutsIds::CanvasID));
+
+                json::JsonObject info{};
+                info.SetNamedValue(NonLocalizable::CustomLayoutsIds::RefWidthID, json::value(1920));
+                info.SetNamedValue(NonLocalizable::CustomLayoutsIds::RefHeightID, json::value(1080));
+
+                json::JsonArray zonesArray{};
+                for (const auto& zoneRect : zones)
+                {
+                    json::JsonObject zone{};
+                    zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::XID, json::value(zoneRect.left));
+                    zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::YID, json::value(zoneRect.top));
+                    zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::WidthID, json::value(zoneRect.right - zoneRect.left));
+                    zone.SetNamedValue(NonLocalizable::CustomLayoutsIds::HeightID, json::value(zoneRect.bottom - zoneRect.top));
+                    zonesArray.Append(zone);
+                }
+
+                info.SetNamedValue(NonLocalizable::CustomLayoutsIds::ZonesID, zonesArray);
+                canvasLayoutJson.SetNamedValue(NonLocalizable::CustomLayoutsIds::InfoID, info);
+                layoutsArray.Append(canvasLayoutJson);
+                root.SetNamedValue(NonLocalizable::CustomLayoutsIds::CustomLayoutsArrayID, layoutsArray);
+                json::to_file(CustomLayouts::CustomLayoutsFileName(), root);
+
+                CustomLayouts::instance().LoadData();
             }
 
         public:
@@ -84,52 +124,6 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)0, zones.size());
             }
 
-            TEST_METHOD (AddOne)
-            {
-                constexpr ZoneIndex zoneId = 0;
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, zoneId);
-                Assert::IsNotNull(zone.get());
-                m_set->AddZone(zone);
-                auto zones = m_set->GetZones();
-                Assert::AreEqual((size_t)1, zones.size());
-                compareZones(zone, zones[zoneId]);
-                Assert::AreEqual(zoneId, zones[zoneId]->Id());
-            }
-
-            TEST_METHOD (AddManyEqual)
-            {
-                for (size_t i = 0; i < 1024; i++)
-                {
-                    ZoneIndex zoneId = i;
-                    winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, zoneId);
-                    Assert::IsNotNull(zone.get());
-                    m_set->AddZone(zone);
-                    auto zones = m_set->GetZones();
-                    Assert::AreEqual(i + 1, zones.size());
-                    compareZones(zone, zones[zoneId]);
-                    Assert::AreEqual(zoneId, zones[zoneId]->Id());
-                }
-            }
-
-            TEST_METHOD (AddManyDifferent)
-            {
-                for (size_t i = 0; i < 1024; i++)
-                {
-                    ZoneIndex zoneId = i;
-                    int left = rand() % 10;
-                    int top = rand() % 10;
-                    int right = left + 1 + rand() % 100;
-                    int bottom = top + 1 + rand() % 100;
-                    winrt::com_ptr<IZone> zone = MakeZone({ left, top, right, bottom }, zoneId);
-                    Assert::IsNotNull(zone.get());
-                    m_set->AddZone(zone);
-                    auto zones = m_set->GetZones();
-                    Assert::AreEqual(i + 1, zones.size());
-                    compareZones(zone, zones[zoneId]);
-                    Assert::AreEqual(zoneId, zones[zoneId]->Id());
-                }
-            }
-
             TEST_METHOD (MakeZoneFromZeroRect)
             {
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 }, 1);
@@ -163,143 +157,71 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (ZoneFromPointInner)
             {
-                const int left = 0, top = 0, right = 100, bottom = 100;
-                winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom }, 1);
-                m_set->AddZone(expected);
-
-                for (int i = left + 1; i < right; i++)
-                {
-                    for (int j = top + 1; j < bottom; j++)
-                    {
-                        auto actual = m_set->ZonesFromPoint(POINT{ i, j });
-                        Assert::IsTrue(actual.size() == 1);
-                        compareZones(expected, m_set->GetZones()[actual[0]]);
-                    }
-                }
+                m_set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
+                                
+                auto actual = m_set->ZonesFromPoint(POINT{ 1, 1 });
+                Assert::IsTrue(actual.size() == 1);
             }
 
             TEST_METHOD (ZoneFromPointBorder)
             {
-                const int left = 0, top = 0, right = 100, bottom = 100;
-                winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom }, 1);
-                m_set->AddZone(expected);
+                m_set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
 
-                for (int i = left; i < right; i++)
-                {
-                    auto actual = m_set->ZonesFromPoint(POINT{ i, top });
-                    Assert::IsTrue(actual.size() == 1);
-                    compareZones(expected, m_set->GetZones()[actual[0]]);
-                }
-
-                for (int i = top; i < bottom; i++)
-                {
-                    auto actual = m_set->ZonesFromPoint(POINT{ left, i });
-                    Assert::IsTrue(actual.size() == 1);
-                    compareZones(expected, m_set->GetZones()[actual[0]]);
-                }
-
-                //bottom and right borders considered to be outside
-                for (int i = left; i < right; i++)
-                {
-                    auto actual = m_set->ZonesFromPoint(POINT{ i, bottom });
-                    Assert::IsTrue(actual.size() == 0);
-                }
-
-                for (int i = top; i < bottom; i++)
-                {
-                    auto actual = m_set->ZonesFromPoint(POINT{ right, i });
-                    Assert::IsTrue(actual.size() == 0);
-                }
+                Assert::IsTrue(m_set->ZonesFromPoint(POINT{ 0, 0 }).size() == 1);
+                Assert::IsTrue(m_set->ZonesFromPoint(POINT{ 1920, 1080 }).size() == 0);
             }
 
             TEST_METHOD (ZoneFromPointOuter)
             {
-                const int left = 0, top = 0, right = 100, bottom = 100;
-                winrt::com_ptr<IZone> zone = MakeZone({ left, top, right, bottom }, 1);
-                m_set->AddZone(zone);
+                m_set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
 
-                auto actual = m_set->ZonesFromPoint(POINT{ 200, 200 });
+                auto actual = m_set->ZonesFromPoint(POINT{ 1921, 1080 });
                 Assert::IsTrue(actual.size() == 0);
             }
 
             TEST_METHOD (ZoneFromPointOverlapping)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                m_set->AddZone(zone1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
-                m_set->AddZone(zone2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 10, 10, 150, 150 }, 3);
-                m_set->AddZone(zone3);
-                winrt::com_ptr<IZone> zone4 = MakeZone({ 10, 10, 50, 50 }, 4);
-                m_set->AddZone(zone4);
+                // prepare layout with overlapping zones
+                saveCustomLayout({ RECT{ 0, 0, 100, 100 }, RECT{ 10, 10, 90, 90 }, RECT{ 10, 10, 150, 150 }, RECT{ 10, 10, 50, 50 } });
+
+                ZoneSetConfig config = ZoneSetConfig(m_id, FancyZonesDataTypes::ZoneSetLayoutType::Custom, Mocks::Monitor(), DefaultValues::SensitivityRadius, OverlappingZonesAlgorithm::Smallest);
+                auto set = MakeZoneSet(config);
+                set->CalculateZones(RECT{0,0,1920,1080}, 4, 0);
 
                 // zone4 is expected because it's the smallest one, and it's considered to be inside
                 // since Multizones support
+                auto zones = set->ZonesFromPoint(POINT{ 50, 50 });
+                Assert::IsTrue(zones.size() == 1);
 
-                auto actual = m_set->ZonesFromPoint(POINT{ 50, 50 });
-                Assert::IsTrue(actual.size() == 1);
-                compareZones(zone4, m_set->GetZones()[actual[0]]);
+                auto expected = MakeZone({ 10, 10, 50, 50 }, 3);
+                auto actual = set->GetZones()[zones[0]];
+                compareZones(expected, actual);
             }
 
-            TEST_METHOD (ZoneFromPointMultizoneHorizontal)
+            TEST_METHOD (ZoneFromPointMultizone)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                m_set->AddZone(zone1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 }, 2);
-                m_set->AddZone(zone2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 }, 3);
-                m_set->AddZone(zone3);
-                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 }, 4);
-                m_set->AddZone(zone4);
+                // prepare layout with overlapping zones
+                saveCustomLayout({ RECT{ 0, 0, 100, 100 }, RECT{ 100, 0, 200, 100 }, RECT{ 0, 100, 100, 200 }, RECT{ 100, 100, 200, 200 } });
 
-                auto actual = m_set->ZonesFromPoint(POINT{ 50, 100 });
+                ZoneSetConfig config = ZoneSetConfig(m_id, FancyZonesDataTypes::ZoneSetLayoutType::Custom, Mocks::Monitor(), DefaultValues::SensitivityRadius, OverlappingZonesAlgorithm::Smallest);
+                auto set = MakeZoneSet(config);
+                set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 4, 0);
+
+                auto actual = set->ZonesFromPoint(POINT{ 50, 100 });
                 Assert::IsTrue(actual.size() == 2);
-                compareZones(zone1, m_set->GetZones()[actual[0]]);
-                compareZones(zone3, m_set->GetZones()[actual[1]]);
-            }
 
-            TEST_METHOD (ZoneFromPointMultizoneVertical)
-            {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                m_set->AddZone(zone1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 }, 2);
-                m_set->AddZone(zone2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 }, 3);
-                m_set->AddZone(zone3);
-                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 }, 4);
-                m_set->AddZone(zone4);
+                auto zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                compareZones(zone1, set->GetZones()[actual[0]]);
 
-                auto actual = m_set->ZonesFromPoint(POINT{ 100, 50 });
-                Assert::IsTrue(actual.size() == 2);
-                compareZones(zone1, m_set->GetZones()[actual[0]]);
-                compareZones(zone2, m_set->GetZones()[actual[1]]);
-            }
-
-            TEST_METHOD (ZoneFromPointMultizoneQuad)
-            {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                m_set->AddZone(zone1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 }, 2);
-                m_set->AddZone(zone2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 }, 3);
-                m_set->AddZone(zone3);
-                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 }, 4);
-                m_set->AddZone(zone4);
-
-                auto actual = m_set->ZonesFromPoint(POINT{ 100, 100 });
-                Assert::IsTrue(actual.size() == 4);
-                compareZones(zone1, m_set->GetZones()[actual[0]]);
-                compareZones(zone2, m_set->GetZones()[actual[1]]);
-                compareZones(zone3, m_set->GetZones()[actual[2]]);
-                compareZones(zone4, m_set->GetZones()[actual[3]]);
+                auto zone3 = MakeZone({ 0, 100, 100, 200 }, 2);
+                compareZones(zone3, set->GetZones()[actual[1]]);
             }
 
             TEST_METHOD (ZoneIndexFromWindowUnknown)
             {
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, 1);
                 HWND window = Mocks::Window();
                 HWND workArea = Mocks::Window();
-                m_set->AddZone(zone);
+                m_set->CalculateZones(RECT{0,0,1920, 1080}, 1, 0);
                 m_set->MoveWindowIntoZoneByIndexSet(window, workArea, { 0 });
 
                 auto actual = m_set->GetZoneIndexSetFromWindow(Mocks::Window());
@@ -308,10 +230,9 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (ZoneIndexFromWindowNull)
             {
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, 1);
                 HWND window = Mocks::Window();
                 HWND workArea = Mocks::Window();
-                m_set->AddZone(zone);
+                m_set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
                 m_set->MoveWindowIntoZoneByIndexSet(window, workArea, { 0 });
 
                 auto actual = m_set->GetZoneIndexSetFromWindow(nullptr);
@@ -320,16 +241,16 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByIndex)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 0, 0, 100, 100 }, 2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 }, 3);
-                m_set->AddZone(zone1);
-                m_set->AddZone(zone2);
-                m_set->AddZone(zone3);
+                // prepare layout with overlapping zones
+                saveCustomLayout({ RECT{ 0, 0, 100, 100 }, RECT{ 0, 0, 100, 100 }, RECT{ 0, 0, 100, 100 } });
+
+                ZoneSetConfig config = ZoneSetConfig(m_id, FancyZonesDataTypes::ZoneSetLayoutType::Custom, Mocks::Monitor(), DefaultValues::SensitivityRadius, OverlappingZonesAlgorithm::Smallest);
+                auto set = MakeZoneSet(config);
+                set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 3, 0);
 
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
-                Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
+                set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
+                Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveWindowIntoZoneByIndexWithNoZones)
@@ -340,12 +261,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByIndexWithInvalidIndex)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 0, 0, 100, 100 }, 2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 }, 3);
-                m_set->AddZone(zone1);
-                m_set->AddZone(zone2);
-                m_set->AddZone(zone3);
+                m_set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
 
                 HWND window = Mocks::Window();
                 m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 100);
@@ -354,13 +270,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByIndexSeveralTimesSameWindow)
             {
-                // Add a couple of zones.
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 1);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 2);
-                m_set->AddZone(zone1);
-                m_set->AddZone(zone2);
-                m_set->AddZone(zone3);
+                m_set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 3, 0);
 
                 HWND window = Mocks::Window();
                 m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
@@ -375,17 +285,13 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByIndexSeveralTimesSameIndex)
             {
-                // Add a couple of zones.
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 1);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 2);
-                m_set->AddZone(zone1);
-                m_set->AddZone(zone2);
-                m_set->AddZone(zone3);
+                m_set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 3, 0);
 
                 HWND window = Mocks::Window();
                 m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == m_set->GetZoneIndexSetFromWindow(window));
                 m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == m_set->GetZoneIndexSetFromWindow(window));
                 m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
                 Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == m_set->GetZoneIndexSetFromWindow(window));
             }
@@ -397,19 +303,17 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByPointOuterPoint)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                m_set->AddZone(zone1);
+                m_set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
 
                 auto window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 200, 200 });
+                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 1921, 1081 });
 
                 Assert::IsTrue(std::vector<ZoneIndex>{} == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveWindowIntoZoneByPointInnerPoint)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
-                m_set->AddZone(zone1);
+                m_set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
 
                 auto window = Mocks::Window();
                 m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
@@ -419,71 +323,33 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByPointInnerPointOverlappingZones)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
-                m_set->AddZone(zone1);
-                m_set->AddZone(zone2);
+                saveCustomLayout({ RECT{ 0, 0, 100, 100 }, RECT{ 10, 10, 90, 90 } });
+
+                ZoneSetConfig config = ZoneSetConfig(m_id, FancyZonesDataTypes::ZoneSetLayoutType::Custom, Mocks::Monitor(), DefaultValues::SensitivityRadius, OverlappingZonesAlgorithm::Smallest);
+                auto set = MakeZoneSet(config);
+                set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 3, 0);
 
                 auto window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
+                set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
 
-                Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveWindowIntoZoneByPointDropAddWindow)
             {
+                saveCustomLayout({ RECT{ 0, 0, 100, 100 }, RECT{ 10, 10, 90, 90 } });
+
+                ZoneSetConfig config = ZoneSetConfig(m_id, FancyZonesDataTypes::ZoneSetLayoutType::Custom, Mocks::Monitor(), DefaultValues::SensitivityRadius, OverlappingZonesAlgorithm::Smallest);
+                auto set = MakeZoneSet(config);
+                set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 3, 0);
+
                 const auto window = Mocks::Window();
                 const auto workArea = Mocks::Window();
 
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
+                set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
 
-                m_set->AddZone(zone1);
-                m_set->AddZone(zone2);
-
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
-
-                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
-
-                Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
-            }
-
-            TEST_METHOD (MoveWindowIntoZoneByPointDropAddWindowToSameZone)
-            {
-                const auto window = Mocks::Window();
-                const auto workArea = Mocks::Window();
-
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
-
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
-
-                m_set->AddZone(zone1);
-                m_set->AddZone(zone2);
-
-                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
-
-                Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
-            }
-
-            TEST_METHOD (MoveWindowIntoZoneByPointSeveralZonesWithSameWindow)
-            {
-                const auto window = Mocks::Window();
-                const auto workArea = Mocks::Window();
-
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 20, 20, 80, 80 }, 2);
-
-                m_set->AddZone(zone1);
-                m_set->AddZone(zone2);
-                m_set->AddZone(zone3);
-
-                m_set->MoveWindowIntoZoneByIndexSet(window, Mocks::Window(), { 0, 1, 2 });
-
-                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
-
-                Assert::IsTrue(std::vector<ZoneIndex>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == set->GetZoneIndexSetFromWindow(window));
             }
     };
 
@@ -497,16 +363,9 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_INITIALIZE(Initialize)
             {
-                ZoneSetConfig config({}, ZoneSetLayoutType::Custom, Mocks::Monitor(), DefaultValues::SensitivityRadius);
+                ZoneSetConfig config({}, ZoneSetLayoutType::Grid, Mocks::Monitor(), DefaultValues::SensitivityRadius);
                 m_set = MakeZoneSet(config);
-
-                // Add a couple of zones.
-                m_zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
-                m_zone2 = MakeZone({ 0, 0, 100, 100 }, 1);
-                m_zone3 = MakeZone({ 0, 0, 100, 100 }, 2);
-                m_set->AddZone(m_zone1);
-                m_set->AddZone(m_zone2);
-                m_set->AddZone(m_zone3);
+                m_set->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 3, 10);
             }
 
             TEST_METHOD (EmptyZonesLeft)

@@ -407,8 +407,7 @@ namespace FancyZonesUnitTests
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
-                auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
-                workArea->ZoneSet()->AddZone(zone);
+                workArea->ZoneSet()->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
 
                 workArea->SaveWindowProcessToZoneIndex(window);
 
@@ -434,8 +433,7 @@ namespace FancyZonesUnitTests
                 Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == appHistoryArray1[0].zoneIndexSet);
 
                 // add zone without window
-                const auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
-                workArea->ZoneSet()->AddZone(zone);
+                workArea->ZoneSet()->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
 
                 workArea->SaveWindowProcessToZoneIndex(window);
                 Assert::AreEqual((size_t)1, AppZoneHistory::instance().GetFullAppZoneHistory().size());
@@ -454,8 +452,7 @@ namespace FancyZonesUnitTests
                 const auto deviceId = workArea->UniqueId();
                 const auto zoneSetId = workArea->ZoneSet()->Id();
 
-                auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
-                workArea->ZoneSet()->AddZone(zone);
+                workArea->ZoneSet()->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
                 workArea->MoveWindowIntoZoneByIndex(window, 0);
 
                 //fill app zone history map
@@ -487,9 +484,7 @@ namespace FancyZonesUnitTests
                 SetWindowPos(window, nullptr, 150, 150, originalWidth, originalHeight, SWP_SHOWWINDOW);
                 SetWindowLong(window, GWL_STYLE, GetWindowLong(window, GWL_STYLE) & ~WS_SIZEBOX);
 
-                auto zone = MakeZone(RECT{ 50, 50, 300, 300 }, 1);
-                workArea->ZoneSet()->AddZone(zone);
-
+                workArea->ZoneSet()->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
                 workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_LEFT, true);
 
                 RECT inZoneRect;

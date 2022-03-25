@@ -277,7 +277,7 @@ void ZonesOverlay::Flash()
     m_cv.notify_all();
 }
 
-void ZonesOverlay::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
+void ZonesOverlay::DrawActiveZoneSet(const ZonesMap& zones,
                                      const ZoneIndexSet& highlightZones,
                                      const Colors::ZoneColors& colors,
                                      const bool showZoneText)
