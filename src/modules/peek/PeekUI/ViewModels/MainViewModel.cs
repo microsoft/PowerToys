@@ -187,26 +187,14 @@ namespace PeekUI.ViewModels
 
         public async Task RenderImageToWindowAsync(string filename, System.Windows.Controls.Image imageControl)
         {
-            // if IsSupportedImage()
-            //      then load dimensions
-            //      then resize window
-            //      then load thumbnail-only + load full image in parallel
-            //      Only stretch image control if dimensions > window size
-            // else if IsMedia() || IsDocument()
-            //      then load thumbnail (fallback icon)
-            //      then resize window
-            // else
-            //      then resize window
-            //      load icon (fallback error)
-
             var screen = Screen.FromHandle(ForegroundWindowHandle);
             Size maxWindowSize = new Size(screen.WpfBounds.Width * ImageScale, screen.WpfBounds.Height * ImageScale);
 
-            if (IsSupportedImage(filename))
+            if (FileTypeHelper.IsSupportedImage(Path.GetExtension(filename)))
             {
                 await RenderSupportedImageToWindowAsync(filename, screen, maxWindowSize, imageControl);
             }
-            else if (IsMedia(filename) || IsDocument(filename))
+            else if (FileTypeHelper.IsMedia(Path.GetExtension(filename)) || FileTypeHelper.IsDocument(Path.GetExtension(filename)))
             {
                 await RenderMediaOrDocumentToWindowAsync(filename, screen, maxWindowSize);
             }
@@ -236,12 +224,17 @@ namespace PeekUI.ViewModels
 
 
             await LoadImageAsync(filename, imageControl, dimensionData.Rotation, CancellationToken);
-            _cancellationTokenSource.TryReset();
         }
 
         private async Task RenderMediaOrDocumentToWindowAsync(string filename, Screen screen, Size maxWindowSize)
         {
             var bitmap = await LoadThumbnailAsync(filename, true);
+            if (CancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+            _cancellationTokenSource = new CancellationTokenSource();
+
             Bitmap = bitmap;
 
             var windowRect = CalculateScaledImageRectangle(new Size(bitmap.PixelWidth, bitmap.PixelHeight), screen, maxWindowSize);
@@ -249,6 +242,8 @@ namespace PeekUI.ViewModels
             WindowHeight = windowRect.Height;
             WindowLeft = windowRect.Left;
             WindowTop = windowRect.Top;
+
+            MainWindowVisibility = Visibility.Visible;
         }
 
         private async Task RenderUnsupportedFileToWindowAsync(string filename, Screen screen, Size maxWindowSize)
@@ -260,10 +255,17 @@ namespace PeekUI.ViewModels
             WindowTop = windowRect.Top;
 
             var bitmap = await LoadIconAsync(filename);
+            if (CancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+            _cancellationTokenSource = new CancellationTokenSource();
+
             Bitmap = bitmap;
+            MainWindowVisibility = Visibility.Visible;
         }
 
-        private Task LoadImageAsync(string filename, System.Windows.Controls.Image imageControl, Rotation rotation, CancellationToken cancellationToken)
+        private async Task LoadImageAsync(string filename, System.Windows.Controls.Image imageControl, Rotation rotation, CancellationToken cancellationToken)
         {
             bool isFullImageLoaded = false;
             bool isThumbnailLoaded = false;
@@ -301,22 +303,8 @@ namespace PeekUI.ViewModels
                 }
             });
 
-            return Task.WhenAll(thumbnailLoadTask, fullImageLoadTask);
-        }
-
-        private static bool IsDocument(string filename)
-        {
-            return filename.Length > 0;
-        }
-
-        private static bool IsMedia(string filename)
-        {
-            return filename.Length > 0;
-        }
-
-        private static bool IsSupportedImage(string filename)
-        {
-            return filename.Length > 0;
+            await Task.WhenAll(thumbnailLoadTask, fullImageLoadTask);
+            _cancellationTokenSource = new CancellationTokenSource();
         }
 
         private static Task<DimensionData> LoadDimensionsAsync(string filename)
@@ -329,7 +317,7 @@ namespace PeekUI.ViewModels
                     using (FileStream stream = File.OpenRead(filename))
                     {
                         string extension = Path.GetExtension(stream.Name);
-                        if (IsSupportedFileType(extension))
+                        if (FileTypeHelper.IsSupportedImage(extension))
                         {
                             using (System.Drawing.Image sourceImage = System.Drawing.Image.FromStream(stream, false, false))
                             {
@@ -359,22 +347,6 @@ namespace PeekUI.ViewModels
                 }
             });
         }
-
-        private static bool IsSupportedFileType(string extension) => extension switch
-        {
-            ".bmp" => true,
-            ".gif" => true,
-            ".jpg" => true,
-            ".jfif" => true,
-            ".jfi" => true,
-            ".jif" => true,
-            ".jpeg" => true,
-            ".jpe" => true,
-            ".png" => true,
-            ".tif" => true,
-            ".tiff" => true,
-            _ => false,
-        };
 
         private static Rect CalculateScaledImageRectangle(Size imageDimensions, Screen screen, Size maxWindowSize)
         {

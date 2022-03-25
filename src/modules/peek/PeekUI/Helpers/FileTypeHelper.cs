@@ -58,6 +58,22 @@ namespace PeekUI.Helpers
             AccessDenied = unchecked((int)0x80030005),
         }
 
+        public static bool IsSupportedImage(string extension) => extension switch
+        {
+            ".bmp" => true,
+            ".gif" => true,
+            ".jpg" => true,
+            ".jfif" => true,
+            ".jfi" => true,
+            ".jif" => true,
+            ".jpeg" => true,
+            ".jpe" => true,
+            ".png" => true,
+            ".tif" => true,
+            ".tiff" => true,
+            _ => false,
+        };
+
         public static bool IsMedia(string extension)
         {
             return IsImage(extension) || IsVideo(extension);
