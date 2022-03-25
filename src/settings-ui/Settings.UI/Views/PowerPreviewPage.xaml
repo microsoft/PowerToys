@@ -21,6 +21,12 @@
             <StackPanel Orientation="Vertical">
 
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
+                    <muxc:InfoBar Severity="Warning"
+                                   x:Uid="FileExplorerPreview_PreviewHandlerOutlookIncompatibility"
+                                   IsOpen="True"
+                                   IsTabStop="True"
+                                   IsClosable="False"
+                                   />
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}"
@@ -73,6 +79,12 @@
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
                     <muxc:InfoBar Severity="Informational"
                                    x:Uid="FileExplorerPreview_RebootRequired"
+                                   IsOpen="True"
+                                   IsTabStop="True"
+                                   IsClosable="False"
+                                   />
+                    <muxc:InfoBar Severity="Warning"
+                                   x:Uid="FileExplorerPreview_ThumbnailsMightNotAppearOnRemoteFolders"
                                    IsOpen="True"
                                    IsTabStop="True"
                                    IsClosable="False"
