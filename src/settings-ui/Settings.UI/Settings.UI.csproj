@@ -264,6 +264,7 @@
     <Content Include="Assets\FluentIcons\FluentIconsSettings.png" />
     <Content Include="Assets\FluentIcons\FluentIconsShortcutGuide.png" />
     <Content Include="Assets\FluentIcons\FluentIconsVideoConferenceMute.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsPeek.png" />
     <Content Include="Assets\Logo.scale-200.png" />
     <Content Include="Assets\Modules\AlwaysOnTop.png" />
     <Content Include="Assets\Modules\ColorPicker.png" />
