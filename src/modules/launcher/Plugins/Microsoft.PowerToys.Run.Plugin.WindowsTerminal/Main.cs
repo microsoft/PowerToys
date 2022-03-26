@@ -153,7 +153,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
             try
             {
                 string path = "shell:AppsFolder\\" + id;
-                Helper.OpenInShell(path, TerminalHelper.GetArguments(profile, _openNewTab), runAsAdmin: true);
+                Helper.OpenInShell(path, TerminalHelper.GetArguments(profile, _openNewTab), runAs: Helper.ShellRunAsType.Administrator);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)

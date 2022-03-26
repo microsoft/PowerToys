@@ -138,4 +138,7 @@
   <data name="wox_plugin_cmd_command_not_found" xml:space="preserve">
     <value>Command not found</value>
   </data>
+  <data name="wox_plugin_cmd_run_as_user" xml:space="preserve">
+    <value>Run as different user (Ctrl+Shift+U)</value>
+  </data>
 </root>
