@@ -165,7 +165,7 @@ namespace Microsoft.Plugin.Shell
             {
                 runAsVerbArg = "runAsUser";
             }
-            else if (runAs == RunAsType.Administrator || !_settings.RunAsAdministrator)
+            else if (runAs == RunAsType.Administrator || _settings.RunAsAdministrator)
             {
                 runAsVerbArg = "runAs";
             }
