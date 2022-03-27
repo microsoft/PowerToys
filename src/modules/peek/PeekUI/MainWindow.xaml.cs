@@ -40,7 +40,7 @@ namespace PeekUI
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
             Closing += MainWindow_Closing;
-            KeyDown += KeyIsDown;
+            KeyDown += MainWindow_KeyDown;
         }
 
         private async void MainViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -68,7 +68,7 @@ namespace PeekUI
             e.Cancel = true;
         }
 
-        private void KeyIsDown(object? sender, KeyEventArgs e)
+        private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
         {
             if (!e.IsRepeat && _viewModel.CurrentSelectedFilePath != null)
             {
@@ -116,7 +116,7 @@ namespace PeekUI
             Activate();
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
         }
