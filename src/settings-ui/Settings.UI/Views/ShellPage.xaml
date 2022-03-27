@@ -112,6 +112,14 @@
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
 
+                <muxc:NavigationViewItem x:Uid="Shell_Peek"
+                                         helpers:NavHelper.NavigateTo="views:PeekPage">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPeek.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+
                 <muxc:NavigationViewItem x:Uid="Shell_PowerRename"
                                          helpers:NavHelper.NavigateTo="views:PowerRenamePage">
                     <muxc:NavigationViewItem.Icon>

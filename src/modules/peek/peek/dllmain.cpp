@@ -5,8 +5,7 @@
 #include "trace.h"
 #include <common/utils/winapi_error.h>
 #include <filesystem>
-
-#include "PeekFileUtils/FileUtils.h"
+#include <common/interop/shared_constants.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -72,6 +71,8 @@ private:
 
     HANDLE m_hProcess;
 
+    HANDLE m_hInvokeEvent;
+
     // Load the settings file.
     void init_settings()
     {
@@ -122,6 +123,8 @@ private:
             catch (...)
             {
                 Logger::error("Failed to initialize Peek start settings");
+
+                set_default_settings();
             }
         }
         else
@@ -173,22 +176,23 @@ private:
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
-    void launch_viewer(String filepath)
+    void launch_process()
     {
-        Logger::trace(L"Starting PeekViewer process");
+        Logger::trace(L"Starting PeekUI process");
+
+        unsigned long powertoys_pid = GetCurrentProcessId();
+
+        std::wstring executable_args = L"";
+        executable_args.append(std::to_wstring(powertoys_pid));
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
+
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
         sei.lpVerb = L"open";
-        sei.lpFile = L"modules\\Peek\\PeekViewer\\PeekViewer.exe";
+        sei.lpFile = L"modules\\Peek\\PeekUI\\Powertoys.PeekUI.exe";
         sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
 
-        // Append quotes around file path so that spaces do not parse into different args
-        String quotedPath = L"\"";
-        quotedPath.append(filepath);
-        quotedPath.append(L"\"");
-
-        sei.lpParameters = quotedPath.c_str();
         if (ShellExecuteExW(&sei))
         {
             Logger::trace("Successfully started the PeekViewer process");
@@ -205,6 +209,8 @@ public:
     Peek()
     {
         init_settings();
+
+        m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_PEEK_SHARED_EVENT);
     };
 
     ~Peek()
@@ -334,12 +340,20 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        ResetEvent(m_hInvokeEvent);
+        launch_process();
         m_enabled = true;
     }
 
     // Disable the powertoy
     virtual void disable()
     {
+        if (m_enabled)
+        {
+            ResetEvent(m_hInvokeEvent);
+            TerminateProcess(m_hProcess, 1);
+        }
+
         m_enabled = false;
     }
 
@@ -375,14 +389,10 @@ public:
             // TODO: fix VK_SPACE DestroyWindow in viewer app
             if (!is_viewer_running())
             {
-                String filepath;
-                HRESULT result = FileUtils::GetSelectedFile(filepath);
-
-                if (result == S_OK)
-                {
-                    launch_viewer(filepath);
-                }
+                launch_process();
             }
+
+            SetEvent(m_hInvokeEvent);
 
             return true;
         }

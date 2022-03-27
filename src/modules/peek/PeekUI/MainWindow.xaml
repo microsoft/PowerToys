@@ -1,0 +1,33 @@
+﻿<Window
+    x:Class="PeekUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:PeekUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:vm="clr-namespace:PeekUI.ViewModels"
+    Title="{Binding WindowTitle, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+    Width="{Binding WindowWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+    Height="{Binding WindowHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+    MinWidth="500"
+    MinHeight="500"
+    d:DataContext="{d:DesignInstance vm:MainViewModel}"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    BorderThickness="1"
+    Left="{Binding WindowLeft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+    Loaded="OnLoaded"
+    ResizeMode="NoResize"
+    Top="{Binding WindowTop, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+    Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+    WindowStartupLocation="Manual"
+    KeyDown="KeyIsDown"
+    mc:Ignorable="d">
+    <Grid>
+        <Image
+            x:Name="ImageControl"
+            Source="{Binding Bitmap, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+            Stretch="Uniform"
+            StretchDirection="DownOnly" />
+    </Grid>
+</Window>

@@ -214,6 +214,9 @@
     <Compile Include="Views\MouseUtilsPage.xaml.cs">
       <DependentUpon>MouseUtilsPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\PeekPage.xaml.cs">
+      <DependentUpon>PeekPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\PowerLauncherPage.xaml.cs">
       <DependentUpon>PowerLauncherPage.xaml</DependentUpon>
     </Compile>
@@ -261,6 +264,7 @@
     <Content Include="Assets\FluentIcons\FluentIconsSettings.png" />
     <Content Include="Assets\FluentIcons\FluentIconsShortcutGuide.png" />
     <Content Include="Assets\FluentIcons\FluentIconsVideoConferenceMute.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsPeek.png" />
     <Content Include="Assets\Logo.scale-200.png" />
     <Content Include="Assets\Modules\AlwaysOnTop.png" />
     <Content Include="Assets\Modules\ColorPicker.png" />
@@ -486,6 +490,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MouseUtilsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PeekPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
