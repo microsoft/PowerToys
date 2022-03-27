@@ -13,6 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
     public class PeekViewModel : Observable
     {
+        private bool _isEnabled;
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly ISettingsUtils _settingsUtils;
@@ -39,6 +41,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 _peekSettings = new PeekSettings();
             }
+
+            _isEnabled = GeneralSettingsConfig.Enabled.Peek;
 
             SendConfigMSG = ipcMSGCallBackFunc;
         }
@@ -85,7 +89,5 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                        PeekSettings.ModuleName,
                        JsonSerializer.Serialize(_peekSettings)));
         }
-
-        private bool _isEnabled;
     }
 }
