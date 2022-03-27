@@ -286,6 +286,7 @@
     <Content Include="Assets\Modules\OOBE\Run.gif" />
     <Content Include="Assets\Modules\OOBE\OOBEShortcutGuide.png" />
     <Content Include="Assets\Modules\OOBE\VideoConferenceMute.png" />
+    <Content Include="Assets\Modules\Peek.png" />
     <Content Include="Assets\Modules\PowerLauncher.png" />
     <Content Include="Assets\Modules\PowerPreview.png" />
     <Content Include="Assets\Modules\PowerRename.png" />
