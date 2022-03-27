@@ -1,4 +1,5 @@
-﻿using ManagedCommon;
+﻿using Common.UI;
+using ManagedCommon;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -16,6 +17,8 @@ namespace PeekUI
     /// </summary>
     public partial class App : Application, IDisposable
     {
+        private ThemeManager? _themeManager;
+
         private Mutex? _instanceMutex;
         private static string[] _args = Array.Empty<string>();
         private int _powerToysRunnerPid;
@@ -48,6 +51,7 @@ namespace PeekUI
                 _powerToysRunnerPid = -1;
             }
 
+            _themeManager = new ThemeManager(this);
             base.OnStartup(e);
         }
 
