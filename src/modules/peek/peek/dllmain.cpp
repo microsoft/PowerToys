@@ -305,31 +305,9 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            // Update a bool property.
-            //if (auto v = values.get_bool_value(L"bool_toggle_1")) {
-            //  g_settings.bool_prop = *v;
-            //}
+            parse_settings(values);
 
-            // Update an int property.
-            //if (auto v = values.get_int_value(L"int_spinner_1")) {
-            //  g_settings.int_prop = *v;
-            //}
-
-            // Update a string property.
-            //if (auto v = values.get_string_value(L"string_text_1")) {
-            //  g_settings.string_prop = *v;
-            //}
-
-            // Update a color property.
-            //if (auto v = values.get_string_value(L"color_picker_1")) {
-            //  g_settings.color_prop = *v;
-            //}
-
-            // If you don't need to do any custom processing of the settings, proceed
-            // to persists the values calling:
             values.save_to_settings_file();
-            // Otherwise call a custom function to process the settings before saving them to disk:
-            // save_settings();
         }
         catch (std::exception&)
         {
