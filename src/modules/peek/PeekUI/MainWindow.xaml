@@ -13,15 +13,17 @@
     MinWidth="500"
     MinHeight="500"
     d:DataContext="{d:DesignInstance vm:MainViewModel}"
+    ui:TitleBar.IsIconVisible="True"
     ui:WindowHelper.UseModernWindowStyle="True"
     BorderThickness="1"
+    Icon="/PowerToys.PeekUI;component/Resources/Peek.ico"
+    KeyDown="KeyIsDown"
     Left="{Binding WindowLeft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     Loaded="OnLoaded"
     ResizeMode="NoResize"
     Top="{Binding WindowTop, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     WindowStartupLocation="Manual"
-    KeyDown="KeyIsDown"
     mc:Ignorable="d">
     <Grid>
         <Image

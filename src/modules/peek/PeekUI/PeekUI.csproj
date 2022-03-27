@@ -11,6 +11,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\Peek\PeekUI</OutputPath>
     <UseWindowsForms>True</UseWindowsForms>
+    <ApplicationIcon>Resources\FluentIconsPeek.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,6 +34,14 @@
       <EmbedInteropTypes>true</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+
+	<PropertyGroup>
+		<ApplicationIcon>Resources\Peek.ico</ApplicationIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Resource Include="Resources\Peek.ico" />
+	</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />
