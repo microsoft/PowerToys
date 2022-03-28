@@ -18,6 +18,7 @@ namespace PeekUI
         private int _powerToysRunnerPid;
         private bool disposedValue;
 
+        // TODO: Make sure no window appears or blinks at startup
         protected override void OnStartup(StartupEventArgs e)
         {
             _args = e?.Args ?? Array.Empty<string>();

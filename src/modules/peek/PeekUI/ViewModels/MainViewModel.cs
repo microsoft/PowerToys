@@ -117,6 +117,7 @@ namespace PeekUI.ViewModels
             ImageControl = imageControl;
         }
 
+        // TODO: Implement proper disposal pattern
         public void Dispose()
         {
             _cancellationTokenSource.Dispose();
@@ -135,6 +136,8 @@ namespace PeekUI.ViewModels
         public bool TryUpdateSelectedFilePaths()
         {
             ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
+
+            // TODO: Get all neighborings files
             var selectedItems = FileExplorerHelper.GetSelectedItems(ForegroundWindowHandle);
 
             var isDifferentSelectedItems = !SelectedFilePaths.SequenceEqual(selectedItems);
@@ -149,6 +152,7 @@ namespace PeekUI.ViewModels
             return isDifferentSelectedItems;
         }
 
+        // TODO: Implement proper cancellation pattern to support quick navigation
         public async Task RenderImageToWindowAsync(string filename)
         {
             IsLoading = true;
@@ -156,6 +160,7 @@ namespace PeekUI.ViewModels
             var screen = Screen.FromHandle(ForegroundWindowHandle);
             Size maxWindowSize = new Size(screen.WpfBounds.Width * ImageScale, (screen.WpfBounds.Height) * ImageScale);
 
+            // TODO: Support preview or thumbnail for document files
             if (FileTypeHelper.IsSupportedImage(Path.GetExtension(filename)))
             {
                 await RenderSupportedImageToWindowAsync(filename, screen.Bounds, maxWindowSize);
