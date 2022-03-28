@@ -157,32 +157,42 @@ namespace Wox.Plugin.Common
                         SearchEngineUrl = null;
                     }
 
-                    string programLocation =
+                    // Get the path to the browser's executable:
+                    // for example "C:\Program Files\SomeCompany\SomeBrowser\Application\launcher.exe" --single-argument %1
+                    string programLocation = GetRegistryValue($@"HKEY_CLASSES_ROOT\{progId}\shell\open\command", null);
+                    if (string.IsNullOrEmpty(programLocation))
+                    {
+                        throw new ArgumentOutOfRangeException(
+                            nameof(programLocation),
+                            "Default browser program location is not specified.");
+                    }
 
-                        // Resolve App Icon (UWP)
-                        GetRegistryValue(
-                            $@"HKEY_CLASSES_ROOT\{progId}\Application",
-                            "ApplicationIcon")
+                    if (programLocation.StartsWith('\"'))
+                    {
+                        var endQuoteIndex = programLocation.IndexOf('\"', 1);
+                        if (endQuoteIndex != -1)
+                        {
+                            programLocation = programLocation.Substring(1, endQuoteIndex - 1);
+                        }
+                    }
 
-                        // Resolves default  file association icon (UWP + Normal)
-                        ?? GetRegistryValue($@"HKEY_CLASSES_ROOT\{progId}\DefaultIcon", null);
-
-                    // "Handles 'Indirect Strings' (UWP programs)"
-                    // Using Ordinal since this is internal and used with a symbol
-                    if (programLocation.StartsWith("@", StringComparison.Ordinal))
+                    if (programLocation.StartsWith('@'))
                     {
                         string directProgramLocation = GetIndirectString(programLocation);
                         Path = string.Equals(FilePath.GetExtension(directProgramLocation), ".exe", StringComparison.Ordinal)
                             ? directProgramLocation
-                            : null;
+                            : throw new ArgumentOutOfRangeException(
+                            nameof(programLocation),
+                            programLocation,
+                            "Unexpected default browser program location.");
                     }
                     else
                     {
                         // Using Ordinal since this is internal and used with a symbol
                         var indexOfComma = programLocation.IndexOf(',', StringComparison.Ordinal);
-                        Path = indexOfComma > 0
-                            ? programLocation.Substring(0, indexOfComma)
-                            : programLocation;
+                        Path = indexOfComma == -1
+                            ? programLocation
+                            : programLocation.Substring(0, indexOfComma);
                     }
 
                     if (string.IsNullOrEmpty(Path))
@@ -195,7 +205,6 @@ namespace Wox.Plugin.Common
                     Path = null;
                     Name = null;
                     SearchEngineUrl = null;
-
                     Log.Exception("Exception when retrieving browser path/name. Path and Name are null.", e, typeof(DefaultBrowserInfo));
                 }
 
