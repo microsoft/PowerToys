@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace PeekUI.Helpers
 {
     public static class FileExplorerHelper
     {
-        [DllImport("user32.dll")]
-        internal static extern IntPtr GetForegroundWindow();
-
         public static IEnumerable<string> GetSelectedItems(IntPtr handle)
         {
             var selectedItems = new List<string>();
@@ -29,7 +25,7 @@ namespace PeekUI.Helpers
                         {
                             selectedItems.Add(item.Path);
                         }
-                    } 
+                    }
                 }
             }
 

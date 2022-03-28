@@ -20,16 +20,13 @@ namespace PeekUI.Views
         {
             InitializeComponent();
 
-            //todo: put in method
-            IntPtr hWnd = new System.Windows.Interop.WindowInteropHelper(GetWindow(this)).EnsureHandle();
-            var attribute = InteropHelper.DWMWINDOWATTRIBUTE.DWMWAWINDOWCORNERPREFERENCE;
-            var preference = InteropHelper.DWMWINDOWCORNERPREFERENCE.DWMWCPROUND;
-            InteropHelper.DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+            this.RoundCorners();
 
-
-            _viewModel = new MainViewModel();
+            _viewModel = new MainViewModel(ImageControl);
             _viewModel.PropertyChanged += MainViewModel_PropertyChanged;
+
             DataContext = _viewModel;
+
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
             Closing += MainWindow_Closing;
@@ -45,8 +42,9 @@ namespace PeekUI.Views
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
-            InteropHelper.SetToolWindowStyle(this);
+            this.SetToolStyle();
         }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             _viewModel.MainWindowData.Visibility = Visibility.Collapsed;
@@ -66,6 +64,7 @@ namespace PeekUI.Views
                     break;
             }
         }
+
         private void OnPeekHotkey()
         {
             if (IsActive && _viewModel.MainWindowData.Visibility == Visibility.Visible)
@@ -77,7 +76,7 @@ namespace PeekUI.Views
                 _viewModel.TryUpdateSelectedFilePaths();
             }
 
-            BringProcessToForeground();
+            this.BringToForeground();
         }
 
         private void KeyIsDown(object? sender, KeyEventArgs e)
@@ -97,18 +96,6 @@ namespace PeekUI.Views
                     default: break;
                 }
             }
-        }
-
-        private void BringProcessToForeground()
-        {
-            // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
-            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { Type = WindowsInteropHelper.INPUTTYPE.INPUTMOUSE, Data = { } };
-            WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
-
-            // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
-            _ = InteropHelper.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
-
-            Activate();
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
