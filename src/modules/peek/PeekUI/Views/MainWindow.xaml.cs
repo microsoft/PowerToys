@@ -30,7 +30,7 @@ namespace PeekUI.Views
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
             Closing += MainWindow_Closing;
-            KeyDown += KeyIsDown;
+            KeyDown += MainWindow_KeyDown;
         }
 
         public void Dispose()
@@ -79,7 +79,7 @@ namespace PeekUI.Views
             this.BringToForeground();
         }
 
-        private void KeyIsDown(object? sender, KeyEventArgs e)
+        private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
         {
             if (!e.IsRepeat && _viewModel.CurrentSelectedFilePath != null)
             {
