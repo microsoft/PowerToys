@@ -29,8 +29,43 @@ namespace PeekUI.Views
 
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
+            Loaded += MainWindow_Loaded;
             Closing += MainWindow_Closing;
             KeyDown += MainWindow_KeyDown;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            _viewModel.MainWindowData.Visibility = Visibility.Collapsed;
+            _viewModel.MainWindowData.TitleBarHeight = TitleBar.GetHeight(this);
+            _viewModel.ImageControl = ImageControl;
+        }
+
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _viewModel.MainWindowData.Visibility = Visibility.Collapsed;
+            e.Cancel = true;
+        }
+
+        private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (!e.IsRepeat && _viewModel.CurrentSelectedFilePath != null)
+            {
+                switch (e.Key)
+                {
+                    case Key.Left:
+                        _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetPreviousOrLast();
+                        e.Handled = true;
+                        break;
+
+                    case Key.Right:
+                        _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetNextOrFirst();
+                        e.Handled = true;
+                        break;
+
+                    default: break;
+                }
+            }
         }
 
         public void Dispose()
@@ -43,13 +78,6 @@ namespace PeekUI.Views
         {
             base.OnSourceInitialized(e);
             this.SetToolStyle();
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            _viewModel.MainWindowData.Visibility = Visibility.Collapsed;
-            _viewModel.MainWindowData.TitleBarHeight = TitleBar.GetHeight(this);
-            _viewModel.ImageControl = ImageControl;
         }
 
         private async void MainViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -77,33 +105,6 @@ namespace PeekUI.Views
             }
 
             this.BringToForeground();
-        }
-
-        private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
-        {
-            if (!e.IsRepeat && _viewModel.CurrentSelectedFilePath != null)
-            {
-                switch (e.Key)
-                {
-                    case Key.Left:
-                        _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetPreviousOrLast();
-                        e.Handled = true;
-                        break;
-
-                    case Key.Right:
-                        _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetNextOrFirst();
-                        e.Handled = true;
-                        break;
-
-                    default: break;
-                }
-            }
-        }
-
-        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
-        {
-            _viewModel.MainWindowData.Visibility = Visibility.Collapsed;
-            e.Cancel = true;
         }
     }
 }
