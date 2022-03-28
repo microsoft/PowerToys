@@ -1,10 +1,10 @@
 ﻿<Window
     x:Class="PeekUI.Views.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:PeekUI.ViewModels"
     Title="{Binding MainWindowData.Title, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
     Width="{Binding MainWindowData.Rectangle.Width, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

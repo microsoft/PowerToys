@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 
 namespace PeekUI.Models
 {
     public class ObservableWindowData : ObservableObject
     {
-
         private double _titleBarHeight;
+
         public double TitleBarHeight
         {
             get
@@ -28,8 +23,8 @@ namespace PeekUI.Models
             }
         }
 
-
         private ObservableRectangle _rectangle = new ObservableRectangle();
+
         public ObservableRectangle Rectangle
         {
             get
@@ -48,6 +43,7 @@ namespace PeekUI.Models
         }
 
         private string _title = string.Empty;
+
         public string Title
         {
             get

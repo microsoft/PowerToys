@@ -47,7 +47,6 @@ namespace PeekUI.Helpers
                         {
                             return Task.FromResult(new DimensionData { Size = size, Rotation = Rotation.Rotate0 });
                         }
-
                     }
                 }
                 catch (Exception)
@@ -67,7 +66,6 @@ namespace PeekUI.Helpers
             });
 
             return thumbnail;
-
         }
 
         public static Task<BitmapSource> LoadIconAsync(string filename)
@@ -79,7 +77,6 @@ namespace PeekUI.Helpers
                 return bitmapSource;
             });
         }
-
 
         public static Task<BitmapImage> LoadFullImageAsync(string filename, Rotation rotation)
         {
@@ -122,6 +119,5 @@ namespace PeekUI.Helpers
 
             return Rotation.Rotate0;
         }
-
     }
 }

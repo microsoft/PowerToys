@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using static PeekUI.Helpers.NativeModels;
 
 namespace PeekUI.Helpers
 {
-    
     public static class FileTypeHelper
     {
         public static bool IsSupportedImage(string extension) => extension switch

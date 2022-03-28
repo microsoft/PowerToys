@@ -32,6 +32,7 @@ namespace PeekUI.ViewModels
         public LinkedList<string> SelectedFilePaths { get; set; } = new LinkedList<string>();
 
         private BitmapSource? _bitmap;
+
         public BitmapSource? Bitmap
         {
             get
@@ -47,10 +48,10 @@ namespace PeekUI.ViewModels
                     OnPropertyChanged(nameof(Bitmap));
                 }
             }
-
         }
 
         private LinkedListNode<string>? _currentSelectedFilePath;
+
         public LinkedListNode<string>? CurrentSelectedFilePath
         {
             get
@@ -71,6 +72,7 @@ namespace PeekUI.ViewModels
         }
 
         private ObservableWindowData _mainWindowData = new ObservableWindowData();
+
         public ObservableWindowData MainWindowData
         {
             get

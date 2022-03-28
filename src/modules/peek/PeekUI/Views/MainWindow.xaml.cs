@@ -14,7 +14,7 @@ namespace PeekUI.Views
     /// </summary>
     public partial class MainWindow : Window, IDisposable
     {
-        private readonly MainViewModel _viewModel; 
+        private readonly MainViewModel _viewModel;
 
         public MainWindow()
         {
@@ -89,10 +89,12 @@ namespace PeekUI.Views
                         _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetPreviousOrLast();
                         e.Handled = true;
                         break;
+
                     case Key.Right:
                         _viewModel.CurrentSelectedFilePath = _viewModel.CurrentSelectedFilePath.GetNextOrFirst();
                         e.Handled = true;
                         break;
+
                     default: break;
                 }
             }

@@ -3,6 +3,7 @@
     public class ObservableRectangle : ObservableObject
     {
         private double _left;
+
         public double Left
         {
             get
@@ -21,6 +22,7 @@
         }
 
         private double _top;
+
         public double Top
         {
             get
@@ -39,6 +41,7 @@
         }
 
         private double _height;
+
         public double Height
         {
             get
@@ -57,6 +60,7 @@
         }
 
         private double _width;
+
         public double Width
         {
             get

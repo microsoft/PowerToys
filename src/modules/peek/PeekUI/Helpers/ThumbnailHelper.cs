@@ -38,7 +38,6 @@ namespace PeekUI.Helpers
                 // delete HBitmap to avoid memory leaks
                 NativeMethods.DeleteObject(hbitmap);
             }
-
         }
 
         public static BitmapSource GetThumbnail(string fileName, bool iconFallback)

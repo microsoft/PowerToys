@@ -5,8 +5,8 @@ namespace PeekUI.Helpers
 {
     public class NativeModels
     {
-        public const int GwlExStyle= -20;
-        public const int WsExToolWindow= 0x00000080;
+        public const int GwlExStyle = -20;
+        public const int WsExToolWindow = 0x00000080;
 
         public enum PerceivedType
         {
@@ -63,8 +63,10 @@ namespace PeekUI.Helpers
         {
             [FieldOffset(0)]
             public MouseInput mi;
+
             [FieldOffset(0)]
             public KeybdInput ki;
+
             [FieldOffset(0)]
             public HardwareInput hi;
         }
@@ -129,7 +131,7 @@ namespace PeekUI.Helpers
             DwmCpDefault = 0,
             DwmCpDoNotRound = 1,
             DwmCpRound = 2,
-            DwmCpRoundSmall= 3
+            DwmCpRoundSmall = 3
         }
 
         [Flags]
