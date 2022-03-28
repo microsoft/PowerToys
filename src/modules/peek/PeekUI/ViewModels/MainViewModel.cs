@@ -71,6 +71,28 @@ namespace PeekUI.ViewModels
             }
         }
 
+        public Visibility IsImageReady => IsLoading ? Visibility.Collapsed : Visibility.Visible;
+
+        private bool _isLoading = true;
+
+        public bool IsLoading
+        {
+            get
+            {
+                return _isLoading;
+            }
+
+            set
+            {
+                if (_isLoading != value)
+                {
+                    _isLoading = value;
+                    OnPropertyChanged(nameof(IsLoading));
+                    OnPropertyChanged(nameof(IsImageReady));
+                }
+            }
+        }
+
         private ObservableWindowData _mainWindowData = new ObservableWindowData();
 
         public ObservableWindowData MainWindowData
@@ -129,6 +151,8 @@ namespace PeekUI.ViewModels
 
         public async Task RenderImageToWindowAsync(string filename)
         {
+            IsLoading = true;
+
             var screen = Screen.FromHandle(ForegroundWindowHandle);
             Size maxWindowSize = new Size(screen.WpfBounds.Width * ImageScale, (screen.WpfBounds.Height) * ImageScale);
 
@@ -149,6 +173,12 @@ namespace PeekUI.ViewModels
         private async Task RenderSupportedImageToWindowAsync(string filename, Rect windowBounds, Size maxWindowSize)
         {
             DimensionData dimensionData = await FileLoadHelper.LoadDimensionsAsync(filename);
+            if (CancellationToken.IsCancellationRequested)
+            {
+                _cancellationTokenSource = new CancellationTokenSource();
+                return;
+            }
+
             var windowRect = dimensionData.Size.Fit(windowBounds, maxWindowSize, MinWindowSize, AllowedContentGap, MainWindowData.TitleBarHeight);
 
             MainWindowData.Rectangle.Width = windowRect.Width;
@@ -173,9 +203,9 @@ namespace PeekUI.ViewModels
             var bitmap = await FileLoadHelper.LoadThumbnailAsync(filename, true);
             if (CancellationToken.IsCancellationRequested)
             {
+                _cancellationTokenSource = new CancellationTokenSource();
                 return;
             }
-            _cancellationTokenSource = new CancellationTokenSource();
 
             Bitmap = bitmap;
 
@@ -188,6 +218,7 @@ namespace PeekUI.ViewModels
             MainWindowData.Rectangle.Top = windowRect.Top;
 
             MainWindowData.Visibility = Visibility.Visible;
+            IsLoading = false;
         }
 
         private async Task RenderUnsupportedFileToWindowAsync(string filename, Rect windowBounds, Size maxWindowSize)
@@ -203,15 +234,16 @@ namespace PeekUI.ViewModels
             var bitmap = await FileLoadHelper.LoadIconAsync(filename);
             if (CancellationToken.IsCancellationRequested)
             {
+                _cancellationTokenSource = new CancellationTokenSource();
                 return;
             }
-            _cancellationTokenSource = new CancellationTokenSource();
 
             Bitmap = bitmap;
             MainWindowData.Visibility = Visibility.Visible;
+            IsLoading = false;
         }
 
-        private async Task LoadImageAsync(string filename, System.Windows.Controls.Image imageControl, Rotation rotation, CancellationToken cancellationToken)
+        private Task LoadImageAsync(string filename, System.Windows.Controls.Image imageControl, Rotation rotation, CancellationToken cancellationToken)
         {
             bool isFullImageLoaded = false;
             bool isThumbnailLoaded = false;
@@ -220,8 +252,9 @@ namespace PeekUI.ViewModels
                 var bitmap = await FileLoadHelper.LoadThumbnailAsync(filename, false);
                 isThumbnailLoaded = true;
 
-                if (cancellationToken.IsCancellationRequested)
+                if (CancellationToken.IsCancellationRequested)
                 {
+                    _cancellationTokenSource = new CancellationTokenSource();
                     return;
                 }
 
@@ -229,6 +262,7 @@ namespace PeekUI.ViewModels
                 {
                     Bitmap = bitmap;
                     MainWindowData.Visibility = Visibility.Visible;
+                    IsLoading = false;
                 }
             });
 
@@ -237,8 +271,9 @@ namespace PeekUI.ViewModels
                 var bitmap = await FileLoadHelper.LoadFullImageAsync(filename, rotation);
                 isFullImageLoaded = true;
 
-                if (cancellationToken.IsCancellationRequested)
+                if (CancellationToken.IsCancellationRequested)
                 {
+                    _cancellationTokenSource = new CancellationTokenSource();
                     return;
                 }
 
@@ -246,11 +281,11 @@ namespace PeekUI.ViewModels
                 if (!isThumbnailLoaded)
                 {
                     MainWindowData.Visibility = Visibility.Visible;
+                    IsLoading = false;
                 }
             });
 
-            await Task.WhenAll(thumbnailLoadTask, fullImageLoadTask);
-            _cancellationTokenSource = new CancellationTokenSource();
+            return Task.WhenAll(thumbnailLoadTask, fullImageLoadTask);
         }
     }
 }
