@@ -1,8 +1,8 @@
-﻿using PeekUI.Helpers;
+﻿using PeekUI.Native;
 using System;
 using System.Windows;
 using System.Windows.Interop;
-using static PeekUI.Helpers.NativeModels;
+using static PeekUI.Native.NativeModels;
 
 namespace PeekUI.Extensions
 {

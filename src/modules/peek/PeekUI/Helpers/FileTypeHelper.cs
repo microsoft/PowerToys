@@ -1,5 +1,6 @@
-﻿using System;
-using static PeekUI.Helpers.NativeModels;
+﻿using PeekUI.Native;
+using System;
+using static PeekUI.Native.NativeModels;
 
 namespace PeekUI.Helpers
 {

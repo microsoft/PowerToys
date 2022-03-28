@@ -1,9 +1,9 @@
 ﻿using PeekUI.Models;
 using System;
 using System.Runtime.InteropServices;
-using static PeekUI.Helpers.NativeModels;
+using static PeekUI.Native.NativeModels;
 
-namespace PeekUI.Helpers
+namespace PeekUI.Native
 {
     public static class NativeMethods
     {

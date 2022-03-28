@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using static PeekUI.Helpers.NativeModels;
+using static PeekUI.Native.NativeModels;
 
 namespace PeekUI.Models
 {

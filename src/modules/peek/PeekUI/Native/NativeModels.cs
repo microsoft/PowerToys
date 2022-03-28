@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace PeekUI.Helpers
+namespace PeekUI.Native
 {
     public class NativeModels
     {

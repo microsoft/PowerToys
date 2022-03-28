@@ -1,4 +1,5 @@
 ﻿using PeekUI.Models;
+using PeekUI.Native;
 using System;
 using System.IO;
 using System.Reflection;
@@ -6,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
-using static PeekUI.Helpers.NativeModels;
+using static PeekUI.Native.NativeModels;
 
 namespace PeekUI.Helpers
 {
