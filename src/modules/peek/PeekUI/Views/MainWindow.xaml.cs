@@ -4,17 +4,10 @@ using PeekUI.Extensions;
 using PeekUI.Helpers;
 using PeekUI.ViewModels;
 using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media;
 
-namespace PeekUI
+namespace PeekUI.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -43,29 +36,48 @@ namespace PeekUI
             KeyDown += KeyIsDown;
         }
 
+        public void Dispose()
+        {
+            _viewModel.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            InteropHelper.SetToolWindowStyle(this);
+        }
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            _viewModel.MainWindowData.Visibility = Visibility.Collapsed;
+            _viewModel.MainWindowData.TitleBarHeight = TitleBar.GetHeight(this);
+            _viewModel.ImageControl = ImageControl;
+        }
+
         private async void MainViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            switch(e.PropertyName)
+            switch (e.PropertyName)
             {
                 case nameof(MainViewModel.CurrentSelectedFilePath):
                     if (_viewModel.CurrentSelectedFilePath != null)
                     {
-                        var filePath = _viewModel.CurrentSelectedFilePath.Value;
-                        var title = Path.GetFileName(filePath);
-                        _viewModel.WindowTitle = title;
-
-                        var titleBarHeight = TitleBar.GetHeight(this);
-
-                        await _viewModel.RenderImageToWindowAsync(filePath, ImageControl, titleBarHeight);
+                        await _viewModel.RenderImageToWindowAsync(_viewModel.CurrentSelectedFilePath.Value);
                     }
                     break;
             }
         }
-
-        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        private void OnPeekHotkey()
         {
-            _viewModel.MainWindowVisibility = Visibility.Collapsed;
-            e.Cancel = true;
+            if (IsActive && _viewModel.MainWindowData.Visibility == Visibility.Visible)
+            {
+                _viewModel.ClearSelection();
+            }
+            else
+            {
+                _viewModel.TryUpdateSelectedFilePaths();
+            }
+
+            BringProcessToForeground();
         }
 
         private void KeyIsDown(object? sender, KeyEventArgs e)
@@ -87,23 +99,6 @@ namespace PeekUI
             }
         }
 
-        private void OnPeekHotkey()
-        {
-            // if files are selected, open peek with those files (optimization: recognize already opened files)
-            // else if window is in focus, close peek
-
-            if (IsActive && _viewModel.MainWindowVisibility == Visibility.Visible)
-            {
-                _viewModel.ClearSelection();
-            }
-            else
-            {
-                _viewModel.TryUpdateSelectedFilePaths();
-            }
-
-            BringProcessToForeground();
-        }
-
         private void BringProcessToForeground()
         {
             // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
@@ -116,21 +111,10 @@ namespace PeekUI
             Activate();
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
-            _viewModel.MainWindowVisibility = Visibility.Collapsed;
-        }
-
-        protected override void OnSourceInitialized(EventArgs e)
-        {
-            base.OnSourceInitialized(e);
-            InteropHelper.SetToolWindowStyle(this);
-        }
-
-        public void Dispose()
-        {
-            _viewModel.Dispose();
-            GC.SuppressFinalize(this);
+            _viewModel.MainWindowData.Visibility = Visibility.Collapsed;
+            e.Cancel = true;
         }
     }
 }

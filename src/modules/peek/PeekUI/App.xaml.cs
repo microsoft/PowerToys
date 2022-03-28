@@ -1,13 +1,8 @@
 ﻿using Common.UI;
 using ManagedCommon;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace PeekUI
@@ -28,7 +23,7 @@ namespace PeekUI
         {
             _args = e?.Args ?? Array.Empty<string>();
 
-            // allow only one instance of color picker
+            // allow only one instance of peek
             _instanceMutex = new Mutex(true, @"Local\PowerToys_Peek_InstanceMutex", out bool createdNew);
             if (!createdNew)
             {

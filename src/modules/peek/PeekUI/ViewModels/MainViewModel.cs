@@ -1,140 +1,32 @@
 ﻿using PeekUI.Helpers;
+using PeekUI.Models;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WpfScreenHelper;
 using Size = System.Windows.Size;
 
 namespace PeekUI.ViewModels
 {
-    public class MainViewModel : ViewModel, IDisposable
+    public class MainViewModel : ObservableObject, IDisposable
     {
         private const double ImageScale = 0.75;
-
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
         private CancellationToken CancellationToken => _cancellationTokenSource.Token;
-
-        public LinkedList<string> SelectedFilePaths { get; set; } = new LinkedList<string>();
-
-        private LinkedListNode<string>? _currentSelectedFilePath;
-        public LinkedListNode<string>? CurrentSelectedFilePath
-        {
-            get
-            {
-                return _currentSelectedFilePath;
-            }
-
-            set
-            {
-                if (_currentSelectedFilePath != value)
-                {
-                    _currentSelectedFilePath = value;
-                    OnPropertyChanged(nameof(CurrentSelectedFilePath));
-                }
-            }
-        }
 
         public IntPtr ForegroundWindowHandle { get; internal set; }
 
-        private string _windowTitle = string.Empty;
-        public string WindowTitle
-        {
-            get
-            {
-                return _windowTitle;
-            }
+        public Image? ImageControl { get; set; }
 
-            set
-            {
-                if (_windowTitle != value)
-                {
-                    _windowTitle = value;
-                    OnPropertyChanged(nameof(WindowTitle));
-                }
-            }
-        }
-
-        private double _windowLeft;
-        public double WindowLeft
-        {
-            get
-            {
-                return _windowLeft;
-            }
-
-            set
-            {
-                if (_windowLeft != value)
-                {
-                    _windowLeft = value;
-                    OnPropertyChanged(nameof(WindowLeft));
-                }
-            }
-        }
-
-        private double _windowTop;
-        public double WindowTop
-        {
-            get
-            {
-                return _windowTop;
-            }
-
-            set
-            {
-                if (_windowTop != value)
-                {
-                    _windowTop = value;
-                    OnPropertyChanged(nameof(WindowTop));
-                }
-            }
-        }
-
-        private double _windowHeight;
-        public double WindowHeight
-        {
-            get
-            {
-                return _windowHeight;
-            }
-
-            set
-            {
-                if (_windowHeight != value)
-                {
-                    _windowHeight = value;
-                    OnPropertyChanged(nameof(WindowHeight));
-                }
-            }
-        }
-
-        private double _windowWidth;
-        public double WindowWidth
-        {
-            get
-            {
-                return _windowWidth;
-            }
-
-            set
-            {
-                if (_windowWidth != value)
-                {
-                    _windowWidth = value;
-                    OnPropertyChanged(nameof(WindowWidth));
-                }
-            }
-        }
+        public LinkedList<string> SelectedFilePaths { get; set; } = new LinkedList<string>();
 
         private BitmapSource? _bitmap;
         public BitmapSource? Bitmap
@@ -155,22 +47,40 @@ namespace PeekUI.ViewModels
 
         }
 
-        private Visibility _visibility;
-
-        public Visibility MainWindowVisibility
+        private LinkedListNode<string>? _currentSelectedFilePath;
+        public LinkedListNode<string>? CurrentSelectedFilePath
         {
             get
             {
-                return _visibility;
+                return _currentSelectedFilePath;
             }
 
             set
             {
-                if (_visibility != value)
+                if (_currentSelectedFilePath != value)
                 {
-                    _visibility = value;
+                    _currentSelectedFilePath = value;
+                    var title = Path.GetFileName(_currentSelectedFilePath?.Value ?? string.Empty);
+                    MainWindowData.Title = title;
+                    OnPropertyChanged(nameof(CurrentSelectedFilePath));
+                }
+            }
+        }
 
-                    OnPropertyChanged(nameof(MainWindowVisibility));
+        private ObservableWindowData _mainWindowData = new ObservableWindowData();
+        public ObservableWindowData MainWindowData
+        {
+            get
+            {
+                return _mainWindowData;
+            }
+
+            set
+            {
+                if (_mainWindowData != value)
+                {
+                    _mainWindowData = value;
+                    OnPropertyChanged(nameof(MainWindowData));
                 }
             }
         }
@@ -181,7 +91,7 @@ namespace PeekUI.ViewModels
             _cancellationTokenSource = new CancellationTokenSource();
 
             CurrentSelectedFilePath = null;
-            MainWindowVisibility = Visibility.Collapsed;
+            MainWindowData.Visibility = Visibility.Collapsed;
         }
 
         public bool TryUpdateSelectedFilePaths()
@@ -201,48 +111,54 @@ namespace PeekUI.ViewModels
             return isDifferentSelectedItems;
         }
 
-        public async Task RenderImageToWindowAsync(string filename, System.Windows.Controls.Image imageControl, double titleBarHeight)
+        public async Task RenderImageToWindowAsync(string filename)
         {
             var screen = Screen.FromHandle(ForegroundWindowHandle);
             Size maxWindowSize = new Size(screen.WpfBounds.Width * ImageScale, (screen.WpfBounds.Height) * ImageScale);
 
             if (FileTypeHelper.IsSupportedImage(Path.GetExtension(filename)))
             {
-                await RenderSupportedImageToWindowAsync(filename, screen, maxWindowSize, imageControl, titleBarHeight);
+                await RenderSupportedImageToWindowAsync(filename, screen, maxWindowSize);
             }
             else if (FileTypeHelper.IsMedia(Path.GetExtension(filename)) || FileTypeHelper.IsDocument(Path.GetExtension(filename)))
             {
-                await RenderMediaOrDocumentToWindowAsync(filename, screen, maxWindowSize, titleBarHeight);
+                await RenderMediaOrDocumentToWindowAsync(filename, screen, maxWindowSize);
             }
             else
             {
-                await RenderUnsupportedFileToWindowAsync(filename, screen, maxWindowSize, titleBarHeight);
+                await RenderUnsupportedFileToWindowAsync(filename, screen, maxWindowSize);
             }
         }
 
-        private async Task RenderSupportedImageToWindowAsync(string filename, Screen screen, Size maxWindowSize, System.Windows.Controls.Image imageControl, double titleBarHeight)
+        private async Task RenderSupportedImageToWindowAsync(string filename, Screen screen, Size maxWindowSize)
         {
             DimensionData dimensionData = await LoadDimensionsAsync(filename);
-            var windowRect = CalculateScaledImageRectangle(dimensionData.Size!.Value, screen, maxWindowSize, titleBarHeight);
-            WindowWidth = windowRect.Width;
-            WindowHeight = windowRect.Height;
-            WindowLeft = windowRect.Left;
-            WindowTop = windowRect.Top;
+            var windowRect = CalculateScaledImageRectangle(dimensionData.Size!.Value, screen, maxWindowSize, MainWindowData.TitleBarHeight);
+            MainWindowData.Rectangle.Width = windowRect.Width;
+            MainWindowData.Rectangle.Height = windowRect.Height;
+            MainWindowData.Rectangle.Left = windowRect.Left;
+            MainWindowData.Rectangle.Top = windowRect.Top;
 
-            if (dimensionData.Size!.Value.Width > WindowWidth || dimensionData.Size!.Value.Height > WindowHeight)
+            if (dimensionData.Size!.Value.Width > MainWindowData.Rectangle.Width || dimensionData.Size!.Value.Height > MainWindowData.Rectangle.Height)
             {
-                imageControl.StretchDirection = StretchDirection.Both;
+                if (ImageControl != null)
+                {
+                    ImageControl.StretchDirection = StretchDirection.Both;
+                }
             }
             else
             {
-                imageControl.StretchDirection = StretchDirection.DownOnly;
+                if (ImageControl != null)
+                {
+                    ImageControl.StretchDirection = StretchDirection.DownOnly;
+                }
             }
 
 
-            await LoadImageAsync(filename, imageControl, dimensionData.Rotation, CancellationToken);
+            await LoadImageAsync(filename, ImageControl, dimensionData.Rotation, CancellationToken);
         }
 
-        private async Task RenderMediaOrDocumentToWindowAsync(string filename, Screen screen, Size maxWindowSize, double titleBarHeight)
+        private async Task RenderMediaOrDocumentToWindowAsync(string filename, Screen screen, Size maxWindowSize)
         {
             var bitmap = await LoadThumbnailAsync(filename, true);
             if (CancellationToken.IsCancellationRequested)
@@ -253,22 +169,22 @@ namespace PeekUI.ViewModels
 
             Bitmap = bitmap;
 
-            var windowRect = CalculateScaledImageRectangle(new Size(bitmap.PixelWidth, bitmap.PixelHeight), screen, maxWindowSize, titleBarHeight);
-            WindowWidth = windowRect.Width;
-            WindowHeight = windowRect.Height;
-            WindowLeft = windowRect.Left;
-            WindowTop = windowRect.Top;
+            var windowRect = CalculateScaledImageRectangle(new Size(bitmap.PixelWidth, bitmap.PixelHeight), screen, maxWindowSize, MainWindowData.TitleBarHeight);
+            MainWindowData.Rectangle.Width = windowRect.Width;
+            MainWindowData.Rectangle.Height = windowRect.Height;
+            MainWindowData.Rectangle.Left = windowRect.Left;
+            MainWindowData.Rectangle.Top = windowRect.Top;
 
-            MainWindowVisibility = Visibility.Visible;
+            MainWindowData.Visibility = Visibility.Visible;
         }
 
-        private async Task RenderUnsupportedFileToWindowAsync(string filename, Screen screen, Size maxWindowSize, double titleBarHeight)
+        private async Task RenderUnsupportedFileToWindowAsync(string filename, Screen screen, Size maxWindowSize)
         {
-            var windowRect = CalculateScaledImageRectangle(new Size(0, 0), screen, maxWindowSize, titleBarHeight);
-            WindowWidth = windowRect.Width;
-            WindowHeight = windowRect.Height;
-            WindowLeft = windowRect.Left;
-            WindowTop = windowRect.Top;
+            var windowRect = CalculateScaledImageRectangle(new Size(0, 0), screen, maxWindowSize, MainWindowData.TitleBarHeight);
+            MainWindowData.Rectangle.Width = windowRect.Width;
+            MainWindowData.Rectangle.Height = windowRect.Height;
+            MainWindowData.Rectangle.Left = windowRect.Left;
+            MainWindowData.Rectangle.Top = windowRect.Top;
 
             var bitmap = await LoadIconAsync(filename);
             if (CancellationToken.IsCancellationRequested)
@@ -278,11 +194,16 @@ namespace PeekUI.ViewModels
             _cancellationTokenSource = new CancellationTokenSource();
 
             Bitmap = bitmap;
-            MainWindowVisibility = Visibility.Visible;
+            MainWindowData.Visibility = Visibility.Visible;
         }
 
-        private async Task LoadImageAsync(string filename, System.Windows.Controls.Image imageControl, Rotation rotation, CancellationToken cancellationToken)
+        private async Task LoadImageAsync(string filename, System.Windows.Controls.Image? imageControl, Rotation rotation, CancellationToken cancellationToken)
         {
+            if (imageControl == null)
+            {
+                return;
+            }
+
             bool isFullImageLoaded = false;
             bool isThumbnailLoaded = false;
             var thumbnailLoadTask = imageControl.Dispatcher.Invoke(async () =>
@@ -298,7 +219,7 @@ namespace PeekUI.ViewModels
                 if (!isFullImageLoaded)
                 {
                     Bitmap = bitmap;
-                    MainWindowVisibility = Visibility.Visible;
+                    MainWindowData.Visibility = Visibility.Visible;
                 }
             });
 
@@ -315,7 +236,7 @@ namespace PeekUI.ViewModels
                 Bitmap = bitmap;
                 if (!isThumbnailLoaded)
                 {
-                    MainWindowVisibility = Visibility.Visible;
+                    MainWindowData.Visibility = Visibility.Visible;
                 }
             });
 
