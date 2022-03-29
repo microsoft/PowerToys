@@ -79,7 +79,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - Additional features and improvements were added to existing PowerToys Run plugins.
 - New TimeDate plugin for PowerToys Run! Thanks [@htcfreek](https://github.com/htcfreek)!
 - We're registering svgs as a Picture kind when SVG Thumbnails are enabled so they appear when searching for pictures in File Explorer.
-- We've disabled PDF preview by default, given its incompatibilities with Outlook and that Edge is now being registered for previewing PDFs on Windows 10 too.
+- We've disabled PDF preview by default, given its incompatibilities with Outlook and that Edge is now being registered for previewing PDF files on Windows 10 too.
 - From a coding quality point of view, every project now has code analyzer active. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
 - A double click on the tray icon is needed instead of single click to open settings.
 
@@ -102,14 +102,14 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 - Fixed a bug where the same layout applied with different configurations to different screens would reset to a single configuration. (This was a hotfix for 0.56)
 - When snapping windows with rounded corners on Windows 11, set the correct corner preferences to avoid gaps between zones. Thanks [@hallatore](https://github.com/hallatore)!
-- Fix for canvas layout reseting due to resolution changes.
+- Fix for canvas layout resetting due to resolution changes.
 
 ### File explorer
 
 - Additional markdown file extensions added for Markdown Preview. Thanks [@skycommand](https://github.com/skycommand)!
 - Svgs are now registered as a picture kind on Windows.
 - Added a text wrapping setting to dev file preview. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Pdf file preview and thumbnails are now disabled by default, due to incompatibility with Outlook and an approppriate warning is shown in Settings.
+- Pdf file preview and thumbnails are now disabled by default, due to incompatibility with Outlook and an appropriate warning is shown in Settings.
 
 ### Mouse utility
 
@@ -163,7 +163,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - Additional logging has been added to Fancy Zones and PowerToys Run.
 - A new CI release build will not be triggered if all that was changed was just documentation.
 - Fixed a racing condition causing flaky build errors when building Power Rename.
-- Centralization of common csproj/vcsproj settings underway. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
+- Centralization of common csproj/vcxproj settings underway. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
 
 #### Community contributions
 
