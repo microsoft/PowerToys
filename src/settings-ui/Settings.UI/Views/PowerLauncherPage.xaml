@@ -9,7 +9,7 @@
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
     
@@ -202,9 +202,11 @@
                                                 <controls:Setting.ActionContent>
                                                     <StackPanel Orientation="Horizontal" Spacing="16">
 
+                                                        <!-- todo(Stefan): InfoBadge not available
                                                         <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
                                                                         Visibility="{x:Bind ShowNotAccessibleWarning}"
                                                                         Style="{StaticResource CriticalIconInfoBadgeStyle}" />
+                                                        -->
 
                                                         <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
                                                                       IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"/>

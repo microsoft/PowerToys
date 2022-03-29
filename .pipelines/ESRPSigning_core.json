@@ -114,7 +114,6 @@
                 "modules\\VideoConference\\PowerToys.VideoConferenceProxyFilter_x86.dll",
                 "modules\\VideoConference\\PowerToys.VideoConferenceProxyFilter_x64.dll",
 
-                "Settings\\PowerToys.Settings.UI.exe",
                 "Settings\\PowerToys.Settings.dll",
                 "Settings\\PowerToys.Settings.exe"
             ],

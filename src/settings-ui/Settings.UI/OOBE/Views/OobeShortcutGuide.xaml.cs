@@ -6,13 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Navigation;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -26,14 +25,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeShortcutGuide()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModulesEnum.ShortcutGuide]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.ShortcutGuide]);
             DataContext = ViewModel;
         }
 
-        private void Start_ShortcutGuide_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void Start_ShortcutGuide_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var executablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, @"..\modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe");
-            var id = Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture);
+            var id = System.Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
             var p = Process.Start(executablePath, id);
             if (p != null)
             {
@@ -43,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel.LogRunningModuleEvent();
         }
 
-        private void SettingsLaunchButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             if (OobeShellPage.OpenMainWindowCallback != null)
             {

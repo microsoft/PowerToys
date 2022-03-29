@@ -7,10 +7,12 @@
     xmlns:localModels="using:Microsoft.PowerToys.Settings.UI.OOBE.ViewModel"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    muxc:BackdropMaterial.ApplyToRootOrPageBackground="True"
     mc:Ignorable="d"
     HighContrastAdjustment="None">
 
+    <!-- todo(Stefan):
+    muxc:BackdropMaterial.ApplyToRootOrPageBackground="True"
+    -->
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
