@@ -4,15 +4,13 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.Resources;
-using Windows.Data.Json;
 using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -39,9 +37,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
             var settingsUtils = new SettingsUtils();
 
-            Action stateUpdatingAction = async () =>
+            Action stateUpdatingAction = () =>
             {
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, ViewModel.RefreshUpdatingState);
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ViewModel.RefreshUpdatingState();
+                });
             };
 
             ViewModel = new GeneralViewModel(

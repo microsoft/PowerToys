@@ -5,7 +5,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using Windows.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
@@ -14,6 +13,17 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         private const int GWL_STYLE = -16;
         private const int WS_POPUP = 1 << 31; // 0x80000000
         internal const int SPI_GETDESKWALLPAPER = 0x0073;
+        internal const int SW_SHOWNORMAL = 1;
+        internal const int SW_SHOWMAXIMIZED = 3;
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetActiveWindow();
+
+        [DllImport("user32.dll")]
+        internal static extern bool SetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+
+        [DllImport("user32.dll")]
+        internal static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
 
         [DllImport("user32.dll")]
         internal static extern uint SendInput(uint nInputs, NativeKeyboardHelper.INPUT[] pInputs, int cbSize);
@@ -43,6 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
+
         internal static extern bool SystemParametersInfo(int uiAction, int uiParam, StringBuilder pvParam, int fWinIni);
 
         public static void SetPopupStyle(IntPtr hwnd)

@@ -6,7 +6,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-      xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
+      xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
       mc:Ignorable="d"
       Loaded="Page_Loaded">
 

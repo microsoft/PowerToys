@@ -403,7 +403,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.WindowWalker.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.WindowWalker.UnitTests\Microsoft.Plugin.WindowWalker.UnitTests.csproj", "{8FE5A5EE-1B59-401C-9FB3-B04ECD3E29C1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Settings.UI.WinUI3", "src\settings-ui\Settings.UI.WinUI3\Settings.UI.WinUI3.csproj", "{020A7474-3601-4160-A159-D7B70B77B15F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings", "src\settings-ui\Settings.UI\PowerToys.Settings.csproj", "{020A7474-3601-4160-A159-D7B70B77B15F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

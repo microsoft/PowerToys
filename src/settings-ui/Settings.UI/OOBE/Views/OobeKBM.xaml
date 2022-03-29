@@ -3,7 +3,8 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls" xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
+      xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+      xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
       mc:Ignorable="d">
     <controls:OOBEPageControl x:Uid="Oobe_KBM"
                               HeroImage="ms-appx:///Assets/Modules/OOBE/KBM.gif">

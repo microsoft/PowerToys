@@ -2,17 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Abstractions;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
+using Microsoft.UI.Xaml.Controls;
 using Windows.System;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -23,15 +20,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private const string PowerToyName = "Keyboard Manager";
 
-        private readonly CoreDispatcher dispatcher;
         private readonly IFileSystemWatcher watcher;
 
         public KeyboardManagerViewModel ViewModel { get; }
 
         public KeyboardManagerPage()
         {
-            dispatcher = Window.Current.Dispatcher;
-
             var settingsUtils = new SettingsUtils();
             ViewModel = new KeyboardManagerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, FilterRemapKeysList);
 
@@ -44,13 +38,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
         }
 
-        private async void OnConfigFileUpdate()
+        private void OnConfigFileUpdate()
         {
             // Note: FileSystemWatcher raise notification multiple times for single update operation.
             // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration everytime since we will be updating the UI only if something is changed.
             if (ViewModel.LoadProfile())
             {
-                await dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                this.DispatcherQueue.TryEnqueue(() =>
                 {
                     ViewModel.NotifyFileChanged();
                 });

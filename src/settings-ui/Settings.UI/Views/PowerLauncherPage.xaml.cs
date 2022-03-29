@@ -8,7 +8,9 @@ using System.IO;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel.Resources;
+using Windows.UI.Core;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -56,7 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (powerLauncherSettings != null && !ViewModel.IsUpToDate(powerLauncherSettings))
                 {
-                    _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    this.DispatcherQueue.TryEnqueue(() =>
                     {
                         DataContext = ViewModel = new PowerLauncherViewModel(powerLauncherSettings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
                         this.Bindings.Update();
@@ -64,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             });
 
-            var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+            var loader = ResourceLoader.GetForViewIndependentUse();
 
             searchResultPreferencesOptions = new ObservableCollection<Tuple<string, string>>();
             searchResultPreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchResultPreference_AlphabeticalOrder"), "alphabetical_order"));
@@ -77,7 +79,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
         }
 
-        private void OpenColorsSettings_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void OpenColorsSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
         }
