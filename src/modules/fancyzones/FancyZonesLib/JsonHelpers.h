@@ -37,15 +37,6 @@ namespace JSONHelpers
         std::optional<FancyZonesDataTypes::ZoneSetData> FromJson(const json::JsonObject& zoneSet);
     };
 
-    struct AppZoneHistoryJSON
-    {
-        std::wstring appPath;
-        std::vector<FancyZonesDataTypes::AppZoneHistoryData> data;
-
-        static json::JsonObject ToJson(const AppZoneHistoryJSON& appZoneHistory);
-        static std::optional<AppZoneHistoryJSON> FromJson(const json::JsonObject& zoneSet);
-    };
-
     struct DeviceInfoJSON
     {
         FancyZonesDataTypes::DeviceIdData deviceId;
@@ -92,10 +83,6 @@ namespace JSONHelpers
     };
 
     json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName);
-
-    TAppZoneHistoryMap ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON);
-    json::JsonArray SerializeAppZoneHistory(const TAppZoneHistoryMap& appZoneHistoryMap);
-    void SaveAppZoneHistory(const std::wstring& appZoneHistoryFileName, const TAppZoneHistoryMap& appZoneHistoryMap);
 
     // replace zones-settings: applied layouts
     std::optional<TDeviceInfoMap> ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON);
