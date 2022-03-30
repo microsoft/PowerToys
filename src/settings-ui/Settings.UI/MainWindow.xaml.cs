@@ -25,7 +25,8 @@ namespace Microsoft.PowerToys.Settings.UI
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
-            this.InitializeComponent();
+            ShellPage.SetElevationStatus(App.IsElevated);
+            ShellPage.SetIsUserAnAdmin(App.IsUserAnAdmin);
 
             // Set window icon
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -67,6 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI
                 App.GetOobeWindow().Activate();
             });
 
+            this.InitializeComponent();
+
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
             {
@@ -86,9 +89,6 @@ namespace Microsoft.PowerToys.Settings.UI
                     }
                 }
             };
-
-            ShellPage.SetElevationStatus(App.IsElevated);
-            ShellPage.SetIsUserAnAdmin(App.IsUserAnAdmin);
 
             bootTime.Stop();
 
