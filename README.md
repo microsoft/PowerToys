@@ -143,7 +143,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 ### Settings
 
-- What's new button in the bottom with a new look, with a couple more UI tweaks. Thanks [@niels9001](https://github.com/niels9001)!
+- _What's new_ button in the bottom with a new look, with a few more UI tweaks. Thanks [@niels9001](https://github.com/niels9001)!
 - Fixed a bug causing Settings not to open when a racing condition caused Keyboard Manager settings to not be read correctly.
 - To open settings from the tray icon a double click is needed instead of a single click.
 - Fix for a bug which would cause checking for updates to run indefinitely.
