@@ -297,11 +297,7 @@ namespace FancyZonesDataTypes
             return std::wstring();
         }
 
-        std::wstring result = deviceName + L"_" + std::to_wstring(width) + L"_" + std::to_wstring(height) + L"_" + virtualDesktopIdStr.get();
-        if (!monitorId.empty())
-        {
-            result += L"_" + monitorId;
-        }
+        std::wstring result = deviceName + L"_" + virtualDesktopIdStr.get();
 
         return result;
     }
