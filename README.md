@@ -108,7 +108,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 - Additional markdown file extensions added for Markdown Preview. Thanks [@skycommand](https://github.com/skycommand)!
 - Svgs are now registered as a picture kind on Windows.
-- Added a text wrapping setting to dev file preview. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Added a text wrapping setting and copy context menu to dev file preview. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - Pdf file preview and thumbnails are now disabled by default, due to incompatibility with Outlook and an appropriate warning is shown in Settings.
 
 ### Mouse utility
@@ -130,7 +130,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - Calculator now handles trailing zeroes on hexadecimal numbers correctly.
 - System commands plugin can now show the local ip and mac addresses. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Folder plugin has improved results, with improved tooltips. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Windows setting plugin has added entries for Screen Saver and Connect Wiring Display Panel. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Windows settings plugin has added entries for Screen Saver and Connect Wiring Display Panel. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Plugins can now show descriptions for their configurations in settings. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Fix for the focus issue when calling PowerToys Run for the first time after login and after returning from some windows.
 - Fix for a bug on Program when creating a shortcut.
@@ -178,6 +178,7 @@ For [v0.58][github-next-release-work], we'll start work on below:
 - Environment Variables Editor PowerToy
 - Continue work on another new PowerToy
 - Stability / bug fixes
+- Adding new file types to dev file preview
 
 ## PowerToys Community
 
