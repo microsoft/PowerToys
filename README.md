@@ -77,7 +77,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 - PowerToys Run quality pass. Old standing issues were re-evaluated and fixed.
 - Additional features and improvements were added to existing PowerToys Run plugins.
-- New plugin for time and date values/information in PowerToys Run! Thanks [@htcfreek](https://github.com/htcfreek)!
+- New plugin for time and date values/information in PowerToys Run. Thanks [@htcfreek](https://github.com/htcfreek)!
 - The [PowerToys Run documentation](https://aka.ms/PowerToysOverview_PowerToysRun) is also receiving a required update. Thanks [@htcfreek](https://github.com/htcfreek)!
 - We're registering svgs as a Picture kind when SVG Thumbnails are enabled so they appear when searching for pictures in File Explorer.
 - We've disabled PDF preview by default, given its incompatibilities with Outlook and that Edge is now being registered for previewing PDF files on Windows 10 too.
@@ -125,7 +125,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - WindowWalker now has a tooltip, additional features like killing the process and closing the window, additional settings and improvements. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Unit converter now accepts additional ways of writing feet and gallon. Also interprets as either imperial or US gallons depending on current culture. Thanks [@yifan-k](https://github.com/yifan-k)!
 - Unit converter now accepts metre for meter.
-- Localization for Web Search and Unit Converter has been enabled.
+- Localization for Web Search and Unit Converter(not including units) has been enabled.
 - Localization for Windows Terminal has been enabled. (This was a hotfix for 0.56)
 - Calculator now tries to always interpret the dot (.) symbol as a decimal separator, despite configured culture, to meet expectations.
 - Calculator now handles trailing zeroes on hexadecimal numbers correctly.
