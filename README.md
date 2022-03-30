@@ -78,6 +78,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - PowerToys Run quality pass. Old standing issues were re-evaluated and fixed.
 - Additional features and improvements were added to existing PowerToys Run plugins.
 - New plugin for time and date values/information in PowerToys Run! Thanks [@htcfreek](https://github.com/htcfreek)!
+- The [PowerToys Run documentation](https://aka.ms/PowerToysOverview_PowerToysRun) is also receiving a required update. Thanks [@htcfreek](https://github.com/htcfreek)!
 - We're registering svgs as a Picture kind when SVG Thumbnails are enabled so they appear when searching for pictures in File Explorer.
 - We've disabled PDF preview by default, given its incompatibilities with Outlook and that Edge is now being registered for previewing PDF files on Windows 10 too.
 - From a coding quality point of view, every project now has code analyzer active. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
