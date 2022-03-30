@@ -163,7 +163,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - New patterns added for code spell-checking and stale entries removed. Thanks [@jsoref](https://github.com/jsoref)
 - Additional logging has been added to Fancy Zones and PowerToys Run.
 - A new CI release build will not be triggered if all that was changed was just documentation.
-- Fixed a racing condition causing flaky build errors when building Power Rename.
+- Fixed a racing condition causing flaky build errors when building PowerRename.
 - Centralization of common csproj/vcxproj settings underway. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
 
 #### Community contributions
