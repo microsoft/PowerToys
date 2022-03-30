@@ -117,11 +117,7 @@ namespace FancyZonesDataTypes
     {
         std::wstring deviceName = L"FallbackDevice";
         GUID virtualDesktopId;
-        std::wstring monitorId;
 
-        static std::optional<DeviceIdData> ParseDeviceId(const std::wstring& str);
-        static bool IsValidDeviceId(const std::wstring& str);
-        
         std::wstring toString() const;
     };
 
