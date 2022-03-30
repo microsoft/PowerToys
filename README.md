@@ -135,7 +135,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - Plugins can now show descriptions for their configurations in settings. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Fix for the focus issue when calling PowerToys Run for the first time after login and after returning from some windows.
 - Fix for a bug on Program when creating a shortcut.
-- Validated that upgrading to .net framework 6 fixed the error appearing when shutting down the system with PowerToys Run running.
+- Validated that upgrading to .NET framework 6 fixed the error appearing when shutting down the system with PowerToys Run running.
 
 ### Video conference mute
 
