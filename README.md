@@ -90,7 +90,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 ### Awake
 - Fixes for the system tray icon. Thanks [@dend](https://github.com/dend)!
-- Temporary duration presets now configurable. Thanks [@dend](https://github.com/dend)!
+- Temporary duration presets are now configurable. Thanks [@dend](https://github.com/dend)!
 - Fix for an issue causing Awake to not be closed properly. Thanks [@dend](https://github.com/dend)!
 
 ### ColorPicker
