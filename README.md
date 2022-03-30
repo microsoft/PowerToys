@@ -79,7 +79,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - Additional features and improvements were added to existing PowerToys Run plugins.
 - New plugin for time and date values/information in PowerToys Run. Thanks [@htcfreek](https://github.com/htcfreek)!
 - The [PowerToys Run documentation](https://aka.ms/PowerToysOverview_PowerToysRun) is also receiving a required update. Thanks [@htcfreek](https://github.com/htcfreek)!
-- We're registering svgs as a picture kind when SVG Thumbnails are enabled so they appear when searching for pictures in File Explorer.
+- PowerToys will register SVGs as a picture kind when SVG Thumbnails are enabled so they appear when searching for pictures in File Explorer.
 - We've disabled PDF preview by default, given its incompatibilities with Outlook and that Edge is now being registered for previewing PDF files on Windows 10 too.
 - From a coding quality point of view, every project now has code analyzer active. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
 - A double click on the tray icon is needed instead of single click to open settings.
@@ -95,7 +95,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 ### ColorPicker
 
-- It's now possible to delete multiple colors from history and also export them to a file. Thanks [@mshtang](https://github.com/mshtang)!
+- It's now possible to delete multiple colors from the history, or to export a list of colors to a file. Thanks [@mshtang](https://github.com/mshtang)!
 - The CIEXYZ format has increased precision. Thanks [@m13253](https://github.com/m13253)!
 - Performance improved by reducing the use of low level keyboard hooks.
 
@@ -108,9 +108,9 @@ In this release, we focused heavily on stability and improvements.  Below are so
 ### File explorer
 
 - Additional markdown file extensions added for Markdown Preview. Thanks [@skycommand](https://github.com/skycommand)!
-- Svgs are now registered as a picture kind on Windows.
+- SVG files are now registered as a picture kind on Windows.
 - Added a text wrapping setting and copy context menu to dev file preview. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Pdf file preview and thumbnails are now disabled by default, due to incompatibility with Outlook and an appropriate warning is shown in Settings.
+- PDF file preview and thumbnails are now disabled by default, due to incompatibility with Outlook and an appropriate warning is shown in Settings.
 
 ### Mouse utility
 
@@ -147,11 +147,11 @@ In this release, we focused heavily on stability and improvements.  Below are so
 - Fixed a bug causing Settings not to open when a racing condition caused Keyboard Manager settings to not be read correctly.
 - To open settings from the tray icon a double click is needed instead of a single click.
 - Fix for a bug which would cause checking for updates to run indefinitely.
-- When auto-updating, pass a flag to avoid restarting without being prompted.
+- When auto-updating, pass a flag to avoid rebooting the computer without being prompted.
 
 ### Installer
 
-- Dependencies installers are now executed with /norestart to avoid unprompted restarts. (This was a hotfix for 0.56). Thanks [@franky920920](https://github.com/franky920920)!
+- Dependencies installers are now executed with /norestart to avoid unprompted reboots. (This was a hotfix for 0.56). Thanks [@franky920920](https://github.com/franky920920)!
 - Upgraded .NET framework dependency to 6.0.3.
 - Installer logs are now saved where they can be collected and sent by the bug report tool.
 - Reverted changes to start with proper elevation and when installed under a different user since those changes ended up causing more issues where PowerToys would start running with the wrong user.
