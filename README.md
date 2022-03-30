@@ -123,7 +123,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 - New plugin for time and date values/information. Thanks [@htcfreek](https://github.com/htcfreek)!
 - WindowWalker now has a tooltip, additional features like killing the process and closing the window, additional settings and improvements. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Unit converter now accepts additional ways of writing feet and gallon. Also interprets as either imperial or US gallons depending on current culture. Thanks [@yifan-k](https://github.com/yifan-k)!
+- Unit converter now accepts alternative syntax for feet and gallon. It interprets as either imperial or US gallons depending on current culture. Thanks [@yifan-k](https://github.com/yifan-k)!
 - Unit converter now accepts metre for meter.
 - Localization for Web Search and Unit Converter (not including units) has been enabled.
 - Localization for Windows Terminal has been enabled. (This was a hotfix for 0.56)
