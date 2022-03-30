@@ -114,7 +114,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 ### Mouse utility
 
-- Find my mouse has a new setting to specify a minimum distance for activation. (This was a hotfix for 0.56)
+- Find my mouse has a new setting to specify a minimum moving distance for activation. (This was a hotfix for 0.56)
 - Fix for the bug causing the task bar to be hidden behind other windows when a mouse utility was active.
 - Fix for the bug causing shortcuts set on icons to not activate when a mouse utility was active.
 - Fixed a slight offset in Mouse Pointer Crosshairs when it's configured with an odd thickness.
