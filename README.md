@@ -150,7 +150,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 ### Installer
 
-- Dependencies installers are now called with /norestart to avoid unprompted restarts. (This was a hotfix for 0.56). Thanks [@franky920920](https://github.com/franky920920)!
+- Dependencies installers are now executed with /norestart to avoid unprompted restarts. (This was a hotfix for 0.56). Thanks [@franky920920](https://github.com/franky920920)!
 - Upgraded .net framework dependency to 6.0.3.
 - Installer logs are now saved where they can be collected and sent by the bug report tool.
 - Reverted changes to start with proper elevation and when installed under a different user since those changes ended up causing more issues where PowerToys would start running with the wrong user.
