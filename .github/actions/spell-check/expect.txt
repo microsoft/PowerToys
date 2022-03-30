@@ -2023,7 +2023,7 @@ timediff
 Timeline
 timeunion
 timeutil
-timezone
+timezones
 Titlecase
 TLayout
 tlb
