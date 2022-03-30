@@ -77,7 +77,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 - PowerToys Run quality pass. Old standing issues were re-evaluated and fixed.
 - Additional features and improvements were added to existing PowerToys Run plugins.
-- New TimeDate plugin for PowerToys Run! Thanks [@htcfreek](https://github.com/htcfreek)!
+- New plugin for time and date values/information in PowerToys Run! Thanks [@htcfreek](https://github.com/htcfreek)!
 - We're registering svgs as a Picture kind when SVG Thumbnails are enabled so they appear when searching for pictures in File Explorer.
 - We've disabled PDF preview by default, given its incompatibilities with Outlook and that Edge is now being registered for previewing PDF files on Windows 10 too.
 - From a coding quality point of view, every project now has code analyzer active. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
@@ -120,17 +120,17 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 ### PowerToys Run
 
-- New TimeDate plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
-- WindowWalker has more information in the tooltip, additional features like killing the process and closing the window, additional settings and improvements. Thanks [@htcfreek](https://github.com/htcfreek)!
+- New plugin for time and date values/information. Thanks [@htcfreek](https://github.com/htcfreek)!
+- WindowWalker now has a tooltip, additional features like killing the process and closing the window, additional settings and improvements. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Unit converter now accepts additional ways of writing feet and gallon. Also interprets as either imperial or US gallons depending on current culture. Thanks [@yifan-k](https://github.com/yifan-k)!
 - Unit converter now accepts metre for meter.
 - Localization for Web Search and Unit Converter has been enabled.
 - Localization for Windows Terminal has been enabled. (This was a hotfix for 0.56)
 - Calculator now tries to always interpret the dot (.) symbol as a decimal separator, despite configured culture, to meet expectations.
 - Calculator now handles trailing zeroes on hexadecimal numbers correctly.
-- System can now get the local ip and mac addresses. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Folder has improved results, with improved tooltips. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Setting has added entries for Screen Saver and Connect Wiring Display Panel. Thanks [@htcfreek](https://github.com/htcfreek)!
+- System commands plugin can now show the local ip and mac addresses. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Folder plugin has improved results, with improved tooltips. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Windows setting plugin has added entries for Screen Saver and Connect Wiring Display Panel. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Plugins can now show descriptions for their configurations in settings. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Fix for the focus issue when calling PowerToys Run for the first time after login and after returning from some windows.
 - Fix for a bug on Program when creating a shortcut.
