@@ -889,10 +889,9 @@ namespace FancyZonesUnitTests
     {
         TEST_METHOD(MonitorToJson)
         {
-            const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            MonitorInfo monitor{ 144, deviceId, -10, 0, 1920, 1080, true };
+            MonitorInfo monitor{ L"AOC2460#4&fe3a015&0&UID65793", L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", 144, -10, 0, 1920, 1080, true };
 
-            const auto expectedStr = L"{\"dpi\": 144, \"monitor-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"top-coordinate\": -10, \"left-coordinate\": 0, \"width\": 1920, \"height\": 1080, \"is-selected\": true}";
+            const auto expectedStr = L"{\"monitor\": \"AOC2460#4&fe3a015&0&UID65793\", \"virtual-desktop\": \"{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"dpi\": 144, \"top-coordinate\": -10, \"left-coordinate\": 0, \"width\": 1920, \"height\": 1080, \"is-selected\": true}";
             const auto expected = json::JsonObject::Parse(expectedStr);
 
             const auto actual = MonitorInfo::ToJson(monitor);
@@ -903,14 +902,14 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(EditorArgsToJson)
         {
-            MonitorInfo monitor1{ 144, L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}", -10, 0, 1920, 1080, true };
-            MonitorInfo monitor2{ 96, L"AOC2460#4&fe3a015&0&UID65793_1920_1080_{39B25DD2-130D-4B5D-8851-4791D66B1538}", 0, 1920, 1920, 1080, false };
+            MonitorInfo monitor1{ L"AOC2460#4&fe3a015&0&UID65793", L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", 144, -10, 0, 1920, 1080, true };
+            MonitorInfo monitor2{ L"AOC2460#4&fe3a015&0&UID65793", L"{39B25DD2-130D-4B5D-8851-4791D66B1538}", 96, 0, 1920, 1920, 1080, false };
             EditorArgs args{
                 1, true, std::vector<MonitorInfo>{ monitor1, monitor2 }
             };
 
-            const std::wstring expectedMonitor1 = L"{\"dpi\": 144, \"monitor-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"top-coordinate\": -10, \"left-coordinate\": 0, \"width\": 1920, \"height\": 1080, \"is-selected\": true}";
-            const std::wstring expectedMonitor2 = L"{\"dpi\": 96, \"monitor-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1080_{39B25DD2-130D-4B5D-8851-4791D66B1538}\", \"top-coordinate\": 0, \"left-coordinate\": 1920, \"width\": 1920, \"height\": 1080, \"is-selected\": false}";
+            const std::wstring expectedMonitor1 = L"{\"monitor\": \"AOC2460#4&fe3a015&0&UID65793\", \"virtual-desktop\": \"{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"dpi\": 144, \"top-coordinate\": -10, \"left-coordinate\": 0, \"width\": 1920, \"height\": 1080, \"is-selected\": true}";
+            const std::wstring expectedMonitor2 = L"{\"monitor\": \"AOC2460#4&fe3a015&0&UID65793\", \"virtual-desktop\": \"{39B25DD2-130D-4B5D-8851-4791D66B1538}\", \"dpi\": 96, \"top-coordinate\": 0, \"left-coordinate\": 1920, \"width\": 1920, \"height\": 1080, \"is-selected\": false}";
             const std::wstring expectedStr = L"{\"process-id\": 1, \"span-zones-across-monitors\": true, \"monitors\": [" + expectedMonitor1 + L", " + expectedMonitor2 + L"]}";
             
             const auto expected = json::JsonObject::Parse(expectedStr);

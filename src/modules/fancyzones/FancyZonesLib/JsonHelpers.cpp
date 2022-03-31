@@ -63,7 +63,8 @@ namespace NonLocalizable
 
     // Editor arguments
     const wchar_t Dpi[] = L"dpi";
-    const wchar_t MonitorId[] = L"monitor-id";
+    const wchar_t MonitorNameId[] = L"monitor";
+    const wchar_t VirtualDesktopId[] = L"virtual-desktop";
     const wchar_t TopCoordinate[] = L"top-coordinate";
     const wchar_t LeftCoordinate[] = L"left-coordinate";
     const wchar_t Width[] = L"width";
@@ -611,8 +612,9 @@ namespace JSONHelpers
     {
         json::JsonObject result{};
 
+        result.SetNamedValue(NonLocalizable::MonitorNameId, json::value(monitor.monitorName));
+        result.SetNamedValue(NonLocalizable::VirtualDesktopId, json::value(monitor.virtualDesktop));
         result.SetNamedValue(NonLocalizable::Dpi, json::value(monitor.dpi));
-        result.SetNamedValue(NonLocalizable::MonitorId, json::value(monitor.id));
         result.SetNamedValue(NonLocalizable::TopCoordinate, json::value(monitor.top));
         result.SetNamedValue(NonLocalizable::LeftCoordinate, json::value(monitor.left));
         result.SetNamedValue(NonLocalizable::Width, json::value(monitor.width));

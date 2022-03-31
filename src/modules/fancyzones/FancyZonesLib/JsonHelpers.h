@@ -90,8 +90,9 @@ namespace JSONHelpers
 
     struct MonitorInfo
     {
+        std::wstring monitorName;
+        std::wstring virtualDesktop;
         int dpi;
-        std::wstring id;
         int top;
         int left;
         int width;
