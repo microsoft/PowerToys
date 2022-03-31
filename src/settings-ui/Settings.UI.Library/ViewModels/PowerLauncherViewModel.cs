@@ -104,6 +104,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
         {
+            if (
+                e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowNotAccessibleWarning)
+                || e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowNotAllowedKeywordWarning)
+                )
+            {
+                // Don't trigger a settings update if the changed property is for visual notification.
+                return;
+            }
+
             OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
             UpdateSettings();
         }
