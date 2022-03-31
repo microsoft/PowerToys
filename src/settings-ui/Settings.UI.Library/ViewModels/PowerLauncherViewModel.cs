@@ -439,6 +439,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 var plugins = settings.Plugins.Where(p => p.Name.StartsWith(SearchText, StringComparison.OrdinalIgnoreCase) || p.Name.IndexOf($" {SearchText}", StringComparison.OrdinalIgnoreCase) > 0);
                 _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)));
+                foreach (var plugin in _plugins)
+                {
+                    plugin.PropertyChanged += OnPluginInfoChange;
+                }
             }
             else
             {
