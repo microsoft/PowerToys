@@ -86,6 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
             _allowPopupWindowSnap = Settings.Properties.FancyzonesAllowPopupWindowSnap.Value;
             _allowChildWindowSnap = Settings.Properties.FancyzonesAllowChildWindowSnap.Value;
+            _disableRoundCornersOnSnap = Settings.Properties.FancyzonesDisableRoundCornersOnSnap.Value;
             _highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
             _systemTheme = Settings.Properties.FancyzonesSystemTheme.Value;
@@ -135,6 +136,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _showZoneNumber;
         private bool _allowPopupWindowSnap;
         private bool _allowChildWindowSnap;
+        private bool _disableRoundCornersOnSnap;
 
         private int _highlightOpacity;
         private string _excludedApps;
@@ -597,6 +599,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _allowChildWindowSnap = value;
                     Settings.Properties.FancyzonesAllowChildWindowSnap.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool DisableRoundCornersOnWindowSnap
+        {
+            get
+            {
+                return _disableRoundCornersOnSnap;
+            }
+
+            set
+            {
+                if (_disableRoundCornersOnSnap != value)
+                {
+                    _disableRoundCornersOnSnap = value;
+                    Settings.Properties.FancyzonesDisableRoundCornersOnSnap.Value = value;
                     NotifyPropertyChanged();
                 }
             }

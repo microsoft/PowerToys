@@ -189,6 +189,10 @@
                                                                  x:Uid="FancyZones_AllowPopupWindowSnap"/>
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowChildWindowSnap}" Margin="{StaticResource ExpanderSettingMargin}"/>
+                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <controls:CheckBoxWithDescriptionControl IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableRoundCornersOnWindowSnap}"
+                                                                 Margin="56, -2, 40, 14"
+                                                                 x:Uid="FancyZones_DisableRoundCornersOnWindowSnap"/>
                             </StackPanel>
 
                         </controls:SettingExpander.Content>
