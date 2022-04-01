@@ -247,7 +247,10 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
             }
         }
 
-        FancyZonesWindowUtils::ResetRoundCornersPreference(window);
+        if (FancyZonesSettings::settings().disableRoundCorners)
+        {
+            FancyZonesWindowUtils::ResetRoundCornersPreference(window);
+        }
 
         auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (monitor)

@@ -33,4 +33,5 @@ enum class SettingId
     ExcludedApps,
     AllowSnapPopupWindows,
     AllowSnapChildWindows,
+    DisableRoundCornersOnSnapping,
 };
