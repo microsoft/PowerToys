@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 if (Environment.TickCount < _lastIPCMessageSentTick + 500)
                 {
-                    // Don't try to update data from the file if we tried to write to it through IPC int the last 500 milliseconds.
+                    // Don't try to update data from the file if we tried to write to it through IPC in the last 500 milliseconds.
                     return;
                 }
 
