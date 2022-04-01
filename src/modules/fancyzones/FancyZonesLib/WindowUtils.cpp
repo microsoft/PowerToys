@@ -517,15 +517,6 @@ void FancyZonesWindowUtils::ResetRoundCornersPreference(HWND window) noexcept
 
         RemoveProp(window, ZonedWindowProperties::PropertyCornerPreference);
     }
-    else
-    {
-        // Set window corner preference on Windows 11 to "Default"
-        int cornerPreference = DWMWCP_DEFAULT;
-        if (!SUCCEEDED(DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference))))
-        {
-            Logger::error(L"Failed to set DWMWCP_DEFAULT corner preference");
-        }
-    }
 }
 
 void FancyZonesWindowUtils::MakeWindowTransparent(HWND window)
