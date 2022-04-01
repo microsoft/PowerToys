@@ -245,6 +245,8 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
 
             auto rect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, size, workAreaWindow);
             FancyZonesWindowUtils::SizeWindowToRect(window, rect);
+
+            FancyZonesWindowUtils::DisableRoundCorners(window);
         }
 
         FancyZonesWindowProperties::StampZoneIndexProperty(window, indexSet);
