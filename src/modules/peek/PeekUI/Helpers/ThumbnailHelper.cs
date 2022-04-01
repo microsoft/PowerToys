@@ -15,7 +15,7 @@ namespace PeekUI.Helpers
     {
         private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
         public static readonly string ProgramDirectory = Directory.GetParent(Assembly.Location)!.ToString();
-        public static readonly string ErrorIcon = Path.Combine(ProgramDirectory, "Assets", "e3f7-64.png");
+        public static readonly string ErrorIcon = Path.Combine(ProgramDirectory, "Assets", "error.png");
 
         // Based on https://stackoverflow.com/questions/21751747/extract-thumbnail-for-any-file-in-windows
         private const string IShellItem2Guid = "7E9FB0D3-919F-4307-AB2E-9B1860310C93";

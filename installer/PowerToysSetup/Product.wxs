@@ -12,6 +12,7 @@
     <?define AwakeProjectName="Awake"?>
     <?define MouseUtilsProjectName="MouseUtils"?>
     <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
+    <?define PeekProjectName="Peek"?>
 
     <?define RepoDir="$(var.ProjectDir)..\..\" ?>
     <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
@@ -42,11 +43,11 @@
     
     <?define SettingsV2Files=concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;System.IO.Abstractions.dll;PowerToys.Settings.UI.Lib.dll;PowerToys.Settings.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;PowerToys.Interop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ColorCode.Core.dll;ColorCode.UWP.dll;Microsoft.Graphics.Canvas.winmd;Microsoft.Toolkit.Uwp.UI.Controls.Core.dll;Microsoft.Toolkit.Uwp.UI.Controls.DataGrid.dll;Microsoft.Toolkit.Uwp.UI.Controls.Input.dll;Microsoft.Toolkit.Uwp.UI.Controls.Layout.dll;Microsoft.Toolkit.Uwp.UI.Controls.Markdown.dll;Microsoft.Toolkit.Uwp.UI.Controls.Media.dll;Microsoft.Toolkit.Uwp.UI.Controls.Primitives.dll;Microsoft.Toolkit.Uwp.pri;Microsoft.Toolkit.Uwp.UI.pri;Microsoft.Toolkit.Win32.UI.XamlHost.pri;Microsoft.UI.Xaml.pri;Microsoft.Xaml.Interactions.pri;Microsoft.Xaml.Interactivity.pri;resources.pri;PowerToys.Settings.exe;PowerToys.Settings.UI.exe;PowerToys.Settings.deps.json;PowerToys.Settings.runtimeconfig.json;NoiseAsset_256x256_PNG.png;Microsoft.Toolkit.Win32.UI.XamlHost.winmd;Microsoft.UI.Xaml.winmd;App.xbf;PowerToys.Settings.UI.xr.xml;Microsoft.Toolkit.Win32.UI.XamlHost.xml?>
 
-    <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png?>
+    <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png;Peek.png?>
 
 	<?define SettingsV2OOBEAssetsModulesFiles=ColorPicker.gif;AlwaysOnTop.png;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
 
-	<?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png?>
+	<?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png;Peek.png?>
 
 	<?define SettingsV2StylesFiles=TextBlock.xbf;Button.xbf?>
 
@@ -415,6 +416,12 @@
                         <!-- Color Picker -->
                         <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
                             <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
+                        </Directory>
+
+                        <!-- Peek -->
+                        <Directory Id="PeekInstallFolder" Name="$(var.PeekProjectName)">
+                            <Directory Id="PeekResourcesFolder" Name="Resources"/>
+                            <Directory Id="PeekAssetsFolder" Name="Assets" />
                         </Directory>
 
                         <!-- Mouse Utils -->
@@ -848,6 +855,31 @@
 			</Component>
 		</DirectoryRef>
 
+        <!-- Peek -->
+        <DirectoryRef Id="PeekInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PeekProjectName)">
+            <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+            <Component Id="Module_Peek" Guid="6520F12A-C255-4C3E-862B-0589897BEE21" Win64="yes">
+                <?foreach File in PowerToys.Peek.dll;PowerToys.PeekUI.exe;PowerToys.PeekUI.dll;PowerToys.PeekUI.deps.json;PowerToys.PeekUI.runtimeconfig.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;WpfScreenHelper.dll?>
+                <File Id="PeekFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\$(var.File)" />
+                <?endforeach?>
+            </Component>
+        </DirectoryRef>
+
+        <!-- Peek Resources -->
+        <DirectoryRef Id="PeekResourcesFolder" FileSource="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Resources">
+            <Component Id="Module_Peek_Icon">
+                <File Id="PeekFile_icon.ico" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Resources\Peek.ico" />
+            </Component>
+        </DirectoryRef>
+        
+        <!-- Peek Assets -->
+        <DirectoryRef Id="PeekAssetsFolder" FileSource="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Assets">
+			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
+            <Component Id="Module_Peek_Assets" Guid="7E781723-60AB-4027-B634-AFCEDDB2B1CD" Win64="yes">
+                <File Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\Assets\error.png" />
+            </Component>
+        </DirectoryRef>
+
         <!-- Awake -->
         <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)">
 			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
@@ -1053,6 +1085,9 @@
             <ComponentRef Id="Module_ColorPicker" />
             <ComponentRef Id="Module_ColorPicker_Icon"/>
 			<ComponentRef Id="Module_ColorPicker_Cursor"/>
+            <ComponentRef Id="Module_Peek" />
+            <ComponentRef Id="Module_Peek_Icon"/>
+            <ComponentRef Id="Module_Peek_Assets" />
             <ComponentRef Id="Module_Awake"/>
             <ComponentRef Id="Module_Awake_Images"/>
             <ComponentRef Id="Module_FindMyMouse"/>
@@ -1102,7 +1137,7 @@
     <Fragment>
         <!-- Resource directories should be added only if the installer is built on the build farm -->
         <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;PeekInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
             <!-- Resource file directories -->
             <?foreach Language in $(var.LocLanguageList)?>
@@ -1255,6 +1290,12 @@
                 Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder"
                 Guid="$(var.CompGUIDPrefix)03">
                 <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.Language)\PowerToys.ColorPickerUI.resources.dll" />
+            </Component>
+            <Component
+                Id="Peek_$(var.IdSafeLanguage)_Component"
+                Directory="Resource$(var.IdSafeLanguage)PeekInstallFolder"
+                Guid="$(var.CompGUIDPrefix)03">
+                <File Id="Peek_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.PeekProjectName)\$(var.Language)\PowerToys.PeekUI.resources.dll" />
             </Component>
             <Component
                 Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component"

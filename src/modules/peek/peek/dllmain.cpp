@@ -189,7 +189,7 @@ private:
 
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
         sei.lpVerb = L"open";
-        sei.lpFile = L"modules\\Peek\\PeekUI\\Powertoys.PeekUI.exe";
+        sei.lpFile = L"modules\\Peek\\Powertoys.PeekUI.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
 

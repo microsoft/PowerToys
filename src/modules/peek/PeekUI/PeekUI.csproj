@@ -9,7 +9,7 @@
     <UseWPF>true</UseWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\Peek\PeekUI</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\Peek\</OutputPath>
     <UseWindowsForms>True</UseWindowsForms>
     <ApplicationIcon>Resources\FluentIconsPeek.ico</ApplicationIcon>
   </PropertyGroup>
@@ -42,10 +42,18 @@
 	<ItemGroup>
 		<Resource Include="Resources\Peek.ico" />
 	</ItemGroup>
+    
+    <ItemGroup>
+        <None Update="Resources\Peek.ico">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Assets\error.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
-  <ItemGroup>
+    <ItemGroup>
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />
-    <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
     <PackageReference Include="WpfScreenHelper" Version="2.0.0" />
   </ItemGroup>
 
