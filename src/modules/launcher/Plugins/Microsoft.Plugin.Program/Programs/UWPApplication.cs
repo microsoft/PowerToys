@@ -159,7 +159,7 @@ namespace Microsoft.Plugin.Program.Programs
                             },
                         });
 
-                // We don't add contex menu to 'run as different user', because UWP applications normally installed per user and not for all users.
+                // We don't add context menu to 'run as different user', because UWP applications normally installed per user and not for all users.
             }
 
             contextMenus.Add(
