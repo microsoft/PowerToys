@@ -394,6 +394,8 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         auto iter = m_topmostWindows.find(data->hwnd);
         if (iter != m_topmostWindows.end())
         {
+            // pin border again, in some cases topmost flag stops working: https://github.com/microsoft/PowerToys/issues/17332
+            PinTopmostWindow(data->hwnd); 
             AssignBorder(data->hwnd);
         }
     }

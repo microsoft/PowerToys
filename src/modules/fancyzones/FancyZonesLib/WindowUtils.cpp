@@ -339,11 +339,6 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
     ScreenToWorkAreaCoords(window, rect);
 
     placement.rcNormalPosition = rect;
-
-    // Set window corner preference on Windows 11 to "Do not round"
-    int corner_preference = DWMWCP_DONOTROUND;
-    DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &corner_preference, sizeof(corner_preference));
-
     placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
     auto result = ::SetWindowPlacement(window, &placement);
@@ -413,11 +408,6 @@ void FancyZonesWindowUtils::RestoreWindowSize(HWND window) noexcept
             SizeWindowToRect(window, rect);
         }
 
-        // Set window corner preference on Windows 11 to "Default"
-        // TODO: Should probably store preference from before snap
-        int corner_preference = DWMWCP_DEFAULT;
-        DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &corner_preference, sizeof(corner_preference));
-
         ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
     }
 }
@@ -484,6 +474,49 @@ RECT FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(HWND window, RECT rect
     MapWindowRect(windowOfRect, nullptr, &newWindowRect);
 
     return newWindowRect;
+}
+
+void FancyZonesWindowUtils::DisableRoundCorners(HWND window) noexcept
+{
+    HANDLE handle = GetPropW(window, ZonedWindowProperties::PropertyCornerPreference);
+    if (!handle)
+    {
+        int cornerPreference = DWMWCP_DEFAULT;
+        // save corner preference if it wasn't set already
+        DwmGetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference));
+
+        HANDLE preferenceHandle;
+        memcpy(&preferenceHandle, &cornerPreference, sizeof(int));
+
+        if (!SetProp(window, ZonedWindowProperties::PropertyCornerPreference, preferenceHandle))
+        {
+            Logger::error(L"Failed to save corner preference, {}", get_last_error_or_default(GetLastError()));
+        }
+    }
+
+    // Set window corner preference on Windows 11 to "Do not round"
+    int cornerPreference = DWMWCP_DONOTROUND;
+    if (!SUCCEEDED(DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference))))
+    {
+        Logger::error(L"Failed to set DWMWCP_DONOTROUND corner preference");
+    }
+}
+
+void FancyZonesWindowUtils::ResetRoundCornersPreference(HWND window) noexcept
+{
+    HANDLE handle = GetPropW(window, ZonedWindowProperties::PropertyCornerPreference);
+    if (handle)
+    {
+        int cornerPreference;
+        memcpy(&cornerPreference, &handle, sizeof(int));
+
+        if (!SUCCEEDED(DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference))))
+        {
+            Logger::error(L"Failed to set saved corner preference");
+        }
+
+        RemoveProp(window, ZonedWindowProperties::PropertyCornerPreference);
+    }
 }
 
 void FancyZonesWindowUtils::MakeWindowTransparent(HWND window)
