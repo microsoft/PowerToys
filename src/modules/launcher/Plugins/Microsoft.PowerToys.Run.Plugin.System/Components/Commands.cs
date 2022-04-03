@@ -159,7 +159,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
             var results = new List<Result>();
 
             // We update the cache only if the last query is older than 'updateCacheIntervalSeconds' seconds
-            if ((DateTime.Now - timeOfLastNetworkQuery).TotalSeconds >= UpdateCacheIntervalSeconds)
+            DateTime timeOfLastNetworkQueryBefore = timeOfLastNetworkQuery;
+            timeOfLastNetworkQuery = DateTime.Now;             // Set time of last query to this query
+            if ((timeOfLastNetworkQuery - timeOfLastNetworkQueryBefore).TotalSeconds >= UpdateCacheIntervalSeconds)
             {
                 networkPropertiesCache = NetworkConnectionProperties.GetList();
             }
@@ -205,9 +207,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     });
                 }
             }
-
-            // Set time of last query
-            timeOfLastNetworkQuery = DateTime.Now;
 
             return results;
         }
