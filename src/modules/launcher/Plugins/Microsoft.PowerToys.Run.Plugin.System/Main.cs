@@ -73,16 +73,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public List<Result> Query(Query query)
         {
-            var results = new List<Result>();
+            List<Result> results = new List<Result>();
+            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
 
             if (query == null)
             {
                 return results;
             }
 
-            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
-
-            // normal system commands are fast and can be return here
+            // normal system commands are fast and can be returned immediately
             var systemCommands = Commands.GetSystemCommands(IsBootedInUefiMode, IconTheme, culture, _confirmSystemCommands);
             foreach (var c in systemCommands)
             {
@@ -112,16 +111,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public List<Result> Query(Query query, bool delayedExecution)
         {
-            var results = new List<Result>();
+            List<Result> results = new List<Result>();
+            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
 
             if (query == null)
             {
                 return results;
             }
 
-            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
-
-            // Network ip and mac results are slow with many network cards and returned here.
+            // Network (ip and mac) results are slow with many network cards and returned delayed.
             // On global queries the first word/part has to be 'ip', 'mac' or 'address' for network results
             string[] keywordList = Resources.ResourceManager.GetString("Microsoft_plugin_sys_Search_NetworkKeywordList", culture).Split("; ");
             if (!string.IsNullOrEmpty(query.ActionKeyword) || keywordList.Any(x => query.Search.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)))

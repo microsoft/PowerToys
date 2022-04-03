@@ -138,9 +138,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         }
 
         /// <summary>
-        /// Creates a list with all network adaoters and their properties
+        /// Creates a list with all network adapters and their properties
         /// </summary>
-        /// <returns>List with the properties of all network adapters</returns>
+        /// <returns>List containing all network adapters</returns>
         internal static List<NetworkConnectionProperties> GetList()
         {
             List<NetworkConnectionProperties> list = new List<NetworkConnectionProperties>();
