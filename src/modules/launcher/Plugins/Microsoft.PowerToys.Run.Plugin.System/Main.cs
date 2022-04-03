@@ -94,7 +94,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                 }
             }
 
-            // The following information result is commented because delayed queries doesn't clear output if no results are available.
+            // The following information result is not returned because delayed queries doesn't clear output if no results are available.
             // On global queries the first word/part has to be 'ip', 'mac' or 'address' for network results
             // string[] keywordList = Resources.ResourceManager.GetString("Microsoft_plugin_sys_Search_NetworkKeywordList", culture).Split("; ");
             // if (!string.IsNullOrEmpty(query.ActionKeyword) || keywordList.Any(x => query.Search.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)))
