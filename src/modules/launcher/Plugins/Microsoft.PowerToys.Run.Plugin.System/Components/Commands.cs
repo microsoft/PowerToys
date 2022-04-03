@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         // Cache for network interface information to save query time
         private const int UpdateCacheIntervalSeconds = 5;
         private static List<NetworkConnectionProperties> networkPropertiesCache = new List<NetworkConnectionProperties>();
-        private static DateTime timeOfLastQuery;
+        private static DateTime timeOfLastNetworkQuery;
 
         /// <summary>
         /// Returns a list with all system command results
@@ -159,10 +159,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
             var results = new List<Result>();
 
             // We update the cache only if the last query is older than 'updateCacheIntervalSeconds' seconds
-            if ((DateTime.Now - timeOfLastQuery).TotalSeconds >= UpdateCacheIntervalSeconds)
+            if ((DateTime.Now - timeOfLastNetworkQuery).TotalSeconds >= UpdateCacheIntervalSeconds)
             {
                 networkPropertiesCache = NetworkConnectionProperties.GetList();
-                timeOfLastQuery = DateTime.Now;
             }
 
             foreach (NetworkConnectionProperties intInfo in networkPropertiesCache)
@@ -206,6 +205,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     });
                 }
             }
+
+            // Set time of last query
+            timeOfLastNetworkQuery = DateTime.Now;
 
             return results;
         }
