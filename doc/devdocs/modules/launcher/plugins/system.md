@@ -69,7 +69,7 @@ Available commands:
 - The network results (IP and MAC address) are only shown on global queries, if the search term starts with either IP, MAC or Address. (We compare case-insensitive.)
 
 ### Returning results
-We return the results in two stepps:
+We return the results in two steps:
 1. All results which we can create very fast like shutdown or logoff via [`Main.Query(Query query)`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Main.cs).
 2. All results which need some time to create like the network results (IP, MAC) via [`Main.Query(Query query, bool delayedExecution)`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Main.cs).
 
