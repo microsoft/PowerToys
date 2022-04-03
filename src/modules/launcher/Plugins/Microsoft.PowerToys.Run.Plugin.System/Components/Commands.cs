@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         internal const int EWXFORCEIFHUNG = 0x00000010;
 
         // Cache for network interface information to save query time
-        private const int UpdateCacheIntervallSeconds = 5;
+        private const int UpdateCacheIntervalSeconds = 5;
         private static List<NetworkConnectionProperties> networkPropertiesCache = new List<NetworkConnectionProperties>();
         private static DateTime timeOfLastQuery;
 
@@ -158,8 +158,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         {
             var results = new List<Result>();
 
-            // We update the cache only if the last query is older than 'updateCacheIntervallSeconds' seconds
-            if ((DateTime.Now - timeOfLastQuery).TotalSeconds >= UpdateCacheIntervallSeconds)
+            // We update the cache only if the last query is older than 'updateCacheIntervalSeconds' seconds
+            if ((DateTime.Now - timeOfLastQuery).TotalSeconds >= UpdateCacheIntervalSeconds)
             {
                 networkPropertiesCache = NetworkConnectionProperties.GetList();
                 timeOfLastQuery = DateTime.Now;
