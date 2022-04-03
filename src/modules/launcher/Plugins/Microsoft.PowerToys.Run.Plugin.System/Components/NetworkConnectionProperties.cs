@@ -313,7 +313,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 case null:
                     return string.Empty;
                 default:
-                    throw new ArgumentException($"'{property}' is not of type 'string', 'List<string>' or <IPAddressCollection>.", nameof(property));
+                    throw new ArgumentException($"'{property}' is not of type 'string', 'List<string>', 'List<IPAddress>' or 'IPAddressCollection'.", nameof(property));
             }
         }
     }
