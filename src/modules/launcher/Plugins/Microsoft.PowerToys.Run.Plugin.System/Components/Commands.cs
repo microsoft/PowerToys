@@ -28,8 +28,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         internal const int EWXFORCEIFHUNG = 0x00000010;
 
         // Cache for network interface information to save query time
+        private const int UpdateCacheIntervallSeconds = 5;
         private static List<NetworkConnectionProperties> networkPropertiesCache = new List<NetworkConnectionProperties>();
-        private static DateTime lastQueryTime;
+        private static DateTime timeOfLastQuery;
 
         /// <summary>
         /// Returns a list with all system command results
@@ -157,10 +158,11 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         {
             var results = new List<Result>();
 
-            if ((DateTime.Now - lastQueryTime).TotalSeconds >= 3)
+            // We update the cache only if the last query is older than 'updateCacheIntervallSeconds' seconds
+            if ((DateTime.Now - timeOfLastQuery).TotalSeconds >= UpdateCacheIntervallSeconds)
             {
                 networkPropertiesCache = NetworkConnectionProperties.GetList();
-                lastQueryTime = DateTime.Now;
+                timeOfLastQuery = DateTime.Now;
             }
 
             foreach (NetworkConnectionProperties intInfo in networkPropertiesCache)
