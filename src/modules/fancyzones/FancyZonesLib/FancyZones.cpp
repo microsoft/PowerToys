@@ -333,19 +333,12 @@ std::pair<winrt::com_ptr<IWorkArea>, ZoneIndexSet> FancyZones::GetAppZoneHistory
 
 void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> workArea, const ZoneIndexSet& zoneIndexSet) noexcept
 {
-    if (!AppZoneHistory::instance().IsAnotherWindowOfApplicationInstanceZoned(window, workArea->UniqueId()))
+    if (workArea)
     {
-        if (workArea)
-        {
-            Trace::FancyZones::SnapNewWindowIntoZone(workArea->ZoneSet());
-        }
-        m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, workArea);
-        AppZoneHistory::instance().UpdateProcessIdToHandleMap(window, workArea->UniqueId());
+        Trace::FancyZones::SnapNewWindowIntoZone(workArea->ZoneSet());
     }
-    else
-    {
-        Logger::info(L"Window was already zoned");
-    }
+    m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, workArea);
+    AppZoneHistory::instance().UpdateProcessIdToHandleMap(window, workArea->UniqueId());
 }
 
 bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR active, HMONITOR primary) noexcept
