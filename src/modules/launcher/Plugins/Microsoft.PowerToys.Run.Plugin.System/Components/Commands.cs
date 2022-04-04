@@ -2,10 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Net.NetworkInformation;
 using System.Windows;
 using System.Windows.Interop;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
@@ -27,6 +26,11 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         internal const int EWXFORCE = 0x00000004;
         internal const int EWXPOWEROFF = 0x00000008;
         internal const int EWXFORCEIFHUNG = 0x00000010;
+
+        // Cache for network interface information to save query time
+        private const int UpdateCacheIntervalSeconds = 5;
+        private static List<NetworkConnectionProperties> networkPropertiesCache = new List<NetworkConnectionProperties>();
+        private static DateTime timeOfLastNetworkQuery;
 
         /// <summary>
         /// Returns a list with all system command results
@@ -154,11 +158,16 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         {
             var results = new List<Result>();
 
-            var interfaces = NetworkInterface.GetAllNetworkInterfaces().Where(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.GetPhysicalAddress() != null);
-            foreach (NetworkInterface i in interfaces)
+            // We update the cache only if the last query is older than 'updateCacheIntervalSeconds' seconds
+            DateTime timeOfLastNetworkQueryBefore = timeOfLastNetworkQuery;
+            timeOfLastNetworkQuery = DateTime.Now;             // Set time of last query to this query
+            if ((timeOfLastNetworkQuery - timeOfLastNetworkQueryBefore).TotalSeconds >= UpdateCacheIntervalSeconds)
             {
-                NetworkConnectionProperties intInfo = new NetworkConnectionProperties(i);
+                networkPropertiesCache = NetworkConnectionProperties.GetList();
+            }
 
+            foreach (NetworkConnectionProperties intInfo in networkPropertiesCache)
+            {
                 if (!string.IsNullOrEmpty(intInfo.IPv4))
                 {
                     results.Add(new Result()
