@@ -487,8 +487,14 @@ namespace Microsoft.Plugin.Program.Programs
                 var program = CreateWin32Program(path);
                 string target = ShellLinkHelper.RetrieveTargetPath(path);
 
-                if (!string.IsNullOrEmpty(target) && (File.Exists(target) || Directory.Exists(target)))
+                if (!string.IsNullOrEmpty(target))
                 {
+                    if (!(File.Exists(target) || Directory.Exists(target)))
+                    {
+                        // If the link points nowhere, consider it invalid.
+                        return InvalidProgram;
+                    }
+
                     program.LnkResolvedPath = program.FullPath;
 
                     // Using CurrentCulture since this is user facing
@@ -514,11 +520,6 @@ namespace Microsoft.Plugin.Program.Programs
                             program.Description = info.FileDescription;
                         }
                     }
-                }
-                else
-                {
-                    // If the link points nowhere, consider it invalid.
-                    return InvalidProgram;
                 }
 
                 return program;
