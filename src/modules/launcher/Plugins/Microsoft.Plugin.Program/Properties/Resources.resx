@@ -165,4 +165,7 @@
   <data name="powertoys_run_plugin_program_uwp_failed" xml:space="preserve">
     <value>Can't start UWP</value>
   </data>
+  <data name="wox_plugin_program_run_as_user" xml:space="preserve">
+    <value>Run as different user (Ctrl+Shift+U)</value>
+  </data>
 </root>
