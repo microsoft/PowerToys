@@ -2077,4 +2077,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Shell_WhatsNew.Content" xml:space="preserve">
     <value>What's new</value>
   </data>
+  <data name="FancyZones_DisableRoundCornersOnWindowSnap.Description" xml:space="preserve">
+    <value>Works on Windows 11 </value>
+  </data>
+  <data name="FancyZones_DisableRoundCornersOnWindowSnap.Header" xml:space="preserve">
+    <value>Disable round corners when window is snapped</value>
+  </data>
 </root>

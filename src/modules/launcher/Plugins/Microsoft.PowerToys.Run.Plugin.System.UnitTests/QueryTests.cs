@@ -28,11 +28,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         [DataRow("sleep", "Put computer to sleep")]
         [DataRow("hibernate", "Hibernate computer")]
         [DataRow("empty recycle", "Empty Recycle Bin")]
-        [DataRow("ip", "IPv4 address of")]
-        [DataRow("address", "IPv4 address of")] // searching for address should show ipv4 first
-        [DataRow("ip v4", "IPv4 address of")]
-        [DataRow("ip v6", "IPv6 address of")]
-        [DataRow("mac addr", "MAC address of")]
         public void EnvironmentIndependentQueryResults(string typedString, string expectedResult)
         {
             // Setup
@@ -41,6 +36,25 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
+
+            // Assert
+            Assert.IsTrue(result.StartsWith(expectedResult, StringComparison.OrdinalIgnoreCase));
+        }
+
+        [DataTestMethod]
+        [DataRow("ip", "IPv4 address of")]
+        [DataRow("address", "IPv4 address of")] // searching for address should show ipv4 first
+        [DataRow("ip v4", "IPv4 address of")]
+        [DataRow("ip v6", "IPv6 address of")]
+        [DataRow("mac addr", "MAC address of")]
+        public void DelayedQueryResults(string typedString, string expectedResult)
+        {
+            // Setup
+            Mock<Main> main = new Mock<Main>();
+            Query expectedQuery = new Query(typedString);
+
+            // Act
+            var result = main.Object.Query(expectedQuery, true).FirstOrDefault().SubTitle;
 
             // Assert
             Assert.IsTrue(result.StartsWith(expectedResult, StringComparison.OrdinalIgnoreCase));

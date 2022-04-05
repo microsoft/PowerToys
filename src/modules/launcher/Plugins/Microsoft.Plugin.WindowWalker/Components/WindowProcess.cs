@@ -186,7 +186,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             if (IsFullAccessDenied)
             {
                 string killTree = killProcessTree ? " /t" : string.Empty;
-                Helper.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, true, true);
+                Helper.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, Helper.ShellRunAsType.Administrator, true);
             }
             else
             {

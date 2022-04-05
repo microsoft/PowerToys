@@ -19,15 +19,31 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private readonly ObservableCollection<Tuple<string, string>> searchResultPreferencesOptions;
         private readonly ObservableCollection<Tuple<string, string>> searchTypePreferencesOptions;
 
+        private int _lastIPCMessageSentTick;
+
+        // Keep track of the last IPC Message that was sent.
+        private int SendDefaultIPCMessageTimed(string msg)
+        {
+            _lastIPCMessageSentTick = Environment.TickCount;
+            return ShellPage.SendDefaultIPCMessage(msg);
+        }
+
         public PowerLauncherPage()
         {
             InitializeComponent();
             var settingsUtils = new SettingsUtils();
+            _lastIPCMessageSentTick = Environment.TickCount;
             PowerLauncherSettings settings = settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
-            ViewModel = new PowerLauncherViewModel(settings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
+            ViewModel = new PowerLauncherViewModel(settings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SendDefaultIPCMessageTimed, App.IsDarkTheme);
             DataContext = ViewModel;
             _ = Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", () =>
             {
+                if (Environment.TickCount < _lastIPCMessageSentTick + 500)
+                {
+                    // Don't try to update data from the file if we tried to write to it through IPC in the last 500 milliseconds.
+                    return;
+                }
+
                 PowerLauncherSettings powerLauncherSettings = null;
                 try
                 {

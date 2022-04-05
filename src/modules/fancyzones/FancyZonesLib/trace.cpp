@@ -55,6 +55,9 @@
 #define ShowZonesOnAllMonitorsKey "ShowZonesOnAllMonitors"
 #define SpanZonesAcrossMonitorsKey "SpanZonesAcrossMonitors"
 #define MakeDraggedWindowTransparentKey "MakeDraggedWindowTransparent"
+#define AllowSnapChildWindows "AllowSnapChildWindows"
+#define AllowSnapPopupWindows "AllowSnapPopupWindows"
+#define DisableRoundCornersOnSnapping "DisableRoundCornersOnSnapping"
 #define ZoneColorKey "ZoneColor"
 #define ZoneBorderColorKey "ZoneBorderColor"
 #define ZoneHighlightColorKey "ZoneHighlightColor"
@@ -324,6 +327,9 @@ void Trace::SettingsTelemetry(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.showZonesOnAllMonitors, ShowZonesOnAllMonitorsKey),
         TraceLoggingBoolean(settings.spanZonesAcrossMonitors, SpanZonesAcrossMonitorsKey),
         TraceLoggingBoolean(settings.makeDraggedWindowTransparent, MakeDraggedWindowTransparentKey),
+        TraceLoggingBoolean(settings.allowSnapChildWindows, AllowSnapChildWindows),
+        TraceLoggingBoolean(settings.allowSnapPopupWindows, AllowSnapPopupWindows),
+        TraceLoggingBoolean(settings.disableRoundCorners, DisableRoundCornersOnSnapping),
         TraceLoggingWideString(settings.zoneColor.c_str(), ZoneColorKey),
         TraceLoggingWideString(settings.zoneBorderColor.c_str(), ZoneBorderColorKey),
         TraceLoggingWideString(settings.zoneHighlightColor.c_str(), ZoneHighlightColorKey),
