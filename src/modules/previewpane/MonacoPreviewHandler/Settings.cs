@@ -22,7 +22,19 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// </summary>
         public bool Wrap
         {
-            get => moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.EnableMonacoPreviewWordWrap;
+            get
+            {
+                try
+                {
+                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.EnableMonacoPreviewWordWrap;
+                }
+                catch (FileNotFoundException)
+                {
+                    // Couldn't read the settings.
+                    // Assume default of true.
+                    return true;
+                }
+            }
         }
 
         /// <summary>
