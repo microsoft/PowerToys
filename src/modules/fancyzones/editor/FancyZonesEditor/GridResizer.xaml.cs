@@ -58,10 +58,5 @@ namespace FancyZonesEditor
                 }
             }
         }
-
-        private void ThumbInitialized(object sender, System.EventArgs e)
-        {
-            System.Windows.Automation.AutomationProperties.SetName(this, FancyZonesEditor.Properties.Resources.Resizer_Thumb_Announce);
-        }
     }
 }

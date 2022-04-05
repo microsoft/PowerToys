@@ -251,6 +251,26 @@ namespace FancyZonesEditor.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string for representing the name of the width dimension.
+        /// </summary>
+        public static string Width_Name {
+            get
+            {
+                return ResourceManager.GetString("Width_Name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string for representing the name of the height dimension.
+        /// </summary>
+        public static string Height_Name {
+            get
+            {
+                return ResourceManager.GetString("Height_Name", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string for explaining how to use the thumbs to resize zone.
         /// </summary>
         public static string Resizer_Thumb_Announce {
