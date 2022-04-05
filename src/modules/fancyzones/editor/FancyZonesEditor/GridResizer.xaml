@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:FancyZonesEditor"
              mc:Ignorable="d" 
              Focusable="True"
+             Initialized="ThumbInitialized"
              d:DesignHeight="300" d:DesignWidth="300">
     <Thumb.Template>
         <ControlTemplate>
