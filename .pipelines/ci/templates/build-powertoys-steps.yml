@@ -92,13 +92,24 @@ steps:
     restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
 
 - task: VSBuild@1
-  displayName: 'Build PowerToysSetup.sln'
+  displayName: 'Build PowerToys MSI'
   inputs:
     solution: '**\installer\PowerToysSetup.sln'
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: /t:PowerToysInstaller ${{ parameters.additionalBuildArguments }}
+    maximumCpuCount: true
+
+- task: VSBuild@1
+  displayName: 'Build PowerToys Bootstrapper'
+  inputs:
+    solution: '**\installer\PowerToysSetup.sln'
+    vsVersion: 17.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArgs: /t:PowerToysBootstrapper ${{ parameters.additionalBuildArguments }}
+    clean: false
     maximumCpuCount: true
 
 # directly not doing WinAppDriver testing
