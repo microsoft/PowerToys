@@ -241,10 +241,19 @@ namespace FancyZonesEditor.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string for representing the names of a single zone.
+        /// </summary>
+        public static string Zone_Name {
+            get
+            {
+                return ResourceManager.GetString("Zone_Name", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string for explaining how to use the thumbs to resize zone.
         /// </summary>
-        public static string Resizer_Thumb_Announce
-        {
+        public static string Resizer_Thumb_Announce {
             get
             {
                 return ResourceManager.GetString("Resizer_Thumb_Announce", resourceCulture);
