@@ -239,7 +239,47 @@ namespace FancyZonesEditor.Properties {
                 return ResourceManager.GetString("Delete_Layout_Dialog_Announce", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string for representing the names of a single zone.
+        /// </summary>
+        public static string Zone_Name {
+            get
+            {
+                return ResourceManager.GetString("Zone_Name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string for representing the name of the width dimension.
+        /// </summary>
+        public static string Width_Name {
+            get
+            {
+                return ResourceManager.GetString("Width_Name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string for representing the name of the height dimension.
+        /// </summary>
+        public static string Height_Name {
+            get
+            {
+                return ResourceManager.GetString("Height_Name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string for explaining how to use the thumbs to resize zone.
+        /// </summary>
+        public static string Resizer_Thumb_Announce {
+            get
+            {
+                return ResourceManager.GetString("Resizer_Thumb_Announce", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Delete zone.
         /// </summary>

@@ -288,6 +288,22 @@
   <data name="Delete_Layout_Dialog_Announce" xml:space="preserve">
     <value>Delete layout dialog.</value>
   </data>
+  <data name="Zone_Name" xml:space="preserve">
+    <value>Zone</value>
+    <comment>The name of the zones.</comment>
+  </data>
+  <data name="Width_Name" xml:space="preserve">
+    <value>Width</value>
+    <comment>The name of dimension called width.</comment>
+  </data>
+  <data name="Height_Name" xml:space="preserve">
+    <value>Height</value>
+    <comment>The name of dimension called height.</comment>
+  </data>
+  <data name="Resizer_Thumb_Announce" xml:space="preserve">
+    <value>Use the arrow keys to resize, delete key to remove.</value>
+    <comment>Keys and key means the keyboard keys.</comment>
+  </data>
   <data name="Are_You_Sure" xml:space="preserve">
     <value>Are you sure?</value>
   </data>

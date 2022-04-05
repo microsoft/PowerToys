@@ -37,7 +37,8 @@
         </Grid>
         <StackPanel Margin="16">
             <StackPanel Margin="0,8,0,0">
-                <TextBlock 
+                <TextBlock
+                    Focusable="True"
                     TextWrapping="Wrap">
                     <Run 
                         FontWeight="Bold" 
@@ -46,6 +47,7 @@
                 </TextBlock>
                 <TextBlock 
                     Margin="0,8,0,0"
+                    Focusable="True"
                     TextWrapping="Wrap">
                     <Run 
                         FontWeight="Bold" 
@@ -54,6 +56,7 @@
                 </TextBlock>
                 <TextBlock 
                     Margin="0,8,0,0"
+                    Focusable="True"
                     TextWrapping="Wrap">
                     <Run 
                         FontWeight="Bold" 
