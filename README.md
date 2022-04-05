@@ -28,7 +28,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 - Windows 11 or Windows 10 v1903 (18362) or newer.
 - Our installer will install the following items:
-   - [.NET Core 3.1.22 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.22-windows-x64-installer) or a newer 3.1.x runtime. This is needed currently for the Settings application.
+   - [.NET Core 3.1.23 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.23-windows-x64-installer) or a newer 3.1.x runtime. This is needed currently for the Settings application.
    - [.NET 6.0.3 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-6.0.3-windows-x64-installer) or a newer 6.0.x runtime. 
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version. 
 
