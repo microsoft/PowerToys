@@ -148,6 +148,16 @@ namespace Wox.Infrastructure
             return Process.Start(processStartInfo);
         }
 
+        public static bool OpenCommandInShell(string path, string pattern, string arguments, string workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
+        {
+            if (pattern.Contains("%1", StringComparison.Ordinal))
+            {
+                arguments = pattern.Replace("%1", arguments);
+            }
+
+            return OpenInShell(path, arguments, workingDir, runAs, runWithHiddenWindow);
+        }
+
         public static bool OpenInShell(string path, string arguments = null, string workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
         {
             using (var process = new Process())
