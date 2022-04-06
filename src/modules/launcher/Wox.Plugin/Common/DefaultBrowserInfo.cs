@@ -36,7 +36,7 @@ namespace Wox.Plugin.Common
         /// <summary>Gets the user-friendly name of the default browser.</summary>
         public static string Name { get; private set; }
 
-        /// <summary>Gets the command line pattern for MS Edge.</summary>
+        /// <summary>Gets the command line pattern of the default browser.</summary>
         public static string ArgumentsPattern { get; private set; }
 
         public static bool IsDefaultBrowserSet { get => !string.IsNullOrEmpty(Path); }
