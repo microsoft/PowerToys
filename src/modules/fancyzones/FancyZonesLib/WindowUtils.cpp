@@ -491,7 +491,7 @@ void FancyZonesWindowUtils::DisableRoundCorners(HWND window) noexcept
 
         // 0 is a valid value, so use a high bit to distinguish between 0 and a GetProp fail
         uint64_t cornerPreference64 = static_cast<uint64_t>(cornerPreference);
-        cornerPreference64 = cornerPreference64 & 0xFFFF | 0x10000;
+        cornerPreference64 = (cornerPreference64 & 0xFFFFFFFF) | 0x100000000;
 
         HANDLE preferenceHandle = {};
         memcpy(&preferenceHandle, &cornerPreference64, sizeof(HANDLE));
@@ -521,7 +521,7 @@ void FancyZonesWindowUtils::ResetRoundCornersPreference(HWND window) noexcept
 
         uint64_t cornerPreference64 = {};
         memcpy(&cornerPreference64, &handle, sizeof(uint64_t));
-        cornerPreference64 = cornerPreference64 & 0xFFFF;
+        cornerPreference64 = cornerPreference64 & 0xFFFFFFFF;
 
         int cornerPreference = static_cast<int>(cornerPreference64);
 
