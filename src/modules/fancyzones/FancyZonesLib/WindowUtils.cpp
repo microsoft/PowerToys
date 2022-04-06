@@ -478,15 +478,23 @@ RECT FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(HWND window, RECT rect
 
 void FancyZonesWindowUtils::DisableRoundCorners(HWND window) noexcept
 {
-    HANDLE handle = GetPropW(window, ZonedWindowProperties::PropertyCornerPreference);
+    HANDLE handle = GetProp(window, ZonedWindowProperties::PropertyCornerPreference);
     if (!handle)
     {
         int cornerPreference = DWMWCP_DEFAULT;
         // save corner preference if it wasn't set already
         DwmGetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference));
 
-        HANDLE preferenceHandle;
-        memcpy(&preferenceHandle, &cornerPreference, sizeof(int));
+        static_assert(sizeof(int) == 4);
+        static_assert(sizeof(HANDLE) == 8);
+        static_assert(sizeof(HANDLE) == sizeof(uint64_t));
+
+        // 0 is a valid value, so use a high bit to distinguish between 0 and a GetProp fail
+        uint64_t cornerPreference64 = static_cast<uint64_t>(cornerPreference);
+        cornerPreference64 = cornerPreference64 & 0xFFFF | 0x10000;
+
+        HANDLE preferenceHandle = {};
+        memcpy(&preferenceHandle, &cornerPreference64, sizeof(HANDLE));
 
         if (!SetProp(window, ZonedWindowProperties::PropertyCornerPreference, preferenceHandle))
         {
@@ -504,11 +512,18 @@ void FancyZonesWindowUtils::DisableRoundCorners(HWND window) noexcept
 
 void FancyZonesWindowUtils::ResetRoundCornersPreference(HWND window) noexcept
 {
-    HANDLE handle = GetPropW(window, ZonedWindowProperties::PropertyCornerPreference);
+    HANDLE handle = GetProp(window, ZonedWindowProperties::PropertyCornerPreference);
     if (handle)
     {
-        int cornerPreference;
-        memcpy(&cornerPreference, &handle, sizeof(int));
+        static_assert(sizeof(int) == 4);
+        static_assert(sizeof(HANDLE) == 8);
+        static_assert(sizeof(HANDLE) == sizeof(uint64_t));
+
+        uint64_t cornerPreference64 = {};
+        memcpy(&cornerPreference64, &handle, sizeof(uint64_t));
+        cornerPreference64 = cornerPreference64 & 0xFFFF;
+
+        int cornerPreference = static_cast<int>(cornerPreference64);
 
         if (!SUCCEEDED(DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference))))
         {
