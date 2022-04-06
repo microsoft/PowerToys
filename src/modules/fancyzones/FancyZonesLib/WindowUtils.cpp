@@ -402,8 +402,8 @@ void FancyZonesWindowUtils::RestoreWindowSize(HWND window) noexcept
         RECT rect;
         if (GetWindowRect(window, &rect))
         {
-            rect.right = rect.left + windowSize[0];
-            rect.bottom = rect.top + windowSize[1];
+            rect.right = rect.left + static_cast<int>(windowWidth);
+            rect.bottom = rect.top + static_cast<int>(windowHeight);
             Logger::info("Restore window size");
             SizeWindowToRect(window, rect);
         }
