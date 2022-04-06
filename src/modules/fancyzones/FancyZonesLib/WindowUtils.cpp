@@ -478,7 +478,7 @@ RECT FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(HWND window, RECT rect
 
 void FancyZonesWindowUtils::DisableRoundCorners(HWND window) noexcept
 {
-    HANDLE handle = GetProp(window, ZonedWindowProperties::PropertyCornerPreference);
+    HANDLE handle = GetPropW(window, ZonedWindowProperties::PropertyCornerPreference);
     if (!handle)
     {
         int cornerPreference = DWMWCP_DEFAULT;
@@ -496,7 +496,7 @@ void FancyZonesWindowUtils::DisableRoundCorners(HWND window) noexcept
         HANDLE preferenceHandle = {};
         memcpy(&preferenceHandle, &cornerPreference64, sizeof(HANDLE));
 
-        if (!SetProp(window, ZonedWindowProperties::PropertyCornerPreference, preferenceHandle))
+        if (!SetPropW(window, ZonedWindowProperties::PropertyCornerPreference, preferenceHandle))
         {
             Logger::error(L"Failed to save corner preference, {}", get_last_error_or_default(GetLastError()));
         }
@@ -512,7 +512,7 @@ void FancyZonesWindowUtils::DisableRoundCorners(HWND window) noexcept
 
 void FancyZonesWindowUtils::ResetRoundCornersPreference(HWND window) noexcept
 {
-    HANDLE handle = GetProp(window, ZonedWindowProperties::PropertyCornerPreference);
+    HANDLE handle = GetPropW(window, ZonedWindowProperties::PropertyCornerPreference);
     if (handle)
     {
         static_assert(sizeof(int) == 4);
@@ -530,7 +530,7 @@ void FancyZonesWindowUtils::ResetRoundCornersPreference(HWND window) noexcept
             Logger::error(L"Failed to set saved corner preference");
         }
 
-        RemoveProp(window, ZonedWindowProperties::PropertyCornerPreference);
+        RemovePropW(window, ZonedWindowProperties::PropertyCornerPreference);
     }
 }
 
