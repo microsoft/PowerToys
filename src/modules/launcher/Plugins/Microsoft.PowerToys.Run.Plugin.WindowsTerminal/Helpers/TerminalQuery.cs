@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using Windows.Management.Deployment;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
 {
@@ -35,10 +36,16 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
         {
             var profiles = new List<TerminalProfile>();
 
+            if (!Terminals.Any())
+            {
+                Log.Warn($"No Windows Terminal packages installed", typeof(TerminalQuery));
+            }
+
             foreach (var terminal in Terminals)
             {
                 if (!File.Exists(terminal.SettingsPath))
                 {
+                    Log.Warn($"Failed to find settings file {terminal.SettingsPath}", typeof(TerminalQuery));
                     continue;
                 }
 
