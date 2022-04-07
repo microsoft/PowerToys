@@ -4,7 +4,7 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/winapi_error.h>
-#include <common/utils/UnhandledExceptionHandler_x64.h>
+#include <common/utils/UnhandledExceptionHandler.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/EventWaiter.h>
 
@@ -46,7 +46,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 {
     winrt::init_apartment();
     LoggerHelpers::init_logger(ShortcutGuideConstants::ModuleKey, L"ShortcutGuide", LogSettings::shortcutGuideLoggerName);
-    InitUnhandledExceptionHandler_x64();
+    InitUnhandledExceptionHandler();
     Logger::trace("Starting Shortcut Guide");
 
     if (!SetCurrentPath())

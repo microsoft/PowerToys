@@ -278,14 +278,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\modulesRegistry.h = src\common\utils\modulesRegistry.h
 		src\common\utils\MsiUtils.h = src\common\utils\MsiUtils.h
 		src\common\utils\os-detect.h = src\common\utils\os-detect.h
-		src\common\utils\process_path.h = src\common\utils\process_path.h
 		src\common\utils\ProcessWaiter.h = src\common\utils\ProcessWaiter.h
+		src\common\utils\process_path.h = src\common\utils\process_path.h
 		src\common\utils\registry.h = src\common\utils\registry.h
 		src\common\utils\resources.h = src\common\utils\resources.h
 		src\common\utils\string_utils.h = src\common\utils\string_utils.h
 		src\common\utils\timeutil.h = src\common\utils\timeutil.h
-		src\common\utils\UnhandledExceptionHandler_x64.h = src\common\utils\UnhandledExceptionHandler_x64.h
 		src\common\utils\winapi_error.h = src\common\utils\winapi_error.h
+		src\common\utils\UnhandledExceptionHandler.h = src\common\utils\UnhandledExceptionHandler.h
 		src\common\utils\window.h = src\common\utils\window.h
 	EndProjectSection
 EndProject
@@ -405,6 +405,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.TimeDate", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeDate\Microsoft.PowerToys.Run.Plugin.TimeDate.csproj", "{5BDBD6C9-A31F-4CEB-871A-5E9E709197EF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests.csproj", "{FD464B4C-2F68-4D06-91E7-4208146C41F5}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.WindowWalker.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.WindowWalker.UnitTests\Microsoft.Plugin.WindowWalker.UnitTests.csproj", "{8FE5A5EE-1B59-401C-9FB3-B04ECD3E29C1}"
 EndProject
 Global

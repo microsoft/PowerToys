@@ -7,7 +7,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/ProcessWaiter.h>
-#include <common/utils/UnhandledExceptionHandler_x64.h>
+#include <common/utils/UnhandledExceptionHandler.h>
 
 #include <trace.h>
 
@@ -28,7 +28,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
 
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Editor", LogSettings::keyboardManagerLoggerName);
-    InitUnhandledExceptionHandler_x64();
+    InitUnhandledExceptionHandler();
     Trace::RegisterProvider();
 
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
