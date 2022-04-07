@@ -162,11 +162,18 @@ inline void LogStackTrace()
 
     HANDLE process = GetCurrentProcess();
     HANDLE thread = GetCurrentThread();
+
+#ifdef _M_ARM64
+    stack.AddrPC.Offset = context.Pc;
+    stack.AddrStack.Offset = context.Sp;
+    stack.AddrFrame.Offset = context.Fp;
+#else
     stack.AddrPC.Offset = context.Rip;
-    stack.AddrPC.Mode = AddrModeFlat;
     stack.AddrStack.Offset = context.Rsp;
-    stack.AddrStack.Mode = AddrModeFlat;
     stack.AddrFrame.Offset = context.Rbp;
+#endif
+    stack.AddrPC.Mode = AddrModeFlat;
+    stack.AddrStack.Mode = AddrModeFlat;
     stack.AddrFrame.Mode = AddrModeFlat;
 
     BOOL result = false;
@@ -174,7 +181,11 @@ inline void LogStackTrace()
     for (;;)
     {
         result = StackWalk64(
+#ifdef _M_ARM64
+            IMAGE_FILE_MACHINE_ARM64,
+#else
             IMAGE_FILE_MACHINE_AMD64,
+#endif
             process,
             thread,
             &stack,
