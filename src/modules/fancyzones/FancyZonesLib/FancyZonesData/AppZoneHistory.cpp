@@ -10,6 +10,207 @@
 #include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/util.h>
 
+namespace JsonUtils
+{
+    struct AppZoneHistoryJSON
+    {
+    private:
+        static std::optional<FancyZonesDataTypes::DeviceIdData> DeviceIdFromJson(const json::JsonObject& json)
+        {
+            try
+            {
+                if (json.HasKey(NonLocalizable::AppZoneHistoryIds::DeviceID))
+                {
+                    json::JsonObject device = json.GetNamedObject(NonLocalizable::AppZoneHistoryIds::DeviceID);
+                    std::wstring monitor = device.GetNamedString(NonLocalizable::AppZoneHistoryIds::MonitorID).c_str();
+                    std::wstring virtualDesktop = device.GetNamedString(NonLocalizable::AppZoneHistoryIds::VirtualDesktopID).c_str();
+
+                    auto virtualDesktopGuid = FancyZonesUtils::GuidFromString(virtualDesktop);
+                    if (!virtualDesktopGuid)
+                    {
+                        return std::nullopt;
+                    }
+
+                    return FancyZonesDataTypes::DeviceIdData{
+                        .deviceName = monitor,
+                        .virtualDesktopId = virtualDesktopGuid.value(),
+                    };
+                }
+                else
+                {
+                    std::wstring deviceIdStr = json.GetNamedString(NonLocalizable::AppZoneHistoryIds::DeviceIdID).c_str();
+                    auto bcDeviceId = BackwardsCompatibility::DeviceIdData::ParseDeviceId(deviceIdStr);
+                    if (!bcDeviceId)
+                    {
+                        return std::nullopt;
+                    }
+
+                    return FancyZonesDataTypes::DeviceIdData{
+                        .deviceName = bcDeviceId->deviceName,
+                        .virtualDesktopId = bcDeviceId->virtualDesktopId,
+                    };
+                }
+            }
+            catch (const winrt::hresult_error&)
+            {
+                return std::nullopt;
+            }
+        }
+
+        static std::optional<FancyZonesDataTypes::AppZoneHistoryData> ParseSingleAppZoneHistoryItem(const json::JsonObject& json)
+        {
+            FancyZonesDataTypes::AppZoneHistoryData data;
+            if (json.HasKey(NonLocalizable::AppZoneHistoryIds::LayoutIndexesID))
+            {
+                data.zoneIndexSet = {};
+                for (const auto& value : json.GetNamedArray(NonLocalizable::AppZoneHistoryIds::LayoutIndexesID))
+                {
+                    data.zoneIndexSet.push_back(static_cast<ZoneIndex>(value.GetNumber()));
+                }
+            }
+            else if (json.HasKey(NonLocalizable::AppZoneHistoryIds::LayoutIndexesID))
+            {
+                data.zoneIndexSet = { static_cast<ZoneIndex>(json.GetNamedNumber(NonLocalizable::AppZoneHistoryIds::LayoutIndexesID)) };
+            }
+
+            auto deviceIdOpt = DeviceIdFromJson(json);
+            if (!deviceIdOpt)
+            {
+                return std::nullopt;
+            }
+
+            data.deviceId = deviceIdOpt.value();
+            data.zoneSetUuid = json.GetNamedString(NonLocalizable::AppZoneHistoryIds::LayoutIdID);
+
+            if (!FancyZonesUtils::IsValidGuid(data.zoneSetUuid))
+            {
+                return std::nullopt;
+            }
+
+            return data;
+        }
+
+    public:
+        std::wstring appPath;
+        std::vector<FancyZonesDataTypes::AppZoneHistoryData> data;
+        
+        static std::optional<AppZoneHistoryJSON> FromJson(const json::JsonObject& json)
+        {
+            try
+            {
+                AppZoneHistoryJSON result;
+
+                result.appPath = json.GetNamedString(NonLocalizable::AppZoneHistoryIds::AppPathID);
+                if (json.HasKey(NonLocalizable::AppZoneHistoryIds::HistoryID))
+                {
+                    auto appHistoryArray = json.GetNamedArray(NonLocalizable::AppZoneHistoryIds::HistoryID);
+                    for (uint32_t i = 0; i < appHistoryArray.Size(); ++i)
+                    {
+                        json::JsonObject json = appHistoryArray.GetObjectAt(i);
+                        if (auto data = ParseSingleAppZoneHistoryItem(json); data.has_value())
+                        {
+                            result.data.push_back(std::move(data.value()));
+                        }
+                    }
+                }
+                else
+                {
+                    // handle previous file format, with single desktop layout information per application
+                    if (auto data = ParseSingleAppZoneHistoryItem(json); data.has_value())
+                    {
+                        result.data.push_back(std::move(data.value()));
+                    }
+                }
+                if (result.data.empty())
+                {
+                    return std::nullopt;
+                }
+
+                return result;
+            }
+            catch (const winrt::hresult_error&)
+            {
+                return std::nullopt;
+            }
+        }
+
+        static json::JsonObject ToJson(const AppZoneHistoryJSON& appZoneHistory)
+        {
+            json::JsonObject result{};
+
+            result.SetNamedValue(NonLocalizable::AppZoneHistoryIds::AppPathID, json::value(appZoneHistory.appPath));
+
+            json::JsonArray appHistoryArray;
+            for (const auto& data : appZoneHistory.data)
+            {
+                json::JsonObject desktopData;
+                json::JsonArray jsonIndexSet;
+                for (ZoneIndex index : data.zoneIndexSet)
+                {
+                    jsonIndexSet.Append(json::value(static_cast<int>(index)));
+                }
+
+                json::JsonObject device{};
+                device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorID, json::value(data.deviceId.deviceName));
+                auto virtualDesktopStr = FancyZonesUtils::GuidToString(data.deviceId.virtualDesktopId);
+                if (virtualDesktopStr)
+                {
+                    device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::VirtualDesktopID, json::value(virtualDesktopStr.value()));
+                }
+
+                desktopData.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIndexesID, jsonIndexSet);
+                desktopData.SetNamedValue(NonLocalizable::AppZoneHistoryIds::DeviceID, device);
+                desktopData.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIdID, json::value(data.zoneSetUuid));
+
+                appHistoryArray.Append(desktopData);
+            }
+
+            result.SetNamedValue(NonLocalizable::AppZoneHistoryIds::HistoryID, appHistoryArray);
+
+            return result;
+        }
+    };
+
+    AppZoneHistory::TAppZoneHistoryMap ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON)
+    {
+        try
+        {
+            AppZoneHistory::TAppZoneHistoryMap appZoneHistoryMap{};
+            auto appLastZones = fancyZonesDataJSON.GetNamedArray(NonLocalizable::AppZoneHistoryIds::AppZoneHistoryID);
+
+            for (uint32_t i = 0; i < appLastZones.Size(); ++i)
+            {
+                json::JsonObject appLastZone = appLastZones.GetObjectAt(i);
+                if (auto appZoneHistory = AppZoneHistoryJSON::FromJson(appLastZone); appZoneHistory.has_value())
+                {
+                    appZoneHistoryMap[appZoneHistory->appPath] = std::move(appZoneHistory->data);
+                }
+            }
+
+            return std::move(appZoneHistoryMap);
+        }
+        catch (const winrt::hresult_error&)
+        {
+            return {};
+        }
+    }
+
+    json::JsonObject SerializeJson(const AppZoneHistory::TAppZoneHistoryMap& map)
+    {
+        json::JsonObject root{};
+        json::JsonArray appHistoryArray{};
+
+        for (const auto& [appPath, appZoneHistoryData] : map)
+        {
+            appHistoryArray.Append(AppZoneHistoryJSON::ToJson(AppZoneHistoryJSON{ appPath, appZoneHistoryData }));
+        }
+
+        root.SetNamedValue(NonLocalizable::AppZoneHistoryIds::AppZoneHistoryID, appHistoryArray);
+        return root;
+    }
+}
+
+
 AppZoneHistory::AppZoneHistory()
 {
 }
@@ -34,7 +235,7 @@ void AppZoneHistory::LoadData()
     {
         if (data)
         {
-            m_history = JSONHelpers::ParseAppZoneHistory(data.value());
+            m_history = JsonUtils::ParseAppZoneHistory(data.value());
         }
         else
         {
@@ -72,11 +273,11 @@ void AppZoneHistory::SaveData()
 
     if (dirtyFlag)
     {
-        JSONHelpers::SaveAppZoneHistory(AppZoneHistoryFileName(), updatedHistory);
+        json::to_file(AppZoneHistoryFileName(), JsonUtils::SerializeJson(updatedHistory));
     }
     else
     {
-        JSONHelpers::SaveAppZoneHistory(AppZoneHistoryFileName(), m_history);
+        json::to_file(AppZoneHistoryFileName(), JsonUtils::SerializeJson(m_history));
     }
 }
 

@@ -75,7 +75,9 @@ namespace FancyZonesEditor.Utils
         // parsing cmd args
         private struct NativeMonitorData
         {
-            public string MonitorId { get; set; }
+            public string Monitor { get; set; }
+
+            public string VirtualDesktop { get; set; }
 
             public int Dpi { get; set; }
 
@@ -94,8 +96,10 @@ namespace FancyZonesEditor.Utils
                 var sb = new StringBuilder();
 
                 // using CultureInfo.InvariantCulture since this is internal data
-                sb.Append("ID: ");
-                sb.AppendLine(MonitorId);
+                sb.Append("Monitor: ");
+                sb.AppendLine(Monitor);
+                sb.Append("Virtual desktop: ");
+                sb.AppendLine(VirtualDesktop);
                 sb.Append("DPI: ");
                 sb.AppendLine(Dpi.ToString(CultureInfo.InvariantCulture));
 
@@ -111,6 +115,13 @@ namespace FancyZonesEditor.Utils
         // applied-layouts.json
         private struct AppliedLayoutWrapper
         {
+            public struct DeviceIdWrapper
+            {
+                public string Monitor { get; set; }
+
+                public string VirtualDesktop { get; set; }
+            }
+
             public struct LayoutWrapper
             {
                 public string Uuid { get; set; }
@@ -126,7 +137,7 @@ namespace FancyZonesEditor.Utils
                 public int SensitivityRadius { get; set; }
             }
 
-            public string DeviceId { get; set; }
+            public DeviceIdWrapper Device { get; set; }
 
             public LayoutWrapper AppliedLayout { get; set; }
         }
@@ -329,7 +340,7 @@ namespace FancyZonesEditor.Utils
                     for (int i = 0; i < count; i++)
                     {
                         var nativeData = default(NativeMonitorData);
-                        nativeData.MonitorId = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
+                        nativeData.Monitor = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
                         nativeData.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
                         nativeData.LeftCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
                         nativeData.TopCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
@@ -346,14 +357,13 @@ namespace FancyZonesEditor.Utils
                     {
                         foreach (NativeMonitorData nativeData in nativeMonitorData)
                         {
-                            var splittedId = nativeData.MonitorId.Split('_');
-                            int width = int.Parse(splittedId[1], CultureInfo.InvariantCulture);
-                            int height = int.Parse(splittedId[2], CultureInfo.InvariantCulture);
+                            var splittedId = nativeData.Monitor.Split('_');
 
                             Rect bounds = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
 
                             Monitor monitor = new Monitor(bounds, bounds);
-                            monitor.Device.Id = nativeData.MonitorId;
+                            monitor.Device.MonitorName = nativeData.Monitor.Substring(0, nativeData.Monitor.LastIndexOf("_", StringComparison.Ordinal));
+                            monitor.Device.VirtualDesktopId = nativeData.Monitor.Substring(nativeData.Monitor.LastIndexOf("_", StringComparison.Ordinal) + 1);
                             monitor.Device.Dpi = nativeData.Dpi;
 
                             monitors.Add(monitor);
@@ -366,11 +376,12 @@ namespace FancyZonesEditor.Utils
                             Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
                             if (nativeData.IsSelected)
                             {
-                                targetMonitorName = nativeData.MonitorId;
+                                targetMonitorName = nativeData.Monitor;
                             }
 
                             var monitor = new Monitor(workArea, workArea);
-                            monitor.Device.Id = nativeData.MonitorId;
+                            monitor.Device.MonitorName = nativeData.Monitor.Substring(0, nativeData.Monitor.LastIndexOf("_", StringComparison.Ordinal));
+                            monitor.Device.VirtualDesktopId = nativeData.Monitor.Substring(nativeData.Monitor.LastIndexOf("_", StringComparison.Ordinal) + 1);
                             monitor.Device.Dpi = nativeData.Dpi;
 
                             App.Overlay.AddMonitor(monitor);
@@ -381,7 +392,11 @@ namespace FancyZonesEditor.Utils
                     for (int i = 0; i < monitors.Count; i++)
                     {
                         var monitor = monitors[i];
-                        if (monitor.Device.Id == targetMonitorName)
+
+                        var monitorName = targetMonitorName.Substring(0, targetMonitorName.LastIndexOf("_", StringComparison.Ordinal));
+                        var virtualDesktop = targetMonitorName.Substring(targetMonitorName.LastIndexOf("_", StringComparison.Ordinal) + 1);
+
+                        if (monitor.Device.MonitorName == monitorName && monitor.Device.VirtualDesktopId == virtualDesktop)
                         {
                             App.Overlay.CurrentDesktop = i;
                             break;
@@ -399,7 +414,7 @@ namespace FancyZonesEditor.Utils
                     for (int i = 0; i < count; i++)
                     {
                         var nativeData = default(NativeMonitorData);
-                        nativeData.MonitorId = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
+                        nativeData.Monitor = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
                         nativeData.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
                         nativeData.LeftCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
                         nativeData.TopCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
@@ -419,7 +434,11 @@ namespace FancyZonesEditor.Utils
                     }
 
                     var monitor = new Monitor(workAreaUnion, workAreaUnion);
-                    monitor.Device.Id = targetMonitorName;
+
+                    var monitorName = targetMonitorName.Substring(0, targetMonitorName.LastIndexOf("_", StringComparison.Ordinal));
+                    var virtualDesktop = targetMonitorName.Substring(targetMonitorName.LastIndexOf("_", StringComparison.Ordinal) + 1);
+                    monitor.Device.MonitorName = monitorName;
+                    monitor.Device.VirtualDesktopId = virtualDesktop;
 
                     App.Overlay.Monitors.Add(monitor);
                 }
@@ -453,18 +472,21 @@ namespace FancyZonesEditor.Utils
 
                     if (!App.Overlay.SpanZonesAcrossMonitors)
                     {
-                        string targetMonitorName = string.Empty;
+                        string targetMonitorId = string.Empty;
+                        string targetVirtualDesktop = string.Empty;
 
                         foreach (NativeMonitorData nativeData in editorParams.Monitors)
                         {
                             Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
                             if (nativeData.IsSelected)
                             {
-                                targetMonitorName = nativeData.MonitorId;
+                                targetMonitorId = nativeData.Monitor;
+                                targetVirtualDesktop = nativeData.VirtualDesktop;
                             }
 
                             var monitor = new Monitor(workArea, workArea);
-                            monitor.Device.Id = nativeData.MonitorId;
+                            monitor.Device.MonitorName = nativeData.Monitor;
+                            monitor.Device.VirtualDesktopId = nativeData.VirtualDesktop;
                             monitor.Device.Dpi = nativeData.Dpi;
 
                             App.Overlay.AddMonitor(monitor);
@@ -475,7 +497,7 @@ namespace FancyZonesEditor.Utils
                         for (int i = 0; i < monitors.Count; i++)
                         {
                             var monitor = monitors[i];
-                            if (monitor.Device.Id == targetMonitorName)
+                            if (monitor.Device.MonitorName == targetMonitorId && monitor.Device.VirtualDesktopId == targetVirtualDesktop)
                             {
                                 App.Overlay.CurrentDesktop = i;
                                 break;
@@ -493,7 +515,9 @@ namespace FancyZonesEditor.Utils
                         Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
 
                         var monitor = new Monitor(workArea, workArea);
-                        monitor.Device.Id = nativeData.MonitorId;
+                        monitor.Device.MonitorName = nativeData.Monitor;
+                        monitor.Device.VirtualDesktopId = nativeData.VirtualDesktop;
+
                         App.Overlay.AddMonitor(monitor);
                     }
                 }
@@ -688,7 +712,12 @@ namespace FancyZonesEditor.Utils
 
                 layouts.AppliedLayouts.Add(new AppliedLayoutWrapper
                 {
-                    DeviceId = monitor.Device.Id,
+                    Device = new AppliedLayoutWrapper.DeviceIdWrapper
+                    {
+                        Monitor = monitor.Device.MonitorName,
+                        VirtualDesktop = monitor.Device.VirtualDesktopId,
+                    },
+
                     AppliedLayout = new AppliedLayoutWrapper.LayoutWrapper
                     {
                         Uuid = zoneset.ZonesetUuid,
@@ -936,7 +965,12 @@ namespace FancyZonesEditor.Utils
             var monitors = App.Overlay.Monitors;
             foreach (var layout in layouts)
             {
-                if (layout.DeviceId == null || layout.DeviceId.Length == 0 || layout.AppliedLayout.Uuid == null || layout.AppliedLayout.Uuid.Length == 0)
+                if (layout.Device.Monitor == null ||
+                    layout.Device.Monitor.Length == 0 ||
+                    layout.Device.VirtualDesktop == null ||
+                    layout.Device.VirtualDesktop.Length == 0 ||
+                    layout.AppliedLayout.Uuid == null ||
+                    layout.AppliedLayout.Uuid.Length == 0)
                 {
                     result = false;
                     continue;
@@ -945,13 +979,7 @@ namespace FancyZonesEditor.Utils
                 bool unused = true;
                 foreach (Monitor monitor in monitors)
                 {
-                    string deviceIdSaved = monitor.Device.Id.Substring(0, monitor.Device.Id.LastIndexOf("_", StringComparison.Ordinal));
-                    string deviceIdReadFromSettings = layout.DeviceId.Substring(0, layout.DeviceId.LastIndexOf("_", StringComparison.Ordinal));
-
-                    string virtualDesktopIdSaved = monitor.Device.Id.Substring(monitor.Device.Id.LastIndexOf("_", StringComparison.Ordinal) + 1);
-                    string virtualDesktopIdReadFromSettings = layout.DeviceId.Substring(layout.DeviceId.LastIndexOf("_", StringComparison.Ordinal) + 1);
-
-                    if (deviceIdSaved == deviceIdReadFromSettings && (virtualDesktopIdSaved == virtualDesktopIdReadFromSettings || virtualDesktopIdReadFromSettings == DefaultVirtualDesktopGuid))
+                    if (monitor.Device.MonitorName == layout.Device.Monitor && (monitor.Device.VirtualDesktopId == layout.Device.VirtualDesktop || layout.Device.VirtualDesktop == DefaultVirtualDesktopGuid))
                     {
                         var settings = new LayoutSettings
                         {

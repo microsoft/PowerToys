@@ -41,10 +41,10 @@ namespace FancyZonesEditor.Models
             Window.Height = workArea.Height;
         }
 
-        public Monitor(string id, int dpi, Rect bounds, Rect workArea)
+        public Monitor(string monitorName, string virtualDesktop, int dpi, Rect bounds, Rect workArea)
             : this(bounds, workArea)
         {
-            Device = new Device(id, dpi, bounds, workArea);
+            Device = new Device(monitorName, virtualDesktop, dpi, bounds, workArea);
         }
 
         public void Scale(double scaleFactor)

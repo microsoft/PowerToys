@@ -862,23 +862,10 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noe
         if (monitor)
         {
             uniqueId.deviceName = FancyZonesUtils::TrimDeviceId(deviceId);
-
-            MONITORINFOEXW mi;
-            mi.cbSize = sizeof(mi);
-            if (GetMonitorInfo(monitor, &mi))
-            {
-                const FancyZonesUtils::Rect monitorRect(mi.rcMonitor);
-                uniqueId.width = monitorRect.width();
-                uniqueId.height = monitorRect.height();
-            }
         }
         else
         {
             uniqueId.deviceName = ZonedWindowProperties::MultiMonitorDeviceID;
-            
-            RECT combinedResolution = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFO::rcMonitor>();
-            uniqueId.width = combinedResolution.right - combinedResolution.left;
-            uniqueId.height = combinedResolution.bottom - combinedResolution.top;
         }
 
         FancyZonesDataTypes::DeviceIdData parentId{};

@@ -5,6 +5,22 @@
 
 #include <common/SettingsAPI/settings_helpers.h>
 
+namespace NonLocalizable
+{
+    namespace AppZoneHistoryIds
+    {
+        const static wchar_t* AppZoneHistoryID = L"app-zone-history";
+        const static wchar_t* AppPathID = L"app-path";
+        const static wchar_t* HistoryID = L"history";
+        const static wchar_t* LayoutIndexesID = L"zone-index-set";
+        const static wchar_t* LayoutIdID = L"zoneset-uuid";
+        const static wchar_t* DeviceIdID = L"device-id";
+        const static wchar_t* DeviceID = L"device";
+        const static wchar_t* MonitorID = L"monitor";
+        const static wchar_t* VirtualDesktopID = L"virtual-desktop";
+    }
+}
+
 class AppZoneHistory
 {
 public:
