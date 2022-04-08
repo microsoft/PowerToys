@@ -9,6 +9,7 @@ namespace ZonedWindowProperties
 {
     const wchar_t PropertyRestoreSizeID[] = L"FancyZones_RestoreSize";
     const wchar_t PropertyRestoreOriginID[] = L"FancyZones_RestoreOrigin";
+    const wchar_t PropertyCornerPreference[] = L"FancyZones_CornerPreference";
 
     const wchar_t MultiMonitorDeviceID[] = L"FancyZones#MultiMonitorDevice";
 }

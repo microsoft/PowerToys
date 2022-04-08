@@ -99,7 +99,7 @@ namespace Microsoft.Plugin.Program.Storage
             string newPath = e.FullPath;
 
             string extension = Path.GetExtension(newPath);
-            Win32Program.ApplicationType appType = Win32Program.GetAppTypeFromPath(newPath);
+            Win32Program.ApplicationType oldAppType = Win32Program.GetAppTypeFromPath(oldPath);
             Programs.Win32Program newApp = Win32Program.GetAppFromPath(newPath);
             Programs.Win32Program oldApp = null;
 
@@ -109,13 +109,9 @@ namespace Microsoft.Plugin.Program.Storage
             // This situation is not encountered for other application types because the fullPath is the path itself, instead of being computed by using the path to the app.
             try
             {
-                if (appType == Win32Program.ApplicationType.ShortcutApplication)
+                if (oldAppType == Win32Program.ApplicationType.ShortcutApplication || oldAppType == Win32Program.ApplicationType.InternetShortcutApplication)
                 {
-                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp.FullPath };
-                }
-                else if (appType == Win32Program.ApplicationType.InternetShortcutApplication)
-                {
-                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp.FullPath };
+                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp?.FullPath ?? oldPath };
                 }
                 else
                 {
@@ -132,7 +128,7 @@ namespace Microsoft.Plugin.Program.Storage
             {
                 if (string.IsNullOrWhiteSpace(oldApp.Name) || string.IsNullOrWhiteSpace(oldApp.ExecutableName) || string.IsNullOrWhiteSpace(oldApp.FullPath))
                 {
-                    Log.Error($"Old app was not initialized properly. OldFullPath: {e.OldFullPath}; OldName: {e.OldName}; FullPath: {e.FullPath}", GetType());
+                    Log.Warn($"Old app data was not initialized properly for removal after file renaming. This likely means it was not a valid app to begin with and removal is not needed. OldFullPath: {e.OldFullPath}; OldName: {e.OldName}; FullPath: {e.FullPath}", GetType());
                 }
                 else
                 {
@@ -160,6 +156,11 @@ namespace Microsoft.Plugin.Program.Storage
                 if (extension.Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     app = GetAppWithSameLnkResolvedPath(path);
+                    if (app == null)
+                    {
+                        // Cancelled links won't have a resolved path.
+                        app = GetAppWithSameNameAndExecutable(Path.GetFileNameWithoutExtension(path), Path.GetFileName(path));
+                    }
                 }
                 else if (extension.Equals(UrlExtension, StringComparison.OrdinalIgnoreCase))
                 {

@@ -1017,6 +1017,14 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FileExplorerPreview_RebootRequired.Title" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
   </data>
+  <data name="FileExplorerPreview_PreviewHandlerOutlookIncompatibility.Title" xml:space="preserve">
+    <value>Enabling the preview handlers will override other preview handlers already installed - there have been reports of incompatibility between Outlook and the PDF Preview Handler</value>
+    <comment>Outlook is the name of a Microsoft product</comment>
+  </data>
+  <data name="FileExplorerPreview_ThumbnailsMightNotAppearOnRemoteFolders.Title" xml:space="preserve">
+    <value>Thumbnails might not appear on paths managed by cloud storage solutions like OneDrive, since these solutions may get their thumbnails from the cloud instead of generating them locally</value>
+    <comment>OneDrive is the name of a Microsoft product</comment>
+  </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
     <comment>Don't translate outlook.exe</comment>
@@ -2053,6 +2061,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Monaco_Wrap_Text.Content" xml:space="preserve">
+    <value>Wrap text</value>
+    <comment>Feature on or off</comment>
+ </data>
   <data name="FancyZones_AllowPopupWindowSnap.Description" xml:space="preserve">
     <value>This setting can affect all popup windows including notifications</value>
   </data>
@@ -2064,5 +2076,11 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Shell_WhatsNew.Content" xml:space="preserve">
     <value>What's new</value>
+  </data>
+  <data name="FancyZones_DisableRoundCornersOnWindowSnap.Description" xml:space="preserve">
+    <value>Works on Windows 11 </value>
+  </data>
+  <data name="FancyZones_DisableRoundCornersOnWindowSnap.Header" xml:space="preserve">
+    <value>Disable round corners when window is snapped</value>
   </data>
 </root>

@@ -95,7 +95,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             // Now, even if . is not part of the culture representation, users won't hit this error since the number will
             // be passed as is to the calculator engine.
             // This shouldn't add any regressions into accepted strings while it will have a behavior the users expect.
-            var splitPattern = $"((?:\\d|\\.|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
+            var splitPattern = $"((?:\\d|[a-fA-F]|\\.|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
             if (!string.IsNullOrEmpty(culture.NumberFormat.NumberGroupSeparator))
             {
                 splitPattern += $"|{Regex.Escape(culture.NumberFormat.NumberGroupSeparator)}";

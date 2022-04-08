@@ -216,10 +216,6 @@ namespace FancyZonesUtils
             // Unique identifier format: <parsed-device-id>_<width>_<height>_<virtual-desktop-id>
             return TrimDeviceId(deviceId) +
                    L'_' +
-                   std::to_wstring(monitorRect.width()) +
-                   L'_' +
-                   std::to_wstring(monitorRect.height()) +
-                   L'_' +
                    virtualDesktopId;
         }
         return {};

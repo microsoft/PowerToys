@@ -9,6 +9,7 @@
 
 #include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/ModuleConstants.h>
+#include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/util.h>
 
 // Non-localizable strings
@@ -81,10 +82,10 @@ void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors
     if (spanZonesAcrossMonitors)
     {
         auto monitorRect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcWork>();
-        std::wstring monitorId = FancyZonesUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId);
 
         JSONHelpers::MonitorInfo monitorJson;
-        monitorJson.id = monitorId;
+        monitorJson.monitorName = ZonedWindowProperties::MultiMonitorDeviceID;
+        monitorJson.virtualDesktop = virtualDesktopId;
         monitorJson.top = monitorRect.top;
         monitorJson.left = monitorRect.left;
         monitorJson.width = monitorRect.right - monitorRect.left;
@@ -107,14 +108,14 @@ void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors
             JSONHelpers::MonitorInfo monitorJson;
 
             std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(monitorInfo.szDevice, displayDeviceIdxMap);
-            std::wstring monitorId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId);
-
+            
             if (monitor == targetMonitor)
             {
                 monitorJson.isSelected = true; /* Is monitor selected for the main editor window opening */
             }
 
-            monitorJson.id = monitorId; /* Monitor id */
+            monitorJson.monitorName = FancyZonesUtils::TrimDeviceId(deviceId); /* Monitor name */
+            monitorJson.virtualDesktop = virtualDesktopId; /* Virtual desktop id */
 
             UINT dpi = 0;
             if (DPIAware::GetScreenDPIForMonitor(monitor, dpi) != S_OK)

@@ -4,6 +4,7 @@
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 
 #include "util.h"
+#include <modules/fancyzones/FancyZonesLib/util.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -22,6 +23,186 @@ namespace FancyZonesUnitTests
         TEST_METHOD_CLEANUP(CleanUp)
         {
             std::filesystem::remove(AppZoneHistory::instance().AppZoneHistoryFileName());
+        }
+
+        TEST_METHOD (AppZoneHistoryParse)
+        {
+            // prepare
+            json::JsonObject root{};
+            json::JsonArray appZoneHistoryArray{};
+
+            {
+                json::JsonArray history{};
+                {
+                    json::JsonObject device{};
+                    device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorID, json::value(L"monitor-1"));
+                    device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::VirtualDesktopID, json::value(L"{72FA9FC0-26A6-4B37-A834-491C148DFC58}"));
+
+                    json::JsonArray zones{};
+                    zones.Append(json::value(0));
+                    zones.Append(json::value(1));
+
+                    json::JsonObject historyObj{};
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIdID, json::value(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}"));
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::DeviceID, device);
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIndexesID, zones);
+
+                    history.Append(historyObj);
+                }
+                {
+                    json::JsonObject device{};
+                    device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorID, json::value(L"monitor-2"));
+                    device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::VirtualDesktopID, json::value(L"{72FA9FC0-26A6-4B37-A834-491C148DFC58}"));
+
+                    json::JsonArray zones{};
+                    zones.Append(json::value(2));
+
+                    json::JsonObject historyObj{};
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIdID, json::value(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}"));
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::DeviceID, device);
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIndexesID, zones);
+
+                    history.Append(historyObj);
+                }
+
+                json::JsonObject obj{};
+                obj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::AppPathID, json::value(L"app-1"));
+                obj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::HistoryID, history);
+                appZoneHistoryArray.Append(obj);
+            }
+            {
+                json::JsonArray history{};
+                {
+                    json::JsonObject device{};
+                    device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorID, json::value(L"monitor-1"));
+                    device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::VirtualDesktopID, json::value(L"{72FA9FC0-26A6-4B37-A834-491C148DFC58}"));
+
+                    json::JsonArray zones{};
+                    zones.Append(json::value(0));
+
+                    json::JsonObject historyObj{};
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIdID, json::value(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}"));
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::DeviceID, device);
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIndexesID, zones);
+
+                    history.Append(historyObj);
+                }
+
+                json::JsonObject obj{};
+                obj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::AppPathID, json::value(L"app-2"));
+                obj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::HistoryID, history);
+                appZoneHistoryArray.Append(obj);
+            }
+
+            root.SetNamedValue(NonLocalizable::AppZoneHistoryIds::AppZoneHistoryID, appZoneHistoryArray);
+            json::to_file(AppZoneHistory::AppZoneHistoryFileName(), root);
+
+            // test
+            AppZoneHistory::instance().LoadData();
+            Assert::AreEqual((size_t)2, AppZoneHistory::instance().GetFullAppZoneHistory().size());
+
+            {
+                FancyZonesDataTypes::DeviceIdData id{
+                    .deviceName = L"monitor-1",
+                    .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{72FA9FC0-26A6-4B37-A834-491C148DFC58}").value()
+                };
+                Assert::IsTrue(AppZoneHistory::instance().GetZoneHistory(L"app-1", id).has_value());
+            }
+            {
+                FancyZonesDataTypes::DeviceIdData id{
+                    .deviceName = L"monitor-2",
+                    .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{72FA9FC0-26A6-4B37-A834-491C148DFC58}").value()
+                };
+                Assert::IsTrue(AppZoneHistory::instance().GetZoneHistory(L"app-1", id).has_value());
+            }
+            {
+                FancyZonesDataTypes::DeviceIdData id{
+                    .deviceName = L"monitor-1",
+                    .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{72FA9FC0-26A6-4B37-A834-491C148DFC58}").value()
+                };
+                Assert::IsTrue(AppZoneHistory::instance().GetZoneHistory(L"app-2", id).has_value());
+            }
+        }
+
+        TEST_METHOD (AppZoneHistoryParseEmpty)
+        {
+            // prepare
+            json::JsonObject root{};
+            json::to_file(AppZoneHistory::AppZoneHistoryFileName(), root);
+
+            // test
+            AppZoneHistory::instance().LoadData();
+            Assert::IsTrue(AppZoneHistory::instance().GetFullAppZoneHistory().empty());
+        }
+
+        TEST_METHOD (AppZoneHistoryParseInvalid)
+        {
+            // prepare
+            json::JsonObject root{};
+            json::JsonArray appZoneHistoryArray{};
+
+            {
+                json::JsonArray history{};
+                {
+                    json::JsonObject device{};
+                    device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorID, json::value(L"monitor-1"));
+                    device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::VirtualDesktopID, json::value(L"{72FA9FC0-26A6-4B37-A834-491C148DFC58}"));
+
+                    json::JsonArray zones{};
+                    zones.Append(json::value(0));
+                    zones.Append(json::value(1));
+
+                    json::JsonObject historyObj{};
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIdID, json::value(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}"));
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::DeviceID, device);
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIndexesID, zones);
+
+                    history.Append(historyObj);
+                }
+
+                json::JsonObject obj{};
+                obj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::AppPathID, json::value(L"app-1"));
+                obj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::HistoryID, history);
+                appZoneHistoryArray.Append(obj);
+            }
+            {
+                json::JsonArray history{};
+                {
+                    json::JsonObject device{};
+                    device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorID, json::value(L"monitor-1"));
+                    device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::VirtualDesktopID, json::value(L"{72FA9FC0-26A6-4B37-A834-}"));
+
+                    json::JsonArray zones{};
+                    zones.Append(json::value(0));
+
+                    json::JsonObject historyObj{};
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIdID, json::value(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}"));
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::DeviceID, device);
+                    historyObj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::LayoutIndexesID, zones);
+
+                    history.Append(historyObj);
+                }
+
+                json::JsonObject obj{};
+                obj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::AppPathID, json::value(L"app-2"));
+                obj.SetNamedValue(NonLocalizable::AppZoneHistoryIds::HistoryID, history);
+                appZoneHistoryArray.Append(obj);
+            }
+
+            root.SetNamedValue(NonLocalizable::AppZoneHistoryIds::AppZoneHistoryID, appZoneHistoryArray);
+            json::to_file(AppZoneHistory::AppZoneHistoryFileName(), root);
+
+            // test
+            AppZoneHistory::instance().LoadData();
+            Assert::AreEqual((size_t)1, AppZoneHistory::instance().GetFullAppZoneHistory().size());
+
+            {
+                FancyZonesDataTypes::DeviceIdData id{
+                    .deviceName = L"monitor-1",
+                    .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{72FA9FC0-26A6-4B37-A834-491C148DFC58}").value()
+                };
+                Assert::IsTrue(AppZoneHistory::instance().GetZoneHistory(L"app-1", id).has_value());
+            }
         }
 
         TEST_METHOD (AppLastZoneInvalidWindow)

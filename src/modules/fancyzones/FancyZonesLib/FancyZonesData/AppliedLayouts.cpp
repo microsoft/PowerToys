@@ -11,6 +11,19 @@
 #include <FancyZonesLib/JsonHelpers.h>
 #include <FancyZonesLib/util.h>
 
+namespace 
+{
+    // didn't use default constants since if they'll be changed later, it'll break this function
+    bool isLayoutDefault(const Layout& layout)
+    {
+        return layout.type == FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid &&
+               layout.zoneCount == 3 &&
+               layout.spacing == 16 &&
+               layout.showSpacing == true &&
+               layout.sensitivityRadius == 20;
+    }
+}
+
 namespace JsonUtils
 {
     struct LayoutJSON
@@ -57,6 +70,50 @@ namespace JsonUtils
 
     struct AppliedLayoutsJSON
     {
+    private:
+        static std::optional<FancyZonesDataTypes::DeviceIdData> DeviceIdFromJson(const json::JsonObject& json)
+        {
+            try
+            {
+                if (json.HasKey(NonLocalizable::AppliedLayoutsIds::DeviceID))
+                {
+                    json::JsonObject device = json.GetNamedObject(NonLocalizable::AppliedLayoutsIds::DeviceID);
+                    std::wstring monitor = device.GetNamedString(NonLocalizable::AppliedLayoutsIds::MonitorID).c_str();
+                    std::wstring virtualDesktop = device.GetNamedString(NonLocalizable::AppliedLayoutsIds::VirtualDesktopID).c_str();
+
+                    auto virtualDesktopGuid = FancyZonesUtils::GuidFromString(virtualDesktop);
+                    if (!virtualDesktopGuid)
+                    {
+                        return std::nullopt;
+                    }
+
+                    return FancyZonesDataTypes::DeviceIdData{
+                        .deviceName = monitor,
+                        .virtualDesktopId = virtualDesktopGuid.value(),
+                    };
+                }
+                else
+                {
+                    std::wstring deviceIdStr = json.GetNamedString(NonLocalizable::AppliedLayoutsIds::DeviceIdID).c_str();
+                    auto bcDeviceId = BackwardsCompatibility::DeviceIdData::ParseDeviceId(deviceIdStr);
+                    if (!bcDeviceId)
+                    {
+                        return std::nullopt;
+                    }
+
+                    return FancyZonesDataTypes::DeviceIdData{
+                        .deviceName = bcDeviceId->deviceName,
+                        .virtualDesktopId = bcDeviceId->virtualDesktopId,
+                    };
+                }
+            }
+            catch (const winrt::hresult_error&)
+            {
+                return std::nullopt;
+            }
+        }
+
+    public:
         FancyZonesDataTypes::DeviceIdData deviceId;
         Layout data;
 
@@ -66,9 +123,8 @@ namespace JsonUtils
             {
                 AppliedLayoutsJSON result;
 
-                std::wstring deviceIdStr = json.GetNamedString(NonLocalizable::AppliedLayoutsIds::DeviceIdID).c_str();
-                auto deviceId = FancyZonesDataTypes::DeviceIdData::ParseDeviceId(deviceIdStr);
-                if (!deviceId.has_value())
+                auto deviceIdOpt = DeviceIdFromJson(json);
+                if (!deviceIdOpt.has_value())
                 {
                     return std::nullopt;
                 }
@@ -79,7 +135,7 @@ namespace JsonUtils
                     return std::nullopt;
                 }
                 
-                result.deviceId = std::move(deviceId.value());
+                result.deviceId = std::move(deviceIdOpt.value());
                 result.data = std::move(layout.value());
                 return result;
             }
@@ -91,9 +147,17 @@ namespace JsonUtils
 
         static json::JsonObject ToJson(const AppliedLayoutsJSON& value)
         {
-            json::JsonObject result{};
+            json::JsonObject device{};
+            device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::MonitorID, json::value(value.deviceId.deviceName));
 
-            result.SetNamedValue(NonLocalizable::AppliedLayoutsIds::DeviceIdID, json::value(value.deviceId.toString()));
+            auto virtualDesktopStr = FancyZonesUtils::GuidToString(value.deviceId.virtualDesktopId);
+            if (virtualDesktopStr)
+            {
+                device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::VirtualDesktopID, json::value(virtualDesktopStr.value()));
+            }
+
+            json::JsonObject result{};
+            result.SetNamedValue(NonLocalizable::AppliedLayoutsIds::DeviceID, device);
             result.SetNamedValue(NonLocalizable::AppliedLayoutsIds::AppliedLayoutID, JsonUtils::LayoutJSON::ToJson(value.data));
             
             return result;
@@ -109,7 +173,12 @@ namespace JsonUtils
         {
             if (auto obj = AppliedLayoutsJSON::FromJson(layouts.GetObjectAt(i)); obj.has_value())
             {
-                map[obj->deviceId] = std::move(obj->data);
+                // skip default layouts in case if they were applied to different resolutions on the same monitor.
+                // NOTE: keep the default layout check for users who update PT version from the v0.57 
+                if (!map.contains(obj->deviceId) && !isLayoutDefault(obj->data))
+                {
+                    map[obj->deviceId] = std::move(obj->data);
+                }
             }
         }
 

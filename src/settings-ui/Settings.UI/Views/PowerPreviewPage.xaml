@@ -21,6 +21,12 @@
             <StackPanel Orientation="Vertical">
 
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
+                    <muxc:InfoBar Severity="Warning"
+                                   x:Uid="FileExplorerPreview_PreviewHandlerOutlookIncompatibility"
+                                   IsOpen="True"
+                                   IsTabStop="True"
+                                   IsClosable="False"
+                                   />
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}"
@@ -35,12 +41,25 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Monaco" Icon="&#xE99A;">
-                        <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoRenderIsEnabled}"
+                    <controls:SettingExpander IsExpanded="False">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Monaco" Icon="&#xE99A;">
+                                <controls:Setting.ActionContent>
+                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoRenderIsEnabled}"
                                           x:Uid="ToggleSwitch"/>
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+
+                        <controls:SettingExpander.Content>
+                            <StackPanel>
+                                <CheckBox x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Wrap_Text"
+                                          IsChecked="{x:Bind ViewModel.MonacoWrapText, Mode=TwoWay}"
+                                          Margin="{StaticResource ExpanderSettingMargin}"
+                                          IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}" />
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
 
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF" Icon="&#xEA90;">
                         <controls:Setting.ActionContent>
@@ -60,6 +79,12 @@
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
                     <muxc:InfoBar Severity="Informational"
                                    x:Uid="FileExplorerPreview_RebootRequired"
+                                   IsOpen="True"
+                                   IsTabStop="True"
+                                   IsClosable="False"
+                                   />
+                    <muxc:InfoBar Severity="Warning"
+                                   x:Uid="FileExplorerPreview_ThumbnailsMightNotAppearOnRemoteFolders"
                                    IsOpen="True"
                                    IsTabStop="True"
                                    IsClosable="False"

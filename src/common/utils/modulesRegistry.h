@@ -155,7 +155,8 @@ inline registry::ChangeSet getSvgThumbnailHandlerChangeSet(const std::wstring in
                                   registry::DOTNET_COMPONENT_CATEGORY_CLSID,
                                   L"Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider",
                                   L"Svg Thumbnail Provider",
-                                  NonLocalizable::ExtSVG);
+                                  NonLocalizable::ExtSVG,
+                                  L"Picture");
 }
 
 inline registry::ChangeSet getPdfThumbnailHandlerChangeSet(const std::wstring installationDir, const bool perUser)
@@ -198,6 +199,18 @@ inline registry::ChangeSet getStlThumbnailHandlerChangeSet(const std::wstring in
                                   L"Microsoft.PowerToys.ThumbnailHandler.Stl.StlThumbnailProvider",
                                   L"Stl Thumbnail Provider",
                                   NonLocalizable::ExtSTL);
+}
+
+inline std::vector<registry::ChangeSet> getAllOnByDefaultModulesChangeSets(const std::wstring installationDir)
+{
+    constexpr bool PER_USER = true;
+    return { getSvgPreviewHandlerChangeSet(installationDir, PER_USER),
+             getMdPreviewHandlerChangeSet(installationDir, PER_USER),
+             getMonacoPreviewHandlerChangeSet(installationDir, PER_USER),
+             getGcodePreviewHandlerChangeSet(installationDir, PER_USER),
+             getSvgThumbnailHandlerChangeSet(installationDir, PER_USER),
+             getGcodeThumbnailHandlerChangeSet(installationDir, PER_USER),
+             getStlThumbnailHandlerChangeSet(installationDir, PER_USER) };
 }
 
 inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstring installationDir)

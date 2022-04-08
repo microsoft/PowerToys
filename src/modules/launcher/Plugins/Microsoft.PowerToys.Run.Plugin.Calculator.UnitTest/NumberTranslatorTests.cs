@@ -130,5 +130,21 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result);
         }
+
+        [DataTestMethod]
+        [DataRow("12.0004", "12.0004")]
+        [DataRow("0xF000", "0xF000")]
+        public void Translate_NoRemovalOfLeadingZeroesOnEdgeCases(string input, string expectedResult)
+        {
+            // Arrange
+            var translator = NumberTranslator.Create(new CultureInfo("pt-PT"), new CultureInfo("en-US"));
+
+            // Act
+            var result = translator.Translate(input);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result);
+        }
     }
 }

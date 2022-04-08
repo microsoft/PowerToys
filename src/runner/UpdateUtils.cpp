@@ -154,7 +154,7 @@ void PeriodicUpdateWorker()
     for (;;)
     {
         auto state = UpdateState::read();
-        int64_t sleep_minutes_till_next_update = 0;
+        int64_t sleep_minutes_till_next_update = UPDATE_CHECK_AFTER_FAILED_INTERVAL_MINUTES;
         if (state.githubUpdateLastCheckedDate.has_value())
         {
             int64_t last_checked_minutes_ago = timeutil::diff::in_minutes(timeutil::now(), *state.githubUpdateLastCheckedDate);

@@ -153,7 +153,7 @@ bool InstallNewVersionStage2(std::wstring installer_path, std::wstring_view inst
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
         sei.lpFile = installer_path.c_str();
         sei.nShow = SW_SHOWNORMAL;
-        std::wstring parameters = L"/passive";
+        std::wstring parameters = L"/passive /norestart";
         sei.lpParameters = parameters.c_str();
 
         success = ShellExecuteExW(&sei) == TRUE;

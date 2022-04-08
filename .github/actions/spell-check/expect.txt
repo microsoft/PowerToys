@@ -294,6 +294,7 @@ comsupp
 Concat
 concrt
 configs
+Configurator
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
@@ -1938,6 +1939,7 @@ Subdir
 subfolder
 subkey
 SUBLANG
+submenu
 subquery
 substr
 Sul
@@ -2021,7 +2023,7 @@ timediff
 Timeline
 timeunion
 timeutil
-timezone
+timezones
 Titlecase
 TLayout
 tlb

@@ -5,6 +5,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Windows;
+using System.Windows.Interop;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Common.UI;
@@ -20,6 +21,9 @@ namespace ColorPicker.Helpers
         private ColorEditorWindow _colorEditorWindow;
         private bool _colorPickerShown;
         private object _colorPickerVisibilityLock = new object();
+
+        private HwndSource _hwndSource;
+        private const int _globalHotKeyId = 0x0001;
 
         // Blocks using the escape key to close the color picker editor when the adjust color flyout is open.
         public static bool BlockEscapeKeyClosingColorPickerEditor { get; set; }
@@ -56,6 +60,12 @@ namespace ColorPicker.Helpers
                 {
                     ShowColorPicker();
                 }
+
+                // Handle the escape key to close Color Picker locally when being spawn from PowerToys, since Keyboard Hooks from the KeyboardMonitor are heavy.
+                if (!(System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
+                {
+                    SetupEscapeGlobalKeyShortcut();
+                }
             }
         }
 
@@ -72,6 +82,12 @@ namespace ColorPicker.Helpers
                     else
                     {
                         HideColorPicker();
+                    }
+
+                    // Handle the escape key to close Color Picker locally when being spawn from PowerToys, since Keyboard Hooks from the KeyboardMonitor are heavy.
+                    if (!(System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
+                    {
+                        ClearEscapeGlobalKeyShortcut();
                     }
 
                     SessionEventHelper.End();
@@ -189,6 +205,68 @@ namespace ColorPicker.Helpers
         private void ColorEditorViewModel_OpenSettingsRequested(object sender, EventArgs e)
         {
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ColorPicker);
+        }
+
+        internal void RegisterWindowHandle(System.Windows.Interop.HwndSource hwndSource)
+        {
+            _hwndSource = hwndSource;
+        }
+
+#pragma warning disable CA1801 // Review unused parameters
+        public IntPtr ProcessWindowMessages(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
+#pragma warning restore CA1801 // Review unused parameters
+        {
+            switch (msg)
+            {
+                case NativeMethods.WM_HOTKEY:
+                    if (!BlockEscapeKeyClosingColorPickerEditor)
+                    {
+                        handled = EndUserSession();
+                    }
+                    else
+                    {
+                        // If escape key is blocked it means a submenu is open.
+                        // Send the escape key to the Window to close that submenu.
+                        // Description for LPARAM in https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-keyup#parameters
+                        // It's basically some modifiers + scancode for escape (1) + number of repetitions (1)
+                        handled = true;
+                        handled &= NativeMethods.PostMessage(_hwndSource.Handle, NativeMethods.WM_KEYDOWN, (IntPtr)NativeMethods.VK_ESCAPE, (IntPtr)0x00010001);
+                        handled &= NativeMethods.PostMessage(_hwndSource.Handle, NativeMethods.WM_KEYUP, (IntPtr)NativeMethods.VK_ESCAPE, (IntPtr)0xC0010001);
+                    }
+
+                    break;
+            }
+
+            return IntPtr.Zero;
+        }
+
+        public void SetupEscapeGlobalKeyShortcut()
+        {
+            if (_hwndSource == null)
+            {
+                return;
+            }
+
+            _hwndSource.AddHook(ProcessWindowMessages);
+            if (!NativeMethods.RegisterHotKey(_hwndSource.Handle, _globalHotKeyId, NativeMethods.MOD_NOREPEAT, NativeMethods.VK_ESCAPE))
+            {
+                Logger.LogWarning("Couldn't register the hotkey for Esc.");
+            }
+        }
+
+        public void ClearEscapeGlobalKeyShortcut()
+        {
+            if (_hwndSource == null)
+            {
+                return;
+            }
+
+            if (!NativeMethods.UnregisterHotKey(_hwndSource.Handle, _globalHotKeyId))
+            {
+                Logger.LogWarning("Couldn't unregister the hotkey for Esc.");
+            }
+
+            _hwndSource.RemoveHook(ProcessWindowMessages);
         }
     }
 }
