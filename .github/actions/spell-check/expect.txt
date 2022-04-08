@@ -303,7 +303,7 @@ constexpr
 contentdialog
 contentfiles
 CONTEXTHELP
-CONTEXTMENU
+contextmenu
 CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
