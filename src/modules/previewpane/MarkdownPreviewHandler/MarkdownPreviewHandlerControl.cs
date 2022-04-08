@@ -17,6 +17,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using PreviewHandlerCommon;
+using Windows.System;
 
 namespace Microsoft.PowerToys.PreviewHandler.Markdown
 {
@@ -133,9 +134,19 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                 MarkdownPipeline pipeline = _pipelineBuilder.Build();
                 string parsedMarkdown = Markdig.Markdown.ToHtml(fileText, pipeline);
                 string markdownHTML = $"{htmlHeader}{parsedMarkdown}{htmlFooter}";
+
                 _browser = new WebView2()
                 {
                     Dock = DockStyle.Fill,
+                };
+
+                _browser.NavigationStarting += async (object sender, CoreWebView2NavigationStartingEventArgs args) =>
+                {
+                    if (args.Uri != null && args.IsUserInitiated)
+                    {
+                        args.Cancel = true;
+                        await Launcher.LaunchUriAsync(new Uri(args.Uri));
+                    }
                 };
 
                 InvokeOnControlThread(() =>
@@ -153,6 +164,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                             {
                                 _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                                 await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
+                                await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
                                 _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
                                 _browser.NavigateToString(markdownHTML);
                                 Controls.Add(_browser);
