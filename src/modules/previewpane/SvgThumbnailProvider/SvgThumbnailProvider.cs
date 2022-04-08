@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <param name="rectangle">The client rectangle to capture from.</param>
         /// <param name="backgroundColor">The default background color to apply.</param>
         /// <returns>A Bitmap representing the browser contents.</returns>
-        public static Bitmap GetBrowserContentImage(WebBrowser browser, Rectangle rectangle, Color backgroundColor)
+        private static Bitmap GetBrowserContentImage(WebBrowser browser, Rectangle rectangle, Color backgroundColor)
         {
             Bitmap image = new Bitmap(rectangle.Width, rectangle.Height);
             using (Graphics graphics = Graphics.FromImage(image))
