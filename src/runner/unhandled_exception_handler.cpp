@@ -82,18 +82,30 @@ void log_stack_trace(std::wstring& generalErrorDescription)
     auto thread = GetCurrentThread();
     STACKFRAME64 stack;
     memset(&stack, 0, sizeof(STACKFRAME64));
+
+#ifdef _M_ARM64
+    stack.AddrPC.Offset = context.Pc;
+    stack.AddrStack.Offset = context.Sp;
+    stack.AddrFrame.Offset = context.Fp;
+#else
     stack.AddrPC.Offset = context.Rip;
-    stack.AddrPC.Mode = AddrModeFlat;
     stack.AddrStack.Offset = context.Rsp;
-    stack.AddrStack.Mode = AddrModeFlat;
     stack.AddrFrame.Offset = context.Rbp;
+#endif
+    stack.AddrPC.Mode = AddrModeFlat;
+    stack.AddrStack.Mode = AddrModeFlat;
     stack.AddrFrame.Mode = AddrModeFlat;
 
     std::wstringstream ss;
     ss << generalErrorDescription << std::endl;
     for (ULONG frame = 0;; frame++)
     {
-        auto result = StackWalk64(IMAGE_FILE_MACHINE_AMD64,
+        auto result = StackWalk64(
+#ifdef _M_ARM64
+            IMAGE_FILE_MACHINE_ARM64,
+#else
+            IMAGE_FILE_MACHINE_AMD64,
+#endif
                                   process,
                                   thread,
                                   &stack,

@@ -4,7 +4,7 @@
 #include <common/display/dpi_aware.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
-#include <common/utils/UnhandledExceptionHandler_x64.h>
+#include <common/utils/UnhandledExceptionHandler.h>
 
 #include <FancyZonesLib/Generated Files/resource.h>
 #include <FancyZonesLib/FancyZonesData.h>
