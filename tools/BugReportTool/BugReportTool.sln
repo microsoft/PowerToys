@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BugReportTool", "BugReportTool\BugReportTool.vcxproj", "{99126840-5C30-4E9E-AC6C-E73DDED5C3BD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SetttingsAPI", "..\..\src\common\SettingsAPI\SetttingsAPI.vcxproj", "{6955446D-23F7-4023-9BB3-8657F904AF99}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SettingsAPI", "..\..\src\common\SettingsAPI\SettingsAPI.vcxproj", "{6955446D-23F7-4023-9BB3-8657F904AF99}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
