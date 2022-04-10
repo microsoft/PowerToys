@@ -9,10 +9,12 @@ export function regDefinition() {
                 // Comments
                 [/;.*/, "comment"],
                 // Keys
+                [/\[\-.*\]/, 'invalid'],
                 [/\[/, 'number.float'],
                 [/\\.*\]/, 'number.float'],
                 // Values
                 [/@=/, "keyword"],
+                [/\".*\"=\-/, "invalid"],
                 [/\".*\"=/, "keyword"],
                 [/\".*\"(?!\=)/, 'string'],
                 [/((hex\({0,1}[0-9,a,b]*\){0,1})|dword):.*/, "string"],
@@ -25,6 +27,5 @@ export function regDefinition() {
                 [/HKEY_DYN_DATA/, 'constant'],
             ]
         }
-
     }
 };
