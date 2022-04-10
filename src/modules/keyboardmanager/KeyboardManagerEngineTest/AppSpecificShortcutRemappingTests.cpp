@@ -16,7 +16,7 @@ namespace RemappingLogicTests
     private:
         KeyboardManagerInput::MockedInput mockedInputHandler;
         State testState;
-        std::wstring testApp1 = L"testtrocess1.exe";
+        std::wstring testApp1 = L"testprocess1.exe";
         std::wstring testApp2 = L"testprocess2.exe";
 
     public:
