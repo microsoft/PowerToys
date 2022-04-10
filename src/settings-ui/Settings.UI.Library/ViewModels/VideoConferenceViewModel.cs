@@ -309,7 +309,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int ToolbarPostionIndex
+        public int ToolbarPositionIndex
         {
             get
             {
@@ -348,7 +348,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             break;
                     }
 
-                    RaisePropertyChanged(nameof(ToolbarPostionIndex));
+                    RaisePropertyChanged(nameof(ToolbarPositionIndex));
                 }
             }
         }
