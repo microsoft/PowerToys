@@ -1,6 +1,6 @@
 // This file adds new languages to monaco
 
-import { regDefinition } from './costumLanguages/reg.js';
+import { regDefinition } from './customLanguages/reg.js';
 
 export async function registerAdditionalLanguages(monaco){
     await languageDefinitions();

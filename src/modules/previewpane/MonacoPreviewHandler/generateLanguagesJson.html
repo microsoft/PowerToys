@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <title>Monaco Preview Handler monaco_languages.json generator</title>
         <script src="monacoSRC/min/vs/loader.js"></script>
-	    <script src="monacoSpecialLanguages.js" type="module"></script>
+        <script src="monacoSpecialLanguages.js" type="module"></script>
         <script type="module">
             import {registerAdditionalLanguages} from "./monacoSpecialLanguages.js"
             function download(filename, text) {
@@ -24,7 +24,6 @@
 		        await registerAdditionalLanguages(monaco);
                 download("monaco_languages.json", "{\"list\":"+ JSON.stringify(monaco.languages.getLanguages())+"}");
             });
-
         </script>
     </head>
     <body>

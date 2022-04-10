@@ -52,10 +52,10 @@
 <div id="container"></div>
 <!-- Script -->
 <script src="http://[[PT_URL]]/monacoSRC/min/vs/loader.js"></script>
-<script src="http://[[PT_URL]]/monacoSpecialLanguages.js"></script>
-<script>
+<script src="http://[[PT_URL]]/monacoSpecialLanguages.js" type="module"></script>
+<script type="module">
 	var editor;
-	
+    import { registerAdditionalLanguages } from "./monacoSpecialLanguages.js"
 	require.config({ paths: { vs: 'http://[[PT_URL]]/monacoSRC/min/vs' } });
 	require(['vs/editor/editor.main'], async function () {
 		await registerAdditionalLanguages(monaco)
