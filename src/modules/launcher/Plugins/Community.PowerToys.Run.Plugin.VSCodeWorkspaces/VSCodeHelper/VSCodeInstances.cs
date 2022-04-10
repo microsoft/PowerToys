@@ -15,7 +15,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 {
     public static class VSCodeInstances
     {
-        private static string _systemPath = string.Empty;
+        private static List<string> _paths = new List<string>();
 
         private static string _userAppDataPath = Environment.GetEnvironmentVariable("AppData");
 
@@ -62,13 +62,19 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
         // Gets the executablePath and AppData foreach instance of VSCode
         public static void LoadVSCodeInstances()
         {
-            if (_systemPath != Environment.GetEnvironmentVariable("PATH"))
+            var environmentPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
+            environmentPath += (environmentPath.Length > 0 && environmentPath.EndsWith(';') ? ";" : string.Empty) + Environment.GetEnvironmentVariable("PATH");
+            var paths = environmentPath.Split(";").ToList();
+            paths = paths.Distinct().ToList();
+
+            var deletedItems = paths.Except(_paths).Any();
+            var newItems = _paths.Except(paths).Any();
+
+            if (newItems || deletedItems)
             {
                 Instances = new List<VSCodeInstance>();
 
-                _systemPath = Environment.GetEnvironmentVariable("PATH");
-                var paths = _systemPath.Split(";");
-                paths = paths.Where(x => x.Contains("VS Code") || x.Contains("VSCodium")).ToArray();
+                paths = paths.Where(x => x.Contains("VS Code") || x.Contains("VSCodium")).ToList();
                 foreach (var path in paths)
                 {
                     if (Directory.Exists(path))

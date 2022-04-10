@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
@@ -14,6 +15,7 @@ using System.Reactive.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Awake.Core;
 using Awake.Core.Models;
 using interop;
@@ -71,6 +73,12 @@ namespace Awake
             _log.Info($"Build: {BuildId}");
             _log.Info($"OS: {Environment.OSVersion}");
             _log.Info($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
+
+            TaskScheduler.UnobservedTaskException += (sender, args) =>
+            {
+                Trace.WriteLine($"Task scheduler error: {args.Exception.Message}"); // somebody forgot to check!
+                args.SetObserved();
+            };
 
             // To make it easier to diagnose future issues, let's get the
             // system power capabilities and aggregate them in the log.
@@ -159,18 +167,7 @@ namespace Awake
         {
             _log.Info(message);
 
-            APIHelper.SetNoKeepAwake();
-            TrayHelper.ClearTray();
-
-            // Because we are running a message loop for the tray, we can't just use Environment.Exit,
-            // but have to make sure that we properly send the termination message.
-            bool cwResult = System.Diagnostics.Process.GetCurrentProcess().CloseMainWindow();
-            _log.Info($"Request to close main window status: {cwResult}");
-
-            if (force)
-            {
-                Environment.Exit(exitCode);
-            }
+            APIHelper.CompleteExit(exitCode, force);
         }
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid)
@@ -204,7 +201,7 @@ namespace Awake
                         }
                     }).Start();
 
-                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("modules/Awake/Images/Awake.ico"));
+                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("modules/awake/images/awake.ico"));
 
                     string? settingsPath = _settingsUtils.GetSettingsFilePath(InternalConstants.AppName);
                     _log.Info($"Reading configuration file: {settingsPath}");
@@ -293,6 +290,8 @@ namespace Awake
 
                 if (settings != null)
                 {
+                    _log.Info($"Identified custom time shortcuts for the tray: {settings.Properties.TrayTimeShortcuts.Count}");
+
                     switch (settings.Properties.Mode)
                     {
                         case AwakeMode.PASSIVE:

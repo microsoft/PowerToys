@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Util.h"
 #include "FancyZonesLib\util.h"
+#include "FancyZonesLib/JsonHelpers.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -69,9 +70,9 @@ namespace FancyZonesUnitTests
             GUID guid;
             const auto expectedGuidStr = L"{E0A2904E-889C-4532-95B1-28FE15C16F66}";
             CLSIDFromString(expectedGuidStr, &guid);
-            const FancyZonesDataTypes::DeviceIdData expected{ L"AOC0001#5&37ac4db&0&UID160002", 1536, 960, guid };
+            const BackwardsCompatibility::DeviceIdData expected{ L"AOC0001#5&37ac4db&0&UID160002", 1536, 960, guid };
             
-            const auto actual = FancyZonesDataTypes::DeviceIdData::ParseDeviceId(input);
+            const auto actual = BackwardsCompatibility::DeviceIdData::ParseDeviceId(input);
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual(expected.deviceName, actual->deviceName);
@@ -91,9 +92,9 @@ namespace FancyZonesUnitTests
             GUID guid;
             const auto expectedGuidStr = L"{E0A2904E-889C-4532-95B1-28FE15C16F66}";
             CLSIDFromString(expectedGuidStr, &guid);
-            const FancyZonesDataTypes::DeviceIdData expected{ L"AOC0001#5&37ac4db&0&UID160002", 1536, 960, guid, L"monitorId" };
+            const BackwardsCompatibility::DeviceIdData expected{ L"AOC0001#5&37ac4db&0&UID160002", 1536, 960, guid, L"monitorId" };
 
-            const auto actual = FancyZonesDataTypes::DeviceIdData::ParseDeviceId(input);
+            const auto actual = BackwardsCompatibility::DeviceIdData::ParseDeviceId(input);
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual(expected.deviceName, actual->deviceName);
@@ -114,9 +115,9 @@ namespace FancyZonesUnitTests
             GUID guid;
             const auto expectedGuidStr = L"{E0A2904E-889C-4532-95B1-28FE15C16F66}";
             CLSIDFromString(expectedGuidStr, &guid);
-            const FancyZonesDataTypes::DeviceIdData expected{ L"AOC00015&37ac4db&0&UID160002", 1536, 960, guid };
+            const BackwardsCompatibility::DeviceIdData expected{ L"AOC00015&37ac4db&0&UID160002", 1536, 960, guid };
 
-            const auto actual = FancyZonesDataTypes::DeviceIdData::ParseDeviceId(input);
+            const auto actual = BackwardsCompatibility::DeviceIdData::ParseDeviceId(input);
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual(expected.deviceName, actual->deviceName);
@@ -133,7 +134,7 @@ namespace FancyZonesUnitTests
         {
             // no width or height
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_1536960_{E0A2904E-889C-4532-95B1-28FE15C16F66}";
-            const auto actual = FancyZonesDataTypes::DeviceIdData::ParseDeviceId(input);
+            const auto actual = BackwardsCompatibility::DeviceIdData::ParseDeviceId(input);
             Assert::IsFalse(actual.has_value());
         }
 
@@ -141,7 +142,7 @@ namespace FancyZonesUnitTests
         {
             // no width and height
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_{E0A2904E-889C-4532-95B1-28FE15C16F66}_monitorId";
-            const auto actual = FancyZonesDataTypes::DeviceIdData::ParseDeviceId(input);
+            const auto actual = BackwardsCompatibility::DeviceIdData::ParseDeviceId(input);
             Assert::IsFalse(actual.has_value());
         }
 
@@ -149,7 +150,7 @@ namespace FancyZonesUnitTests
         {
             // no guid
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_1536960_";
-            const auto actual = FancyZonesDataTypes::DeviceIdData::ParseDeviceId(input);
+            const auto actual = BackwardsCompatibility::DeviceIdData::ParseDeviceId(input);
             Assert::IsFalse(actual.has_value());
         }
 
@@ -157,7 +158,7 @@ namespace FancyZonesUnitTests
         {
             // invalid guid
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_1536960_{asdf}";
-            const auto actual = FancyZonesDataTypes::DeviceIdData::ParseDeviceId(input);
+            const auto actual = BackwardsCompatibility::DeviceIdData::ParseDeviceId(input);
             Assert::IsFalse(actual.has_value());
         }
 
@@ -165,7 +166,7 @@ namespace FancyZonesUnitTests
         {
             // invalid width/height
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_15a6_960_{E0A2904E-889C-4532-95B1-28FE15C16F66}";
-            const auto actual = FancyZonesDataTypes::DeviceIdData::ParseDeviceId(input);
+            const auto actual = BackwardsCompatibility::DeviceIdData::ParseDeviceId(input);
             Assert::IsFalse(actual.has_value());
         }
 
@@ -173,7 +174,7 @@ namespace FancyZonesUnitTests
         {
             // changed order
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_15a6_960_monitorId_{E0A2904E-889C-4532-95B1-28FE15C16F66}";
-            const auto actual = FancyZonesDataTypes::DeviceIdData::ParseDeviceId(input);
+            const auto actual = BackwardsCompatibility::DeviceIdData::ParseDeviceId(input);
             Assert::IsFalse(actual.has_value());
         }
 

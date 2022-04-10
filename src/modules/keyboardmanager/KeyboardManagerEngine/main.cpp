@@ -3,7 +3,7 @@
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
-#include <common/utils/UnhandledExceptionHandler_x64.h>
+#include <common/utils/UnhandledExceptionHandler.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
@@ -15,7 +15,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     winrt::init_apartment();
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Engine", LogSettings::keyboardManagerLoggerName);
     
-    InitUnhandledExceptionHandler_x64();
+    InitUnhandledExceptionHandler();
 
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)

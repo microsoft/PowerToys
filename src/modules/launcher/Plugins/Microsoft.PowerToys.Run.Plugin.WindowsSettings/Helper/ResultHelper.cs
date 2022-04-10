@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
@@ -61,27 +62,27 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         {
             var toolTipText = new StringBuilder();
 
-            toolTipText.AppendLine($"{Resources.Application}: {entry.Type}");
+            toolTipText.AppendLine(CultureInfo.CurrentCulture, $"{Resources.Application}: {entry.Type}");
 
             if (entry.Areas != null && entry.Areas.Any())
             {
-                toolTipText.AppendLine($"{Resources.Area}: {entry.JoinedAreaPath}");
+                toolTipText.AppendLine(CultureInfo.CurrentCulture, $"{Resources.Area}: {entry.JoinedAreaPath}");
             }
 
             if (entry.AltNames != null && entry.AltNames.Any())
             {
                 var altList = entry.AltNames.Aggregate((current, next) => $"{current}, {next}");
 
-                toolTipText.AppendLine($"{Resources.AlternativeName}: {altList}");
+                toolTipText.AppendLine(CultureInfo.CurrentCulture, $"{Resources.AlternativeName}: {altList}");
             }
 
-            toolTipText.Append($"{Resources.Command}: {entry.Command}");
+            toolTipText.Append(CultureInfo.CurrentCulture, $"{Resources.Command}: {entry.Command}");
 
             if (!string.IsNullOrEmpty(entry.Note))
             {
                 toolTipText.AppendLine(string.Empty);
                 toolTipText.AppendLine(string.Empty);
-                toolTipText.Append($"{Resources.Note}: {entry.Note}");
+                toolTipText.Append(CultureInfo.CurrentCulture, $"{Resources.Note}: {entry.Note}");
             }
 
             result.ToolTipData = new ToolTipData(entry.Name, toolTipText.ToString());

@@ -4,8 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
     <Platforms>x64</Platforms>
-	<Version>$(Version).0</Version>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Version>$(Version).0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

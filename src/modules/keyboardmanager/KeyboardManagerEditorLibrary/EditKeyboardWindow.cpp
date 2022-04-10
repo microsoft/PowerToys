@@ -144,8 +144,8 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     RECT desktopRect = UIHelpers::GetForegroundWindowDesktopRect();
 
     // Calculate DPI dependent window size
-    int windowWidth = EditorConstants::DefaultEditKeyboardWindowWidth;
-    int windowHeight = EditorConstants::DefaultEditKeyboardWindowHeight;
+    float windowWidth = EditorConstants::DefaultEditKeyboardWindowWidth;
+    float windowHeight = EditorConstants::DefaultEditKeyboardWindowHeight;
 
     DPIAware::ConvertByCursorPosition(windowWidth, windowHeight);
     DPIAware::GetScreenDPIForCursor(g_currentDPI);
@@ -155,10 +155,10 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
         szWindowClass,
         GET_RESOURCE_STRING(IDS_EDITKEYBOARD_WINDOWNAME).c_str(),
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX,
-        ((desktopRect.right + desktopRect.left) / 2) - (windowWidth / 2),
-        ((desktopRect.bottom + desktopRect.top) / 2) - (windowHeight / 2),
-        windowWidth,
-        windowHeight,
+        ((desktopRect.right + desktopRect.left) / 2) - ((int)windowWidth / 2),
+        ((desktopRect.bottom + desktopRect.top) / 2) - ((int)windowHeight / 2),
+        static_cast<int>(windowWidth),
+        static_cast<int>(windowHeight),
         NULL,
         NULL,
         hInst,
@@ -415,11 +415,11 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     case WM_GETMINMAXINFO:
     {
         LPMINMAXINFO mmi = (LPMINMAXINFO)lParam;
-        int minWidth = EditorConstants::MinimumEditKeyboardWindowWidth;
-        int minHeight = EditorConstants::MinimumEditKeyboardWindowHeight;
+        float minWidth = EditorConstants::MinimumEditKeyboardWindowWidth;
+        float minHeight = EditorConstants::MinimumEditKeyboardWindowHeight;
         DPIAware::Convert(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), minWidth, minHeight);
-        mmi->ptMinTrackSize.x = minWidth;
-        mmi->ptMinTrackSize.y = minHeight;
+        mmi->ptMinTrackSize.x = static_cast<LONG>(minWidth);
+        mmi->ptMinTrackSize.y = static_cast<LONG>(minHeight);
     }
     break;
     case WM_GETDPISCALEDSIZE:

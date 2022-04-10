@@ -352,10 +352,11 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             string oldFullPath = directory + "\\" + oldpath;
             string fullPath = directory + "\\" + path;
+            string linkingTo = Directory.GetCurrentDirectory();
 
             // ShellLinkHelper must be mocked for lnk applications
             var mockShellLink = new Mock<IShellLinkHelper>();
-            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(string.Empty);
+            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(linkingTo);
             Win32Program.ShellLinkHelper = mockShellLink.Object;
 
             // old item and new item are the actual items when they are in existence
@@ -363,14 +364,14 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             {
                 Name = "oldpath",
                 ExecutableName = oldpath,
-                FullPath = fullPath,
+                FullPath = linkingTo,
             };
 
             Win32Program newitem = new Win32Program
             {
                 Name = "path",
                 ExecutableName = path,
-                FullPath = fullPath,
+                FullPath = linkingTo,
             };
 
             win32ProgramRepository.Add(olditem);

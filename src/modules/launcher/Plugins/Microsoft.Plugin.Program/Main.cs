@@ -19,7 +19,7 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Microsoft.Plugin.Program
 {
-    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IDisposable
     {
         // The order of this array is important! The Parsers will be checked in order (index 0 to index Length-1) and the first parser which is able to parse the Query will be used
         // NoArgumentsArgumentParser does always succeed and therefor should always be last/fallback
@@ -185,17 +185,13 @@ namespace Microsoft.Plugin.Program
 
                 runProcess(info);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ProgramLogger.Exception($"Unable to start ", ex, System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, info?.FileName);
                 var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
                 var message = $"{Properties.Resources.powertoys_run_plugin_program_start_failed}: {info?.FileName}";
                 _context.API.ShowMsg(name, message, string.Empty);
             }
-        }
-
-        public void ReloadData()
-        {
-            IndexPrograms();
         }
 
         public void Dispose()

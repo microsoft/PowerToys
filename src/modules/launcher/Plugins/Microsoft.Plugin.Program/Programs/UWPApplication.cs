@@ -158,6 +158,8 @@ namespace Microsoft.Plugin.Program.Programs
                                 return true;
                             },
                         });
+
+                // We don't add context menu to 'run as different user', because UWP applications normally installed per user and not for all users.
             }
 
             contextMenus.Add(
@@ -214,8 +216,9 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     appManager.ActivateApplication(UserModelId, queryArguments, noFlags, out var unusedPid);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    ProgramLogger.Exception($"Unable to launch UWP {DisplayName}", ex, MethodBase.GetCurrentMethod().DeclaringType, queryArguments);
                     var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
                     var message = $"{Properties.Resources.powertoys_run_plugin_program_uwp_failed}: {DisplayName}";
                     api.ShowMsg(name, message, string.Empty);

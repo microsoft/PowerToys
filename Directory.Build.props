@@ -7,7 +7,7 @@
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <Company>Microsoft Corporation</Company>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <Platforms>x64</Platforms>
+    <Platforms>x64;ARM64</Platforms>
     <PackageTags>PowerToys</PackageTags>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>Recommended</AnalysisMode>

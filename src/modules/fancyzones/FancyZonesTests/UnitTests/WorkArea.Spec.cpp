@@ -48,13 +48,9 @@ namespace FancyZonesUnitTests
             Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
 
             m_parentUniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
-            m_parentUniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
-            m_parentUniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top; 
             CLSIDFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}", &m_parentUniqueId.virtualDesktopId);
                 
             m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
-            m_uniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
-            m_uniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top;
             CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
                                 
             auto guid = Helpers::StringToGuid(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
@@ -116,19 +112,10 @@ namespace FancyZonesUnitTests
                 FancyZonesDataTypes::DeviceIdData uniqueIdData;
                 uniqueIdData.virtualDesktopId = m_virtualDesktopGuid;
 
-                MONITORINFOEXW mi;
-                mi.cbSize = sizeof(mi);
-                if (GetMonitorInfo(m_monitor, &mi))
-                {
-                    FancyZonesUtils::Rect const monitorRect(mi.rcMonitor);
-                    uniqueIdData.width = monitorRect.width();
-                    uniqueIdData.height = monitorRect.height();
-                }
-
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, uniqueIdData, {});
 
                 const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
-                const FancyZonesDataTypes::DeviceIdData expectedUniqueId{ L"FallbackDevice", m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left, m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top, m_virtualDesktopGuid };
+                const FancyZonesDataTypes::DeviceIdData expectedUniqueId{ L"FallbackDevice", m_virtualDesktopGuid };
 
                 Assert::IsNotNull(workArea.get());
                 Assert::IsTrue(expectedUniqueId == workArea->UniqueId());
@@ -144,15 +131,6 @@ namespace FancyZonesUnitTests
                 // Generate unique id without virtual desktop id
                 FancyZonesDataTypes::DeviceIdData uniqueId;
                 uniqueId.deviceName = FancyZonesUtils::TrimDeviceId(m_deviceId);
-
-                MONITORINFOEXW mi;
-                mi.cbSize = sizeof(mi);
-                if (GetMonitorInfo(m_monitor, &mi))
-                {
-                    FancyZonesUtils::Rect const monitorRect(mi.rcMonitor);
-                    uniqueId.width = monitorRect.width();
-                    uniqueId.height = monitorRect.height();
-                }
 
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, uniqueId, {});
 
@@ -208,8 +186,6 @@ namespace FancyZonesUnitTests
             Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
 
             m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
-            m_uniqueId.width = m_monitorInfo.rcMonitor.right - m_monitorInfo.rcMonitor.left;
-            m_uniqueId.height = m_monitorInfo.rcMonitor.bottom - m_monitorInfo.rcMonitor.top;
             CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
 
             AppZoneHistory::instance().LoadData();
@@ -407,8 +383,7 @@ namespace FancyZonesUnitTests
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
-                auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
-                workArea->ZoneSet()->AddZone(zone);
+                workArea->ZoneSet()->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
 
                 workArea->SaveWindowProcessToZoneIndex(window);
 
@@ -434,8 +409,7 @@ namespace FancyZonesUnitTests
                 Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == appHistoryArray1[0].zoneIndexSet);
 
                 // add zone without window
-                const auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
-                workArea->ZoneSet()->AddZone(zone);
+                workArea->ZoneSet()->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
 
                 workArea->SaveWindowProcessToZoneIndex(window);
                 Assert::AreEqual((size_t)1, AppZoneHistory::instance().GetFullAppZoneHistory().size());
@@ -454,8 +428,7 @@ namespace FancyZonesUnitTests
                 const auto deviceId = workArea->UniqueId();
                 const auto zoneSetId = workArea->ZoneSet()->Id();
 
-                auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
-                workArea->ZoneSet()->AddZone(zone);
+                workArea->ZoneSet()->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
                 workArea->MoveWindowIntoZoneByIndex(window, 0);
 
                 //fill app zone history map
@@ -487,9 +460,7 @@ namespace FancyZonesUnitTests
                 SetWindowPos(window, nullptr, 150, 150, originalWidth, originalHeight, SWP_SHOWWINDOW);
                 SetWindowLong(window, GWL_STYLE, GetWindowLong(window, GWL_STYLE) & ~WS_SIZEBOX);
 
-                auto zone = MakeZone(RECT{ 50, 50, 300, 300 }, 1);
-                workArea->ZoneSet()->AddZone(zone);
-
+                workArea->ZoneSet()->CalculateZones(RECT{ 0, 0, 1920, 1080 }, 1, 0);
                 workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_LEFT, true);
 
                 RECT inZoneRect;

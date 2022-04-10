@@ -65,7 +65,15 @@ namespace ColorPicker.ViewModels
             }
 
             _userSettings.ShowColorName.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(ShowColorName)); };
-            keyboardMonitor?.Start();
+
+            // Only start a local keyboard low level hook if running as a standalone.
+            // Otherwise, the global keyboard hook from runner will be used to activate Color Picker through ShowColorPickerSharedEvent
+            // and the Escape key will be registered as a shortcut by appStateHandler when ColorPicker is being used.
+            // This is much lighter than using a local low level keyboard hook.
+            if ((System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
+            {
+                keyboardMonitor?.Start();
+            }
         }
 
         /// <summary>
@@ -163,5 +171,10 @@ namespace ColorPicker.ViewModels
         /// <param name="e">The new values for the zoom</param>
         private void MouseInfoProvider_OnMouseWheel(object sender, Tuple<Point, bool> e)
             => _zoomWindowHelper.Zoom(e.Item1, e.Item2);
+
+        public void RegisterWindowHandle(System.Windows.Interop.HwndSource hwndSource)
+        {
+            _appStateHandler.RegisterWindowHandle(hwndSource);
+        }
     }
 }

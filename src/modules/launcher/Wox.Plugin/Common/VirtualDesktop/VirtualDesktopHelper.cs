@@ -94,7 +94,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             string registryExplorerVirtualDesktops = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops";
 
             // List of all desktops
-            byte[] allDeskValue = (byte[])Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false).GetValue("VirtualDesktopIDs", null);
+            byte[] allDeskValue = (byte[])Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false)?.GetValue("VirtualDesktopIDs", null);
             if (allDeskValue != null)
             {
                 // We clear only, if we can read from registry. Otherwise we keep the existing values.
@@ -115,8 +115,8 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             }
 
             // Guid for current desktop
-            var currentDeskSessionValue = Registry.CurrentUser.OpenSubKey(registrySessionVirtualDesktops, false).GetValue("CurrentVirtualDesktop", null); // Windows 10
-            var currentDeskExplorerValue = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false).GetValue("CurrentVirtualDesktop", null); // Windows 11
+            var currentDeskSessionValue = Registry.CurrentUser.OpenSubKey(registrySessionVirtualDesktops, false)?.GetValue("CurrentVirtualDesktop", null); // Windows 10
+            var currentDeskExplorerValue = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false)?.GetValue("CurrentVirtualDesktop", null); // Windows 11
             var currentDeskValue = _IsWindowsEleven ? currentDeskExplorerValue : currentDeskSessionValue;
             if (currentDeskValue != null)
             {
@@ -518,10 +518,10 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// <returns><see langword="True"/> if yes and <see langword="false"/> if no.</returns>
         private static bool IsWindowsElevenOrLater()
         {
-            var currentBuildString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false).GetValue("CurrentBuild", uint.MinValue);
+            var currentBuildString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false)?.GetValue("CurrentBuild", null) ?? uint.MinValue;
             uint currentBuild = uint.TryParse(currentBuildString as string, out var build) ? build : uint.MinValue;
 
-            var currentBuildNumberString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false).GetValue("CurrentBuildNumber", uint.MinValue);
+            var currentBuildNumberString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false)?.GetValue("CurrentBuildNumber", null) ?? uint.MinValue;
             uint currentBuildNumber = uint.TryParse(currentBuildNumberString as string, out var buildNumber) ? buildNumber : uint.MinValue;
 
             uint currentWindowsBuild = currentBuild != uint.MinValue ? currentBuild : currentBuildNumber;

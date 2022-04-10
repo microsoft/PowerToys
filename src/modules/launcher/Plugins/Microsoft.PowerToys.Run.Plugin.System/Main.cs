@@ -17,7 +17,7 @@ using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.PowerToys.Run.Plugin.System
 {
-    public class Main : IPlugin, IPluginI18n, ISettingProvider, IContextMenu
+    public class Main : IPlugin, IPluginI18n, ISettingProvider, IContextMenu, IDelayedExecutionPlugin
     {
         private PluginInitContext _context;
 
@@ -51,6 +51,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             {
                 Key = "ReduceNetworkResultScore",
                 DisplayLabel = Resources.Reduce_Network_Result_Score,
+                DisplayDescription = Resources.Reduce_Network_Result_Score_Description,
                 Value = true,
             },
         };
@@ -72,17 +73,16 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public List<Result> Query(Query query)
         {
-            var results = new List<Result>();
+            List<Result> results = new List<Result>();
+            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
 
             if (query == null)
             {
                 return results;
             }
 
-            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
+            // normal system commands are fast and can be returned immediately
             var systemCommands = Commands.GetSystemCommands(IsBootedInUefiMode, IconTheme, culture, _confirmSystemCommands);
-            var networkConnectionResults = Commands.GetNetworkConnectionResults(IconTheme, culture);
-
             foreach (var c in systemCommands)
             {
                 var resultMatch = StringMatcher.FuzzySearch(query.Search, c.Title);
@@ -94,24 +94,46 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                 }
             }
 
-            foreach (var r in networkConnectionResults)
-            {
-                // On global queries the first word/part has to be 'ip', 'mac' or 'address'
-                if (string.IsNullOrEmpty(query.ActionKeyword))
-                {
-                    string[] keywordList = Resources.ResourceManager.GetString("Microsoft_plugin_sys_Search_NetworkKeywordList", culture).Split("; ");
-                    if (!keywordList.Any(x => query.Search.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)))
-                    {
-                        continue;
-                    }
-                }
+            // The following information result is not returned because delayed queries doesn't clear output if no results are available.
+            // On global queries the first word/part has to be 'ip', 'mac' or 'address' for network results
+            // string[] keywordList = Resources.ResourceManager.GetString("Microsoft_plugin_sys_Search_NetworkKeywordList", culture).Split("; ");
+            // if (!string.IsNullOrEmpty(query.ActionKeyword) || keywordList.Any(x => query.Search.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)))
+            // {
+            //    results.Add(new Result()
+            //    {
+            //        Title = "Getting network informations. Please wait ...",
+            //        IcoPath = $"Images\\networkAdapter.{IconTheme}.png",
+            //        Score = StringMatcher.FuzzySearch("address", "ip address").Score,
+            //    });
+            // }
+            return results;
+        }
 
-                var resultMatch = StringMatcher.FuzzySearch(query.Search, r.SubTitle);
-                if (resultMatch.Score > 0)
+        public List<Result> Query(Query query, bool delayedExecution)
+        {
+            List<Result> results = new List<Result>();
+            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
+
+            if (query == null)
+            {
+                return results;
+            }
+
+            // Network (ip and mac) results are slow with many network cards and returned delayed.
+            // On global queries the first word/part has to be 'ip', 'mac' or 'address' for network results
+            string[] keywordList = Resources.ResourceManager.GetString("Microsoft_plugin_sys_Search_NetworkKeywordList", culture).Split("; ");
+            if (!string.IsNullOrEmpty(query.ActionKeyword) || keywordList.Any(x => query.Search.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)))
+            {
+                var networkConnectionResults = Commands.GetNetworkConnectionResults(IconTheme, culture);
+                foreach (var r in networkConnectionResults)
                 {
-                    r.Score = _reduceNetworkResultScore ? (int)(resultMatch.Score * 65 / 100) : resultMatch.Score; // Adjust score to improve user experience and priority order
-                    r.SubTitleHighlightData = resultMatch.MatchData;
-                    results.Add(r);
+                    var resultMatch = StringMatcher.FuzzySearch(query.Search, r.SubTitle);
+                    if (resultMatch.Score > 0)
+                    {
+                        r.Score = _reduceNetworkResultScore ? (int)(resultMatch.Score * 65 / 100) : resultMatch.Score; // Adjust score to improve user experience and priority order
+                        r.SubTitleHighlightData = resultMatch.MatchData;
+                        results.Add(r);
+                    }
                 }
             }
 

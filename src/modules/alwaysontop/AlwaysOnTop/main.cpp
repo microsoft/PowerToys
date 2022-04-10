@@ -2,7 +2,7 @@
 
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/window.h>
-#include <common/utils/UnhandledExceptionHandler_x64.h>
+#include <common/utils/UnhandledExceptionHandler.h>
 
 #include <common/utils/logger_helper.h>
 
@@ -18,7 +18,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 {
     winrt::init_apartment();
     LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::alwaysOnTopLoggerName);
-    InitUnhandledExceptionHandler_x64();    
+    InitUnhandledExceptionHandler();    
 
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)

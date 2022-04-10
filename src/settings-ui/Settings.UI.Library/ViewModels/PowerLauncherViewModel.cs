@@ -104,6 +104,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
         {
+            if (
+                e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowNotAccessibleWarning)
+                || e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowNotAllowedKeywordWarning)
+                )
+            {
+                // Don't trigger a settings update if the changed property is for visual notification.
+                return;
+            }
+
             OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
             UpdateSettings();
         }
@@ -430,6 +439,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 var plugins = settings.Plugins.Where(p => p.Name.StartsWith(SearchText, StringComparison.OrdinalIgnoreCase) || p.Name.IndexOf($" {SearchText}", StringComparison.OrdinalIgnoreCase) > 0);
                 _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)));
+                foreach (var plugin in _plugins)
+                {
+                    plugin.PropertyChanged += OnPluginInfoChange;
+                }
             }
             else
             {
