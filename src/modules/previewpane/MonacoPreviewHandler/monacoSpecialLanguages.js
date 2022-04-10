@@ -5,7 +5,7 @@ import { regDefinition } from './customLanguages/reg.js';
 export async function registerAdditionalLanguages(monaco){
     await languageDefinitions();
     registerAdditionalLanguage("cppExt", [".ino", ".pde"], "cpp", monaco)
-    registerAdditionalLanguage("xmlExt", [".xsl", ".xsd", ".wsdl"], "xml", monaco)
+    registerAdditionalLanguage("xmlExt", [".xsl", ".xsd", ".wsdl", ".xslt"], "xml", monaco)
     registerAdditionalLanguage("razorExt", [".razor"], "razor", monaco)
     registerAdditionalNewLanguage("reg", [".reg"], regDefinition(), monaco)
 }
