@@ -298,9 +298,9 @@ namespace UnitTestsCommonLib
 
             int actualSize = expectedSize;
             wchar_t* buffer = new wchar_t[expectedSize];
-            bool serizalizationSuccess = settings.serialize_to_buffer(buffer, &actualSize);
+            bool serializationSuccess = settings.serialize_to_buffer(buffer, &actualSize);
 
-            Assert::IsTrue(serizalizationSuccess);
+            Assert::IsTrue(serializationSuccess);
             Assert::AreEqual(expectedSize, actualSize);
 
             auto actualJson = json::JsonObject::Parse(std::wstring(buffer));
