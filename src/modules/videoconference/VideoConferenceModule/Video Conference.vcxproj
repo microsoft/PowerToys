@@ -177,7 +177,7 @@ xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
     <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
       <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">
+    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">

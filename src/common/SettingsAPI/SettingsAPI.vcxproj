@@ -5,8 +5,8 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{6955446D-23F7-4023-9BB3-8657F904AF99}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>SetttingsAPI</RootNamespace>
-    <ProjectName>SetttingsAPI</ProjectName>
+    <RootNamespace>SettingsAPI</RootNamespace>
+    <ProjectName>SettingsAPI</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
