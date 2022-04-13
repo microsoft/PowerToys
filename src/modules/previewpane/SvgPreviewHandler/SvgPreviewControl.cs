@@ -182,6 +182,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                         await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
                         await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
                         _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                        _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
                         _browser.NavigateToString(svgData);
                         Controls.Add(_browser);
                     }

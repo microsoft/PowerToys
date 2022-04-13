@@ -37,11 +37,6 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         private const uint MaxThumbnailSize = 10000;
 
         /// <summary>
-        /// Thumbnail bitmap to show.
-        /// </summary>
-        private Bitmap _thumbnail;
-
-        /// <summary>
         /// WebView2 Control to display Svg.
         /// </summary>
         private WebView2 _browser;
@@ -79,13 +74,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// </summary>
         /// <param name="content">The content to render.</param>
         /// <param name="cx">The maximum thumbnail size, in pixels.</param>
-        public void GetThumbnail(string content, uint cx)
+        public Bitmap GetThumbnail(string content, uint cx)
         {
-            if (cx > MaxThumbnailSize)
+            if (cx == 0 || cx > MaxThumbnailSize || string.IsNullOrEmpty(content) || !content.Contains("svg"))
             {
-                return;
+                return null;
             }
 
+            Bitmap thumbnail = null;
             bool thumbnailDone = false;
             string wrappedContent = WrapSVGInHTML(content);
 
@@ -104,16 +100,16 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 
                 MemoryStream ms = new MemoryStream();
                 await _browser.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, ms);
-                _thumbnail = new Bitmap(ms);
+                thumbnail = new Bitmap(ms);
 
-                if (_thumbnail.Width != cx && _thumbnail.Height != cx)
+                if (thumbnail.Width != cx && thumbnail.Height != cx)
                 {
                     // We are not the appropriate size for caller.  Resize now while
                     // respecting the aspect ratio.
-                    float scale = Math.Min((float)cx / _thumbnail.Width, (float)cx / _thumbnail.Height);
-                    int scaleWidth = (int)(_thumbnail.Width * scale);
-                    int scaleHeight = (int)(_thumbnail.Height * scale);
-                    _thumbnail = ResizeImage(_thumbnail, scaleWidth, scaleHeight);
+                    float scale = Math.Min((float)cx / thumbnail.Width, (float)cx / thumbnail.Height);
+                    int scaleWidth = (int)(thumbnail.Width * scale);
+                    int scaleHeight = (int)(thumbnail.Height * scale);
+                    thumbnail = ResizeImage(thumbnail, scaleWidth, scaleHeight);
                 }
 
                 thumbnailDone = true;
@@ -132,6 +128,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
                     await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
                     _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                    _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
                     _browser.NavigateToString(wrappedContent);
                 }
                 catch (NullReferenceException)
@@ -143,6 +140,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
             {
                 Application.DoEvents();
             }
+
+            return thumbnail;
         }
 
         /// <summary>
@@ -235,11 +234,13 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 
             if (svgData != null)
             {
-                GetThumbnail(svgData, cx);
-                if (_thumbnail != null && _thumbnail.Size.Width > 0 && _thumbnail.Size.Height > 0)
+                using (Bitmap thumbnail = GetThumbnail(svgData, cx))
                 {
-                    phbmp = _thumbnail.GetHbitmap();
-                    pdwAlpha = WTS_ALPHATYPE.WTSAT_RGB;
+                    if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
+                    {
+                        phbmp = thumbnail.GetHbitmap();
+                        pdwAlpha = WTS_ALPHATYPE.WTSAT_RGB;
+                    }
                 }
             }
         }
