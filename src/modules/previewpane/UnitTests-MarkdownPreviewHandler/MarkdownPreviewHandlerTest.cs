@@ -15,7 +15,7 @@ namespace MarkdownPreviewHandlerUnitTests
     [STATestClass]
     public class MarkdownPreviewHandlerTest
     {
-        private static readonly int ThreeSecondsInMilliseconds = 3000;
+        private static readonly int TenSecondsInMilliseconds = 10000;
 
         [TestMethod]
         public void MarkdownPreviewHandlerControlAddsBrowserToFormWhenDoPreviewIsCalled()
@@ -28,7 +28,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
                 }
@@ -50,7 +50,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
                 }
@@ -72,7 +72,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count < 2 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count < 2 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
                 }
@@ -94,7 +94,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
                 }
@@ -116,7 +116,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count < 2 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count < 2 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
                 }
@@ -138,7 +138,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
                 }
