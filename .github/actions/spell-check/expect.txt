@@ -65,7 +65,7 @@ APPICON
 appid
 appium
 APPLASTZONE
-applets
+Applets
 Applicationcan
 applicationframehost
 applog
