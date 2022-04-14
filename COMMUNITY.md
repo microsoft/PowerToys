@@ -7,7 +7,7 @@ Names are in alphabetical order based on first name.
 ## High impact community members
 
 ### [@Aaron-Junker](https://github.com/Aaron-Junker) - [Aaron Junker](https://aaron-junker.github.io)
-Aaron has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes.  Aaron was the primary person for helping build the File Explorer preview pane handler for developer files.
+Aaron has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Aaron was the primary person for helping build the File Explorer preview pane handler for developer files.
 
 ### [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)
 CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
