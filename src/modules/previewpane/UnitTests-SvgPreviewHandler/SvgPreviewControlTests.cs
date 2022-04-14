@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using Microsoft.PowerToys.PreviewHandler.Svg;
 using Microsoft.PowerToys.STATestExtension;
@@ -21,6 +22,7 @@ namespace SvgPreviewHandlerUnitTests
     public class SvgPreviewControlTests
     {
         private static readonly int ThreeSecondsInMilliseconds = 3000;
+        private static readonly int SleepTimeInMilliseconds = 200;
 
         [TestMethod]
         public void SvgPreviewControlShouldAddExtendedBrowserControlWhenDoPreviewCalled()
@@ -36,6 +38,7 @@ namespace SvgPreviewHandlerUnitTests
                 while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 // Assert
@@ -58,6 +61,7 @@ namespace SvgPreviewHandlerUnitTests
                 while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 // Assert
@@ -84,6 +88,7 @@ namespace SvgPreviewHandlerUnitTests
                 while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 var textBox = svgPreviewControl.Controls[0] as RichTextBox;
@@ -117,6 +122,7 @@ namespace SvgPreviewHandlerUnitTests
                 while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 var textBox = svgPreviewControl.Controls[0] as RichTextBox;
@@ -153,6 +159,7 @@ namespace SvgPreviewHandlerUnitTests
                 while (svgPreviewControl.Controls.Count < 2 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 // Assert
@@ -182,6 +189,7 @@ namespace SvgPreviewHandlerUnitTests
                 while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 // Assert
@@ -207,6 +215,7 @@ namespace SvgPreviewHandlerUnitTests
                 while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 var textBox = svgPreviewControl.Controls[0] as RichTextBox;

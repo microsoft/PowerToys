@@ -4,6 +4,7 @@
 
 using System;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 using Microsoft.PowerToys.PreviewHandler.Markdown;
 using Microsoft.PowerToys.STATestExtension;
@@ -16,6 +17,7 @@ namespace MarkdownPreviewHandlerUnitTests
     public class MarkdownPreviewHandlerTest
     {
         private static readonly int TenSecondsInMilliseconds = 10000;
+        private static readonly int SleepTimeInMilliseconds = 200;
 
         [TestMethod]
         public void MarkdownPreviewHandlerControlAddsBrowserToFormWhenDoPreviewIsCalled()
@@ -31,6 +33,7 @@ namespace MarkdownPreviewHandlerUnitTests
                 while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 // Assert
@@ -53,6 +56,7 @@ namespace MarkdownPreviewHandlerUnitTests
                 while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 // Assert
@@ -75,6 +79,7 @@ namespace MarkdownPreviewHandlerUnitTests
                 while (markdownPreviewHandlerControl.Controls.Count < 2 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 // Assert
@@ -97,6 +102,7 @@ namespace MarkdownPreviewHandlerUnitTests
                 while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 // Assert
@@ -119,6 +125,7 @@ namespace MarkdownPreviewHandlerUnitTests
                 while (markdownPreviewHandlerControl.Controls.Count < 2 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 // Assert
@@ -141,6 +148,7 @@ namespace MarkdownPreviewHandlerUnitTests
                 while (markdownPreviewHandlerControl.Controls.Count == 0 && Environment.TickCount < beforeTick + TenSecondsInMilliseconds)
                 {
                     Application.DoEvents();
+                    Thread.Sleep(SleepTimeInMilliseconds);
                 }
 
                 // Assert
