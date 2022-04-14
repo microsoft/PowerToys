@@ -102,7 +102,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 await _browser.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, ms);
                 thumbnail = new Bitmap(ms);
 
-                if (thumbnail.Width != cx && thumbnail.Height != cx)
+                if (thumbnail.Width != cx && thumbnail.Height != cx && thumbnail.Width != 0 && thumbnail.Height != 0)
                 {
                     // We are not the appropriate size for caller.  Resize now while
                     // respecting the aspect ratio.
