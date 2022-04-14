@@ -142,9 +142,10 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
         private List<VSCodeWorkspace> GetWorkspacesInVscdb(VSCodeInstance vscodeInstance, string filePath)
         {
             var dbFileResults = new List<VSCodeWorkspace>();
+            SqliteConnection sqliteConnection = null;
             try
             {
-                var sqliteConnection = new SqliteConnection($"Data Source={filePath};Mode=ReadOnly;");
+                sqliteConnection = new SqliteConnection($"Data Source={filePath};Mode=ReadOnly;");
                 sqliteConnection.Open();
 
                 if (sqliteConnection.State == System.Data.ConnectionState.Open)
@@ -183,13 +184,15 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                         }
                     }
                 }
-
-                sqliteConnection.Close();
             }
             catch (Exception e)
             {
                 var message = $"Failed to retrieve workspaces from db: {filePath}";
                 Log.Exception(message, e, GetType());
+            }
+            finally
+            {
+                sqliteConnection?.Close();
             }
 
             return dbFileResults;
