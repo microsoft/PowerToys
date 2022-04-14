@@ -93,6 +93,11 @@ namespace FancyZonesEditor.Models
 
         public void ScaleLayout(double workAreaWidth, double workAreaHeight)
         {
+            if (CanvasRect.Height == 0 || CanvasRect.Width == 0)
+            {
+                return;
+            }
+
             Int32Rect[] zones = new Int32Rect[Zones.Count];
             Zones.CopyTo(zones, 0);
             Zones.Clear();
