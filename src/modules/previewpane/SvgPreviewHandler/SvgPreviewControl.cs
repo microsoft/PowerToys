@@ -5,6 +5,8 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
 using Common;
@@ -12,6 +14,8 @@ using Common.Utilities;
 using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
 using Microsoft.PowerToys.PreviewHandler.Svg.Utilities;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
 using PreviewHandlerCommon;
 
 namespace Microsoft.PowerToys.PreviewHandler.Svg
@@ -22,9 +26,36 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
     public class SvgPreviewControl : FormHandlerControl
     {
         /// <summary>
-        /// Extended Browser Control to display Svg.
+        /// WebView2 Control to display Svg.
         /// </summary>
-        private WebBrowserExt _browser;
+        private WebView2 _browser;
+
+        /// <summary>
+        /// WebView2 Environment
+        /// </summary>
+        private CoreWebView2Environment _webView2Environment;
+
+        /// <summary>
+        /// Name of the virtual host
+        /// </summary>
+        public const string VirtualHostName = "PowerToysLocalSvg";
+
+        /// <summary>
+        /// Gets the path of the current assembly.
+        /// </summary>
+        /// <remarks>
+        /// Source: https://stackoverflow.com/a/283917/14774889
+        /// </remarks>
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().Location;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
 
         /// <summary>
         /// Text box to display the information about blocked elements from Svg.
@@ -73,7 +104,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                _browser.ScrollBarsEnabled = true;
                 PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
             }
 
@@ -90,7 +120,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                         AddTextBoxControl(Properties.Resource.BlockedElementInfoText);
                     }
 
-                    AddBrowserControl(svgData);
+                    AddWebViewControl(svgData);
                     Resize += FormResized;
                     base.DoPreview(dataSource);
                     PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
@@ -129,19 +159,38 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         }
 
         /// <summary>
-        /// Adds a Web Browser Control to Control Collection.
+        /// Adds a WebView2 Control to Control Collection.
         /// </summary>
         /// <param name="svgData">Svg to display on Browser Control.</param>
-        private void AddBrowserControl(string svgData)
+        private void AddWebViewControl(string svgData)
         {
-            _browser = new WebBrowserExt();
-            _browser.DocumentText = svgData;
+            _browser = new WebView2();
             _browser.Dock = DockStyle.Fill;
-            _browser.IsWebBrowserContextMenuEnabled = false;
-            _browser.ScriptErrorsSuppressed = true;
-            _browser.ScrollBarsEnabled = false;
-            _browser.AllowNavigation = false;
-            Controls.Add(_browser);
+
+            ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
+               webView2EnvironmentAwaiter = CoreWebView2Environment
+                   .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgPreview-Temp")
+                   .ConfigureAwait(true).GetAwaiter();
+            webView2EnvironmentAwaiter.OnCompleted(() =>
+            {
+                InvokeOnControlThread(async () =>
+                {
+                    try
+                    {
+                        _webView2Environment = webView2EnvironmentAwaiter.GetResult();
+                        await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
+                        await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
+                        _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                        _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+                        _browser.NavigateToString(svgData);
+                        Controls.Add(_browser);
+                    }
+                    catch (NullReferenceException)
+                    {
+                    }
+                });
+            });
         }
 
         /// <summary>
