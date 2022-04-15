@@ -22,9 +22,6 @@ namespace MonacoPreviewHandlerUnitTests
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "new Exception() is fine in test projects.")]
     public class MonacoPreviewControlTests
     {
-        private static readonly int ThreeSecondsInMilliseconds = 3000;
-        private static readonly int SleepTimeInMilliseconds = 200;
-
         [TestMethod]
         public void MonacoPreviewControlShouldAddExtendedBrowserControlWhenDoPreviewCalled()
         {
@@ -34,54 +31,19 @@ namespace MonacoPreviewHandlerUnitTests
                 // Act
                 monacoPreviewControl.DoPreview<string>("HelperFiles/test.json");
 
-                int beforeTick = Environment.TickCount;
-
-                while (monacoPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
-                {
-                    Application.DoEvents();
-                    Thread.Sleep(SleepTimeInMilliseconds);
-                }
-
-                if (monacoPreviewControl.Controls[0] is Label)
-                {
-                    Trace.WriteLine(monacoPreviewControl.Controls[0].Text);
-                }
-
                 string loadingText = Microsoft.PowerToys.PreviewHandler.Monaco.Properties.Resources.Loading_Screen_Message;
 
-                while (monacoPreviewControl.Controls[0] is Label)
+                Assert.AreEqual(loadingText, monacoPreviewControl.Controls[0].Text);
+
+                while (!(monacoPreviewControl.Controls[0] is WebView2))
                 {
-                    if (monacoPreviewControl.Controls[0].Text != loadingText)
-                    {
-                        Assert.Fail("Hit exception");
-                    }
                 }
+
+                Trace.WriteLine(monacoPreviewControl.Controls);
 
                 // Assert
                 Assert.AreEqual(1, monacoPreviewControl.Controls.Count);
                 Assert.IsInstanceOfType(monacoPreviewControl.Controls[0], typeof(WebView2));
-            }
-        }
-
-        [TestMethod]
-        public void MonacoPreviewControlShouldFillDockForWebView2WhenDoPreviewCalled()
-        {
-            // Arrange
-            using (var monacoPreviewControl = new MonacoPreviewHandlerControl())
-            {
-                // Act
-                monacoPreviewControl.DoPreview<string>("HelperFiles/test.json");
-
-                int beforeTick = Environment.TickCount;
-
-                while (monacoPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
-                {
-                    Application.DoEvents();
-                    Thread.Sleep(SleepTimeInMilliseconds);
-                }
-
-                // Assert
-                Assert.AreEqual(DockStyle.Fill, ((WebView2)monacoPreviewControl.Controls[0]).Dock);
             }
         }
 
