@@ -54,7 +54,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// <summary>
         /// Rounds the value to the predefined number of significant digits.
         /// </summary>
-        /// <param name="value">Value to b runded</param>
+        /// <param name="value">Value to be rounded</param>
         public static double Round(double value)
         {
             if (value == 0.0D)
