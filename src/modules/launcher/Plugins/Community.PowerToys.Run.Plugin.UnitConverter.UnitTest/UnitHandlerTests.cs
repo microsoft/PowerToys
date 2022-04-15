@@ -27,7 +27,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         }
 
         [TestMethod]
-        public void HandleSmall()
+        public void HandleNanometerToKilometer()
         {
             var convertModel = new ConvertModel(1, "nanometer", "kilometer");
             double result = UnitHandler.ConvertInput(convertModel, UnitsNet.QuantityType.Length);
