@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Platforms>x64</Platforms>
+    <AssemblyTitle>UnitTests-MonacoPreviewHandler</AssemblyTitle>
+    <AssemblyDescription>PowerToys UnitTests-MonacoPreviewHandler</AssemblyDescription>
+    <AssemblyTitle>UnitTests-MonacoPreviewHandler</AssemblyTitle>
+    <Description>PowerToys UnitTests-MonacoPreviewHandler</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ProjectGuid>{78755F57-2114-4F01-9742-13621D012D17}</ProjectGuid>
+    <RootNamespace>MonacoPreviewHandlerUnitTests</RootNamespace>
+    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+  </PropertyGroup>
+
+  <Import Project="..\..\..\Version.props" />
+
+  <ItemGroup>
+    <Compile Remove="GlobalSuppressions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Moq" Version="4.16.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
+    <ProjectReference Include="..\MonacoPreviewHandler\MonacoPreviewHandler.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
+    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
+    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
+      <Link>StyleCop.json</Link>
+    </AdditionalFiles>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="HelperFiles\test.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

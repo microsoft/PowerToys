@@ -1,0 +1,9 @@
+﻿{
+	"Hello": "World",
+	"This": [ "Is", "Microsoft", "PowerToys" ],
+	"Test files great": true,
+	"I": {
+		"ran": "out",
+		"of": "ideas"
+	}
+}
