@@ -233,7 +233,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "src\common\logger\logger.vcxproj", "{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SetttingsAPI", "src\common\SettingsAPI\SetttingsAPI.vcxproj", "{6955446D-23F7-4023-9BB3-8657F904AF99}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SettingsAPI", "src\common\SettingsAPI\SettingsAPI.vcxproj", "{6955446D-23F7-4023-9BB3-8657F904AF99}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Interop.Tests", "src\common\interop\interop-tests\Microsoft.Interop.Tests.csproj", "{58736667-1027-4AD7-BFDF-7A3A6474103A}"
 EndProject

@@ -7,7 +7,10 @@ Names are in alphabetical order based on first name.
 ## High impact community members
 
 ### [@Aaron-Junker](https://github.com/Aaron-Junker) - [Aaron Junker](https://aaron-junker.github.io)
-Aaron has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes as well as work on an upcoming utility.
+Aaron has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Aaron was the primary person for helping build the File Explorer preview pane handler for developer files.
+
+### [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)
+CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
 Davide has helped fix multiple bugs, added new features, as well as help us with the ARM64 effort by porting applications to .NET Core.
@@ -34,6 +37,9 @@ Rafael has helped do the [upgrade from CppWinRT 1.x to 2.0](https://github.com/m
 
 ### [@royvou](https://github.com/royvou)
 Roy has helped out contributing multiple features to PowerToys Run
+
+### [@snickler](https://github.com/snickler) - [Jeremy Sinclair](http://sinclairinat0r.com)
+Jeremy has helped drive large sums of the ARM64 support inside PowerToys
 
 ### [@TobiasSekan](https://github.com/TobiasSekan) - Tobias Sekan
 Tobias Sekan has helped out contributing features to PowerToys Run such as Settings plugin, Registry plugin

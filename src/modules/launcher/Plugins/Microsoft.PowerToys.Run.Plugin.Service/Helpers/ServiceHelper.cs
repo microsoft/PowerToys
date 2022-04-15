@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -81,16 +81,16 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
 
                 if (action == Action.Start)
                 {
-                    info.Arguments = string.Join(' ', "start", serviceResult.ServiceName);
+                    info.Arguments = $"start \"{serviceResult.ServiceName}\"";
                 }
                 else if (action == Action.Stop)
                 {
-                    info.Arguments = string.Join(' ', "stop", serviceResult.ServiceName);
+                    info.Arguments = $"stop \"{serviceResult.ServiceName}\"";
                 }
                 else if (action == Action.Restart)
                 {
                     info.FileName = "cmd";
-                    info.Arguments = string.Join(' ', "/c net stop", serviceResult.ServiceName, "&&", "net start", serviceResult.ServiceName);
+                    info.Arguments = $"/c net stop \"{serviceResult.ServiceName}\" && net start \"{serviceResult.ServiceName}\"";
                 }
 
                 var process = Process.Start(info);

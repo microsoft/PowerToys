@@ -65,7 +65,7 @@ APPICON
 appid
 appium
 APPLASTZONE
-applets
+Applets
 Applicationcan
 applicationframehost
 applog
@@ -303,7 +303,7 @@ constexpr
 contentdialog
 contentfiles
 CONTEXTHELP
-CONTEXTMENU
+contextmenu
 CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
@@ -2213,6 +2213,7 @@ wdp
 wdupenv
 weakme
 webcam
+webserver
 webpage
 website
 webview

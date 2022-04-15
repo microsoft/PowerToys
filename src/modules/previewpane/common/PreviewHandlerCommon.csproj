@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-    <Compile Update="controls\WebBrowserExt.cs" />
     <Compile Update="examplehandler\CustomControlTest.cs" />
     <Compile Update="controls\FormHandlerControl.cs" />
   </ItemGroup>
@@ -39,6 +38,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1150.38" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

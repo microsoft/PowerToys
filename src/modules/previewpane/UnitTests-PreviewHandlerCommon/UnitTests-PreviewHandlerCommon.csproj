@@ -26,9 +26,6 @@
     <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="WebBrowserExtUnitTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
     <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
     <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />

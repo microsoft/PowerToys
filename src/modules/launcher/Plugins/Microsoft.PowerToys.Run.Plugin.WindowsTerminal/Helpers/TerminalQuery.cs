@@ -68,6 +68,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
                 var settingsPath = Path.Combine(localAppDataPath, "Packages", p.Id.FamilyName, "LocalState", "settings.json");
                 yield return new TerminalPackage(aumid, version, p.DisplayName, settingsPath, p.Logo.LocalPath);
             }
-       }
+        }
     }
 }

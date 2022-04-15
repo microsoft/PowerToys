@@ -12,7 +12,7 @@ namespace RemappingUITests
     // Tests for methods in the LoadingAndSavingRemappingHelper namespace
     TEST_CLASS (LoadingAndSavingRemappingTests)
     {
-        std::wstring testApp1 = L"testtrocess1.exe";
+        std::wstring testApp1 = L"testprocess1.exe";
         std::wstring testApp2 = L"testprocess2.exe";
 
     public:

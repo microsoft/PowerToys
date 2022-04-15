@@ -780,7 +780,7 @@ UINT __stdcall CertifyVirtualCameraDriverCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Failed to initialize", hr);
 
     hr = WcaGetProperty(L"CustomActionData", &certificatePath);
-    ExitOnFailure(hr, "Failed to get install preperty", hr);
+    ExitOnFailure(hr, "Failed to get install property", hr);
 
     hCertStore = CertOpenStore(CERT_STORE_PROV_SYSTEM, 0, 0, CERT_SYSTEM_STORE_LOCAL_MACHINE, L"AuthRoot");
     if (!hCertStore)
@@ -858,7 +858,7 @@ UINT __stdcall InstallVirtualCameraDriverCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Failed to initialize");
 
     hr = WcaGetProperty(L"CustomActionData", &driverPath);
-    ExitOnFailure(hr, "Failed to get install preperty");
+    ExitOnFailure(hr, "Failed to get install property");
 
     BOOL requiresReboot;
     DiInstallDriverW(GetConsoleWindow(), driverPath, DIIRFLAG_FORCE_INF, &requiresReboot);
@@ -889,7 +889,7 @@ UINT __stdcall UninstallVirtualCameraDriverCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Failed to initialize");
 
     hr = WcaGetProperty(L"CustomActionData", &driverPath);
-    ExitOnFailure(hr, "Failed to get uninstall preperty");
+    ExitOnFailure(hr, "Failed to get uninstall property");
 
     BOOL requiresReboot;
     DiUninstallDriverW(GetConsoleWindow(), driverPath, 0, &requiresReboot);

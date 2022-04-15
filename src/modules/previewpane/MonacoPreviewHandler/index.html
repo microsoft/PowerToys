@@ -52,10 +52,13 @@
 <div id="container"></div>
 <!-- Script -->
 <script src="http://[[PT_URL]]/monacoSRC/min/vs/loader.js"></script>
-<script>
+<script src="http://[[PT_URL]]/monacoSpecialLanguages.js" type="module"></script>
+<script type="module">
 	var editor;
+    import { registerAdditionalLanguages } from "http://[[PT_URL]]/monacoSpecialLanguages.js"
 	require.config({ paths: { vs: 'http://[[PT_URL]]/monacoSRC/min/vs' } });
-	require(['vs/editor/editor.main'], function () {
+	require(['vs/editor/editor.main'], async function () {
+		await registerAdditionalLanguages(monaco)
 		// Creates the editor
 		// For all parameters: https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.istandaloneeditorconstructionoptions.html
 		editor = monaco.editor.create(document.getElementById('container'), {
@@ -112,23 +115,23 @@
 	});
 
 	function onContextMenu(){
-	// Hide context menu items
-	// Code modified from https://stackoverflow.com/questions/48745208/disable-cut-and-copy-in-context-menu-in-monaco-editor/65413517#65413517
-	let menus = require('vs/platform/actions/common/actions').MenuRegistry._menuItems
-	let contextMenuEntry = [...menus].find(entry => entry[0]._debugName == "EditorContext")
-	let contextMenuLinks = contextMenuEntry[1]
+		// Hide context menu items
+		// Code modified from https://stackoverflow.com/questions/48745208/disable-cut-and-copy-in-context-menu-in-monaco-editor/65413517#65413517
+		let menus = require('vs/platform/actions/common/actions').MenuRegistry._menuItems
+		let contextMenuEntry = [...menus].find(entry => entry[0]._debugName == "EditorContext")
+		let contextMenuLinks = contextMenuEntry[1]
 
-	let removableIds = ['editor.action.clipboardCutAction', 'editor.action.formatDocument', 'editor.action.formatSelection', 'editor.action.quickCommand', 'editor.action.quickOutline', 'editor.action.refactor', 'editor.action.sourceAction', 'editor.action.rename', undefined, 'editor.action.revealDefinition', 'editor.action.revealDeclaration', 'editor.action.goToTypeDefinition', 'editor.action.goToImplementation', 'editor.action.goToReferences', 'editor.action.changeAll']
+		let removableIds = ['editor.action.clipboardCutAction', 'editor.action.formatDocument', 'editor.action.formatSelection', 'editor.action.quickCommand', 'editor.action.quickOutline', 'editor.action.refactor', 'editor.action.sourceAction', 'editor.action.rename', undefined, 'editor.action.revealDefinition', 'editor.action.revealDeclaration', 'editor.action.goToTypeDefinition', 'editor.action.goToImplementation', 'editor.action.goToReferences', 'editor.action.changeAll']
 
-	let removeById = (list, ids) => {
-		let node = list._first
-		do {
-			let shouldRemove = ids.includes(node.element?.command?.id)
-			if (shouldRemove) { list._remove(node) }
-		} while ((node = node.next))
-	}
+		let removeById = (list, ids) => {
+			let node = list._first
+			do {
+				let shouldRemove = ids.includes(node.element?.command?.id)
+				if (shouldRemove) { list._remove(node) }
+			} while ((node = node.next))
+		}
 
-	removeById(contextMenuLinks, removableIds)
+		removeById(contextMenuLinks, removableIds)
 	}
 </script>
 

@@ -5,6 +5,8 @@
 using System;
 using System.Drawing;
 using System.IO.Abstractions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Common;
@@ -12,7 +14,10 @@ using Markdig;
 using Microsoft.PowerToys.PreviewHandler.Markdown.Properties;
 using Microsoft.PowerToys.PreviewHandler.Markdown.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
 using PreviewHandlerCommon;
+using Windows.System;
 
 namespace Microsoft.PowerToys.PreviewHandler.Markdown
 {
@@ -53,12 +58,39 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// <summary>
         /// Extended Browser Control to display markdown html.
         /// </summary>
-        private WebBrowserExt _browser;
+        private WebView2 _browser;
+
+        /// <summary>
+        /// WebView2 Environment
+        /// </summary>
+        private CoreWebView2Environment _webView2Environment;
+
+        /// <summary>
+        /// Name of the virtual host
+        /// </summary>
+        public const string VirtualHostName = "PowerToysLocalMarkdown";
 
         /// <summary>
         /// True if external image is blocked, false otherwise.
         /// </summary>
         private bool _infoBarDisplayed;
+
+        /// <summary>
+        /// Gets the path of the current assembly.
+        /// </summary>
+        /// <remarks>
+        /// Source: https://stackoverflow.com/a/283917/14774889
+        /// </remarks>
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().Location;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MarkdownPreviewHandlerControl"/> class.
@@ -103,25 +135,52 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                 string parsedMarkdown = Markdig.Markdown.ToHtml(fileText, pipeline);
                 string markdownHTML = $"{htmlHeader}{parsedMarkdown}{htmlFooter}";
 
+                _browser = new WebView2()
+                {
+                    Dock = DockStyle.Fill,
+                };
+
+                _browser.NavigationStarting += async (object sender, CoreWebView2NavigationStartingEventArgs args) =>
+                {
+                    if (args.Uri != null && args.IsUserInitiated)
+                    {
+                        args.Cancel = true;
+                        await Launcher.LaunchUriAsync(new Uri(args.Uri));
+                    }
+                };
+
                 InvokeOnControlThread(() =>
                 {
-                    _browser = new WebBrowserExt
+                ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
+   webView2EnvironmentAwaiter = CoreWebView2Environment
+       .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                    "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MarkdownPreview-Temp")
+       .ConfigureAwait(true).GetAwaiter();
+                webView2EnvironmentAwaiter.OnCompleted(() =>
                     {
-                        DocumentText = markdownHTML,
-                        Dock = DockStyle.Fill,
-                        IsWebBrowserContextMenuEnabled = false,
-                        ScriptErrorsSuppressed = true,
-                        ScrollBarsEnabled = true,
-                        AllowNavigation = false,
-                    };
-                    Controls.Add(_browser);
+                        InvokeOnControlThread(async () =>
+                        {
+                            try
+                            {
+                                _webView2Environment = webView2EnvironmentAwaiter.GetResult();
+                                await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
+                                await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
+                                _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                                _browser.NavigateToString(markdownHTML);
+                                Controls.Add(_browser);
 
-                    if (_infoBarDisplayed)
-                    {
-                        _infoBar = GetTextBoxControl(Resources.BlockedImageInfoText);
-                        Resize += FormResized;
-                        Controls.Add(_infoBar);
-                    }
+                                if (_infoBarDisplayed)
+                                {
+                                    _infoBar = GetTextBoxControl(Resources.BlockedImageInfoText);
+                                    Resize += FormResized;
+                                    Controls.Add(_infoBar);
+                                }
+                            }
+                            catch (NullReferenceException)
+                            {
+                            }
+                        });
+                    });
                 });
 
                 PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewed());

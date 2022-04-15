@@ -35,15 +35,22 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
             };
 
             var json = JsonDocument.Parse(settingsJson, options);
+            JsonElement profilesList;
 
             json.RootElement.TryGetProperty("profiles", out JsonElement profilesElement);
-            if (profilesElement.ValueKind != JsonValueKind.Object)
+            if (profilesElement.ValueKind == JsonValueKind.Object)
             {
-                return profiles;
+                profilesElement.TryGetProperty("list", out profilesList);
+                if (profilesList.ValueKind != JsonValueKind.Array)
+                {
+                    return profiles;
+                }
             }
-
-            profilesElement.TryGetProperty("list", out JsonElement profilesList);
-            if (profilesList.ValueKind != JsonValueKind.Array)
+            else if (profilesElement.ValueKind == JsonValueKind.Array)
+            {
+                profilesList = profilesElement;
+            }
+            else
             {
                 return profiles;
             }

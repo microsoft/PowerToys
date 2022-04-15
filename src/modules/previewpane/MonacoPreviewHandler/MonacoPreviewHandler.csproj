@@ -14,9 +14,9 @@
 
   <PropertyGroup>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Monaco</RootNamespace>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+	<TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
-    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
+	<IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
     <AssemblyName>PowerToys.MonacoPreviewHandler</AssemblyName>
   </PropertyGroup>
 
@@ -31,7 +31,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1108.44" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1150.38" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -39,18 +39,18 @@
   </ItemGroup>
 
   <ItemGroup>
-      <Compile Update="MonacoPreviewHandlerControl.cs" />
-      <Compile Update="Properties\Resources.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Resources.resx</DependentUpon>
-      </Compile>
+    <Compile Update="MonacoPreviewHandlerControl.cs" />
+    <Compile Update="Properties\Resources.Designer.cs">
+    <DesignTime>True</DesignTime>
+    <AutoGen>True</AutoGen>
+    <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
-    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,20 +63,32 @@
   </ItemGroup>
 
   <ItemGroup>
-      <None Update="index.html">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+    <None Update="index.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   
   <ItemGroup>
-      <None Update="monacoSRC\**\*.*">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+    <None Update="monacoSRC\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
-      <None Update="monaco_languages.json">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+    <None Update="customLanguages\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="monaco_languages.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="monacoSpecialLanguages.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

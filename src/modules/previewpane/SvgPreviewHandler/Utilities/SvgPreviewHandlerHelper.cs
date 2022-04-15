@@ -117,7 +117,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
 
             string centering = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);";
 
-            // Because WebBrowser class is based on IE version that do not support max-width and max-height extra CSS is needed for it to work.
+            // max-width and max-height not supported. Extra CSS is needed for it to work.
             string scaling = $"max-width: {width} ; max-height: {height} ;";
             scaling += $"  _height:expression(this.scrollHeight > {heightR} ? \" {height}\" : \"auto\"); _width:expression(this.scrollWidth > {widthR} ? \"{width}\" : \"auto\");";
 

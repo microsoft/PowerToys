@@ -71,6 +71,7 @@ TestCase\("[^"]+"
 \\restart
 \\restore
 \\result
+\\rotating
 \\runner
 \\runtimes
 \\Telemetry

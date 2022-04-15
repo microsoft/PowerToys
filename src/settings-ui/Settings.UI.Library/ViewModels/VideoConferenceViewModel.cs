@@ -91,7 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _isEnabled = GeneralSettingsConfig.Enabled.VideoConference;
             _cameraAndMicrophoneMuteHotkey = Settings.Properties.MuteCameraAndMicrophoneHotkey.Value;
-            _mirophoneMuteHotkey = Settings.Properties.MuteMicrophoneHotkey.Value;
+            _microphoneMuteHotkey = Settings.Properties.MuteMicrophoneHotkey.Value;
             _cameraMuteHotkey = Settings.Properties.MuteCameraHotkey.Value;
             CameraImageOverlayPath = Settings.Properties.CameraOverlayImagePath.Value;
             SelectOverlayImage = new ButtonClickCommand(SelectOverlayImageAction);
@@ -142,7 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _toolbarPositionIndex;
         private int _toolbarMonitorIndex;
         private HotkeySettings _cameraAndMicrophoneMuteHotkey;
-        private HotkeySettings _mirophoneMuteHotkey;
+        private HotkeySettings _microphoneMuteHotkey;
         private HotkeySettings _cameraMuteHotkey;
         private int _selectedCameraIndex = -1;
         private int _selectedMicrophoneIndex;
@@ -277,14 +277,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return _mirophoneMuteHotkey;
+                return _microphoneMuteHotkey;
             }
 
             set
             {
-                if (value != _mirophoneMuteHotkey)
+                if (value != _microphoneMuteHotkey)
                 {
-                    _mirophoneMuteHotkey = value;
+                    _microphoneMuteHotkey = value;
                     Settings.Properties.MuteMicrophoneHotkey.Value = value;
                     RaisePropertyChanged(nameof(MicrophoneMuteHotkey));
                 }
@@ -309,7 +309,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int ToolbarPostionIndex
+        public int ToolbarPositionIndex
         {
             get
             {
@@ -348,7 +348,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             break;
                     }
 
-                    RaisePropertyChanged(nameof(ToolbarPostionIndex));
+                    RaisePropertyChanged(nameof(ToolbarPositionIndex));
                 }
             }
         }
