@@ -334,24 +334,16 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
 
-    std::wstring executable_args = L"\"";
-    executable_args.append(executable_path);
-    executable_args.append(L"\" ");
-    executable_args.append(powertoys_pipe_name);
-    executable_args.append(L" ");
-    executable_args.append(settings_pipe_name);
-    executable_args.append(L" ");
-    executable_args.append(std::to_wstring(powertoys_pid));
-    executable_args.append(L" ");
-    executable_args.append(settings_theme);
-    executable_args.append(L" ");
-    executable_args.append(settings_elevatedStatus);
-    executable_args.append(L" ");
-    executable_args.append(settings_isUserAnAdmin);
-    executable_args.append(L" ");
-    executable_args.append(settings_showOobe);
-    executable_args.append(L" ");
-    executable_args.append(settings_showScoobe);
+    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {}",
+                                               executable_path,
+                                               powertoys_pipe_name,
+                                               settings_pipe_name,
+                                               std::to_wstring(powertoys_pid),
+                                               settings_theme,
+                                               settings_elevatedStatus,
+                                               settings_isUserAnAdmin,
+                                               settings_showOobe,
+                                               settings_showScoobe);
 
     if (settings_window.has_value())
     {
@@ -363,10 +355,14 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
 
     if (is_process_elevated())
     {
-        // TODO: Revisit this after switching to .NET 5
-        // Due to a bug in .NET, running the Settings process as non-elevated
-        // from an elevated process sometimes results in a crash.
-        // process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
+        auto res = RunNonElevatedFailsafe(executable_path, executable_args, get_module_folderpath());
+        process_created = res.has_value();
+        if (process_created)
+        {
+            process_info.dwProcessId = res->processID;
+            process_info.hProcess = res->processHandle.release();
+            g_isLaunchInProgress = false;
+        }
     }
 
     if (FALSE == process_created)

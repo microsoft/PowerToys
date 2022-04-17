@@ -109,7 +109,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
 
     case ID_DOCUMENTATION_MENU_COMMAND:
     {
-        RunNonElevatedEx(L"https://aka.ms/PowerToysOverview", L"");
+        RunNonElevatedEx(L"https://aka.ms/PowerToysOverview", L"", L"");
         break;
     }
         

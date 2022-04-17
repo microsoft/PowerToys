@@ -15,15 +15,19 @@
 #include <winrt/Windows.Foundation.Collections.h>
 
 #include <string>
+#include <filesystem>
+
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
+#include <common/utils/process_path.h>
+#include <common/utils/processApi.h>
 
-namespace 
+namespace
 {
     inline std::wstring GetErrorString(HRESULT handle)
     {
-         _com_error err(handle);
-         return err.ErrorMessage();
+        _com_error err(handle);
+        return err.ErrorMessage();
     }
 
     inline bool FindDesktopFolderView(REFIID riid, void** ppv)
@@ -51,7 +55,7 @@ namespace
 
         CComPtr<IShellBrowser> spBrowser;
         result = CComQIPtr<IServiceProvider>(spdisp)->QueryService(SID_STopLevelBrowser,
-                                                          IID_PPV_ARGS(&spBrowser));
+                                                                   IID_PPV_ARGS(&spBrowser));
         if (result != S_OK)
         {
             Logger::warn(L"Failed to query service. {}", GetErrorString(result));
@@ -104,7 +108,8 @@ namespace
 
     inline bool ShellExecuteFromExplorer(
         PCWSTR pszFile,
-        PCWSTR pszParameters = nullptr)
+        PCWSTR pszParameters = nullptr,
+        PCWSTR workingDir = L"")
     {
         CComPtr<IShellFolderViewDual> spFolderView;
         if (!GetDesktopAutomationObject(IID_PPV_ARGS(&spFolderView)))
@@ -121,11 +126,11 @@ namespace
         }
 
         CComQIPtr<IShellDispatch2>(spdispShell)
-            ->ShellExecute(CComBSTR(pszFile),
-                           CComVariant(pszParameters ? pszParameters : L""),
-                           CComVariant(L""),
-                           CComVariant(L""),
-                           CComVariant(SW_SHOWNORMAL));
+            ->ShellExecuteW(CComBSTR(pszFile),
+                            CComVariant(pszParameters ? pszParameters : L""),
+                            CComVariant(workingDir),
+                            CComVariant(L""),
+                            CComVariant(SW_SHOWNORMAL));
 
         return true;
     }
@@ -205,7 +210,7 @@ inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params)
 }
 
 // Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
-inline bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid)
+inline bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir = nullptr)
 {
     Logger::info(L"run_non_elevated with params={}", params);
     auto executable_args = L"\"" + file + L"\"";
@@ -225,7 +230,7 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
         {
             Logger::error(L"GetShellWindow() failed. {}", get_last_error_or_default(GetLastError()));
         }
-        
+
         return false;
     }
     DWORD pid;
@@ -280,7 +285,7 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
                                     FALSE,
                                     EXTENDED_STARTUPINFO_PRESENT,
                                     nullptr,
-                                    nullptr,
+                                    workingDir,
                                     &siex.StartupInfo,
                                     &pi);
     if (succeeded)
@@ -307,22 +312,60 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
     return succeeded;
 }
 
-inline bool RunNonElevatedEx(const std::wstring& file, const std::wstring& params)
+inline bool RunNonElevatedEx(const std::wstring& file, const std::wstring& params, const std::wstring& working_dir)
 {
     try
     {
         CoInitialize(nullptr);
-        if (!ShellExecuteFromExplorer(file.c_str(), params.c_str()))
+        if (!ShellExecuteFromExplorer(file.c_str(), params.c_str(), working_dir.c_str()))
         {
             return false;
         }
     }
-    catch(...)
+    catch (...)
     {
         return false;
     }
 
     return true;
+}
+
+struct ProcessInfo
+{
+    wil::unique_process_handle processHandle;
+    DWORD processID = {};
+};
+
+inline std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& file, const std::wstring& params, const std::wstring& working_dir)
+{
+    bool launched = RunNonElevatedEx(file, params, working_dir);
+    if (!launched)
+    {
+        Logger::warn(L"RunNonElevatedEx() failed. Trying fallback");
+        std::wstring action_runner_path = get_module_folderpath() + L"\\PowerToys.ActionRunner.exe";
+        std::wstring newParams = fmt::format(L"-run-non-elevated -target \"{}\" {}", file, params);
+        launched = run_non_elevated(action_runner_path, newParams, nullptr, working_dir.c_str());
+        if (launched)
+        {
+            Logger::trace(L"Started {}", file);
+        }
+        else
+        {
+            Logger::warn(L"Failed to start {}", file);
+            return std::nullopt;
+        }
+    }
+
+    auto handles = getProcessHandlesByName(std::filesystem::path{ file }.filename().wstring(), PROCESS_QUERY_INFORMATION | SYNCHRONIZE);
+
+    if (handles.empty())
+        return std::nullopt;
+
+    ProcessInfo result;
+    result.processID = GetProcessId(handles[0].get());
+    result.processHandle = std::move(handles[0]);
+
+    return result;
 }
 
 // Run command with the same elevation, returns true if succeeded
