@@ -418,8 +418,14 @@ WorkArea::HideZonesOverlay() noexcept
 IFACEMETHODIMP_(void)
 WorkArea::UpdateActiveZoneSet() noexcept
 {
+    bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
+    if (!isLayoutAlreadyApplied)
+    {
+        AppliedLayouts::instance().ApplyDefaultLayout(m_uniqueId);
+    }
+
     CalculateZoneSet(FancyZonesSettings::settings().overlappingZonesAlgorithm);
-    if (m_window)
+    if (m_window && m_zoneSet)
     {
         m_highlightZone.clear();
         m_zonesOverlay->DrawActiveZoneSet(m_zoneSet->GetZones(), m_highlightZone, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
