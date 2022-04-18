@@ -21,7 +21,7 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
     <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
