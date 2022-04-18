@@ -8,7 +8,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public class UnitConversionResult
     {
-        public static string Format { get; set; } = "{0:g14} {1}";
+        public static string Format { get; set; } = "g14";
 
         public double ConvertedValue { get; }
 
@@ -30,7 +30,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 provider = System.Globalization.CultureInfo.CurrentCulture;
             }
 
-            return string.Format(provider, Format, ConvertedValue, UnitName);
+            return ConvertedValue.ToString(Format, provider) + " " + UnitName;
         }
     }
 }

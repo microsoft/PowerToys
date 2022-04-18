@@ -73,7 +73,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     {
                         try
                         {
-                            Clipboard.SetText(result.ToString());
+                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.Format, CultureInfo.CurrentCulture));
                             ret = true;
                         }
                         catch (ExternalException)
@@ -105,7 +105,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     {
                         try
                         {
-                            Clipboard.SetText(result.ToString());
+                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.Format, CultureInfo.CurrentCulture));
                             ret = true;
                         }
                         catch (ExternalException)
