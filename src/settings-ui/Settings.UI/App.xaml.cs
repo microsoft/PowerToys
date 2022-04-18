@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using interop;
 using ManagedCommon;
@@ -90,6 +91,12 @@ namespace Microsoft.PowerToys.Settings.UI
 
             if (cmdArgs != null && cmdArgs.Length >= RequiredArgumentsQty)
             {
+                // Skip the first argument which is prepended when launched by explorer
+                if (cmdArgs[0].EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase) && cmdArgs[1].EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase) && (cmdArgs.Length >= RequiredArgumentsQty + 1))
+                {
+                    cmdArgs = cmdArgs.Skip(1).ToArray();
+                }
+
                 _ = int.TryParse(cmdArgs[(int)Arguments.PTPid], out int powerToysPID);
                 PowerToysPID = powerToysPID;
 
@@ -103,19 +110,19 @@ namespace Microsoft.PowerToys.Settings.UI
                     // open specific window
                     switch (cmdArgs[(int)Arguments.SettingsWindow])
                     {
-                        case "Overview": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.GeneralPage); break;
-                        case "AlwaysOnTop": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.AlwaysOnTopPage); break;
-                        case "Awake": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.AwakePage); break;
-                        case "ColorPicker": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.ColorPickerPage); break;
-                        case "FancyZones": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.FancyZonesPage); break;
-                        case "Run": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage); break;
-                        case "ImageResizer": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.ImageResizerPage); break;
-                        case "KBM": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.KeyboardManagerPage); break;
-                        case "MouseUtils": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.MouseUtilsPage); break;
-                        case "PowerRename": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.PowerRenamePage); break;
-                        case "FileExplorer": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.PowerPreviewPage); break;
-                        case "ShortcutGuide": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.ShortcutGuidePage); break;
-                        case "VideoConference": StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.VideoConferencePage); break;
+                        case "Overview": StartupPage = typeof(Views.GeneralPage); break;
+                        case "AlwaysOnTop": StartupPage = typeof(Views.AlwaysOnTopPage); break;
+                        case "Awake": StartupPage = typeof(Views.AwakePage); break;
+                        case "ColorPicker": StartupPage = typeof(Views.ColorPickerPage); break;
+                        case "FancyZones": StartupPage = typeof(Views.FancyZonesPage); break;
+                        case "Run": StartupPage = typeof(Views.PowerLauncherPage); break;
+                        case "ImageResizer": StartupPage = typeof(Views.ImageResizerPage); break;
+                        case "KBM": StartupPage = typeof(Views.KeyboardManagerPage); break;
+                        case "MouseUtils": StartupPage = typeof(Views.MouseUtilsPage); break;
+                        case "PowerRename": StartupPage = typeof(Views.PowerRenamePage); break;
+                        case "FileExplorer": StartupPage = typeof(Views.PowerPreviewPage); break;
+                        case "ShortcutGuide": StartupPage = typeof(Views.ShortcutGuidePage); break;
+                        case "VideoConference": StartupPage = typeof(Views.VideoConferencePage); break;
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
                 }
@@ -178,15 +185,15 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public static Task<IUICommand> ShowDialogAsync(string content, string title = null)
         {
-            var dlg = new MessageDialog(content, title ?? string.Empty);
+            var dialog = new MessageDialog(content, title ?? string.Empty);
             var handle = NativeMethods.GetActiveWindow();
             if (handle == IntPtr.Zero)
             {
                 throw new InvalidOperationException();
             }
 
-            InitializeWithWindow.Initialize(dlg, handle);
-            return dlg.ShowAsync().AsTask<IUICommand>();
+            InitializeWithWindow.Initialize(dialog, handle);
+            return dialog.ShowAsync().AsTask<IUICommand>();
         }
 
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()

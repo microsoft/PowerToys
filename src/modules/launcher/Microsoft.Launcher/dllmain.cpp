@@ -231,7 +231,18 @@ public:
 
         unsigned long powertoys_pid = GetCurrentProcessId();
         TerminateRunningInstance();
-        if (!is_process_elevated(false))
+        if (is_process_elevated(false))
+        {
+            Logger::trace("Starting PowerToys Run from elevated process");
+            const auto modulePath = get_module_folderpath();
+            std::wstring runExecutablePath = modulePath;
+            std::wstring params;
+            params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
+            params += L"--started-from-runner ";
+            runExecutablePath += L"\\modules\\launcher\\PowerToys.PowerLauncher.exe";
+            processStarted = RunNonElevatedFailsafe(runExecutablePath, params, modulePath).has_value();
+        }
+        else
         {
             Logger::trace("Starting PowerToys Run from not elevated process");
             std::wstring executable_args;
@@ -253,35 +264,6 @@ public:
             else
             {
                 Logger::error("Launcher failed to start");
-            }
-        }
-        else
-        {
-            Logger::trace("Starting PowerToys Run from elevated process");
-            std::wstring runExecutablePath = get_module_folderpath();
-            std::wstring params;
-            params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
-            params += L"--started-from-runner ";
-            runExecutablePath += L"\\modules\\launcher\\PowerToys.PowerLauncher.exe";
-            if (RunNonElevatedEx(runExecutablePath, params))
-            {
-                processStarted = true;
-                Logger::trace(L"The process started successfully");
-            }
-            else
-            {
-                Logger::warn(L"RunNonElevatedEx() failed. Trying fallback");
-                std::wstring action_runner_path = get_module_folderpath() + L"\\PowerToys.ActionRunner.exe";
-                std::wstring newParams = L"-run-non-elevated -target modules\\launcher\\PowerToys.PowerLauncher.exe " + params;
-                if (run_non_elevated(action_runner_path, newParams, nullptr))
-                {
-                    processStarted = true;
-                    Logger::trace("Started PowerToys Run Process");
-                }
-                else
-                {
-                    Logger::warn("Failed to start PowerToys Run");
-                }
             }
         }
         processStarting = false;
@@ -343,7 +325,8 @@ public:
 
             /* Now, PowerToys Run uses a global hotkey so that it can get focus.
              * Activate it with the centralized keyboard hook only if the setting is on.*/
-            if (m_use_centralized_keyboard_hook) {
+            if (m_use_centralized_keyboard_hook)
+            {
                 Logger::trace("Set POWER_LAUNCHER_SHARED_EVENT");
                 SetEvent(m_hCentralizedKeyboardHookEvent);
                 return true;
@@ -404,7 +387,7 @@ void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& setting
             m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
             m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
         }
-        catch(...)
+        catch (...)
         {
             Logger::error("Failed to initialize PT Run start shortcut");
         }
