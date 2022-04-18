@@ -68,103 +68,134 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
                     if (File.Exists(vscode_storage))
                     {
-                        var fileContent = File.ReadAllText(vscode_storage);
+                        var storageResults = GetWorkspacesInJson(vscodeInstance, vscode_storage);
+                        results.AddRange(storageResults);
+                    }
 
-                        try
-                        {
-                            VSCodeStorageFile vscodeStorageFile = JsonSerializer.Deserialize<VSCodeStorageFile>(fileContent);
-
-                            if (vscodeStorageFile != null && vscodeStorageFile.OpenedPathsList != null)
-                            {
-                                // for previous versions of vscode
-                                if (vscodeStorageFile.OpenedPathsList.Workspaces3 != null)
-                                {
-                                    foreach (var workspaceUri in vscodeStorageFile.OpenedPathsList.Workspaces3)
-                                    {
-                                        var workspace = ParseVSCodeUri(workspaceUri, vscodeInstance);
-                                        if (workspace != null)
-                                        {
-                                            results.Add(workspace);
-                                        }
-                                    }
-                                }
-
-                                // vscode v1.55.0 or later
-                                if (vscodeStorageFile.OpenedPathsList.Entries != null)
-                                {
-                                    foreach (var entry in vscodeStorageFile.OpenedPathsList.Entries)
-                                    {
-                                        bool isWorkspaceFile = false;
-                                        var uri = entry.FolderUri;
-                                        if (entry.Workspace != null && entry.Workspace.ConfigPath != null)
-                                        {
-                                            isWorkspaceFile = true;
-                                            uri = entry.Workspace.ConfigPath;
-                                        }
-
-                                        var workspace = ParseVSCodeUri(uri, vscodeInstance, isWorkspaceFile);
-                                        if (workspace != null)
-                                        {
-                                            results.Add(workspace);
-                                        }
-                                    }
-                                }
-                            }
-                            else if (File.Exists(vscode_storage_db))
-                            {
-                                var sqliteConnection = new SqliteConnection($"Data Source={vscode_storage_db};Mode=ReadOnly;");
-                                sqliteConnection.Open();
-
-                                if (sqliteConnection.State == System.Data.ConnectionState.Open)
-                                {
-                                    var sqlite_cmd = sqliteConnection.CreateCommand();
-                                    sqlite_cmd.CommandText = "SELECT value FROM ItemTable WHERE key LIKE 'history.recentlyOpenedPathsList'";
-
-                                    var sqlite_datareader = sqlite_cmd.ExecuteReader();
-
-                                    if (sqlite_datareader.Read())
-                                    {
-                                        string entries = sqlite_datareader.GetString(0);
-                                        if (!string.IsNullOrEmpty(entries))
-                                        {
-                                            VSCodeStorageEntries vscodeStorageEntries = JsonSerializer.Deserialize<VSCodeStorageEntries>(entries);
-                                            if (vscodeStorageEntries.Entries != null)
-                                            {
-                                                vscodeStorageEntries.Entries = vscodeStorageEntries.Entries.Where(x => x != null).ToList();
-                                                foreach (var entry in vscodeStorageEntries.Entries)
-                                                {
-                                                    bool isWorkspaceFile = false;
-                                                    var uri = entry.FolderUri;
-                                                    if (entry.Workspace != null && entry.Workspace.ConfigPath != null)
-                                                    {
-                                                        isWorkspaceFile = true;
-                                                        uri = entry.Workspace.ConfigPath;
-                                                    }
-
-                                                    var workspace = ParseVSCodeUri(uri, vscodeInstance, isWorkspaceFile);
-                                                    if (workspace != null)
-                                                    {
-                                                        results.Add(workspace);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                sqliteConnection.Close();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            var message = $"Failed to deserialize ${vscode_storage}";
-                            Log.Exception(message, ex, GetType());
-                        }
+                    if (File.Exists(vscode_storage_db))
+                    {
+                        var storageDbResults = GetWorkspacesInVscdb(vscodeInstance, vscode_storage_db);
+                        results.AddRange(storageDbResults);
                     }
                 }
 
                 return results;
             }
+        }
+
+        private List<VSCodeWorkspace> GetWorkspacesInJson(VSCodeInstance vscodeInstance, string filePath)
+        {
+            var storageFileResults = new List<VSCodeWorkspace>();
+
+            var fileContent = File.ReadAllText(filePath);
+
+            try
+            {
+                VSCodeStorageFile vscodeStorageFile = JsonSerializer.Deserialize<VSCodeStorageFile>(fileContent);
+
+                if (vscodeStorageFile != null && vscodeStorageFile.OpenedPathsList != null)
+                {
+                    // for previous versions of vscode
+                    if (vscodeStorageFile.OpenedPathsList.Workspaces3 != null)
+                    {
+                        foreach (var workspaceUri in vscodeStorageFile.OpenedPathsList.Workspaces3)
+                        {
+                            var workspace = ParseVSCodeUri(workspaceUri, vscodeInstance);
+                            if (workspace != null)
+                            {
+                                storageFileResults.Add(workspace);
+                            }
+                        }
+                    }
+
+                    // vscode v1.55.0 or later
+                    if (vscodeStorageFile.OpenedPathsList.Entries != null)
+                    {
+                        foreach (var entry in vscodeStorageFile.OpenedPathsList.Entries)
+                        {
+                            bool isWorkspaceFile = false;
+                            var uri = entry.FolderUri;
+                            if (entry.Workspace != null && entry.Workspace.ConfigPath != null)
+                            {
+                                isWorkspaceFile = true;
+                                uri = entry.Workspace.ConfigPath;
+                            }
+
+                            var workspace = ParseVSCodeUri(uri, vscodeInstance, isWorkspaceFile);
+                            if (workspace != null)
+                            {
+                                storageFileResults.Add(workspace);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var message = $"Failed to deserialize {filePath}";
+                Log.Exception(message, ex, GetType());
+            }
+
+            return storageFileResults;
+        }
+
+        private List<VSCodeWorkspace> GetWorkspacesInVscdb(VSCodeInstance vscodeInstance, string filePath)
+        {
+            var dbFileResults = new List<VSCodeWorkspace>();
+            SqliteConnection sqliteConnection = null;
+            try
+            {
+                sqliteConnection = new SqliteConnection($"Data Source={filePath};Mode=ReadOnly;");
+                sqliteConnection.Open();
+
+                if (sqliteConnection.State == System.Data.ConnectionState.Open)
+                {
+                    var sqlite_cmd = sqliteConnection.CreateCommand();
+                    sqlite_cmd.CommandText = "SELECT value FROM ItemTable WHERE key LIKE 'history.recentlyOpenedPathsList'";
+
+                    var sqlite_datareader = sqlite_cmd.ExecuteReader();
+
+                    if (sqlite_datareader.Read())
+                    {
+                        string entries = sqlite_datareader.GetString(0);
+                        if (!string.IsNullOrEmpty(entries))
+                        {
+                            VSCodeStorageEntries vscodeStorageEntries = JsonSerializer.Deserialize<VSCodeStorageEntries>(entries);
+                            if (vscodeStorageEntries.Entries != null)
+                            {
+                                vscodeStorageEntries.Entries = vscodeStorageEntries.Entries.Where(x => x != null).ToList();
+                                foreach (var entry in vscodeStorageEntries.Entries)
+                                {
+                                    bool isWorkspaceFile = false;
+                                    var uri = entry.FolderUri;
+                                    if (entry.Workspace != null && entry.Workspace.ConfigPath != null)
+                                    {
+                                        isWorkspaceFile = true;
+                                        uri = entry.Workspace.ConfigPath;
+                                    }
+
+                                    var workspace = ParseVSCodeUri(uri, vscodeInstance, isWorkspaceFile);
+                                    if (workspace != null)
+                                    {
+                                        dbFileResults.Add(workspace);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                var message = $"Failed to retrieve workspaces from db: {filePath}";
+                Log.Exception(message, e, GetType());
+            }
+            finally
+            {
+                sqliteConnection?.Close();
+            }
+
+            return dbFileResults;
         }
     }
 }
