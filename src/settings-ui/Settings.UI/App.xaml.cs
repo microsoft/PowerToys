@@ -219,6 +219,11 @@ namespace Microsoft.PowerToys.Settings.UI
             settingsWindow = null;
         }
 
+        public static MainWindow GetSettingsWindow()
+        {
+            return settingsWindow;
+        }
+
         public static OobeWindow GetOobeWindow()
         {
             return oobeWindow;

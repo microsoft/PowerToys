@@ -24,7 +24,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             openPicker.FileTypeFilter.Add(".jpg");
             openPicker.FileTypeFilter.Add(".jpeg");
             openPicker.FileTypeFilter.Add(".png");
-            ((IInitializeWithWindow)(object)openPicker).Initialize(System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle);
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
+            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
 
             StorageFile file = await openPicker.PickSingleFileAsync();
             return file?.Path;
