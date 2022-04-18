@@ -18,7 +18,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 - Package new ideas into classes or refactor existing ideas into a class as you extend.
 - When adding new classes/methods/changing existing code: add new unit tests or update the existing tests.
 
-## Github Workflow
+## GitHub Workflow
 
 - Before starting to work on a fix/feature, make sure there is an open issue to track the work.
 - Add the `In progress` label to the issue, if not already present also add a `Cost-Small/Medium/Large` estimate and make sure all appropriate labels are set.
