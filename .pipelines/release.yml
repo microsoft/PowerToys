@@ -169,7 +169,7 @@ jobs:
   - task: VSBuild@1
     displayName: Publish Settings for Packaging
     inputs:
-      solution: 'src/settings-ui/PowerToys.Settings/PowerToys.Settings.csproj'
+      solution: 'src/settings-ui/Settings.UI/PowerToys.Settings.csproj'
       vsVersion: 17.0
       msbuildArgs: >-
         /target:Publish
