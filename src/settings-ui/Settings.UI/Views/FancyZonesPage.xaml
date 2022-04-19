@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"     
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"     
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 

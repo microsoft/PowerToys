@@ -5,14 +5,12 @@
 using System;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.ApplicationModel.Resources;
-using Windows.System.Diagnostics;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
+using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
@@ -89,7 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             this.Unloaded += ShortcutControl_Unloaded;
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
-            ResourceLoader resourceLoader = ResourceLoader.GetForCurrentView();
+            ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse();
 
             // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
             shortcutDialog = new ContentDialog
@@ -118,29 +116,29 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void KeyEventHandler(int key, bool matchValue, int matchValueCode)
         {
-            switch ((Windows.System.VirtualKey)key)
+            switch ((VirtualKey)key)
             {
-                case Windows.System.VirtualKey.LeftWindows:
-                case Windows.System.VirtualKey.RightWindows:
+                case VirtualKey.LeftWindows:
+                case VirtualKey.RightWindows:
                     internalSettings.Win = matchValue;
                     break;
-                case Windows.System.VirtualKey.Control:
-                case Windows.System.VirtualKey.LeftControl:
-                case Windows.System.VirtualKey.RightControl:
+                case VirtualKey.Control:
+                case VirtualKey.LeftControl:
+                case VirtualKey.RightControl:
                     internalSettings.Ctrl = matchValue;
                     break;
-                case Windows.System.VirtualKey.Menu:
-                case Windows.System.VirtualKey.LeftMenu:
-                case Windows.System.VirtualKey.RightMenu:
+                case VirtualKey.Menu:
+                case VirtualKey.LeftMenu:
+                case VirtualKey.RightMenu:
                     internalSettings.Alt = matchValue;
                     break;
-                case Windows.System.VirtualKey.Shift:
-                case Windows.System.VirtualKey.LeftShift:
-                case Windows.System.VirtualKey.RightShift:
+                case VirtualKey.Shift:
+                case VirtualKey.LeftShift:
+                case VirtualKey.RightShift:
                     _shiftToggled = true;
                     internalSettings.Shift = matchValue;
                     break;
-                case Windows.System.VirtualKey.Escape:
+                case VirtualKey.Escape:
                     internalSettings = new HotkeySettings();
                     shortcutDialog.IsPrimaryButtonEnabled = false;
                     return;
@@ -183,7 +181,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             // If the current key press is tab, based on the other keys ignore the key press so as to shift focus out of the hotkey control.
-            if ((Windows.System.VirtualKey)key == Windows.System.VirtualKey.Tab)
+            if ((VirtualKey)key == VirtualKey.Tab)
             {
                 // Shift was not pressed while entering and Shift is not pressed while leaving the hotkey control, treat it as a normal tab key press.
                 if (!internalSettings.Shift && !_shiftKeyDownOnEntering && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
@@ -197,7 +195,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     // This is to reset the shift key press within the control as it was not used within the control but rather was used to leave the hotkey.
                     internalSettings.Shift = false;
 
-                    SendSingleKeyboardInput((short)Windows.System.VirtualKey.Shift, (uint)NativeKeyboardHelper.KeyEventF.KeyDown);
+                    SendSingleKeyboardInput((short)VirtualKey.Shift, (uint)NativeKeyboardHelper.KeyEventF.KeyDown);
 
                     return false;
                 }
@@ -223,7 +221,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 // The system still has shift in the key pressed status, therefore pass a Shift KeyUp message to the system, to release the shift key, therefore simulating only the Tab key press.
                 else if (!internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
-                    SendSingleKeyboardInput((short)Windows.System.VirtualKey.Shift, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
+                    SendSingleKeyboardInput((short)VirtualKey.Shift, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
 
                     return false;
                 }
@@ -238,50 +236,47 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             return true;
         }
 
-        private async void Hotkey_KeyDown(int key)
+        private void Hotkey_KeyDown(int key)
         {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            KeyEventHandler(key, true, key);
+
+            c.Keys = internalSettings.GetKeysList();
+
+            if (internalSettings.GetKeysList().Count == 0)
             {
-                KeyEventHandler(key, true, key);
+                // Empty, disable save button
+                shortcutDialog.IsPrimaryButtonEnabled = false;
+            }
+            else if (internalSettings.GetKeysList().Count == 1)
+            {
+                // 1 key, disable save button
+                shortcutDialog.IsPrimaryButtonEnabled = false;
 
-                c.Keys = internalSettings.GetKeysList();
-
-                if (internalSettings.GetKeysList().Count == 0)
+                // Check if the one key is a hotkey
+                if (internalSettings.Shift || internalSettings.Win || internalSettings.Alt || internalSettings.Ctrl)
                 {
-                    // Empty, disable save button
-                    shortcutDialog.IsPrimaryButtonEnabled = false;
+                    c.IsError = false;
                 }
-                else if (internalSettings.GetKeysList().Count == 1)
+                else
                 {
-                    // 1 key, disable save button
-                    shortcutDialog.IsPrimaryButtonEnabled = false;
-
-                    // Check if the one key is a hotkey
-                    if (internalSettings.Shift || internalSettings.Win || internalSettings.Alt || internalSettings.Ctrl)
-                    {
-                        c.IsError = false;
-                    }
-                    else
-                    {
-                        c.IsError = true;
-                    }
+                    c.IsError = true;
                 }
+            }
 
-                // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
-                if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
+            // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
+            if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
+            {
+                lastValidSettings = internalSettings.Clone();
+
+                if (!ComboIsValid(lastValidSettings))
                 {
-                    lastValidSettings = internalSettings.Clone();
-
-                    if (!ComboIsValid(lastValidSettings))
-                    {
-                        DisableKeys();
-                    }
-                    else
-                    {
-                        EnableKeys();
-                    }
+                    DisableKeys();
                 }
-            });
+                else
+                {
+                    EnableKeys();
+                }
+            }
         }
 
         private void EnableKeys()
@@ -300,12 +295,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // WarningLabel.Style = (Style)App.Current.Resources["SecondaryWarningTextStyle"];
         }
 
-        private async void Hotkey_KeyUp(int key)
+        private void Hotkey_KeyUp(int key)
         {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                KeyEventHandler(key, false, 0);
-            });
+            KeyEventHandler(key, false, 0);
         }
 
         private bool Hotkey_IsActive()
@@ -331,7 +323,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _shiftToggled = false;
 
             // To keep track of the shift key, whether it was pressed on entering.
-            if ((NativeMethods.GetAsyncKeyState((int)Windows.System.VirtualKey.Shift) & 0x8000) != 0)
+            if ((NativeMethods.GetAsyncKeyState((int)VirtualKey.Shift) & 0x8000) != 0)
             {
                 _shiftKeyDownOnEntering = true;
             }

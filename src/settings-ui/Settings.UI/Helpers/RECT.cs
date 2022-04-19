@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace PowerToys.Settings.Helpers
+namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]

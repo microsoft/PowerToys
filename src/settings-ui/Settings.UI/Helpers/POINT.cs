@@ -5,23 +5,21 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace PowerToys.Settings.Helpers
+namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Interop")]
-    public struct WINDOWPLACEMENT
+    public struct POINT
     {
-        public int Length { get; set; }
+        public int X { get; set; }
 
-        public int Flags { get; set; }
+        public int Y { get; set; }
 
-        public int ShowCmd { get; set; }
-
-        public POINT MinPosition { get; set; }
-
-        public POINT MaxPosition { get; set; }
-
-        public RECT NormalPosition { get; set; }
+        public POINT(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
     }
 }

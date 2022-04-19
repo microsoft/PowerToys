@@ -28,8 +28,20 @@ if($items.Count -eq 0)
 $items | ForEach-Object { 
     if($_.VersionInfo.FileVersion -eq "1.0.0.0" )
 	{
-		Write-Host "Version not set: " + $_.FullName
-		$totalFailure++;
+		# These items are exceptions that actually have the 1.0.0.0 version.
+		if ((-not $_.Name.EndsWith("Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Windows.ApplicationModel.Resources.Projection.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Windows.AppLifecycle.Projection.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Windows.System.Power.Projection.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Bootstrap.Net.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactions.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactivity.dll"))
+		)
+		{
+			Write-Host "Version not set: " + $_.FullName
+			$totalFailure++;
+		}
 	}
 }
 

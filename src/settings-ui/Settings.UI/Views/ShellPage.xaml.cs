@@ -7,11 +7,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using WinUI = Microsoft.UI.Xaml.Controls;
+using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -184,7 +185,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
             {
-                var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+                var loader = ResourceLoader.GetForViewIndependentUse();
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
@@ -210,7 +211,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuClosed))
             {
-                var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+                var loader = ResourceLoader.GetForViewIndependentUse();
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
@@ -219,14 +220,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void OOBEItem_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void OOBEItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
             OpenOobeWindowCallback();
         }
 
-        private async void FeedbackItem_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private async void FeedbackItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
+            await Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
         }
     }
 }

@@ -12,13 +12,13 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
-using Microsoft.PowerToys.Settings.UI.Views;
-using Windows.ApplicationModel.Resources;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Navigation;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
+using Windows.UI.Core;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -42,14 +42,17 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public OobePowerToysModule ViewModel { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OobeWhatsNew"/> class.
+        /// </summary>
         public OobeWhatsNew()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModulesEnum.WhatsNew]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.WhatsNew]);
             DataContext = ViewModel;
         }
 
-        private async Task<string> GetReleaseNotesMarkdown()
+        private static async Task<string> GetReleaseNotesMarkdown()
         {
             string releaseNotesJSON = string.Empty;
             using (HttpClient getReleaseInfoClient = new HttpClient())
@@ -80,44 +83,38 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             return releaseNotesHtmlBuilder.ToString();
         }
 
-        private async void Page_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private async void Page_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             try
             {
                 string releaseNotesMarkdown = await GetReleaseNotesMarkdown();
 
-                // Make sure we run in the UI thread. await doesn't seem to guarantee it.
-                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                {
-                    ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
-                    ReleaseNotesMarkdown.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                    LoadingProgressRing.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                });
+                ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
+                ReleaseNotesMarkdown.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
             }
             catch (Exception ex)
             {
                 Logger.LogError("Exception when loading the release notes", ex);
 
-                // Make sure we run in the UI thread. await doesn't seem to guarantee it.
-                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                {
-                    LoadingProgressRing.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                    ErrorInfoBar.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                });
+                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
         }
 
+        /// <inheritdoc/>
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             ViewModel.LogClosingModuleEvent();
         }
 
-        private void ReleaseNotesMarkdown_LinkClicked(object sender, Toolkit.Uwp.UI.Controls.LinkClickedEventArgs e)
+        private void ReleaseNotesMarkdown_LinkClicked(object sender, LinkClickedEventArgs e)
         {
             if (Uri.TryCreate(e.Link, UriKind.Absolute, out Uri link))
             {
