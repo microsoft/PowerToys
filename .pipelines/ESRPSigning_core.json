@@ -191,6 +191,7 @@
                 "modules\\launcher\\SQLitePCLRaw.batteries_v2.dll",
                 "modules\\launcher\\SQLitePCLRaw.core.dll",
                 "modules\\launcher\\SQLitePCLRaw.provider.e_sqlite3.dll",
+                "Settings\\Microsoft.Graphics.Canvas.Interop.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll"
