@@ -92,6 +92,21 @@
                 PerMachine="yes"
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
+            <ExePackage
+                Name="WindowsAppRuntimeInstall.exe"
+                Compressed="no"
+                Id="WinAppSDK101"
+                DownloadUrl="https://aka.ms/windowsappsdk/1.0/1.0.1/windowsappruntimeinstall-1.0.1-x64.exe"
+                RepairCommand=""
+                Permanent="yes">
+                <ExitCode Value="-2147009274" Behavior="success"/>
+                <RemotePayload
+                    Description="Windows App SDK 1.0.1 Runtime Install"
+                    ProductName="Windows App SDK 1.0.1 Runtime Install"
+                    Size="56995840"
+                    Version="6.0.3.31024"
+                    Hash="03174CC303D8EB9C39BC69A15E48FB20E5ECA65F" />
+            </ExePackage>            
             <MsiPackage
                 SourceFile="x64\Release\PowerToysSetup-$(var.Version)-x64.msi"
                 Compressed="yes"

@@ -2246,6 +2246,8 @@ WINDOWPLACEMENT
 WINDOWPOSCHANGED
 WINDOWPOSCHANGING
 Windowsapp
+windowsappsdk
+windowsappruntimeinstall
 WINDOWSBUILDNUMBER
 Windowscodecs
 windowsdesktop
