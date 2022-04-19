@@ -55,6 +55,15 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         }
 
         [DataTestMethod]
+        [DataRow(new string[] { ".1", "cm", "to", "mm" }, new object[] { new string[] { "0.1", "cm", "to", "mm" } })]
+        public void AddPrefixZero(string[] input, string[] expectedResult)
+        {
+            InputInterpreter.PrefixZero(ref input);
+            CollectionAssert.AreEqual(expectedResult, input);
+        }
+
+
+        [DataTestMethod]
         [DataRow("a f in c")]
         [DataRow("12 f in")]
         public void ParseInvalidQueries(string queryString)
@@ -67,6 +76,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         [DataTestMethod]
         [DataRow("12 f in c", 12)]
         [DataRow("10m to cm", 10)]
+        [DataRow(".1m to cm", 0.1)]
         public void ParseValidQueries(string queryString, double result)
         {
             Query query = new Query(queryString);

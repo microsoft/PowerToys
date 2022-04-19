@@ -214,11 +214,23 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 }
             }
         }
+        
+        /// <summary>
+        /// Add a "0" if the first query character is "."
+        /// </summary>
+        public static void PrefixZero(ref string[] split)
+        {
+            if (split[0][0] == '.')
+            {
+                split[0] = '0' + split[0];
+            }
+        }
 
         public static ConvertModel Parse(Query query)
         {
             string[] split = query.Search.Split(' ');
 
+            InputInterpreter.PrefixZero(ref split);
             InputInterpreter.ShorthandFeetInchHandler(ref split, CultureInfo.CurrentCulture);
             InputInterpreter.InputSpaceInserter(ref split);
 
