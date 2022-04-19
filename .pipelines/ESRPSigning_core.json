@@ -114,7 +114,6 @@
                 "modules\\VideoConference\\PowerToys.VideoConferenceProxyFilter_x86.dll",
                 "modules\\VideoConference\\PowerToys.VideoConferenceProxyFilter_x64.dll",
 
-                "Settings\\PowerToys.Settings.UI.exe",
                 "Settings\\PowerToys.Settings.dll",
                 "Settings\\PowerToys.Settings.exe"
             ],
@@ -192,6 +191,7 @@
                 "modules\\launcher\\SQLitePCLRaw.batteries_v2.dll",
                 "modules\\launcher\\SQLitePCLRaw.core.dll",
                 "modules\\launcher\\SQLitePCLRaw.provider.e_sqlite3.dll",
+                "Settings\\Microsoft.Graphics.Canvas.Interop.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll"

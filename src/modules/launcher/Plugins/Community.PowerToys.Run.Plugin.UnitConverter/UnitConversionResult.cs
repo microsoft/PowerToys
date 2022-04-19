@@ -8,6 +8,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public class UnitConversionResult
     {
+        public static string Format { get; set; } = "g14";
+
         public double ConvertedValue { get; }
 
         public string UnitName { get; }
@@ -19,6 +21,16 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             ConvertedValue = convertedValue;
             UnitName = unitName;
             QuantityType = quantityType;
+        }
+
+        public string ToString(System.IFormatProvider provider = null)
+        {
+            if (provider == null)
+            {
+                provider = System.Globalization.CultureInfo.CurrentCulture;
+            }
+
+            return ConvertedValue.ToString(Format, provider) + " " + UnitName;
         }
     }
 }

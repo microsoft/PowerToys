@@ -389,7 +389,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                 if (name.StartsWith(namePrefix, StringComparison.InvariantCulture))
                 {
-                    if (int.TryParse(name.Substring(namePrefix.Length), out int number))
+                    if (int.TryParse(name.AsSpan(namePrefix.Length), out int number))
                     {
                         if (newSizeCounter < number)
                         {

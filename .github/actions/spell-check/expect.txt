@@ -839,6 +839,7 @@ IIO
 IItem
 IJson
 IKs
+Ijwhost
 IList
 ILogon
 IMAGEHLP
@@ -1061,6 +1062,7 @@ lhs
 lhwnd
 lia
 LIBID
+Lifecycle
 LIGHTORANGE
 LIGHTTURQUOISE
 lindex
@@ -1655,6 +1657,7 @@ regkey
 REGPINTYPES
 regsvr
 reimplementing
+REINSTALLMODE
 reloadable
 Remapper
 remappings
@@ -2243,6 +2246,8 @@ WINDOWPLACEMENT
 WINDOWPOSCHANGED
 WINDOWPOSCHANGING
 Windowsapp
+windowsappsdk
+windowsappruntimeinstall
 WINDOWSBUILDNUMBER
 Windowscodecs
 windowsdesktop

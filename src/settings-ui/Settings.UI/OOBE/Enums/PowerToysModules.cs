@@ -4,7 +4,7 @@
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
 {
-    public enum PowerToysModulesEnum
+    public enum PowerToysModules
     {
         Overview = 0,
         AlwaysOnTop,

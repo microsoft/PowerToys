@@ -5,9 +5,9 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     x:Name="ShortcutContentControl">
     <UserControl.Resources>
@@ -69,11 +69,11 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
+                    <!--TODO(stefan) InfoBadge not available
                         <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
                                         Margin="2,0,12,0"
                                         Style="{StaticResource CriticalIconInfoBadgeStyle}" />
-                    
-                        
+                    -->
 
                     <TextBlock x:Name="InvalidShortcutWarningLabel"
                                x:Uid="InvalidShortcut"

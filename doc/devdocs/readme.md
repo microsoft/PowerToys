@@ -18,7 +18,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 - Package new ideas into classes or refactor existing ideas into a class as you extend.
 - When adding new classes/methods/changing existing code: add new unit tests or update the existing tests.
 
-## Github Workflow
+## GitHub Workflow
 
 - Before starting to work on a fix/feature, make sure there is an open issue to track the work.
 - Add the `In progress` label to the issue, if not already present also add a `Cost-Small/Medium/Large` estimate and make sure all appropriate labels are set.
@@ -39,7 +39,8 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 
 1. Windows 10 April 2018 Update (version 1803) or newer
 2. Visual Studio Community/Professional/Enterprise 2022
-3. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
+3. Install the [Windows App SDK 1.0.1 C# Visual Studio 2022 extension](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads)
+4. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
 
 ### Get Submodules to compile
 We have submodules that need to be initialized before you can compile most parts of PowerToys.  This should be a one time step.

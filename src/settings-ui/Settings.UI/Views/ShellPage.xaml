@@ -10,8 +10,9 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     HighContrastAdjustment="None"
-    muxc:BackdropMaterial.ApplyToRootOrPageBackground="True"
     mc:Ignorable="d">
+    <!--TODO(stefan): Bring back Should be available in v1.1
+    BackdropMaterial.ApplyToRootOrPageBackground="True"-->
 
     <i:Interaction.Behaviors>
         <ic:EventTriggerBehavior EventName="Loaded">

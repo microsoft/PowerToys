@@ -62,7 +62,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             return new Result
             {
                 ContextData = result,
-                Title = $"{result.ConvertedValue} {result.UnitName}",
+                Title = result.ToString(),
                 IcoPath = _icon_path,
                 Score = 300,
                 SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.copy_to_clipboard, result.QuantityType),
@@ -73,7 +73,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     {
                         try
                         {
-                            Clipboard.SetText(result.ConvertedValue.ToString(CultureInfo.CurrentCulture));
+                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.Format, CultureInfo.CurrentCulture));
                             ret = true;
                         }
                         catch (ExternalException)
@@ -105,7 +105,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     {
                         try
                         {
-                            Clipboard.SetText(result.ConvertedValue.ToString(CultureInfo.CurrentCulture));
+                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.Format, CultureInfo.CurrentCulture));
                             ret = true;
                         }
                         catch (ExternalException)

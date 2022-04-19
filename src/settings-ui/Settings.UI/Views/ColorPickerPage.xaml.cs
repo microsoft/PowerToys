@@ -4,7 +4,7 @@
 
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         /// <param name="sender">The sender of this event</param>
         /// <param name="e">The arguments of this event</param>
-        private void ColorPicker_ComboBox_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void ColorPicker_ComboBox_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
            /**
             * UWP hack
@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorPicker_ComboBox.SelectedIndex = index;
         }
 
-        private void ReorderButtonUp_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void ReorderButtonUp_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             ColorFormatModel color = ((MenuFlyoutItem)sender).DataContext as ColorFormatModel;
             if (color == null)
@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void ReorderButtonDown_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void ReorderButtonDown_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             ColorFormatModel color = ((MenuFlyoutItem)sender).DataContext as ColorFormatModel;
             if (color == null)
