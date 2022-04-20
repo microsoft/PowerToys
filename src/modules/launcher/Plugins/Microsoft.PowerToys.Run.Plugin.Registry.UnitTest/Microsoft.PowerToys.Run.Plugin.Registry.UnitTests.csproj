@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
-    <Platforms>x64</Platforms>
+    
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <PlatformTarget>x64</PlatformTarget>
+    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
