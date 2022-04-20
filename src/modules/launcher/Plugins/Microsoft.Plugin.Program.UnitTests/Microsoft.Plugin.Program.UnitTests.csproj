@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
-    <Platforms>x64</Platforms>
-    <PlatformTarget>x64</PlatformTarget>
     <ApplicationManifest>AppxManifests\developmentApp\AppxManifest.xml</ApplicationManifest>
   </PropertyGroup>
 
