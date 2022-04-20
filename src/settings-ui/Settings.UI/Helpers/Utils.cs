@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
                 placement.Length = Marshal.SizeOf(typeof(WINDOWPLACEMENT));
                 placement.Flags = 0;
-                placement.ShowCmd = placement.ShowCmd == NativeMethods.SW_SHOWMAXIMIZED ? NativeMethods.SW_SHOWMAXIMIZED : NativeMethods.SW_SHOWNORMAL;
+                placement.ShowCmd = (placement.ShowCmd == NativeMethods.SW_SHOWMAXIMIZED) ? NativeMethods.SW_SHOWMAXIMIZED : NativeMethods.SW_SHOWNORMAL;
                 return placement;
             }
             catch (Exception)
