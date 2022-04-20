@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Drawing;
 using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
@@ -33,6 +35,10 @@ namespace Microsoft.PowerToys.Settings.UI
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("icon.ico");
+
+            NativeMethods.GetWindowPlacement(hWnd, out var startupPlacement);
+            var placement = Utils.DeserializePlacementOrDefault(hWnd);
+            NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
             Title = loader.GetString("SettingsWindow_Title");
@@ -103,6 +109,9 @@ namespace Microsoft.PowerToys.Settings.UI
         private void Window_Closed(object sender, WindowEventArgs args)
         {
             App.ClearSettingsWindow();
+
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            Utils.SerializePlacement(hWnd);
         }
     }
 }
