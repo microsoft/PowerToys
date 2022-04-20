@@ -11,15 +11,14 @@
     <Version>$(Version).0</Version>
     <ApplicationIcon />
     <StartupObject />
-    <Platforms>x64</Platforms>
+    
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\..\..\x64\Debug\modules\launcher\WoxTest</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\WoxTest</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -27,12 +26,11 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>..\..\..\..\x64\Release\modules\launcher\WoxTest</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\WoxTest</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
