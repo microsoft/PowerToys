@@ -10,6 +10,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Resources;
+using Windows.Graphics;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
@@ -29,6 +30,16 @@ namespace Microsoft.PowerToys.Settings.UI
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("icon.ico");
+
+            OverlappedPresenter presenter = appWindow.Presenter as OverlappedPresenter;
+            presenter.IsResizable = false;
+            presenter.IsMinimizable = false;
+            presenter.IsMaximizable = false;
+
+            SizeInt32 size;
+            size.Width = 1650;
+            size.Height = 1050;
+            appWindow.Resize(size);
 
             this.initialModule = initialModule;
 
