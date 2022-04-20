@@ -9,16 +9,17 @@
     <StartupObject>PowerLauncher.App</StartupObject>
     <ApplicationIcon>Images\RunResource.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>    
-    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <Platforms>$(Platform)</Platforms>
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
     <Version>$(Version).0</Version>
     <Authors>Microsoft Corporation</Authors>
     <Description>PowerToys PowerLauncher</Description>
     <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
-	<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\</OutputPath>	
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
   </PropertyGroup>
 
 
