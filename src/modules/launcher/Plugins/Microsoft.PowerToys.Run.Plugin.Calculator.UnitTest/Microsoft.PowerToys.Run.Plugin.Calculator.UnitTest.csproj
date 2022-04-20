@@ -4,7 +4,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
 
     <IsPackable>false</IsPackable>
-    <Platforms>x64</Platforms>
+    
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
