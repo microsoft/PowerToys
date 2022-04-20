@@ -16,6 +16,14 @@
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\Settings</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <PlatformTarget>ARM64</PlatformTarget>
+    <Platforms>ARM64</Platforms>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <NoWarn></NoWarn>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
