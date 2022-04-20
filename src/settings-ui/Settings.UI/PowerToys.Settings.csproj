@@ -13,7 +13,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\Settings</OutputPath>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
     <PlatformTarget>$(Platform)</PlatformTarget>
     <Platforms>$(Platform)</Platforms>
   </PropertyGroup>
