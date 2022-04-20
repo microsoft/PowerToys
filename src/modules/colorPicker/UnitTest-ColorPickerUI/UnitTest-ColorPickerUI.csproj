@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\ColorPicker\UnitTest-ColorPickerUI\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\ColorPicker\UnitTest-ColorPickerUI\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
