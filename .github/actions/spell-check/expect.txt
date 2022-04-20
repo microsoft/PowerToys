@@ -574,6 +574,7 @@ fallthrough
 fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+FANCYZONESWINDOWSTYLES
 Farbraum
 Faroe
 FARPROC
@@ -695,6 +696,7 @@ helptext
 Heure
 HEVC
 hfile
+HFONT
 hglobal
 hhk
 HHmmss
