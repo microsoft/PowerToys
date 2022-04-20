@@ -128,6 +128,8 @@ void LogInfo(HWND window)
     Logger::log(L"Exstyle: WS_EX_TOPMOST             {}", (exStyle & WS_EX_TOPMOST) == WS_EX_TOPMOST);
     Logger::log(L"Exstyle: WS_EX_TRANSPARENT         {}", (exStyle & WS_EX_TRANSPARENT) == WS_EX_TRANSPARENT);
     Logger::log(L"Exstyle: WS_EX_WINDOWEDGE          {}", (exStyle & WS_EX_WINDOWEDGE) == WS_EX_WINDOWEDGE);
+
+    Logger::log(L"");
 }
 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
