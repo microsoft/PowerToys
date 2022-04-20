@@ -15,21 +15,18 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         public static WINDOWPLACEMENT DeserializePlacementOrDefault(IntPtr handle)
         {
-            if (File.Exists(_placementPath))
+            try
             {
-                try
-                {
-                    var json = File.ReadAllText(_placementPath);
-                    var placement = JsonSerializer.Deserialize<WINDOWPLACEMENT>(json);
+                var json = File.ReadAllText(_placementPath);
+                var placement = JsonSerializer.Deserialize<WINDOWPLACEMENT>(json);
 
-                    placement.Length = Marshal.SizeOf(typeof(WINDOWPLACEMENT));
-                    placement.Flags = 0;
-                    placement.ShowCmd = placement.ShowCmd == NativeMethods.SW_SHOWMAXIMIZED ? NativeMethods.SW_SHOWMAXIMIZED : NativeMethods.SW_SHOWNORMAL;
-                    return placement;
-                }
-                catch (Exception)
-                {
-                }
+                placement.Length = Marshal.SizeOf(typeof(WINDOWPLACEMENT));
+                placement.Flags = 0;
+                placement.ShowCmd = placement.ShowCmd == NativeMethods.SW_SHOWMAXIMIZED ? NativeMethods.SW_SHOWMAXIMIZED : NativeMethods.SW_SHOWNORMAL;
+                return placement;
+            }
+            catch (Exception)
+            {
             }
 
             _ = NativeMethods.GetWindowPlacement(handle, out var defaultPlacement);
