@@ -74,7 +74,10 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
             {
                 Instances = new List<VSCodeInstance>();
 
-                paths = paths.Where(x => x.Contains("VS Code") || x.Contains("VSCodium")).ToList();
+                paths = paths.Where(x =>
+                                    x.Contains("VS Code",  StringComparison.OrdinalIgnoreCase) ||
+                                    x.Contains("VSCodium", StringComparison.OrdinalIgnoreCase) ||
+                                    x.Contains("vscode", StringComparison.OrdinalIgnoreCase)).ToList();
                 foreach (var path in paths)
                 {
                     if (Directory.Exists(path))
