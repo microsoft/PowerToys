@@ -2,8 +2,8 @@
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
-    <Platforms>x64</Platforms>
-    <PlatformTarget>x64</PlatformTarget>
+    
+    
     <Version>$(Version).0</Version>
     <Authors>Microsoft Corporation</Authors>
     <Description>PowerToys PowerLauncher Telemetry</Description>
