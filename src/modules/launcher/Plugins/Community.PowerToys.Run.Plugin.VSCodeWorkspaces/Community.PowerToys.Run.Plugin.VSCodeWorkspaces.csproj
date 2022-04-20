@@ -11,7 +11,7 @@
 		<useWPF>true</useWPF>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\VSCodeWorkspaces\</OutputPath>
+		<OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\VSCodeWorkspaces\</OutputPath>
   </PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">

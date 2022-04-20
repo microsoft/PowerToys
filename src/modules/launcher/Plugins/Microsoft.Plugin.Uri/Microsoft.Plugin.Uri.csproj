@@ -11,7 +11,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-	<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\Uri\</OutputPath>    
+	<OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\Uri\</OutputPath>    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
