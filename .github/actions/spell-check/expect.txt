@@ -1157,6 +1157,7 @@ Marquesas
 martinchrzan
 martinmoene
 Mato
+Maximizable
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
@@ -1203,6 +1204,7 @@ millis
 mimetype
 mindaro
 Minimatch
+Minimizable
 MINIMIZEBOX
 MINIMIZEEND
 MINIMIZESTART
