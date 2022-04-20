@@ -148,7 +148,6 @@ namespace Wox.Infrastructure
             return Process.Start(processStartInfo);
         }
 
-<<<<<<< Updated upstream
         public static bool OpenCommandInShell(string path, string pattern, string arguments, string workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
         {
             if (pattern.Contains("%1", StringComparison.Ordinal))
@@ -159,8 +158,6 @@ namespace Wox.Infrastructure
             return OpenInShell(path, arguments, workingDir, runAs, runWithHiddenWindow);
         }
 
-=======
->>>>>>> Stashed changes
         public static bool OpenInShell(string path, string arguments = null, string workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
         {
             using (var process = new Process())
