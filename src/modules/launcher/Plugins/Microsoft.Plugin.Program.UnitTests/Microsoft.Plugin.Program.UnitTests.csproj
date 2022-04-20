@@ -4,6 +4,8 @@
     <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <ApplicationManifest>AppxManifests\developmentApp\AppxManifest.xml</ApplicationManifest>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <Platforms>$(Platform)</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
