@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
-
     <IsPackable>false</IsPackable>
-    <PlatformTarget>x64</PlatformTarget>
-    <Platforms>x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
