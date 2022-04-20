@@ -12,13 +12,12 @@
     <Version>$(Version).0</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    
+	<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\WoxPlugin</OutputPath>
   </PropertyGroup>
 
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\WoxPlugin</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <LangVersion>7.3</LangVersion>
@@ -28,7 +27,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\WoxPlugin</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>

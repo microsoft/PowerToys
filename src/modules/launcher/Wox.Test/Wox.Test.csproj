@@ -11,12 +11,11 @@
     <Version>$(Version).0</Version>
     <ApplicationIcon />
     <StartupObject />
-    
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\WoxTest</OutputPath>    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\WoxTest</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <LangVersion>7.3</LangVersion>
@@ -27,7 +26,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\WoxTest</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>

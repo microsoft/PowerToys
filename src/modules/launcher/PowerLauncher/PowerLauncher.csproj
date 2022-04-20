@@ -19,7 +19,7 @@
     <Authors>Microsoft Corporation</Authors>
     <Description>PowerToys PowerLauncher</Description>
     <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
   </PropertyGroup>
 
 

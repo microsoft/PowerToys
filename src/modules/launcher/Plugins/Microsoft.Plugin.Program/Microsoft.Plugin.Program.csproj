@@ -12,7 +12,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\Plugins\Program\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\Program\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

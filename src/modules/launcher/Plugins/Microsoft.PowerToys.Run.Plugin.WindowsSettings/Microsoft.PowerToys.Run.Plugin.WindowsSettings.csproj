@@ -10,14 +10,12 @@
     <Version>$(Version).0</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
-    
+	<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\WindowsSettings\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\Plugins\WindowsSettings\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <Optimize>false</Optimize>
     <DebugType>full</DebugType>
@@ -25,7 +23,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\Plugins\WindowsSettings\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
