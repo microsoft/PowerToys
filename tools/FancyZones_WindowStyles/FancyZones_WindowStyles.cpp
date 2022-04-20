@@ -70,14 +70,6 @@ public:
 
 void LogInfo(HWND window)
 {
-    auto cTxtLen = GetWindowTextLength(window);
-    auto pszMem = (LPWSTR)VirtualAlloc((LPVOID)NULL, (DWORD)(cTxtLen + 1), MEM_COMMIT, PAGE_READWRITE);
-    GetWindowText(window, pszMem, cTxtLen + 1);
-
-    Logger::log(L"");
-    Logger::log(L"--------------- {} ---------------", pszMem);
-    Logger::log(L"");
-
     auto style = GetWindowLong(window, GWL_STYLE);
     auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
 
