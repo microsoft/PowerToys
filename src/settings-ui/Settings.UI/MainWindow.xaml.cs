@@ -36,7 +36,6 @@ namespace Microsoft.PowerToys.Settings.UI
             AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("icon.ico");
 
-            NativeMethods.GetWindowPlacement(hWnd, out var startupPlacement);
             var placement = Utils.DeserializePlacementOrDefault(hWnd);
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
