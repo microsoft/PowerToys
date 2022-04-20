@@ -10,22 +10,22 @@
     <Version>$(Version).0</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <Platforms>x64</Platforms>
+    
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
-    <PlatformTarget>x64</PlatformTarget>
+    
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\WindowsSettings\</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\Plugins\WindowsSettings\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <Optimize>false</Optimize>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\..\..\x64\Release\modules\launcher\Plugins\WindowsSettings\</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\Plugins\WindowsSettings\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
