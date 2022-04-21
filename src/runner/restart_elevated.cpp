@@ -41,7 +41,7 @@ bool restart_if_scheduled()
     case RestartAsElevatedOpenSettings:
         return run_elevated(exe_path.get(), L"--open-settings");
     case RestartAsNonElevated:
-        return run_non_elevated(exe_path.get(), L"--dont-elevate", NULL);
+        return run_non_elevated(exe_path.get(), L"", NULL);
     default:
         return false;
     }
@@ -52,5 +52,5 @@ bool restart_same_elevation()
     constexpr DWORD exe_path_size = 0xFFFF;
     auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
     GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
-    return run_same_elevation(exe_path.get(), L"--dont-elevate", nullptr);
+    return run_same_elevation(exe_path.get(), L"", nullptr);
 }
