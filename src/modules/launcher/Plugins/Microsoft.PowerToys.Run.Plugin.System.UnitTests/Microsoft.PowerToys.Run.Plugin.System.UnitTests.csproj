@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
-
     <IsPackable>false</IsPackable>
-    <Platforms>x64</Platforms>
+	<PlatformTarget>$(Platform)</PlatformTarget>
+	<Platforms>$(Platform)</Platforms>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.System.UnitTests</RootNamespace>
   </PropertyGroup>
 
