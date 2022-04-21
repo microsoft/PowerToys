@@ -9,13 +9,13 @@
     <Nullable>enable</Nullable>
     <LangVersion>8.0</LangVersion>
     <OutputType>Library</OutputType>
-    <PlatformTarget>x64</PlatformTarget>
-    <Platforms>x64</Platforms>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <Platforms>$(Platform)</Platforms>
     <Version>$(Version).0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>..\..\..\..\x64\$(Configuration)\modules\ColorPicker\UnitTest-ColorPickerUI\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\ColorPicker\UnitTest-ColorPickerUI\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
