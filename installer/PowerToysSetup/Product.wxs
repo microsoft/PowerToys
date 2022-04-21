@@ -14,10 +14,14 @@
     <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
 
     <?define RepoDir="$(var.ProjectDir)..\..\" ?>
+    <?if $(var.Platform) = x64?>
+        <?define BinDir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
+    <?else?>
+        <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
+    <?endif?>        
     <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
-    <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
-    <?define ShortcutGuideExecutable=$(var.BinX64Dir)\modules\ShortcutGuide\ShortcutGuide?>
-    <?define ShortcutGuideModuleInterface=$(var.BinX64Dir)\modules\ShortcutGuide\ShortcutGuideModuleInterface?>
+    <?define ShortcutGuideExecutable=$(var.BinDir)\modules\ShortcutGuide\ShortcutGuide?>
+    <?define ShortcutGuideModuleInterface=$(var.BinDir)\modules\ShortcutGuide\ShortcutGuideModuleInterface?>
 
     <!-- WiX Components with multiple files cause issues due to the way Windows installs them. 
          Windows decides whether to install a component by checking the existence of KeyPath file and its version.
@@ -98,7 +102,7 @@
 
 	<?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
 
-	<?define PowerRenameFiles=Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;msvcp140_app.dll;PowerToys.PowerRenameUILib.dll;PowerToys.PowerRename.exe;resources.pri;vcruntime140_1_app.dll;vcruntime140_app.dll;PowerToys.PowerRenameExt.dll?>
+	<?define PowerRenameFiles=Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;msvcp140_app.dll;PowerToys.PowerRenameUILib.dll;PowerToys.PowerRename.exe;resources.pri;vcruntime140_app.dll;PowerToys.PowerRenameExt.dll?>
 
 	
 	<Product Id="*"
@@ -108,7 +112,7 @@
        Manufacturer="Microsoft Corporation"
        UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
 
-        <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="x64" />
+        <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="$(var.Platform)" />
 
         <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
 
@@ -129,7 +133,7 @@
             <![CDATA[(WINDOWSBUILDNUMBER >= 18362)]]>
         </Condition>
 
-        <Icon Id="powertoys.exe" SourceFile="$(var.BinX64Dir)svgs\icon.ico"/>
+        <Icon Id="powertoys.exe" SourceFile="$(var.BinDir)svgs\icon.ico"/>
         <Property Id="ARPPRODUCTICON" Value="powertoys.exe" />
         <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" Absent="disallow" TypicalDefault="install"
                  Description="Contains the Shortcut Guide and Fancy Zones features.">
@@ -521,7 +525,7 @@
     </Fragment>
 
     <Fragment>
-        <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinX64Dir)">
+        <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinDir)">
             <Component Id="powertoys_toast_clsid" Win64="yes">
                 <RemoveFolder Id='Remove_powertoys_toast_clsid' On='uninstall' />
                 <RegistryKey Root="HKCR" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
@@ -597,24 +601,24 @@
         </DirectoryRef>
 
         <!-- FancyZone -->
-        <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
+        <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinDir)modules\">
 			      <?foreach File in $(var.FancyZonesFiles)?>
                 <Component Id="Module_FancyZones_$(var.File)" Win64="yes">
-                    <File Id="Module_FancyZones_File_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.File)" />
+                    <File Id="Module_FancyZones_File_$(var.File)" Source="$(var.BinDir)modules\$(var.FancyZonesProjectName)\$(var.File)" />
                 </Component>
             <?endforeach?>
         </DirectoryRef>
 
         <DirectoryRef Id="ToolsFolder">
             <Component Id="BugReportTool_exe" Win64="yes">
-                <File Source="$(var.BinX64Dir)BugReportTool\PowerToys.BugReportTool.exe" Id="BugReportTool.exe" KeyPath="yes" Checksum="yes" />
+                <File Source="$(var.BinDir)BugReportTool\PowerToys.BugReportTool.exe" Id="BugReportTool.exe" KeyPath="yes" Checksum="yes" />
             </Component>
             <Component Id="WebcamReportTool_exe" Win64="yes">
-                <File Source="$(var.BinX64Dir)WebcamReportTool\PowerToys.WebcamReportTool.exe" Id="WebcamReportTool.exe" Checksum="yes" />
+                <File Source="$(var.BinDir)WebcamReportTool\PowerToys.WebcamReportTool.exe" Id="WebcamReportTool.exe" Checksum="yes" />
             </Component>
         </DirectoryRef>
 
-        <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
+        <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinDir)modules\">
             <Component Id="Module_PowerPreview_Registry" Win64="yes">
                 <!-- Update Key to use IE11 for prevhost.exe -->
                 <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
@@ -628,10 +632,10 @@
         </DirectoryRef>
 
         <!-- Image Resizer -->
-        <DirectoryRef Id="ImageResizerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)">
+        <DirectoryRef Id="ImageResizerInstallFolder" FileSource="$(var.BinDir)modules\$(var.ImageResizerProjectName)">
             <?foreach File in $(var.ImageResizerFiles)?>
                 <Component Id="Module_ImageResizer_$(var.File)" Win64="yes">
-                    <File Id="Module_ImageResizer_File_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.File)" />
+                    <File Id="Module_ImageResizer_File_$(var.File)" Source="$(var.BinDir)modules\$(var.ImageResizerProjectName)\$(var.File)" />
                 </Component>
             <?endforeach?>
             <Component Id="Module_ImageResizer_vcredist_dlls" Win64="yes" Guid="52F2C34D-6F45-44B4-9718-2FDFBC2373B8">
@@ -715,10 +719,10 @@
         </DirectoryRef>
 
         <!-- PowerRename -->
-        <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
+        <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)">
             <?foreach File in $(var.PowerRenameFiles)?>
                 <Component Id="PowerRename_$(var.File)" Win64="yes">
-                    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\$(var.File)" />
+                    <File Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\$(var.File)" />
                 </Component>
             <?endforeach?>        
 			<!-- !Warning! Make sure to change Component Guid if you update something here -->
@@ -739,23 +743,23 @@
             </Component>
         </DirectoryRef>
 
-        <DirectoryRef Id="PowerRenameAssetsFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
+        <DirectoryRef Id="PowerRenameAssetsFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)">
 			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
             <Component Id="Module_PowerRename_Assets" Guid="BA290033-7861-44B7-8A04-7E4C3CC7F0AE" Win64="yes">
-                <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Assets\file.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Assets\folder.png" />
+                <File Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Assets\file.png" />
+                <File Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Assets\folder.png" />
             </Component>
         </DirectoryRef>
         <!-- MouseUtils -->
-        <DirectoryRef Id="MouseUtilsInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)">
+        <DirectoryRef Id="MouseUtilsInstallFolder" FileSource="$(var.BinDir)modules\$(var.MouseUtilsProjectName)">
             <Component Id="Module_FindMyMouse" Win64="yes">
-                <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.FindMyMouse.dll" KeyPath="yes" />
+                <File Source="$(var.BinDir)modules\$(var.MouseUtilsProjectName)\PowerToys.FindMyMouse.dll" KeyPath="yes" />
             </Component>
             <Component Id="Module_MouseHighlighter" Win64="yes">
-                <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.MouseHighlighter.dll" KeyPath="yes" />
+                <File Source="$(var.BinDir)modules\$(var.MouseUtilsProjectName)\PowerToys.MouseHighlighter.dll" KeyPath="yes" />
             </Component>
             <Component Id="Module_MousePointerCrosshairs" Win64="yes">
-                <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\PowerToys.MousePointerCrosshairs.dll" KeyPath="yes" />
+                <File Source="$(var.BinDir)modules\$(var.MouseUtilsProjectName)\PowerToys.MousePointerCrosshairs.dll" KeyPath="yes" />
             </Component>
         </DirectoryRef>
 
@@ -766,31 +770,36 @@
             </Component>
         </DirectoryRef>
 
-        <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
+        <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\">
 			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
             <Component Id="Module_VideoConference" Guid="21DA4677-4AE8-4F01-BFC9-448E338DF864" Win64="yes">
                 <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x64.dll" KeyPath="yes" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceModule.dll" />
                 <File Source="$(var.BinX32Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x86.dll" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceModule.dll" />
+                <?if $(var.Platform) = x64?>
+                    <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x64.dll" KeyPath="yes" />
+                <?else?>
+                    <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_ARM64.dll" KeyPath="yes" />
+                <?endif?>        
+
             </Component>
         </DirectoryRef>
-        <DirectoryRef Id="VideoConferenceIconsFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons">
+        <DirectoryRef Id="VideoConferenceIconsFolder" FileSource="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons">
 			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
             <Component Id="Module_VideoConferenceIcons" Guid="9910F3D9-1BDF-43DB-BA0C-C558B121DF18" Win64="yes">
                 <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Dark.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Light.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Dark.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Light.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Dark.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Light.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Dark.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Light.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Light.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Dark.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Dark.png" />
-                <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Light.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Dark.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Light.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Dark.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Light.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Dark.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Light.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Dark.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Light.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Light.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Dark.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Dark.png" />
+                <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Light.png" />
             </Component>
         </DirectoryRef>
 
@@ -801,144 +810,144 @@
         </DirectoryRef>
 
         <!-- KBM -->
-        <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\">
+        <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\">
             <Component Id="Module_KeyboardManager" Win64="yes">
-                <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\PowerToys.KeyboardManager.dll" />
+                <File Source="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\PowerToys.KeyboardManager.dll" />
             </Component>
         </DirectoryRef>
 
         <!-- KBM Editor -->
-        <DirectoryRef Id="KeyboardManagerEditorInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor">
+        <DirectoryRef Id="KeyboardManagerEditorInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor">
             <Component Id="Module_KeyboardManager_Editor" Win64="yes">
-                <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe" />
+                <File Source="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe" />
             </Component>
         </DirectoryRef>
 
         <!-- KBM Engine -->
-        <DirectoryRef Id="KeyboardManagerEngineInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine">
+        <DirectoryRef Id="KeyboardManagerEngineInstallFolder" FileSource="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine">
             <Component Id="Module_KeyboardManager_Engine" Win64="yes">
-                <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe" />
+                <File Source="$(var.BinDir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe" />
             </Component>
         </DirectoryRef>
 
         <!-- Color Picker -->
-        <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
+        <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinDir)modules\$(var.ColorPickerProjectName)">
 			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
             <Component Id="Module_ColorPicker" Guid="C15076EC-70EE-4CE9-BEA0-665B1EECCAAF" Win64="yes">
                 <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Text.Json.dll;Ijwhost.dll?>
-                <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
+                <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinDir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
                 <?endforeach?>
             </Component>
         </DirectoryRef>
 
         <!-- Color Picker Resources -->
-        <DirectoryRef Id="ColorPickerResourcesFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources">
+        <DirectoryRef Id="ColorPickerResourcesFolder" FileSource="$(var.BinDir)modules\$(var.ColorPickerProjectName)\Resources">
             <Component Id="Module_ColorPicker_Cursor">
-                <File Id="ColorPickerFile_colorPicker.cur" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources\colorPicker.cur" />
+                <File Id="ColorPickerFile_colorPicker.cur" Source="$(var.BinDir)modules\$(var.ColorPickerProjectName)\Resources\colorPicker.cur" />
             </Component>
 			<Component Id="Module_ColorPicker_Icon">
-				<File Id="ColorPickerFile_icon.ico" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources\icon.ico" />
+				<File Id="ColorPickerFile_icon.ico" Source="$(var.BinDir)modules\$(var.ColorPickerProjectName)\Resources\icon.ico" />
 			</Component>
 		</DirectoryRef>
 
         <!-- Awake -->
-        <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)">
+        <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinDir)modules\$(var.AwakeProjectName)">
 			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
             <Component Id="Module_Awake" Guid="0D571D9A-743B-4CC5-9297-F0289FBE3398" Win64="yes">
                 <?foreach File in PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToys.Interop.dll;System.CommandLine.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Text.Json.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll?>
-                <File Id="AwakeFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\$(var.File)" />
+                <File Id="AwakeFile_$(var.File)" Source="$(var.BinDir)modules\$(var.AwakeProjectName)\$(var.File)" />
                 <?endforeach?>
             </Component>
         </DirectoryRef>
 
         <!-- Awake images -->
-        <DirectoryRef Id="AwakeImagesFolder" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\Images">
+        <DirectoryRef Id="AwakeImagesFolder" FileSource="$(var.BinDir)modules\$(var.AwakeProjectName)\Images">
             <Component Id="Module_Awake_Images" >
-                <File Id="Awake_Awake.ico" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\Images\Awake.ico" />
+                <File Id="Awake_Awake.ico" Source="$(var.BinDir)modules\$(var.AwakeProjectName)\Images\Awake.ico" />
             </Component>
         </DirectoryRef>
 
         <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
             <?foreach File in $(var.PowerPreviewFiles)?>
                 <Component Id="Module_PowerPreview_$(var.File)" Win64="yes">
-                    <File Id="Module_PowerPreview_$(var.File)" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.File)" />
+                    <File Id="Module_PowerPreview_$(var.File)" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.File)" />
                 </Component>
             <?endforeach?>
         </DirectoryRef>
-        <DirectoryRef Id="MonacoPreviewHandlerRuntimesWinX64NativeFolder" FileSource="$(var.BinX64Dir)modules\FileExplorerPreview\runtimes\win-x64\native">
+        <DirectoryRef Id="MonacoPreviewHandlerRuntimesWinX64NativeFolder" FileSource="$(var.BinDir)modules\FileExplorerPreview\runtimes\win-x64\native">
             <Component Id="MonacoPreviewHandlerRuntimesWinX64NativeLibs" Win64="yes">
-                <File Id="MonacoPreviewHandler_WebView2Loader" Source="$(var.BinX64Dir)modules\FileExplorerPreview\runtimes\win-x64\native\WebView2Loader.dll" />
+                <File Id="MonacoPreviewHandler_WebView2Loader" Source="$(var.BinDir)modules\FileExplorerPreview\runtimes\win-x64\native\WebView2Loader.dll" />
             </Component>
         </DirectoryRef>
-        <DirectoryRef Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" FileSource="$(var.BinX64Dir)modules\FileExplorerPreview\customLanguages">
+        <DirectoryRef Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" FileSource="$(var.BinDir)modules\FileExplorerPreview\customLanguages">
             <Component Id="MonacoPreviewHandlerMonacoCustomLanguagesRegJS" Win64="yes">
-                <File Id="MonacoPreviewHandler_MonacoCustomLanguagesRegJS" Source="$(var.BinX64Dir)modules\FileExplorerPreview\customLanguages\reg.js" />
+                <File Id="MonacoPreviewHandler_MonacoCustomLanguagesRegJS" Source="$(var.BinDir)modules\FileExplorerPreview\customLanguages\reg.js" />
             </Component>
         </DirectoryRef>
 
         <!-- AlwaysOnTop -->
-        <DirectoryRef Id="AlwaysOnTopInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.AlwaysOnTopProjectName)">
+        <DirectoryRef Id="AlwaysOnTopInstallFolder" FileSource="$(var.BinDir)modules\$(var.AlwaysOnTopProjectName)">
             <Component Id="Module_AlwaysOnTopInterface" Win64="yes">
-                <File Source="$(var.BinX64Dir)modules\$(var.AlwaysOnTopProjectName)\PowerToys.AlwaysOnTopModuleInterface.dll" />
+                <File Source="$(var.BinDir)modules\$(var.AlwaysOnTopProjectName)\PowerToys.AlwaysOnTopModuleInterface.dll" />
             </Component>
 			<Component Id="Module_AlwaysOnTop" Win64="yes">
-				<File Source="$(var.BinX64Dir)modules\$(var.AlwaysOnTopProjectName)\PowerToys.AlwaysOnTop.exe" />
+				<File Source="$(var.BinDir)modules\$(var.AlwaysOnTopProjectName)\PowerToys.AlwaysOnTop.exe" />
 			</Component>
 			
         </DirectoryRef>
 
         <!-- SettingsV2 components -->
-        <DirectoryRef Id="SettingsV2InstallFolder" FileSource="$(var.BinX64Dir)Settings\">
+        <DirectoryRef Id="SettingsV2InstallFolder" FileSource="$(var.BinDir)Settings\">
             <?foreach File in $(var.SettingsV2Files)?>
                 <Component Id="SV2C_$(var.File)" Win64="yes">
-                    <File Id="SV2_$(var.File)" Source="$(var.BinX64Dir)Settings\$(var.File)" />
+                    <File Id="SV2_$(var.File)" Source="$(var.BinDir)Settings\$(var.File)" />
                 </Component>
             <?endforeach?>
         </DirectoryRef>
-        <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets">
+        <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.BinDir)Settings\Assets">
             <Component Id="SettingsV2Assets_LogoScale200" Win64="yes">
-                <File Id="SV2A_LogoScale200" Source="$(var.BinX64Dir)Settings\Assets\Logo.scale-200.png" />
+                <File Id="SV2A_LogoScale200" Source="$(var.BinDir)Settings\Assets\Logo.scale-200.png" />
             </Component>
             <Component Id="SettingsV2Assets_SplashScreen" Win64="yes">
-                <File Id="SV2A_SplashScreen" Source="$(var.BinX64Dir)Settings\Assets\SplashScreen.png" />
+                <File Id="SV2A_SplashScreen" Source="$(var.BinDir)Settings\Assets\SplashScreen.png" />
             </Component>
             <Component Id="SettingsV2Assets_StoreLogo_Scale100" Win64="yes">
-                <File Id="SV2A_StoreLogoScale100" Source="$(var.BinX64Dir)Settings\Assets\StoreLogo.scale-100.png" />
+                <File Id="SV2A_StoreLogoScale100" Source="$(var.BinDir)Settings\Assets\StoreLogo.scale-100.png" />
             </Component>
             <Component Id="SettingsV2Assets_StoreLogo" Win64="yes">
-                <File Id="SV2A_StoreLogo" Source="$(var.BinX64Dir)Settings\Assets\StoreLogo.png" />
+                <File Id="SV2A_StoreLogo" Source="$(var.BinDir)Settings\Assets\StoreLogo.png" />
             </Component>
             <Component Id="SettingsV2Assets_Square150x150sc200" Win64="yes">
-                <File Id="SV2A_Square150x150sc200" Source="$(var.BinX64Dir)Settings\Assets\Square150x150Logo.scale-200.png" />
+                <File Id="SV2A_Square150x150sc200" Source="$(var.BinDir)Settings\Assets\Square150x150Logo.scale-200.png" />
             </Component>
             <Component Id="SettingsV2Assets_Square44x44ts24" Win64="yes">
-                <File Id="SV2A_Square44x44ts24" Source="$(var.BinX64Dir)Settings\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+                <File Id="SV2A_Square44x44ts24" Source="$(var.BinDir)Settings\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
             </Component>
             <Component Id="SettingsV2Assets_Wide310x150sc200" Win64="yes">
-                <File Id="SV2A_Wide310x150sc200" Source="$(var.BinX64Dir)Settings\Assets\Wide310x150Logo.scale-200.png" />
+                <File Id="SV2A_Wide310x150sc200" Source="$(var.BinDir)Settings\Assets\Wide310x150Logo.scale-200.png" />
             </Component>
             <Component Id="SettingsV2Assets_Square44x44Logo200" Win64="yes">
-                <File Id="SV2A_Square44x44Logo200" Source="$(var.BinX64Dir)Settings\Assets\Square44x44Logo.scale-200.png" />
+                <File Id="SV2A_Square44x44Logo200" Source="$(var.BinDir)Settings\Assets\Square44x44Logo.scale-200.png" />
             </Component>
         </DirectoryRef>
-        <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules">
+        <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinDir)Settings\Assets\Modules">
 			<?foreach File in $(var.SettingsV2AssetsModulesFiles)?>
 			    <Component Id="SettingsV2AssetsModules_$(var.File)" Win64="yes">
-				    <File Id="S2AMF_$(var.File)" Source="$(var.BinX64Dir)Settings\Assets\Modules\$(var.File)" />
+				    <File Id="S2AMF_$(var.File)" Source="$(var.BinDir)Settings\Assets\Modules\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 		</DirectoryRef>
-        <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules\OOBE">
+        <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.BinDir)Settings\Assets\Modules\OOBE">
 			<?foreach File in $(var.SettingsV2OOBEAssetsModulesFiles)?>
 			    <Component Id="SettingsV2OOBEAssetsModules_$(var.File)" Win64="yes">
-				    <File Id="SettingsV2OOBEAssetsModules_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\Modules\OOBE\$(var.File)" />
+				    <File Id="SettingsV2OOBEAssetsModules_$(var.File)"  Source="$(var.BinDir)Settings\Assets\Modules\OOBE\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 		</DirectoryRef>
-        <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\FluentIcons">
+        <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinDir)Settings\Assets\FluentIcons">
 			<?foreach File in $(var.SettingsV2OOBEAssetsFluentIconsFiles)?>
 			    <Component Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)" Win64="yes">
-				    <File Id="SettingsV2OOBEAssetsFluentIconsFile_$(var.File)" Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
+				    <File Id="SettingsV2OOBEAssetsFluentIconsFile_$(var.File)" Source="$(var.BinDir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
 			    </Component>
 			<?endforeach?>			
         </DirectoryRef>
@@ -1184,151 +1193,151 @@
                 Id="Launcher_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)LauncherInstallFolder"
                 Guid="$(var.CompGUIDPrefix)00">
-                <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerToys.PowerLauncher.resources.dll" />
+                <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\$(var.Language)\PowerToys.PowerLauncher.resources.dll" />
             </Component>
             <Component
                 Id="FancyZonesEditor_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FancyZonesInstallFolder"
                 Guid="$(var.CompGUIDPrefix)01">
-                <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\PowerToys.FancyZonesEditor.resources.dll" />
+                <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\$(var.FancyZonesProjectName)\$(var.Language)\PowerToys.FancyZonesEditor.resources.dll" />
             </Component>
             <Component
                 Id="ImageResizer_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)ImageResizerInstallFolder"
                 Guid="$(var.CompGUIDPrefix)02">
-                <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\PowerToys.ImageResizer.resources.dll" />
+                <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\$(var.ImageResizerProjectName)\$(var.Language)\PowerToys.ImageResizer.resources.dll" />
             </Component>
             <Component
                 Id="ColorPicker_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder"
                 Guid="$(var.CompGUIDPrefix)03">
-                <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.Language)\PowerToys.ColorPickerUI.resources.dll" />
+                <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\$(var.ColorPickerProjectName)\$(var.Language)\PowerToys.ColorPickerUI.resources.dll" />
             </Component>
             <Component
                 Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
                 Guid="$(var.CompGUIDPrefix)04">
-                <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.MarkdownPreviewHandler.resources.dll" />
+                <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.Language)\PowerToys.MarkdownPreviewHandler.resources.dll" />
             </Component>
             <Component
                 Id="SVGPreviewHandler_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
                 Guid="$(var.CompGUIDPrefix)05">
-                <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.SvgPreviewHandler.resources.dll" />
+                <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.Language)\PowerToys.SvgPreviewHandler.resources.dll" />
             </Component>
             <Component
                 Id="PDFPreviewHandler_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
                 Guid="$(var.CompGUIDPrefix)06">
-                <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.PdfPreviewHandler.resources.dll" />
+                <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.Language)\PowerToys.PdfPreviewHandler.resources.dll" />
             </Component>
             <Component
                 Id="GcodePreviewHandler_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
                 Guid="$(var.CompGUIDPrefix)07">
-                <File Id="GcodePreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PowerToys.GcodePreviewHandler.resources.dll" />
+                <File Id="GcodePreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.Language)\PowerToys.GcodePreviewHandler.resources.dll" />
             </Component>
             <!-- PowerToys Run aka Launcher plugin resources -->
             <Component
                 Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder"
                 Guid="$(var.CompGUIDPrefix)08">
-                <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
+                <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_Folder_$(var.IdSafeLanguage)_Component"
                 Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder"
                 Guid="$(var.CompGUIDPrefix)09">
-                <File Id="Launcher_Folder_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Folder\$(var.Language)\Microsoft.Plugin.Folder.resources.dll" />
+                <File Id="Launcher_Folder_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Folder\$(var.Language)\Microsoft.Plugin.Folder.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_Program_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)0A"
                 Directory="Resource$(var.IdSafeLanguage)ProgramPluginFolder">
-                <File Id="Launcher_Program_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Program\$(var.Language)\Microsoft.Plugin.Program.resources.dll" />
+                <File Id="Launcher_Program_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Program\$(var.Language)\Microsoft.Plugin.Program.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_Shell_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)0B"
                 Directory="Resource$(var.IdSafeLanguage)ShellPluginFolder">
-                <File Id="Launcher_Shell_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Shell\$(var.Language)\Microsoft.Plugin.Shell.resources.dll" />
+                <File Id="Launcher_Shell_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Shell\$(var.Language)\Microsoft.Plugin.Shell.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_Indexer_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)0C"
                 Directory="Resource$(var.IdSafeLanguage)IndexerPluginFolder">
-                <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
+                <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_Uri_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)0D"
                 Directory="Resource$(var.IdSafeLanguage)UriPluginFolder">
-                <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
+                <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)0E"
                 Directory="Resource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder">
-                <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.Language)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
+                <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.Language)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
             </Component>
             <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component"
                        Guid="$(var.CompGUIDPrefix)0F"
                        Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
-                <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
+                <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_Registry_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)10"
                 Directory="Resource$(var.IdSafeLanguage)RegistryPluginFolder">
-                <File Id="Launcher_Registry_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Registry.resources.dll" />
+                <File Id="Launcher_Registry_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Registry\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Registry.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_Service_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)11"
                 Directory="Resource$(var.IdSafeLanguage)ServicePluginFolder">
-                <File Id="Launcher_Service_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Service.resources.dll" />
+                <File Id="Launcher_Service_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Service\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Service.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_System_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)12"
                 Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder">
-                <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
+                <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)13"
                 Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
-                <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
+                <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_TimeZone_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)14"
                 Directory="Resource$(var.IdSafeLanguage)TimeZonePluginFolder">
-                <File Id="Launcher_TimeZone_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeZone.resources.dll" />
+                <File Id="Launcher_TimeZone_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\TimeZone\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeZone.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)15"
                 Directory="Resource$(var.IdSafeLanguage)WindowsTerminalPluginFolder">
-                <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
+                <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_WebSearch_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)16"
                 Directory="Resource$(var.IdSafeLanguage)WebSearchPluginFolder">
-                <File Id="Launcher_WebSearch_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\$(var.Language)\Community.PowerToys.Run.Plugin.WebSearch.resources.dll" />
+                <File Id="Launcher_WebSearch_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\WebSearch\$(var.Language)\Community.PowerToys.Run.Plugin.WebSearch.resources.dll" />
             </Component>
             <Component
                 Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)17"
                 Directory="Resource$(var.IdSafeLanguage)UnitConverterPluginFolder">
-                <File Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\$(var.Language)\Community.PowerToys.Run.Plugin.UnitConverter.resources.dll" />
+                <File Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\UnitConverter\$(var.Language)\Community.PowerToys.Run.Plugin.UnitConverter.resources.dll" />
             </Component>
 			<Component
                 Id="Launcher_TimeDate_$(var.IdSafeLanguage)_Component"
                 Guid="$(var.CompGUIDPrefix)18"
                 Directory="Resource$(var.IdSafeLanguage)TimeDatePluginFolder">
-                <File Id="Launcher_TimeDate_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeDate\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeDate.resources.dll" />
+                <File Id="Launcher_TimeDate_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\TimeDate\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeDate.resources.dll" />
             </Component>
             <?undef IdSafeLanguage?>
             <?undef CompGUIDPrefix?>
@@ -1348,11 +1357,11 @@
 
 			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
             <Component Id="launcherInstallComponent" Guid="5E7074E9-155F-49A1-BD4C-470A09814618" Directory="LauncherInstallFolder" >
-                <File Source="$(var.BinX64Dir)modules\Launcher\PowerToys.Launcher.dll" />
-                <?foreach File in concrt140_app.dll;e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Text.Json.dll;Ijwhost.dll?>
-                <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
+                <File Source="$(var.BinDir)modules\Launcher\PowerToys.Launcher.dll" />
+                <?foreach File in concrt140_app.dll;e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Text.Json.dll;Ijwhost.dll?>
+                <File Id="File_$(var.File)" Source="$(var.BinDir)modules\launcher\$(var.File)" />
                 <?endforeach?>
-                <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.UI.Lib.dll" />
+                <File Source="$(var.BinDir)Settings\PowerToys.Settings.UI.Lib.dll" />
                 <!-- VCRuntime -->
                 <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
                 <File Id="File_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
@@ -1360,231 +1369,231 @@
             </Component>
 			<?foreach File in $(var.launcherImagesComponentFiles)?>
 			    <Component Id="launcherImagesComponent_$(var.File)" Win64="yes" Directory="LauncherImagesFolder">
-				    <File Id="launcherImagesComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Images\$(var.File)" />
+				    <File Id="launcherImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Images\$(var.File)" />
 			    </Component>
 			<?endforeach?>
             <!-- Calculator Plugin -->
 			<?foreach File in $(var.calcComponentFiles)?>
 			    <Component Id="calcComponent_$(var.File)" Win64="yes" Directory="CalculatorPluginFolder">
-				    <File Id="calcComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Calculator\$(var.File)" />
+				    <File Id="calcComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Calculator\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<Component Id="calculatorImagesComponentLight" Directory="CalculatorImagesFolder" >
-                <File Id="calculatorPluginImg_calculator_light" Source="$(var.BinX64Dir)modules\launcher\Plugins\Calculator\Images\calculator.light.png" />
+                <File Id="calculatorPluginImg_calculator_light" Source="$(var.BinDir)modules\launcher\Plugins\Calculator\Images\calculator.light.png" />
             </Component>
 			<Component Id="calculatorImagesComponentDark" Directory="CalculatorImagesFolder" >
-    			<File Id="calculatorPluginImg_calculator_dark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Calculator\Images\calculator.dark.png" />
+    			<File Id="calculatorPluginImg_calculator_dark" Source="$(var.BinDir)modules\launcher\Plugins\Calculator\Images\calculator.dark.png" />
 			</Component>
 
             <!-- Folder Plugin -->
 			<?foreach File in $(var.FolderComponentFiles)?>
 			    <Component Id="FolderComponent_$(var.File)" Win64="yes" Directory="FolderPluginFolder">
-				    <File Id="FolderComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Folder\$(var.File)" />
+				    <File Id="FolderComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Folder\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<?foreach File in $(var.FolderImagesComponentFiles)?>
 			    <Component Id="FolderImagesComponent_$(var.File)" Win64="yes" Directory="FolderPluginImagesFolder">
-				    <File Id="FolderImagesComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Folder\Images\$(var.File)" />
+				    <File Id="FolderImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Folder\Images\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			
             <!-- Program Plugin -->
             <?foreach File in $(var.ProgramComponentFiles)?>
                 <Component Id="ProgramComponent_$(var.File)" Win64="yes" Directory="ProgramPluginFolder">
-                    <File Id="ProgramComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Program\$(var.File)" />
+                    <File Id="ProgramComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Program\$(var.File)" />
                 </Component>
             <?endforeach?>
 
 			<?foreach File in $(var.ProgramImagesComponentFiles)?>
 			<Component Id="ProgramImagesComponent_$(var.File)" Win64="yes" Directory="ProgramImagesFolder">
-				<File Id="ProgramImagesComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Program\Images\$(var.File)" />
+				<File Id="ProgramImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Program\Images\$(var.File)" />
 			</Component>
 			<?endforeach?>
 			
             <!-- Shell Plugin -->
 			<?foreach File in $(var.ShellComponentFiles)?>
 			    <Component Id="ShellComponent_$(var.File)" Win64="yes" Directory="ShellPluginFolder">
-				    <File Id="ShellComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Shell\$(var.File)" />
+				    <File Id="ShellComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Shell\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<?foreach File in $(var.ShellImagesComponentFiles)?>
 			    <Component Id="ShellImagesComponent_$(var.File)" Win64="yes" Directory="ShellImagesFolder">
-				    <File Id="ShellImagesComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Shell\Images\$(var.File)" />
+				    <File Id="ShellImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Shell\Images\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			
 			<!-- Indexer Plugin -->
 			<?foreach File in $(var.IndexerComponentFiles)?>
 			    <Component Id="IndexerComponent_$(var.File)" Win64="yes" Directory="IndexerPluginFolder">
-				    <File Id="IndexerComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Indexer\$(var.File)" />
+				    <File Id="IndexerComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Indexer\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<?foreach File in $(var.IndexerImagesComponentFiles)?>
 			    <Component Id="IndexerImagesComponent_$(var.File)" Win64="yes" Directory="IndexerImagesFolder">
-				    <File Id="IndexerImagesComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Indexer\Images\$(var.File)" />
+				    <File Id="IndexerImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Indexer\Images\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			
 			<!-- UnitConverter Plugin -->
 			<?foreach File in $(var.UnitConvCompFiles)?>
 			    <Component Id="UnitConvComp_$(var.File)" Win64="yes" Directory="UnitConverterPluginFolder">
-				    <File Id="UnitConvCompFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\$(var.File)" />
+				    <File Id="UnitConvCompFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\UnitConverter\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<Component Id="UnitConverterImagesComponentLight" Directory="UnitConverterImagesFolder" >
-                <File Id="UnitConverterLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.light.png" />
+                <File Id="UnitConverterLight" Source="$(var.BinDir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.light.png" />
             </Component>
 			<Component Id="UnitConverterImagesComponentDark" Directory="UnitConverterImagesFolder" >
-			    <File Id="UnitConverterDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.dark.png" />
+			    <File Id="UnitConverterDark" Source="$(var.BinDir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.dark.png" />
 			</Component>
 
             <!-- WebSearch Plugin -->
 			<?foreach File in $(var.WebSrchCompFiles)?>
 			    <Component Id="WebSrchComp_$(var.File)" Win64="yes" Directory="WebSearchPluginFolder">
-				    <File Id="WebSrchCompFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\$(var.File)" />
+				    <File Id="WebSrchCompFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\WebSearch\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<Component Id="WebSearchImagesComponentLight" Directory="WebSearchImagesFolder" >
-                <File Id="WebSearchLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\Images\WebSearch.light.png" />
+                <File Id="WebSearchLight" Source="$(var.BinDir)modules\launcher\Plugins\WebSearch\Images\WebSearch.light.png" />
             </Component>
 			<Component Id="WebSearchImagesComponentDark" Directory="WebSearchImagesFolder" >
-			    <File Id="WebSearchDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\WebSearch\Images\WebSearch.dark.png" />
+			    <File Id="WebSearchDark" Source="$(var.BinDir)modules\launcher\Plugins\WebSearch\Images\WebSearch.dark.png" />
 			</Component>
 
             <!-- Uri Plugin -->
 			<?foreach File in $(var.UriComponentFiles)?>
 			    <Component Id="UriComponent_$(var.File)" Win64="yes" Directory="UriPluginFolder">
-				    <File Id="UriComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\$(var.File)" />
+				    <File Id="UriComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Uri\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<Component Id="UriImagesComponentLight" Directory="UriImagesFolder" >
-                <File Id="UriLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\Images\Uri.light.png" />
+                <File Id="UriLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\Uri\Images\Uri.light.png" />
             </Component>
 			<Component Id="UriImagesComponentDark" Directory="UriImagesFolder" >
-			    <File Id="UriDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\Images\Uri.dark.png" />
+			    <File Id="UriDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\Uri\Images\Uri.dark.png" />
 			</Component>
 
             <!-- VSCodeWorkspaces Plugin -->
 			<?foreach File in $(var.VSCWrkCompFiles)?>
 			    <Component Id="VSCWrkComp_$(var.File)" Win64="yes" Directory="VSCodeWorkspacesPluginFolder">
-				    <File Id="VSCWrkCompFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.File)" />
+				    <File Id="VSCWrkCompFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<Component Id="VSCodeWorkspacesDepsComponent" Directory="VSCodeWorkspacesPluginFolder">
-				<File Id="VSCodeWorkspaceFolder_deps" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.deps.json" />
+				<File Id="VSCodeWorkspaceFolder_deps" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.deps.json" />
 			</Component>
 			<Component Id="VSCodeWorkspacesImagesComponentLight" Directory="VSCodeWorkspaceImagesFolder" >
-                <File Id="VSCodeWorkspaceCodeLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code-light.png" />
+                <File Id="VSCodeWorkspaceCodeLight" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code-light.png" />
             </Component>
 			<Component Id="VSCodeWorkspacesImagesComponentDark" Directory="VSCodeWorkspaceImagesFolder" >
-    			<File Id="VSCodeWorkspaceCodeDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code-dark.png" />
+    			<File Id="VSCodeWorkspaceCodeDark" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code-dark.png" />
 			</Component>
 			<Component Id="VSCodeWorkspacesImagesComponentFolder" Directory="VSCodeWorkspaceImagesFolder" >
-			    <File Id="VSCodeWorkspaceFolder" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\folder.png" />
+			    <File Id="VSCodeWorkspaceFolder" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Images\folder.png" />
 			</Component>
 			<Component Id="VSCodeWorkspacesImagesComponentMonitor" Directory="VSCodeWorkspaceImagesFolder" >
-			    <File Id="VSCodeWorkspaceRemote" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\monitor.png" />
+			    <File Id="VSCodeWorkspaceRemote" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Images\monitor.png" />
 			</Component>
 
             <!-- WindowWalker Plugin -->
 			<?foreach File in $(var.WindowWlkrCompFiles)?>
 			    <Component Id="WindowWlkrComp_$(var.File)" Win64="yes" Directory="WindowWalkerPluginFolder">
-				    <File Id="WindowWlkrCompFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\$(var.File)" />
+				    <File Id="WindowWlkrCompFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\WindowWalker\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<?foreach File in $(var.WindowWlkrImagesCompFiles)?>
 			    <Component Id="WindowWalkerImagesComp_$(var.File)" Win64="yes" Directory="WindowWalkerImagesFolder">
-				    <File Id="WindowWalkerImagesComp_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\$(var.File)" />
+				    <File Id="WindowWalkerImagesComp_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\WindowWalker\Images\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 
             <!-- Registry Plugin -->
 			<?foreach File in $(var.RegistryComponentFiles)?>
 			    <Component Id="RegistryComponent_$(var.File)" Win64="yes" Directory="RegistryPluginFolder">
-				    <File Id="RegistryComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\$(var.File)" />
+				    <File Id="RegistryComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Registry\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<Component Id="RegistryImagesComponentLight" Directory="RegistryImagesFolder" >
-                <File Id="RegistryLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\Images\reg.light.png" />
+                <File Id="RegistryLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\Registry\Images\reg.light.png" />
             </Component>
 			<Component Id="RegistryImagesComponentDark" Directory="RegistryImagesFolder" >
-			    <File Id="RegistryDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\Images\reg.dark.png" />
+			    <File Id="RegistryDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\Registry\Images\reg.dark.png" />
 			</Component>
 
             <!-- Service Plugin -->
 			<?foreach File in $(var.ServiceComponentFiles)?>
 			    <Component Id="ServiceComponent_$(var.File)" Win64="yes" Directory="ServicePluginFolder">
-				    <File Id="ServiceComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\$(var.File)" />
+				    <File Id="ServiceComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Service\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<Component Id="ServiceImagesComponentLight" Directory="ServiceImagesFolder" >
-                <File Id="ServiceLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\Images\service.light.png" />
+                <File Id="ServiceLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\Service\Images\service.light.png" />
             </Component>
 			<Component Id="ServiceImagesComponentDark" Directory="ServiceImagesFolder" >
-			    <File Id="ServiceDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\Images\service.dark.png" />
+			    <File Id="ServiceDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\Service\Images\service.dark.png" />
 			</Component>
 
             <!-- System Plugin -->
 			<?foreach File in $(var.SystemComponentFiles)?>
 			    <Component Id="SystemComponent_$(var.File)" Win64="yes" Directory="SystemPluginFolder">
-				    <File Id="SystemComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.File)" />
+				    <File Id="SystemComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\System\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<?foreach File in $(var.SystemImagesComponentFiles)?>
 			    <Component Id="SystemImagesComponent_$(var.File)" Win64="yes" Directory="SystemImagesFolder">
-				    <File Id="SystemImagesComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\$(var.File)" />
+				    <File Id="SystemImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\System\Images\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			
 			<!-- TimeDate Plugin -->
 			<?foreach File in $(var.TimeDateComponentFiles)?>
 			    <Component Id="TimeDateComponent_$(var.File)" Win64="yes" Directory="TimeDatePluginFolder">
-				    <File Id="TimeDateComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeDate\$(var.File)" />
+				    <File Id="TimeDateComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\TimeDate\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<?foreach File in $(var.TimeDateImagesComponentFiles)?>
 			    <Component Id="TimeDateImagesComponent_$(var.File)" Win64="yes" Directory="TimeDateImagesFolder">
-				    <File Id="TimeDateImagesComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeDate\Images\$(var.File)" />
+				    <File Id="TimeDateImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\TimeDate\Images\$(var.File)" />
 			    </Component>
 			<?endforeach?>
       
             <!-- TimeZone Plugin -->
             <?foreach File in $(var.TimeZoneComponentFiles)?>
 			    <Component Id="TimeZoneComponent_$(var.File)" Win64="yes" Directory="TimeZonePluginFolder">
-				    <File Id="TimeZoneComponentFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\$(var.File)" />
+				    <File Id="TimeZoneComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\TimeZone\$(var.File)" />
 			    </Component>
 			<?endforeach?>
             <Component Id="TimeZoneImagesComponentLight" Directory="TimeZoneImagesFolder" >
-                <File Id="TimeZoneLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\Images\timeZone.light.png" />
+                <File Id="TimeZoneLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\TimeZone\Images\timeZone.light.png" />
             </Component>
             <Component Id="TimeZoneImagesComponentDark" Directory="TimeZoneImagesFolder" >
-	            <File Id="TimeZoneDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\TimeZone\Images\timeZone.dark.png" />
+	            <File Id="TimeZoneDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\TimeZone\Images\timeZone.dark.png" />
 		    </Component>
       
             <!-- WindowsSettings Plugin -->
 			<?foreach File in $(var.WinSetCmpFiles)?>
 			    <Component Id="WinSetCmp_$(var.File)" Win64="yes" Directory="WindowsSettingsPluginFolder">
-				    <File Id="WinSetCmpFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\$(var.File)" />
+				    <File Id="WinSetCmpFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\WindowsSettings\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<Component Id="WindowsSettingsImagesComponentLight" Directory="WindowsSettingsImagesFolder" >
-                <File Id="WindowsSettingsLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\Images\WindowsSettings.light.png" />
+                <File Id="WindowsSettingsLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\WindowsSettings\Images\WindowsSettings.light.png" />
             </Component>
 			<Component Id="WindowsSettingsImagesComponentDark" Directory="WindowsSettingsImagesFolder" >
-			    <File Id="WindowsSettingsDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\Images\WindowsSettings.dark.png" />
+			    <File Id="WindowsSettingsDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\WindowsSettings\Images\WindowsSettings.dark.png" />
 			</Component>
 
             <!-- WindowsTerminal Plugin -->
 			<?foreach File in $(var.WinTermCmpFiles)?>
 			    <Component Id="WinTermCmp_$(var.File)" Win64="yes" Directory="WindowsTerminalPluginFolder">
-				    <File Id="WinTermCmpFile_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.File)" />
+				    <File Id="WinTermCmpFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\$(var.File)" />
 			    </Component>
 			<?endforeach?>
 			<Component Id="WindowsTerminalImagesComponentLight" Directory="WindowsTerminalImagesFolder" >
-                <File Id="WindowsTerminalLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.light.png" />
+                <File Id="WindowsTerminalLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.light.png" />
             </Component>
 			<Component Id="WindowsTerminalImagesComponentDark" Directory="WindowsTerminalImagesFolder" >
-			    <File Id="WindowsTerminalDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.dark.png" />
+			    <File Id="WindowsTerminalDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.dark.png" />
 			</Component>
 
         </ComponentGroup>
