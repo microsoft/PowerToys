@@ -443,10 +443,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (is_restart_scheduled())
     {
         if (!restart_if_scheduled())
-
         {
-            Logger::warn("Scheduled restart failed. Trying restart as admin as fallback...");
-            restart_same_elevation();
+            // If it's not possible to restart non-elevated due to some condition in the user's configuration, user should start PowerToys manually.
+            Logger::warn("Scheduled restart failed. Couldn't restart non-elevated. PowerToys exits here because retrying it would just mean failing in a loop.");
         }
     }
     stop_tray_icon();
