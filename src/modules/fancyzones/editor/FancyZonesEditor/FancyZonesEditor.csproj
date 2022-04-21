@@ -5,12 +5,14 @@
     <AssemblyDescription>PowerToys FancyZones Editor</AssemblyDescription>
     <Description>PowerToys FancyZones Editor</Description>
     <Version>$(Version).0</Version>
-    <Platforms>x64</Platforms>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <Platforms>$(Platform)</Platforms>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FancyZones</OutputPath> 
   </PropertyGroup>
   
   <PropertyGroup>
@@ -21,16 +23,12 @@
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <Optimize>true</Optimize>
-    <PlatformTarget>x64</PlatformTarget>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FancyZones</OutputPath> 
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <Optimize>false</Optimize>
-    <PlatformTarget>x64</PlatformTarget>
-    <OutputPath>..\..\..\..\..\x64\Debug\modules\FancyZones</OutputPath> 
   </PropertyGroup>
     
   <PropertyGroup>
