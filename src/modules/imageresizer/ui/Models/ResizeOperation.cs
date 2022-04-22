@@ -56,6 +56,8 @@ namespace ImageResizer.Models
 
                 var encoder = CreateEncoder(containerFormat);
 
+                var skipImage = false;
+
                 if (decoder.Metadata != null)
                 {
                     try
@@ -75,6 +77,12 @@ namespace ImageResizer.Models
                 foreach (var originalFrame in decoder.Frames)
                 {
                     var transformedBitmap = Transform(originalFrame);
+
+                    if (transformedBitmap == originalFrame)
+                    {
+                        skipImage = true;
+                    }
+
                     BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
 
 #if DEBUG
@@ -96,6 +104,12 @@ namespace ImageResizer.Models
                     }
 
                     var frame = CreateBitmapFrame(transformedBitmap, metadata);
+
+                    // if the frame was not modified, we should not replace the metadata
+                    if (skipImage)
+                    {
+                        frame = CreateBitmapFrame(originalFrame, originalMetadata);
+                    }
 
                     encoder.Frames.Add(frame);
                 }
