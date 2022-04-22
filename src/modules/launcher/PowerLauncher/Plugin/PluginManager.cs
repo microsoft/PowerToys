@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using PowerLauncher.Properties;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
+using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -27,6 +28,8 @@ namespace PowerLauncher.Plugin
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IDirectory Directory = FileSystem.Directory;
         private static readonly object AllPluginsLock = new object();
+        private static readonly WoxJsonStorage<PowerToysRunSettings> _storage;
+        private static readonly PowerToysRunSettings _settings;
 
         private static IEnumerable<PluginPair> _contextMenuPlugins = new List<PluginPair>();
 
@@ -129,6 +132,8 @@ namespace PowerLauncher.Plugin
 
         static PluginManager()
         {
+            _storage = new WoxJsonStorage<PowerToysRunSettings>();
+            _settings = _storage.Load();
             ValidateUserDirectory();
         }
 
@@ -195,6 +200,7 @@ namespace PowerLauncher.Plugin
 
                     if (results != null)
                     {
+                        UpdateResultsScore(pair.Plugin.Name, results);
                         UpdatePluginMetadata(results, metadata, query);
                         UpdateResultWithActionKeyword(results, query);
                     }
@@ -215,6 +221,15 @@ namespace PowerLauncher.Plugin
                 Log.Exception($"Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e, MethodBase.GetCurrentMethod().DeclaringType);
 
                 return new List<Result>();
+            }
+        }
+
+        private static void UpdateResultsScore(string name, List<Result> results)
+        {
+            int scoreAdjust = _settings.AdjustScore.GetValueOrDefault(name, 0);
+            foreach (var r in results)
+            {
+                r.Score += scoreAdjust;
             }
         }
 

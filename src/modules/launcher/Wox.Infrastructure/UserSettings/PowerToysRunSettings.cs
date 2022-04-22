@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Text.Json.Serialization;
@@ -197,6 +198,8 @@ namespace Wox.Infrastructure.UserSettings
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LastQueryMode LastQueryMode { get; set; } = LastQueryMode.Selected;
+
+        public Dictionary<string, int> AdjustScore { get; set; } = new Dictionary<string, int>();
     }
 
     public enum LastQueryMode
