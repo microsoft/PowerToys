@@ -145,6 +145,8 @@ namespace ColorPicker.ViewModels
                 }
 
                 _userSettings.ColorHistory.ReleaseNotification();
+
+                // this could be location of the issue
             }
         }
 
