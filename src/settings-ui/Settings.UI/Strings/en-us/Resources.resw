@@ -617,32 +617,52 @@
     <value>Show recently used strings</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
-    <value>Enable Markdown preview  (.md, .markdown, .mdown, .mkdn, .mkd, .mdwn, .mdtxt, .mdtext)</value>
+    <value>Markdown</value>
     <comment>Do not loc "Markdown".  Do you want this feature on / off</comment>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Description" xml:space="preserve">
+    <value>.md, .markdown, .mdown, .mkdn, .mkd, .mdwn, .mdtxt, .mdtext</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
-    <value>Enable developer files preview (Example: .cpp, .py, ...)</value>
+    <value>Developer files (Monaco)</value>
     <comment>Do you want this feature on / off</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Description" xml:space="preserve">
+    <value>Examples: .cpp, .py etc.</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
-    <value>Enable SVG (.svg) preview</value>
+    <value>Scalable Vector Graphics</value>
     <comment>Do you want this feature on / off</comment>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Description" xml:space="preserve">
+    <value>.svg</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Header" xml:space="preserve">
-    <value>Enable PDF (.pdf) preview</value>
+    <value>Portable Document Format</value>
     <comment>Do you want this feature on / off</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Description" xml:space="preserve">
+    <value>.pdf</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail.Header" xml:space="preserve">
-    <value>Enable SVG (.svg) thumbnails</value>
+    <value>Scalable Vector Graphics</value>
     <comment>Do you want this feature on / off</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail.Description" xml:space="preserve">
+    <value>.svg</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_STL_Thumbnail.Header" xml:space="preserve">
-    <value>Enable STL (.stl) thumbnails</value>
+    <value>Stereolithography</value>
     <comment>Do you want this feature on / off</comment>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_STL_Thumbnail.Description" xml:space="preserve">
+    <value>.stl</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_PDF_Thumbnail.Header" xml:space="preserve">
-    <value>Enable PDF (.pdf) thumbnails</value>
+    <value>Portable Document Format</value>
     <comment>Do you want this feature on / off</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_PDF_Thumbnail.Description" xml:space="preserve">
+    <value>.pdf</value>
   </data>
   <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
@@ -1002,13 +1022,16 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>PowerToys is up to date.</value>
   </data>
   <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Header" xml:space="preserve">
-    <value>Icon Preview</value>
+    <value>Thumbnail icon Preview</value>
+  </data>
+  <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Description" xml:space="preserve">
+    <value>Select the file types for which thumbnail previews must be rendered.</value>
   </data>
   <data name="FileExplorerPreview_PreviewPane.Header" xml:space="preserve">
     <value>Preview Pane</value>
   </data>
   <data name="FileExplorerPreview_PreviewPane.Description" xml:space="preserve">
-    <value>Ensure that Preview Pane is open by toggling the view with Alt + P in File Explorer.</value>
+    <value>Select the file types which must be rendered in the Previe Pane. Ensure that Preview Pane is open by toggling the view with Alt + P in File Explorer.</value>
     <comment>Preview Pane and File Explorer are app/feature names in Windows. 'Alt + P' is a shortcut</comment>
   </data>
   <data name="FileExplorerPreview_RunAsAdminRequired.Title" xml:space="preserve">
@@ -1018,11 +1041,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>A reboot may be required for changes to these settings to take effect</value>
   </data>
   <data name="FileExplorerPreview_PreviewHandlerOutlookIncompatibility.Title" xml:space="preserve">
-    <value>Enabling the preview handlers will override other preview handlers already installed - there have been reports of incompatibility between Outlook and the PDF Preview Handler</value>
+    <value>Enabling the preview handlers will override other preview handlers already installed - there have been reports of incompatibility between Outlook and the PDF Preview Handler.</value>
     <comment>Outlook is the name of a Microsoft product</comment>
   </data>
   <data name="FileExplorerPreview_ThumbnailsMightNotAppearOnRemoteFolders.Title" xml:space="preserve">
-    <value>Thumbnails might not appear on paths managed by cloud storage solutions like OneDrive, since these solutions may get their thumbnails from the cloud instead of generating them locally</value>
+    <value>Thumbnails might not appear on paths managed by cloud storage solutions like OneDrive, since these solutions may get their thumbnails from the cloud instead of generating them locally.</value>
     <comment>OneDrive is the name of a Microsoft product</comment>
   </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
@@ -1942,18 +1965,18 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>You need to run as administrator to modify these settings.</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail.Header" xml:space="preserve">
-    <value>Enable G-code (.gcode) thumbnails</value>
+    <value>G-code</value>
     <comment>Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
+    <value>G-code</value>
+    <comment>Do you want this feature on / off</comment>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
   </data>
-  <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
-    <value>Enable G-code (.gcode) preview</value>
-    <comment>Do you want this feature on / off</comment>
   </data>
   <data name="FancyZones_NumberColor.Header" xml:space="preserve">
     <value>Number color</value>
