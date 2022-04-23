@@ -643,25 +643,25 @@
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
   </data>
-  <data name="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail.Header" xml:space="preserve">
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
     <comment>Do you want this feature on / off</comment>
   </data>
-  <data name="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail.Description" xml:space="preserve">
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG.Description" xml:space="preserve">
     <value>.svg</value>
   </data>
-  <data name="FileExplorerPreview_ToggleSwitch_STL_Thumbnail.Header" xml:space="preserve">
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Header" xml:space="preserve">
     <value>Stereolithography</value>
     <comment>Do you want this feature on / off</comment>
   </data>
-  <data name="FileExplorerPreview_ToggleSwitch_STL_Thumbnail.Description" xml:space="preserve">
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Description" xml:space="preserve">
     <value>.stl</value>
   </data>
-  <data name="FileExplorerPreview_ToggleSwitch_PDF_Thumbnail.Header" xml:space="preserve">
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
     <comment>Do you want this feature on / off</comment>
   </data>
-  <data name="FileExplorerPreview_ToggleSwitch_PDF_Thumbnail.Description" xml:space="preserve">
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
   </data>
   <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
@@ -1964,11 +1964,11 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="VideoConference_RunAsAdminRequired.Title" xml:space="preserve">
     <value>You need to run as administrator to modify these settings.</value>
   </data>
-  <data name="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail.Header" xml:space="preserve">
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Header" xml:space="preserve">
     <value>G-code</value>
     <comment>Do you want this feature on / off</comment>
   </data>
-  <data name="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail.Description" xml:space="preserve">
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
