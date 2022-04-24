@@ -142,6 +142,22 @@ bool InstallNewVersionStage2(std::wstring installer_path, std::wstring_view inst
 
     bool success = true;
 
+    for (const auto& entry : fs::directory_iterator(updating::get_pending_updates_path()))
+    {
+        auto entryPath = entry.path().wstring();
+        std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+
+        if ((entry.path().extension() == ".msi" || entry.path().extension() == ".exe") && installer_path.find(entryPath) == std::string::npos)
+        {
+            std::error_code err;
+            fs::remove(entry, err);
+            if (err.value())
+            {
+                Logger::warn("Failed to delete file {}. {}", entry.path().string(), err.message());
+            }
+        }
+    }
+
     if (installer_path.ends_with(L".msi"))
     {
         success = MsiInstallProductW(installer_path.data(), nullptr) == ERROR_SUCCESS;
