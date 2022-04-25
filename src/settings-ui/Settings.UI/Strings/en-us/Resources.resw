@@ -626,7 +626,7 @@
     <comment>Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Description" xml:space="preserve">
-    <value>Examples: .cpp, .py, json, xml, csproj etc.</value>
+    <value>Examples: .cpp, .py, .json, .xml, .csproj etc.</value>
     <comment>File extensions should not be altered</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
