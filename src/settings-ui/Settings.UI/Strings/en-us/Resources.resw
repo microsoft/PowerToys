@@ -1327,7 +1327,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
   </data>
   <data name="Oobe_FileExplorer.Description" xml:space="preserve">
-    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown files (.md), PDF files (.pdf), SVG icons (.svg), STL files (.stl), Gcode files (.gcode) and developer files to be viewed in the preview pane. It introduces File Explorer thumbnail support for a number of these file types as well.</value>
+    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown (.md), PDF (.pdf), SVG (.svg), STL (.stl), G-code (.gcode) and developer files to be viewed in the preview pane. It introduces File Explorer thumbnail support for a number of these file types as well.</value>
   </data>
   <data name="Oobe_ImageResizer.Description" xml:space="preserve">
     <value>Image Resizer is a Windows shell extension for simple bulk image-resizing.</value>
@@ -1969,14 +1969,14 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>You need to run as administrator to modify these settings.</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Header" xml:space="preserve">
-    <value>G-code</value>
+    <value>Geometric Code</value>
     <comment>"G-code" is a file type and should not be altered. Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
-    <value>G-code</value>
+    <value>Geometric Code</value>
     <comment>"G-code" is a file type and should not be altered. Do you want this feature on / off</comment>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
