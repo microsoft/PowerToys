@@ -1,5 +1,9 @@
 #include "pch.h"
+
+#include <filesystem>
+
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include "FancyZonesLib\ZoneIndexSetBitmask.h"
 #include "FancyZonesLib\ZoneSet.h"
 #include <FancyZonesLib/util.h>
@@ -86,7 +90,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD (TestCreateZoneSetGuidEmpty)
         {
             GUID zoneSetId{};
-            ZoneSetConfig config(zoneSetId, m_layoutType, monitor, DefaultValues::SensitivityRadius);
+            ZoneSetConfig config(zoneSetId, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius);
             winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
 
             Assert::IsNotNull(&set);
