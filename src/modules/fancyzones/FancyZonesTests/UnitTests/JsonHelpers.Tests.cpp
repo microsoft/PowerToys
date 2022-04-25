@@ -106,6 +106,7 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(BackwardsCompatibility::DeviceIdData::IsValidDeviceId(deviceId));
         }
     };
+    
     TEST_CLASS (ZoneSetLayoutTypeUnitTest)
     {
         TEST_METHOD (ZoneSetLayoutTypeToString)
@@ -679,15 +680,6 @@ namespace FancyZonesUnitTests
 
     TEST_CLASS (ZoneSetDataUnitTest)
     {
-        TEST_METHOD (ToJsonGeneral)
-        {
-            json::JsonObject expected = json::JsonObject::Parse(L"{\"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"type\": \"rows\"}");
-            ZoneSetData data{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Rows };
-            const auto actual = ZoneSetDataJSON::ToJson(data);
-            auto res = CustomAssert::CompareJsonObjects(expected, actual);
-            Assert::IsTrue(res.first, res.second.c_str());
-        }
-
         TEST_METHOD (FromJsonGeneral)
         {
             ZoneSetData expected{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Columns };
@@ -722,8 +714,8 @@ namespace FancyZonesUnitTests
         TEST_METHOD (FromJsonMissingKeys)
         {
             ZoneSetData data{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Columns };
-            const auto json = ZoneSetDataJSON::ToJson(data);
-
+            const auto json = json::JsonObject::Parse(L"{\"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"type\": \"columns\"}");
+            
             auto iter = json.First();
             while (iter.HasCurrent())
             {
