@@ -631,7 +631,8 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
-    <comment>Do you want this feature on / off</comment>
+    <comment>Do you want this feature on / off</comment>0
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Description" xml:space="preserve">
     <value>.svg</value>
     <comment>File extension, should not be altered</comment>
@@ -1980,7 +1981,6 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>"G-code" is a file type and should not be altered. Do you want this feature on / off</comment>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
-  </data>
   </data>
   <data name="FancyZones_NumberColor.Header" xml:space="preserve">
     <value>Number color</value>
