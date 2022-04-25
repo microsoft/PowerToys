@@ -81,7 +81,6 @@ private:
 
     HMONITOR m_monitor{};
     FancyZonesUtils::Rect m_workAreaRect{};
-
     FancyZonesDataTypes::WorkAreaId m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
@@ -109,3 +108,4 @@ inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR moni
 
     return self;
 }
+
