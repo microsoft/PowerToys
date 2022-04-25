@@ -26,6 +26,11 @@ namespace FancyZonesUnitTests
         FancyZonesDataTypes::WorkAreaId m_uniqueId;
         FancyZonesDataTypes::WorkAreaId m_emptyUniqueId;
 
+        HINSTANCE m_hInst{};
+        HMONITOR m_monitor{};
+        MONITORINFOEX m_monitorInfo{};
+        GUID m_virtualDesktopGuid{};
+
         TEST_METHOD_INITIALIZE(Init)
         {
             m_uniqueId.monitorId.deviceId.id = L"DELA026";
@@ -91,7 +96,6 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().ApplyLayout(parentUniqueId, layout);
 
             auto actualWorkArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, parentUniqueId);
-
             Assert::IsNotNull(actualWorkArea->ZoneSet());
 
             Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().contains(m_uniqueId));
@@ -108,8 +112,13 @@ namespace FancyZonesUnitTests
 
     TEST_CLASS (WorkAreaUnitTests)
     {
+<<<<<<< main
         FancyZonesDataTypes::WorkAreaId m_uniqueId;
         FancyZonesDataTypes::WorkAreaId m_parentUniqueId; // default empty
+=======
+        FancyZonesDataTypes::DeviceIdData m_uniqueId;
+        FancyZonesDataTypes::DeviceIdData m_parentUniqueId; // default empty
+>>>>>>> warnings
 
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};

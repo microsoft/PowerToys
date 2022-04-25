@@ -34,7 +34,7 @@ namespace JsonUtils
         {
             try
             {
-                Layout data;
+                Layout data{};
                 auto idStr = json.GetNamedString(NonLocalizable::AppliedLayoutsIds::UuidID);
                 auto id = FancyZonesUtils::GuidFromString(idStr.c_str());
                 if (!id.has_value())
@@ -138,7 +138,7 @@ namespace JsonUtils
 
     public:
         FancyZonesDataTypes::WorkAreaId workAreaId;
-        Layout data;
+        Layout data{};
 
         static std::optional<AppliedLayoutsJSON> FromJson(const json::JsonObject& json)
         {
