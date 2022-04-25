@@ -3,6 +3,7 @@
 
 #include <common/logger/call_tracer.h>
 #include <common/logger/logger.h>
+#include <common/utils/winapi_error.h>
 
 #include "FancyZonesData/AppliedLayouts.h"
 #include "FancyZonesData/AppZoneHistory.h"
@@ -117,30 +118,12 @@ WorkArea::~WorkArea()
     windowPool.FreeZonesOverlayWindow(m_window);
 }
 
-bool WorkArea::Init(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId)
+bool WorkArea::Init(HINSTANCE hinstance, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId)
 {
-    Rect workAreaRect;
-    m_monitor = monitor;
-    if (monitor)
-    {
-        MONITORINFO mi{};
-        mi.cbSize = sizeof(mi);
-        if (!GetMonitorInfoW(monitor, &mi))
-        {
-            Logger::error(L"GetMonitorInfo failed on work area initialization");
-            return false;
-        }
-        workAreaRect = Rect(mi.rcWork);
-    }
-    else
-    {
-        workAreaRect = GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
-    }
-
     m_uniqueId = uniqueId;
     InitializeZoneSets(parentUniqueId);
 
-    m_window = windowPool.NewZonesOverlayWindow(workAreaRect, hinstance, this);
+    m_window = windowPool.NewZonesOverlayWindow(m_workAreaRect, hinstance, this);
 
     if (!m_window)
     {
@@ -433,31 +416,11 @@ void WorkArea::CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) 
         appliedLayout->sensitivityRadius,
         overlappingAlgorithm));
 
-    RECT workArea;
-    if (m_monitor)
-    {
-        MONITORINFO monitorInfo{};
-        monitorInfo.cbSize = sizeof(monitorInfo);
-        if (GetMonitorInfoW(m_monitor, &monitorInfo))
-        {
-            workArea = monitorInfo.rcWork;
-        }
-        else
-        {
-            Logger::error(L"CalculateZoneSet: GetMonitorInfo failed");
-            return;
-        }
-    }
-    else
-    {
-        workArea = GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
-    }
-
     bool showSpacing = appliedLayout->showSpacing;
     int spacing = showSpacing ? appliedLayout->spacing : 0;
     int zoneCount = appliedLayout->zoneCount;
 
-    zoneSet->CalculateZones(workArea, zoneCount, spacing);
+    zoneSet->CalculateZones(m_workAreaRect, zoneCount, spacing);
     UpdateActiveZoneSet(zoneSet.get());
 }
 
@@ -515,6 +478,11 @@ void WorkArea::SetAsTopmostWindow() noexcept
     SetWindowPos(m_window, windowInsertAfter, 0, 0, 0, 0, flags);
 }
 
+void WorkArea::LogInitializationError()
+{
+    Logger::error(L"Unable to get monitor info, {}", get_last_error_or_default(GetLastError()));
+}
+
 #pragma endregion
 
 LRESULT CALLBACK WorkArea::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
@@ -531,13 +499,3 @@ LRESULT CALLBACK WorkArea::s_WndProc(HWND window, UINT message, WPARAM wparam, L
                                   DefWindowProc(window, message, wparam, lparam);
 }
 
-std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept
-{
-    auto self = std::make_shared<WorkArea>(hinstance);
-    if (self->Init(hinstance, monitor, uniqueId, parentUniqueId))
-    {
-        return self;
-    }
-
-    return nullptr;
-}
