@@ -1914,6 +1914,7 @@ STDMETHODCALLTYPE
 STDMETHODIMP
 stdout
 stefan
+Stereolithography
 STGM
 STGMEDIUM
 sticpl
