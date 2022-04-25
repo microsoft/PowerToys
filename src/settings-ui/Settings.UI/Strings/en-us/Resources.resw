@@ -273,10 +273,7 @@
   </data>
   <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
     <value>Enable Keyboard Manager</value>
-    <comment>
-      Keyboard Manager enable toggle header
-      do not loc the Product name.  Do you want this feature on / off
-    </comment>
+    <comment>Keyboard Manager enable toggle header. Do not loc the Product name. Do you want this feature on / off</comment>
   </data>
   <data name="KeyboardManager_ProfileDescription.Text" xml:space="preserve">
     <value>Select the profile to display the active key remap and shortcuts</value>
@@ -618,23 +615,26 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
     <value>Markdown</value>
-    <comment>Do not loc "Markdown".  Do you want this feature on / off</comment>
+    <comment>Do not loc "Markdown". Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Description" xml:space="preserve">
     <value>.md, .markdown, .mdown, .mkdn, .mkd, .mdwn, .mdtxt, .mdtext</value>
+    <comment>File extensions, should not be altered</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
     <value>Developer files (Monaco)</value>
     <comment>Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Description" xml:space="preserve">
-    <value>Examples: .cpp, .py etc.</value>
+    <value>Examples: .cpp, .py, json, xml, csproj etc.</value>
+    <comment>File extensions should not be altered</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
     <comment>Do you want this feature on / off</comment>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Description" xml:space="preserve">
     <value>.svg</value>
+    <comment>File extension, should not be altered</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
@@ -642,6 +642,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
+    <comment>File extension, should not be altered</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
@@ -649,6 +650,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG.Description" xml:space="preserve">
     <value>.svg</value>
+    <comment>File extension, should not be altered</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Header" xml:space="preserve">
     <value>Stereolithography</value>
@@ -656,6 +658,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Description" xml:space="preserve">
     <value>.stl</value>
+    <comment>File extension, should not be altered</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
@@ -663,6 +666,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
+    <comment>File extension, should not be altered</comment>
   </data>
   <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
@@ -1302,7 +1306,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Let's get started!</value>
   </data>
   <data name="Oobe_PowerToysDescription.Text" xml:space="preserve">
-    <value>Welcome to PowerToys!  These overviews will help you quickly learn the basics of all our utilities.</value>
+    <value>Welcome to PowerToys! These overviews will help you quickly learn the basics of all our utilities.</value>
   </data>
   <data name="Oobe_GettingStarted.Text" xml:space="preserve">
     <value>Getting started</value>
@@ -1323,7 +1327,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
   </data>
   <data name="Oobe_FileExplorer.Description" xml:space="preserve">
-    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown files (.md), PDF files (.pdf), SVG icons (.svg), STL files (.stl), Gcode files (.gcode) and developer files to be viewed in the preview pane. It introduces file explorer thumbnail support for a number of these file types as well.</value>
+    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown files (.md), PDF files (.pdf), SVG icons (.svg), STL files (.stl), Gcode files (.gcode) and developer files to be viewed in the preview pane. It introduces File Explorer thumbnail support for a number of these file types as well.</value>
   </data>
   <data name="Oobe_ImageResizer.Description" xml:space="preserve">
     <value>Image Resizer is a Windows shell extension for simple bulk image-resizing.</value>
@@ -1655,7 +1659,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
     <value>Learn more about File Explorer add-ons</value>
-    <comment>File Explorer is a product name, do not loc</comment>
+    <comment>File Explorer is a product name, localize as Windows does</comment>
   </data>
   <data name="LearnMore_PowerRename.Text" xml:space="preserve">
     <value>Learn more about PowerRename</value>
@@ -1966,14 +1970,14 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Header" xml:space="preserve">
     <value>G-code</value>
-    <comment>Do you want this feature on / off</comment>
+    <comment>"G-code" is a file type and should not be altered. Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
     <value>G-code</value>
-    <comment>Do you want this feature on / off</comment>
+    <comment>"G-code" is a file type and should not be altered. Do you want this feature on / off</comment>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
   </data>
