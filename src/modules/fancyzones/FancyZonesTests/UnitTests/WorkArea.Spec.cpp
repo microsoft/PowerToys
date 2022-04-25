@@ -28,16 +28,13 @@ namespace FancyZonesUnitTests
 
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};
-        MONITORINFOEX m_monitorInfo{};
-        GUID m_virtualDesktopGuid{};
 
         TEST_METHOD_INITIALIZE(Init)
         {
             m_uniqueId.monitorId.deviceId.id = L"DELA026";
             m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
             m_uniqueId.monitorId.serialNumber = L"serial-number";
-            auto res = CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
-            Assert::IsTrue(SUCCEEDED(res));
+            m_uniqueId.monitorId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value();
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
@@ -92,10 +89,10 @@ namespace FancyZonesUnitTests
                 .sensitivityRadius = 20,
             };
 
-            auto parentWorkArea = MakeWorkArea({}, Mocks::Monitor(), parentUniqueId, m_emptyUniqueId);
+            auto parentWorkArea = MakeWorkArea(m_hInst, m_monitor, parentUniqueId, m_emptyUniqueId);
             AppliedLayouts::instance().ApplyLayout(parentUniqueId, layout);
 
-            auto actualWorkArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, parentUniqueId);
+            auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, parentUniqueId);
             Assert::IsNotNull(actualWorkArea->ZoneSet());
 
             Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().contains(m_uniqueId));
@@ -112,13 +109,8 @@ namespace FancyZonesUnitTests
 
     TEST_CLASS (WorkAreaUnitTests)
     {
-<<<<<<< main
         FancyZonesDataTypes::WorkAreaId m_uniqueId;
         FancyZonesDataTypes::WorkAreaId m_parentUniqueId; // default empty
-=======
-        FancyZonesDataTypes::DeviceIdData m_uniqueId;
-        FancyZonesDataTypes::DeviceIdData m_parentUniqueId; // default empty
->>>>>>> warnings
 
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};
