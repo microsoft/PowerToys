@@ -85,12 +85,17 @@ namespace
         CComPtr<IShellView> spsv;
         
         // Desktop may not be available on startup
-        auto maxAttempts = 5;
-        for (auto i = 1; !FindDesktopFolderView(IID_PPV_ARGS(&spsv)) && i <= maxAttempts; i++)
+        auto attempts = 5;
+        for (auto i = 1; i <= attempts; i++)
         {
+            if (FindDesktopFolderView(IID_PPV_ARGS(&spsv)))
+            {
+                break;
+            }
+
             Logger::warn(L"FindDesktopFolderView() failed attempt {}", i);
 
-            if (i == maxAttempts)
+            if (i == attempts)
             {
                 Logger::warn(L"FindDesktopFolderView() max attempts reached");
                 return false;
