@@ -102,11 +102,7 @@
 
 	<?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
 
-    <?if $(var.Platform) = x64?>
-        <?define PowerRenameFiles=Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;msvcp140_app.dll;PowerToys.PowerRenameUILib.dll;PowerToys.PowerRename.exe;resources.pri;vcruntime140_app.dll;PowerToys.PowerRenameExt.dll;vcruntime140_1_app.dll?>
-    <?else?>
-        <?define PowerRenameFiles=Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;msvcp140_app.dll;PowerToys.PowerRenameUILib.dll;PowerToys.PowerRename.exe;resources.pri;vcruntime140_app.dll;PowerToys.PowerRenameExt.dll?>
-    <?endif?>        
+    <?define PowerRenameFiles=PowerRenameUI.ico;Microsoft.WindowsAppRuntime.Bootstrap.dll;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll?>
 
 	<Product Id="*"
        Name="PowerToys (Preview)"
