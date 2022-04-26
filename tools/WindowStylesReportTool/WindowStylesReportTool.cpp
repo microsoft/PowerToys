@@ -1,8 +1,5 @@
-// FancyZones_WindowStyles.cpp : Defines the entry point for the application.
-//
-
 #include "pch.h"
-#include "FancyZones_WindowStyles.h"
+#include "WindowStylesReportTool.h"
 
 #include <shlobj.h>
 
@@ -142,7 +139,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    Logger::init("FancyZones_WindowStyles");
+    Logger::init("WindowStylesReportTool");
 
     WNDCLASSEXW wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -151,12 +148,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hInstance = hInstance;
-    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_FANCYZONESWINDOWSTYLES));
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WINDOWSTYLESICON));
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName = L"";
-    wcex.lpszClassName = L"FancyZones_WindowStyles";
-    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.lpszClassName = L"WindowStylesReportTool";
+    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALLICON));
 
     if (!RegisterClassExW(&wcex))
     {
@@ -164,7 +161,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HWND hWnd = CreateWindowW(L"FancyZones_WindowStyles", L"Window Style", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 600, 200, nullptr, nullptr, hInstance, nullptr);
+    HWND hWnd = CreateWindowW(L"WindowStylesReportTool", L"Window Style Report Tool", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 600, 200, nullptr, nullptr, hInstance, nullptr);
     if (!hWnd)
     {
         Logger::log(L"Window creation error: {}", get_last_error_or_default(GetLastError()));

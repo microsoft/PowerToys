@@ -18,7 +18,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FancyZones_WindowStyles.h">
+    <ClInclude Include="WindowStylesReportTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -26,7 +26,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FancyZones_WindowStyles.cpp">
+    <ClCompile Include="WindowStylesReportTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -34,7 +34,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="FancyZones_WindowStyles.rc">
+    <ResourceCompile Include="WindowStylesReportTool.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -42,7 +42,7 @@
     <Image Include="small.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="FancyZones_WindowStyles.ico">
+    <Image Include="WindowStylesReportTool.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

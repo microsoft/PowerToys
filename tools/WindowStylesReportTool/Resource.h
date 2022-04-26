@@ -1,18 +1,12 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by FancyZones_WindowStyles.rc
-
-#define IDS_APP_TITLE			103
+// Used by WindowStylesReportTool.rc
 
 #define IDR_MAINFRAME			128
-#define IDD_FANCYZONESWINDOWSTYLES_DIALOG	102
 #define IDD_ABOUTBOX			103
-#define IDM_ABOUT				104
-#define IDM_EXIT				105
-#define IDI_FANCYZONESWINDOWSTYLES			107
-#define IDI_SMALL				108
-#define IDC_FANCYZONESWINDOWSTYLES			109
-#define IDC_MYICON				2
+#define IDI_WINDOWSTYLESICON			107
+#define IDI_SMALLICON				108
+#define IDC_WINDOWSTYLES			109
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
 #endif
