@@ -214,7 +214,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 }
             }
         }
-        
+
         /// <summary>
         /// Add a "0" if the first query character is "."
         /// </summary>
