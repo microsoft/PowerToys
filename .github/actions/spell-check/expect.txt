@@ -389,6 +389,7 @@ DComposition
 ddf
 Deact
 debian
+debugbreak
 DECLAR
 declspec
 decltype
@@ -936,6 +937,7 @@ IRegistration
 IRegistry
 IReloadable
 IRepository
+IResource
 IResult
 ISavable
 isbi
@@ -975,6 +977,7 @@ IView
 IVirtual
 IWeb
 IWIC
+IWindow
 IWindows
 IWork
 IXaml
@@ -1527,7 +1530,6 @@ powerlauncher
 powerpreview
 powerrename
 POWERRENAMETEST
-POWERRENAMEUIHOST
 powertoy
 powertoysinterop
 powertoyssetup
@@ -1690,6 +1692,7 @@ RESOURCEID
 RESTORESIZE
 RESTORETOMAXIMIZED
 restrictedcapabilities
+restrictederrorinfo
 resultlist
 resw
 resx
@@ -1996,6 +1999,7 @@ TApplied
 targ
 TARGETAPPHEADER
 TARGETDIR
+targetentrypoint
 TARGETHEADER
 targetnametoken
 targetsize
