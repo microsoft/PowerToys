@@ -1526,7 +1526,6 @@ powerlauncher
 powerpreview
 powerrename
 POWERRENAMETEST
-POWERRENAMEUIHOST
 powertoy
 powertoysinterop
 powertoyssetup
