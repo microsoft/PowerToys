@@ -1311,6 +1311,7 @@ NCPAINT
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
 NCRBUTTONUP
+NCRENDERING
 NDEBUG
 Ndombe
 ndp
@@ -2256,6 +2257,8 @@ WINDOWSBUILDNUMBER
 Windowscodecs
 windowsdesktop
 windowssearch
+WINDOWSTYLES
+WINDOWSTYLESICON
 windowsx
 windowwalker
 winerror
