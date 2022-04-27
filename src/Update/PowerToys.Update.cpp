@@ -169,15 +169,15 @@ bool InstallNewVersionStage2(std::wstring installer_path, std::wstring_view inst
         }
     }
 
-    // Delete only .msi and .exe
-    // Skip the installer if installation failed
     for (const auto& entry : fs::directory_iterator(updating::get_pending_updates_path()))
     {
         auto entryPath = entry.path().wstring();
         std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
 
+        // Delete only .msi and .exe
         if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
         {
+            // Skipping current installer in case of failed update
             if (installer_path.find(entryPath) != std::string::npos && !success)
             {
                 continue;
