@@ -626,7 +626,7 @@
     <comment>File type, do not translate</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Description" xml:space="preserve">
-    <value>.cpp, .py, .json, .xml, .csproj etc.</value>
+    <value>.cpp, .py, .json, .xml, .csproj, ...</value>
     <comment>File extensions should not be altered</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
