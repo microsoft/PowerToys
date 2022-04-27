@@ -77,6 +77,25 @@ steps:
     maximumCpuCount: true
 
 - task: NuGetCommand@2
+  displayName: Restore NuGet packages for WindowStylesReportTool.sln
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: tools\WindowStylesReportTool\WindowStylesReportTool.sln
+    restoreDirectory: '$(Build.SourcesDirectory)\tools\WindowStylesReportTool\packages'
+
+- task: VSBuild@1
+  displayName: 'Build WindowStylesReportTool.sln'
+  inputs:
+    solution: '**\WindowStylesReportTool.sln'
+    vsVersion: 17.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+    maximumCpuCount: true
+
+- task: NuGetCommand@2
   displayName: Restore NuGet packages for PowerToysSetup.sln
   inputs:
     command: restore
