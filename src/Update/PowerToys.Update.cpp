@@ -169,13 +169,20 @@ bool InstallNewVersionStage2(std::wstring installer_path, std::wstring_view inst
         }
     }
 
+    // Delete only .msi and .exe
+    // Skip the installer if installation failed
     for (const auto& entry : fs::directory_iterator(updating::get_pending_updates_path()))
     {
         auto entryPath = entry.path().wstring();
         std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
 
-        if ((entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe")) && installer_path.find(entryPath) == std::string::npos)
+        if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
         {
+            if (installer_path.find(entryPath) != std::string::npos && !success)
+            {
+                continue;
+            }
+
             std::error_code err;
             fs::remove(entry, err);
             if (err.value())
@@ -188,13 +195,6 @@ bool InstallNewVersionStage2(std::wstring installer_path, std::wstring_view inst
     if (!success)
     {
         return false;
-    }
-
-    std::error_code err;
-    fs::remove(installer_path, err);
-    if (err.value())
-    {
-        Logger::warn("Failed to delete installer. {}", err.message());
     }
 
     UpdateState::store([&](UpdateState& state) {
