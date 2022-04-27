@@ -310,6 +310,18 @@ void LogInfo(HWND window)
     }
 
     Logger::log(L"Window: {}", app);
+
+    WCHAR className[256];
+    auto classNameLength = GetClassName(window, className, sizeof(className));
+    if (classNameLength > 0)
+    {
+        Logger::log(L"Class: {}", className);
+    }
+    else
+    {
+        Logger::log(L"GetClassName error: {}", get_last_error_or_default(GetLastError()));   
+    }
+    
     Logger::log(L"");
 
     LogStyles(window);
