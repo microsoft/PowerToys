@@ -616,6 +616,9 @@
             <Component Id="WebcamReportTool_exe" Win64="yes">
                 <File Source="$(var.BinDir)WebcamReportTool\PowerToys.WebcamReportTool.exe" Id="WebcamReportTool.exe" Checksum="yes" />
             </Component>
+			<Component Id="WindowStylesReportTool_exe" Win64="yes">
+				<File Source="$(var.BinDir)WindowStylesReportTool\PowerToys.WindowStylesReportTool.exe" Id="WindowStylesReportTool.exe" Checksum="yes" />
+			</Component>
         </DirectoryRef>
 
         <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinDir)modules\">
@@ -1049,6 +1052,7 @@
         <ComponentGroup Id="ToolComponents" Directory="ToolsFolder">
             <ComponentRef Id="BugReportTool_exe" />
             <ComponentRef Id="WebcamReportTool_exe" />
+			<ComponentRef Id="WindowStylesReportTool_exe" />
         </ComponentGroup>
     </Fragment>
 

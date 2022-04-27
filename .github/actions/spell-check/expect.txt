@@ -527,6 +527,7 @@ enum
 EOAC
 eol
 epicgames
+epo
 Eqn
 ERASEBKGND
 EREOF
@@ -574,6 +575,7 @@ fallthrough
 fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+FANCYZONESWINDOWSTYLES
 Farbraum
 Faroe
 FARPROC
@@ -695,6 +697,7 @@ helptext
 Heure
 HEVC
 hfile
+HFONT
 hglobal
 hhk
 HHmmss
@@ -1309,6 +1312,7 @@ NCPAINT
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
 NCRBUTTONUP
+NCRENDERING
 NDEBUG
 Ndombe
 ndp
@@ -2254,6 +2258,8 @@ WINDOWSBUILDNUMBER
 Windowscodecs
 windowsdesktop
 windowssearch
+WINDOWSTYLES
+WINDOWSTYLESICON
 windowsx
 windowwalker
 winerror
