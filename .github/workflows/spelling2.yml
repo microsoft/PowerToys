@@ -36,6 +36,7 @@ jobs:
         config: .github/actions/spell-check
         suppress_push_for_open_pull_request: 1
         post_comment: 0
+        dictionary_source_prefixes: '{"cspell": "https://raw.githubusercontent.com/check-spelling/cspell-dicts/master/dictionaries/"}'
         extra_dictionaries:
           cspell:filetypes/filetypes.txt
           cspell:html/html.txt
