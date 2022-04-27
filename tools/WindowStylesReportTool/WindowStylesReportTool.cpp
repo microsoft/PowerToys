@@ -309,6 +309,7 @@ void LogInfo(HWND window)
         app = processPath.substr(pos + 1);
     }
 
+    Logger::log(L"Timestamp: {}", std::chrono::system_clock::now());
     Logger::log(L"Window: {}", app);
 
     WCHAR className[256];
