@@ -406,9 +406,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
 
-            auto hFont = (HFONT)GetStockObject(DEVICE_DEFAULT_FONT);
-            SelectObject(hdc, hFont);
-
             LPCWSTR text = L"Please select the target window (using a mouse or Alt+Tab), \r\nand press Ctrl+Alt+S to capture its styles. \r\nYou can find the output file \"window_styles.txt\" on your desktop.";
             RECT rc{0,50,600,200};
             DrawText(hdc, text, (int)wcslen(text), &rc, DT_CENTER | DT_WORDBREAK);
