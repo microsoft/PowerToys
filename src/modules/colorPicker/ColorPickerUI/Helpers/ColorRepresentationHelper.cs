@@ -262,7 +262,7 @@ namespace ColorPicker.Helpers
             y = Math.Round(y * 100, 4);
             z = Math.Round(z * 100, 4);
 
-            return $"xyz({x.ToString(CultureInfo.InvariantCulture)}" +
+            return $"XYZ({x.ToString(CultureInfo.InvariantCulture)}" +
                    $", {y.ToString(CultureInfo.InvariantCulture)}" +
                    $", {z.ToString(CultureInfo.InvariantCulture)})";
         }

@@ -23,7 +23,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow(ColorRepresentationType.HWB, "hwb(0, 0%, 100%)")]
         [DataRow(ColorRepresentationType.RGB, "rgb(0, 0, 0)")]
         [DataRow(ColorRepresentationType.CIELAB, "CIELab(0, 0, 0)")]
-        [DataRow(ColorRepresentationType.CIEXYZ, "xyz(0, 0, 0)")]
+        [DataRow(ColorRepresentationType.CIEXYZ, "XYZ(0, 0, 0)")]
         [DataRow(ColorRepresentationType.VEC4, "(0f, 0f, 0f, 1f)")]
         [DataRow(ColorRepresentationType.DecimalValue, "0")]
 
