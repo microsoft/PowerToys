@@ -42,7 +42,7 @@ std::filesystem::path get_desktop_path()
 // Get the executable path or module name for modern apps
 inline std::wstring get_process_path(DWORD pid) noexcept
 {
-    auto process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, TRUE, pid);
+    auto process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, TRUE, pid);
     std::wstring name;
     if (process != INVALID_HANDLE_VALUE)
     {
