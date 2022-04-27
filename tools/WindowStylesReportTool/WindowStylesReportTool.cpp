@@ -317,7 +317,7 @@ void LogInfo(HWND window)
     LogDwmAttributes(window);
     LogVirtualDesktopInfo(window);
 
-    Logger::log(L"---------------------------------------");
+    Logger::log(L"=======================================");
     Logger::log(L"");
 }
 
