@@ -20,7 +20,7 @@
               SuppressRepair="yes" />
         </BootstrapperApplicationRef>
 
-        <util:FileSearch Variable="HasDotnet603" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\6.0.3\System.Xaml.dll" Result="exists" />
+        <util:FileSearch Variable="HasDotnet604" Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App\6.0.4\System.Xaml.dll" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
@@ -42,11 +42,11 @@
 
         <Chain>
             <ExePackage
-                Name="windowsdesktop-runtime-6.0.3-win-x64.exe"
+                Name="windowsdesktop-runtime-6.0.4-win-x64.exe"
                 Compressed="no"
                 Id="DotnetRuntime6"
-                DetectCondition="HasDotnet603"
-                DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/7f3a766e-9516-4579-aaf2-2b150caa465c/d57665f880cdcce816b278a944092965/windowsdesktop-runtime-6.0.3-win-x64.exe"
+                DetectCondition="HasDotnet604"
+                DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/f13d7b5c-608f-432b-b7ec-8fe84f4030a1/5e06998f9ce23c620b9d6bac2dae6c1d/windowsdesktop-runtime-6.0.4-win-x64.exe"
                 InstallCommand="/install /quiet /norestart"
                 RepairCommand="/repair /passive /norestart"
                 Permanent="yes"
@@ -54,11 +54,11 @@
                 UninstallCommand="/uninstall /quiet /norestart">
                 <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
-                    Description="Microsoft Windows Desktop Runtime - 6.0.3 (x64)"
-                    ProductName="Microsoft Windows Desktop Runtime - 6.0.3 (x64)"
-                    Size="57153808"
-                    Version="6.0.3.31024"
-                    Hash="85EB71B760EBA108348824A4928ED2BA9775BE76" />
+                    Description="Microsoft Windows Desktop Runtime - 6.0.4 (x64)"
+                    ProductName="Microsoft Windows Desktop Runtime - 6.0.4 (x64)"
+                    Size="57801256"
+                    Version="6.0.4.31115"
+                    Hash="BD514FC9A2F00577BCBFFDFF38453001AA006D97" />
             </ExePackage>
             <ExePackage
                 Name="MicrosoftEdgeWebview2Setup.exe"
