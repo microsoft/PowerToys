@@ -1,5 +1,7 @@
 #include "SerializedSharedMemory.h"
-
+#ifdef _M_ARM64
+#define _mm_pause() __yield();
+#endif
 inline char* SerializedSharedMemory::lock_flag_addr() noexcept
 {
     return reinterpret_cast<char*>(_memory._data + _memory._size);
