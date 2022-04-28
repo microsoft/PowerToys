@@ -13,8 +13,8 @@ The Windows settings Plugin allows users to search the Windows settings.
 
 ## How to add a new Windows Setting or change one
 
-All Windows settings are located in `WindowsSettings.json` in root folder of the project.
-The `WindowsSettings.json` use a JSON schema file that make it easier to edit it.
+All Windows settings are located in _WindowsSettings.json_ in root folder of the project.
+The _WindowsSettings.json_ use a JSON schema file that make it easier to edit it.
 
 | Key                 | Optional | Value type        | String prefix |
 | ------------------- | -------- | ----------------- | ------------- |
@@ -28,7 +28,7 @@ The `WindowsSettings.json` use a JSON schema file that make it easier to edit it
 | `DeprecatedInBuild` | Yes      | Integer           |               |
 | `ShowAsFirstResult` | Yes      | Boolean           |               |
 
-A minimum entry for the `WindowsSettings.json` looks like:
+A minimum entry for the _WindowsSettings.json_ looks like:
 
 ```json
   {
@@ -38,7 +38,7 @@ A minimum entry for the `WindowsSettings.json` looks like:
   }
 ```
 
-A full entry for the `WindowsSettings.json` looks like:
+A full entry for the _WindowsSettings.json_ looks like:
 
 ```json
   {
@@ -87,6 +87,7 @@ Each score will decreased by one when a condition match.
 | x.       | no condition match                                                | Low score    |
 
 ### Remarks
+
 * For each score condition we check if the property "ShowAsFirstResult" of the setting is true. If yes we use the firstResultScore instead of condition`s score.
 
 ## Important for developers
@@ -107,7 +108,7 @@ Each score will decreased by one when a condition match.
 
 ### Interfaces used by this plugin
 
-The plugin use only these interfaces (all inside the `Main.cs`):
+The plugin use only these interfaces (all inside the _Main.cs_):
 
 * `Wox.Plugin.IPlugin`
 * `Wox.Plugin.IContextMenu`
@@ -117,22 +118,22 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 
 | File                                  | Content                                                                 |
 | ------------------------------------- | ----------------------------------------------------------------------- |
-| `Classes\WindowsSetting.cs`           | A class that represent one Windows setting                              |
-| `Classes\WindowsSettings.cs`          | A wrapper class that only contains a list with Windows settings (see 1) |
-| `Helper\ContextMenuHelper.cs`         | All functions to build the context menu (for each result entry)         |
-| `Helper\JsonSettingsListHelper.cs`    | All functions to load the windows settings from a JSON file             |
-| `Helper\ResultHelper.cs`              | All functions to convert internal results into WOX results              |
-| `Helper\TranslationHelper.cs`         | All functions to translate the result in the surface language           |
-| `Helper\UnsupportedSettingsHelper.cs` | All functions to filter not supported Windows settings out              |
-| `Helper\WindowsSettingsPathHelper.cs` | All functions to build the area paths                                   |
-| `Images\WindowsSettings.dark.png`     | Symbol for the results for the dark theme                               |
-| `Images\WindowsSettings.light.png`    | Symbol for the results for the light theme                              |
-| `Properties\Resources.Designer.resx`  | File that contain all translatable keys                                 |
-| `Properties\Resources.resx`           | File that contain all translatable strings in the neutral language      |
-| `GlobalSuppressions.cs`               | Code suppressions (no real file, linked via *.csproj)                   |
-| `Main.cs`                             | Main class, the only place that implement the WOX interfaces            |
-| `plugin.json`                         | All meta-data for this plugin                                           |
-| `StyleCop.json`                       | Code style (no real file, linked via *.csproj)                          |
+| Classes\WindowsSetting.cs           | A class that represent one Windows setting                              |
+| Classes\WindowsSettings.cs          | A wrapper class that only contains a list with Windows settings (see 1) |
+| Helper\ContextMenuHelper.cs         | All functions to build the context menu (for each result entry)         |
+| Helper\JsonSettingsListHelper.cs    | All functions to load the windows settings from a JSON file             |
+| Helper\ResultHelper.cs              | All functions to convert internal results into WOX results              |
+| Helper\TranslationHelper.cs         | All functions to translate the result in the surface language           |
+| Helper\UnsupportedSettingsHelper.cs | All functions to filter not supported Windows settings out              |
+| Helper\WindowsSettingsPathHelper.cs | All functions to build the area paths                                   |
+| Images\WindowsSettings.dark.png     | Symbol for the results for the dark theme                               |
+| Images\WindowsSettings.light.png    | Symbol for the results for the light theme                              |
+| Properties\Resources.Designer.resx  | File that contain all translatable keys                                 |
+| Properties\Resources.resx           | File that contain all translatable strings in the neutral language      |
+| GlobalSuppressions.cs               | Code suppressions (no real file, linked via *.csproj)                   |
+| Main.cs                             | Main class, the only place that implement the WOX interfaces            |
+| plugin.json                         | All meta-data for this plugin                                           |
+| StyleCop.json                       | Code style (no real file, linked via *.csproj)                          |
 
 1. We need this extra wrapper class to make it possible that the JSON file can have and use a JSON schema file.
 Because the JSON file must have a object as root type, instead of a array.

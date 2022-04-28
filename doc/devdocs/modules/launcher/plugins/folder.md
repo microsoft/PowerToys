@@ -1,4 +1,5 @@
 # Folder Plugin
+
 The Folder plugin is used to navigate the directory structure and display the sub-folders and files within a folder.
 ![Image of Folder plugin](/doc/images/launcher/plugins/folder.png)
 
@@ -17,4 +18,5 @@ There are two types of Folder Processors, based on the type of information they 
 2. [InternalDirectoryProcessor](src/modules/launcher/Plugins/Microsoft.Plugin.Folder/InternalDirectoryProcessor.cs) - This processor is used to retrieve the files and folders located within the current drive or shared folder.
 
 ## Score
+
 The first result is of score **500** and the following results are scored **10**.

@@ -67,17 +67,17 @@ A full entry for the `TimeZone.json` looks like:
 
 ### Remarks
 
-* At minimum one of the optional value should be filled.
+At minimum one of the optional value should be filled.
 
 ## Scores
 
-* Scores are not used
+Scores are not used
 
 ## Important for developers
 
 ### General
 
-* The assembly name is cached into `_assemblyName` (to avoid to many calls of `Assembly.GetExecutingAssembly()`)
+The assembly name is cached into `_assemblyName` (to avoid to many calls of `Assembly.GetExecutingAssembly()`)
 
 ## Microsoft.PowerToys.Run.Plugin.TimeZone project
 
@@ -103,25 +103,25 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 
 | File                                   | Content                                                                 |
 | -------------------------------------- | ----------------------------------------------------------------------- |
-| `Classes\TimeZoneProperties.cs`        | A class that represent one time zone                                    |
-| `Classes\TimeZones.cs`                 | A wrapper class that only contains a list with time zones  (see 1)      |
-| `Classes\TimeZoneSettings.cs`          | A class that contains all settings for the Time Zone plugin             |
-| `Extensions\StringBuilderExtension.cs` | Extension methods for `StringBuilder` Objects                           |
-| `Helper\ContextMenuHelper.cs`          | All functions to build the context menu (for each result entry)         |
-| `Helper\JsonHelper.cs`                 | All functions to load the time zones from a JSON file                   |
-| `Helper\ResultHelper.cs`               | All functions to convert internal results into WOX results              |
-| `Helper\TranslationHelper.cs`          | All functions to translate the result in the surface language           |
-| `Images\timeZone.dark.png`             | Symbol for the results for the dark theme                               |
-| `Images\timeZone.light.png`            | Symbol for the results for the light theme                              |
-| `Properties\Resources.Designer.resx`   | File that contain all translatable keys                                 |
-| `Properties\Resources.resx`            | File that contain all translatable strings in the neutral language      |
-| `GlobalSuppressions.cs`                | Code suppressions (no real file, linked via *.csproj)                   |
-| `Main.cs`                              | Main class, the only place that implement the WOX interfaces            |
-| `plugin.json`                          | All meta-data for this plugin                                           |
-| `StyleCop.json`                        | Code style (no real file, linked via *.csproj)                          |
-| `timezones.json`                       | File that contains all time zone information                            |
-| `timeZones.schema.json`                | JSON schema for `timezones.json`                                        |
-| `StyleCop.json`                        | Code style (no real file, linked via *.csproj)                          |
+| Classes\TimeZoneProperties.cs        | A class that represent one time zone                                    |
+| Classes\TimeZones.cs                 | A wrapper class that only contains a list with time zones  (see 1)      |
+| Classes\TimeZoneSettings.cs          | A class that contains all settings for the Time Zone plugin             |
+| Extensions\StringBuilderExtension.cs | Extension methods for `StringBuilder` Objects                           |
+| Helper\ContextMenuHelper.cs          | All functions to build the context menu (for each result entry)         |
+| Helper\JsonHelper.cs                 | All functions to load the time zones from a JSON file                   |
+| Helper\ResultHelper.cs               | All functions to convert internal results into WOX results              |
+| Helper\TranslationHelper.cs          | All functions to translate the result in the surface language           |
+| Images\timeZone.dark.png             | Symbol for the results for the dark theme                               |
+| Images\timeZone.light.png            | Symbol for the results for the light theme                              |
+| Properties\Resources.Designer.resx   | File that contain all translatable keys                                 |
+| Properties\Resources.resx            | File that contain all translatable strings in the neutral language      |
+| GlobalSuppressions.cs                | Code suppressions (no real file, linked via *.csproj)                   |
+| Main.cs                              | Main class, the only place that implement the WOX interfaces            |
+| plugin.json                          | All meta-data for this plugin                                           |
+| StyleCop.json                        | Code style (no real file, linked via *.csproj)                          |
+| timezones.json                       | File that contains all time zone information                            |
+| timeZones.schema.json                | JSON schema for timezones.json                                        |
+| StyleCop.json                        | Code style (no real file, linked via *.csproj)                          |
 
 1. We need this extra wrapper class to make it possible that the JSON file can have and use a JSON schema file.
 Because the JSON file must have a object as root type, instead of a array.
@@ -140,9 +140,9 @@ Because the JSON file must have a object as root type, instead of a array.
 
 #### Packages
 
-| Package                                                                               | Version |
-| ------------------------------------------------------------------------------------- | ------- |
-| [StyleCop.Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)          | 1.1.118 |
+| Package | Version |
+|--|--|
+| [StyleCop.Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers) | 1.1.118 |
 
 #### Projects
 
