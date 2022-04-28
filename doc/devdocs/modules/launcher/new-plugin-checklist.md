@@ -3,7 +3,7 @@
 - [ ] The plugin is a project under `modules\launcher\Plugins`
 - [ ] Microsoft plugin project name pattern: `Microsoft.PowerToys.Run.Plugin.{PluginName}`
 - [ ] Community plugin project name pattern: `Community.PowerToys.Run.Plugin.{PluginName}`
-- [ ] [`GlobalSuppressions.cs`](/src/codeAnalysis/GlobalSuppressions.cs) and [`StyleCop.json`](/src/codeAnalysis/StyleCop.json) have to be included in the plugin project so it follows PowerToys code guidelines
+- [ ] [GlobalSuppressions.cs](/src/codeAnalysis/GlobalSuppressions.cs) and [StyleCop.json](/src/codeAnalysis/StyleCop.json) have to be included in the plugin project so it follows PowerToys code guidelines
 - [ ] The project file should import `Version.props` and specify `<Version>$(Version).0</Version>`
 - [ ] Make sure `*.csproj` specify only x64 platform target
 - [ ] The plugin has to contain a `plugin.json` file of the following format in its root folder
@@ -26,9 +26,9 @@
 
 - [ ] Do not use plugin name or PowerToys as prefixes for entities inside of the plugin project
 - [ ] The plugin has to have Unit tests. Use MSTest framework
-- [ ] Plugin's output code and assets have to be included in the installer [`Product.wxs`](/installer/PowerToysSetup/Product.wxs)
+- [ ] Plugin's output code and assets have to be included in the installer [Product.wxs](/installer/PowerToysSetup/Product.wxs)
 - [ ] Test the plugin with a local build. Build the installer, install, check that the plugin works as expected
-- [ ] All plugin's binaries have to be included in the signed build [`pipeline.user.windows.yml`](/.pipelines/pipeline.user.windows.yml)
+- [ ] All plugin's binaries have to be included in the signed build [pipeline.user.windows.yml](/.pipelines/pipeline.user.windows.yml)
 - [ ] The plugin target framework has to be .NET Core 3.1. All dependencies have to have .NET 5 version
 
 Some localization steps can only be done after the first pass by the localization team to provide the localized resources.

@@ -8,14 +8,14 @@ Note: We refer to base application without plugins as PowerLauncher, which is sa
 
 ## UI
 
-PowerToys Run UI is written in the WPF framework. The UI code is present in the PowerLauncher project and is spanned across three high-level components: [`MainWindow.xaml`](/src/modules/launcher/PowerLauncher/MainWindow.xaml), [`LauncherControl.xaml`](/src/modules/launcher/PowerLauncher/LauncherControl.xaml) and [`ResultList.xaml`](/src/modules/launcher/PowerLauncher/LauncherControl.xaml). These components are discussed below.
+PowerToys Run UI is written in the WPF framework. The UI code is present in the PowerLauncher project and is spanned across three high-level components: [MainWindow.xaml](/src/modules/launcher/PowerLauncher/MainWindow.xaml), [LauncherControl.xaml](/src/modules/launcher/PowerLauncher/LauncherControl.xaml) and [ResultList.xaml](/src/modules/launcher/PowerLauncher/LauncherControl.xaml). These components are discussed below.
 
 ![Image of PowerToys Run UI](/doc/images/launcher/pt_run_ui.png)
 **Fig 1: PowerToys Run UI architecture**
 
-1. **[`MainWindow.xaml`](/src/modules/launcher/PowerLauncher/MainWindow.xaml)**: This is the outermost-level UI control. It is composed of lower-level UI components such as [`LauncherControl.xaml`](/src/modules/launcher/PowerLauncher/LauncherControl.xaml) and [`ResultList.xaml`](/src/modules/launcher/PowerLauncher/LauncherControl.xaml). The corresponding code-behind file implements all the UI related functionalities such as autosuggest, key-bindings, toggling visibility of WPF window and animations.
-2. **[`LauncherControl.xaml`](/src/modules/launcher/PowerLauncher/LauncherControl.xaml)**: This control implements the UI component for editing query text.(marked in red in Fig 1) It consists of two overlapping WPF controls, `TextBox` and `TextBlock`. The outer `TextBox` is used for editing query whereas the inner `TextBlock` is used to display autosuggest text.
-3. **[`ResultList.xaml`](/src/modules/launcher/PowerLauncher/LauncherControl.xaml)**: This control implements the UI component for displaying results (marked in green in Fig 1). It consists of a `ListView` WPF control with a custom `ItemTemplate` to display application logo, name, tooltip text, and context menu.
+1. **[MainWindow.xaml](/src/modules/launcher/PowerLauncher/MainWindow.xaml)**: This is the outermost-level UI control. It is composed of lower-level UI components such as [LauncherControl.xaml](/src/modules/launcher/PowerLauncher/LauncherControl.xaml) and [ResultList.xaml](/src/modules/launcher/PowerLauncher/LauncherControl.xaml). The corresponding code-behind file implements all the UI related functionalities such as autosuggest, key-bindings, toggling visibility of WPF window and animations.
+2. **[LauncherControl.xaml](/src/modules/launcher/PowerLauncher/LauncherControl.xaml)**: This control implements the UI component for editing query text.(marked in red in Fig 1) It consists of two overlapping WPF controls, `TextBox` and `TextBlock`. The outer `TextBox` is used for editing query whereas the inner `TextBlock` is used to display autosuggest text.
+3. **[ResultList.xaml](/src/modules/launcher/PowerLauncher/LauncherControl.xaml)**: This control implements the UI component for displaying results (marked in green in Fig 1). It consists of a `ListView` WPF control with a custom `ItemTemplate` to display application logo, name, tooltip text, and context menu.
 
 ## Data flow
 
@@ -29,7 +29,7 @@ Data flow between View and ViewModel follows typical `MVVM` scheme. Properties i
 
 ### Flow of data between ViewModels and Plugins(Model)
 
-PowerLauncher interact with plugins using [`IPlugin`](/src/modules/launcher/Wox.Plugin/IPlugin.cs) and `IDelayedExecutionPlugin` interface. [`IPlugin`](/src/modules/launcher/Wox.Plugin/IPlugin.cs) is used for initialization and making queries which are fast (typically return results in less than 100ms).[`IDelayedExecutionPlugin`](/src/modules/launcher/Wox.Plugin/IDelayedExecutionPlugin.cs) is used for long-running queries and is implemented only when required. For example, [`IDelayedExecutionPlugin`](/src/modules/launcher/Wox.Plugin/IDelayedExecutionPlugin.cs) is implemented by indexer plugin for searching files with names of form \*abc\*.
+PowerLauncher interact with plugins using [IPlugin](/src/modules/launcher/Wox.Plugin/IPlugin.cs) and `IDelayedExecutionPlugin` interface. [IPlugin](/src/modules/launcher/Wox.Plugin/IPlugin.cs) is used for initialization and making queries which are fast (typically return results in less than 100ms).[IDelayedExecutionPlugin](/src/modules/launcher/Wox.Plugin/IDelayedExecutionPlugin.cs) is used for long-running queries and is implemented only when required. For example, [IDelayedExecutionPlugin](/src/modules/launcher/Wox.Plugin/IDelayedExecutionPlugin.cs) is implemented by indexer plugin for searching files with names of form \*abc\*.
 
 ```cs
     public interface IPlugin
@@ -53,4 +53,4 @@ PowerLauncher interact with plugins using [`IPlugin`](/src/modules/launcher/Wox.
 
 ### Requesting services from PowerLauncher
 
-Plugins could use the [`IPublicAPI`](/src/modules/launcher/Wox.Plugin/IPublicAPI.cs) interface to request services such as getting the current theme (for deciding logo background), displaying messages to the user, and toggling the visibility of PowerLauncher.
+Plugins could use the [IPublicAPI](/src/modules/launcher/Wox.Plugin/IPublicAPI.cs) interface to request services such as getting the current theme (for deciding logo background), displaying messages to the user, and toggling the visibility of PowerLauncher.

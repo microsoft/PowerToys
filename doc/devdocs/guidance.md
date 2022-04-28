@@ -6,7 +6,7 @@ In order to support localization **YOU SHOULD NOT** have hardcoded UI display st
 
 ### For CPP
 
-Use [`StringTable` resource][String Table] to store the strings and resource header file(`resource.h`) to store Id's linked to the UI display string. Add the strings with Id's referenced from the header file to the resource-definition script file. You can use [Visual Studio Resource Editor][VS Resource Editor] to create and manage resource files.
+Use [StringTable resource][String Table] to store the strings and resource header file(`resource.h`) to store Id's linked to the UI display string. Add the strings with Id's referenced from the header file to the resource-definition script file. You can use [Visual Studio Resource Editor][VS Resource Editor] to create and manage resource files.
 
 - `resource.h`:
 
@@ -35,7 +35,7 @@ std::wstring GET_RESOURCE_STRING(IDS_MODULE_DISPLAYNAME)
 
 ### For C\#
 
-Use [XML resource file (.resx)][Resx Files] to store the UI display strings and [`Resource Manager`][Resource Manager] to consume those strings in the code. You can use [Visual Studio][Resx Files VS] to create and manage XML resources files.
+Use [XML resource file (.resx)][Resx Files] to store the UI display strings and [Resource Manager`][Resource Manager] to consume those strings in the code. You can use [Visual Studio][Resx Files VS] to create and manage XML resources files.
 
 - `Resources.resx`
 
@@ -46,14 +46,14 @@ Use [XML resource file (.resx)][Resx Files] to store the UI display strings and 
   </data>
 ```
 
-- Use [`Resource Manager`][Resource Manager] to consume strings in code.
+- Use [Resource Manager`][Resource Manager] to consume strings in code.
 
 ```csharp
 System.Resources.ResourceManager manager = new System.Resources.ResourceManager(baseName, assembly);
 string validUIDisplayString = manager.GetString("ValidUIDisplayString", resourceCulture);
 ```
 
-In case of Visual Studio is used to create the resource file. Simply use the `Resources` class in auto-generated `Resources.Designer.cs` file to access the strings which encapsulate the [`Resource Manager`][Resource Manager] logic.
+In case of Visual Studio is used to create the resource file. Simply use the `Resources` class in auto-generated `Resources.Designer.cs` file to access the strings which encapsulate the [Resource Manager`][Resource Manager] logic.
 
 ```csharp
 string validUIDisplayString = Resources.ValidUIDisplayString;

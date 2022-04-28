@@ -125,7 +125,7 @@ Specifications for the [PowerToys settings API](/doc/devdocs/settings.md).
 
 ## Implementation details
 
-### [`Runner`](runner.md)
+### [Runner](runner.md)
 
 The PowerToys Runner contains the project for the PowerToys.exe executable.
 It's responsible for:
@@ -137,14 +137,14 @@ It's responsible for:
 
 ![Image of the tray icon](/doc/images/runner/tray.png)
 
-### [`Interface`](modules/interface.md)
+### [Interface](modules/interface.md)
 
 Definition of the interface used by the [runner](/src/runner) to manage the PowerToys. All PowerToys must implement this interface.
 
-### [`Common`](common.md)
+### [Common](common.md)
 
 The common lib, as the name suggests, contains code shared by multiple PowerToys components and modules, e.g. [json parsing](/src/common/json.h) and [IPC primitives](/src/common/two_way_pipe_message_ipc.h).
 
-### [`Settings`](settingsv2/)
+### [Settings](settingsv2/)
 
 Settings v2 is our current settings implementation. Please head over to the dev docs that goes into the current settings system.

@@ -9,7 +9,7 @@ The following must be kept in mind regarding compatibility with settings v1 and 
 
 ## 2. Communication with runner
 
-- The status of each of the modules is communicated with the runner in the form of a json object. The names of all the powerToys is set in the [`EnableModules.cs`](src/settings-ui/Settings.UI.Library/EnabledModules.cs) file. The `JsonPropertyName` must not be changed to ensure that the information is dispatched properly to all the modules by the runner.
+- The status of each of the modules is communicated with the runner in the form of a json object. The names of all the powerToys is set in the [EnableModules.cs](src/settings-ui/Settings.UI.Library/EnabledModules.cs) file. The `JsonPropertyName` must not be changed to ensure that the information is dispatched properly to all the modules by the runner.
 
 ## ImageResizer anomaly
 

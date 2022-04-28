@@ -1,6 +1,6 @@
 # How to integrate new MSIX module with PowerToys Settings and WiX installer
 
-[`issue_11705_with_example` branch](https://github.com/microsoft/PowerToys/tree/issue_11705_with_example) contains HelloWorld UWP C# MSIX application which reads its module settings and is installed along PowerToys.
+["issue_11705_with_example" branch](https://github.com/microsoft/PowerToys/tree/issue_11705_with_example) contains HelloWorld UWP C# MSIX application which reads its module settings and is installed along PowerToys.
 
 ## Steps
 

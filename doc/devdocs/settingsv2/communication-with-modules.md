@@ -3,7 +3,7 @@
 ## Through runner
 
 - The settings process communicates changes in the UI to most modules using the runner through delegates.
-- More details on this are mentioned in [`runner-ipc.md`](settingsv2/runner-ipc.md).
+- More details on this are mentioned in [runner-ipc.md](settingsv2/runner-ipc.md).
 
 ## PT Run
 

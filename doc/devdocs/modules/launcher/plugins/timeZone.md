@@ -142,7 +142,7 @@ Because the JSON file must have a object as root type, instead of a array.
 
 | Package                                                                               | Version |
 | ------------------------------------------------------------------------------------- | ------- |
-| [`StyleCop.Analyzers`](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)          | 1.1.118 |
+| [StyleCop.Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)          | 1.1.118 |
 
 #### Projects
 
