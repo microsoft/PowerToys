@@ -9,7 +9,7 @@
 3. deploy HelloModule module and sign it with a self-signed certificate (don't forget to put it into a trusted store)
 4. build PowerToysSetup solution and install it
 
-Type HelloModule into Start Search and observe that it was installed:
+Type _HelloModule_ into Start Search and observe that it was installed:
 
 <img src="../images/msix/hello-module-start.png">
 
@@ -21,7 +21,7 @@ Open HelloModule:
 
 <img src="../images/msix/hello-module-screen.png">
 
-First time you press "Load Settings", it'll detect that it doesn't have permissions to access local file system and open its system settings window, toggle it there:
+First time you press **Load Settings**, it'll detect that it doesn't have permissions to access local file system and open its system settings window, toggle it there:
 
 <img src="../images/msix/hello-module-app-permissions.png">
 

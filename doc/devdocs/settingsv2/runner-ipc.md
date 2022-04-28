@@ -25,7 +25,7 @@ If any information has been modified by the user in the GeneralSettings page, th
 
 ## Receiving information from runner
 
-- The `ShellPage`object has a `IPCResponseHandleList` which is a list of functions which handle IPC responses.
+- The **ShellPage** object has a **IPCResponseHandleList** which is a list of functions which handle IPC responses.
 
 ```cs
     // receive IPC Message

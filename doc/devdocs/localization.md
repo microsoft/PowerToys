@@ -21,11 +21,11 @@
 
 The [Localization.XLoc](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/build-localization.cmd#L24-L25) tool is run on the repo root, and it checks for all occurrences of _LocProject.json_. Each localized project has a _LocProject.json_ file in the project root, which contains the location of the English resx file, list of languages for localization, and the output path where the localized resx files are to be copied to. In addition to this, some other parameters can be set, such as whether the language ID should be added as a folder in the file path or in the file name. When the CDPX pipeline is run, the localization team is notified of changes in the English resx files. For each project with localization enabled, a `loc` folder (see [loc](https://github.com/microsoft/PowerToys/tree/main/src/modules/launcher/Microsoft.Launcher/loc) for example) is created in the same directory as the _LocProject.json_ file. The folder contains language specific folders which in turn have a nested folder path equivalent to `OutputPath` in the _LocProject.json_. Each of these folders contain one _.lcl_ file. The _.lcl_ files contain the English resources along with their translation for that language. These are described in more detail [in the section below](#lcl-files). Once the `.resx` files are generated, they will be used during the **Build PowerToys** step for localized versions of the modules.
 
-Since the localization script requires certain nuget packages, the [restore-localization](https://github.com/microsoft/PowerToys/blob/main/.pipelines/restore-localization.cmd) script is run before running `build-localization` to install all the required packages. This script must [run in the `restore` step](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/pipeline.user.windows.yml#L37-L39) of pipeline because [the host is network isolated](https://onebranch.visualstudio.com/Pipeline/_wiki/wikis/Pipeline.wiki/2066/Consuming-Packages-in-a-CDPx-Pipelinhttps://onebranch.visualstudio.com/Pipeline/_wiki/wikis/Pipeline.wiki/2066/Consuming-Packages-in-a-CDPx-Pipeline?anchor=overview) at the `build` step. The [Toolset package source](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/pipeline.user.windows.yml#L23) is used for this.
+Since the localization script requires certain nuget packages, the [restore-localization](https://github.com/microsoft/PowerToys/blob/main/.pipelines/restore-localization.cmd) script is run before running **build-localization** to install all the required packages. This script must [run in the `restore` step](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/pipeline.user.windows.yml#L37-L39) of pipeline because [the host is network isolated](https://onebranch.visualstudio.com/Pipeline/_wiki/wikis/Pipeline.wiki/2066/Consuming-Packages-in-a-CDPx-Pipelinhttps://onebranch.visualstudio.com/Pipeline/_wiki/wikis/Pipeline.wiki/2066/Consuming-Packages-in-a-CDPx-Pipeline?anchor=overview) at the `build` step. The [Toolset package source](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/pipeline.user.windows.yml#L23) is used for this.
 
 The process and variables that can be tweaked on the pipeline are described in more detail [in this article on Visual Studio](https://onebranch.visualstudio.com/Pipeline/_wiki/wikis/Pipeline.wiki/290/Localization).
 
-The localized resource dlls for C# projects are added to the MSI only for build on the pipeline. This is done by checking if the [IsPipeline` variable is defined](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/installer/PowerToysSetup/Product.wxs#L804-L805), which gets defined before building the installer on the pipeline in [build-installer.cmd](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/.pipelines/build-installer.cmd#L4). This is done because the localized resx files are only present on the pipeline, and not having this check would result in the installer project failing to build locally.
+The localized resource dlls for C# projects are added to the MSI only for build on the pipeline. This is done by checking if the [IsPipeline variable is defined](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/installer/PowerToysSetup/Product.wxs#L804-L805), which gets defined before building the installer on the pipeline in [build-installer.cmd](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/.pipelines/build-installer.cmd#L4). This is done because the localized resx files are only present on the pipeline, and not having this check would result in the installer project failing to build locally.
 
 ### UWP Special case
 
@@ -37,7 +37,7 @@ UWP differs from this as it expects the resources to have the same _Resources.re
 
 For example: _path\en-us\Resources.resw_ for English and _path\fr-fr\Resources.resw_ for French.
 
-Since the pipeline generates it in this format, [a script is run](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/build-localization.cmd#L29-L31) to move these resw files to the correct format expected by all UWP projects. Currently the only UWP project is [Settings.UI](https://github.com/microsoft/PowerToys/tree/main/src/core/Settings.UI). The script used for moving the resources can be found in [move_uwp_resources]](https://github.com/microsoft/PowerToys/blob/main/tools/localization/move_uwp_resources.ps1). The equivalent full language IDs for each shortened language ID obtained from the pipeline has been hardcoded in the script.
+Since the pipeline generates it in this format, [a script is run](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/build-localization.cmd#L29-L31) to move these resw files to the correct format expected by all UWP projects. Currently the only UWP project is [Settings.UI](https://github.com/microsoft/PowerToys/tree/main/src/core/Settings.UI). The script used for moving the resources can be found in [move_uwp_resources](https://github.com/microsoft/PowerToys/blob/main/tools/localization/move_uwp_resources.ps1). The equivalent full language IDs for each shortened language ID obtained from the pipeline has been hardcoded in the script.
 
 ## Enabling localization on a new project
 
@@ -70,7 +70,7 @@ C++ projects do not support resx files, and instead use rc files along with _res
 
 If you already have a rc file, copy the string table to a separate txt file and run the [convert-stringtable-to-resx.ps1](https://github.com/microsoft/PowerToys/blob/main/tools/build/convert-stringtable-to-resx.ps1) script on it. This script is not very robust to input, and requires the data in a specific format, where `IDS_ResName L"ResourceValue"` and any number of spaces can be present in between. The script converts this file to the format expected by [resgen](https://docs.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert), which will convert it to _.resx_. The resource names are changed from all uppercase to title case, and the `IDS_` prefix is removed. Escape characters might have to be manually replaced, for example rc files would have escaped double quotes as `""`, so this should be replaced with just `"` before converting to the resx files.
 
-After generating the resx file, rename the existing _.rc_ and _.h_ files to _ProjName.base.rc_ and _resource.base.h_. In the rc file remove the string table which is to be localized, and in the _.h_ file remove all `#define`s corresponding to localized resources. In the _.vcxproj_ of the C++ project, add the following build event:
+After generating the resx file, rename the existing .rc and .h files to _ProjName.base.rc_ and _resource.base.h_. In the rc file remove the string table which is to be localized, and in the _.h_ file remove all `#define`s corresponding to localized resources. In the _.vcxproj_ of the C++ project, add the following build event:
 
 ```cpp
 <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
@@ -112,7 +112,7 @@ Since C# projects natively support resx files, the only step required here is to
 
 **Note:** Building with localized resources may cause a build warning "Referenced assembly 'mscorlib.dll' targets a different processor" which is a VS bug. More details can be found [in this issue](https://github.com/microsoft/PowerToys/issues/7269).
 
-**Note:** If a project needs to be migrated from XAML resources to resx, the easiest way to convert the resources would be to change to format to `=` separates resources by either manually (by Ctrl+H on a text editor), or by a script, and then running [resgen](https://docs.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) on `Developer Command Prompt for VS` to convert it to resx format.
+**Note:** If a project needs to be migrated from XAML resources to resx, the easiest way to convert the resources would be to change to format to `=` separated resources by either manually (by Ctrl+H on a text editor), or by a script, and then running [resgen](https://docs.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) on `Developer Command Prompt for VS` to convert it to resx format.
 
 ```
 <system:String x:Key="wox_plugin_calculator_plugin_name">Calculator</system:String>
@@ -124,7 +124,7 @@ to
 
 ```
 wox_plugin_calculator_plugin_name=Calculator
-wox_plugin_calculator_plugin_description=Allows to do mathematical calculations.(Try 5*3-2 in Wox)
+wox_plugin_calculator_plugin_description=Allows to do mathematical calculations. (Try 5*3-2 in Wox)
 wox_plugin_calculator_not_a_number=Not a number (NaN)
 ```
 

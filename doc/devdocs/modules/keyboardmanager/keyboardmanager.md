@@ -109,7 +109,7 @@ KBM uses two sets of settings files.
 
 - `originalKeys` stores the key/shortcut which is to be pressed for the remap, and `newKeys` stores the key/shortcut which is to be executed.
 - Both contain semi-colon separated virtual key codes. For `remapKeys`, `originalKeys` must have only one key code, whereas for `remapShortcuts` it must have atleast two key codes.
-- `inProcess` sub-key was added in `remapKeys` because there was a possibility of adding the registry based remapping approach (used by [SharpKeys](https://github.com/randyrants/sharpkeys)), so that would be under a separate sub-key while `inProcess` would be for keyboard hook based remaps. This was deprioritized as there weren't enough requests for it.
+- `inProcess` sub-key was added in `remapKeys` because there was a possibility of adding the registry based remapping approach (used by [SharpKeys](https://github.com/randyrants/sharpkeys)), so that would be under a separate sub-key while `inProcess` would be for keyboard hook based remaps. This was de-prioritized as there weren't enough requests for it.
 - `remapShortcuts` is split into `global` and `appSpecific`, where `global` remaps would apply to all applications, whereas `appSpecific` would apply on when the `targetApp` is in focus. `targetApp` must be the process name of the app (with or without it's extension), e.g. `msedge` or `msedge.exe` for Microsoft Edge.
 
 ## Loading settings
@@ -122,7 +122,7 @@ Since the [hook_proc](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b2
 
 As seen in the code for `hook_proc`, similar to other keyboard hooks in PowerToys it consists of a main method `HandleKeyboardHookEvent` which computes whether the key needs to be suppressed and accordingly returns 1 or calls the `CallNextHook` method.
 
-`HandleKeyboardHookEvent` is covered in the [section below](#HandleKeyboardHookEvent). The `SetNumLockToPreviousState` code in the above snippet is required for a special scenario with keyboard input, which is covered in [Surpressing Num-lock](#Suppressing-Num-Lock-in-a-keyboard-hook).
+`HandleKeyboardHookEvent` is covered in the [section below](#HandleKeyboardHookEvent). The `SetNumLockToPreviousState` code in the above snippet is required for a special scenario with keyboard input, which is covered in [Suppressing Num-lock](#Suppressing-Num-Lock-in-a-keyboard-hook).
 
 ## HandleKeyboardHookEvent
 
@@ -204,7 +204,7 @@ While the above work around fixes most of the cases, there are still some scenar
 
 ## Other remapping approaches
 
-Other approaches for remapping which were deprioritized are:
+Other approaches for remapping which were de-prioritized are:
 
 ### Registry approach
 
@@ -212,7 +212,7 @@ This method is used by [SharpKeys](https://github.com/randyrants/sharpkeys) and 
 
 ### Driver approach
 
-Using a driver approach has the benefit of not depending on precedence orders as KBM could always run before low level hooks, and it also has the benefit of differentiating between different keyboards, allowing [multi keyboard-specific remaps](https://github.com/microsoft/PowerToys/issues/1460). The disadvantages are however that any bug or crash could have system level consequences. [Interception](https://github.com/oblitum/Interception) is an open source driver that could be used for implementing this. The approach was deprioritized due to the potential side effects.
+Using a driver approach has the benefit of not depending on precedence orders as KBM could always run before low level hooks, and it also has the benefit of differentiating between different keyboards, allowing [multi keyboard-specific remaps](https://github.com/microsoft/PowerToys/issues/1460). The disadvantages are however that any bug or crash could have system level consequences. [Interception](https://github.com/oblitum/Interception) is an open source driver that could be used for implementing this. The approach was de-prioritized due to the potential side effects.
 
 ## Telemetry
 

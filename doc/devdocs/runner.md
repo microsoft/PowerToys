@@ -20,10 +20,10 @@ Contains code for registering a Windows event hook through `SetWinEventHook`, th
 
 #### [tray_icon.cpp](/src/runner/tray_icon.cpp)
 
-Contains code for managing the PowerToys tray icon and its menu commands. Note that `dispatch_run_on_main_ui_thread` is used to 
-transfer received json message from the [Settings window](/doc/devdocs/settings.md) to the main thread, since we're communicating with it from [a dedicated thread](https://github.com/microsoft/PowerToys/blob/7357e40d3f54de51176efe54fda6d57028837b8c/src/runner/settings_window.cpp#L267-L271).
+Contains code for managing the PowerToys tray icon and its menu commands. Note that `dispatch_run_on_main_ui_thread` is used to transfer received json message from the [Settings window](/doc/devdocs/settings.md) to the main thread, since we're communicating with it from [a dedicated thread](https://github.com/microsoft/PowerToys/blob/7357e40d3f54de51176efe54fda6d57028837b8c/src/runner/settings_window.cpp#L267-L271).
 
 #### [settings_window.cpp](/src/runner/settings_window.cpp)
+
 Contains code for starting the PowerToys settings window and communicating with it. Settings window is a separate process, so we're using [Windows pipes](https://docs.microsoft.com/windows/win32/ipc/pipes) as a transport for json messages.
 
 #### [general_settings.cpp](/src/runner/general_settings.cpp)
