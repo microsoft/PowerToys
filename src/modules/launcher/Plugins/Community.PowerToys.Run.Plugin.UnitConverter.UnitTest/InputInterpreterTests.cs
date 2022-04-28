@@ -58,7 +58,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         [DataRow(new string[] { ".1", "cm", "to", "mm" }, new object[] { new string[] { "0.1", "cm", "to", "mm" } })]
         public void AddPrefixZero(string[] input, string[] expectedResult)
         {
-            InputInterpreter.PrefixZero(ref input);
+            InputInterpreter.PrefixZero(ref input, CultureInfo.InvariantCulture);
             CollectionAssert.AreEqual(expectedResult, input);
         }
 
