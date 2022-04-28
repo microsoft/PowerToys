@@ -66,7 +66,7 @@ The installer can only be compiled in `Release` mode, step 1 and 2 must be done 
 1. Compile `PowerToys.sln`. Instructions are listed above.
 2. Compile `BugReportTool.sln` tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
 3. Compile `WebcamReportTool.sln` tool. Path from root: `tools\WebcamReportTool\WebcamReportTool.sln` (details listed below)
-3. Compile `WindowStylesReportTool.sln` tool. Path from root: `tools\WindowStylesReportTool\WindowStylesReportTool.sln` (details listed below)
+3. Compile `StylesReportTool.sln` tool. Path from root: `tools\StylesReportTool\StylesReportTool.sln` (details listed below)
 4. Compile `PowerToysSetup.sln` Path from root: `installer\PowerToysSetup.sln` (details listed below)
 
 ### Prerequisites for building the MSI installer
@@ -88,7 +88,7 @@ The installer can only be compiled in `Release` mode, step 1 and 2 must be done 
 
 ### Locally compiling the Window styles reporting tool
 
-1. Open `tools\WindowStylesReportTool\WindowStylesReportTool.sln`
+1. Open `tools\StylesReportTool\StylesReportTool.sln`
 2. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
 3. From the `Build` menu, choose `Build Solution`.
 

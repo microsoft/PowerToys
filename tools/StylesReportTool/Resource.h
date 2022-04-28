@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by WindowStylesReportTool.rc
+// Used by StylesReportTool.rc
 
 #define IDR_MAINFRAME			128
 #define IDD_ABOUTBOX			103

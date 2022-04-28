@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "WindowStylesReportTool.h"
+#include "StylesReportTool.h"
 
 #include <dwmapi.h>
 #include <shlobj.h>
@@ -344,7 +344,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    Logger::init("WindowStylesReportTool");
+    Logger::init("StylesReportTool");
 
     WNDCLASSEXW wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -357,7 +357,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName = L"";
-    wcex.lpszClassName = L"WindowStylesReportTool";
+    wcex.lpszClassName = L"StylesReportTool";
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALLICON));
 
     if (!RegisterClassExW(&wcex))
@@ -366,7 +366,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HWND hWnd = CreateWindowW(L"WindowStylesReportTool", L"Window Style Report Tool", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 600, 200, nullptr, nullptr, hInstance, nullptr);
+    HWND hWnd = CreateWindowW(L"StylesReportTool", L"Window Style Report Tool", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 600, 200, nullptr, nullptr, hInstance, nullptr);
     if (!hWnd)
     {
         Logger::log(L"Window creation error: {}", get_last_error_or_default(GetLastError()));
