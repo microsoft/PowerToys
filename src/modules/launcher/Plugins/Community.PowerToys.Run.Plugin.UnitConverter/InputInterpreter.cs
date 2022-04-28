@@ -220,7 +220,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// </summary>
         public static void PrefixZero(ref string[] split, CultureInfo culture)
         {
-            if (split[0].StartsWith(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator))
+            if (split[0].StartsWith(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, System.StringComparison.CurrentCulture))
             {
                 split[0] = '0' + split[0];
             }
