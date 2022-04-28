@@ -218,7 +218,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// <summary>
         /// Add a "0" if the query starts with a decimal separator
         /// </summary>
-        public static void PrefixZero(ref string[] split)
+        public static void PrefixZero(ref string[] split, CultureInfo culture)
         {
             if (split[0].StartsWith(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator))
             {
@@ -230,7 +230,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         {
             string[] split = query.Search.Split(' ');
 
-            InputInterpreter.PrefixZero(ref split);
+            InputInterpreter.PrefixZero(ref split, CultureInfo.CurrentCulture);
             InputInterpreter.ShorthandFeetInchHandler(ref split, CultureInfo.CurrentCulture);
             InputInterpreter.InputSpaceInserter(ref split);
 
