@@ -25,7 +25,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 - If you are a community contributor, you will not be able to add labels to the issue, in that case just add a comment saying that you started to work on the issue and try to give an estimate for the delivery date.
 - If the work item has a medium/large cost, using the markdown task list, list each sub item and update the list with a check mark after completing each sub item.
 - When opening a PR, follow the PR template.
-- When you'd like the team to take a look, (even if the work is not yet fully-complete), mark the PR as 'Ready For Review' so that the team can review your work and provide comments, suggestions, and request changes. It may take several cycles, but the end result will be solid, testable, conformant code that is safe for us to merge.
+- When you'd like the team to take a look, (even if the work is not yet fully-complete), mark the PR as "Ready For Review" so that the team can review your work and provide comments, suggestions, and request changes. It may take several cycles, but the end result will be solid, testable, conformant code that is safe for us to merge.
 - When the PR is approved, let the owner of the PR merge it. For community contributions the reviewer that approved the PR can also merge it.
 - Use the **Squash and merge** option to merge a PR, if you don't want to squash it because there are logically different commits, use **Rebase and merge**.
 - We don't close issues automatically when referenced in a PR, so after the PR is merged:
@@ -40,7 +40,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 1. Windows 10 April 2018 Update (version 1803) or newer
 2. Visual Studio Community/Professional/Enterprise 2022
 3. Install the [Windows App SDK 1.0.3 C# Visual Studio 2022 extension](https://docs.microsoft.com/windows/apps/windows-app-sdk/downloads)
-4. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says **install extra components**, click **install**
+4. Once you've cloned and started the _PowerToys.sln_ file, in the solution explorer, if you see a dialog that says **install extra components**, click **install**
 
 ### Get Submodules to compile
 
@@ -53,8 +53,8 @@ We have submodules that need to be initialized before you can compile most parts
 ### Compiling Source Code
 
 - Open `PowerToys.sln` in Visual Studio, in the **Solutions Configuration** drop-down menu select **Release** or **Debug**, from the **Build** menu choose **Build Solution**.
-- The PowerToys binaries will be in your repo under `x64\Release\`.
-- You can run `x64\Release\PowerToys.exe` directly without installing PowerToys, but some modules (i.e. PowerRename, ImageResizer, File Explorer extension etc.) will not be available unless you also build the installer and install PowerToys.
+- The PowerToys binaries will be in your repo under _x64\Release\`.
+- You can run _x64\Release\PowerToys.exe_ directly without installing PowerToys, but some modules (i.e. PowerRename, ImageResizer, File Explorer extension etc.) will not be available unless you also build the installer and install PowerToys.
 
 ## Compile the installer
 
@@ -100,7 +100,7 @@ The installer can only be compiled in **Release** mode, step 1 and 2 must be don
 2. In Visual Studio, in the **Solutions Configuration** drop-down menu select **Release**
 3. From the **Build** menu choose **Build Solution**.
 
-The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+The resulting _PowerToysSetup.msi_ installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
 
 #### Supported arguments for the .EXE Bootstrapper installer
 

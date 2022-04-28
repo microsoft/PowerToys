@@ -19,7 +19,7 @@
 
 [The localization step](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/pipeline.user.windows.yml#L45-L52) is run on the pipeline before the solution is built. This step runs the [build-localization](https://github.com/microsoft/PowerToys/blob/main/.pipelines/build-localization.cmd) script, which generates resx files for all the projects with localization enabled using the `Localization.XLoc` package.
 
-The [Localization.XLoc](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/build-localization.cmd#L24-L25) tool is run on the repo root, and it checks for all occurrences of `LocProject.json`. Each localized project has a `LocProject.json` file in the project root, which contains the location of the English resx file, list of languages for localization, and the output path where the localized resx files are to be copied to. In addition to this, some other parameters can be set, such as whether the language ID should be added as a folder in the file path or in the file name. When the CDPX pipeline is run, the localization team is notified of changes in the English resx files. For each project with localization enabled, a `loc` folder (see [loc](https://github.com/microsoft/PowerToys/tree/main/src/modules/launcher/Microsoft.Launcher/loc) for example) is created in the same directory as the `LocProject.json` file. The folder contains language specific folders which in turn have a nested folder path equivalent to `OutputPath` in the `LocProject.json`. Each of these folders contain one `lcl` file. The `lcl` files contain the English resources along with their translation for that language. These are described in more detail [in the section below](#lcl-files). Once the `.resx` files are generated, they will be used during the **Build PowerToys** step for localized versions of the modules.
+The [Localization.XLoc](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/build-localization.cmd#L24-L25) tool is run on the repo root, and it checks for all occurrences of _LocProject.json_. Each localized project has a _LocProject.json_ file in the project root, which contains the location of the English resx file, list of languages for localization, and the output path where the localized resx files are to be copied to. In addition to this, some other parameters can be set, such as whether the language ID should be added as a folder in the file path or in the file name. When the CDPX pipeline is run, the localization team is notified of changes in the English resx files. For each project with localization enabled, a `loc` folder (see [loc](https://github.com/microsoft/PowerToys/tree/main/src/modules/launcher/Microsoft.Launcher/loc) for example) is created in the same directory as the _LocProject.json_ file. The folder contains language specific folders which in turn have a nested folder path equivalent to `OutputPath` in the _LocProject.json_. Each of these folders contain one _.lcl_ file. The _.lcl_ files contain the English resources along with their translation for that language. These are described in more detail [in the section below](#lcl-files). Once the `.resx` files are generated, they will be used during the **Build PowerToys** step for localized versions of the modules.
 
 Since the localization script requires certain nuget packages, the [restore-localization](https://github.com/microsoft/PowerToys/blob/main/.pipelines/restore-localization.cmd) script is run before running `build-localization` to install all the required packages. This script must [run in the `restore` step](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/pipeline.user.windows.yml#L37-L39) of pipeline because [the host is network isolated](https://onebranch.visualstudio.com/Pipeline/_wiki/wikis/Pipeline.wiki/2066/Consuming-Packages-in-a-CDPx-Pipelinhttps://onebranch.visualstudio.com/Pipeline/_wiki/wikis/Pipeline.wiki/2066/Consuming-Packages-in-a-CDPx-Pipeline?anchor=overview) at the `build` step. The [Toolset package source](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/pipeline.user.windows.yml#L23) is used for this.
 
@@ -29,21 +29,21 @@ The localized resource dlls for C# projects are added to the MSI only for build 
 
 ### UWP Special case
 
-C# projects normally expect localized resource files with the language id in the file name as Resources.`langId`.resx, where `langId` is generally a two character code except for language with specific variants (like zh-Hans or pt-BR):
+C# projects normally expect localized resource files with the language id in the file name as _Resources.`langId`.resx_, where `langId` is generally a two character code except for language with specific variants (like zh-Hans or pt-BR):
 
-For example, `path\Resources.resx` for English and `path\Resources.fr.resx` for French.
+For example: _path\Resources.resx_ for English and _path\Resources.fr.resx_ for French.
 
-UWP differs from this as it expects the resources to have the same Resources.resw file name, but they should be present in language specific folders, with the full language ID (such as fr-fr, zh-hans, pt-br, etc.)
+UWP differs from this as it expects the resources to have the same _Resources.resw_  file name, but they should be present in language specific folders, with the full language ID (such as fr-fr, zh-hans, pt-br, etc.)
 
-For example, `path\en-us\Resources.resw` for English and `path\fr-fr\Resources.resw` for French.
+For example: _path\en-us\Resources.resw_ for English and _path\fr-fr\Resources.resw_ for French.
 
 Since the pipeline generates it in this format, [a script is run](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/build-localization.cmd#L29-L31) to move these resw files to the correct format expected by all UWP projects. Currently the only UWP project is [Settings.UI](https://github.com/microsoft/PowerToys/tree/main/src/core/Settings.UI). The script used for moving the resources can be found in [move_uwp_resources]](https://github.com/microsoft/PowerToys/blob/main/tools/localization/move_uwp_resources.ps1). The equivalent full language IDs for each shortened language ID obtained from the pipeline has been hardcoded in the script.
 
 ## Enabling localization on a new project
 
-To enable localization on a new project, the first step is to create a file `LocProject.json` in the project root.
+To enable localization on a new project, the first step is to create a file _LocProject.json_ in the project root.
 
-For example, for a project in the folder `src\path` where the resx file is present in `resources\Resources.resx`, the `LocProject.json` file will contain the following:
+For example, for a project in the folder _src\path_ where the resx file is present in _resources\Resources.resx_, the _LocProject.json_ file will contain the following:
 
 ```json
 {
@@ -66,11 +66,11 @@ The rest of the steps depend on the project type and are covered in the sections
 
 ### C++
 
-C++ projects do not support `resx` files, and instead use `rc` files along with `resource.h` files. The CDPX pipeline however doesn't support localizing `rc` files and the other alternative they support is directly translating the resources from the binary which makes it harder to maintain resources. To avoid this, a custom script has been added which expects a resx file and converts the entries to an rc file with a string table and adds resource declarations to a resource.h file so that the resources can be compiled with the C++ project.
+C++ projects do not support resx files, and instead use rc files along with _resource.h_ files. The CDPX pipeline however doesn't support localizing rc files and the other alternative they support is directly translating the resources from the binary which makes it harder to maintain resources. To avoid this, a custom script has been added which expects a resx file and converts the entries to an rc file with a string table and adds resource declarations to a _resource.h_ file so that the resources can be compiled with the C++ project.
 
-If you already have a .rc file, copy the string table to a separate txt file and run the [convert-stringtable-to-resx.ps1](https://github.com/microsoft/PowerToys/blob/main/tools/build/convert-stringtable-to-resx.ps1) script on it. This script is not very robust to input, and requires the data in a specific format, where `IDS_ResName L"ResourceValue"` and any number of spaces can be present in between. The script converts this file to the format expected by [resgen](https://docs.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert), which will convert it to resx. The resource names are changed from all uppercase to title case, and the `IDS_` prefix is removed. Escape characters might have to be manually replaced, for example .rc files would have escaped double quotes as `""`, so this should be replaced with just `"` before converting to the resx files.
+If you already have a rc file, copy the string table to a separate txt file and run the [convert-stringtable-to-resx.ps1](https://github.com/microsoft/PowerToys/blob/main/tools/build/convert-stringtable-to-resx.ps1) script on it. This script is not very robust to input, and requires the data in a specific format, where `IDS_ResName L"ResourceValue"` and any number of spaces can be present in between. The script converts this file to the format expected by [resgen](https://docs.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert), which will convert it to _.resx_. The resource names are changed from all uppercase to title case, and the `IDS_` prefix is removed. Escape characters might have to be manually replaced, for example rc files would have escaped double quotes as `""`, so this should be replaced with just `"` before converting to the resx files.
 
-After generating the resx file, rename the existing rc and h files to ProjName.base.rc and resource.base.h. In the rc file remove the string table which is to be localized and in the .h file remove all `#define`s corresponding to localized resources. In the vcxproj of the C++ project, add the following build event:
+After generating the resx file, rename the existing _.rc_ and _.h_ files to _ProjName.base.rc_ and _resource.base.h_. In the rc file remove the string table which is to be localized, and in the _.h_ file remove all `#define`s corresponding to localized resources. In the _.vcxproj_ of the C++ project, add the following build event:
 
 ```cpp
 <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
@@ -78,7 +78,7 @@ After generating the resx file, rename the existing rc and h files to ProjName.b
 </Target>
 ```
 
-This event runs a script which generates a resource.h and ProjName.rc in the `Generated Files` folder using the strings in all the resx files along with the existing information in resource.base.h and ProjName.base.rc. The script can be found [here](https://github.com/microsoft/PowerToys/blob/main/tools/build/convert-resx-to-rc.ps1). The script uses [resgen](https://docs.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) to convert the resx file to a string table expected in the .rc file format. When the resources are added to the rc file the `IDS_` prefix is added and resource names are in upper case (as it was originally). Any occurrences of `"` in the string resource is escaped as `""` to prevent build errors. The string tables are added to the rc file in the following format:
+This event runs a script which generates a _resource.h_ and _ProjName.rc_ in the `Generated Files` folder using the strings in all the resx files along with the existing information in _resource.base.h_ and _ProjName.base.rc_. The script can be found [in this file](https://github.com/microsoft/PowerToys/blob/main/tools/build/convert-resx-to-rc.ps1). The script uses [resgen](https://docs.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) to convert the resx file to a string table expected in the rc file format. When the resources are added to the .rc file the `IDS_` prefix is added and resource names are in upper case (as it was originally). Any occurrences of `"` in the string resource is escaped as `""` to prevent build errors. The string tables are added to the rc file in the following format:
 
 ```cpp
     #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
@@ -92,7 +92,7 @@ This event runs a script which generates a resource.h and ProjName.rc in the `Ge
     #endif
 ```
 
-Since there is no API to identify the `AFX_TARG_*`, `LANG_*` or `SUBLANG_*` values from each langId from the pipeline, these are hardcoded in the script (for each language) as done [in this script](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/tools/build/convert-resx-to-rc.ps1#L50-L77). **If any other languages are added in the future, this script will have to be updated.** In order to determine what are the language codes, you can open the rc file in Resource View, right click the string table and press `Insert Copy` and choose the corresponding language. This autogenerates the required code and can be used to figure out the language codes. The files also add the resource declarations to a resource.h file, starting from 101 by default(this can be changed by an optional argument). Since the output files will be generated in `Generated Files`, any includes in these two files will require an additional `..\` and wherever resource.h is used, it will have to be included as `Generated Files\resource.h`. While adding `resource.base.h` and `ProjName.base.rc` to the vcxproj, these should be modified to not participate in the build to avoid build errors:
+Since there is no API to identify the `AFX_TARG_*`, `LANG_*` or `SUBLANG_*` values from each langId from the pipeline, these are hardcoded in the script (for each language) as done [in this script](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/tools/build/convert-resx-to-rc.ps1#L50-L77). **If any other languages are added in the future, this script will have to be updated.** In order to determine what are the language codes, you can open the rc file in Resource View, right click the string table, press **Insert Copy** and choose the corresponding language. This autogenerates the required code and can be used to figure out the language codes. The files also add the resource declarations to a _resource.h_ file, starting from 101 by default (this can be changed by an optional argument). Since the output files will be generated in `Generated Files`, any includes in these two files will require an additional `..\` and wherever _resource.h_ is used, it will have to be included as `Generated Files\resource.h`. While adding `resource.base.h` and `ProjName.base.rc` to the vcxproj, these should be modified to not participate in the build to avoid build errors:
 
 ```cpp
 <None Include="Resources.resx" />
@@ -104,7 +104,7 @@ Check [this PR](https://github.com/microsoft/PowerToys/pull/6104) for an example
 
 ### C\#
 
-Since C# projects natively support `resx` files, the only step required here is to include all the resx files in the build. For .NET Core projects this is done automatically and the .csproj does not need to be modified. For other projects, the following line needs to be added:
+Since C# projects natively support resx files, the only step required here is to include all the resx files in the build. For .NET Core projects this is done automatically and the .csproj does not need to be modified. For other projects, the following line needs to be added:
 
 ```cs
 <EmbeddedResource Include="Properties\Resources.*.resx" />
@@ -132,7 +132,7 @@ After adding the resx file to the project along with the resource generator, ref
 
 ### UWP
 
-UWP projects expect `resw` files rather than `resx` (the format is almost the same). Unlike other C# projects, the files are expected in the format `fullLangId\Resources.resw`. To include these files in the build, replace the following line in the csproj:
+UWP projects expect resw files rather than resx (the format is almost the same). Unlike other C# projects, the files are expected in the format `fullLangId\Resources.resw`. To include these files in the build, replace the following line in the csproj:
 
 ```cs
 <PRIResource Include="Strings\en-us\Resources.resw" />
@@ -172,11 +172,11 @@ Since the LEGO PRs update some of the strings in LCL files at a time, there can 
 
 ## Enabling localized MSI for a new project
 
-For C++ and UWP projects no additional files are generated with localization that need to be added to the MSI. For C++ projects all the resources are added to the dll/exe, while for UWP projects they are added to the `resources.pri` file (which is present even for an unlocalized project). To verify if the localized resources are added to the `resources.pri` file the following steps can be done:
+For C++ and UWP projects no additional files are generated with localization that need to be added to the MSI. For C++ projects all the resources are added to the dll/exe, while for UWP projects they are added to the _resources.pri_ file (which is present even for an unlocalized project). To verify if the localized resources are added to the _resources.pri_ file the following steps can be done:
 
 - Open `Developer Command Prompt for VS`
 - After navigating to the folder containing the pri file, run the following command: `makepri.exe dump /if .\resources.pri`
-- Check the contents of the `resources.pri.xml` file that is generated from the command. The last section of the file will contain the resources with the strings in all the languages:
+- Check the contents of the _resources.pri.xml_ file that is generated from the command. The last section of the file will contain the resources with the strings in all the languages:
 
 ```xml
 <NamedResource name="GeneralSettings_RunningAsAdminText" uri="ms-resource://f4f787a5-f0ae-47a9-be89-5408b1dd2b47/Resources/GeneralSettings_RunningAsAdminText">
@@ -198,6 +198,6 @@ This can be done by adding the directory name of the project in [Product.wxs](ht
 </Component>
 ```
 
-We should also ensure the new dlls are signed by the pipeline. Currently all dlls of the form [\**.resources.dll* are signed](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/.pipelines/pipeline.user.windows.yml#L68).
+We should also ensure the new dlls are signed by the pipeline. Currently all dlls of the form [*_.resources.dll_ are signed](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/.pipelines/pipeline.user.windows.yml#L68).
 
 **Note:** The resource dlls should be added to the MSI project only after the initial commit with the lcl files has been done by the Localization team. Otherwise the pipeline will fail as there wouldn't be any resx files to generate the dlls.

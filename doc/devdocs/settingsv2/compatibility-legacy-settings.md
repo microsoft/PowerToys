@@ -4,7 +4,7 @@ The following must be kept in mind regarding compatibility with settings v1 and 
 
 ## 1. Folder Naming structure
 
-- Each of the modules has a folder within the `Local/Microsoft/PowerToys` directory which contains the module configurations within the `settings.json` file. The name of this folder must be the same across settingsv1 and settingsv2.
+- Each of the modules has a folder within the `Local/Microsoft/PowerToys` directory which contains the module configurations within the _settings.json_ file. The name of this folder must be the same across settingsv1 and settingsv2.
 - The name of the settings folder for each powertoy is the same as the `ModuleName`. It is set within each of the viewModel files. This name must not be changed to ensure that the user configurations for each of the powertoys rolls over on update.
 
 ## 2. Communication with runner

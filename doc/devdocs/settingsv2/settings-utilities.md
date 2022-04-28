@@ -1,7 +1,7 @@
 # Settings Utilities
 
 - Abstractions for each of the file/folder related operations are present in [SettingsUtils.cs](src/settings-ui/Settings.UI.Library/SettingsUtils.cs).
-- To reduce contention between the settings process and runner while trying to access the `settings.json` file of any powertoy, the settings process tries to access the file only when it needs to load the information for the first time. However, there is still no mechanism in place which ensures that both the settings and runner processes do not access the information simultaneously leading to `IOExceptions`.
+- To reduce contention between the settings process and runner while trying to access the _settings.json_ file of any powertoy, the settings process tries to access the file only when it needs to load the information for the first time. However, there is still no mechanism in place which ensures that both the settings and runner processes do not access the information simultaneously leading to `IOExceptions`.
 
 ## Utilities
 

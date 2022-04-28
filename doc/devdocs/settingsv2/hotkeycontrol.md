@@ -38,7 +38,7 @@ It provides the following callbacks to the `HotKeySettingsControlHook`:
 
 ### [HotkeySettings.cs](/src/settings-ui/Settings.UI.Library/HotkeySettings.cs)
 
-Contains the structure of a HotKey where it is represented as a combination of one of the modifier keys (`Alt`, `Shift`, `Win` and `Ctrl`) and a non-modifier key.
+Contains the structure of a HotKey where it is represented as a combination of one of the modifier keys (Alt, Shift, Win and Ctrl) and a non-modifier key.
 
 ### Note
 

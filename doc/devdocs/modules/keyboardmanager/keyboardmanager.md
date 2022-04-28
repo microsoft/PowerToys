@@ -43,7 +43,7 @@ The enable/disable code can be found [in dll.main](https://github.com/microsoft/
 
 KBM uses two sets of settings files.
 
-- The main `settings.json` is of the following format:
+- The main _settings.json_ is of the following format:
 
 ```json
     {
@@ -64,7 +64,7 @@ KBM uses two sets of settings files.
 ```
 
 - The `activeConfiguration` attribute stores the current remapping profile, while `keyboardConfigurations` stores all the profiles that the user has. This was added to avoid any future breaking changes for the [profiles feature](https://github.com/microsoft/PowerToys/issues/1881), which would allow users to switch between remappings
-- The profile format (`default.json`) is of the following format:
+- The profile format (_default.json_) is of the following format:
 
 ```json
     {
