@@ -18,7 +18,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WindowStylesReportTool.h">
+    <ClInclude Include="StylesReportTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -26,7 +26,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="WindowStylesReportTool.cpp">
+    <ClCompile Include="StylesReportTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -34,7 +34,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="WindowStylesReportTool.rc">
+    <ResourceCompile Include="StylesReportTool.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -42,7 +42,7 @@
     <Image Include="small.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="WindowStylesReportTool.ico">
+    <Image Include="StylesReportTool.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

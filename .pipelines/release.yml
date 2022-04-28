@@ -156,9 +156,9 @@ jobs:
       maximumCpuCount: true
 
   - task: VSBuild@1
-    displayName: Build WindowStylesReportTool
+    displayName: Build StylesReportTool
     inputs:
-      solution: '**/tools/WindowStylesReportTool/WindowStylesReportTool.sln'
+      solution: '**/tools/StylesReportTool/StylesReportTool.sln'
       vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)

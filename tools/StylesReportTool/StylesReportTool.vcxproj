@@ -14,7 +14,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{0febafaf-cb77-41f0-8ef9-8e3ad4b4f842}</ProjectGuid>
-    <RootNamespace>WindowStylesReportTool</RootNamespace>
+    <RootNamespace>StylesReportTool</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -87,22 +87,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="WindowStylesReportTool.h" />
+    <ClInclude Include="StylesReportTool.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="WindowStylesReportTool.cpp" />
+    <ClCompile Include="StylesReportTool.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="WindowStylesReportTool.rc" />
+    <ResourceCompile Include="StylesReportTool.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="WindowStylesReportTool.ico" />
+    <Image Include="StylesReportTool.ico" />
     <Image Include="small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
