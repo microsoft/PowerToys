@@ -107,10 +107,18 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            App.ClearSettingsWindow();
-
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             Utils.SerializePlacement(hWnd);
+
+            if (App.GetOobeWindow() == null)
+            {
+                App.ClearSettingsWindow();
+            }
+            else
+            {
+                args.Handled = true;
+                NativeMethods.ShowWindow(hWnd, NativeMethods.SW_HIDE);
+            }
         }
     }
 }
