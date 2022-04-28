@@ -4,6 +4,7 @@
 
 using System;
 using interop;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.UI;
@@ -36,9 +37,14 @@ namespace Microsoft.PowerToys.Settings.UI
             presenter.IsMinimizable = false;
             presenter.IsMaximizable = false;
 
+            var dpi = NativeMethods.GetDpiForWindow(hWnd);
+            float scalingFactor = (float)dpi / 96;
+            int width = (int)(1100 * scalingFactor);
+            int height = (int)(700 * scalingFactor);
+
             SizeInt32 size;
-            size.Width = 1650;
-            size.Height = 1050;
+            size.Width = width;
+            size.Height = height;
             appWindow.Resize(size);
 
             this.initialModule = initialModule;
