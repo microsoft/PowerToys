@@ -1,4 +1,5 @@
 # New plugin checklist
+
 - [ ] The plugin is a project under `modules\launcher\Plugins`
 - [ ] Microsoft plugin project name pattern: `Microsoft.PowerToys.Run.Plugin.{PluginName}`
 - [ ] Community plugin project name pattern: `Community.PowerToys.Run.Plugin.{PluginName}`
@@ -6,7 +7,8 @@
 - [ ] The project file should import `Version.props` and specify `<Version>$(Version).0</Version>`
 - [ ] Make sure `*.csproj` specify only x64 platform target
 - [ ] The plugin has to contain a `plugin.json` file of the following format in its root folder
-```
+
+```json
 {
   "ID": string, // GUID string
   "ActionKeyword": string, // Direct activation phrase
@@ -21,6 +23,7 @@
   "IcoPathLight": string // Path to light theme icon. The path is relative to the root plugin folder 
 }
 ```
+
 - [ ] Do not use plugin name or PowerToys as prefixes for entities inside of the plugin project
 - [ ] The plugin has to have Unit tests. Use MSTest framework
 - [ ] Plugin's output code and assets have to be included in the installer [`Product.wxs`](/installer/PowerToysSetup/Product.wxs)

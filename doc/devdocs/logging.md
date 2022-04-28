@@ -5,5 +5,5 @@ We use the awesome [spdlog](https://github.com/gabime/spdlog) library for loggin
 ```xml
 <Import Project="..\..\..\deps\spdlog.props" />
 ```
-It'll add the required include dirs and link the library binary itself.
 
+It'll add the required include dirs and link the library binary itself.

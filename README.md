@@ -28,9 +28,9 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 - Windows 11 or Windows 10 v1903 (18362) or newer.
 - Our installer will install the following items:
-   - [.NET 6.0.3 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-6.0.3-windows-x64-installer) or a newer 6.0.x runtime. 
-   - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version. 
-   - [Windows App SDK Runtime 1.0.3](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads). This will install version 1.0.3 if this or newer version is not installed already.
+  - [.NET 6.0.3 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-6.0.3-windows-x64-installer) or a newer 6.0.x runtime. 
+  - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version. 
+  - [Windows App SDK Runtime 1.0.3](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads). This will install version 1.0.3 if this or newer version is not installed already.
 
 ### Via GitHub with EXE [Recommended]
 
@@ -43,6 +43,7 @@ This is our preferred method.
 Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which will be available for both Windows 11 and Windows 10.
 
 ### Via WinGet (Preview)
+
 Download PowerToys from [WinGet][winget-link]. To install PowerToys, run the following command from the command line / PowerShell:
 
 ```powershell
@@ -151,7 +152,7 @@ In this release, we focused heavily on stability and improvements.  Below are so
 
 ### Installer
 
-- Dependencies installers are now executed with /norestart to avoid unprompted reboots. (This was a hotfix for 0.56). Thanks [@franky920920](https://github.com/franky920920)!
+- Dependencies installers are now executed with `/norestart` to avoid unprompted reboots. (This was a hotfix for 0.56). Thanks [@franky920920](https://github.com/franky920920)!
 - Upgraded .NET framework dependency to 6.0.3.
 - Installer logs are now saved where they can be collected and sent by the bug report tool.
 - Reverted changes to start with proper elevation and when installed under a different user since those changes ended up causing more issues where PowerToys would start running with the wrong user.

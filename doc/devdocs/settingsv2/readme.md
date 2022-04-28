@@ -1,4 +1,5 @@
 # Table of Contents
+
 1. [Settings overview](/doc/devdocs/settingsv2/project-overview.md)
 2. [UI Architecture](/doc/devdocs/settingsv2/ui-architecture.md)
 3. [ViewModels](/doc/devdocs/settingsv2/viewmodels.md)

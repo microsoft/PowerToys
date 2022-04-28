@@ -1,6 +1,6 @@
 # Unofficial community driven install methods
 
-These are community driven alternative install methods to Windows Package Manager (WinGet) and GitHub. The PowerToys teams does not update or manage these install methods. 
+These are community driven alternative install methods to Windows Package Manager (WinGet) and GitHub. The PowerToys teams does not update or manage these install methods.
 
 These will be listed in alphabetical order.
 
@@ -22,7 +22,7 @@ choco upgrade powertoys
 
 ## Scoop
 
-Download and update PowerToys from [Scoop](https://scoop.sh). 
+Download and update PowerToys from [Scoop](https://scoop.sh).
 
 To install PowerToys, run the following command from the command line / PowerShell:
 

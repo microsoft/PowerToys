@@ -1,6 +1,6 @@
 # Developer Preview (Monaco)
 
-Developer preview is based on [Microsofts Monaco Editor](https://microsoft.github.io/monaco-editor/) which is maintained by the Visual Studio Code team.
+Developer preview is based on [Microsoft's Monaco Editor](https://microsoft.github.io/monaco-editor/) which is maintained by the Visual Studio Code team.
 
 ## Update monaco editor
 
@@ -11,7 +11,7 @@ Developer preview is based on [Microsofts Monaco Editor](https://microsoft.githu
 
 ## monaco_languages.json
 
-[`monaco_languages.json`](/src/modules/previewpane/MonacoPreviewHandler/monaco_languages.json) contains all extensions and Id's for the supported languages of Monaco. The [`FileHandler`](/src/modules/previewpane/MonacoPreviewHandler/FileHandler.cs) class and the installer are using this file.
+[`monaco_languages.json`](/src/modules/previewpane/MonacoPreviewHandler/monaco_languages.json) contains all extensions and Ids for the supported languages of Monaco. The [`FileHandler`](/src/modules/previewpane/MonacoPreviewHandler/FileHandler.cs) class and the installer are using this file.
 
 ### Generate monaco_languages.json file
 

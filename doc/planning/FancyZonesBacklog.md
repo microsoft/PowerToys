@@ -5,6 +5,7 @@ This file captures the prioritized list of issues the FancyZones team will tackl
 ## On deck
 
 ## Backlog
+
 Add tests to the new editor [197](https://github.com/microsoft/PowerToys/issues/197)  
 Cycle through windows in a Zone [175](https://github.com/microsoft/PowerToys/issues/175)  
 Minimize/restore windows in a zone as a group [174](https://github.com/microsoft/PowerToys/issues/174)  
