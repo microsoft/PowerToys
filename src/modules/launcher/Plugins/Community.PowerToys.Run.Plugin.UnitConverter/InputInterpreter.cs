@@ -216,11 +216,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Add a "0" if the first query character is "."
+        /// Add a "0" if the query starts with a decimal separator
         /// </summary>
         public static void PrefixZero(ref string[] split)
         {
-            if (split[0][0] == '.')
+            if (split[0].StartsWith(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator))
             {
                 split[0] = '0' + split[0];
             }
