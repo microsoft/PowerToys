@@ -19,4 +19,4 @@ The Settings.UI.Library project contains the data that is to be rendered by the 
 
 The function of the settings runner project is to communicate all changes that the user makes in the user interface, to the runner so that it can be dispatched and reflected in all the modules.
 
-MVVM: https://docs.microsoft.com/en-us/windows/uwp/data-binding/data-binding-and-mvvm
+MVVM: https://docs.microsoft.com/windows/uwp/data-binding/data-binding-and-mvvm

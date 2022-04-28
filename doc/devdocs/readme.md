@@ -39,7 +39,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and you
 
 1. Windows 10 April 2018 Update (version 1803) or newer
 2. Visual Studio Community/Professional/Enterprise 2022
-3. Install the [Windows App SDK 1.0.3 C# Visual Studio 2022 extension](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads)
+3. Install the [Windows App SDK 1.0.3 C# Visual Studio 2022 extension](https://docs.microsoft.com/windows/apps/windows-app-sdk/downloads)
 4. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says **install extra components**, click **install**
 
 ### Get Submodules to compile
