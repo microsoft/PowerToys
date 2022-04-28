@@ -113,12 +113,12 @@
    - [x] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
 
 ## Always on Top
- - [ ] Pin/unpin a window, verify it's topmost/not topmost.
- - [ ] Pin/unpin a window, verify the border appeared/disappeared.
- - [ ] Switch virtual desktop, verify border doesn't show up on another desktop.
- - [ ] Minimize and maximize pinned window, verify the border looks as usual.
- - [ ] Change border color and thickness.
- - [ ] Verify if sound is played according to the sound setting.
- - [ ] Exclude app, try to pin it.
- - [ ] Exclude already pinned app, verify it was unpinned.
- - [ ] Try to pin the app in the Game Mode.
+ - [x] Pin/unpin a window, verify it's topmost/not topmost.
+ - [x] Pin/unpin a window, verify the border appeared/disappeared.
+ - [x] Switch virtual desktop, verify border doesn't show up on another desktop.
+ - [x] Minimize and maximize pinned window, verify the border looks as usual.
+ - [x] Change border color and thickness.
+ - [x] Verify if sound is played according to the sound setting.
+ - [x] Exclude app, try to pin it.
+ - [x] Exclude already pinned app, verify it was unpinned.
+ - [x] Try to pin the app in the Game Mode.
