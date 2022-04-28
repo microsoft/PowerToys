@@ -105,6 +105,15 @@ namespace Microsoft.PowerToys.Settings.UI
             ShellPage.Navigate(type);
         }
 
+        public void CloseHiddenWindow()
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            if (!NativeMethods.IsWindowVisible(hWnd))
+            {
+                Close();
+            }
+        }
+
         private void Window_Closed(object sender, WindowEventArgs args)
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
