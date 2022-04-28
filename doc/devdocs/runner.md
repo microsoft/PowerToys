@@ -8,7 +8,7 @@ Contains code for initializing and managing the PowerToy modules. `PowertoyModul
 
 #### [powertoys_events.cpp](/src/runner/powertoys_events.cpp)
 
-Contains code that handles the various events listeners, and forwards those events to the PowerToys modules. You can learn more about the current event architecture [here](/doc/devdocs/shared-hooks.md).
+Contains code that handles the various events listeners, and forwards those events to the PowerToys modules. You can learn more about the current event architecture in [Shared hooks](/doc/devdocs/shared-hooks.md).
 
 #### [lowlevel_keyboard_event.cpp](/src/runner/lowlevel_keyboard_event.cpp)
 

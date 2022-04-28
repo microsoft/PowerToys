@@ -28,13 +28,13 @@ This project contains any code that is to be shared between the backend and UI p
 
 ### DetectSingleRemapKeyUIBackend and DetectShortcutUIBackend
 
-[These methods](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/KeyboardManagerState.cpp#L374-L446) are [called on the low level hook](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L399-L408) in the main keyboard event handler. When the user opens any UI window the UI states are updated and in this case some remappings have to be disabled. On the Remap keys window, all remappings are disabled, while on the Remap shortcuts window, shortcut remappings are disabled. 
+[These methods in dllmain.cpp](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/KeyboardManagerState.cpp#L374-L446) are [called on the low level hook](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L399-L408) in the main keyboard event handler. When the user opens any UI window the UI states are updated and in this case some remappings have to be disabled. On the Remap keys window, all remappings are disabled, while on the Remap shortcuts window, shortcut remappings are disabled.
 
-In addition to this, if the user has opened the Type window, and the window is in focus, [whenever a key event is received we have to update the set of selected keys in the TextBlock](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/KeyboardManagerState.cpp#L266-L329) in the ContentDialog. These methods also call the `KeyDelay` handlers to check if the input is Esc/Enter and accordingly handle the Accessibility events for the Type window. When the user clicks the Type button, [variables in the KeyboardManagerState store the corresponding TextBlocks](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/SingleKeyRemapControl.cpp#L375-L376) which appear in the ContentDialog, so that these UI controls can be updated from the hook on the dispatcher thread.
+In addition to this, if the user has opened the Type window, and the window is in focus, whenever a key event is received we have to [update the set of selected keys in the TextBlock](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/KeyboardManagerState.cpp#L266-L329) in the ContentDialog. These methods also call the `KeyDelay` handlers to check if the input is Esc/Enter and accordingly handle the Accessibility events for the Type window. When the user clicks the Type button, [variables in the KeyboardManagerState store the corresponding TextBlocks](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/SingleKeyRemapControl.cpp#L375-L376) which appear in the ContentDialog, so that these UI controls can be updated from the hook on the dispatcher thread.
 
 ### HandleKeyDelayEvent
 
-[This method](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/KeyboardManagerState.cpp#L482-L498) checks if the UI is in the foreground, and if so runs the key delay handlers that have been registered.
+[This method in KeyboardManagerState.cpp](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/KeyboardManagerState.cpp#L482-L498) checks if the UI is in the foreground, and if so runs the key delay handlers that have been registered.
 
 ### Saving remappings to file
 
@@ -46,6 +46,7 @@ To prevent the UI thread and low level hook thread from concurrently accessing t
 
 ## KeyDelay
 
+<!-- here be broken links -->
 [This class](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/common/KeyDelay.cpp) implements a queue based approach for processing key events and based on the time difference between key down and key up events [executes separate methods for `ShortPress`, `LongPress` or `LongPressReleased`](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/KeyDelay.h#L69-L72). The class is used for the hold Enter/Esc functionality required for making the Type window accessible and prevent keyboard traps (see [this](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/SingleKeyRemapControl.cpp#L273-L292) for an example of it's usage). The `KeyEvents` are added to the queue from the hook thread of KBM, and a separate [DelayThread](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/KeyDelay.cpp#L142-L166) is used to process the key events by checking the `time` member in the key event. The thresholds for short vs long press and hold wait timeouts are `static` constants, but if the module is extended for other purposes these could be made into arguments.
 
 **Note:** [Deletion of the KeyDelay](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/KeyDelay.cpp#L4-L12) object should never be called from the `DelayThread` i.e. from within one of the 3 handlers, as it can re-enter the mutex and would lead to a deadlock. This can be avoided by either deleting it on a separate thread or as done in the KBM UI, on the dispatcher thread. See [this PR](https://github.com/microsoft/PowerToys/pull/6959#issue-496583547) for more details on this issue.
@@ -56,19 +57,19 @@ The [Shortcut class](https://github.com/microsoft/PowerToys/blob/main/src/module
 
 ### IsKeyboardStateClearExceptShortcut
 
-[This method](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/Shortcut.cpp#L665-L813) is used by the `HandleShortcutRemapEvent` to check if any other keys on the keyboard have been pressed apart from the keys in the shortcut. This is required because shortcut to shortcut remaps should not be applied if the shortcut is pressed with other keys. The method iterates over all the possible key codes, except any keys that are considered reserved, unassigned, OEM-specific or undefined, as well as mouse buttons (see list [here](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/Shortcut.cpp#L628-L663)).
+[This method](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/Shortcut.cpp#L665-L813) is used by the `HandleShortcutRemapEvent` to check if any other keys on the keyboard have been pressed apart from the keys in the shortcut. This is required because shortcut to shortcut remaps should not be applied if the shortcut is pressed with other keys. The method iterates over all the possible key codes, except any keys that are considered reserved, unassigned, OEM-specific or undefined, as well as mouse buttons. See list in [Shortcut.cpp](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/Shortcut.cpp#L628-L663).
 
 ### CheckModifiersKeyboardState
 
-[This method](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/Shortcut.cpp#L517-L614) uses `GetVirtualKeyState` (internally calls `GetAsyncKeyState` in production code), to check if all the modifiers of the current shortcut are being pressed. Since Win doesn't have a non-L/R key code we check this by checking both LWIN and RWIN.
+[This method in Shortcut.cpp](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/Shortcut.cpp#L517-L614) uses `GetVirtualKeyState` (internally calls `GetAsyncKeyState` in production code), to check if all the modifiers of the current shortcut are being pressed. Since Win doesn't have a non-L/R key code we check this by checking both LWIN and RWIN.
 
 ### Tests
 
-Tests for some methods in the `Shortcut` class can be found [here](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/test/ShortcutTests.cpp).
+Tests for some methods in the `Shortcut` class can be found in [ShortcutTests.cpp](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/test/ShortcutTests.cpp).
 
 ## Helpers
 
-[This namespace](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/common/Helpers.cpp) has any methods which are used across either UI or the backend which aren't specific to either. Some of these methods have tests [here](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/test/SetKeyEventTests.cpp).
+[This namespace](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/common/Helpers.cpp) has any methods which are used across either UI or the backend which aren't specific to either. Some of these methods have tests in [SetKeyEventTests.cpp](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/test/SetKeyEventTests.cpp).
 
 ### Foreground App Detection
 

@@ -4,12 +4,12 @@
 
 ## Steps
 
-- uncomment everything near "TODO: Use to activate embedded MSIX" comments
-- build PowerToys solution
-- deploy HelloModule module and sign it with a self-signed certificate (don't forget to put it into a trusted store)
-- build PowerToysSetup solution and install it
+1. uncomment everything near "TODO: Use to activate embedded MSIX" comments
+2. build PowerToys solution
+3. deploy HelloModule module and sign it with a self-signed certificate (don't forget to put it into a trusted store)
+4. build PowerToysSetup solution and install it
 
-Type HelloModule into start search and observe that it was installed:
+Type HelloModule into Start Search and observe that it was installed:
 
 <img src="../images/msix/hello-module-start.png">
 

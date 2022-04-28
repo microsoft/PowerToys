@@ -19,7 +19,7 @@ PowerToys Run UI is written in the WPF framework. The UI code is present in the 
 
 ## Data flow
 
-The backend code is written using the `Model-View-ViewModel (MVVM)` structural design pattern. Plugins act as `Model` in this project. A detailed overview of the project's structure is given [here](/doc/devdocs/modules/launcher/project_structure.md).
+The backend code is written using the `Model-View-ViewModel (MVVM)` structural design pattern. Plugins act as `Model` in this project. A detailed overview of the project's structure is given in [Project Structure](/doc/devdocs/modules/launcher/project_structure.md).
 
 ### Flow of data between UI(view) and ViewModels
 

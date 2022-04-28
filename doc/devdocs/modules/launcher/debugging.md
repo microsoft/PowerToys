@@ -4,7 +4,7 @@ PowerToys Run is a single exe file associated with `launcher.exe` process and de
 
 ## Debugging Prerequisite
 
-Setup development environment for PowerToys by following instruction [here](https://github.com/microsoft/PowerToys/tree/main/doc/devdocs#prerequisites-for-compiling-powertoys).
+Setup development environment for PowerToys by following instructions in [Prerequisites](https://github.com/microsoft/PowerToys/tree/main/doc/devdocs#prerequisites-for-compiling-powertoys).
 
 ## Direct debugging
 

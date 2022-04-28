@@ -19,5 +19,4 @@ var result = CalculateEngine.Interpret(query.Search, CultureInfo.CurrentUICultur
 - It comprises of the `Result` and `RoundedResult` properties.
 
 ### Score
-The score of each result from the calculator plugin is `300`.
-
+The score of each result from the calculator plugin is **300**.
