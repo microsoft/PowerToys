@@ -141,9 +141,9 @@ namespace Microsoft.PowerToys.Settings.UI
                 });
                 ipcmanager.Start();
 
-                settingsWindow = new MainWindow();
                 if (!ShowOobe && !ShowScoobe)
                 {
+                    settingsWindow = new MainWindow();
                     settingsWindow.Activate();
                     settingsWindow.NavigateToSection(StartupPage);
                 }
