@@ -22,32 +22,43 @@ namespace Microsoft.PowerToys.Settings.UI
     {
         private PowerToysModules initialModule;
 
+        private const int ExpectedWidth = 1100;
+        private const int ExpectedHeight = 700;
+        private const int DefaultDPI = 96;
+        private int _currentDPI;
+        private WindowId _windowId;
+        private IntPtr _hWnd;
+        private AppWindow _appWindow;
+
         public OobeWindow(PowerToysModules initialModule)
         {
             this.InitializeComponent();
 
             // Set window icon
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("icon.ico");
+            _hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            _windowId = Win32Interop.GetWindowIdFromWindow(_hWnd);
+            _appWindow = AppWindow.GetFromWindowId(_windowId);
+            _appWindow.SetIcon("icon.ico");
 
-            OverlappedPresenter presenter = appWindow.Presenter as OverlappedPresenter;
+            OverlappedPresenter presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsResizable = false;
             presenter.IsMinimizable = false;
             presenter.IsMaximizable = false;
 
-            var dpi = NativeMethods.GetDpiForWindow(hWnd);
-            float scalingFactor = (float)dpi / 96;
-            int width = (int)(1100 * scalingFactor);
-            int height = (int)(700 * scalingFactor);
+            var dpi = NativeMethods.GetDpiForWindow(_hWnd);
+            _currentDPI = dpi;
+            float scalingFactor = (float)dpi / DefaultDPI;
+            int width = (int)(ExpectedWidth * scalingFactor);
+            int height = (int)(ExpectedHeight * scalingFactor);
 
             SizeInt32 size;
             size.Width = width;
             size.Height = height;
-            appWindow.Resize(size);
+            _appWindow.Resize(size);
 
             this.initialModule = initialModule;
+
+            this.SizeChanged += OobeWindow_SizeChanged;
 
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
             Title = loader.GetString("OobeWindow_Title");
@@ -71,6 +82,23 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 App.OpenSettingsWindow(type);
             });
+        }
+
+        private void OobeWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
+        {
+            var dpi = NativeMethods.GetDpiForWindow(_hWnd);
+            if (_currentDPI != dpi)
+            {
+                // Reacting to a DPI change. Should not cause a resize -> sizeChanged loop.
+                _currentDPI = dpi;
+                float scalingFactor = (float)dpi / DefaultDPI;
+                int width = (int)(ExpectedWidth * scalingFactor);
+                int height = (int)(ExpectedHeight * scalingFactor);
+                SizeInt32 size;
+                size.Width = width;
+                size.Height = height;
+                _appWindow.Resize(size);
+            }
         }
 
         private void Window_Closed(object sender, WindowEventArgs args)
