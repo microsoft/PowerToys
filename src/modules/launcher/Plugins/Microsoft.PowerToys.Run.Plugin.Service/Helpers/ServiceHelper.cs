@@ -22,26 +22,26 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
     {
         public static IEnumerable<Result> Search(string search, string icoPath, PluginInitContext context)
         {
-            var services = ServiceController.GetServices();
+            var services = ServiceController.GetServices().OrderBy(s => s.DisplayName);
             IEnumerable<ServiceController> serviceList = new List<ServiceController>();
 
             if (search.StartsWith(Resources.wox_plugin_service_status + ":", StringComparison.CurrentCultureIgnoreCase))
             {
                 // allows queries like 'status:running'
-                serviceList = services.Where(s => GetLocalizedStatus(s.Status).Contains(search.Split(':')[1], StringComparison.CurrentCultureIgnoreCase)).ToList().OrderBy(x => (int)x.Status);
+                serviceList = services.Where(s => GetLocalizedStatus(s.Status).Contains(search.Split(':')[1], StringComparison.CurrentCultureIgnoreCase));
             }
             else if (search.StartsWith(Resources.wox_plugin_service_startup + ":", StringComparison.CurrentCultureIgnoreCase))
             {
                 // allows queries like 'startup:automatic'
-                serviceList = services.Where(s => GetLocalizedStartType(s.StartType, s.ServiceName).Contains(search.Split(':')[1], StringComparison.CurrentCultureIgnoreCase)).ToList().OrderBy(x => (int)x.StartType);
+                serviceList = services.Where(s => GetLocalizedStartType(s.StartType, s.ServiceName).Contains(search.Split(':')[1], StringComparison.CurrentCultureIgnoreCase));
             }
             else
             {
                 // To show 'starts with' results first, we split the search into two steps and then concatenating the lists.
                 var servicesStartsWith = services
-                    .Where(s => s.DisplayName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).StartsWith(search, StringComparison.OrdinalIgnoreCase));
+                    .Where(s => s.DisplayName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.StartsWith(search, StringComparison.OrdinalIgnoreCase)); // || GetResultTitle(s).StartsWith(search, StringComparison.OrdinalIgnoreCase));
                 var servicesContains = services.Except(servicesStartsWith)
-                    .Where(s => s.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.Contains(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).Contains(search, StringComparison.OrdinalIgnoreCase));
+                    .Where(s => s.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.Contains(search, StringComparison.OrdinalIgnoreCase)); // || GetResultTitle(s).Contains(search, StringComparison.OrdinalIgnoreCase));
                 serviceList = servicesStartsWith.Concat(servicesContains);
             }
 
@@ -70,6 +70,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
                 {
                     Title = ServiceHelper.GetResultTitle(s),
                     SubTitle = ServiceHelper.GetResultSubTitle(s),
+                    ToolTipData = new ToolTipData(serviceResult.DisplayName, serviceResult.ServiceName),
                     IcoPath = icoPath,
                     ContextData = serviceResult,
                     Action = serviceAction,
@@ -146,7 +147,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
             }
 
             var suffix = $"({serviceController.ServiceName})";
-            return serviceController.DisplayName.EndsWith(suffix, StringComparison.CurrentCulture) ? serviceController.DisplayName : $"{serviceController.DisplayName} {suffix}";
+
+            // return serviceController.DisplayName.EndsWith(suffix, StringComparison.CurrentCulture) ? serviceController.DisplayName : $"{serviceController.DisplayName} {suffix}";
+            return serviceController.DisplayName;
         }
 
         private static string GetResultSubTitle(ServiceController serviceController)
@@ -156,7 +159,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
                 throw new ArgumentNullException(nameof(serviceController));
             }
 
-            return $"{Resources.wox_plugin_service_status}: {GetLocalizedStatus(serviceController.Status)} - {Resources.wox_plugin_service_startup}: {GetLocalizedStartType(serviceController.StartType, serviceController.ServiceName)}";
+            return $"{Resources.wox_plugin_service_status}: {GetLocalizedStatus(serviceController.Status)} - {Resources.wox_plugin_service_startup}: {GetLocalizedStartType(serviceController.StartType, serviceController.ServiceName)} - Name: {serviceController.ServiceName}";
         }
 
         private static string GetLocalizedStatus(ServiceControllerStatus status)
