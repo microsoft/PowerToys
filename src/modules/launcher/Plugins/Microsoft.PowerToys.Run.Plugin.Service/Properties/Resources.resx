@@ -165,6 +165,9 @@
   <data name="wox_plugin_service_start_mode_automatic" xml:space="preserve">
     <value>Automatic</value>
   </data>
+  <data name="wox_plugin_service_start_mode_automaticDelayed" xml:space="preserve">
+    <value>Automatic (Delayed Start)</value>
+  </data>
   <data name="wox_plugin_service_start_mode_boot" xml:space="preserve">
     <value>Boot</value>
   </data>

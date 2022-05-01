@@ -11,6 +11,7 @@ using System.Reflection;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Run.Plugin.Service.Properties;
+using Microsoft.Win32;
 using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -22,13 +23,28 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
         public static IEnumerable<Result> Search(string search, string icoPath, PluginInitContext context)
         {
             var services = ServiceController.GetServices();
+            IEnumerable<ServiceController> servieList = new List<ServiceController>();
 
-            var servicesStartsWith = services
+            if (search.StartsWith(Resources.wox_plugin_service_status + ":", StringComparison.CurrentCultureIgnoreCase))
+            {
+                // allows queries like 'status:running
+                servieList = services.Where(s => GetLocalizedStatus(s.Status).Contains(search.Split(':')[1], StringComparison.CurrentCultureIgnoreCase)).ToList().OrderBy(x => (int)x.Status);
+            }
+            else if (search.StartsWith(Resources.wox_plugin_service_startup + ":", StringComparison.CurrentCultureIgnoreCase))
+            {
+                // allows querys like 'startup:automatic'
+                servieList = services.Where(s => GetLocalizedStartType(s.StartType, s.ServiceName).Contains(search.Split(':')[1], StringComparison.CurrentCultureIgnoreCase)).ToList().OrderBy(x => (int)x.StartType);
+            }
+            else
+            {
+                var servicesStartsWith = services
                 .Where(s => s.DisplayName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).StartsWith(search, StringComparison.OrdinalIgnoreCase));
-            var servicesContains = services.Except(servicesStartsWith)
-                .Where(s => s.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.Contains(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).Contains(search, StringComparison.OrdinalIgnoreCase));
+                var servicesContains = services.Except(servicesStartsWith)
+                    .Where(s => s.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.Contains(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).Contains(search, StringComparison.OrdinalIgnoreCase));
+                servieList = servicesStartsWith.Concat(servicesContains);
+            }
 
-            return servicesStartsWith.Concat(servicesContains).Select(s =>
+            return servieList.Select(s =>
             {
                 ServiceResult serviceResult = new ServiceResult(s);
                 Func<ActionContext, bool> serviceAction;
@@ -139,7 +155,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
                 throw new ArgumentNullException(nameof(serviceController));
             }
 
-            return $"{Resources.wox_plugin_service_status}: {GetLocalizedStatus(serviceController.Status)} - {Resources.wox_plugin_service_startup}: {GetLocalizedStartType(serviceController.StartType)}";
+            return $"{Resources.wox_plugin_service_status}: {GetLocalizedStatus(serviceController.Status)} - {Resources.wox_plugin_service_startup}: {GetLocalizedStartType(serviceController.StartType, serviceController.ServiceName)}";
         }
 
         private static string GetLocalizedStatus(ServiceControllerStatus status)
@@ -178,7 +194,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
             }
         }
 
-        private static string GetLocalizedStartType(ServiceStartMode startMode)
+        private static string GetLocalizedStartType(ServiceStartMode startMode, string serviceName)
         {
             if (startMode == ServiceStartMode.Boot)
             {
@@ -190,7 +206,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
             }
             else if (startMode == ServiceStartMode.Automatic)
             {
-                return Resources.wox_plugin_service_start_mode_automatic;
+                return !IsDelayedStart(serviceName) ? Resources.wox_plugin_service_start_mode_automatic : Resources.wox_plugin_service_start_mode_automaticDelayed;
             }
             else if (startMode == ServiceStartMode.Manual)
             {
@@ -244,6 +260,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
             {
                 return string.Empty;
             }
+        }
+
+        private static bool IsDelayedStart(string serviceName)
+        {
+           return (int)Registry.LocalMachine.OpenSubKey(@"System\CurrentControlSet\Services\" + serviceName, false)?.GetValue("DelayedAutostart", 0, RegistryValueOptions.None) == 1;
         }
     }
 }
