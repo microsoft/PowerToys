@@ -23,17 +23,17 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
         public static IEnumerable<Result> Search(string search, string icoPath, PluginInitContext context)
         {
             var services = ServiceController.GetServices();
-            IEnumerable<ServiceController> servieList = new List<ServiceController>();
+            IEnumerable<ServiceController> serviceList = new List<ServiceController>();
 
             if (search.StartsWith(Resources.wox_plugin_service_status + ":", StringComparison.CurrentCultureIgnoreCase))
             {
-                // allows queries like 'status:running
-                servieList = services.Where(s => GetLocalizedStatus(s.Status).Contains(search.Split(':')[1], StringComparison.CurrentCultureIgnoreCase)).ToList().OrderBy(x => (int)x.Status);
+                // allows queries like 'status:running'
+                serviceList = services.Where(s => GetLocalizedStatus(s.Status).Contains(search.Split(':')[1], StringComparison.CurrentCultureIgnoreCase)).ToList().OrderBy(x => (int)x.Status);
             }
             else if (search.StartsWith(Resources.wox_plugin_service_startup + ":", StringComparison.CurrentCultureIgnoreCase))
             {
-                // allows querys like 'startup:automatic'
-                servieList = services.Where(s => GetLocalizedStartType(s.StartType, s.ServiceName).Contains(search.Split(':')[1], StringComparison.CurrentCultureIgnoreCase)).ToList().OrderBy(x => (int)x.StartType);
+                // allows queries like 'startup:automatic'
+                serviceList = services.Where(s => GetLocalizedStartType(s.StartType, s.ServiceName).Contains(search.Split(':')[1], StringComparison.CurrentCultureIgnoreCase)).ToList().OrderBy(x => (int)x.StartType);
             }
             else
             {
@@ -41,10 +41,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
                 .Where(s => s.DisplayName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).StartsWith(search, StringComparison.OrdinalIgnoreCase));
                 var servicesContains = services.Except(servicesStartsWith)
                     .Where(s => s.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.Contains(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).Contains(search, StringComparison.OrdinalIgnoreCase));
-                servieList = servicesStartsWith.Concat(servicesContains);
+                serviceList = servicesStartsWith.Concat(servicesContains);
             }
 
-            return servieList.Select(s =>
+            return serviceList.Select(s =>
             {
                 ServiceResult serviceResult = new ServiceResult(s);
                 Func<ActionContext, bool> serviceAction;
