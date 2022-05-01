@@ -37,9 +37,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
             }
             else
             {
-				// To show 'starts with' results first, we split the search into two steps and then concatenating the lists.
+                // To show 'starts with' results first, we split the search into two steps and then concatenating the lists.
                 var servicesStartsWith = services
-					.Where(s => s.DisplayName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).StartsWith(search, StringComparison.OrdinalIgnoreCase));
+                    .Where(s => s.DisplayName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).StartsWith(search, StringComparison.OrdinalIgnoreCase));
                 var servicesContains = services.Except(servicesStartsWith)
                     .Where(s => s.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.Contains(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).Contains(search, StringComparison.OrdinalIgnoreCase));
                 serviceList = servicesStartsWith.Concat(servicesContains);
