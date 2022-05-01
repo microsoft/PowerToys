@@ -70,6 +70,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        internal static string wox_plugin_service_name {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open services (Ctrl+O).
         /// </summary>
         internal static string wox_plugin_service_open_services {
