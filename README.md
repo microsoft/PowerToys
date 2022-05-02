@@ -86,7 +86,7 @@ In this release, we focused on upgrading to new dependencies and building for na
 - Fix for a CI error related to spell checking due to a GitHub API change. Thanks [@jsoref](https://github.com/jsoref)!
 - Fixed the documentation references to GitHub. Thanks [@Cyl18](https://github.com/Cyl18)!
 
-### ARM 64
+### ARM64
 
 - Prepare solution and property files for ARM64 port. Thanks [@snickler](https://github.com/snickler)!
 - Port unhandled exception handler to ARM64. Thanks [@snickler](https://github.com/snickler)!
