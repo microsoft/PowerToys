@@ -15,7 +15,7 @@ jobs:
       - name: Submit package to Windows Package Manager Community Repository
         run: |
           iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
-          $github = Invoke-RestMethod -uri "$($releases_url)" 
+          $github = Invoke-RestMethod -uri "https://api.github.com/repos/Microsoft/PowerToys/releases" 
           Write-Output $github.release.assets
           $installerUrl = $github.release.assets | Where-Object -Property name -match 'PowerToysSetup' | Select -ExpandProperty browser_download_url -First 1
           $wingetPackage = "Microsoft.PowerToys"
