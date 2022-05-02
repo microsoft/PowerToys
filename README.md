@@ -178,7 +178,7 @@ We'd like to directly mention certain contributors (in alphabetical order) for t
 For [v0.59][github-next-release-work], we'll work on below:
 
 - Environment Variables Editor PowerToy
-- Wrap up the ARM 64 build
+- Wrap up the ARM64 build
 - Stability / bug fixes
 
 ## PowerToys Community
