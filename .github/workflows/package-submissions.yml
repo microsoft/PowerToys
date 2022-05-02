@@ -16,7 +16,9 @@ jobs:
         run: |
           iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
           $github = Get-Content '${{ github.event_path }}' | ConvertFrom-Json
+          Write-Output $github.release.assets
           $installerUrl = $github.release.assets | Where-Object -Property name -match 'PowerToysSetup' | Select -ExpandProperty browser_download_url -First 1
           $wingetPackage = "Microsoft.PowerToys"
           $gitToken = {{ secrets.pt_WinGet }}
-          .\wingetcreate.exe update $wingetPackage -s -v $github.release.tag_name.Trim("v") -u $installerUrl -t $gitToken
+          $ver = $github.release.tag_name.Trim("v")
+          .\wingetcreate.exe update $wingetPackage -s -v $ver -u $installerUrl -t $gitToken
