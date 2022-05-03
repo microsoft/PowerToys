@@ -117,7 +117,7 @@ In this release, we focused on upgrading to new dependencies and building for na
 
 - Fix for a crash in dev file preview if the settings file hadn't been created yet. (This was a hotfix for 0.57)
 - New file types were added to dev file preview. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Fix an existing "file still in use" issue in dev file preview. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Fix an existing "file still in use" issue in dev file preview (".reg", ".xslt", ".xsd", ".wsdl", ".ino", ".pde", ".razor"). Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - Dev file preview is now able to interpret file extensions in a case-insensitive way. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - SVG and markdown viewers no longer use WebBrowser and use WebView2 instead.
 - Markdown preview now respects the dark mode settings on Windows. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
