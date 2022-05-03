@@ -77,7 +77,7 @@ In this release, we focused on upgrading to new dependencies and building for na
 
 - Most of the work for running natively on ARM64 has been included in the repo. Thanks [@snickler](https://github.com/snickler)!
 - Uses of the obsolete WebBrowser control were replaced with WebView 2.
-- All uses of .NET core were removed. PowerToys now runs on .NET framework 6.
+- All uses of .NET Core 3.1 were removed. PowerToys now runs on .NET 6.
 - Settings no longer runs on XAML Islands and is now running on WinUI 3, fixing many bugs related to XAML islands.
 
 ### General
@@ -158,7 +158,7 @@ In this release, we focused on upgrading to new dependencies and building for na
 - Distribute a signed .msi inside the .exe installer bootstrapper. (This was a hotfix for 0.57)
 - Removed the .NET core dependency from the installer.
 - Partial support for an ARM64 installer.
-- Updated the .NET framework to 6.0.4.
+- Updated the .NET to 6.0.4.
 - Force update all files on reinstall/update, to try and fix installation issues.
 
 
