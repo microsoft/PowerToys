@@ -16,7 +16,7 @@ jobs:
         run: |
           
           $wingetPackage = "Microsoft.PowerToys"
-          $gitToken = ${{ secrets.PT_WINGET }}
+          $gitToken = "${{ secrets.PT_WINGET }}"
           
           $github = Invoke-RestMethod -uri "https://api.github.com/repos/Microsoft/PowerToys/releases" 
           
