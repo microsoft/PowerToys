@@ -977,7 +977,7 @@ IView
 IVirtual
 IWeb
 IWIC
-IWindow
+iwindow
 IWindows
 IWork
 IXaml
