@@ -18,9 +18,9 @@
 #include <sstream>
 #include <vector>
 
-#include "microsoft.ui.xaml.window.h" // For the IWindowNative interface.
-#include <winrt/Microsoft.UI.Interop.h> // For the WindowId struct and the GetWindowIdFromWindow function.
-#include <winrt/Microsoft.UI.Windowing.h> // For AppWindow::GetFromWindowId
+#include "microsoft.ui.xaml.window.h"
+#include <winrt/Microsoft.UI.Interop.h>
+#include <winrt/Microsoft.UI.Windowing.h>
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;
@@ -225,6 +225,8 @@ namespace winrt::PowerRenameUI::implementation
 
     void MainWindow::ShowAll(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
+        button_showAll().IsChecked(true);
+        button_showRenamed().IsChecked(false);
         if (!m_uiUpdatesItem.ShowAll())
         {
             m_explorerItems.Clear();
@@ -235,6 +237,8 @@ namespace winrt::PowerRenameUI::implementation
 
     void MainWindow::ShowRenamed(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
+        button_showRenamed().IsChecked(true);
+        button_showAll().IsChecked(false);
         if (m_uiUpdatesItem.ShowAll())
         {
             m_explorerItems.Clear();
@@ -319,7 +323,7 @@ namespace winrt::PowerRenameUI::implementation
 
     void MainWindow::PopulateExplorerItems()
     {
-        //_TRACER_;
+        _TRACER_;
 
         UINT count = 0;
         m_prManager->GetVisibleItemCount(&count);

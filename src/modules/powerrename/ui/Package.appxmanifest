@@ -8,12 +8,12 @@
 
   <Identity
     Name="9c8d3ebd-7545-4943-aeba-2264efcb1c85"
-    Publisher="CN=stefa"
+    Publisher="CN=Microsoft Corporation"
     Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>PowerRenameUI</DisplayName>
-    <PublisherDisplayName>stefa</PublisherDisplayName>
+    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
