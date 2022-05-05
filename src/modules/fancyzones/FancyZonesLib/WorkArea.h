@@ -20,8 +20,7 @@ public:
 
 #if defined(UNIT_TESTS)
         m_workAreaRect = FancyZonesUtils::Rect({ 0, 0, 1920, 1080 });
-        return true;
-#endif
+#else
 
         if (monitor)
         {
@@ -38,6 +37,7 @@ public:
         {
             m_workAreaRect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
         }
+#endif
 
         return true;
     }
