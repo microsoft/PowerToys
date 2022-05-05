@@ -8,6 +8,7 @@
 #include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/util.h>
 
 namespace JsonUtils
@@ -221,11 +222,6 @@ AppZoneHistory& AppZoneHistory::instance()
     return self;
 }
 
-void AppZoneHistory::SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback)
-{
-    m_virtualDesktopCheckCallback = callback;
-}
-
 void AppZoneHistory::LoadData()
 {
     auto file = AppZoneHistoryFileName();
@@ -253,22 +249,21 @@ void AppZoneHistory::SaveData()
 {
     bool dirtyFlag = false;
     std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> updatedHistory;
-    if (m_virtualDesktopCheckCallback)
-    {
-        for (const auto& [path, dataVector] : m_history)
-        {
-            auto updatedVector = dataVector;
-            for (auto& data : updatedVector)
-            {
-                if (!m_virtualDesktopCheckCallback(data.deviceId.virtualDesktopId))
-                {
-                    data.deviceId.virtualDesktopId = GUID_NULL;
-                    dirtyFlag = true;
-                }
-            }
+    VirtualDesktop virtualDesktop;
 
-            updatedHistory.insert(std::make_pair(path, updatedVector));
+    for (const auto& [path, dataVector] : m_history)
+    {
+        auto updatedVector = dataVector;
+        for (auto& data : updatedVector)
+        {
+            if (!virtualDesktop.IsVirtualDesktopIdSavedInRegistry(data.deviceId.virtualDesktopId))
+            {
+                data.deviceId.virtualDesktopId = GUID_NULL;
+                dirtyFlag = true;
+            }
         }
+
+        updatedHistory.insert(std::make_pair(path, updatedVector));
     }
 
     if (dirtyFlag)
@@ -525,7 +520,8 @@ void AppZoneHistory::SyncVirtualDesktops(GUID currentVirtualDesktopId)
             }
             else
             {
-                if (m_virtualDesktopCheckCallback && !m_virtualDesktopCheckCallback(data.deviceId.virtualDesktopId))
+                VirtualDesktop virtualDesktop;
+                if (!virtualDesktop.IsVirtualDesktopIdSavedInRegistry(data.deviceId.virtualDesktopId))
                 {
                     data.deviceId.virtualDesktopId = GUID_NULL;
                     dirtyFlag = true;

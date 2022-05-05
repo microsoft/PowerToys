@@ -9,6 +9,7 @@
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/util.h>
 
 namespace 
@@ -244,19 +245,18 @@ void AppliedLayouts::SaveData()
 {
     bool dirtyFlag = false;
     TAppliedLayoutsMap updatedMap;
-    if (m_virtualDesktopCheckCallback)
-    {
-        for (const auto& [id, data] : m_layouts)
-        {
-            auto updatedId = id;
-            if (!m_virtualDesktopCheckCallback(id.virtualDesktopId))
-            {
-                updatedId.virtualDesktopId = GUID_NULL;
-                dirtyFlag = true;
-            }
+    VirtualDesktop virtualDesktop;
 
-            updatedMap.insert({ updatedId, data });
+    for (const auto& [id, data] : m_layouts)
+    {
+        auto updatedId = id;
+        if (!virtualDesktop.IsVirtualDesktopIdSavedInRegistry(id.virtualDesktopId))
+        {
+            updatedId.virtualDesktopId = GUID_NULL;
+            dirtyFlag = true;
         }
+
+        updatedMap.insert({ updatedId, data });
     }
 
     if (dirtyFlag)
@@ -267,11 +267,6 @@ void AppliedLayouts::SaveData()
     {
         json::to_file(AppliedLayoutsFileName(), JsonUtils::SerializeJson(m_layouts));
     }
-}
-
-void AppliedLayouts::SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback)
-{
-    m_virtualDesktopCheckCallback = callback;
 }
 
 void AppliedLayouts::SyncVirtualDesktops(GUID currentVirtualDesktopId)
@@ -301,7 +296,8 @@ void AppliedLayouts::SyncVirtualDesktops(GUID currentVirtualDesktopId)
         }
         else
         {
-            if (m_virtualDesktopCheckCallback && !m_virtualDesktopCheckCallback(id.virtualDesktopId))
+            VirtualDesktop virtualDesktop;
+            if (!virtualDesktop.IsVirtualDesktopIdSavedInRegistry(id.virtualDesktopId))
             {
                 replaceWithNullId.push_back(id);
                 dirtyFlag = true;
