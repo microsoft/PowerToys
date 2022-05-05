@@ -59,12 +59,6 @@ public:
         m_hinstance(hinstance),
         m_windowMoveHandler([this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
-        }),
-        m_virtualDesktop([this]() { 
-            PostMessage(m_window, WM_PRIV_VD_INIT, 0, 0); 
-        },
-        [this]() { 
-            PostMessage(m_window, WM_PRIV_VD_UPDATE, 0, 0); 
         })
     {
         this->disableModuleCallback = std::move(disableModuleCallback);
@@ -258,8 +252,6 @@ FancyZones::Run() noexcept
         }
     }
 
-    m_virtualDesktop.Init();
-
     m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [] {
                           SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
                           SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
@@ -274,6 +266,7 @@ FancyZones::Run() noexcept
         }
     });
 
+    PostMessage(m_window, WM_PRIV_VD_INIT, 0, 0);
     AppliedLayouts::instance().SetVirtualDesktopCheckCallback(std::bind(&VirtualDesktop::IsVirtualDesktopIdSavedInRegistry, &m_virtualDesktop, std::placeholders::_1));
     AppZoneHistory::instance().SetVirtualDesktopCheckCallback(std::bind(&VirtualDesktop::IsVirtualDesktopIdSavedInRegistry, &m_virtualDesktop, std::placeholders::_1));
 }
@@ -289,8 +282,6 @@ FancyZones::Destroy() noexcept
         DestroyWindow(m_window);
         m_window = nullptr;
     }
-
-    m_virtualDesktop.UnInit();
 }
 
 // IFancyZonesCallback

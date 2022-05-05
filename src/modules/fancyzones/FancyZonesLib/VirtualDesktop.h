@@ -1,12 +1,9 @@
 #pragma once
 
-#include "WorkArea.h"
-#include "on_thread_executor.h"
-
 class VirtualDesktop
 {
 public:
-    VirtualDesktop(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback);
+    VirtualDesktop();
     ~VirtualDesktop();
 
     inline bool IsVirtualDesktopIdSavedInRegistry(GUID id) const
@@ -28,9 +25,6 @@ public:
         return false;
     }
 
-    void Init();
-    void UnInit();
-
     std::optional<GUID> GetCurrentVirtualDesktopIdFromRegistry() const;
     std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry() const;
 
@@ -41,14 +35,7 @@ public:
     std::vector<std::pair<HWND, GUID>> GetWindowsRelatedToDesktops() const;
 
 private:
-    std::function<void()> m_vdInitCallback;
-    std::function<void()> m_vdUpdatedCallback;
-
     IVirtualDesktopManager* m_vdManager;
 
-    OnThreadExecutor m_virtualDesktopTrackerThread;
-    wil::unique_handle m_terminateVirtualDesktopTrackerEvent;
-
     std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry(HKEY hKey) const;
-    void HandleVirtualDesktopUpdates();
 };

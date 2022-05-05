@@ -72,9 +72,7 @@ HKEY GetVirtualDesktopsRegKey()
     return virtualDesktopsKey.get();
 }
 
-VirtualDesktop::VirtualDesktop(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback) :
-    m_vdInitCallback(vdInitCallback),
-    m_vdUpdatedCallback(vdUpdatedCallback)
+VirtualDesktop::VirtualDesktop()
 {
     auto res = CoCreateInstance(CLSID_VirtualDesktopManager, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&m_vdManager));
     if (FAILED(res))
@@ -88,22 +86,6 @@ VirtualDesktop::~VirtualDesktop()
     if (m_vdManager)
     {
         m_vdManager->Release();
-    }
-}
-
-void VirtualDesktop::Init()
-{
-    m_vdInitCallback();
-
-    m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
-    m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] { HandleVirtualDesktopUpdates(); } });
-}
-
-void VirtualDesktop::UnInit()
-{
-    if (m_terminateVirtualDesktopTrackerEvent)
-    {
-        SetEvent(m_terminateVirtualDesktopTrackerEvent.get());
     }
 }
 
@@ -250,29 +232,4 @@ std::optional<GUID> VirtualDesktop::GetDesktopIdByTopLevelWindows() const
     }
 
     return std::nullopt;
-}
-
-void VirtualDesktop::HandleVirtualDesktopUpdates()
-{
-    HKEY virtualDesktopsRegKey = GetVirtualDesktopsRegKey();
-    if (!virtualDesktopsRegKey)
-    {
-        return;
-    }
-    HANDLE regKeyEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-    HANDLE events[2] = { regKeyEvent, m_terminateVirtualDesktopTrackerEvent.get() };
-    while (1)
-    {
-        if (RegNotifyChangeKeyValue(virtualDesktopsRegKey, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS)
-        {
-            return;
-        }
-        if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != (WAIT_OBJECT_0 + 0))
-        {
-            // if terminateEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
-            return;
-        }
-
-        m_vdUpdatedCallback();
-    }
 }
