@@ -68,7 +68,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_GCODE" Icon="&#xE81E;">
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_GCODE" Icon="&#xE914;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODERenderIsEnabled}"
                                           x:Uid="ToggleSwitch"/>
@@ -89,28 +89,28 @@
                                    IsTabStop="True"
                                    IsClosable="False"
                                    />
-                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail" Icon="&#xE91B;">
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}"
                                           x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_PDF_Thumbnail" Icon="&#xEA90;">
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF" Icon="&#xEA90;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFThumbnailIsEnabled}"
                                           x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_GCODE_Thumbnail" Icon="&#xE81E;">
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE" Icon="&#xE914;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODEThumbnailIsEnabled}"
                                           x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                  <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_STL_Thumbnail" Icon="&#xF158;">
+                  <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_STL" Icon="&#xE914;">
                       <controls:Setting.ActionContent>
                           <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.STLThumbnailIsEnabled}"
                                         x:Uid="ToggleSwitch"/>
