@@ -14,11 +14,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Debug'">
-    <PlatformToolset>v143</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Release'">
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -28,7 +23,8 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>  <PropertyGroup Label="UserMacros" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\FancyZones\</OutDir>
   </PropertyGroup>
@@ -81,30 +77,25 @@
   <ItemGroup>
     <ClCompile Include="Colors.cpp" />
     <ClCompile Include="FancyZonesData\AppZoneHistory.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)'=='Debug'">../pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)'=='Release'">../pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="FancyZonesData\CustomLayouts.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)'=='Debug'">../pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)'=='Release'">../pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="FancyZones.cpp" />
     <ClCompile Include="FancyZonesDataTypes.cpp" />
     <ClCompile Include="FancyZonesData\AppliedLayouts.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)'=='Debug'">../pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)'=='Release'">../pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="FancyZonesData\LayoutTemplates.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)'=='Debug'">../pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)'=='Release'">../pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="FancyZonesWindowProperties.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
     <ClCompile Include="FancyZonesData.cpp" />
     <ClCompile Include="JsonHelpers.cpp" />
     <ClCompile Include="FancyZonesData\LayoutHotkeys.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)'=='Debug'">../pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)'=='Release'">../pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="LayoutConfigurator.cpp" />
     <ClCompile Include="MonitorUtils.cpp" />
