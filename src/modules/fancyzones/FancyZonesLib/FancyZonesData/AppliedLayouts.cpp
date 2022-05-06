@@ -420,8 +420,9 @@ bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::DeviceIdData&
 
     m_layouts[deviceId] = std::move(layout);
     
-    SaveData();
-
+    // Saving default layout data doesn't make sense, since it's ignored on parsing.
+    // Given that default layouts are ignored when parsing, 
+    // saving default data can cause an infinite loop of reading, reapplying default layout and saving the same file.
     return true;
 }
 
