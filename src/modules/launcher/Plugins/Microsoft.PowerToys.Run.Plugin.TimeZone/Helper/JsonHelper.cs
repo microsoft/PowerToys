@@ -38,7 +38,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 using var stream = assembly.GetManifestResourceStream(resourceName);
                 if (stream is null)
                 {
-                    throw new Exception("stream is null");
+                    Log.Error("Stream is null", typeof(JsonHelper));
+                    return new TimeZoneList();
                 }
 
                 using var reader = new StreamReader(stream);
