@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Microsoft.PowerToys.Settings.UI.Library.CustomAction;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
@@ -135,5 +134,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
         }
 
         public const uint VirtualKeyWindows = interop.Constants.VK_WIN_BOTH;
+
+        public static bool Windows11()
+        {
+            return Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= 22000;
+        }
     }
 }

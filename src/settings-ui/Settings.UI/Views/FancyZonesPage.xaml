@@ -14,6 +14,7 @@
         <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
         <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+        <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="FancyZones"
@@ -189,10 +190,8 @@
                                                                  x:Uid="FancyZones_AllowPopupWindowSnap"/>
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowChildWindowSnap}" Margin="{StaticResource ExpanderSettingMargin}"/>
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <controls:CheckBoxWithDescriptionControl IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableRoundCornersOnWindowSnap}"
-                                                                 Margin="56, -2, 40, 14"
-                                                                 x:Uid="FancyZones_DisableRoundCornersOnWindowSnap"/>
+                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource TrueToVisibleConverter}}"/>
+                                <CheckBox x:Uid="FancyZones_DisableRoundCornersOnWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableRoundCornersOnWindowSnap}" Margin="{StaticResource ExpanderSettingMargin}" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource TrueToVisibleConverter}}"/>
                             </StackPanel>
 
                         </controls:SettingExpander.Content>
