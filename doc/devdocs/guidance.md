@@ -16,7 +16,7 @@ XXX must be a unique int in the list (mostly the int ID of the last string id pl
 #define IDS_MODULE_DISPLAYNAME                    XXX
 ```
 
-- `StringTable` in resource-definition script file `validmodulename.rc`:
+- **StringTable** in resource-definition script file _validmodulename.rc_:
 
 ```cpp
     STRINGTABLE
@@ -25,7 +25,7 @@ XXX must be a unique int in the list (mostly the int ID of the last string id pl
     END
 ```
 
-- Use the `GET_RESOURCE_STRING(UINT resource_id)` method to consume strings in your code.
+- Use the **GET_RESOURCE_STRING(UINT resource_id)** method to consume strings in your code.
 
 ```cpp
 #include <common.h>
@@ -53,7 +53,7 @@ System.Resources.ResourceManager manager = new System.Resources.ResourceManager(
 string validUIDisplayString = manager.GetString("ValidUIDisplayString", resourceCulture);
 ```
 
-In case of Visual Studio is used to create the resource file. Simply use the `Resources` class in auto-generated _Resources.Designer.cs_ file to access the strings which encapsulate the [Resource Manager][Resource Manager] logic.
+In case of Visual Studio is used to create the resource file. Simply use the **Resources** class in auto-generated _Resources.Designer.cs_ file to access the strings which encapsulate the [Resource Manager][Resource Manager] logic.
 
 ```csharp
 string validUIDisplayString = Resources.ValidUIDisplayString;

@@ -7,8 +7,7 @@ The Windows settings Plugin allows users to search the Windows settings.
 * Support modern Windows settings (Windows 10+)
 * Support legacy Windows settings (Windows 7, 8.1)
 * Support extra programs for setting (like ODBC)
-
-* Support search by the area of the setting (like `Privacy`)
+* Support search by the area of the setting (like _Privacy_)
 * Support search for alternative names of a setting
 
 ## How to add a new Windows Setting or change one
@@ -18,15 +17,15 @@ The _WindowsSettings.json_ use a JSON schema file that make it easier to edit it
 
 | Key                 | Optional | Value type        | String prefix |
 | ------------------- | -------- | ----------------- | ------------- |
-| `Name`              | **No**   | String            |               |
-| `Type`              | **No**   | String            | `App`         |
-| `Command`           | **No**   | String            |               |
-| `Areas`             | Yes      | List with strings | `Area`        |
-| `AltNames`          | Yes      | List with strings |               |
-| `Note`              | Yes      | String            | `Note`        |
-| `IntroducedInBuild` | Yes      | Integer           |               |
-| `DeprecatedInBuild` | Yes      | Integer           |               |
-| `ShowAsFirstResult` | Yes      | Boolean           |               |
+| Name              | **No**   | String            |               |
+| Type              | **No**   | String            | App         |
+| Command           | **No**   | String            |               |
+| Areas             | Yes      | List with strings | Area        |
+| AltNames          | Yes      | List with strings |               |
+| Note              | Yes      | String            | Note        |
+| IntroducedInBuild | Yes      | Integer           |               |
+| DeprecatedInBuild | Yes      | Integer           |               |
+| ShowAsFirstResult | Yes      | Boolean           |               |
 
 A minimum entry for the _WindowsSettings.json_ looks like:
 
@@ -58,10 +57,10 @@ A full entry for the _WindowsSettings.json_ looks like:
 
 * The `Command` for modern Windows settings should start with `ms-settings:`
 * The `Command` for legacy Windows settings should start with `control`
-* The integer value for `IntroducedInBuild` and  `DeprecatedInBuild` must be in range of `0` to `4294967295`
+* The integer value for `IntroducedInBuild` and  `DeprecatedInBuild` must be in range of **0** to **4294967295**
 * The strings for `Name`, `AltNames`, `Areas`, `Type` and `Note` must not contain whitespace(s) or special characters (#, €, $, etc.)
-* The strings for `Name`, `AltNames`, `Areas`, `Type` and `Note` are used as ids for the resource file under `Properties\Resources.resx`
-* When you add new strings make sure you have add add all translations for it.
+* The strings for `Name`, `AltNames`, `Areas`, `Type` and `Note` are used as ids for the resource file under _Properties\Resources.resx_
+* When you add new strings, make sure you have add all translations for it.
 
 ## Scores
 
@@ -74,7 +73,7 @@ There are three different score types with different start values.
 | Medium score       |  5000        |
 | Low score          |  1000        |
 
-Each score will decreased by one when a condition match.
+Each score will be decreased by one when a condition matches.
 
 | Priority | Condition                                                         | Score type   |
 | -------- | ----------------------------------------------------------------- | ------------ |
@@ -88,13 +87,13 @@ Each score will decreased by one when a condition match.
 
 ### Remarks
 
-* For each score condition we check if the property "ShowAsFirstResult" of the setting is true. If yes we use the firstResultScore instead of condition`s score.
+* For each score condition we check if the property "ShowAsFirstResult" of the setting is true. If yes we use the firstResultScore instead of condition's score.
 
 ## Important for developers
 
 ### General
 
-* The assembly name is cached into `_assemblyName` (to avoid to many calls of `Assembly.GetExecutingAssembly()`)
+* The assembly name is cached into **_assemblyName** to avoid to many calls of `Assembly.GetExecutingAssembly()`.
 
 ## Microsoft.PowerToys.Run.Plugin.WindowsSettings project
 
@@ -108,11 +107,11 @@ Each score will decreased by one when a condition match.
 
 ### Interfaces used by this plugin
 
-The plugin use only these interfaces (all inside the _Main.cs_):
+The plugin uses only these interfaces (all inside the _Main.cs_):
 
-* `Wox.Plugin.IPlugin`
-* `Wox.Plugin.IContextMenu`
-* `Wox.Plugin.IPluginI18n`
+* Wox.Plugin.IPlugin
+* Wox.Plugin.IContextMenu
+* Wox.Plugin.IPluginI18n
 
 ### Program files
 
@@ -158,5 +157,5 @@ Because the JSON file must have a object as root type, instead of a array.
 
 #### Projects
 
-* `Wox.Infrastructure`
-* `Wox.Plugin`
+* Wox.Infrastructure
+* Wox.Plugin

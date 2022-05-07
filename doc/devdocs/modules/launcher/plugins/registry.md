@@ -4,7 +4,7 @@ The registry plugin allows users to search the Windows registry.
 
 ## Special functions (differ from the regular functions)
 
-* Support full base keys and short base keys (e.g. `HKLM` for `HKEY_LOCALE_MACHINE`).
+* Support full base keys and short base keys (e.g. **HKLM** for **HKEY_LOCALE_MACHINE**).
 * Show count of subkeys and count of values in the second result line.
 * Search for value names and value data inside a registry key (syntax: `[RegistryKey]\\[ValueName]` and `[RegistryKey]\\[ValueData]`)
 
@@ -26,12 +26,12 @@ The score is currently not set on the results.
 
 ### General
 
-* The assembly name is cached into `_assemblyName` (to avoid to many calls of `Assembly.GetExecutingAssembly()`)
+* The assembly name is cached into **_assemblyName** to avoid to many calls of `Assembly.GetExecutingAssembly()`
 
 ### Results
 
-* All results override the visible search result via `QueryTextDisplay` to avoid problems with short registry base keys (e.g. `HKLM`).
-* The length of a `Title` and `Subtitle` is automatic truncated, when it is to long.
+* All results override the visible search result via **QueryTextDisplay** to avoid problems with short registry base keys (e.g. **HKLM**).
+* The length of a _Title_ and _Subtitle_ is automatic truncated, when it is to long.
 
 ## Microsoft.Plugin.Registry project
 
@@ -47,10 +47,10 @@ The score is currently not set on the results.
 
 The plugin use only these interfaces (all inside the _Main.cs_):
 
-* `Wox.Plugin.IPlugin`
-* `Wox.Plugin.IContextMenu`
-* `Wox.Plugin.IPluginI18n`
-* `System.IDisposable`
+* Wox.Plugin.IPlugin
+* Wox.Plugin.IContextMenu
+* Wox.Plugin.IPluginI18n
+* System.IDisposable
 
 ### Program files
 
@@ -90,6 +90,7 @@ The plugin use only these interfaces (all inside the _Main.cs_):
 
 #### Packages
 
+<!-- fxcop is deprecated -->
 | Package                                                                             | Version |
 | ----------------------------------------------------------------------------------- | ------- |
 | [Microsoft.CodeAnalysis.FxCopAnalyzers](https://github.com/dotnet/roslyn-analyzers) | 3.3.0   |
@@ -97,5 +98,5 @@ The plugin use only these interfaces (all inside the _Main.cs_):
 
 #### Projects
 
-* `Wox.Infrastructure`
-* `Wox.Plugin`
+* Wox.Infrastructure
+* Wox.Plugin

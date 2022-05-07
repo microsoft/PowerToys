@@ -1,4 +1,5 @@
 # NOTICES AND INFORMATION
+
 This software incorporates material from third parties.
 
 - Color Picker
@@ -98,6 +99,7 @@ THE SOFTWARE.
 ### Wox License
 
 **Fork project source**: https://github.com/jjw24/Wox/
+
 **Base project source**: https://github.com/Wox-launcher/Wox
 
 The MIT License (MIT)
@@ -121,7 +123,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-###  Beta Tadele's Window Walker License
+### Beta Tadele's Window Walker License
 
 **Source**: https://github.com/betsegaw/windowwalker
 
@@ -166,11 +168,12 @@ SOFTWARE.
 ## PowerToy: Installer/Runner
 
 ### spdlog
+
 **Source**: https://github.com/gabime/spdlog
 
 The MIT License (MIT)
 
-Copyright (c) 2016 Gabi Melman.                                       
+Copyright (c) 2016 Gabi Melman.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -194,8 +197,8 @@ THE SOFTWARE.
 This software depends on the fmt lib (MIT License),
 and users must comply to its license: https://github.com/fmtlib/fmt/blob/master/LICENSE.rst
 
-
 ### cxxopts
+
 **Source**: https://github.com/jarro2783
 
 Copyright (c) 2014 Jarryd Beck
@@ -218,8 +221,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-
 ### expected-lite
+
 **Source**: https://github.com/martinmoene/expected-lite
 
 Boost Software License - Version 1.0 - August 17th, 2003
@@ -247,6 +250,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ### zip
+
 **Source**: https://github.com/kuba--/zip
 
 This is free and unencumbered software released into the public domain.
@@ -272,5 +276,4 @@ OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-For more information, please refer to <http://unlicense.org/>
-
+For more information, please refer to http://unlicense.org

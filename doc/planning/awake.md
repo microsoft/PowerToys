@@ -10,13 +10,13 @@ The build ID can be found in [NLog.config](https://github.com/microsoft/PowerToy
 
 | Build ID                                                  | Build Date       |
 |:----------------------------------------------------------|:-----------------|
-| [LIBRARIAN_03202022](#librarian_03202022-march-20-2022) | March 20, 2022   |
+| [LIBRARIAN_03202022](#librarian_03202022-march-20-2022)   | March 20, 2022   |
 | `ARBITER_01312022`                                        | January 31, 2022 |
 
 ### LIBRARIAN_03202022 (March 20, 2022)
 
 - Changed the tray context menu to be following OS conventions instead of the style offered by Windows Forms. This introduces better support for DPI scaling and theming in the future.
-- Custom times in the tray can now be configured in the `settings.json` file for awake, through the `tray_times` property. The property values are representative of a `Dictionary<string, int>` and can be in the form of `"YOUR_NAME": LENGTH_IN_SECONDS`:
+- Custom times in the tray can now be configured in the _settings.json_ file for awake, through the **tray_times** property. The property values are representative of a `Dictionary<string, int>` and can be in the form of `"<YOUR_NAME>": LENGTH_IN_SECONDS`:
 
 ```json
 {

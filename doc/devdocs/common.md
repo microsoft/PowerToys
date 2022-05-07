@@ -6,7 +6,7 @@ Animation helper class with two easing-in animations: linear and exponential.
 
 #### class AsyncMessageQueue: [header](/src/common/async_message_queue.h)
 
-Header-only asynchronous message queue. Used by `TwoWayPipeMessageIPC`.
+Header-only asynchronous message queue. Used by **TwoWayPipeMessageIPC**.
 
 #### class TwoWayPipeMessageIPC: [header](/src/common/two_way_pipe_message_ipc.h)
 
@@ -61,15 +61,15 @@ To use UWP-style toast notifications, simply include the header and call one of 
       std::vector<std::wstring_view> button_labels);
 ```
 
-We might add more functions in the future if the need arises, e.g. `show_toast_xml` which will accept raw XML for rich customization.
+We might add more functions in the future if the need arises, e.g. **show_toast_xml** which will accept raw XML for rich customization.
 
 Description:
 
-- `#1` is for sending simple notifications without any callbacks or buttons
-- `#2` is capable of showing a toast with multiple buttons and background activation
-- `message` is a plain-text argument
+- **#1** is for sending simple notifications without any callbacks or buttons
+- **#2** is capable of showing a toast with multiple buttons and background activation
+- _message_ is a plain-text argument
 
-Implement a toast activation handler/callback as a function in [handler_functions.cpp](/src/common/notifications_winrt/handler_functions.cpp) and register its `background_handler_id` via `handlers_map`, e.g.:
+Implement a toast activation handler/callback as a function in [handler_functions.cpp](/src/common/notifications_winrt/handler_functions.cpp) and register its _background_handler_id_ via _handlers_map_, e.g.:
 
 ```cpp
     // Your .cpp where you'd like to show a toast

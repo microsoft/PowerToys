@@ -1,10 +1,10 @@
 # Tools
 
-## [Monitor info report](tools\monitor_info_report)
+## [Monitor info report](tools/monitor_info_report)
 
 A small diagnostic tool which helps identifying WinAPI bugs related to the physical monitor detection. When launched, it creates a log file like this:
 
-```
+```txt
     GetSystemMetrics = 2
     GetMonitorInfo OK
     EnumDisplayDevices OK:
@@ -21,4 +21,4 @@ A small diagnostic tool which helps identifying WinAPI bugs related to the physi
     EnumDisplayMonitors OK
 ```
 
-and also duplicates the info to `stdout`.
+and also duplicates the info to **stdout**.

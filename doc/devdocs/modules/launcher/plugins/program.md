@@ -13,8 +13,8 @@ There are broadly two different categories of applications:
 
 - The logic for indexing Packaged applications is present within the [UWP.cs](src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/UWP.cs) file.
 - There can be multiple applications present within a package. The [UWPApplication.cs](src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/UWPApplication.cs) file encapsulates the properties of a packaged application.
-- To index packaged applications, the `PackageManager` retrieves all the packages for the current user and indexes all the applications.
-- To retrieve the app icon for packaged applications, the assets path is retrieved from the `Application Manifest` file. There are multiple icons corresponding to each scale, target size and theme. The best icon is chosen given the theme of powerToys Run.
+- To index packaged applications, the **PackageManager** retrieves all the packages for the current user and indexes all the applications.
+- To retrieve the app icon for packaged applications, the assets path is retrieved from the _Application Manifest_ file. There are multiple icons corresponding to each scale, target size and theme. The best icon is chosen given the theme of powerToys Run.
 
 ## [Win32Program](src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/Win32Program.cs)
 
@@ -27,8 +27,8 @@ There are broadly two different categories of applications:
     6. Locations pointed to by the PATH environment variable.
 - To prevent applications and shortcuts present in multiple locations from showing up as duplicate results, we consider apps with the same name, executable name and full path to be the same.
 - The subtitle of the application result is set based on it's application type. It could be one of the following:
-    1. Lnk Shortcuts
-    2. Appref files
+    1. .lnk Shortcut files
+    2. appref files
     3. Internet shortcut - steam and epic games
     4. PWAs
     5. Run commands - these are indexed by the PATH environment variable

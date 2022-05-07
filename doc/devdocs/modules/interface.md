@@ -21,27 +21,27 @@
 
 The PowerToys runner will, for each PowerToy DLL:
 
-- load the DLL,
-- call [powertoy_create()](#powertoy_create_func) to create the PowerToy.
+- load the DLL
+- call [powertoy_create()](#powertoy_create_func) to create the PowerToy
 
 On the received object, the runner will call:
 
-- [get_name()](#get_name) to get the name of the PowerToy,
-- [enable()](#enable) to initialize the PowerToy.
+- [get_name()](#get_name) to get the name of the PowerToy
+- [enable()](#enable) to initialize the PowerToy
 
-While running, the runner might call the following methods between `create_powertoy()`
-and `destroy()`:
+While running, the runner might call the following methods between **create_powertoy()**
+and **destroy()**:
 
-- [disable()](#disable)/[enable()](#enable)/[is_enabled()](#is_enabled) to change or get the PowerToy's enabled state,
-- [get_config()](#get_config) to get the available configuration settings,
-- [set_config()](#set_config) to set settings after they have been edited in the Settings editor,
-- [call_custom_action()](#call_custom_action) when the user selects a custom action in the Settings editor,
+- [disable()](#disable)/[enable()](#enable)/[is_enabled()](#is_enabled) to change or get the PowerToy's enabled state
+- [get_config()](#get_config) to get the available configuration settings
+- [set_config()](#set_config) to set settings after they have been edited in the Settings editor
+- [call_custom_action()](#call_custom_action) when the user selects a custom action in the Settings editor
 
 When terminating, the runner will:
 
-- call [disable()](#disable),
-- call [destroy()](#destroy) which should free all the memory and delete the PowerToy object,
-- unload the DLL.
+- call [disable()](#disable)
+- call [destroy()](#destroy) which should free all the memory and delete the PowerToy object
+- unload the DLL
 
 ## Method definition
 
@@ -54,14 +54,14 @@ This section contains a more detailed description of each of the interface metho
 ```
 
 Typedef of the factory function that creates the PowerToy object.
-Must be exported by the DLL as `powertoy_create()`.
+Must be exported by the DLL as **powertoy_create()**.
 
 Called by the PowerToys runner to initialize each PowerToy.
 It will be called only once before a call to [destroy()](#destroy) is made.
 
 The returned PowerToy should be in the disabled state. The runner will call the [enable()](#enable) method to start the PowerToy.
 
-In case of errors returns `nullptr`.
+In case of errors returns _nullptr_.
 
 ### get_name
 
@@ -79,7 +79,7 @@ Returns the name of the PowerToy, it will be cached by the runner.
 
 Fills a buffer with the available configuration settings.
 
-If `buffer` is a null pointer or the buffer size is not large enough sets the required buffer size in 'buffer_size' and return false.
+If _buffer_ is a null pointer or the buffer size is not large enough sets the required buffer size in _buffer_size_ and return false.
 
 Returns true if successful.
 

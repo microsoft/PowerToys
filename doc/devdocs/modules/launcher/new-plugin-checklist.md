@@ -1,8 +1,8 @@
 # New plugin checklist
 
 - [ ] The plugin is a project under `modules\launcher\Plugins`
-- [ ] Microsoft plugin project name pattern: `Microsoft.PowerToys.Run.Plugin.{PluginName}`
-- [ ] Community plugin project name pattern: `Community.PowerToys.Run.Plugin.{PluginName}`
+- [ ] Microsoft plugin project name pattern: `Microsoft.PowerToys.Run.Plugin.<PluginName>`
+- [ ] Community plugin project name pattern: `Community.PowerToys.Run.Plugin.<PluginName>`
 - [ ] [GlobalSuppressions.cs](/src/codeAnalysis/GlobalSuppressions.cs) and [StyleCop.json](/src/codeAnalysis/StyleCop.json) have to be included in the plugin project so it follows PowerToys code guidelines
 - [ ] The project file should import `Version.props` and specify `<Version>$(Version).0</Version>`
 - [ ] Make sure `*.csproj` specify only x64 platform target
@@ -18,7 +18,7 @@
   "Version": "1.0.0", // For future compatibility
   "Language": "csharp", // So far we support only csharp 
   "Website": "https://aka.ms/powertoys",
-  "ExecuteFileName": string, // Should be {Type}.PowerToys.Run.Plugin.{PluginName}.dll
+  "ExecuteFileName": string, // Should be <Type>.PowerToys.Run.Plugin.<PluginName>.dll
   "IcoPathDark": string, // Path to dark theme icon. The path is relative to the root plugin folder 
   "IcoPathLight": string // Path to light theme icon. The path is relative to the root plugin folder 
 }

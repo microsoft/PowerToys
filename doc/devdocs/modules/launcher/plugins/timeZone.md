@@ -11,21 +11,21 @@ The Time Zone plugin allows users to search a time zone.
 
 ## How to add a new time zone  or change one
 
-All time zones are located in `TimeZone.json` in root folder of the project.
-The `TimeZone.json` use a JSON schema file that make it easier to edit it.
+All time zones are located in _TimeZone.json_ in root folder of the project.
+The _TimeZone.json_ use a JSON schema file that make it easier to edit it.
 
 | Key                 | Optional | Value type        |
 | ------------------- | -------- | ----------------- |
-| `Offset`            | **No**   | String            |
-| `Name`              | Yes      | String            |
-| `MilitaryName`      | Yes      | String            |
-| `Shortcut`          | Yes      | String            |
-| `TimeNamesStandard` | Yes      | List with strings |
-| `TimeNamesDaylight` | Yes      | List with strings |
-| `ShortcutsStandard` | Yes      | List with strings |
-| `ShortcutsDaylight` | Yes      | List with strings |
-| `CountriesStandard` | Yes      | List with strings |
-| `CountriesDaylight` | Yes      | List with strings |
+| Offset            | **No**   | String            |
+| Name              | Yes      | String            |
+| MilitaryName      | Yes      | String            |
+| Shortcut          | Yes      | String            |
+| TimeNamesStandard | Yes      | List with strings |
+| TimeNamesDaylight | Yes      | List with strings |
+| ShortcutsStandard | Yes      | List with strings |
+| ShortcutsDaylight | Yes      | List with strings |
+| CountriesStandard | Yes      | List with strings |
+| CountriesDaylight | Yes      | List with strings |
 
 A minimum entry for the `TimeZone.json` looks like:
 
@@ -36,7 +36,7 @@ A minimum entry for the `TimeZone.json` looks like:
   }
 ```
 
-A full entry for the `TimeZone.json` looks like:
+A full entry for the _TimeZone.json_ looks like:
 
 ```json
   {
@@ -77,7 +77,7 @@ Scores are not used
 
 ### General
 
-The assembly name is cached into `_assemblyName` (to avoid to many calls of `Assembly.GetExecutingAssembly()`)
+The assembly name is cached into **_assemblyName** to avoid to many calls of `Assembly.GetExecutingAssembly()`.
 
 ## Microsoft.PowerToys.Run.Plugin.TimeZone project
 
@@ -91,13 +91,13 @@ The assembly name is cached into `_assemblyName` (to avoid to many calls of `Ass
 
 ### Interfaces used by this plugin
 
-The plugin use only these interfaces (all inside the `Main.cs`):
+The plugin use only these interfaces (all inside the _Main.cs_):
 
-* `Wox.Plugin.IPlugin`
-* `Wox.Plugin.IContextMenu`
-* `Wox.Plugin.IPluginI18n`
-* `Wox.Plugin.ISettingProvider`
-* `IDisposable`
+* Wox.Plugin.IPlugin
+* Wox.Plugin.IContextMenu
+* Wox.Plugin.IPluginI18n
+* Wox.Plugin.ISettingProvider
+* IDisposable
 
 ### Program files
 
@@ -106,7 +106,7 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 | Classes\TimeZoneProperties.cs        | A class that represent one time zone                                    |
 | Classes\TimeZones.cs                 | A wrapper class that only contains a list with time zones  (see 1)      |
 | Classes\TimeZoneSettings.cs          | A class that contains all settings for the Time Zone plugin             |
-| Extensions\StringBuilderExtension.cs | Extension methods for `StringBuilder` Objects                           |
+| Extensions\StringBuilderExtension.cs | Extension methods for **StringBuilder** Objects                           |
 | Helper\ContextMenuHelper.cs          | All functions to build the context menu (for each result entry)         |
 | Helper\JsonHelper.cs                 | All functions to load the time zones from a JSON file                   |
 | Helper\ResultHelper.cs               | All functions to convert internal results into WOX results              |
@@ -146,5 +146,5 @@ Because the JSON file must have a object as root type, instead of a array.
 
 #### Projects
 
-* `Wox.Infrastructure`
-* `Wox.Plugin`
+* Wox.Infrastructure
+* Wox.Plugin

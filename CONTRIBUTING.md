@@ -53,7 +53,7 @@ Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/
 
 ### Naming of features and functionality
 
-Naming should be descriptive and straight forward.  We want names to be clear about functionality and usefulness moving forward. 
+Naming should be descriptive and straight forward.  We want names to be clear about functionality and usefulness moving forward.
 
 ### How can I become a collaborator on the PowerToys team
 
@@ -65,4 +65,4 @@ When the time comes, Microsoft will reach out and help make you a formal team me
 
 ## Thank you
 
-Thank you in advance for your contribution! 
+Thank you in advance for your contribution!

@@ -4,16 +4,16 @@ The Settings v2 process uses two way IPC to communicate with the runner process.
 
 ## Initialization
 
-- On the settings' side, the two way IPC delegates are contained with the [ShellPage.xaml.cs](/src/settings-ui/Settings.UI/Views/ShellPage.xaml.cs) file. The delegates are static and the views for all the powerToys send the ipc information to the viewmodels as `ShellPage.DefaultSndMSGCallBack`.
-- These delegates are initialized within the [Mainwindow.xaml.cs](/src/settings-ui/Settings.UI/MainWindow.xaml.cs) file in the `Settings.Runner` project.
+- On the settings' side, the two way IPC delegates are contained with the [ShellPage.xaml.cs](/src/settings-ui/Settings.UI/Views/ShellPage.xaml.cs) file. The delegates are static and the views for all the powerToys send the ipc information to the viewmodels as **ShellPage.DefaultSndMSGCallBack**.
+- These delegates are initialized within the [Mainwindow.xaml.cs](/src/settings-ui/Settings.UI/MainWindow.xaml.cs) file in the **Settings.Runner** project.
 
 ## Types of IPC delegates
 
 There are three types of delegates for the settings to communicate with the runner:
 
-1. `SendDefaultMessage` - This is used by all the viewmodels to communicate changes in the UI to the runner so that the information can be dispatched to the modules.
-2. `RestartAsAdmin`
-3. `CheckForUpdates`
+1. **SendDefaultMessage** - This is used by all the viewmodels to communicate changes in the UI to the runner so that the information can be dispatched to the modules.
+2. **RestartAsAdmin**
+3. **CheckForUpdates**
 
 ## Sending information to runner
 
@@ -25,7 +25,7 @@ If any information has been modified by the user in the GeneralSettings page, th
 
 ## Receiving information from runner
 
-- The **ShellPage** object has a **IPCResponseHandleList** which is a list of functions which handle IPC responses.
+- The **ShellPage**object has a **IPCResponseHandleList** which is a list of functions which handle IPC responses.
 
 ```cs
     // receive IPC Message

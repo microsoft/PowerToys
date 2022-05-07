@@ -11,7 +11,7 @@ Fig 1. Project along with their dependencies in PowerToys Run ecosystem.
 
 ### [PowerLauncher](/src/modules/launcher/PowerLauncher)
 
-This is the startup project for the PowerToys Run. It is a WPF desktop application and follows the `Model-View-ViewModel (MVVM)` design pattern. Plugins play the role of `Model` and provide data to `ViewModel.`
+This is the startup project for the PowerToys Run. It is a WPF desktop application and follows the "Model-View-ViewModel (MVVM)" design pattern. Plugins play the role of `Model` and provide data to **ViewModel**.
 
 ### [PowerLauncher.Telemetry](/src/modules/launcher/PowerLauncher.Telemetry)
 
@@ -24,7 +24,7 @@ This is the startup project for the PowerToys Run. It is a WPF desktop applicati
 
 ### [Wox.Infrastructure](/src/modules/launcher/Wox.Infrastructure)
 
-[Wox.Infrastructure](/src/modules/launcher/Wox.Infrastructure) is a .NET core project that contains helper classes required for image manipulation and storage by the PowerLauncher project and the plugins. [ImageLoader.cs](/src/modules/launcher/Wox.Infrastructure/Image/ImageLoader.cs) class is used to load icons for `Win32` program. It also provides caching functionality to speed up image loading for frequently queried programs.
+[Wox.Infrastructure](/src/modules/launcher/Wox.Infrastructure) is a .NET core project that contains helper classes required for image manipulation and storage by the PowerLauncher project and the plugins. [ImageLoader.cs](/src/modules/launcher/Wox.Infrastructure/Image/ImageLoader.cs) class is used to load icons for **Win32** program. It also provides caching functionality to speed up image loading for frequently queried programs.
 
 ### [Wox.Plugin](/src/modules/launcher/Wox.Plugin)
 

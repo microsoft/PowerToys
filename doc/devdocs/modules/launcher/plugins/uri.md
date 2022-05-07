@@ -6,7 +6,7 @@ The URI Plugin, as the name suggests is used to directly run the URI that has be
 
 ## [URI Parser](src/modules/launcher/Plugins/Microsoft.Plugin.Uri/UriHelper/ExtendedUriParser.cs)
 
-The [ExtendedUriParser.cs](src/modules/launcher/Plugins/Microsoft.Plugin.Uri/UriHelper/ExtendedUriParser.cs) file tries to parse the user input and returns a `System.Uri` result  by using the `UriBuilder`. It also captures other cases which the UriBuilder does not handle such as when the input ends with a `:`, `.` or `:/`.
+The [ExtendedUriParser.cs](src/modules/launcher/Plugins/Microsoft.Plugin.Uri/UriHelper/ExtendedUriParser.cs) file tries to parse the user input and returns a **System.Uri** result  by using the **UriBuilder**. It also captures other cases which the UriBuilder does not handle such as when the input ends with a `:`, `.` or `:/`.
 
 ## [URI Resolver](src/modules/launcher/Plugins/Microsoft.Plugin.Uri/UriHelper/UriResolver.cs)
 

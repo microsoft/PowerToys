@@ -1,19 +1,19 @@
 # Overview
 
-`Settings` is Windows App Sdk WinUI3 .Net Unpackaged desktop application. More details about Windows App Sdk can be found [here](https://github.com/microsoft/WindowsAppSDK#windows-app-sdk---calling-all-windows-developers). More details about WinUI can be found [here](https://microsoft.github.io/microsoft-ui-xaml/about.html#what-is-it).
+**Settings** is Windows App SDK WinUI3 .NET Unpackaged desktop application. More details about Windows App SDK can be found [here](https://github.com/microsoft/WindowsAppSDK#windows-app-sdk---calling-all-windows-developers). More details about WinUI can be found [here](https://microsoft.github.io/microsoft-ui-xaml/about.html#what-is-it).
 
 ## Settings V2 Project structure
 
-The Settings project .Net WinUI3 based project which
+The Settings project .NET WinUI3 based project which
 follows the [MVVM architectural pattern][MVVM] where the graphical user interface is separated from the view models.
 
 ### [UI Components](/src/settings-ui/Settings.UI/)
 
-The UI Components are part of PowerToys.Settings project. It contains the xaml files for each of the UI components. It also contains the Hotkey logic for the settings control.
+The UI Components are part of **PowerToys.Settings** project. It contains the XAML files for each of the UI components. It also contains the Hotkey logic for the settings control.
 
 ### [Viewmodels](/src/settings-ui/Settings.UI.Library)
 
-The Settings.UI.Library project contains the data that is to be rendered by the UI components.
+The **Settings.UI.Library** project contains the data that is to be rendered by the UI components.
 
 ### [Settings Runner](/src/settings-ui/Settings.UI)
 

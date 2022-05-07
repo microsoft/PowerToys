@@ -1,6 +1,6 @@
 # Debugging
 
-PowerToys Run is a single exe file associated with `launcher.exe` process and debugger should be attached to this process. There are two approaches to debug PowerToys Run. Both these approaches differ in the compile-time and the range of functionalities that could be debugged. These methods are discussed in detail in the following sections.
+PowerToys Run is a single exe file associated with _launcher.exe_ process and debugger should be attached to this process. There are two approaches to debug PowerToys Run. Both these approaches differ in the compile-time and the range of functionalities that could be debugged. These methods are discussed in detail in the following sections.
 
 ## Debugging Prerequisite
 
@@ -15,11 +15,11 @@ This approach is used to test UI, plugins, and core PowerToys Run functionality.
 
 ## Debugging with runner
 
-This approach can be used to test UI, plugins, core PowerToys Run functionality and PowerToys Run settings. This approach **cannot** be used to debug functions that execute on starting `launcher.exe` process. This requires building runner along with all the other modules on first compile, making it slower than `Direct debugging` approach. The subsequent compilations should be fast.
+This approach can be used to test UI, plugins, core PowerToys Run functionality and PowerToys Run settings. This approach **cannot** be used to debug functions that execute on starting _launcher.exe_ process. This requires building runner along with all the other modules on first compile, making it slower than "Direct debugging" approach. The subsequent compilations should be fast.
 
-1. Right-click on `runner` and select **Set as startup Project**.
+1. Right-click on **runner** and select **Set as startup Project**.
 2. Press <kbd>F5</kbd> to start debugging.
-3. Attach debugger to `launcher.exe` process.
+3. Attach debugger to _launcher.exe_ process.
     1. Go to **Debug** > **Attach to process...**
-    2. Filter and select `launcher.exe` process.
+    2. Filter and select _launcher.exe_ process.
     3. Click on **Attach**.
