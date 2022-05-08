@@ -49,9 +49,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             result = TransformResult(result);
             if (result is string)
             {
-#pragma warning disable CA2201 // Do not raise reserved exception types
-                throw new Exception(result as string);
-#pragma warning restore CA2201 // Do not raise reserved exception types
+                throw new ArithmeticException(result as string);
             }
 
             if (string.IsNullOrEmpty(result?.ToString()))

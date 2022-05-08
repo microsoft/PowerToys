@@ -70,11 +70,18 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 Log.Exception($"Exception when query for <{query}>", e, GetType());
 
                 // error message result on keyword queries
-                return string.IsNullOrEmpty(query.ActionKeyword) ? new List<Result>() :
-                    new List<Result>
+                if (string.IsNullOrEmpty(query.ActionKeyword))
+                {
+                    return new List<Result>();
+                }
+                else
+                {
+                    string err = (e is Mages.Core.ParseException) ? Properties.Resources.wox_plugin_calculator_expression_not_complete : e.Message;
+                    return new List<Result>
                     {
-                        ResultHelper.CreateErrorResult(Properties.Resources.wox_plugin_calculator_calculation_failed, IconPath),
+                        ResultHelper.CreateErrorResult(Properties.Resources.wox_plugin_calculator_calculation_failed, err, IconPath),
                     };
+                }
             }
         }
 

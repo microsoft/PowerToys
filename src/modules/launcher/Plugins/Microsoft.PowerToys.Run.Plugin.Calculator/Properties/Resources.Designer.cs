@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mages engine result is not a number (NaN).
+        ///   Looks up a localized string similar to Calculation result is not a valid number (NaN).
         /// </summary>
         public static string wox_plugin_calculator_not_a_number {
             get {

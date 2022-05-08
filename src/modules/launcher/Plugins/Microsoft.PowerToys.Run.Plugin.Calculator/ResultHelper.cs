@@ -36,11 +36,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             };
         }
 
-        public static Result CreateErrorResult(string errorMsg, string iconPath)
+        public static Result CreateErrorResult(string errorMsg, string exceptMsg, string iconPath)
         {
             return new Result
             {
                 Title = errorMsg,
+                SubTitle = exceptMsg,
                 IcoPath = iconPath,
                 Score = 300,
             };
