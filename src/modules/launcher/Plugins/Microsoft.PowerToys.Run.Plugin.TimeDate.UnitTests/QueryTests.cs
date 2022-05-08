@@ -82,10 +82,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("and time", 1)] // match if term is conjunction and other words
         [DataRow("date and time", 1)] // Match if first word is a full word match
         [DataRow("ate and time", 0)] // Don't match if first word is not a full word match
-        [DataRow("10/10/10", 0)] // Don't match number only input (Ignor number only settings is default on)
-        [DataRow("10:10:10", 0)] // Don't match number only input (Ignor number only settings is default on)
-        [DataRow("10 10 10", 0)] // Don't match number only input (Ignor number only settings is default on)
-        [DataRow("ft10", 3)] // Match number input with prefix (Ignor number only settings is default on)
+        [DataRow("10/10/10", 0)] // Don't match number only input (Ignore number only settings is default on)
+        [DataRow("10:10:10", 0)] // Don't match number only input (Ignore number only settings is default on)
+        [DataRow("10 10 10", 0)] // Don't match number only input (Ignore number only settings is default on)
+        [DataRow("ft10", 3)] // Match number input with prefix (Ignore number only settings is default on)
         public void ValidateBehaviorOnGlobalQueries(string typedString, int expectedResultCount)
         {
             // Setup
