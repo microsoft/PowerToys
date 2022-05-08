@@ -88,6 +88,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unsupported use of square brackets.
+        /// </summary>
+        public static string wox_plugin_calculator_double_array_returned {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_double_array_returned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Expression wrong or incomplete (Did you forget some parentheses?).
         /// </summary>
         public static string wox_plugin_calculator_expression_not_complete {

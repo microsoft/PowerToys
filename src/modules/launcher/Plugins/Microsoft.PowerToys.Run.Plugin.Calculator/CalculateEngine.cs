@@ -84,6 +84,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 return Properties.Resources.wox_plugin_calculator_expression_not_complete;
             }
 
+            if (result is double[,])
+            {
+                return Properties.Resources.wox_plugin_calculator_double_array_returned;
+            }
+
             return result;
         }
     }

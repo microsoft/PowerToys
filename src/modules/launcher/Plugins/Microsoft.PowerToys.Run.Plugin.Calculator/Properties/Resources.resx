@@ -138,4 +138,7 @@
   <data name="wox_plugin_calculator_calculation_failed" xml:space="preserve">
     <value>Failed to calculate the input</value>
   </data>
+  <data name="wox_plugin_calculator_double_array_returned" xml:space="preserve">
+    <value>Unsupported use of square brackets</value>
+  </data>
 </root>
