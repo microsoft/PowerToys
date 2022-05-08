@@ -76,7 +76,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 }
                 else
                 {
-                    string err = (e is Mages.Core.ParseException) ? Properties.Resources.wox_plugin_calculator_expression_not_complete : e.Message;
+                    string err = (e is Mages.Core.ParseException) ? Properties.Resources.wox_plugin_calculator_expression_not_complete
+                        : (e is OverflowException) ? Properties.Resources.wox_plugin_calculator_not_covert_to_decimal
+                        : e.Message;
                     return new List<Result>
                     {
                         ResultHelper.CreateErrorResult(Properties.Resources.wox_plugin_calculator_calculation_failed, err, IconPath),

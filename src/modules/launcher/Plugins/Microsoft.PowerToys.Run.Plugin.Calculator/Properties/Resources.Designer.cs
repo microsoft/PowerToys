@@ -115,6 +115,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Result value was either too large or too small for a decimal number.
+        /// </summary>
+        public static string wox_plugin_calculator_not_covert_to_decimal {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_not_covert_to_decimal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Does mathematical calculations (e.g. 5*3-2)..
         /// </summary>
         public static string wox_plugin_calculator_plugin_description {

@@ -141,4 +141,7 @@
   <data name="wox_plugin_calculator_double_array_returned" xml:space="preserve">
     <value>Unsupported use of square brackets</value>
   </data>
+  <data name="wox_plugin_calculator_not_covert_to_decimal" xml:space="preserve">
+    <value>Result value was either too large or too small for a decimal number</value>
+  </data>
 </root>
