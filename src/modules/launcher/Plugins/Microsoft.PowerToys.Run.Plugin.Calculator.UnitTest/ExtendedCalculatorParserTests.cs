@@ -36,7 +36,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("42")]
         [DataRow("test")]
         [DataRow("pi(2)")] // Incorrect input, constant is being treated as a function.
         [DataRow("e(2)")]

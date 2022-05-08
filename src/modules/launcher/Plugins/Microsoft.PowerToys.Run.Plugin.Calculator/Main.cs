@@ -66,19 +66,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                // error result
+                // error log
                 Log.Exception($"Exception when query for <{query}>", e, GetType());
-                if (!string.IsNullOrEmpty(query.ActionKeyword))
-                {
-                    return new List<Result>
+
+                // error message result on keyword queries
+                return string.IsNullOrEmpty(query.ActionKeyword) ? new List<Result>() :
+                    new List<Result>
                     {
                         ResultHelper.CreateErrorResult(Properties.Resources.wox_plugin_calculator_calculation_failed, IconPath),
                     };
-                }
-                else
-                {
-                    return new List<Result>();
-                }
             }
         }
 
