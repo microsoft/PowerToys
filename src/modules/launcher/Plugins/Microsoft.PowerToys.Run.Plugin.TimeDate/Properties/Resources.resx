@@ -253,7 +253,7 @@
     <value>This setting applies to the 'Date' and 'Now' result.</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingGlobalQueryIgnoreNumberInput" xml:space="preserve">
-    <value>Ignore number only input on global queries</value>
+    <value>Ignore input without any letter (number only) on global queries</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery" xml:space="preserve">
     <value>Hide 'Invalid number input' error message on global queries</value>

@@ -421,7 +421,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ignore number only input on global queries.
+        ///   Looks up a localized string similar to Ignore input without any letter (number only) on global queries.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SettingGlobalQueryIgnoreNumberInput {
             get {
