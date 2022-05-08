@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         internal bool OnlyDateTimeNowGlobal { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether we shouold ignore number only input on global queries
+        /// Gets a value indicating whether we should ignore number only input on global queries
         /// </summary>
         internal bool GlobalQueryIgnoreNumberInput { get; private set; }
 
