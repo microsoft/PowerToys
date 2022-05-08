@@ -70,7 +70,7 @@ The following formats are currently available:
 - We have the following settings that the user can configure to change the behavior of the plugin:
 
 	| Key | Default value | Name | Description |
-	|--------------|-----------|------------|
+	|--------------|-----------|------------|------------|
 	| `OnlyDateTimeNowGlobal` | `true` | Show only 'Time', 'Date', and 'Now' result on global queries | Regardless of this setting, for global queries the first word of the query has to be a complete match. |
 	| `GlobalQueryIgnoreNumberInput` | `false` | Ignore input without any letter (number only) on global queries | |
 	| `TimeWithSeconds` | `false` | Show time with seconds | This setting applies to the 'Time' and 'Now' result. |
