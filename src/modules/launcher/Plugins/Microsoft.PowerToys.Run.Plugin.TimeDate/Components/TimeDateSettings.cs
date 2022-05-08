@@ -34,6 +34,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         internal bool OnlyDateTimeNowGlobal { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether we shouold ignore number only input on global queries
+        /// </summary>
+        internal bool GlobalQueryIgnoreNumberInput { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether to show the time with seconds or not
         /// </summary>
         internal bool TimeWithSeconds { get; private set; }
@@ -96,6 +101,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 },
                 new PluginAdditionalOption()
                 {
+                    Key = nameof(GlobalQueryIgnoreNumberInput),
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingGlobalQueryIgnoreNumberInput,
+                    Value = false,
+                },
+                new PluginAdditionalOption()
+                {
                     Key = nameof(TimeWithSeconds),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_SettingTimeWithSeconds,
                     DisplayDescription = Resources.Microsoft_plugin_timedate_SettingTimeWithSeconds_Description,
@@ -131,6 +142,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
 
             OnlyDateTimeNowGlobal = GetSettingOrDefault(settings, nameof(OnlyDateTimeNowGlobal));
+            GlobalQueryIgnoreNumberInput = GetSettingOrDefault(settings, nameof(GlobalQueryIgnoreNumberInput));
             TimeWithSeconds = GetSettingOrDefault(settings, nameof(TimeWithSeconds));
             DateWithWeekday = GetSettingOrDefault(settings, nameof(DateWithWeekday));
             HideNumberMessageOnGlobalQuery = GetSettingOrDefault(settings, nameof(HideNumberMessageOnGlobalQuery));

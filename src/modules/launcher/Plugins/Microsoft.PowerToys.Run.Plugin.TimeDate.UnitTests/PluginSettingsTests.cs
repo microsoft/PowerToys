@@ -22,11 +22,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             var result = settings?.Length;
 
             // Assert
-            Assert.AreEqual(4, result);
+            Assert.AreEqual(5, result);
         }
 
         [DataTestMethod]
         [DataRow("OnlyDateTimeNowGlobal")]
+        [DataRow("GlobalQueryIgnoreNumberInput")]
         [DataRow("TimeWithSeconds")]
         [DataRow("DateWithWeekday")]
         [DataRow("HideNumberMessageOnGlobalQuery")]
@@ -44,6 +45,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
         [DataTestMethod]
         [DataRow("OnlyDateTimeNowGlobal", true)]
+        [DataRow("GlobalQueryIgnoreNumberInput", false)]
         [DataRow("TimeWithSeconds", false)]
         [DataRow("DateWithWeekday", false)]
         [DataRow("HideNumberMessageOnGlobalQuery", false)]

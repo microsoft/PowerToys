@@ -421,6 +421,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ignore number only input on global queries.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingGlobalQueryIgnoreNumberInput {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingGlobalQueryIgnoreNumberInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hide &apos;Invalid number input&apos; error message on global queries.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery {

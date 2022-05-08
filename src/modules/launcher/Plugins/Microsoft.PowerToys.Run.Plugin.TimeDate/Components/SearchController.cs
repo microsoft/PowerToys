@@ -55,6 +55,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 return results;
             }
 
+            // Ignore number only input on global queries if setting is true
+            if (!isKeywordSearch && TimeDateSettings.Instance.GlobalQueryIgnoreNumberInput && searchTerm.Any(char.IsLetter))
+            {
+                return results;
+            }
+
             // Switch search type
             if (isEmptySearchInput)
             {

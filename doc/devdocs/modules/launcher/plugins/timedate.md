@@ -72,6 +72,7 @@ The following formats are currently available:
 	| Key | Default value | Name/Description |
 	|--------------|-----------|------------|
 	| `OnlyDateTimeNowGlobal` | `true` | Show only 'Time', 'Date', and 'Now' result on global queries |
+	| `GlobalQueryIgnoreNumberInput` | `false` | Ignore number only input on global queries |
 	| `TimeWithSeconds` | `false` | Show time with seconds (Applies to 'Time' and 'Now' result) |
 	| `DateWithWeekday` | `false` | Show date with weekday and name of month (Applies to 'Date' and 'Now' result) |
 	| `HideNumberMessageOnGlobalQuery` | `false` | Hide 'Invalid number input' error message on global queries |
