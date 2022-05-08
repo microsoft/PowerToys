@@ -33,6 +33,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
+            if (string.IsNullOrEmpty(query.Search))
+            {
+                return new List<Result>();
+            }
+
             NumberTranslator translator = NumberTranslator.Create(CultureInfo.CurrentCulture, new CultureInfo("en-US"));
             var input = translator.Translate(query.Search.Normalize(NormalizationForm.FormKC));
 
@@ -61,10 +66,20 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                Log.Exception("Exception when query for <{query}>", e, GetType());
+                // error result
+                Log.Exception($"Exception when query for <{query}>", e, GetType());
+                if (!string.IsNullOrEmpty(query.ActionKeyword))
+                {
+                    return new List<Result>
+                    {
+                        ResultHelper.CreateErrorResult(Properties.Resources.wox_plugin_calculator_calculation_failed, IconPath),
+                    };
+                }
+                else
+                {
+                    return new List<Result>();
+                }
             }
-
-            return new List<Result>();
         }
 
         public void Init(PluginInitContext context)

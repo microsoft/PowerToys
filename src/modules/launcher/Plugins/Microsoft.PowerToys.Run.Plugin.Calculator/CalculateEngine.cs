@@ -47,6 +47,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             }
 
             result = TransformResult(result);
+            if (result is string)
+            {
+#pragma warning disable CA2201 // Do not raise reserved exception types
+                throw new Exception(result as string);
+#pragma warning restore CA2201 // Do not raise reserved exception types
+            }
 
             if (string.IsNullOrEmpty(result?.ToString()))
             {
@@ -68,7 +74,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             return Math.Round(value, RoundingDigits, MidpointRounding.AwayFromZero);
         }
 
-        private static object TransformResult(object result)
+        private static dynamic TransformResult(object result)
         {
             if (result.ToString() == "NaN")
             {

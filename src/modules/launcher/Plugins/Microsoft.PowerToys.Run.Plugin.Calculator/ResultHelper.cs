@@ -36,6 +36,16 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             };
         }
 
+        public static Result CreateErrorResult(string errorMsg, string iconPath)
+        {
+            return new Result
+            {
+                Title = errorMsg,
+                IcoPath = iconPath,
+                Score = 300,
+            };
+        }
+
         public static bool Action(decimal? roundedResult)
         {
             var ret = false;

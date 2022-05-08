@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             }
 
             bool singleDigitFactorial = input.EndsWith("!", StringComparison.InvariantCulture);
-            if (input.Length <= 2 && !singleDigitFactorial)
+            if (input.Length <= 0 && !singleDigitFactorial)
             {
                 return false;
             }

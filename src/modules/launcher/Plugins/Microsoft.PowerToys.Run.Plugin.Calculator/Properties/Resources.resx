@@ -124,7 +124,7 @@
     <value>Does mathematical calculations (e.g. 5*3-2).</value>
   </data>
   <data name="wox_plugin_calculator_not_a_number" xml:space="preserve">
-    <value>Not a number (NaN)</value>
+    <value>Mages engine result is not a number (NaN)</value>
   </data>
   <data name="wox_plugin_calculator_expression_not_complete" xml:space="preserve">
     <value>Expression wrong or incomplete (Did you forget some parentheses?)</value>
@@ -134,5 +134,8 @@
   </data>
   <data name="wox_plugin_calculator_copy_failed" xml:space="preserve">
     <value>Copy failed, please try later</value>
+  </data>
+  <data name="wox_plugin_calculator_calculation_failed" xml:space="preserve">
+    <value>Failed to calculate the input</value>
   </data>
 </root>
