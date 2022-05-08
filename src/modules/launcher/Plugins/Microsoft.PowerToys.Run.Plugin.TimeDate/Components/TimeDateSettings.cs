@@ -103,7 +103,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 {
                     Key = nameof(GlobalQueryIgnoreNumberInput),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_SettingGlobalQueryIgnoreNumberInput,
-                    Value = false,
+                    Value = true,
                 },
                 new PluginAdditionalOption()
                 {

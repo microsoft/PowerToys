@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
         [DataTestMethod]
         [DataRow("OnlyDateTimeNowGlobal", true)]
-        [DataRow("GlobalQueryIgnoreNumberInput", false)]
+        [DataRow("GlobalQueryIgnoreNumberInput", true)]
         [DataRow("TimeWithSeconds", false)]
         [DataRow("DateWithWeekday", false)]
         [DataRow("HideNumberMessageOnGlobalQuery", false)]
