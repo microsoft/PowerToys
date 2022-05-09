@@ -245,12 +245,11 @@ void AppliedLayouts::SaveData()
 {
     bool dirtyFlag = false;
     TAppliedLayoutsMap updatedMap;
-    VirtualDesktop virtualDesktop;
-
+    
     for (const auto& [id, data] : m_layouts)
     {
         auto updatedId = id;
-        if (!virtualDesktop.IsVirtualDesktopIdSavedInRegistry(id.virtualDesktopId))
+        if (!VirtualDesktop::instance().IsVirtualDesktopIdSavedInRegistry(id.virtualDesktopId))
         {
             updatedId.virtualDesktopId = GUID_NULL;
             dirtyFlag = true;

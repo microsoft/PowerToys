@@ -249,14 +249,13 @@ void AppZoneHistory::SaveData()
 {
     bool dirtyFlag = false;
     std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> updatedHistory;
-    VirtualDesktop virtualDesktop;
-
+    
     for (const auto& [path, dataVector] : m_history)
     {
         auto updatedVector = dataVector;
         for (auto& data : updatedVector)
         {
-            if (!virtualDesktop.IsVirtualDesktopIdSavedInRegistry(data.deviceId.virtualDesktopId))
+            if (!VirtualDesktop::instance().IsVirtualDesktopIdSavedInRegistry(data.deviceId.virtualDesktopId))
             {
                 data.deviceId.virtualDesktopId = GUID_NULL;
                 dirtyFlag = true;

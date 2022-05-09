@@ -2,6 +2,7 @@
 #include "VirtualDesktop.h"
 
 #include <common/logger/logger.h>
+#include "trace.h"
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -89,6 +90,12 @@ VirtualDesktop::~VirtualDesktop()
     }
 }
 
+VirtualDesktop& VirtualDesktop::instance()
+{
+    static VirtualDesktop self;
+    return self;
+}
+
 std::optional<GUID> VirtualDesktop::GetCurrentVirtualDesktopIdFromRegistry() const
 {
     // On newer Windows builds, the current virtual desktop is persisted to
@@ -162,6 +169,25 @@ std::optional<std::vector<GUID>> VirtualDesktop::GetVirtualDesktopIdsFromRegistr
     return GetVirtualDesktopIdsFromRegistry(GetVirtualDesktopsRegKey());
 }
 
+bool VirtualDesktop::IsVirtualDesktopIdSavedInRegistry(GUID id) const
+{
+    auto ids = GetVirtualDesktopIdsFromRegistry();
+    if (!ids.has_value())
+    {
+        return false;
+    }
+
+    for (const auto& regId : *ids)
+    {
+        if (regId == id)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool VirtualDesktop::IsWindowOnCurrentDesktop(HWND window) const
 {
     std::optional<GUID> id = GetDesktopId(window);
@@ -207,6 +233,40 @@ std::vector<std::pair<HWND, GUID>> VirtualDesktop::GetWindowsRelatedToDesktops()
     }
 
     return result;
+}
+
+GUID VirtualDesktop::GetCurrentVirtualDesktopId() const noexcept
+{
+    return m_currentVirtualDesktopId;
+}
+
+GUID VirtualDesktop::GetPreviousVirtualDesktopId() const noexcept
+{
+    return m_previousDesktopId;
+}
+
+void VirtualDesktop::UpdateVirtualDesktopId() noexcept
+{
+    m_previousDesktopId = m_currentVirtualDesktopId;
+
+    auto currentVirtualDesktopId = GetCurrentVirtualDesktopIdFromRegistry();
+    if (!currentVirtualDesktopId.has_value())
+    {
+        Logger::info("No Virtual Desktop Id found in registry");
+        currentVirtualDesktopId = VirtualDesktop::instance().GetDesktopIdByTopLevelWindows();
+    }
+
+    if (currentVirtualDesktopId.has_value())
+    {
+        m_currentVirtualDesktopId = *currentVirtualDesktopId;
+
+        if (m_currentVirtualDesktopId == GUID_NULL)
+        {
+            Logger::warn("Couldn't retrieve virtual desktop id");
+        }
+    }
+
+    Trace::VirtualDesktopChanged();
 }
 
 std::optional<GUID> VirtualDesktop::GetDesktopIdByTopLevelWindows() const

@@ -3,39 +3,32 @@
 class VirtualDesktop
 {
 public:
-    VirtualDesktop();
-    ~VirtualDesktop();
+    static VirtualDesktop& instance();
 
-    inline bool IsVirtualDesktopIdSavedInRegistry(GUID id) const
-    {
-        auto ids = GetVirtualDesktopIdsFromRegistry();
-        if (!ids.has_value())
-        {
-            return false;
-        }
+    // saved values
+    GUID GetCurrentVirtualDesktopId() const noexcept;
+    GUID GetPreviousVirtualDesktopId() const noexcept;
+    void UpdateVirtualDesktopId() noexcept;
 
-        for (const auto& regId : *ids)
-        {
-            if (regId == id)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    std::optional<GUID> GetCurrentVirtualDesktopIdFromRegistry() const;
-    std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry() const;
-
+    // IVirtualDesktopManager
     bool IsWindowOnCurrentDesktop(HWND window) const;
     std::optional<GUID> GetDesktopId(HWND window) const;
     std::optional<GUID> GetDesktopIdByTopLevelWindows() const;
-
     std::vector<std::pair<HWND, GUID>> GetWindowsRelatedToDesktops() const;
 
+    // registry
+    std::optional<GUID> GetCurrentVirtualDesktopIdFromRegistry() const;
+    std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry() const;
+    bool IsVirtualDesktopIdSavedInRegistry(GUID id) const;
+
 private:
-    IVirtualDesktopManager* m_vdManager;
+    VirtualDesktop();
+    ~VirtualDesktop();
+
+    IVirtualDesktopManager* m_vdManager{nullptr};
+
+    GUID m_currentVirtualDesktopId{};
+    GUID m_previousDesktopId{};
 
     std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry(HKEY hKey) const;
 };

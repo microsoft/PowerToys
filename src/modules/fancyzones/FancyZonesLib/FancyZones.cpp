@@ -86,7 +86,7 @@ public:
             monitor = NULL;
         }
 
-        m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
+        m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
     }
 
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
@@ -95,12 +95,12 @@ public:
         {
             monitor = NULL;
         }
-        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
+        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
     }
 
     void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
     {
-        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
+        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()));
     }
 
     IFACEMETHODIMP_(void)
@@ -183,10 +183,7 @@ private:
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
-    VirtualDesktop m_virtualDesktop;
 
-    GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.
-    GUID m_currentDesktopId{}; // UUID of the current virtual desktop.
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
 
     OnThreadExecutor m_dpiUnawareThread;
@@ -332,7 +329,7 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> workA
 
 bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR active, HMONITOR primary) noexcept
 {
-    auto workAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId);
+    auto workAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
     if (workAreaMap.empty())
     {
         Logger::trace(L"No work area for the current desktop.");
@@ -379,8 +376,8 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    auto desktopId = m_virtualDesktop.GetDesktopId(window);
-    if (desktopId.has_value() && *desktopId != m_currentDesktopId)
+    auto desktopId = VirtualDesktop::instance().GetDesktopId(window);
+    if (desktopId.has_value() && *desktopId != VirtualDesktop::instance().GetCurrentVirtualDesktopId())
     {
         // Switch between virtual desktops results with posting same windows messages that also indicate
         // creation of new window. We need to check if window being processed is on currently active desktop.
@@ -526,7 +523,7 @@ void FancyZones::ToggleEditor() noexcept
     }
 
     wil::unique_cotaskmem_string virtualDesktopId;
-    if (!SUCCEEDED(StringFromCLSID(m_currentDesktopId, &virtualDesktopId)))
+    if (!SUCCEEDED(StringFromCLSID(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), &virtualDesktopId)))
     {
         return;
     }
@@ -795,28 +792,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     if (changeType == DisplayChangeType::VirtualDesktop ||
         changeType == DisplayChangeType::Initialization)
     {
-        m_previousDesktopId = m_currentDesktopId;
-
-        auto currentVirtualDesktopId = m_virtualDesktop.GetCurrentVirtualDesktopIdFromRegistry();
-        if (!currentVirtualDesktopId.has_value())
-        {
-            Logger::info("Virtual Desktop id from top level window");
-            currentVirtualDesktopId = m_virtualDesktop.GetDesktopIdByTopLevelWindows();
-        }
-
-        if (currentVirtualDesktopId.has_value())
-        {
-            m_currentDesktopId = *currentVirtualDesktopId;
-            if (m_previousDesktopId != GUID_NULL && m_currentDesktopId != m_previousDesktopId)
-            {
-                Trace::VirtualDesktopChanged();
-            }
-
-            if (m_currentDesktopId == GUID_NULL)
-            {
-                Logger::warn("Couldn't retrieve virtual desktop id");
-            }
-        }
+        VirtualDesktop::instance().UpdateVirtualDesktopId();
 
         if (changeType == DisplayChangeType::Initialization)
         {
@@ -837,16 +813,16 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
 void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noexcept
 {
-    if (m_workAreaHandler.IsNewWorkArea(m_currentDesktopId, monitor))
+    if (m_workAreaHandler.IsNewWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor))
     {
         wil::unique_cotaskmem_string virtualDesktopIdStr;
-        if (!SUCCEEDED(StringFromCLSID(m_currentDesktopId, &virtualDesktopIdStr)))
+        if (!SUCCEEDED(StringFromCLSID(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), &virtualDesktopIdStr)))
         {
             Logger::debug(L"Add new work area on virtual desktop {}", virtualDesktopIdStr.get());
         }
         
         FancyZonesDataTypes::DeviceIdData uniqueId;
-        uniqueId.virtualDesktopId = m_currentDesktopId;
+        uniqueId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
 
         if (monitor)
         {
@@ -858,7 +834,7 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noe
         }
 
         FancyZonesDataTypes::DeviceIdData parentId{};
-        auto parentArea = m_workAreaHandler.GetWorkArea(m_previousDesktopId, monitor);
+        auto parentArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetPreviousVirtualDesktopId(), monitor);
         if (parentArea)
         {
             parentId = parentArea->UniqueId();
@@ -867,7 +843,7 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noe
         auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId);
         if (workArea)
         {
-            m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
+            m_workAreaHandler.AddWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor, workArea);
             AppliedLayouts::instance().SaveData();
         }
     }
@@ -924,7 +900,7 @@ void FancyZones::UpdateWorkAreas() noexcept
 
 void FancyZones::UpdateWindowsPositions(bool suppressMove) noexcept
 {
-    for (const auto [window, desktopId] : m_virtualDesktop.GetWindowsRelatedToDesktops())
+    for (const auto [window, desktopId] : VirtualDesktop::instance().GetWindowsRelatedToDesktops())
     {
         auto zoneIndexSet = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
         auto workArea = m_workAreaHandler.GetWorkArea(window, desktopId);
@@ -940,7 +916,7 @@ void FancyZones::CycleTabs(bool reverse) noexcept
     auto window = GetForegroundWindow();
     HMONITOR current = WorkAreaKeyFromWindow(window);
 
-    auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, current);
+    auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), current);
     if (workArea)
     {
         workArea->CycleTabs(window, reverse);
@@ -958,7 +934,7 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
         auto currMonitorInfo = std::find(std::begin(monitorInfo), std::end(monitorInfo), current);
         do
         {
-            auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, *currMonitorInfo);
+            auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), *currMonitorInfo);
             if (m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */, workArea))
             {
                 Trace::FancyZones::KeyboardSnapWindowToZone(workArea->ZoneSet());
@@ -985,7 +961,7 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
     }
     else
     {
-        auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, current);
+        auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), current);
         // Single monitor environment, or combined multi-monitor environment.
         if (FancyZonesSettings::settings().restoreSize)
         {
@@ -1025,7 +1001,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
     {
         // Multi monitor environment.
         // First, try to stay on the same monitor
-        bool success = ProcessDirectedSnapHotkey(window, vkCode, false, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+        bool success = ProcessDirectedSnapHotkey(window, vkCode, false, m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), current));
         if (success)
         {
             return true;
@@ -1044,7 +1020,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             }
             else
             {
-                auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
+                auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor);
                 if (workArea)
                 {
                     auto zoneSet = workArea->ZoneSet();
@@ -1092,7 +1068,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
         // Sanity check: the current monitor is valid
         if (currentMonitorRect.top <= currentMonitorRect.bottom)
         {
-            auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, current);
+            auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), current);
             if (workArea)
             {
                 auto zoneSet = workArea->ZoneSet();
@@ -1139,7 +1115,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
     else
     {
         // Single monitor environment, or combined multi-monitor environment.
-        return ProcessDirectedSnapHotkey(window, vkCode, true, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+        return ProcessDirectedSnapHotkey(window, vkCode, true, m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), current));
     }
 }
 
@@ -1183,7 +1159,7 @@ bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle
 
 void FancyZones::RegisterVirtualDesktopUpdates() noexcept
 {
-    auto guids = m_virtualDesktop.GetVirtualDesktopIdsFromRegistry();
+    auto guids = VirtualDesktop::instance().GetVirtualDesktopIdsFromRegistry();
     if (guids.has_value())
     {
         m_workAreaHandler.RegisterUpdates(*guids);
@@ -1275,7 +1251,7 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
     {
         HMONITOR monitor = WorkAreaKeyFromWindow(window);
 
-        auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
+        auto workArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor);
         if (workArea && workArea->ZoneSet() && workArea->ZoneSet()->LayoutType() != FancyZonesDataTypes::ZoneSetLayoutType::Blank)
         {
             if (vkCode == VK_UP || vkCode == VK_DOWN)
@@ -1306,7 +1282,7 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
         return;
     }
 
-    auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(m_currentDesktopId);
+    auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
     AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout.value());
     AppliedLayouts::instance().SaveData();
     UpdateZoneSets();
@@ -1317,7 +1293,7 @@ void FancyZones::FlashZones() noexcept
 {
     if (FancyZonesSettings::settings().flashZonesOnQuickSwitch && !m_windowMoveHandler.IsDragEnabled())
     {
-        for (auto [monitor, workArea] : m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId))
+        for (auto [monitor, workArea] : m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId()))
         {
             workArea->FlashZones();
         }
@@ -1336,7 +1312,7 @@ std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
 std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
 {
     std::vector<std::pair<HMONITOR, RECT>> monitorInfo;
-    const auto& activeWorkAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId);
+    const auto& activeWorkAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
     for (const auto& [monitor, workArea] : activeWorkAreaMap)
     {
         if (workArea->ZoneSet() != nullptr)
