@@ -29,9 +29,7 @@ using namespace winrt::Microsoft::Windows::ApplicationModel::Resources;
 #define MAX_LOADSTRING 100
 
 // Non-localizable
-const std::wstring moduleName = L"PowerRename";
 const std::wstring PowerRenameUIIco = L"PowerRenameUI.ico";
-const std::wstring internalPath = L"";
 const wchar_t c_WindowClass[] = L"PowerRename";
 HINSTANCE g_hostHInst;
 
@@ -53,7 +51,7 @@ namespace winrt::PowerRenameUI::implementation
             Microsoft::UI::Windowing::AppWindow::GetFromWindowId(windowId);
         appWindow.SetIcon(PowerRenameUIIco);
 
-        Title(hstring{ moduleName });
+        Title(hstring{ L"PowerRename" });
         
         m_searchMRUList = winrt::single_threaded_observable_vector<hstring>();
         m_replaceMRUList = winrt::single_threaded_observable_vector<hstring>();

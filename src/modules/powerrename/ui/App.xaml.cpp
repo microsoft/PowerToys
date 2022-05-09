@@ -6,6 +6,10 @@
 #include <vector>
 #include <string>
 
+#include <common/logger/logger.h>
+#include <common/logger/logger_settings.h>
+#include <common/utils/logger_helper.h>
+
 using namespace winrt;
 using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
@@ -17,6 +21,8 @@ using namespace PowerRenameUI::implementation;
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 std::vector<std::wstring> g_files;
+
+const std::wstring moduleName = L"PowerRename";
 
 /// <summary>
 /// Initializes the singleton application object.  This is the first line of authored code
@@ -45,12 +51,14 @@ App::App()
 /// <param name="e">Details about the launch request and process.</param>
 void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
+    LoggerHelpers::init_logger(moduleName, L"", LogSettings::powerRenameLoggerName);
+
 #define BUFSIZE 4096 * 4
 
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     if (hStdin == INVALID_HANDLE_VALUE)
     {
-        // Logger::error(L"Invalid input handle.");
+        Logger::error(L"Invalid input handle.");
         ExitProcess(1);
     }
 
@@ -79,7 +87,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
             break;
     }
 
-    //Logger::debug(L"Starting PowerRename with {} files selected", files.size());
+    Logger::debug(L"Starting PowerRename with {} files selected", g_files.size());
 
     window = make<MainWindow>();
     window.Activate();
