@@ -398,19 +398,44 @@ const AppZoneHistory::TAppZoneHistoryMap& AppZoneHistory::GetFullAppZoneHistory(
 
 std::optional<FancyZonesDataTypes::AppZoneHistoryData> AppZoneHistory::GetZoneHistory(const std::wstring& appPath, const FancyZonesDataTypes::DeviceIdData& deviceId) const noexcept
 {
-    auto iter = m_history.find(appPath);
-    if (iter != m_history.end())
+    auto app = appPath;
+    auto pos = appPath.find_last_of('\\');
+    if (pos != std::string::npos && pos + 1 < appPath.length())
     {
-        auto historyVector = iter->second;
-        for (const auto& history : historyVector)
+        app = appPath.substr(pos + 1);
+    }
+
+    auto srcVirtualDesktopIDStr = FancyZonesUtils::GuidToString(deviceId.virtualDesktopId);
+    if (srcVirtualDesktopIDStr)
+    {
+        Logger::debug(L"Get {} zone history on monitor: {}, virtual desktop: {}", app, deviceId.deviceName, srcVirtualDesktopIDStr.value());
+    }
+
+    auto iter = m_history.find(appPath);
+    if (iter == m_history.end())
+    {
+        Logger::info("App history not found");
+        return std::nullopt;
+    }
+
+    auto historyVector = iter->second;
+    for (const auto& history : historyVector)
+    {
+        if (history.deviceId.deviceName == deviceId.deviceName)
         {
-            if (history.deviceId == deviceId)
+            auto vdStr = FancyZonesUtils::GuidToString(history.deviceId.virtualDesktopId);
+            if (vdStr)
+            {
+                Logger::debug(L"App zone history found on the device {} with virtual desktop {}", history.deviceId.deviceName, vdStr.value());
+            }
+
+            if (history.deviceId.virtualDesktopId == deviceId.virtualDesktopId || history.deviceId.virtualDesktopId == GUID_NULL)
             {
                 return history;
             }
         }
     }
-    
+
     return std::nullopt;
 }
 
@@ -474,22 +499,49 @@ void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDat
 ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId) const
 {
     auto processPath = get_process_path(window);
-    if (!processPath.empty())
+    if (processPath.empty())
     {
-        auto history = m_history.find(processPath);
-        if (history != std::end(m_history))
+        Logger::error("Process path is empty");
+        return {};
+    }
+
+    auto history = m_history.find(processPath);
+    if (history == std::end(m_history))
+    {
+        return {};
+    }
+
+    auto srcVirtualDesktopIDStr = FancyZonesUtils::GuidToString(deviceId.virtualDesktopId);
+    auto app = processPath;
+    auto pos = processPath.find_last_of('\\');
+    if (pos != std::string::npos && pos + 1 < processPath.length())
+    {
+        app = processPath.substr(pos + 1);
+    }
+
+    if (srcVirtualDesktopIDStr)
+    {
+        Logger::debug(L"Get {} zone history on monitor: {}, virtual desktop: {}", app, deviceId.deviceName, srcVirtualDesktopIDStr.value());
+    }
+
+    const auto& perDesktopData = history->second;
+    for (const auto& data : perDesktopData)
+    {
+        if (data.zoneSetUuid == zoneSetId && data.deviceId.deviceName == deviceId.deviceName)
         {
-            const auto& perDesktopData = history->second;
-            for (const auto& data : perDesktopData)
+            auto vdStr = FancyZonesUtils::GuidToString(data.deviceId.virtualDesktopId);
+            if (vdStr)
             {
-                if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
-                {
-                    return data.zoneIndexSet;
-                }
+                Logger::debug(L"App zone history found on the device {} with virtual desktop {}", data.deviceId.deviceName, vdStr.value()); 
+            }
+
+            if (data.deviceId.virtualDesktopId == deviceId.virtualDesktopId || data.deviceId.virtualDesktopId == GUID_NULL)
+            {
+                return data.zoneIndexSet;
             }
         }
     }
-
+    
     return {};
 }
 
