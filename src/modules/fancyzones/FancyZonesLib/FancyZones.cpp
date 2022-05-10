@@ -1167,8 +1167,8 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
         AppliedLayouts::instance().RemoveDeletedVirtualDesktops(*guids);
     }
 
-    AppZoneHistory::instance().SyncVirtualDesktops(m_currentDesktopId);
-    AppliedLayouts::instance().SyncVirtualDesktops(m_currentDesktopId);
+    AppZoneHistory::instance().SyncVirtualDesktops();
+    AppliedLayouts::instance().SyncVirtualDesktops();
 }
 
 void FancyZones::UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept
@@ -1228,8 +1228,6 @@ void FancyZones::SettingsUpdate(SettingId id)
 void FancyZones::OnEditorExitEvent() noexcept
 {
     // Collect information about changes in zone layout after editor exited.
-    AppZoneHistory::instance().SyncVirtualDesktops(m_currentDesktopId);
-    AppliedLayouts::instance().SyncVirtualDesktops(m_currentDesktopId);
     UpdateZoneSets();
 }
 

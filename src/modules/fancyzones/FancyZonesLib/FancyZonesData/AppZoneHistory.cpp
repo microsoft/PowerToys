@@ -493,18 +493,27 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
     return {};
 }
 
-void AppZoneHistory::SyncVirtualDesktops(GUID currentVirtualDesktopId)
+void AppZoneHistory::SyncVirtualDesktops()
 {
     // Explorer persists current virtual desktop identifier to registry on a per session basis,
     // but only after first virtual desktop switch happens. If the user hasn't switched virtual
     // desktops in this session value in registry will be empty and we will use default GUID in
     // that case (00000000-0000-0000-0000-000000000000).
     
-    auto currentVirtualDesktopStr = FancyZonesUtils::GuidToString(currentVirtualDesktopId);
-    if (currentVirtualDesktopStr)
+    auto savedInRegistryVirtualDesktopID = VirtualDesktop::instance().GetCurrentVirtualDesktopIdFromRegistry();
+    if (!savedInRegistryVirtualDesktopID.has_value() || savedInRegistryVirtualDesktopID.value() == GUID_NULL)
     {
-        Logger::info(L"AppZoneHistory Sync virtual desktops: current {}", currentVirtualDesktopStr.value());
+        return;
     }
+
+    auto currentVirtualDesktopStr = FancyZonesUtils::GuidToString(savedInRegistryVirtualDesktopID.value());
+    if (!currentVirtualDesktopStr.has_value())
+    {
+        Logger::error(L"Failed to convert virtual desktop GUID to string");
+        return;
+    }
+
+    Logger::info(L"AppZoneHistory Sync virtual desktops: current {}", currentVirtualDesktopStr.value());
 
     bool dirtyFlag = false;
 
@@ -514,29 +523,15 @@ void AppZoneHistory::SyncVirtualDesktops(GUID currentVirtualDesktopId)
         {
             if (data.deviceId.virtualDesktopId == GUID_NULL)
             {
-                data.deviceId.virtualDesktopId = currentVirtualDesktopId;
+                data.deviceId.virtualDesktopId = savedInRegistryVirtualDesktopID.value();
                 dirtyFlag = true;
-            }
-            else
-            {
-                VirtualDesktop virtualDesktop;
-                if (!virtualDesktop.IsVirtualDesktopIdSavedInRegistry(data.deviceId.virtualDesktopId))
-                {
-                    data.deviceId.virtualDesktopId = GUID_NULL;
-                    dirtyFlag = true;
-                }
             }
         }
     }
 
     if (dirtyFlag)
     {
-        wil::unique_cotaskmem_string virtualDesktopIdStr;
-        if (SUCCEEDED(StringFromCLSID(currentVirtualDesktopId, &virtualDesktopIdStr)))
-        {
-            Logger::info(L"Update Virtual Desktop id to {}", virtualDesktopIdStr.get());
-        }
-
+        Logger::info(L"Update Virtual Desktop id to {}", currentVirtualDesktopStr.value());
         SaveData();
     }
 }

@@ -48,7 +48,7 @@ public:
     void LoadData();
     void SaveData();
 
-    void SyncVirtualDesktops(GUID currentVirtualDesktopId);
+    void SyncVirtualDesktops();
     void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
 
     std::optional<Layout> GetDeviceLayout(const FancyZonesDataTypes::DeviceIdData& id) const noexcept;
