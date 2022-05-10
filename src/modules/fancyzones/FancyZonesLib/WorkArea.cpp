@@ -390,7 +390,7 @@ WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
         }
         else
         {
-            Logger::error(L"Failed to stringify layout id on the requested work area");
+            Logger::error(L"Failed to convert to string layout GUID on the requested work area");
         }
     }
     else
