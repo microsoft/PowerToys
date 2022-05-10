@@ -398,7 +398,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.WindowWalk
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings", "src\settings-ui\Settings.UI\PowerToys.Settings.csproj", "{020A7474-3601-4160-A159-D7B70B77B15F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUI", "src\modules\powerrename\ui\PowerRenameUI.vcxproj", "{27718999-C175-450A-861C-89F911E16A88}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUI", "src\modules\powerrename\PowerRenameUILib\PowerRenameUI.vcxproj", "{27718999-C175-450A-861C-89F911E16A88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
