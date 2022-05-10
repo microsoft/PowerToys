@@ -282,7 +282,7 @@ bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::Dev
         return false;
     }
 
-    auto processPath = get_process_path(window);
+    auto processPath = get_process_path_waiting_uwp(window);
     if (processPath.empty())
     {
         return false;
@@ -337,7 +337,7 @@ bool AppZoneHistory::RemoveAppLastZone(HWND window, const FancyZonesDataTypes::D
 {
     Logger::info(L"Add app zone history, device: {}, layout: {}", deviceId.toString(), zoneSetId);
 
-    auto processPath = get_process_path(window);
+    auto processPath = get_process_path_waiting_uwp(window);
     if (!processPath.empty())
     {
         auto history = m_history.find(processPath);
@@ -441,7 +441,7 @@ std::optional<FancyZonesDataTypes::AppZoneHistoryData> AppZoneHistory::GetZoneHi
 
 bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId) const noexcept
 {
-    auto processPath = get_process_path(window);
+    auto processPath = get_process_path_waiting_uwp(window);
     if (!processPath.empty())
     {
         auto history = m_history.find(processPath);
@@ -475,7 +475,7 @@ bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, cons
 
 void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId)
 {
-    auto processPath = get_process_path(window);
+    auto processPath = get_process_path_waiting_uwp(window);
     if (!processPath.empty())
     {
         auto history = m_history.find(processPath);
@@ -498,16 +498,10 @@ void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDat
 
 ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId) const
 {
-    auto processPath = get_process_path(window);
+    auto processPath = get_process_path_waiting_uwp(window);
     if (processPath.empty())
     {
         Logger::error("Process path is empty");
-        return {};
-    }
-
-    auto history = m_history.find(processPath);
-    if (history == std::end(m_history))
-    {
         return {};
     }
 
@@ -522,6 +516,12 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
     if (srcVirtualDesktopIDStr)
     {
         Logger::debug(L"Get {} zone history on monitor: {}, virtual desktop: {}", app, deviceId.deviceName, srcVirtualDesktopIDStr.value());
+    }
+
+    auto history = m_history.find(processPath);
+    if (history == std::end(m_history))
+    {
+        return {};
     }
 
     const auto& perDesktopData = history->second;

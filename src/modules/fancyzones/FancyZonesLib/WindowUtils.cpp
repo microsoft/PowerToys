@@ -228,7 +228,7 @@ bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
         return false;
     }
 
-    std::wstring processPath = get_process_path(window);
+    std::wstring processPath = get_process_path_waiting_uwp(window);
     CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), (DWORD)processPath.length());
     if (IsExcludedByUser(processPath))
     {
