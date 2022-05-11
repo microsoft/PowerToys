@@ -66,6 +66,7 @@
                         x:Uid="ShortcutGuide_PressWinKeyWarning"
                         Severity="Warning"
                         IsTabStop="True"
+                        IsEnabled="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior}"
                         IsClosable="False"
                     />
