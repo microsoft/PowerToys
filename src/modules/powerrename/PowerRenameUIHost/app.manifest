@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" xmlns:asmV3="urn:schemas-microsoft-com:asm.v3" manifestVersion="1.0">
-    <asmV3:file name="PowerToys.PowerRenameUILib.dll">
-        <activatableClass name="PowerRenameUILib.App" threadingModel="both" xmlns="urn:schemas-microsoft-com:winrt.v1" />
-        <activatableClass name="PowerRenameUILib.XamlMetadataProvider" threadingModel="both" xmlns="urn:schemas-microsoft-com:winrt.v1" />
-        <activatableClass name="PowerRenameUILib.MainWindow" threadingModel="both" xmlns="urn:schemas-microsoft-com:winrt.v1" />
-    </asmV3:file>
-</assembly>

@@ -225,70 +225,70 @@
   <data name="TextBox_ApplyTo.Text" xml:space="preserve">
     <value>Apply to</value>
   </data>
-  <data name="DocsButton.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="DocsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Documentation</value>
   </data>
-  <data name="DocsButton.AutomationProperties.Name" xml:space="preserve">
+  <data name="DocsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Documentation</value>
   </data>
-  <data name="ToggleButton_IncludeFiles.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ToggleButton_IncludeFiles.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Include files</value>
   </data>
-  <data name="ToggleButton_IncludeFiles.AutomationProperties.Name" xml:space="preserve">
+  <data name="ToggleButton_IncludeFiles.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Include files</value>
   </data>
-  <data name="ToggleButton_IncludeFolders.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ToggleButton_IncludeFolders.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Include folders</value>
   </data>
-  <data name="ToggleButton_IncludeFolders.AutomationProperties.Name" xml:space="preserve">
+  <data name="ToggleButton_IncludeFolders.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Include folders</value>
   </data>
-  <data name="ToggleButton_IncludeSubFolders.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ToggleButton_IncludeSubFolders.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Include subfolders</value>
   </data>
-  <data name="ToggleButton_IncludeSubFolders.AutomationProperties.Name" xml:space="preserve">
+  <data name="ToggleButton_IncludeSubFolders.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Include subfolders</value>
   </data>
   <data name="TextBlock_TextFormatting.Text" xml:space="preserve">
     <value>Text formatting</value>
   </data>
-  <data name="ToggleButton_Lowercase.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ToggleButton_Lowercase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>lowercase</value>
   </data>
-  <data name="ToggleButton_Lowercase.AutomationProperties.Name" xml:space="preserve">
+  <data name="ToggleButton_Lowercase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Lowercase</value>
   </data>
-  <data name="ToggleButton_Uppercase.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ToggleButton_Uppercase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>UPPERCASE</value>
   </data>
-  <data name="ToggleButton_Uppercase.AutomationProperties.Name" xml:space="preserve">
+  <data name="ToggleButton_Uppercase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Uppercase</value>
   </data>
-  <data name="ToggleButton_Titlecase.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Title case</value>
   </data>
-  <data name="ToggleButton_Titlecase.AutomationProperties.Name" xml:space="preserve">
+  <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Title case</value>
   </data>
-  <data name="ToggleButton_Capitalize.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ToggleButton_Capitalize.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Capitalize Each Word</value>
   </data>
-  <data name="ToggleButton_Capitalize.AutomationProperties.Name" xml:space="preserve">
+  <data name="ToggleButton_Capitalize.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Capitalize each word</value>
   </data>
-  <data name="ToggleButton_EnumItems.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ToggleButton_EnumItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Enumerate items</value>
   </data>
-  <data name="ToggleButton_EnumItems.AutomationProperties.Name" xml:space="preserve">
+  <data name="ToggleButton_EnumItems.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Enumerate items</value>
   </data>
-  <data name="SelectAllCheckBox.AutomationProperties.Name" xml:space="preserve">
+  <data name="SelectAllCheckBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Select or deselect all</value>
   </data>
-  <data name="FilterButton.AutomationProperties.Name" xml:space="preserve">
+  <data name="FilterButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Filter</value>
   </data>
-  <data name="FilterButton.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="FilterButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Filter</value>
   </data>
   <data name="ShowAll.Text" xml:space="preserve">
@@ -303,31 +303,31 @@
   <data name="TxtBlock_Renamed.Text" xml:space="preserve">
     <value>Renamed</value>
   </data>
-  <data name="TxtBlock_ButtonSettings.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="TxtBlock_ButtonSettings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="TxtBlock_ButtonSettings.AutomationProperties.Name" xml:space="preserve">
+  <data name="TxtBlock_ButtonSettings.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Settings</value>
   </data>
   <data name="TxtBlock_ButtonApply.Text" xml:space="preserve">
     <value>Apply</value>
   </data>
-  <data name="ButtonApply.AutomationProperties.Name" xml:space="preserve">
+  <data name="ButtonApply.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Apply</value>
   </data>
   <data name="TxtBlock_ButtonApplyAndClose.Text" xml:space="preserve">
     <value>Apply and close</value>
   </data>
-  <data name="RegExButton.AutomationProperties.Name" xml:space="preserve">
+  <data name="RegExButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>RegEx help</value>
   </data>
-  <data name="RegExButton.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="RegExButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>RegEx help</value>
   </data>
-  <data name="FileCreationButton.AutomationProperties.Name" xml:space="preserve">
+  <data name="FileCreationButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>File creation date and time help</value>
   </data>
-  <data name="FileCreationButton.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="FileCreationButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>File creation date and time help</value>
   </data>
 
