@@ -211,7 +211,7 @@ jobs:
   - task: VSBuild@1
     displayName: Publish Monaco Preview Handler for Packaging
     inputs:
-      solution: 'src/modules/launcher/MonacoPreviewHandler/MonacoPreviewHandler.csproj'
+      solution: 'src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj'
       vsVersion: 17.0
       # The arguments should be the same as the ones for Settings; make sure they are.
       msbuildArgs: >-
@@ -227,7 +227,7 @@ jobs:
   - task: VSBuild@1
     displayName: Publish Markdown Preview Handler for Packaging
     inputs:
-      solution: 'src/modules/launcher/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj'
+      solution: 'src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj'
       vsVersion: 17.0
       # The arguments should be the same as the ones for Settings; make sure they are.
       msbuildArgs: >-
@@ -243,7 +243,7 @@ jobs:
   - task: VSBuild@1
     displayName: Publish Svg Preview Handler for Packaging
     inputs:
-      solution: 'src/modules/launcher/SvgPreviewHandler/SvgPreviewHandler.csproj'
+      solution: 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
       vsVersion: 17.0
       # The arguments should be the same as the ones for Settings; make sure they are.
       msbuildArgs: >-
@@ -259,7 +259,7 @@ jobs:
   - task: VSBuild@1
     displayName: Publish Svg Thumbnail Provider for Packaging
     inputs:
-      solution: 'src/modules/launcher/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
+      solution: 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
       vsVersion: 17.0
       # The arguments should be the same as the ones for Settings; make sure they are.
       msbuildArgs: >-
