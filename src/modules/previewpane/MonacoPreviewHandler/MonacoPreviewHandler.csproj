@@ -3,17 +3,20 @@
     <AssemblyTitle>PowerToys.MonacoPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys MonacoPreviewHandler</AssemblyDescription>
     <Description>PowerToys MonacoPreviewHandler</Description>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <Platforms>$(Platform)</Platforms>
   </PropertyGroup>
   
   <Import Project="..\..\..\Version.props" />
 
   <PropertyGroup>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Monaco</RootNamespace>
-	<TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+	  <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
 	<IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
     <AssemblyName>PowerToys.MonacoPreviewHandler</AssemblyName>

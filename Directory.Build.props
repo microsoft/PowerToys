@@ -11,6 +11,7 @@
     <PackageTags>PowerToys</PackageTags>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>Recommended</AnalysisMode>
+    <PlatformTarget>$(Platform)</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
