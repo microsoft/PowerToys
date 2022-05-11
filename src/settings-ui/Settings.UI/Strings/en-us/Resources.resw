@@ -2085,7 +2085,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_Radio_Windows_Default.Content" xml:space="preserve">
     <value>Windows default</value>
   </data>
-  <data name="PowerPreviewPage.SecondaryLinksHeader" xml:space="preserve">
+  <data name="FileExplorerPreview.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
   </data>
