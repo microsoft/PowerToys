@@ -9,8 +9,6 @@
     <Nullable>enable</Nullable>
     <LangVersion>8.0</LangVersion>
     <OutputType>Library</OutputType>
-    <PlatformTarget>$(Platform)</PlatformTarget>
-    <Platforms>$(Platform)</Platforms>
     <Version>$(Version).0</Version>
   </PropertyGroup>
 

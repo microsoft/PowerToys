@@ -5,7 +5,6 @@
     <TargetFramework>net6.0-windows</TargetFramework>
 	<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <UseWPF>true</UseWPF>
-    <Platforms>x64;ARM64</Platforms>
     <AssemblyName>PowerToys.Common.UI</AssemblyName>
   </PropertyGroup>
 

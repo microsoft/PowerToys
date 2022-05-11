@@ -10,8 +10,6 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <PlatformTarget>$(Platform)</PlatformTarget>
-    <Platforms>$(Platform)</Platforms>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FancyZones</OutputPath> 
   </PropertyGroup>
   

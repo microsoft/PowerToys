@@ -11,7 +11,6 @@
     <AssemblyName>Microsoft.Interop.Tests</AssemblyName>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <Platforms>x64;ARM64</Platforms>
     <AssemblyTitle>interop-tests</AssemblyTitle>
   </PropertyGroup>
 

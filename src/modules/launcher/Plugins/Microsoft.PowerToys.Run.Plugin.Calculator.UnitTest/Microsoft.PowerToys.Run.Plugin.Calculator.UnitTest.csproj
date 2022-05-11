@@ -5,8 +5,6 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <PlatformTarget>$(Platform)</PlatformTarget>
-    <Platforms>$(Platform)</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
