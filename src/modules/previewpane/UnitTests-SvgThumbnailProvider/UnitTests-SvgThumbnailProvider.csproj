@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Platforms>x64</Platforms>
     <AssemblyTitle>UnitTests-SvgThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-SvgThumbnailProvider</AssemblyDescription>
     <AssemblyTitle>UnitTests-SvgThumbnailProvider</AssemblyTitle>
