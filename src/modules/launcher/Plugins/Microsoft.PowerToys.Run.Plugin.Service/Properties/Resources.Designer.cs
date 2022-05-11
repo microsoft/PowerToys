@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -66,6 +66,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
         internal static string wox_plugin_service_continue_pending {
             get {
                 return ResourceManager.GetString("wox_plugin_service_continue_pending", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        internal static string wox_plugin_service_name {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_name", resourceCulture);
             }
         }
         
@@ -174,6 +183,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
         internal static string wox_plugin_service_start_mode_automatic {
             get {
                 return ResourceManager.GetString("wox_plugin_service_start_mode_automatic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Automatic (Delayed Start).
+        /// </summary>
+        internal static string wox_plugin_service_start_mode_automaticDelayed {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_start_mode_automaticDelayed", resourceCulture);
             }
         }
         

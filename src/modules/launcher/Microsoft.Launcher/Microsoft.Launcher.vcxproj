@@ -17,10 +17,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\launcher\</OutDir>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Debug'">
-    <PlatformToolset>v143</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Release'">
+  <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
