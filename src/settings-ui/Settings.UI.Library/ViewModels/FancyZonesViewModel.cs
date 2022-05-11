@@ -116,6 +116,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
             _windows11 = Helper.Windows11();
+
+            // Disable setting on windows 10
+            if (!_windows11 && DisableRoundCornersOnWindowSnap)
+            {
+                DisableRoundCornersOnWindowSnap = false;
+            }
         }
 
         private bool _isEnabled;
