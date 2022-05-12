@@ -268,7 +268,7 @@ namespace ColorPicker.Helpers
         /// Convert a given <see cref="Color"/> to a decimal BGR value
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
-        /// <returns>The decimal value[0..16777215]</returns>
+        /// <returns>The decimal value [0..16777215]</returns>
         internal static int ConvertDecimalBGRValue(Color color)
         {
             return (color.B * 65536) + (color.G * 256) + color.R;
@@ -278,7 +278,7 @@ namespace ColorPicker.Helpers
         /// Convert a given <see cref="Color"/> to a decimal RGB value
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
-        /// <returns>The decimal value[0..16777215]</returns>
+        /// <returns>The decimal value [0..16777215]</returns>
         internal static int ConvertDecimalRGBValue(Color color)
         {
             return (color.R * 65536) + (color.G * 256) + color.B;
