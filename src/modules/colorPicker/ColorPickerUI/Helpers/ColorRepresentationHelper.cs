@@ -129,7 +129,7 @@ namespace ColorPicker.Helpers
         /// <returns>a string value number</returns>
         private static string ColorToDecimalBGR(Color color)
         {
-            return $"{color.R + (color.G * 256) + (color.B * 65536)}";
+            return $"{ColorHelper.ConvertDecimalBGRValue(color)}";
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace ColorPicker.Helpers
         /// <returns>a string value number</returns>
         private static string ColorToDecimalRGB(Color color)
         {
-            return $"{(color.R * 65536) + (color.G * 256) + color.B}";
+            return $"{ColorHelper.ConvertDecimalRGBValue(color)}";
         }
 
         /// <summary>
