@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
@@ -179,7 +180,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 {
                     Controls.Remove(_loading);
                     Label errorMessage = new Label();
-                    errorMessage.Text = Resources.Max_File_Size_Error;
+                    errorMessage.Text = Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture);
                     errorMessage.Width = 500;
                     errorMessage.Height = 50;
                     Controls.Add(errorMessage);
