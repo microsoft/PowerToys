@@ -424,7 +424,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("FF0000", 255)] // red
         [DataRow("00FF00", 65280)] // green
         [DataRow("0000FF", 16711680)] // blue
-        public void ColorRGBToDecimalBGR(string hexValue, int decimalColorValue)
+        public void ColorRGBtoDecimalBGR(string hexValue, int decimalColorValue)
         {
             var color = HexValueToColor(hexValue);
             var result = ColorHelper.ConvertDecimalBGRValue(color);
@@ -440,7 +440,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("FF0000", 16711680)] // red
         [DataRow("00FF00", 65280)] // green
         [DataRow("0000FF", 255)] // blue
-        public void ColorRGBToDecimalRGB(string hexValue, int decimalColorValue)
+        public void ColorRGBtoDecimalRGB(string hexValue, int decimalColorValue)
         {
             var color = HexValueToColor(hexValue);
             var result = ColorHelper.ConvertDecimalRGBValue(color);
