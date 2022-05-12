@@ -47,7 +47,8 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.CIELAB => ColorToCIELAB(color),
                 ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
                 ColorRepresentationType.VEC4 => ColorToFloat(color),
-                ColorRepresentationType.DecimalValue => ColorToDecimal(color),
+                ColorRepresentationType.DecimalValue => ColorToDecimalBGR(color),
+                ColorRepresentationType.DecimalRGBValue => ColorToDecimalRGB(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
                 _ => ColorToHex(color),
@@ -122,13 +123,23 @@ namespace ColorPicker.Helpers
         }
 
         /// <summary>
-        /// Return a <see cref="string"/> representation decimal color value
+        /// Return a <see cref="string"/> representation decimal BGR color value
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>a string value number</returns>
-        private static string ColorToDecimal(Color color)
+        private static string ColorToDecimalBGR(Color color)
         {
             return $"{color.R + (color.G * 256) + (color.B * 65536)}";
+        }
+
+        /// <summary>
+        /// Return a <see cref="string"/> representation decimal RGB color value
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>a string value number</returns>
+        private static string ColorToDecimalRGB(Color color)
+        {
+            return $"{(color.R * 65536) + (color.G * 256) + color.B}";
         }
 
         /// <summary>

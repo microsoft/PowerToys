@@ -72,8 +72,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         VEC4 = 11,
 
         /// <summary>
-        /// Color presentation as integer decimal value 0-16777215
+        /// Color presentation as integer decimal BGR value 0-16777215
         /// </summary>
         DecimalValue = 12,
+
+        /// <summary>
+        /// Color presentation as integer decimal RGB value 0-16777215
+        /// </summary>
+        DecimalRGBValue = 13,
     }
 }
