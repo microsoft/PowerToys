@@ -1230,6 +1230,12 @@ void FancyZones::UpdateZoneSets() noexcept
 bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
+    
+    if (!FancyZonesWindowProcessing::IsProcessable(window))
+    {
+        return false;
+    }
+    
     if (FancyZonesSettings::settings().overrideSnapHotkeys && FancyZonesWindowUtils::IsCandidateForZoning(window))
     {
         HMONITOR monitor = WorkAreaKeyFromWindow(window);
