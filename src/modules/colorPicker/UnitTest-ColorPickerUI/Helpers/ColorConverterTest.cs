@@ -16,6 +16,22 @@ namespace Microsoft.ColorPicker.UnitTests
     [TestClass]
     public class ColorConverterTest
     {
+        private Color HexValueToColor(string hexValue)
+        {
+            if (string.IsNullOrWhiteSpace(hexValue))
+            {
+                Assert.IsNotNull(hexValue);
+            }
+
+            Assert.IsTrue(hexValue.Length >= 6);
+
+            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+
+            return Color.FromArgb(255, red, green, blue);
+        }
+
         // test values taken from https://de.wikipedia.org/wiki/HSV-Farbraum
         [TestMethod]
         [DataRow(000, 000, 000, 000, 000, 000)] // Black
@@ -184,18 +200,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("7E7EB8", 240.5, 013.5, 057.0)]
         public void ColorRGBtoHSITest(string hexValue, double hue, double saturation, double intensity)
         {
-            if (string.IsNullOrWhiteSpace(hexValue))
-            {
-                Assert.IsNotNull(hexValue);
-            }
-
-            Assert.IsTrue(hexValue.Length >= 6);
-
-            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-
-            var color = Color.FromArgb(255, red, green, blue);
+            var color = HexValueToColor(hexValue);
             var result = ColorHelper.ConvertToHSIColor(color);
 
             // hue[0°..360°]
@@ -232,18 +237,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("7E7EB8", 240, 049, 028)]
         public void ColorRGBtoHWBTest(string hexValue, double hue, double whiteness, double blackness)
         {
-            if (string.IsNullOrWhiteSpace(hexValue))
-            {
-                Assert.IsNotNull(hexValue);
-            }
-
-            Assert.IsTrue(hexValue.Length >= 6);
-
-            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-
-            var color = Color.FromArgb(255, red, green, blue);
+            var color = HexValueToColor(hexValue);
             var result = ColorHelper.ConvertToHWBColor(color);
 
             // hue[0°..360°]
@@ -280,18 +274,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("7E7EB8", "B0", 049, 028)]
         public void ColorRGBtoNColTest(string hexValue, string hue, double whiteness, double blackness)
         {
-            if (string.IsNullOrWhiteSpace(hexValue))
-            {
-                Assert.IsNotNull(hexValue);
-            }
-
-            Assert.IsTrue(hexValue.Length >= 6);
-
-            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-
-            var color = Color.FromArgb(255, red, green, blue);
+            var color = HexValueToColor(hexValue);
             var result = ColorHelper.ConvertToNaturalColor(color);
 
             // hue
@@ -336,18 +319,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("E3F988", 94.25, -23.70, 51.58)] // mindaro
         public void ColorRGBtoCIELABTest(string hexValue, double lightness, double chromaticityA, double chromaticityB)
         {
-            if (string.IsNullOrWhiteSpace(hexValue))
-            {
-                Assert.IsNotNull(hexValue);
-            }
-
-            Assert.IsTrue(hexValue.Length >= 6);
-
-            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-
-            var color = Color.FromArgb(255, red, green, blue);
+            var color = HexValueToColor(hexValue);
             var result = ColorHelper.ConvertToCIELABColor(color);
 
             // lightness[0..100]
@@ -400,18 +372,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("E3F988", 69.9955, 85.8597, 36.1785)] // mindaro
         public void ColorRGBtoCIEXYZTest(string hexValue, double x, double y, double z)
         {
-            if (string.IsNullOrWhiteSpace(hexValue))
-            {
-                Assert.IsNotNull(hexValue);
-            }
-
-            Assert.IsTrue(hexValue.Length >= 6);
-
-            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-
-            var color = Color.FromArgb(255, red, green, blue);
+            var color = HexValueToColor(hexValue);
             var result = ColorHelper.ConvertToCIEXYZColor(color);
 
             // x[0..0.95047]
@@ -454,6 +415,38 @@ namespace Microsoft.ColorPicker.UnitTests
                     }
                 }
             }
+        }
+
+        [TestMethod]
+        [DataRow("FFFFFF", 16777215)] // white
+        [DataRow("808080", 8421504)] // gray
+        [DataRow("000000", 0)] // black
+        [DataRow("FF0000", 255)] // red
+        [DataRow("00FF00", 65280)] // green
+        [DataRow("0000FF", 16711680)] // blue
+        public void ColorRGBToDecimalBGR(string hexValue, int decimalColorValue)
+        {
+            var color = HexValueToColor(hexValue);
+            var result = ColorHelper.ConvertDecimalBGRValue(color);
+
+            // decimalColor[0..16777215]
+            Assert.AreEqual(result, decimalColorValue);
+        }
+
+        [TestMethod]
+        [DataRow("FFFFFF", 16777215)] // white
+        [DataRow("808080", 8421504)] // gray
+        [DataRow("000000", 0)] // black
+        [DataRow("FF0000", 16711680)] // red
+        [DataRow("00FF00", 65280)] // green
+        [DataRow("0000FF", 255)] // blue
+        public void ColorRGBToDecimalRGB(string hexValue, int decimalColorValue)
+        {
+            var color = HexValueToColor(hexValue);
+            var result = ColorHelper.ConvertDecimalRGBValue(color);
+
+            // decimalColor[0..16777215]
+            Assert.AreEqual(result, decimalColorValue);
         }
     }
 }
