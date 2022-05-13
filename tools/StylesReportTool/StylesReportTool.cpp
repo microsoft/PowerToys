@@ -124,9 +124,9 @@ public:
     }
 
     template<typename FormatString, typename... Args>
-    static void log(FormatString fmt, const Args&... args)
+    static void log(FormatString fmt, Args&&... args)
     {
-        logger << std::format(fmt, args...) << std::endl;
+        logger << std::format(fmt, std::forward<Args>(args)...) << std::endl;
     }
 };
 
