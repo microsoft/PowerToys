@@ -126,7 +126,7 @@ public:
     template<typename FormatString, typename... Args>
     static void log(FormatString fmt, Args&&... args)
     {
-        logger << std::format(fmt, std::forward<Args>(args)...) << std::endl;
+        logger << std::vformat(fmt, std::make_wformat_args(args...)) << std::endl;
     }
 };
 
