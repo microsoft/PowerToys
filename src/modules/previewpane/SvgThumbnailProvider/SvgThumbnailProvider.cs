@@ -137,7 +137,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
                     _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
 
-                    // WebView2.NavigateToString() limitation. See docs.
+                    // WebView2.NavigateToString() limitation
+                    // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
                     if (wrappedContent.Length > 2 * 1024 * 1024)
                     {
                         string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";

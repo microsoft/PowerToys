@@ -95,9 +95,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
 
                 blocked = SvgPreviewHandlerHelper.CheckBlockedElements(svgData);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 PreviewError(ex, dataSource);
                 return;
@@ -107,9 +105,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             {
                 svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
             }
@@ -132,9 +128,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     base.DoPreview(dataSource);
                     PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     PreviewError(ex, dataSource);
                 }
@@ -190,7 +184,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                         _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
                         _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
 
-                        // WebView2.NavigateToString() limitation. See docs.
+                        // WebView2.NavigateToString() limitation
+                        // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
                         if (svgData.Length > 2 * 1024 * 1024)
                         {
                             string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
