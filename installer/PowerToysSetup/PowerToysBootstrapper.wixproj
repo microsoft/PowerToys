@@ -14,7 +14,7 @@
   <PropertyGroup>
     <Configuration>Release</Configuration>
     <Platform Condition="'$(Platform)'=='x64'">x64</Platform>
-    <Platform Condition="'$(Platform)'=='x64'">x86</Platform>
+    <Platform Condition="'$(Platform)'!='x64'">x86</Platform>
     <ProductVersion>3.10</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
