@@ -2181,6 +2181,7 @@ verrsrc
 VERSIONINFO
 Versioning
 VFT
+vformat
 vid
 VIDCAP
 videoconference
@@ -2235,6 +2236,7 @@ website
 webview
 wekyb
 Wevtapi
+wformat
 wgpocpl
 Whichdoes
 whitespaces

@@ -5,8 +5,6 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.Plugin.Uri.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <PlatformTarget>$(Platform)</PlatformTarget>
-    <Platforms>$(Platform)</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

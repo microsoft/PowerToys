@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <format>
 
 inline std::optional<std::wstring> get_last_error_message(const DWORD dw)
 {
@@ -123,9 +124,9 @@ public:
     }
 
     template<typename FormatString, typename... Args>
-    static void log(const FormatString& fmt, const Args&... args)
+    static void log(FormatString fmt, Args&&... args)
     {
-        logger << std::format(fmt, args...) << std::endl;
+        logger << std::vformat(fmt, std::make_wformat_args(args...)) << std::endl;
     }
 };
 
