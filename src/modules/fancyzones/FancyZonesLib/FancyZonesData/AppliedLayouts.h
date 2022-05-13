@@ -48,8 +48,7 @@ public:
     void LoadData();
     void SaveData();
 
-    void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
-    void SyncVirtualDesktops(GUID currentVirtualDesktopId);
+    void SyncVirtualDesktops();
     void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
 
     std::optional<Layout> GetDeviceLayout(const FancyZonesDataTypes::DeviceIdData& id) const noexcept;
@@ -67,5 +66,4 @@ private:
 
     std::unique_ptr<FileWatcher> m_fileWatcher;
     TAppliedLayoutsMap m_layouts;
-    std::function<bool(GUID)> m_virtualDesktopCheckCallback;
 };

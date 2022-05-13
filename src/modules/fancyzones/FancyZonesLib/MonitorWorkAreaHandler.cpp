@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "MonitorWorkAreaHandler.h"
 #include "VirtualDesktop.h"
+#include "WorkArea.h"
 #include "util.h"
 
 #include <common/logger/logger.h>
