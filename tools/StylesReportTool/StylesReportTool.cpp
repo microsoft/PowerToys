@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <format>
 
 inline std::optional<std::wstring> get_last_error_message(const DWORD dw)
 {
