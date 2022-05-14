@@ -308,7 +308,7 @@ static bool ShouldSuppressMove(HWND window, RECT zoneRect, bool suppressMove)
     if (GetWindowRect(window, &windowRect))
     {
         // Check if window is already in rect except for the zone title bar
-        if (zoneRect.left == windowRect.left &&
+        if (zoneRect.left <= windowRect.left &&
             zoneRect.right == windowRect.right &&
             zoneRect.bottom == windowRect.bottom &&
             zoneRect.top <= windowRect.top)
@@ -374,7 +374,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
     if (!sizeEmpty)
     {
         auto zoneTitleBar = m_zoneTitleBarByIndexSets.find(indexSet);
-        auto zoneTitleBarHeight = 0;
+        FancyZonesUtils::Rect zoneTitleBarInlineFrame;
 
         // Are we are not alone?
         if (!m_windowsByIndexSets[indexSet].empty())
@@ -399,15 +399,19 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
                     auto dpi = GetDpiForMonitor(MonitorFromWindow(workAreaWindow, MONITOR_DEFAULTTOPRIMARY));
                     zoneTitleBar = m_zoneTitleBarByIndexSets.emplace(indexSet, MakeZoneTitleBar(m_config.ZoneTitleBarStyle, m_hinstance, zone, dpi)).first;
 
-                    zoneTitleBarHeight = zoneTitleBar->second->GetHeight();
-                    rect.top += zoneTitleBarHeight;
-                    SizeWindowToRect(hwnd, rect);
+                    zoneTitleBarInlineFrame = zoneTitleBar->second->GetInlineFrame();
+                    auto rectForResize = AdjustRectForSizeWindowToRect(hwnd, *zoneTitleBarInlineFrame.get(), workAreaWindow);
+                    SizeWindowToRect(hwnd, rectForResize);
+                }
+                else
+                {
+                    zoneTitleBarInlineFrame = rect;
                 }
             }
             else
             {
                 // Adjust the rect
-                zoneTitleBarHeight = zoneTitleBar->second->GetHeight();
+                zoneTitleBarInlineFrame = zoneTitleBar->second->GetInlineFrame();
             }
         }
 
@@ -420,8 +424,15 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
         auto shouldSuppressMove = ShouldSuppressMove(window, rect, suppressMove);
         if (!shouldSuppressMove)
         {
-            rect.top += zoneTitleBarHeight;
-            SizeWindowToRect(window, rect);
+            if (IsRectEmpty(zoneTitleBarInlineFrame.get()))
+            {
+                SizeWindowToRect(window, rect);
+            }
+            else
+            {
+                auto rectForResize = AdjustRectForSizeWindowToRect(window, *zoneTitleBarInlineFrame.get(), workAreaWindow);
+                SizeWindowToRect(window, rectForResize);
+            }
         }
 
         auto oldBitmask = GetWindowStamp(window);

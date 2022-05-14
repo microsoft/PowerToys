@@ -19,11 +19,17 @@ D2D1_COLOR_F Drawing::ConvertColor(winrt::Windows::UI::Color color)
                         color.A / 255.f);
 }
 
-ID2D1Factory* Drawing::GetD2DFactory()
+ID2D1Factory6* Drawing::GetD2DFactory()
 {
     static auto pD2DFactory = [] {
-        ID2D1Factory* res = nullptr;
-        D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &res);
+        D2D1_FACTORY_OPTIONS options = {
+#ifdef _DEBUG
+            D2D1_DEBUG_LEVEL_INFORMATION
+#endif
+        };
+        ID2D1Factory6* res = nullptr;
+
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, options, &res);
         return res;
     }();
     return pD2DFactory;
@@ -140,6 +146,28 @@ winrt::com_ptr<ID2D1SolidColorBrush> Drawing::CreateBrush(D2D1_COLOR_F color) co
     return brush;
 }
 
+winrt::com_ptr<ID2D1StrokeStyle1> Drawing::CreateStroke(float stokeWidht) const
+{
+    if (!*this)
+    {
+        return nullptr;
+    }
+
+    winrt::com_ptr<ID2D1StrokeStyle1> stroke = nullptr;
+
+    auto properties = D2D1::StrokeStyleProperties1(
+        D2D1_CAP_STYLE_ROUND,
+        D2D1_CAP_STYLE_ROUND,
+        D2D1_CAP_STYLE_ROUND,
+        D2D1_LINE_JOIN_ROUND,
+        0.0f,
+        D2D1_DASH_STYLE_SOLID,
+        0.0f);
+    GetD2DFactory()->CreateStrokeStyle(properties, nullptr, 0, stroke.put());
+
+    return stroke;
+}
+
 winrt::com_ptr<ID2D1Bitmap> Drawing::CreateIcon(HICON icon) const
 {
     if (!*this)
@@ -179,6 +207,49 @@ winrt::com_ptr<ID2D1Bitmap> Drawing::CreateIcon(HICON icon) const
     return bitmap;
 }
 
+winrt::com_ptr<ID2D1PathGeometry> Drawing::CreateTriangle(const D2D1_TRIANGLE& triangle) const
+{
+    if (!*this)
+    {
+        return nullptr;
+    }
+
+    winrt::com_ptr<ID2D1PathGeometry> geometry = nullptr;
+
+    GetD2DFactory()->CreatePathGeometry(geometry.put());
+
+    if (!geometry)
+    {
+        return nullptr;
+    }
+
+    winrt::com_ptr<ID2D1GeometrySink> tessellationSink = nullptr;
+
+    geometry->Open(tessellationSink.put());
+
+    if (!tessellationSink)
+    {
+        return nullptr;
+    }
+
+    tessellationSink->BeginFigure(triangle.point1, D2D1_FIGURE_BEGIN_FILLED);
+
+    tessellationSink->AddLine(triangle.point2);
+
+    tessellationSink->AddLine(triangle.point3);
+
+    tessellationSink->EndFigure(D2D1_FIGURE_END_CLOSED);
+
+    auto hr = tessellationSink->Close();
+
+    if (FAILED(hr))
+    {
+        return nullptr;
+    }
+
+    return geometry;
+}
+
 void Drawing::FillRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color)
 {
     if (!*this)
@@ -193,7 +264,7 @@ void Drawing::FillRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color)
     }
 }
 
-void Drawing::FillRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color)
+void Drawing::FillRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color, float radiusFactor)
 {
     if (!*this)
     {
@@ -205,14 +276,48 @@ void Drawing::FillRoundedRectangle(const D2D1_RECT_F& rect, D2D1_COLOR_F color)
     {
         D2D1_ROUNDED_RECT roundedRect;
         roundedRect.rect = rect;
-        roundedRect.radiusX = (rect.right - rect.left) * .1f;
-        roundedRect.radiusY = (rect.bottom - rect.top) * .1f;
+        roundedRect.radiusX = (rect.right - rect.left) * radiusFactor;
+        roundedRect.radiusY = (rect.bottom - rect.top) * radiusFactor;
 
         auto radius = min(roundedRect.radiusX, roundedRect.radiusY);
         roundedRect.radiusX = radius;
         roundedRect.radiusY = radius;
 
         m_renderTarget->FillRoundedRectangle(roundedRect, brush.get());
+    }
+}
+
+void Drawing::FillEllipse(const D2D1_ELLIPSE& ellipse, D2D1_COLOR_F color)
+{
+    if (!*this)
+    {
+        return;
+    }
+
+    auto brush = CreateBrush(color);
+    if (brush)
+    {
+        m_renderTarget->FillEllipse(ellipse, brush.get());
+    }
+}
+
+void Drawing::FillGeometry(ID2D1PathGeometry* geometry, D2D1_COLOR_F color, float strokeWidth)
+{
+    if (!*this)
+    {
+        return;
+    }
+
+    auto brush = CreateBrush(color);
+    auto stroke = CreateStroke(strokeWidth);
+    if (brush)
+    {
+        m_renderTarget->FillGeometry(geometry, brush.get());
+
+        if (stroke)
+        {
+            m_renderTarget->DrawGeometry(geometry, brush.get(), strokeWidth, stroke.get());
+        }
     }
 }
 

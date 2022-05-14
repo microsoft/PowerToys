@@ -104,6 +104,8 @@
                                         <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Icons" />
                                         <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Tabs" />
                                         <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Labels" />
+                                        <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Pager" />
+                                        <ComboBoxItem x:Uid="FancyZones_ZoneTitleBarStyle_Buttons" />
                                     </ComboBox>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>

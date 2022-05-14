@@ -158,8 +158,7 @@ public:
             }
             break;
 
-        case EVENT_SYSTEM_FOREGROUND:
-        case EVENT_OBJECT_FOCUS:
+        case EVENT_OBJECT_REORDER:
             PostMessageW(m_window, WM_PRIV_WINDOWREORDER, wparam, lparam);
             break;
         }

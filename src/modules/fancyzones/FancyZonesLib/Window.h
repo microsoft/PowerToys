@@ -7,13 +7,15 @@ using WndProc = std::function<LRESULT(HWND window, UINT message, WPARAM wparam, 
 class Window
 {
 public:
-    Window(HINSTANCE hinstance, WndProc proc, DWORD style, DWORD extendedStyle, FancyZonesUtils::Rect position, LPCWSTR windowName = NULL, HWND parent = NULL, HMENU menu = NULL, int show = SW_SHOWNOACTIVATE) noexcept;
+    Window() noexcept;
     ~Window();
 
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
 
     operator HWND() const { return m_window; }
+
+    void Init(HINSTANCE hinstance, WndProc proc, DWORD style, DWORD extendedStyle, FancyZonesUtils::Rect position, LPCWSTR windowName = NULL, HWND parent = NULL, HMENU menu = NULL, int show = SW_SHOWNOACTIVATE) noexcept;
 
 private:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;

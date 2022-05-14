@@ -7,10 +7,16 @@ namespace NonLocalizable
     const wchar_t WindowClassName[] = L"FancyZones_Window";
 }
 
-Window::Window(HINSTANCE hinstance, WndProc proc, DWORD style, DWORD extendedStyle, FancyZonesUtils::Rect position, LPCWSTR windowName, HWND parent, HMENU menu, int showCommand) noexcept :
+Window::Window() noexcept :
     m_window(NULL),
-    m_proc(proc)
+    m_proc(nullptr)
 {
+}
+
+void Window::Init(HINSTANCE hinstance, WndProc proc, DWORD style, DWORD extendedStyle, FancyZonesUtils::Rect position, LPCWSTR windowName, HWND parent, HMENU menu, int showCommand) noexcept
+{
+    m_proc = proc;
+
     static ATOM windowClass = INVALID_ATOM;
     if (windowClass == INVALID_ATOM)
     {

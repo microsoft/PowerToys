@@ -51,6 +51,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             AutoHideTabs = 7,
             Labels = 8,
             AutoHideLabels = 9,
+            Pager = 10,
+            AutoHidePager = 11,
+            Buttons = 12,
+            AutoHideButtons = 13,
         }
 
         public FancyZonesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")

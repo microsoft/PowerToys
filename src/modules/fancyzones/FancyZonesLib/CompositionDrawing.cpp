@@ -15,17 +15,7 @@ void CompositionDrawing::Init(HWND window)
     }
 
     // Create devices
-    D2D1_FACTORY_OPTIONS options = {
-#ifdef _DEBUG
-        D2D1_DEBUG_LEVEL_INFORMATION
-#endif
-    };
-
-    D2D1CreateFactory(
-        D2D1_FACTORY_TYPE_MULTI_THREADED,
-        __uuidof(m_d2dFactory),
-        &options,
-        m_d2dFactory.put_void());
+    m_d2dFactory.copy_from(GetD2DFactory());
     if (!m_d2dFactory)
     {
         return;

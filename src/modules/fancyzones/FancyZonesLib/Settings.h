@@ -23,7 +23,11 @@ enum struct ZoneTitleBarStyle : int
     AutoHideTabs = 7,
     Labels = 8,
     AutoHideLabels = 9,
-    EnumElements = 10, // number of elements in the enum, not counting this
+    Pager = 10,
+    AutoHidePager = 11,
+    Buttons = 12,
+    AutoHideButtons = 13,
+    EnumElements = 14, // number of elements in the enum, not counting this
 };
 
 // in reality, this file needs to be kept in sync currently with src/settings-ui/Settings.UI.Library/FZConfigProperties.cs
