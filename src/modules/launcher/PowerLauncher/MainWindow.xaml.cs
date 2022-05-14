@@ -5,6 +5,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Timers;
 using System.Windows;
@@ -159,7 +160,13 @@ namespace PowerLauncher
 
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += Launcher_KeyDown;
-            SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
+
+            Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                add => SearchBox.QueryTextBox.TextChanged += add,
+                remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                    .Throttle(TimeSpan.FromMilliseconds(250))
+                    .Do(@event => Dispatcher.Invoke(() => QueryTextBox_TextChanged(@event.Sender, @event.EventArgs)))
+                    .Subscribe();
 
             // Set initial language flow direction
             SearchBox_UpdateFlowDirection();
