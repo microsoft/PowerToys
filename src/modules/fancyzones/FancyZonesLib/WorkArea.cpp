@@ -388,7 +388,16 @@ WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
         {
             return AppZoneHistory::instance().GetAppLastZoneIndexSet(window, m_uniqueId, zoneSetId.get());
         }
+        else
+        {
+            Logger::error(L"Failed to convert to string layout GUID on the requested work area");
+        }
     }
+    else
+    {
+        Logger::error(L"No layout initialized on the requested work area");
+    }
+
     return {};
 }
 

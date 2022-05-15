@@ -1,27 +1,48 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="661b0d33-8cab-4599-adca-0976e0346f63" Publisher="CN=ms" Version="1.0.0.0" />
-  <mp:PhoneIdentity PhoneProductId="661b0d33-8cab-4599-adca-0976e0346f63" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap">
+
+  <Identity
+    Name="9c8d3ebd-7545-4943-aeba-2264efcb1c85"
+    Publisher="CN=Microsoft Corporation"
+    Version="1.0.0.0" />
+
   <Properties>
-    <DisplayName>PowerRenameUILib</DisplayName>
+    <DisplayName>PowerRenameUI</DisplayName>
     <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
+
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
   </Dependencies>
+
   <Resources>
-    <Resource Language="x-generate" />
+    <Resource Language="x-generate"/>
   </Resources>
+
   <Applications>
-    <Application Id="App" Executable="placeholder.exe" EntryPoint="PowerRenameUILib.App">
-      <uap:VisualElements DisplayName="PowerRenameUILib" Description="Project for a single page C++/WinRT Universal Windows Platform (UWP) app with no predefined layout" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" BackgroundColor="transparent">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"></uap:DefaultTile>
+    <Application Id="App"
+      Executable="$targetnametoken$.exe"
+      EntryPoint="$targetentrypoint$">
+      <uap:VisualElements
+        DisplayName="PowerRenameUI"
+        Description="PowerRenameUI"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
     </Application>
   </Applications>
+
   <Capabilities>
-    <Capability Name="internetClient" />
+    <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>

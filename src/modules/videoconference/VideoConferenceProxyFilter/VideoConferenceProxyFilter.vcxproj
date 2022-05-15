@@ -9,6 +9,10 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -16,6 +20,10 @@
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -34,13 +42,13 @@
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Debug'">
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Release'">
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -72,13 +80,13 @@
     <Lib>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
-    <PreBuildEvent Condition="'$(Platform)'=='x64'">
+    <PreBuildEvent Condition="'$(Platform)'!='Win32'">
       <Command>call "$(ProjectDir)build_vcm_x86.cmd"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Platform)'!='Win32'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\VideoConference\</OutDir>
-    <TargetName>PowerToys.VideoConferenceProxyFilter_x64</TargetName>
+    <TargetName>PowerToys.VideoConferenceProxyFilter_$(Platform)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='Win32'">
     <OutDir>..\..\..\..\x86\$(Configuration)\modules\VideoConference\</OutDir>
@@ -103,7 +111,7 @@
       <ModuleDefinitionFile>module.def</ModuleDefinitionFile>
     </Link>
     <ResourceCompile>
-      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">_WIN64;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'!='Win32'">_WIN64;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

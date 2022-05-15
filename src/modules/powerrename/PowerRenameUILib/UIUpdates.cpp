@@ -2,7 +2,7 @@
 #include "UIUpdates.h"
 #include "UIUpdates.g.cpp"
 
-namespace winrt::PowerRenameUILib::implementation
+namespace winrt::PowerRenameUI::implementation
 {
     UIUpdates::UIUpdates() :
         m_showAll{ true }, m_changedItemId{ -1 }, m_checked{ true }, m_closeUIWindow{ false }, m_buttonRenameEnabled{ false }
@@ -19,7 +19,7 @@ namespace winrt::PowerRenameUILib::implementation
         if (m_showAll != value)
         {
             m_showAll = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"ShowAll" });
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"ShowAll" });
         }
     }
 
@@ -31,7 +31,7 @@ namespace winrt::PowerRenameUILib::implementation
     void UIUpdates::ChangedExplorerItemId(int32_t value)
     {
         m_changedItemId = value;
-        m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"ChangedItemId" });
+        m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"ChangedItemId" });
     }
 
     bool UIUpdates::Checked()
@@ -44,7 +44,7 @@ namespace winrt::PowerRenameUILib::implementation
         m_checked = value;
     }
 
-    winrt::event_token UIUpdates::PropertyChanged(winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
+    winrt::event_token UIUpdates::PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
     {
         return m_propertyChanged.add(handler);
     }
@@ -56,12 +56,12 @@ namespace winrt::PowerRenameUILib::implementation
 
     void UIUpdates::ToggleAll()
     {
-        m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"ToggleAll" });
+        m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"ToggleAll" });
     }
 
     void UIUpdates::Rename()
     {
-        m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Rename" });
+        m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Rename" });
     }
 
     hstring UIUpdates::OriginalCount()
@@ -74,7 +74,7 @@ namespace winrt::PowerRenameUILib::implementation
         if (m_originalCount != value)
         {
             m_originalCount = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"OriginalCount" });
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"OriginalCount" });
         }
     }
 
@@ -88,7 +88,7 @@ namespace winrt::PowerRenameUILib::implementation
         if (m_renamedCount != value)
         {
             m_renamedCount = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"RenamedCount" });
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"RenamedCount" });
         }
     }
 
@@ -112,7 +112,7 @@ namespace winrt::PowerRenameUILib::implementation
         if (m_buttonRenameEnabled != value)
         {
             m_buttonRenameEnabled = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"ButtonRenameEnabled" });
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"ButtonRenameEnabled" });
         }
     }
 }

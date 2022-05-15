@@ -1,7 +1,7 @@
 #pragma once
 #include "PatternSnippet.g.h"
 
-namespace winrt::PowerRenameUILib::implementation
+namespace winrt::PowerRenameUI::implementation
 {
     struct PatternSnippet : PatternSnippetT<PatternSnippet>
     {
@@ -12,16 +12,16 @@ namespace winrt::PowerRenameUILib::implementation
         void Code(hstring const& value);
         hstring Description();
         void Description(hstring const& value);
-        winrt::event_token PropertyChanged(winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
+        winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
 
     private:
         winrt::hstring m_code;
         winrt::hstring m_description;
-        winrt::event<Windows::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
+        winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
     };
 }
-namespace winrt::PowerRenameUILib::factory_implementation
+namespace winrt::PowerRenameUI::factory_implementation
 {
     struct PatternSnippet : PatternSnippetT<PatternSnippet, implementation::PatternSnippet>
     {

@@ -3,10 +3,11 @@
 
 #include <common/display/dpi_aware.h>
 #include <common/logger/logger.h>
+#include <common/utils/elevation.h>
+#include <common/utils/excluded_apps.h>
 #include <common/utils/process_path.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
-#include <common/utils/excluded_apps.h>
 
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/Settings.h>
@@ -228,7 +229,7 @@ bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
         return false;
     }
 
-    std::wstring processPath = get_process_path(window);
+    std::wstring processPath = get_process_path_waiting_uwp(window);
     CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), (DWORD)processPath.length());
     if (IsExcludedByUser(processPath))
     {
@@ -245,30 +246,7 @@ bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
 
 bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
 {
-    DWORD pid = 0;
-    GetWindowThreadProcessId(window, &pid);
-    if (!pid)
-    {
-        return false;
-    }
-
-    wil::unique_handle hProcess{ OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
-                                             FALSE,
-                                             pid) };
-
-    wil::unique_handle token;
-    bool elevated = false;
-
-    if (OpenProcessToken(hProcess.get(), TOKEN_QUERY, &token))
-    {
-        TOKEN_ELEVATION elevation;
-        DWORD size;
-        if (GetTokenInformation(token.get(), TokenElevation, &elevation, sizeof(elevation), &size))
-        {
-            return elevation.TokenIsElevated != 0;
-        }
-    }
-    return false;
+    return is_process_of_window_elevated(window);
 }
 
 bool FancyZonesWindowUtils::IsExcludedByUser(const std::wstring& processPath) noexcept

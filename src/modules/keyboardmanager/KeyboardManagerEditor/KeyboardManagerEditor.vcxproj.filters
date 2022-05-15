@@ -45,7 +45,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Resources.resx">
       <Filter>Resource Files</Filter>
     </None>
@@ -55,6 +54,7 @@
     <None Include="KeyboardManagerEditor.base.rc">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="KeyboardManagerEditor.exe.manifest" />

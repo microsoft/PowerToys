@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Platforms>x64</Platforms>
     <UseWindowsForms>true</UseWindowsForms>
     <ProjectGuid>{11491FD8-F921-48BF-880C-7FEA185B80A1}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.ThumbnailHandler.Pdf</RootNamespace>

@@ -105,7 +105,6 @@
                 "modules\\MouseUtils\\PowerToys.MousePointerCrosshairs.dll",
 
                 "modules\\PowerRename\\PowerToys.PowerRenameExt.dll",
-                "modules\\PowerRename\\PowerToys.PowerRenameUILib.dll",
                 "modules\\PowerRename\\PowerToys.PowerRename.exe",
 
                 "modules\\ShortcutGuide\\ShortcutGuide\\PowerToys.ShortcutGuide.exe",

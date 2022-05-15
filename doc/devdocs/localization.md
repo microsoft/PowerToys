@@ -25,17 +25,6 @@ The process and variables that can be tweaked on the pipeline are described in m
 
 The localized resource dlls for C# projects are added to the MSI only for build on the pipeline. This is done by checking if the [`IsPipeline` variable is defined](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/installer/PowerToysSetup/Product.wxs#L804-L805), which gets defined before building the installer on the pipeline [here](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/.pipelines/build-installer.cmd#L4). This is done because the localized resx files are only present on the pipeline, and not having this check would result in the installer project failing to build locally.
 
-### UWP Special case
-C# projects normally expect localized resource files with the language id in the file name as Resources.`langId`.resx, where `langId` is generally a two character code except for language with specific variants (like zh-Hans or pt-BR):
-
-For example, `path\Resources.resx` for English and `path\Resources.fr.resx` for French.
-
-UWP differs from this as it expects the resources to have the same Resources.resw file name, but they should be present in language specific folders, with the full language ID (such as fr-fr, zh-hans, pt-br, etc.)
-
-For example, `path\en-us\Resources.resw` for English and `path\fr-fr\Resources.resw` for French.
-
-Since the pipeline generates it in this format, [a script is run](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/build-localization.cmd#L29-L31) to move these resw files to the correct format expected by all UWP projects. Currently the only UWP project is [Settings.UI](https://github.com/microsoft/PowerToys/tree/main/src/core/Settings.UI). The script used for moving the resources can be [found here](https://github.com/microsoft/PowerToys/blob/main/tools/localization/move_uwp_resources.ps1). The equivalent full language IDs for each shortened language ID obtained from the pipeline has been hardcoded in the script.
-
 ## Enabling localization on a new project
 To enable localization on a new project, the first step is to create a file `LocProject.json` in the project root.
 
