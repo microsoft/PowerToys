@@ -46,6 +46,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private Label _loading;
 
         /// <summary>
+        /// Loading progress bar
+        /// </summary>
+        private ProgressBar _loadingBar;
+
+        /// <summary>
         /// Name of the virtual host
         /// </summary>
         public const string VirtualHostName = "PowerToysLocalMonaco";
@@ -105,6 +110,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                 .ConfigureAwait(true).GetAwaiter();
                         webView2EnvironmentAwaiter.OnCompleted(() =>
                         {
+                            _loadingBar.Value = 60;
+                            this.Update();
                             InvokeOnControlThread(async () =>
                             {
                                 try
@@ -115,6 +122,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                     }
 
                                     _webView2Environment = webView2EnvironmentAwaiter.GetResult();
+
+                                    _loadingBar.Value = 70;
+                                    this.Update();
 
                                     // Initialize WebView
                                     try
@@ -132,6 +142,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                         _webView.Height = this.Height;
                                         _webView.Width = this.Width;
                                         Controls.Add(_webView);
+                                        _loadingBar.Value = 100;
+                                        this.Update();
                                     }
                                     catch (NullReferenceException)
                                     {
@@ -140,6 +152,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                 catch (WebView2RuntimeNotFoundException)
                                 {
                                     Controls.Remove(_loading);
+                                    Controls.Remove(_loadingBar);
 
                                     // WebView2 not installed message
                                     Label errorMessage = new Label();
@@ -166,6 +179,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     InvokeOnControlThread(() =>
                     {
                         Controls.Remove(_loading);
+                        Controls.Remove(_loadingBar);
                         Label text = new Label();
                         text.Text = Resources.Exception_Occurred;
                         text.Text += e.Message;
@@ -184,6 +198,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 InvokeOnControlThread(() =>
                 {
                     Controls.Remove(_loading);
+                    Controls.Remove(_loadingBar);
                     Label errorMessage = new Label();
                     errorMessage.Text = Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture);
                     errorMessage.Width = 500;
@@ -200,6 +215,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         {
             _webView.Height = this.Height;
             _webView.Width = this.Width;
+            this.Update();
         }
 
         /// <summary>
@@ -241,9 +257,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 settings.IsStatusBarEnabled = false;
 
                 Controls.Remove(_loading);
+                Controls.Remove(_loadingBar);
 #if DEBUG
                 _webView.CoreWebView2.OpenDevToolsWindow();
 #endif
+
+                _loadingBar.Value = 80;
+                this.Update();
             }
         }
 
@@ -278,6 +298,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         {
             InvokeOnControlThread(() =>
             {
+                _loadingBar = new ProgressBar();
+                _loadingBar.Width = this.Width;
+                _loadingBar.Location = new Point(0, 40);
+                _loadingBar.Maximum = 100;
+                _loadingBar.Value = 10;
+                Controls.Add(_loadingBar);
+                this.Update();
+
                 _loading = new Label();
                 _loading.Text = Resources.Loading_Screen_Message;
                 _loading.Width = this.Width;
@@ -286,6 +314,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 _loading.ForeColor = Settings.TextColor;
                 _loading.BackColor = Settings.BackgroundColor;
                 Controls.Add(_loading);
+                this.Update();
             });
         }
 
