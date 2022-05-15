@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Common;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
@@ -49,13 +50,33 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// </summary>
         public const string VirtualHostName = "PowerToysLocalMonaco";
 
+        /// <summary>
+        /// HTML code passed to the file
+        /// </summary>
+#nullable enable
+        private string? html;
+#nullable disable
+
+        /// <summary>
+        /// Id for monaco language
+        /// </summary>
+        private string vsCodeLangSet;
+
+        /// <summary>
+        /// The content of the previewing file in base64
+        /// </summary>
+        private string base64FileCode;
+
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
             base.DoPreview(dataSource);
 
+            // Sets background color
+            new Task(SetBackground).Start();
+
             // Starts loading screen
-            InitializeLoadingScreen();
+            new Task(InitializeLoadingScreen).Start();
 
             // New webview2 element
             _webView = new WebView2();
@@ -71,6 +92,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
             if (fileSize < _settings.MaxFileSize)
             {
+                new Task(() => { InitializeIndexFileAndSelectedFile(filePath); }).Start();
+
                 try
                 {
                     InvokeOnControlThread(() =>
@@ -92,36 +115,18 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                     }
 
                                     _webView2Environment = webView2EnvironmentAwaiter.GetResult();
-                                    var vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
-                                    string fileContent;
-                                    using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-                                    {
-                                        fileContent = fileReader.ReadToEnd();
-                                        fileReader.Close();
-                                    }
-
-                                    var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
-
-                                    string html;
-
-                                    // prepping index html to load in
-                                    using (StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-                                    {
-                                        html = htmlFileReader.ReadToEnd();
-                                        htmlFileReader.Close();
-                                    }
-
-                                    html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
-                                    html = html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
-                                    html = html.Replace("[[PT_THEME]]", Settings.GetTheme(), StringComparison.InvariantCulture);
-                                    html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
-                                    html = html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
 
                                     // Initialize WebView
                                     try
                                     {
                                         await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
                                         _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+
+                                        // Wait until html is loaded
+                                        while (html == null)
+                                        {
+                                        }
+
                                         _webView.NavigateToString(html);
                                         _webView.NavigationCompleted += WebView2Init;
                                         _webView.Height = this.Height;
@@ -261,6 +266,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             }
         }
 
+        private void SetBackground()
+        {
+            InvokeOnControlThread(() =>
+            {
+                this.BackColor = Settings.BackgroundColor;
+            });
+        }
+
         private void InitializeLoadingScreen()
         {
             InvokeOnControlThread(() =>
@@ -274,6 +287,50 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 _loading.BackColor = Settings.BackgroundColor;
                 Controls.Add(_loading);
             });
+        }
+
+        private void InitializeIndexFileAndSelectedFile(string filePath)
+        {
+            Task getFileExtensionTask = new Task(() =>
+            {
+                vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
+            });
+            getFileExtensionTask.Start();
+
+            Task readPreviewedFileTask = new Task(() =>
+            {
+                using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                {
+                    var fileContent = fileReader.ReadToEnd();
+                    fileReader.Close();
+                    base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
+                }
+            });
+
+            readPreviewedFileTask.Start();
+
+            Task readHtmlFileTask = new Task(() =>
+            {
+                // prepping index html to load in
+                using (StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                {
+                    html = htmlFileReader.ReadToEnd();
+                    htmlFileReader.Close();
+                }
+            });
+
+            readHtmlFileTask.Start();
+
+            // Wait until all tasks are completed
+            while (!getFileExtensionTask.IsCompleted || !readPreviewedFileTask.IsCompleted || !readHtmlFileTask.IsCompleted)
+            {
+            }
+
+            html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_THEME]]", Settings.GetTheme(), StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
         }
 
         private async void DownloadLink_Click(object sender, EventArgs e)
