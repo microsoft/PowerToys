@@ -84,7 +84,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
                     {
                         var files = Directory.GetFiles(path);
                         var iconPath = Path.GetDirectoryName(path);
-                        files = files.Where(x => 
+                        files = files.Where(x =>
                                             (x.Contains("code", StringComparison.OrdinalIgnoreCase) ||
                                             x.Contains("VSCodium", StringComparison.OrdinalIgnoreCase))
                                             && !x.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase)).ToArray();
