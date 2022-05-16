@@ -84,7 +84,7 @@ bool UseImmersiveDarkMode(HWND window, bool enabled)
         }
 
         int useImmersiveDarkMode = enabled ? 1 : 0;
-        return DwmSetWindowAttribute(window, 20, &useImmersiveDarkMode, sizeof(useImmersiveDarkMode)) == 0;
+        return DwmSetWindowAttribute(window, attribute, &useImmersiveDarkMode, sizeof(useImmersiveDarkMode)) == 0;
     }
 
     return false;
