@@ -22,11 +22,19 @@
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Microsoft.UI.Windowing.h>
 
+// For immersive dark mode
+#include "dwmapi.h"
+#include <limits.h>
+#include <windows.h>
+#include <iostream>
+
 using namespace winrt;
 using namespace Windows::UI::Xaml;
 using namespace winrt::Microsoft::Windows::ApplicationModel::Resources;
 
 #define MAX_LOADSTRING 100
+#define DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 19
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 
 // Non-localizable
 const std::wstring PowerRenameUIIco = L"PowerRenameUI.ico";
@@ -34,6 +42,53 @@ const wchar_t c_WindowClass[] = L"PowerRename";
 HINSTANCE g_hostHInst;
 
 extern std::vector<std::wstring> g_files;
+
+// OS Information
+typedef LONG NTSTATUS, *PNTSTATUS;
+typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+
+ RTL_OSVERSIONINFOW GetRealOSVersion()
+{
+    HMODULE hMod = ::GetModuleHandleW(L"ntdll.dll");
+    if (hMod)
+    {
+        RtlGetVersionPtr fxPtr = (RtlGetVersionPtr)::GetProcAddress(hMod, "RtlGetVersion");
+        if (fxPtr != nullptr)
+        {
+            RTL_OSVERSIONINFOW rovi = { 0 };
+            rovi.dwOSVersionInfoSize = sizeof(rovi);
+            if (STATUS_SUCCESS == fxPtr(&rovi))
+            {
+                return rovi;
+            }
+        }
+    }
+    RTL_OSVERSIONINFOW rovi = { 0 };
+    return rovi;
+}
+
+bool IsWindows10OrGreater(DWORD buildNumber = -1)
+{
+    auto info = GetRealOSVersion();
+    return info.dwMajorVersion >= 10 && info.dwBuildNumber >= buildNumber;
+}
+
+bool UseImmersiveDarkMode(HWND window, bool enabled)
+{
+    if (IsWindows10OrGreater(17763))
+    {
+        auto attribute = DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1;
+        if (IsWindows10OrGreater(18985))
+        {
+            attribute = DWMWA_USE_IMMERSIVE_DARK_MODE;
+        }
+
+        int useImmersiveDarkMode = enabled ? 1 : 0;
+        return DwmSetWindowAttribute(window, 20, &useImmersiveDarkMode, sizeof(useImmersiveDarkMode)) == 0;
+    }
+
+    return false;
+}
 
 namespace winrt::PowerRenameUI::implementation
 {
@@ -46,6 +101,9 @@ namespace winrt::PowerRenameUI::implementation
         windowNative->get_WindowHandle(&m_window);
         Microsoft::UI::WindowId windowId =
             Microsoft::UI::GetWindowIdFromWindow(m_window);
+
+        // Apply Immersive Dark Mode
+        UseImmersiveDarkMode(m_window, true);
 
         Microsoft::UI::Windowing::AppWindow appWindow =
             Microsoft::UI::Windowing::AppWindow::GetFromWindowId(windowId);

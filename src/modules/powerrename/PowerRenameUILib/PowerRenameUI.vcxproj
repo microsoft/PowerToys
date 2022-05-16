@@ -68,6 +68,9 @@
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">kernel32.lib;user32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
@@ -150,10 +153,9 @@
     <Image Include="Assets\file.png" />
     <Image Include="Assets\folder.png" />
     <Image Include="PowerRenameUI.ico">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Image>
   </ItemGroup>
-
   <ItemGroup>
     <_WildCardPRIResource Include="Strings\*\Resources.resw" />
   </ItemGroup>
