@@ -44,7 +44,4 @@
     </Image>
     <Image Include="PowerRenameUI.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <PRIResource Include="Resources.resw" />
-  </ItemGroup>
 </Project>

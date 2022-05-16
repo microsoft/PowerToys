@@ -47,6 +47,29 @@ namespace winrt::PowerRenameUI::implementation
         Microsoft::UI::WindowId windowId =
             Microsoft::UI::GetWindowIdFromWindow(m_window);
 
+        POINT cursorPosition{};
+        if (GetCursorPos(&cursorPosition))
+        {
+            HMONITOR hMonitor = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
+            MONITORINFOEX monitorInfo;
+            monitorInfo.cbSize = sizeof(MONITORINFOEX);
+            GetMonitorInfo(hMonitor, &monitorInfo);
+            RECT rect;
+            if (GetWindowRect(m_window, &rect))
+            {
+                int width = rect.right - rect.left;
+                int height = rect.bottom - rect.top;
+
+                MoveWindow(m_window,
+                             monitorInfo.rcWork.left + (monitorInfo.rcWork.right - monitorInfo.rcWork.left - width) / 2,
+                             monitorInfo.rcWork.top + (monitorInfo.rcWork.bottom - monitorInfo.rcWork.top - height) / 2,
+                             width,
+                             height,
+                             true);
+            }
+        }
+
+
         Microsoft::UI::Windowing::AppWindow appWindow =
             Microsoft::UI::Windowing::AppWindow::GetFromWindowId(windowId);
         appWindow.SetIcon(PowerRenameUIIco);
@@ -107,7 +130,7 @@ namespace winrt::PowerRenameUI::implementation
                         CComPtr<IShellItemArray> shellItemArray;
                         // To test PowerRename uncomment this line and update the path to
                         // your local (absolute or relative) path which you want to see in PowerRename
-                        // files.push_back(<path>);
+                        // g_files.push_back(<path>);
 
                         if (!g_files.empty())
                         {
