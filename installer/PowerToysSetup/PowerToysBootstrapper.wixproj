@@ -20,7 +20,11 @@
     <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
     <OutputType>Bundle</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
-    <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
+    <!-- TODO: Remove hacks for arm64 after we adopt a Wix version that supports it -->
+    <OutputName Condition="'$(Platform)'=='x86'">PowerToysSetup-$(Version)-arm64</OutputName>
+    <OutputName Condition="'$(Platform)'!='x86'">PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputPath Condition="'$(Platform)'=='x86'">arm64\$(Configuration)\</OutputPath>
+    <OutputPath Condition="'$(Platform)'!='x86'">$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <NuGetPackageImportStamp />
   </PropertyGroup>
