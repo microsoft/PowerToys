@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
 
             // Switch search type
-            if (isEmptySearchInput || (!isKeywordSearch & TimeDateSettings.Instance.OnlyDateTimeNowGlobal))
+            if (isEmptySearchInput || (!isKeywordSearch && TimeDateSettings.Instance.OnlyDateTimeNowGlobal))
             {
                 // Return all results for system time/date on empty keyword search
                 // or only time, date and now results for system time on global queries if the corresponding setting is enabled
