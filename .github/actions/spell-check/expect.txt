@@ -744,6 +744,7 @@ hsv
 htcfreek
 HTHUMBNAIL
 HTTRANSPARENT
+HValue
 Hvci
 hwb
 HWINEVENTHOOK
@@ -1493,7 +1494,6 @@ plocm
 plugin
 pluginsmodel
 PMSIHANDLE
-PNTSTATUS
 Pohnpei
 popup
 POPUPWINDOW
@@ -2288,6 +2288,7 @@ wpf
 wpr
 wprintf
 wprp
+Wql
 wregex
 WResize
 writefile
