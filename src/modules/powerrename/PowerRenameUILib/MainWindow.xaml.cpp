@@ -24,7 +24,6 @@
 
 // For immersive dark mode
 #include "dwmapi.h"
-#include <limits.h>
 #include <windows.h>
 #include <iostream>
 
