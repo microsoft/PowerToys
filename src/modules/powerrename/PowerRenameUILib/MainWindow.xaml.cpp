@@ -33,8 +33,8 @@ using namespace Windows::UI::Xaml;
 using namespace winrt::Microsoft::Windows::ApplicationModel::Resources;
 
 #define MAX_LOADSTRING 100
-#define DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 19
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#define HKEY_WINDOWS_THEME L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"
 
 // Non-localizable
 const std::wstring PowerRenameUIIco = L"PowerRenameUI.ico";
@@ -63,9 +63,40 @@ typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
             }
         }
     }
-    RTL_OSVERSIONINFOW rovi = { 0 };
-    return rovi;
+    RTL_OSVERSIONINFOW info = { 0 };
+    return info;
 }
+
+ enum CurrentTheme { Dark = 0, Light = 1 };
+
+ // based on https://stackoverflow.com/questions/51334674/how-to-detect-windows-10-light-dark-mode-in-win32-application
+ CurrentTheme GetSystemTheme()
+ {
+    // The value is expected to be a REG_DWORD, which is a signed 32-bit little-endian
+    auto buffer = std::vector<char>(4);
+    auto cbData = static_cast<DWORD>(buffer.size() * sizeof(char));
+    auto res = RegGetValueW(
+        HKEY_CURRENT_USER,
+        HKEY_WINDOWS_THEME,
+        L"AppsUseLightTheme",
+        RRF_RT_REG_DWORD, // expected value type
+        nullptr,
+        buffer.data(),
+        &cbData);
+
+    if (res != ERROR_SUCCESS)
+    {
+        return CurrentTheme::Light;
+    }
+
+    // convert bytes written to our buffer to an int, assuming little-endian
+    auto i = int(buffer[3] << 24 |
+                 buffer[2] << 16 |
+                 buffer[1] << 8 |
+                 buffer[0]);
+
+    return CurrentTheme(i);
+ }
 
 bool IsWindows10OrGreater(DWORD buildNumber = -1)
 {
@@ -73,21 +104,61 @@ bool IsWindows10OrGreater(DWORD buildNumber = -1)
     return info.dwMajorVersion >= 10 && info.dwBuildNumber >= buildNumber;
 }
 
-bool UseImmersiveDarkMode(HWND window, bool enabled)
+bool SupportsImmersiveDarkMode() 
 {
-    if (IsWindows10OrGreater(17763))
-    {
-        auto attribute = DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1;
-        if (IsWindows10OrGreater(18985))
-        {
-            attribute = DWMWA_USE_IMMERSIVE_DARK_MODE;
-        }
+    return IsWindows10OrGreater(18985);
+}
 
+void SetImmersiveDarkMode(HWND window, bool enabled)
+{
+    if (SupportsImmersiveDarkMode())
+    {
         int useImmersiveDarkMode = enabled ? 1 : 0;
-        return DwmSetWindowAttribute(window, attribute, &useImmersiveDarkMode, sizeof(useImmersiveDarkMode)) == 0;
+        DwmSetWindowAttribute(window, DWMWA_USE_IMMERSIVE_DARK_MODE, &useImmersiveDarkMode, sizeof(useImmersiveDarkMode));
+    }
+}
+
+DWORD WINAPI CheckImmersiveDarkMode(LPVOID lpParam)
+{
+    HWND window = (HWND)lpParam;
+    HANDLE hEvent;
+    HKEY hKey;
+
+    // Open the Key to listen
+    RegOpenKeyEx(HKEY_CURRENT_USER, HKEY_WINDOWS_THEME, 0, KEY_NOTIFY, &hKey);
+
+    while (true)
+    {
+        // Create an event.
+        hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+        // Watch the registry key for a change of value.
+        RegNotifyChangeKeyValue(hKey,
+                                             TRUE,
+                                             REG_NOTIFY_CHANGE_LAST_SET,
+                                             hEvent,
+                                             TRUE);
+
+        Logger::debug(L"Waiting for Theme Change");
+        WaitForSingleObject(hEvent, INFINITE);
+
+        auto theme = GetSystemTheme();
+        Logger::info(L"Theme Changed to {}", theme == CurrentTheme::Dark ? L"Dark" : L"Light");
+        SetImmersiveDarkMode(window, theme == CurrentTheme::Dark);
     }
 
-    return false;
+    return 0;
+}
+
+void RegisterForImmersiveDarkMode(HWND window) 
+{
+    if (SupportsImmersiveDarkMode())
+    {
+        SetImmersiveDarkMode(window, GetSystemTheme() == CurrentTheme::Dark);
+
+        DWORD dwThreadId;
+        CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CheckImmersiveDarkMode, window, 0, &dwThreadId);
+    }
 }
 
 namespace winrt::PowerRenameUI::implementation
@@ -101,9 +172,7 @@ namespace winrt::PowerRenameUI::implementation
         windowNative->get_WindowHandle(&m_window);
         Microsoft::UI::WindowId windowId =
             Microsoft::UI::GetWindowIdFromWindow(m_window);
-
-        // Apply Immersive Dark Mode
-        UseImmersiveDarkMode(m_window, true);
+        RegisterForImmersiveDarkMode(m_window);
 
         Microsoft::UI::Windowing::AppWindow appWindow =
             Microsoft::UI::Windowing::AppWindow::GetFromWindowId(windowId);
