@@ -4,6 +4,7 @@
 
 using System;
 using interop;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
@@ -39,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI
             _windowId = Win32Interop.GetWindowIdFromWindow(_hWnd);
             _appWindow = AppWindow.GetFromWindowId(_windowId);
             _appWindow.SetIcon("icon.ico");
+            ThemeHelpers.RegisterForImmersiveDarkMode(_hWnd);
 
             OverlappedPresenter presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsResizable = false;

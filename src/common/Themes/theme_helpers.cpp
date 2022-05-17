@@ -1,5 +1,5 @@
+// Port Based on https://stackoverflow.com/a/62811758/5001796
 #include "theme_helpers.h"
-// For immersive dark mode
 #include "dwmapi.h"
 #include <windows.h>
 #include <iostream>
@@ -31,17 +31,6 @@ namespace
         }
         RTL_OSVERSIONINFOW info = { 0 };
         return info;
-    }
-
-    bool IsWindows10OrGreater(DWORD buildNumber = -1)
-    {
-        auto info = GetRealOSVersion();
-        return info.dwMajorVersion >= 10 && info.dwBuildNumber >= buildNumber;
-    }
-
-    bool SupportsImmersiveDarkMode()
-    {
-        return IsWindows10OrGreater(18985);
     }
 
     DWORD WINAPI CheckImmersiveDarkMode(LPVOID lpParam)
@@ -104,9 +93,15 @@ CurrentTheme ThemeHelpers::GetSystemTheme()
     return CurrentTheme(i);
 }
 
+bool ThemeHelpers::SupportsImmersiveDarkMode()
+{
+    auto info = GetRealOSVersion();
+    return info.dwMajorVersion >= 10 && info.dwBuildNumber >= 18985;
+}
+
 void ThemeHelpers::SetImmersiveDarkMode(HWND window, bool enabled)
 {
-    if (SupportsImmersiveDarkMode())
+    if (ThemeHelpers::SupportsImmersiveDarkMode())
     {
         int useImmersiveDarkMode = enabled ? 1 : 0;
         DwmSetWindowAttribute(window, DWMWA_USE_IMMERSIVE_DARK_MODE, &useImmersiveDarkMode, sizeof(useImmersiveDarkMode));
@@ -115,7 +110,7 @@ void ThemeHelpers::SetImmersiveDarkMode(HWND window, bool enabled)
 
 void ThemeHelpers::RegisterForImmersiveDarkMode(HWND window)
 {
-    if (SupportsImmersiveDarkMode())
+    if (ThemeHelpers::SupportsImmersiveDarkMode())
     {
         ThemeHelpers::SetImmersiveDarkMode(window, ThemeHelpers::GetSystemTheme() == CurrentTheme::Dark);
 

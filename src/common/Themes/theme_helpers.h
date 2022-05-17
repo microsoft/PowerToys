@@ -10,6 +10,7 @@ enum class CurrentTheme
 struct ThemeHelpers
 {
     static CurrentTheme GetSystemTheme();
+    static bool ThemeHelpers::SupportsImmersiveDarkMode();
     static void ThemeHelpers::SetImmersiveDarkMode(HWND window, bool enabled);
     static void ThemeHelpers::RegisterForImmersiveDarkMode(HWND window);
 };

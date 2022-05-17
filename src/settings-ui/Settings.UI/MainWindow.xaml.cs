@@ -4,6 +4,7 @@
 
 using System;
 using System.Drawing;
+using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -35,6 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("icon.ico");
+            ThemeHelpers.RegisterForImmersiveDarkMode(hWnd);
 
             var placement = Utils.DeserializePlacementOrDefault(hWnd);
             NativeMethods.SetWindowPlacement(hWnd, ref placement);

@@ -14,4 +14,10 @@ namespace ManagedCommon
         HighContrastBlack,
         HighContrastWhite,
     }
+
+    public enum CurrentTheme
+    {
+        Dark = 0,
+        Light = 1,
+    }
 }
