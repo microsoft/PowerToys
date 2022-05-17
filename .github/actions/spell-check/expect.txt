@@ -145,7 +145,6 @@ betadele
 betsegaw
 BGR
 bgra
-BGSOUNDS
 bhid
 Bicubic
 bigbar
@@ -189,7 +188,6 @@ Bto
 buf
 BUFSIZE
 bugreport
-BUILDARCH
 buildtransitive
 Burkina
 Buryatia
@@ -240,7 +238,6 @@ CLASSNOTAVAILABLE
 clickable
 clickonce
 CLIENTEDGE
-CLIENTPULL
 clientside
 CLIPCHILDREN
 Clipperton
@@ -440,18 +437,13 @@ dimm
 directshow
 dirs
 DISABLEASACTIONKEY
-dispid
-DISPIDAMBIENTDLCONTROL
 DISPLAYCHANGE
 displayname
 divyan
-DLACTIVEXCTLS
-DLCONTROL
 Dlg
 DLGFRAME
 DLGMODALFRAME
 dlib
-DLIMAGES
 dllexport
 dllhost
 dllmain
@@ -462,7 +454,6 @@ doctype
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
-DOWNLOADONLY
 DPICHANGED
 DPIs
 DPolicy
@@ -518,6 +509,7 @@ Emoji
 emptyrecyclebin
 ENABLEDPOPUP
 endforeach
+endian
 endif
 endl
 endpointvolume
@@ -529,14 +521,13 @@ enum
 EOAC
 eol
 epicgames
-epo
 Eqn
 ERASEBKGND
 EREOF
 EResize
+ERole
 ERRORMESSAGE
 ERRORTITLE
-ERole
 ESettings
 esize
 esrp
@@ -577,7 +568,6 @@ fallthrough
 fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
-FANCYZONESWINDOWSTYLES
 Farbraum
 Faroe
 FARPROC
@@ -615,11 +605,9 @@ FOFX
 FOLDERID
 folderpath
 FORCEMINIMIZE
-FORCEOFFLINE
 foreach
 formatetc
 FRAMECHANGED
-FRAMEDOWNLOAD
 franky
 frankychen
 Froml
@@ -662,7 +650,6 @@ globals
 GNumber
 google
 GPTR
-gsuberland
 gtm
 gui
 guiddef
@@ -699,7 +686,6 @@ helptext
 Heure
 HEVC
 hfile
-HFONT
 hglobal
 hhk
 HHmmss
@@ -757,7 +743,6 @@ hstring
 hsv
 htcfreek
 HTHUMBNAIL
-Htmdid
 HTTRANSPARENT
 Hvci
 hwb
@@ -791,10 +776,8 @@ ICompositor
 ICONERROR
 IContext
 ICONWARNING
-ICore
 ICreate
 IData
-IDCANCEL
 IDD
 IDelayed
 IDesktop
@@ -805,7 +788,6 @@ IDispatcher
 IDisposable
 idl
 IDLIST
-IDOK
 IDOn
 IDR
 IDrive
@@ -843,8 +825,8 @@ IInspectable
 IIO
 IItem
 IJson
-IKs
 Ijwhost
+IKs
 IList
 ILogon
 IMAGEHLP
@@ -871,7 +853,6 @@ INFOEXAMPLE
 Infotip
 ingbuffer
 inheritdoc
-INITDIALOG
 initguid
 Inlines
 inorder
@@ -932,7 +913,6 @@ IPublic
 IQuery
 IRead
 IReference
-IReflect
 IRegistered
 IRegistration
 IRegistry
@@ -979,9 +959,7 @@ IVirtual
 IWeb
 IWIC
 iwindow
-IWindows
 IWork
-IXaml
 IXml
 IYUV
 IZone
@@ -1039,7 +1017,6 @@ Kyrgyzstan
 Kyzylorda
 LAlt
 Lambson
-lamotile
 langword
 Lastdevice
 Laute
@@ -1121,6 +1098,7 @@ LPRECT
 LPSTR
 lpsz
 lpt
+LPTHREAD
 LPTOP
 lptpm
 LPTSTR
@@ -1192,7 +1170,6 @@ MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 messageboxes
-METACHARSET
 Metadatas
 metafile
 mfapi
@@ -1218,7 +1195,6 @@ MINIMIZESTART
 miniz
 minlevel
 Miracast
-mirophone
 Mishkeegogamang
 mjpg
 mkd
@@ -1261,7 +1237,6 @@ msdata
 MSDN
 msedge
 MSGFLT
-mshtmdid
 MSIFASTINSTALL
 MSIHANDLE
 msiquery
@@ -1326,10 +1301,8 @@ netcore
 netcoreapp
 netcpl
 netframework
-NETFX
 netsetup
 netsh
-netstandard
 Neue
 newcolor
 newdev
@@ -1406,7 +1379,6 @@ NUMLOCK
 NUMPAD
 Nunavut
 Nusa
-Nvidia
 nwc
 NWSE
 Objbase
@@ -1444,7 +1416,7 @@ ostr
 ostream
 ostringstream
 OSVERSIONINFOEXW
-otating
+OSVERSIONINFOW
 OUTOFCONTEXT
 OUTOFMEMORY
 outpin
@@ -1521,11 +1493,11 @@ plocm
 plugin
 pluginsmodel
 PMSIHANDLE
+PNTSTATUS
 Pohnpei
 popup
 POPUPWINDOW
 posix
-Postion
 powercfg
 powerlauncher
 powerpreview
@@ -1553,7 +1525,6 @@ Prefixer
 Preinstalled
 preload
 PREMULTIPLIED
-preperty
 prevhost
 previewer
 PREVIEWHANDLERFRAMEINFO
@@ -1580,6 +1551,7 @@ PROPBAG
 PROPERTYKEY
 propkey
 propvarutil
+PRTL
 prvpane
 psapi
 PSECURITY
@@ -1648,7 +1620,6 @@ rectp
 rects
 recyclebin
 redirectedfrom
-Redist
 reencode
 reencoded
 refactor
@@ -1720,6 +1691,7 @@ Roboto
 roslyn
 Rothera
 ROUNDSMALL
+rovi
 royvou
 Rpc
 RRF
@@ -1730,8 +1702,6 @@ rst
 Rstrtmgr
 RTB
 RTLREADING
-ruleset
-RUNACTIVEXCTLS
 runas
 rundll
 rungameid
@@ -1773,7 +1743,6 @@ SENDCHANGE
 sendvirtualinput
 serializationexception
 serializer
-serizalization
 serverside
 SETCONTEXT
 setcursor
@@ -1788,8 +1757,6 @@ SETTEXT
 SETTINGCHANGE
 settingsheader
 settingshotkeycontrol
-settingsv
-Setttings
 SETWORKAREA
 sfgao
 SFGAOF
@@ -1869,7 +1836,6 @@ somil
 Soref
 SOURCECLIENTAREAONLY
 SOURCEHEADER
-sourceid
 sourcesdirectory
 spdisp
 spdlog
@@ -2023,7 +1989,6 @@ Tenggara
 testcase
 testhost
 testprocess
-testtrocess
 testzones
 TEXCOORD
 textblock
@@ -2047,7 +2012,6 @@ TMPVAR
 TNP
 todo
 toggleswitch
-Toolchain
 toolkitcontrols
 toolkitconverters
 Toolset
@@ -2172,7 +2136,6 @@ vcruntime
 vcvars
 VDesktop
 vdi
-VDId
 vec
 VERBSONLY
 VERBW
@@ -2180,8 +2143,8 @@ VERIFYCONTEXT
 verrsrc
 VERSIONINFO
 Versioning
-VFT
 vformat
+VFT
 vid
 VIDCAP
 videoconference
@@ -2230,8 +2193,8 @@ wdp
 wdupenv
 weakme
 webcam
-webserver
 webpage
+webserver
 website
 webview
 wekyb
@@ -2261,8 +2224,8 @@ WINDOWPLACEMENT
 WINDOWPOSCHANGED
 WINDOWPOSCHANGING
 Windowsapp
-windowsappsdk
 windowsappruntimeinstall
+windowsappsdk
 WINDOWSBUILDNUMBER
 Windowscodecs
 windowsdesktop
@@ -2347,8 +2310,6 @@ Wwan
 Wwanpp
 xamarin
 XAttribute
-xbf
-XBind
 Xbox
 XBUTTON
 XBUTTONDBLCLK
@@ -2359,7 +2320,6 @@ XDocument
 XElement
 XFile
 XIncrement
-XInstance
 XLoc
 XNamespace
 XOffset
