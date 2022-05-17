@@ -415,14 +415,14 @@ jobs:
       contents: >-
         **/*.pdb
       flattenFolders: True
-      targetFolder: $(Build.ArtifactStagingDirectory)/Symbols/
+      targetFolder: $(Build.ArtifactStagingDirectory)/Symbols-$(BuildPlatform)/
    
   - task: PowerShell@2
     displayName: 'Remove unneeded files from ArtifactStagingDirectory'
     inputs:
       targetType: 'inline'
       script: |
-        cd $(Build.ArtifactStagingDirectory)/Symbols/
+        cd $(Build.ArtifactStagingDirectory)/Symbols-$(BuildPlatform)/
         Remove-Item vc143.pdb
         Remove-Item *test*
 
@@ -431,21 +431,21 @@ jobs:
     continueOnError: True
     inputs:
       SearchPattern: |
-        $(Build.ArtifactStagingDirectory)/Symbols/**/*.*
+        $(Build.ArtifactStagingDirectory)/Symbols-$(BuildPlatform)/**/*.*
       IndexSources: false
       SymbolServerType: TeamServices
       
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: Symbols'
     inputs:
-      PathtoPublish: $(System.ArtifactsDirectory)/Symbols/
-      ArtifactName: Symbols
+      PathtoPublish: $(System.ArtifactsDirectory)/Symbols-$(BuildPlatform)/
+      ArtifactName: Symbols-$(BuildPlatform)
 
   - task: DeleteFiles@1
     displayName: 'Remove symbols from ArtifactStagingDirectory'
     inputs:
       Contents: '*'
-      SourceFolder: $(Build.ArtifactStagingDirectory)/Symbols/
+      SourceFolder: $(Build.ArtifactStagingDirectory)/Symbols-$(BuildPlatform)/
       RemoveSourceFolder: True
 
   - task: CopyFiles@2
