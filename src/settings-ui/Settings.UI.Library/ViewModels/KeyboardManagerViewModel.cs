@@ -239,7 +239,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
         public bool LoadProfile()
         {
-            // The KBM process out of runner creates the default.json file if it does not exist.
             var success = true;
             var readSuccessfully = false;
 
@@ -247,35 +246,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             try
             {
-                // retry loop for reading
-                CancellationTokenSource ts = new CancellationTokenSource();
-                Task t = Task.Run(() =>
+                if (_settingsUtils.SettingsExists(PowerToyName, fileName))
                 {
-                    while (!readSuccessfully && !ts.IsCancellationRequested)
+                    try
                     {
-                        if (_settingsUtils.SettingsExists(PowerToyName, fileName))
-                        {
-                            try
-                            {
-                                _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
-                                readSuccessfully = true;
-                            }
-                            catch (Exception e)
-                            {
-                                Logger.LogError($"Exception encountered when reading {PowerToyName} settings", e);
-                            }
-                        }
-
-                        if (!readSuccessfully)
-                        {
-                            Task.Delay(500).Wait();
-                        }
+                        _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
+                        readSuccessfully = true;
                     }
-                });
-
-                var completedInTime = t.Wait(3000, ts.Token);
-                ts.Cancel();
-                ts.Dispose();
+                    catch (Exception e)
+                    {
+                        Logger.LogError($"Exception encountered when reading {PowerToyName} settings", e);
+                    }
+                }
 
                 if (readSuccessfully)
                 {
@@ -284,11 +266,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 else
                 {
                     success = false;
-                }
-
-                if (!completedInTime)
-                {
-                    Logger.LogError($"Timeout encountered when loading {PowerToyName} profile");
                 }
             }
             catch (Exception e)
