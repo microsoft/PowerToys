@@ -128,6 +128,7 @@ steps:
 # directly not doing WinAppDriver testing
 - task: VSTest@2
   displayName: 'MS Tests'
+  condition: ne(variables['BuildPlatform'], 'arm64') # No arm64 agents to run the tests.
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
@@ -163,6 +164,7 @@ steps:
 
 # Native dlls
 - task: VSTest@2
+  condition: ne(variables['BuildPlatform'],'arm64') # No arm64 agents to run the tests.
   displayName: 'Native Tests'
   inputs:
     platform: '$(BuildPlatform)'

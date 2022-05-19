@@ -12,7 +12,7 @@
     <Version>$(Version).0</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\WoxInfrastructure</OutputPath>    
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\WoxInfrastructure</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
