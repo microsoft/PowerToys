@@ -56,8 +56,6 @@ namespace ImageResizer.Models
 
                 var encoder = CreateEncoder(containerFormat);
 
-                var skipImage = false;
-
                 if (decoder.Metadata != null)
                 {
                     try
@@ -78,40 +76,37 @@ namespace ImageResizer.Models
                 {
                     var transformedBitmap = Transform(originalFrame);
 
+                    // if the frame was not modified, we should not replace the metadata
                     if (transformedBitmap == originalFrame)
                     {
-                        skipImage = true;
+                        encoder.Frames.Add(originalFrame);
                     }
-
-                    BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
-
-#if DEBUG
-                    Debug.WriteLine($"### Processing metadata of file {_file}");
-                    originalMetadata.PrintsAllMetadataToDebugOutput();
-#endif
-
-                    var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
-
-                    if (_settings.RemoveMetadata && metadata != null)
+                    else
                     {
-                        // strip any metadata that doesn't affect rendering
-                        var newMetadata = new BitmapMetadata(metadata.Format);
+                        BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
 
-                        metadata.CopyMetadataPropertyTo(newMetadata, "System.Photo.Orientation");
-                        metadata.CopyMetadataPropertyTo(newMetadata, "System.Image.ColorSpace");
+    #if DEBUG
+                        Debug.WriteLine($"### Processing metadata of file {_file}");
+                        originalMetadata.PrintsAllMetadataToDebugOutput();
+    #endif
 
-                        metadata = newMetadata;
+                        var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
+
+                        if (_settings.RemoveMetadata && metadata != null)
+                        {
+                            // strip any metadata that doesn't affect rendering
+                            var newMetadata = new BitmapMetadata(metadata.Format);
+
+                            metadata.CopyMetadataPropertyTo(newMetadata, "System.Photo.Orientation");
+                            metadata.CopyMetadataPropertyTo(newMetadata, "System.Image.ColorSpace");
+
+                            metadata = newMetadata;
+                        }
+
+                        var frame = CreateBitmapFrame(transformedBitmap, metadata);
+
+                        encoder.Frames.Add(frame);
                     }
-
-                    var frame = CreateBitmapFrame(transformedBitmap, metadata);
-
-                    // if the frame was not modified, we should not replace the metadata
-                    if (skipImage)
-                    {
-                        frame = CreateBitmapFrame(originalFrame, originalMetadata);
-                    }
-
-                    encoder.Frames.Add(frame);
                 }
 
                 path = GetDestinationPath(encoder);
