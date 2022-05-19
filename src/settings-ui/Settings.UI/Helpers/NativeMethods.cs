@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         internal const int SPI_GETDESKWALLPAPER = 0x0073;
         internal const int SW_SHOWNORMAL = 1;
         internal const int SW_SHOWMAXIMIZED = 3;
+        internal const int SW_HIDE = 0;
 
         [DllImport("user32.dll")]
         internal static extern IntPtr GetActiveWindow();
@@ -43,6 +44,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         [DllImport("user32.dll")]
         public static extern int GetDpiForWindow(System.IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         public static extern bool AllowSetForegroundWindow(int dwProcessId);
