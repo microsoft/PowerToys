@@ -6,6 +6,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
@@ -25,6 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         private string settingsConfigFileFolder = string.Empty;
+
+        private bool _windows11;
 
         private enum MoveWindowBehaviour
         {
@@ -112,6 +115,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _zoneNumberColor = !string.IsNullOrEmpty(numberColor) ? numberColor : ConfigDefaults.DefaultFancyzonesNumberColor;
 
             _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
+            _windows11 = Helper.Windows11();
+
+            // Disable setting on windows 10
+            if (!_windows11 && DisableRoundCornersOnWindowSnap)
+            {
+                DisableRoundCornersOnWindowSnap = false;
+            }
         }
 
         private bool _isEnabled;
@@ -845,6 +855,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 }
             }
         }
+
+        public bool Windows11 => _windows11;
 
         private void LaunchEditor()
         {
