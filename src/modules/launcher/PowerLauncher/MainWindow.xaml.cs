@@ -164,8 +164,9 @@ namespace PowerLauncher
             Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
                 add => SearchBox.QueryTextBox.TextChanged += add,
                 remove => SearchBox.QueryTextBox.TextChanged -= remove)
-                    .Throttle(TimeSpan.FromMilliseconds(250))
-                    .Do(@event => Dispatcher.Invoke(() => QueryTextBox_TextChanged(@event.Sender, @event.EventArgs)))
+                    .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                    .Throttle(TimeSpan.FromMilliseconds(150))
+                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender)))
                     .Subscribe();
 
             // Set initial language flow direction
@@ -420,7 +421,7 @@ namespace PowerLauncher
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
             // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
-            if (_viewModel.Results != null)
+            if (_viewModel.Results != null && !string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
             {
                 SearchBox.AutoCompleteTextBlock.Text = MainViewModel.GetAutoCompleteText(
                     _viewModel.Results.SelectedIndex,
@@ -429,9 +430,8 @@ namespace PowerLauncher
             }
         }
 
-        private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void ClearAutoCompleteText(TextBox textBox)
         {
-            var textBox = (TextBox)sender;
             var text = textBox.Text;
             var autoCompleteText = SearchBox.AutoCompleteTextBlock.Text;
 
@@ -439,6 +439,11 @@ namespace PowerLauncher
             {
                 SearchBox.AutoCompleteTextBlock.Text = string.Empty;
             }
+        }
+
+        private void PerformSearchQuery(TextBox textBox)
+        {
+            var text = textBox.Text;
 
             if (_isTextSetProgrammatically)
             {
