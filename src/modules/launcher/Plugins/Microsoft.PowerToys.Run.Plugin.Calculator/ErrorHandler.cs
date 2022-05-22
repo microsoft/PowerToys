@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
     {
         internal static List<Result> OnError(string icon, bool isGlobalQuery, string queryInput, string errorMessage, Exception exception = default)
         {
-            string userMessage = string.Empty;
+            string userMessage;
 
             if (errorMessage != default)
             {
