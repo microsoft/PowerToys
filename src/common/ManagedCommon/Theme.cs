@@ -15,7 +15,7 @@ namespace ManagedCommon
         HighContrastWhite,
     }
 
-    public enum CurrentTheme
+    public enum AppTheme
     {
         Dark = 0,
         Light = 1,

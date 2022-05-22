@@ -79,6 +79,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     break;
             }
 
+            App.HandleThemeChange();
             return 0;
         }
 

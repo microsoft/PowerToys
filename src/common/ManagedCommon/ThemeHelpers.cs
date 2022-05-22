@@ -3,10 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
-using System.Management;
+using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using Microsoft.Win32;
 
 namespace ManagedCommon
@@ -17,15 +15,37 @@ namespace ManagedCommon
         [DllImport("dwmapi.dll")]
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
 
-        private const string HKeyRoot = "HKEY_CURRENT_USER";
-        private const string HkeyWindowsTheme = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
-        private const string HValueAppTheme = "AppsUseLightTheme";
+        internal const string HKeyRoot = "HKEY_CURRENT_USER";
+        internal const string HkeyWindowsTheme = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes";
+        internal const string HkeyWindowsPersonalizeTheme = $@"{HkeyWindowsTheme}\Personalize";
+        internal const string HValueAppTheme = "AppsUseLightTheme";
+        internal const string HValueCurrentTheme = "CurrentTheme";
 
         // based on https://stackoverflow.com/questions/51334674/how-to-detect-windows-10-light-dark-mode-in-win32-application
-        public static CurrentTheme GetSystemTheme()
+        public static AppTheme GetAppTheme()
         {
-            int value = (int)Registry.GetValue($"{HKeyRoot}\\{HkeyWindowsTheme}", HValueAppTheme, 1);
-            return (CurrentTheme)value;
+            int value = (int)Registry.GetValue($"{HKeyRoot}\\{HkeyWindowsPersonalizeTheme}", HValueAppTheme, 1);
+            return (AppTheme)value;
+        }
+
+        public static Theme GetCurrentTheme()
+        {
+            string theme = (string)Registry.GetValue($"{HKeyRoot}\\{HkeyWindowsTheme}", HValueCurrentTheme, string.Empty);
+            theme = theme.Split('\\').Last().Split('.').First().ToString();
+
+            switch (theme)
+            {
+                case "hc1":
+                    return Theme.HighContrastOne;
+                case "hc2":
+                    return Theme.HighContrastTwo;
+                case "hcwhite":
+                    return Theme.HighContrastWhite;
+                case "hcblack":
+                    return Theme.HighContrastBlack;
+                default:
+                    return Theme.System;
+            }
         }
 
         public static bool SupportsImmersiveDarkMode()
@@ -40,17 +60,6 @@ namespace ManagedCommon
                 int useImmersiveDarkMode = enabled ? 1 : 0;
                 _ = DwmSetWindowAttribute(window, 20, ref useImmersiveDarkMode, sizeof(int));
             }
-        }
-
-        public static void RegisterForImmersiveDarkMode(IntPtr window)
-        {
-            SetImmersiveDarkMode(window, GetSystemTheme() == CurrentTheme.Dark);
-
-            var currentUser = WindowsIdentity.GetCurrent();
-            var query = new WqlEventQuery($"SELECT * FROM RegistryValueChangeEvent WHERE Hive='HKEY_USERS' AND KeyPath='{currentUser.User.Value}\\\\{HkeyWindowsTheme.Replace("\\", "\\\\")}' AND ValueName='{HValueAppTheme}'");
-            var watcher = new ManagementEventWatcher(query);
-            watcher.EventArrived += (_, _) => SetImmersiveDarkMode(window, GetSystemTheme() == CurrentTheme.Dark);
-            watcher.Start();
         }
     }
 }
