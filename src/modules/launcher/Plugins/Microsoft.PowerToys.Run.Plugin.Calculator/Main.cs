@@ -78,7 +78,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                // Any other crash occured
+                // Any other crash occurred
                 // We want to keep the process alive if any the mages library throws any exceptions.
                 return ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, default, e);
             }
