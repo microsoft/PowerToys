@@ -115,7 +115,7 @@
                     Hash="$(var.WinAppSDKPayloadHash)" />
             </ExePackage>
             <MsiPackage
-                SourceFile="$(var.Platform)\Release\PowerToysSetup-$(var.Version)-$(var.Platform).msi"
+                SourceFile="$(var.PowerToysPlatform)\Release\PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform).msi"
                 Compressed="yes"
                 DisplayInternalUI="no">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />

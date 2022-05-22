@@ -9,6 +9,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
     <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
   </PropertyGroup>

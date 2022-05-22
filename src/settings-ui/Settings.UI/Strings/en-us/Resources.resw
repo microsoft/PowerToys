@@ -1356,7 +1356,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
 
 Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
-  </data>    
+  </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Documentation on Microsoft Docs</value>
   </data>
@@ -1474,7 +1474,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_WhatsNew_LoadingError.Title" xml:space="preserve">
     <value>Couldn't load the release notes.</value>
   </data>
-	  <data name="Oobe_WhatsNew_LoadingError.Message" xml:space="preserve">
+  <data name="Oobe_WhatsNew_LoadingError.Message" xml:space="preserve">
     <value>Please check your internet connection.</value>
   </data>
   <data name="Oobe_WhatsNew_DetailedReleaseNotesLink.Text" xml:space="preserve">
@@ -2085,7 +2085,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_Radio_Windows_Default.Content" xml:space="preserve">
     <value>Windows default</value>
   </data>
-  <data name="PowerPreviewPage.SecondaryLinksHeader" xml:space="preserve">
+  <data name="FileExplorerPreview.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
   </data>
@@ -2105,10 +2105,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Shell_WhatsNew.Content" xml:space="preserve">
     <value>What's new</value>
   </data>
-  <data name="FancyZones_DisableRoundCornersOnWindowSnap.Description" xml:space="preserve">
-    <value>Works on Windows 11 </value>
-  </data>
-  <data name="FancyZones_DisableRoundCornersOnWindowSnap.Header" xml:space="preserve">
+  <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable round corners when window is snapped</value>
   </data>
 </root>

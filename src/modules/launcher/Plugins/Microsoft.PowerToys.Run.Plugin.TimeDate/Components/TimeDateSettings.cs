@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         private static TimeDateSettings instance;
 
         /// <summary>
-        /// Gets a value indicating whether to show only the time and date in global results or not
+        /// Gets a value indicating whether to show only the time and date for system time in global results or not
         /// </summary>
         internal bool OnlyDateTimeNowGlobal { get; private set; }
 

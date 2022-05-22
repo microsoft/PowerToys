@@ -49,7 +49,7 @@ WindowBorder::~WindowBorder()
     if (m_window)
     {
         SetWindowLongPtrW(m_window, GWLP_USERDATA, 0);
-        ShowWindow(m_window, SW_HIDE);
+        DestroyWindow(m_window);
     }
 }
 

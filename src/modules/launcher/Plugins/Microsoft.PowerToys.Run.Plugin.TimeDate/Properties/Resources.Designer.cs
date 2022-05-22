@@ -430,7 +430,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show only &apos;Time&apos;, &apos;Date&apos; and &apos;Now&apos; result on global queries.
+        ///   Looks up a localized string similar to Show only &apos;Time&apos;, &apos;Date&apos; and &apos;Now&apos; result for system time on global queries.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal {
             get {
