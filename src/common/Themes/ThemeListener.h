@@ -11,11 +11,13 @@ DWORD WINAPI _checkTheme(LPVOID lpParam);
 class ThemeListener
 {
 	public:
-		ThemeListener() {
-            AppTheme = ThemeHelpers::GetAppTheme();
+        ThemeListener()
+        {
+          AppTheme = ThemeHelpers::GetAppTheme();
             dwThreadHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)_checkTheme, this, 0, &dwThreadId);
-		}
-        ~ThemeListener() {
+        }
+        ~ThemeListener() 
+        {
             CloseHandle(dwThreadHandle);
             dwThreadId = 0;
         }
