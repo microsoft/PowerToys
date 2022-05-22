@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("=2^96", "Result value was either too large or too small for a decimal number")]
         [DataRow("=+()", "Calculation result is not a valid number (NaN)")]
         [DataRow("=[10,10]", "Unsupported use of square brackets")]
-        public void ErrorResultOnInvalidKeywordQeury(string typedString, string expectedResult)
+        public void ErrorResultOnInvalidKeywordQuery(string typedString, string expectedResult)
         {
             // Setup
             Mock<Main> main = new ();
@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("2^96")]
         [DataRow("+()")]
         [DataRow("[10,10]")]
-        public void NoResultOnInvalidGlobalQeury(string typedString)
+        public void NoResultOnInvalidGlobalQuery(string typedString)
         {
             // Setup
             Mock<Main> main = new ();

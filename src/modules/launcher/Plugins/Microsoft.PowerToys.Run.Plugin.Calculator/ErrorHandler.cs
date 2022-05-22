@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
     internal static class ErrorHandler
     {
         /// <summary>
-        /// Mothod to handles errors while calculating
+        /// Method to handles errors while calculating
         /// </summary>
         /// <param name="icon">Path to result icon.</param>
         /// <param name="isGlobalQuery">Bool to indicate if it is a global query.</param>
