@@ -152,7 +152,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     // Create the Settings window hidden so that it's fully initialized and
                     // it will be ready to receive the notification if the user opens
                     // the Settings from the tray icon.
-                    settingsWindow = new MainWindow(true);
+                    settingsWindow = new MainWindow(isDark, true);
 
                     if (ShowOobe)
                     {

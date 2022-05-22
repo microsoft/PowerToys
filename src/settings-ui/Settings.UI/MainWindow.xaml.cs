@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI
     /// </summary>
     public sealed partial class MainWindow : Window
     {
-        public MainWindow(bool createHidden = false, bool isDark)
+        public MainWindow(bool isDark, bool createHidden = false)
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
