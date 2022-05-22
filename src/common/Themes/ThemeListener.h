@@ -14,7 +14,7 @@ class ThemeListener
         ThemeListener()
         {
           AppTheme = ThemeHelpers::GetAppTheme();
-            dwThreadHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)_checkTheme, this, 0, &dwThreadId);
+          dwThreadHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)_checkTheme, this, 0, &dwThreadId);
         }
         ~ThemeListener() 
         {
