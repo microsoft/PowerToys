@@ -9,8 +9,18 @@ using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
-    internal class ErrorHandler
+    internal static class ErrorHandler
     {
+        /// <summary>
+        /// Mothod to handles errors while calculating
+        /// </summary>
+        /// <param name="icon">Path to result icon.</param>
+        /// <param name="isGlobalQuery">Bool to indicate if it is a global query.</param>
+        /// <param name="queryInput">User input as string including the action keyword.</param>
+        /// <param name="errorMessage">Error message if applicable.</param>
+        /// <param name="exception">Exception if applicable.</param>
+        /// <returns>List of results to show. Either an error message or an empty list.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="errorMessage"/> and <paramref name="exception"/> are fille with their default values.</exception>
         internal static List<Result> OnError(string icon, bool isGlobalQuery, string queryInput, string errorMessage, Exception exception = default)
         {
             string userMessage;
