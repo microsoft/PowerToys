@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <summary>
         /// Name of the virtual host
         /// </summary>
-        public const string VirtualHostName = "PowerToysLocalSvgThumbnail";
+        private const string VirtualHostName = "PowerToysLocalSvgThumbnail";
 
         /// <summary>
         /// Gets the path of the current assembly.
@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <remarks>
         /// Source: https://stackoverflow.com/a/283917/14774889
         /// </remarks>
-        public static string AssemblyDirectory
+        private static string AssemblyDirectory
         {
             get
             {
@@ -69,6 +69,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         }
 
         /// <summary>
+        /// Represent WebView2 user data folder path.
+        /// </summary>
+        private string _webView2UserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                    "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgThumbnailPreview-Temp";
+
+        /// <summary>
         /// Render SVG using WebView2 control, capture the WebView2
         /// preview and create Bitmap out of it.
         /// </summary>
@@ -76,6 +82,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <param name="cx">The maximum thumbnail size, in pixels.</param>
         public Bitmap GetThumbnail(string content, uint cx)
         {
+            CleanupWebView2UserDataFolder();
+
             if (cx == 0 || cx > MaxThumbnailSize || string.IsNullOrEmpty(content) || !content.Contains("svg"))
             {
                 return null;
@@ -117,8 +125,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 
             ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                webView2EnvironmentAwaiter = CoreWebView2Environment
-                   .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
-                                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgThumbnailPreview-Temp")
+                   .CreateAsync(userDataFolder: _webView2UserDataFolder)
                    .ConfigureAwait(true).GetAwaiter();
             webView2EnvironmentAwaiter.OnCompleted(async () =>
             {
@@ -129,9 +136,22 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
                     _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
                     _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-                    _browser.NavigateToString(wrappedContent);
+
+                    // WebView2.NavigateToString() limitation
+                    // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
+                    // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
+                    if (wrappedContent.Length > 1_500_000)
+                    {
+                        string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
+                        File.WriteAllText(filename, wrappedContent);
+                        _browser.Source = new Uri(filename);
+                    }
+                    else
+                    {
+                        _browser.NavigateToString(wrappedContent);
+                    }
                 }
-                catch (NullReferenceException)
+                catch (Exception)
                 {
                 }
             });
@@ -248,6 +268,26 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         public void Dispose()
         {
             GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Cleanup the previously created tmp html files from svg files bigger than 2MB.
+        /// </summary>
+        private void CleanupWebView2UserDataFolder()
+        {
+            try
+            {
+                // Cleanup temp dir
+                var dir = new DirectoryInfo(_webView2UserDataFolder);
+
+                foreach (var file in dir.EnumerateFiles("*.html"))
+                {
+                    file.Delete();
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }

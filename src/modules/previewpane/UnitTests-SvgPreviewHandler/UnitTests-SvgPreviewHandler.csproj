@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Platforms>x64</Platforms>
     <AssemblyTitle>UnitTests-SvgPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-SvgPreviewHandler</AssemblyDescription>
     <AssemblyTitle>UnitTests-SvgPreviewHandler</AssemblyTitle>
@@ -10,7 +9,7 @@
   <PropertyGroup>
     <ProjectGuid>{060D75DA-2D1C-48E6-A4A1-6F0718B64661}</ProjectGuid>
     <RootNamespace>SvgPreviewHandlerUnitTests</RootNamespace>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>

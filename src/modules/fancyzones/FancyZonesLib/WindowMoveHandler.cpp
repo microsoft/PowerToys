@@ -10,6 +10,7 @@
 #include "FancyZonesData/AppZoneHistory.h"
 #include "Settings.h"
 #include "WorkArea.h"
+#include <FancyZonesLib/FancyZonesWindowProcessing.h>
 #include <FancyZonesLib/WindowUtils.h>
 
 // Non-Localizable strings
@@ -60,6 +61,11 @@ WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallb
 
 void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept
 {
+    if (!FancyZonesWindowProcessing::IsProcessable(window))
+    {
+        return;
+    }
+
     if (!FancyZonesWindowUtils::IsCandidateForZoning(window) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
     {
         return;

@@ -16,7 +16,6 @@ using Microsoft.PowerToys.PreviewHandler.Svg.Utilities;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
-using PreviewHandlerCommon;
 
 namespace Microsoft.PowerToys.PreviewHandler.Svg
 {
@@ -38,7 +37,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <summary>
         /// Name of the virtual host
         /// </summary>
-        public const string VirtualHostName = "PowerToysLocalSvg";
+        private const string VirtualHostName = "PowerToysLocalSvg";
 
         /// <summary>
         /// Gets the path of the current assembly.
@@ -46,7 +45,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <remarks>
         /// Source: https://stackoverflow.com/a/283917/14774889
         /// </remarks>
-        public static string AssemblyDirectory
+        private static string AssemblyDirectory
         {
             get
             {
@@ -68,11 +67,19 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         private bool _infoBarAdded;
 
         /// <summary>
+        /// Represent WebView2 user data folder path.
+        /// </summary>
+        private string _webView2UserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgPreview-Temp";
+
+        /// <summary>
         /// Start the preview on the Control.
         /// </summary>
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            CleanupWebView2UserDataFolder();
+
             string svgData = null;
             bool blocked = false;
 
@@ -88,9 +95,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
 
                 blocked = SvgPreviewHandlerHelper.CheckBlockedElements(svgData);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 PreviewError(ex, dataSource);
                 return;
@@ -100,9 +105,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             {
                 svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
             }
@@ -125,9 +128,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     base.DoPreview(dataSource);
                     PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     PreviewError(ex, dataSource);
                 }
@@ -169,8 +170,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
 
             ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                webView2EnvironmentAwaiter = CoreWebView2Environment
-                   .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
-                                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgPreview-Temp")
+                   .CreateAsync(userDataFolder: _webView2UserDataFolder)
                    .ConfigureAwait(true).GetAwaiter();
             webView2EnvironmentAwaiter.OnCompleted(() =>
             {
@@ -183,10 +183,24 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                         await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
                         _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
                         _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-                        _browser.NavigateToString(svgData);
+
+                        // WebView2.NavigateToString() limitation
+                        // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
+                        // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
+                        if (svgData.Length > 1_500_000)
+                        {
+                            string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
+                            File.WriteAllText(filename, svgData);
+                            _browser.Source = new Uri(filename);
+                        }
+                        else
+                        {
+                            _browser.NavigateToString(svgData);
+                        }
+
                         Controls.Add(_browser);
                     }
-                    catch (NullReferenceException)
+                    catch (Exception)
                     {
                     }
                 });
@@ -223,6 +237,26 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             _infoBarAdded = true;
             AddTextBoxControl(Properties.Resource.SvgNotPreviewedError);
             base.DoPreview(dataSource);
+        }
+
+        /// <summary>
+        /// Cleanup the previously created tmp html files from svg files bigger than 2MB.
+        /// </summary>
+        private void CleanupWebView2UserDataFolder()
+        {
+            try
+            {
+                // Cleanup temp dir
+                var dir = new DirectoryInfo(_webView2UserDataFolder);
+
+                foreach (var file in dir.EnumerateFiles("*.html"))
+                {
+                    file.Delete();
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }

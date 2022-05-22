@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Platforms>x64</Platforms>
     <AssemblyTitle>UnitTests-GcodePreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-GcodePreviewHandler</AssemblyDescription>
     <AssemblyTitle>UnitTests-GcodePreviewHandler</AssemblyTitle>

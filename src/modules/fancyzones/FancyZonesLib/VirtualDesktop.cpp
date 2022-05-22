@@ -2,6 +2,7 @@
 #include "VirtualDesktop.h"
 
 #include <common/logger/logger.h>
+#include "trace.h"
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -72,9 +73,7 @@ HKEY GetVirtualDesktopsRegKey()
     return virtualDesktopsKey.get();
 }
 
-VirtualDesktop::VirtualDesktop(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback) :
-    m_vdInitCallback(vdInitCallback),
-    m_vdUpdatedCallback(vdUpdatedCallback)
+VirtualDesktop::VirtualDesktop()
 {
     auto res = CoCreateInstance(CLSID_VirtualDesktopManager, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&m_vdManager));
     if (FAILED(res))
@@ -91,20 +90,10 @@ VirtualDesktop::~VirtualDesktop()
     }
 }
 
-void VirtualDesktop::Init()
+VirtualDesktop& VirtualDesktop::instance()
 {
-    m_vdInitCallback();
-
-    m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
-    m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] { HandleVirtualDesktopUpdates(); } });
-}
-
-void VirtualDesktop::UnInit()
-{
-    if (m_terminateVirtualDesktopTrackerEvent)
-    {
-        SetEvent(m_terminateVirtualDesktopTrackerEvent.get());
-    }
+    static VirtualDesktop self;
+    return self;
 }
 
 std::optional<GUID> VirtualDesktop::GetCurrentVirtualDesktopIdFromRegistry() const
@@ -180,6 +169,25 @@ std::optional<std::vector<GUID>> VirtualDesktop::GetVirtualDesktopIdsFromRegistr
     return GetVirtualDesktopIdsFromRegistry(GetVirtualDesktopsRegKey());
 }
 
+bool VirtualDesktop::IsVirtualDesktopIdSavedInRegistry(GUID id) const
+{
+    auto ids = GetVirtualDesktopIdsFromRegistry();
+    if (!ids.has_value())
+    {
+        return false;
+    }
+
+    for (const auto& regId : *ids)
+    {
+        if (regId == id)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool VirtualDesktop::IsWindowOnCurrentDesktop(HWND window) const
 {
     std::optional<GUID> id = GetDesktopId(window);
@@ -193,7 +201,7 @@ std::optional<GUID> VirtualDesktop::GetDesktopId(HWND window) const
     if (m_vdManager && m_vdManager->IsWindowOnCurrentVirtualDesktop(window, &isWindowOnCurrentDesktop) == S_OK && isWindowOnCurrentDesktop)
     {
         // Filter windows such as Windows Start Menu, Task Switcher, etc.
-        if (m_vdManager->GetWindowDesktopId(window, &id) == S_OK && id != GUID_NULL)
+        if (m_vdManager->GetWindowDesktopId(window, &id) == S_OK)
         {
             return id;
         }
@@ -227,6 +235,40 @@ std::vector<std::pair<HWND, GUID>> VirtualDesktop::GetWindowsRelatedToDesktops()
     return result;
 }
 
+GUID VirtualDesktop::GetCurrentVirtualDesktopId() const noexcept
+{
+    return m_currentVirtualDesktopId;
+}
+
+GUID VirtualDesktop::GetPreviousVirtualDesktopId() const noexcept
+{
+    return m_previousDesktopId;
+}
+
+void VirtualDesktop::UpdateVirtualDesktopId() noexcept
+{
+    m_previousDesktopId = m_currentVirtualDesktopId;
+
+    auto currentVirtualDesktopId = GetCurrentVirtualDesktopIdFromRegistry();
+    if (!currentVirtualDesktopId.has_value())
+    {
+        Logger::info("No Virtual Desktop Id found in registry");
+        currentVirtualDesktopId = VirtualDesktop::instance().GetDesktopIdByTopLevelWindows();
+    }
+
+    if (currentVirtualDesktopId.has_value())
+    {
+        m_currentVirtualDesktopId = *currentVirtualDesktopId;
+
+        if (m_currentVirtualDesktopId == GUID_NULL)
+        {
+            Logger::warn("Couldn't retrieve virtual desktop id");
+        }
+    }
+
+    Trace::VirtualDesktopChanged();
+}
+
 std::optional<GUID> VirtualDesktop::GetDesktopIdByTopLevelWindows() const
 {
     using result_t = std::vector<HWND>;
@@ -250,29 +292,4 @@ std::optional<GUID> VirtualDesktop::GetDesktopIdByTopLevelWindows() const
     }
 
     return std::nullopt;
-}
-
-void VirtualDesktop::HandleVirtualDesktopUpdates()
-{
-    HKEY virtualDesktopsRegKey = GetVirtualDesktopsRegKey();
-    if (!virtualDesktopsRegKey)
-    {
-        return;
-    }
-    HANDLE regKeyEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-    HANDLE events[2] = { regKeyEvent, m_terminateVirtualDesktopTrackerEvent.get() };
-    while (1)
-    {
-        if (RegNotifyChangeKeyValue(virtualDesktopsRegKey, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS)
-        {
-            return;
-        }
-        if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != (WAIT_OBJECT_0 + 0))
-        {
-            // if terminateEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
-            return;
-        }
-
-        m_vdUpdatedCallback();
-    }
 }

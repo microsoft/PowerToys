@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Platforms>x64</Platforms>
     <AssemblyTitle>UnitTests-PreviewHandlerCommon</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-PreviewHandlerCommon</AssemblyDescription>
     <AssemblyTitle>UnitTests-PreviewHandlerCommon</AssemblyTitle>

@@ -21,7 +21,7 @@ jobs:
           $github = Invoke-RestMethod -uri "https://api.github.com/repos/Microsoft/PowerToys/releases" 
           
           $targetRelease = $github | Where-Object -Property name -match 'Release'| Select -First 1
-          $installerUrl = $targetRelease | Select -ExpandProperty assets -First 1 | Where-Object -Property name -match 'PowerToysSetup' | Select -ExpandProperty browser_download_url
+          $installerUrl = $targetRelease | Select -ExpandProperty assets -First 1 | Where-Object -Property name -match 'PowerToysSetup.*x64' | Select -ExpandProperty browser_download_url
           $ver = $targetRelease.tag_name.Trim("v")
           
           # getting latest wingetcreate file

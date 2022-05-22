@@ -1,54 +1,34 @@
 #pragma once
 
-#include "WorkArea.h"
-#include "on_thread_executor.h"
-
 class VirtualDesktop
 {
 public:
-    VirtualDesktop(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback);
-    ~VirtualDesktop();
+    static VirtualDesktop& instance();
 
-    inline bool IsVirtualDesktopIdSavedInRegistry(GUID id) const
-    {
-        auto ids = GetVirtualDesktopIdsFromRegistry();
-        if (!ids.has_value())
-        {
-            return false;
-        }
+    // saved values
+    GUID GetCurrentVirtualDesktopId() const noexcept;
+    GUID GetPreviousVirtualDesktopId() const noexcept;
+    void UpdateVirtualDesktopId() noexcept;
 
-        for (const auto& regId : *ids)
-        {
-            if (regId == id)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    void Init();
-    void UnInit();
-
-    std::optional<GUID> GetCurrentVirtualDesktopIdFromRegistry() const;
-    std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry() const;
-
+    // IVirtualDesktopManager
     bool IsWindowOnCurrentDesktop(HWND window) const;
     std::optional<GUID> GetDesktopId(HWND window) const;
     std::optional<GUID> GetDesktopIdByTopLevelWindows() const;
-
     std::vector<std::pair<HWND, GUID>> GetWindowsRelatedToDesktops() const;
 
+    // registry
+    std::optional<GUID> GetCurrentVirtualDesktopIdFromRegistry() const;
+    std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry() const;
+    bool IsVirtualDesktopIdSavedInRegistry(GUID id) const;
+
 private:
-    std::function<void()> m_vdInitCallback;
-    std::function<void()> m_vdUpdatedCallback;
+    VirtualDesktop();
+    ~VirtualDesktop();
 
-    IVirtualDesktopManager* m_vdManager;
+    IVirtualDesktopManager* m_vdManager{nullptr};
 
-    OnThreadExecutor m_virtualDesktopTrackerThread;
-    wil::unique_handle m_terminateVirtualDesktopTrackerEvent;
+    GUID m_currentVirtualDesktopId{};
+    GUID m_previousDesktopId{};
 
     std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry(HKEY hKey) const;
-    void HandleVirtualDesktopUpdates();
 };

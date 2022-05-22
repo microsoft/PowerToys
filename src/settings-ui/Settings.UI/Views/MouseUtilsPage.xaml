@@ -130,6 +130,7 @@
                                     ScrollViewer.VerticalScrollMode="Enabled"
                                     ScrollViewer.IsVerticalRailEnabled="True"
                                     TextWrapping="Wrap"
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}"
                                     AcceptsReturn="True"
                                     MinWidth="240"
                                     MinHeight="160" />

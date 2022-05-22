@@ -1,6 +1,6 @@
-namespace PowerRenameUILib
+namespace PowerRenameUI
 {
-    runtimeclass PatternSnippet : Windows.UI.Xaml.Data.INotifyPropertyChanged
+    runtimeclass PatternSnippet : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
     {
         PatternSnippet(String code, String description);
         String Code;
