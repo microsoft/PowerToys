@@ -89,7 +89,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             if (result is double[,])
             {
-                // '[10,10]' is intepreted as array by mages engine
+                // '[10,10]' is interpreted as array by mages engine
                 return Properties.Resources.wox_plugin_calculator_double_array_returned;
             }
 
