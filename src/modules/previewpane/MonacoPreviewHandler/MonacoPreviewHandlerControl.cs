@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Common;
+using Microsoft.PowerToys.PreviewHandler.Monaco.Helpers;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -75,6 +76,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
+            Logger.LogInfo("Starting previewing file");
+
             base.DoPreview(dataSource);
 
             // Sets background color
@@ -103,6 +106,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 {
                     InvokeOnControlThread(() =>
                     {
+                        Logger.LogInfo("Create WebView2 environment");
                         ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                             webView2EnvironmentAwaiter = CoreWebView2Environment
                                 .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
@@ -137,6 +141,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                         {
                                         }
 
+                                        Logger.LogInfo("Navigates to string of HTML file");
+
                                         _webView.NavigateToString(html);
                                         _webView.NavigationCompleted += WebView2Init;
                                         _webView.Height = this.Height;
@@ -145,12 +151,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                         _loadingBar.Value = 100;
                                         this.Update();
                                     }
-                                    catch (NullReferenceException)
+                                    catch (NullReferenceException e)
                                     {
+                                        Logger.LogError("NullReferenceException catched. Skipping exception.", e);
                                     }
                                 }
                                 catch (WebView2RuntimeNotFoundException)
                                 {
+                                    Logger.LogWarning("WebView2 was not found");
                                     Controls.Remove(_loading);
                                     Controls.Remove(_loadingBar);
 
@@ -188,6 +196,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                         text.Width = 500;
                         text.Height = 10000;
                         Controls.Add(text);
+                        Logger.LogError("Error catched. Showing error to user", e);
                     });
                 }
 
@@ -195,6 +204,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             }
             else
             {
+                Logger.LogInfo("File is too big to display. Showing error message");
                 InvokeOnControlThread(() =>
                 {
                     Controls.Remove(_loading);
@@ -227,6 +237,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             // Checks if already navigated
             if (!_hasNavigated)
             {
+                Logger.LogInfo("Setting WebView2 settings");
                 CoreWebView2Settings settings = (sender as WebView2).CoreWebView2.Settings;
 
 #if DEBUG
@@ -256,10 +267,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 // Disable status bar
                 settings.IsStatusBarEnabled = false;
 
+                Logger.LogInfo("Remove loading elements");
                 Controls.Remove(_loading);
                 Controls.Remove(_loadingBar);
 #if DEBUG
                 _webView.CoreWebView2.OpenDevToolsWindow();
+                Logger.LogInfo("Opened Dev Tools window, because solution was built in debug mode");
 #endif
 
                 _loadingBar.Value = 80;
@@ -277,6 +290,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             if (_hasNavigated)
             {
                 e.Cancel = false;
+                Logger.LogInfo("Stopped navigation from user");
             }
 
             // If it has navigated to index.html it stops further navigations
@@ -288,6 +302,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
         private void SetBackground()
         {
+            Logger.LogInfo("Setting background of window");
             InvokeOnControlThread(() =>
             {
                 this.BackColor = Settings.BackgroundColor;
@@ -296,6 +311,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
         private void InitializeLoadingScreen()
         {
+            Logger.LogInfo("Initializing loading screen");
             InvokeOnControlThread(() =>
             {
                 _loadingBar = new ProgressBar();
@@ -316,12 +332,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 Controls.Add(_loading);
                 this.Update();
             });
+            Logger.LogInfo("Loading screen initialized");
         }
 
         private void InitializeIndexFileAndSelectedFile(string filePath)
         {
             Task getFileExtensionTask = new Task(() =>
             {
+                Logger.LogInfo("Starting getting monaco language id out of filetype");
                 vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
             });
             getFileExtensionTask.Start();
@@ -330,9 +348,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             {
                 using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                 {
+                    Logger.LogInfo("Starting reading requested file");
                     var fileContent = fileReader.ReadToEnd();
                     fileReader.Close();
                     base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
+                    Logger.LogInfo("Reading requested file ended");
                 }
             });
 
@@ -343,8 +363,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 // prepping index html to load in
                 using (StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                 {
+                    Logger.LogInfo("Starting reading HTML source file");
                     html = htmlFileReader.ReadToEnd();
                     htmlFileReader.Close();
+                    Logger.LogInfo("Reading HTML source file ended");
                 }
             });
 
@@ -365,6 +387,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private async void DownloadLink_Click(object sender, EventArgs e)
         {
             await Launcher.LaunchUriAsync(new Uri("https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"));
+            Logger.LogInfo("User clicked on downloading WebView2 link.");
         }
     }
 }
