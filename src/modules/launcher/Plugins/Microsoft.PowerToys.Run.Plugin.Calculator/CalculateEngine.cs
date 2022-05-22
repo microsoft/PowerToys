@@ -25,8 +25,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// Interpret
         /// </summary>
         /// <param name="cultureInfo">Use CultureInfo.CurrentCulture if something is user facing</param>
-        public CalculateResult Interpret(string input, CultureInfo cultureInfo)
+        public CalculateResult Interpret(string input, CultureInfo cultureInfo, out string error)
         {
+            error = default;
+
             if (!CalculateHelper.InputValid(input))
             {
                 return default;
@@ -49,7 +51,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             result = TransformResult(result);
             if (result is string)
             {
-                throw new ArithmeticException(result as string);
+                error = result as string;
+                return default;
             }
 
             if (string.IsNullOrEmpty(result?.ToString()))

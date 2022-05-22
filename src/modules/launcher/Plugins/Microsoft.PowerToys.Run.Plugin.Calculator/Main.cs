@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Text;
 using ManagedCommon;
 using Wox.Plugin;
-using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
@@ -28,6 +27,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public List<Result> Query(Query query)
         {
+            bool isGlobalQuery = string.IsNullOrEmpty(query.ActionKeyword);
+
             if (query == null)
             {
                 throw new ArgumentNullException(paramName: nameof(query));
@@ -49,41 +50,36 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             try
             {
                 // Using CurrentUICulture since this is user facing
-                var result = CalculateEngine.Interpret(input, CultureInfo.CurrentUICulture);
+                var result = CalculateEngine.Interpret(input, CultureInfo.CurrentUICulture, out string errorMessage);
 
                 // This could happen for some incorrect queries, like pi(2)
                 if (result.Equals(default(CalculateResult)))
                 {
-                    return new List<Result>();
+                    return errorMessage == default ? new List<Result>() : ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, errorMessage);
                 }
 
                 return new List<Result>
                 {
                     ResultHelper.CreateResult(result.RoundedResult, IconPath),
                 };
-            } // We want to keep the process alive if any the mages library throws any exceptions.
+            }
+            catch (Mages.Core.ParseException)
+            {
+                // Invalid input
+                return ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, Properties.Resources.wox_plugin_calculator_expression_not_complete);
+            }
+            catch (OverflowException)
+            {
+                // Result to big to convert to decimal
+                return ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, Properties.Resources.wox_plugin_calculator_not_covert_to_decimal);
+            }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                // error log
-                Log.Exception($"Exception when query for <{query}>", e, GetType());
-
-                // error message result on keyword queries
-                if (string.IsNullOrEmpty(query.ActionKeyword))
-                {
-                    return new List<Result>();
-                }
-                else
-                {
-                    string err = (e is Mages.Core.ParseException) ? Properties.Resources.wox_plugin_calculator_expression_not_complete
-                        : (e is OverflowException) ? Properties.Resources.wox_plugin_calculator_not_covert_to_decimal
-                        : e.Message;
-                    return new List<Result>
-                    {
-                        ResultHelper.CreateErrorResult(Properties.Resources.wox_plugin_calculator_calculation_failed, err, IconPath),
-                    };
-                }
+                // Any other crash occured
+                // We want to keep the process alive if any the mages library throws any exceptions.
+                return ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, default, e);
             }
         }
 
