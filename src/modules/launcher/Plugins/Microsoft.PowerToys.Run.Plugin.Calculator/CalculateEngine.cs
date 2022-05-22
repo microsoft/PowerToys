@@ -45,6 +45,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             // This could happen for some incorrect queries, like pi(2)
             if (result == null)
             {
+                error = Properties.Resources.wox_plugin_calculator_expression_not_complete;
                 return default;
             }
 
