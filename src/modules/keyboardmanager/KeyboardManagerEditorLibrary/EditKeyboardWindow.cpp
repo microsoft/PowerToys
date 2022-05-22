@@ -396,6 +396,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     xamlBridgePtr = nullptr;
     hWndXamlIslandEditKeyboardWindow = nullptr;
     hwndLock.lock();
+    theme_listener.DelChangedHandler(handleTheme);
     hwndEditKeyboardNativeWindow = nullptr;
     keyboardManagerState.ResetUIState();
     keyboardManagerState.ClearRegisteredKeyDelays();
