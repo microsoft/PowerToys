@@ -34,6 +34,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
+            // Happens if the user has only typed the action key so far
             if (string.IsNullOrEmpty(query.Search))
             {
                 return new List<Result>();
