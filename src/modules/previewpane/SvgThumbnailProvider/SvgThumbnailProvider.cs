@@ -106,6 +106,9 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].style = 'width:100%;height:100%';");
                 }
 
+                // Hide scrollbar - fixes #18286
+                await _browser.ExecuteScriptAsync("document.querySelector('body').style.overflow='hidden'");
+
                 MemoryStream ms = new MemoryStream();
                 await _browser.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, ms);
                 thumbnail = new Bitmap(ms);
