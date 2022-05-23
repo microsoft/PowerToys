@@ -424,13 +424,15 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("FF0000", 255)] // red
         [DataRow("00FF00", 65280)] // green
         [DataRow("0000FF", 16711680)] // blue
+        [DataRow("ef68ff", 16738543)] // magenta
+        [DataRow("ffaa00", 43775)] // yellow
         public void ColorRGBtoDecimalBGR(string hexValue, int decimalColorValue)
         {
             var color = HexValueToColor(hexValue);
             var result = ColorHelper.ConvertDecimalBGRValue(color);
 
             // decimalColor[0..16777215]
-            Assert.AreEqual(result, decimalColorValue);
+            Assert.AreEqual(decimalColorValue, result);
         }
 
         [TestMethod]
@@ -440,13 +442,15 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("FF0000", 16711680)] // red
         [DataRow("00FF00", 65280)] // green
         [DataRow("0000FF", 255)] // blue
+        [DataRow("ef68ff", 15689983)] // magenta
+        [DataRow("ffaa00", 16755200)] // yellow
         public void ColorRGBtoDecimalRGB(string hexValue, int decimalColorValue)
         {
             var color = HexValueToColor(hexValue);
             var result = ColorHelper.ConvertDecimalRGBValue(color);
 
             // decimalColor[0..16777215]
-            Assert.AreEqual(result, decimalColorValue);
+            Assert.AreEqual(decimalColorValue, result);
         }
     }
 }
