@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -134,7 +135,8 @@ namespace Wox.Plugin
 
             try
             {
-                _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(Metadata.ExecuteFilePath);
+                var loadContext = new PluginLoadContext(Metadata.ExecuteFilePath);
+                _assembly = loadContext.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(Metadata.ExecuteFilePath)));
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
