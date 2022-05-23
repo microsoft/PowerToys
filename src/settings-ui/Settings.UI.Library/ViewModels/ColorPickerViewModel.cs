@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 { ColorRepresentationType.CIELAB, "CIE LAB - CIELab(76, 21, 80)" },
                 { ColorRepresentationType.CIEXYZ, "CIE XYZ - xyz(56, 50, 7)" },
                 { ColorRepresentationType.VEC4, "VEC4 - (1.0f, 0.7f, 0f, 1f)" },
-                { ColorRepresentationType.DecimalValue, "Decimal BGR - 16755200" },
+                { ColorRepresentationType.DecimalValue, "Decimal BGR - 43775" },
                 { ColorRepresentationType.DecimalRGBValue, "Decimal RGB - 16755200" },
             };
 
@@ -217,7 +217,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             formatsUnordered.Add(new ColorFormatModel(cielabFormatName, "CIELab(66, 72, -52)", visibleFormats.ContainsKey(cielabFormatName) && visibleFormats[cielabFormatName]));
             formatsUnordered.Add(new ColorFormatModel(ciexyzFormatName, "XYZ(59, 35, 98)", visibleFormats.ContainsKey(ciexyzFormatName) && visibleFormats[ciexyzFormatName]));
             formatsUnordered.Add(new ColorFormatModel(vec4FormatName, "(0.94f, 0.41f, 1.00f, 1f)", visibleFormats.ContainsKey(vec4FormatName) && visibleFormats[vec4FormatName]));
-            formatsUnordered.Add(new ColorFormatModel(decimalFormatName, "15689983", visibleFormats.ContainsKey(decimalFormatName) && visibleFormats[decimalFormatName]));
+            formatsUnordered.Add(new ColorFormatModel(decimalFormatName, "16738543", visibleFormats.ContainsKey(decimalFormatName) && visibleFormats[decimalFormatName]));
             formatsUnordered.Add(new ColorFormatModel(decimalRGBFormatName, "15689983", visibleFormats.ContainsKey(decimalRGBFormatName) && visibleFormats[decimalRGBFormatName]));
 
             foreach (var storedColorFormat in _colorPickerSettings.Properties.VisibleColorFormats)
