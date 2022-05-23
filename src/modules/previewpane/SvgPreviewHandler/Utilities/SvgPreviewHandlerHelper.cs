@@ -84,6 +84,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
             string widthR = string.Empty;
             string heightR = string.Empty;
             string oldStyle = string.Empty;
+            bool hasViewBox = false;
 
             // Get width and height of element and remove it afterwards because it will be added inside style attribute
             for (int i = 0; i < attributes.Count(); i++)
@@ -106,6 +107,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
                     attributes.ElementAt(i).Remove();
                     i--;
                 }
+                else if (attributes.ElementAt(i).Name == "viewBox")
+                {
+                    hasViewBox = true;
+                }
             }
 
             svgData.ReplaceAttributes(attributes);
@@ -122,6 +127,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
             scaling += $"  _height:expression(this.scrollHeight > {heightR} ? \" {height}\" : \"auto\"); _width:expression(this.scrollWidth > {widthR} ? \"{width}\" : \"auto\");";
 
             svgData.Add(new XAttribute("style", scaling + centering + oldStyle));
+
+            if (!hasViewBox)
+            {
+                // Fixes https://github.com/microsoft/PowerToys/issues/18107
+                string viewBox = $"0 0 {widthR} {heightR}";
+                svgData.Add(new XAttribute("viewBox", viewBox));
+            }
+
             return svgData.ToString();
         }
 
