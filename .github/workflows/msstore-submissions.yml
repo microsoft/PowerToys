@@ -1,0 +1,52 @@
+name: Submit Microsoft.PowerToys package to Windows Store
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+
+  microsoft_store:
+    name: Publish Microsoft Store
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get latest URL from public releases
+        id: releaseVars
+        run: |
+          release=$(curl https://api.github.com/repos/Microsoft/PowerToys/releases | jq '[.[]|select(.name | contains("Release"))][0]')
+          assets=$(jq -n "$release" | jq '.assets')
+          powerToysSetup=$(jq -n "$assets" | jq '[.[]|select(.name | contains("PowerToysSetup"))]')
+          echo ::set-output name=powerToysInstallerX64Url::$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("x64"))][0].browser_download_url')
+
+      - name: Configure Store Credentials
+        uses: microsoft/store-submission@v1
+        with:
+          command: configure
+          type: win32
+          seller-id: ${{ secrets.SELLER_ID }}
+          product-id: ${{ secrets.PRODUCT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          client-id: ${{ secrets.CLIENT_ID }}
+          client-secret: ${{ secrets.CLIENT_SECRET }}
+
+      - name: Update draft submission
+        uses: microsoft/store-submission@v1
+        with:
+          command: update
+          product-update: '{
+              "packages":[
+                  {
+                    "packageUrl":"${{ steps.releaseVars.outputs.powerToysInstallerX64Url }}",
+                    "languages":["zh-hans", "zh-hant", "en", "cs", "nl", "fr", "pt", "pt-br", "de", "hu", "it", "ja", "ko", "pl", "ru", "es", "tr"],
+                    "architectures":["X64"],
+                    "installerParameters":"-passive",
+                    "isSilentInstall":true
+                  }
+              ]
+            }'
+
+      - name: Publish Submission
+        uses: microsoft/store-submission@v1
+        with: 
+          command: publish
