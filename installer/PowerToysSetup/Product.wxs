@@ -15,8 +15,10 @@
 
     <?define RepoDir="$(var.ProjectDir)..\..\" ?>
     <?if $(var.Platform) = x64?>
+        <?define PlatformLK="x64" ?>
         <?define BinDir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
     <?else?>
+        <?define PlatformLK="arm64" ?>
         <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
     <?endif?>        
     <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
@@ -111,7 +113,7 @@
        Manufacturer="Microsoft Corporation"
        UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
 
-        <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="$(var.Platform)" />
+        <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="$(var.PlatformLK)" />
 
         <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
 
