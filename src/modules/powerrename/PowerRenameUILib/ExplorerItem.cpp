@@ -7,13 +7,13 @@ namespace {
     const wchar_t folderImagePath[] = L"ms-appx:///Assets/folder.png";
 }
 
-namespace winrt::PowerRenameUILib::implementation
+namespace winrt::PowerRenameUI::implementation
 {
     ExplorerItem::ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked) :
         m_id{ id }, m_idStr{ std::to_wstring(id) }, m_original{ original }, m_renamed{ renamed }, m_type{ type }, m_depth{ depth }, m_checked{ checked }
     {
         m_imagePath = (m_type == static_cast<UINT>(ExplorerItemType::Folder)) ? folderImagePath : fileImagePath;
-        m_highlight = m_checked && !m_renamed.empty() ? Windows::UI::Xaml::Visibility::Visible : Windows::UI::Xaml::Visibility::Collapsed;
+        m_highlight = m_checked && !m_renamed.empty() ? Microsoft::UI::Xaml::Visibility::Visible : Microsoft::UI::Xaml::Visibility::Collapsed;
     }
 
     int32_t ExplorerItem::Id()
@@ -36,7 +36,7 @@ namespace winrt::PowerRenameUILib::implementation
         if (m_original != value)
         {
             m_original = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Original" });
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Original" });
         }
     }
 
@@ -50,13 +50,13 @@ namespace winrt::PowerRenameUILib::implementation
         if (m_renamed != value)
         {
             m_renamed = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Renamed" });
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Renamed" });
 
-            auto visibility = m_checked && !m_renamed.empty() ? Windows::UI::Xaml::Visibility::Visible : Windows::UI::Xaml::Visibility::Collapsed;
+            auto visibility = m_checked && !m_renamed.empty() ? Microsoft::UI::Xaml::Visibility::Visible : Microsoft::UI::Xaml::Visibility::Collapsed;
             if (m_highlight != visibility)
             {
                 m_highlight = visibility;
-                m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Highlight" });
+                m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Highlight" });
             }
         }
     }
@@ -80,7 +80,7 @@ namespace winrt::PowerRenameUILib::implementation
         if (m_type != value)
         {
             m_type = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Type" });
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Type" });
         }
     }
 
@@ -94,23 +94,23 @@ namespace winrt::PowerRenameUILib::implementation
         if (m_checked != value)
         {
             m_checked = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Checked" });
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Checked" });
 
-            auto visibility = m_checked && !m_renamed.empty() ? Windows::UI::Xaml::Visibility::Visible : Windows::UI::Xaml::Visibility::Collapsed;
+            auto visibility = m_checked && !m_renamed.empty() ? Microsoft::UI::Xaml::Visibility::Visible : Microsoft::UI::Xaml::Visibility::Collapsed;
             if (m_highlight != visibility)
             {
                 m_highlight = visibility;
-                m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Highlight" });
+                m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Highlight" });
             }
         }
     }
 
-    winrt::Windows::UI::Xaml::Visibility ExplorerItem::Highlight()
+    Microsoft::UI::Xaml::Visibility ExplorerItem::Highlight()
     {
         return m_highlight;
     }
 
-    winrt::event_token ExplorerItem::PropertyChanged(winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
+    winrt::event_token ExplorerItem::PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
     {
         return m_propertyChanged.add(handler);
     }

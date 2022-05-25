@@ -6,9 +6,8 @@
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\ColorPicker</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <UseWPF>true</UseWPF>
-    <PlatformTarget>$(Platform)</PlatformTarget>
-    <Platforms>$(Platform)</Platforms>
     <StartupObject>ColorPicker.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>

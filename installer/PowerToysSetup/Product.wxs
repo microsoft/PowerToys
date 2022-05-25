@@ -42,7 +42,7 @@
     
     <?define ImageResizerFiles=PowerToys.ImageResizer.exe;PowerToys.ImageResizerExt.dll;PowerToys.ImageResizer.dll;PowerToys.ImageResizer.deps.json;PowerToys.ImageResizer.runtimeconfig.json;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Common.UI.dll;ControlzEx.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Text.Json.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Interop.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;Ijwhost.dll ?>
 
-    <?define PowerPreviewFiles=PowerToys.powerpreview.dll;PowerToys.PreviewHandlerCommon.dll;PowerToys.PreviewHandlerCommon.deps.json;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.SvgPreviewHandler.dll;PowerToys.SvgPreviewHandler.comhost.dll;PowerToys.SvgPreviewHandler.runtimeconfig.json;PowerToys.SvgPreviewHandler.deps.json;PowerToys.SvgThumbnailProvider.dll;PowerToys.SvgThumbnailProvider.comhost.dll;PowerToys.SvgThumbnailProvider.runtimeconfig.json;PowerToys.SvgThumbnailProvider.deps.json;PowerToys.MarkdownPreviewHandler.dll;PowerToys.MarkdownPreviewHandler.comhost.dll;PowerToys.MarkdownPreviewHandler.runtimeconfig.json;PowerToys.MarkdownPreviewHandler.deps.json;Markdig.Signed.dll;HtmlAgilityPack.dll;System.IO.Abstractions.dll;monaco_languages.json;monacoSpecialLanguages.js;PowerToys.Common.UI.dll;PowerToys.Settings.UI.Lib.dll;PowerToys.MonacoPreviewHandler.dll;PowerToys.MonacoPreviewHandler.comhost.dll;PowerToys.MonacoPreviewHandler.runtimeconfig.json;PowerToys.MonacoPreviewHandler.deps.json;ControlzEx.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Web.WebView2.WinForms.dll;Microsoft.Web.WebView2.Wpf.dll;System.Runtime.WindowsRuntime.dll;index.html;PowerToys.PdfPreviewHandler.dll;PowerToys.PdfPreviewHandler.comhost.dll;PowerToys.PdfPreviewHandler.runtimeconfig.json;PowerToys.PdfPreviewHandler.deps.json;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.PdfThumbnailProvider.dll;PowerToys.PdfThumbnailProvider.comhost.dll;PowerToys.PdfThumbnailProvider.runtimeconfig.json;PowerToys.PdfThumbnailProvider.deps.json;PowerToys.GcodePreviewHandler.dll;PowerToys.GcodePreviewHandler.comhost.dll;PowerToys.GcodePreviewHandler.runtimeconfig.json;PowerToys.GcodePreviewHandler.deps.json;PowerToys.GcodeThumbnailProvider.dll;PowerToys.GcodeThumbnailProvider.comhost.dll;PowerToys.GcodeThumbnailProvider.runtimeconfig.json;PowerToys.GcodeThumbnailProvider.deps.json;PowerToys.StlThumbnailProvider.dll;PowerToys.StlThumbnailProvider.comhost.dll;PowerToys.StlThumbnailProvider.runtimeconfig.json;PowerToys.StlThumbnailProvider.deps.json;HelixToolkit.dll;HelixToolkit.Core.Wpf.dll;Ijwhost.dll;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll?>
+    <?define PowerPreviewFiles=PowerToys.powerpreview.dll;PowerToys.PreviewHandlerCommon.dll;PowerToys.PreviewHandlerCommon.deps.json;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.SvgPreviewHandler.dll;PowerToys.SvgPreviewHandler.comhost.dll;PowerToys.SvgPreviewHandler.runtimeconfig.json;PowerToys.SvgPreviewHandler.deps.json;PowerToys.SvgThumbnailProvider.dll;PowerToys.SvgThumbnailProvider.comhost.dll;PowerToys.SvgThumbnailProvider.runtimeconfig.json;PowerToys.SvgThumbnailProvider.deps.json;PowerToys.MarkdownPreviewHandler.dll;PowerToys.MarkdownPreviewHandler.comhost.dll;PowerToys.MarkdownPreviewHandler.runtimeconfig.json;PowerToys.MarkdownPreviewHandler.deps.json;Markdig.Signed.dll;HtmlAgilityPack.dll;System.IO.Abstractions.dll;monaco_languages.json;monacoSpecialLanguages.js;PowerToys.Common.UI.dll;PowerToys.Settings.UI.Lib.dll;PowerToys.MonacoPreviewHandler.dll;PowerToys.MonacoPreviewHandler.comhost.dll;PowerToys.MonacoPreviewHandler.runtimeconfig.json;PowerToys.MonacoPreviewHandler.deps.json;ControlzEx.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Web.WebView2.WinForms.dll;Microsoft.Web.WebView2.Wpf.dll;WebView2Loader.dll;System.Runtime.WindowsRuntime.dll;index.html;PowerToys.PdfPreviewHandler.dll;PowerToys.PdfPreviewHandler.comhost.dll;PowerToys.PdfPreviewHandler.runtimeconfig.json;PowerToys.PdfPreviewHandler.deps.json;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.PdfThumbnailProvider.dll;PowerToys.PdfThumbnailProvider.comhost.dll;PowerToys.PdfThumbnailProvider.runtimeconfig.json;PowerToys.PdfThumbnailProvider.deps.json;PowerToys.GcodePreviewHandler.dll;PowerToys.GcodePreviewHandler.comhost.dll;PowerToys.GcodePreviewHandler.runtimeconfig.json;PowerToys.GcodePreviewHandler.deps.json;PowerToys.GcodeThumbnailProvider.dll;PowerToys.GcodeThumbnailProvider.comhost.dll;PowerToys.GcodeThumbnailProvider.runtimeconfig.json;PowerToys.GcodeThumbnailProvider.deps.json;PowerToys.StlThumbnailProvider.dll;PowerToys.StlThumbnailProvider.comhost.dll;PowerToys.StlThumbnailProvider.runtimeconfig.json;PowerToys.StlThumbnailProvider.deps.json;HelixToolkit.dll;HelixToolkit.Core.Wpf.dll;Ijwhost.dll;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll?>
     
     <?define SettingsV2Files=Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.IO.Abstractions.dll;System.Text.Json.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll?>
 
@@ -102,9 +102,8 @@
 
 	<?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
 
-	<?define PowerRenameFiles=Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;msvcp140_app.dll;PowerToys.PowerRenameUILib.dll;PowerToys.PowerRename.exe;resources.pri;vcruntime140_app.dll;PowerToys.PowerRenameExt.dll?>
+    <?define PowerRenameFiles=PowerRenameUI.ico;Microsoft.WindowsAppRuntime.Bootstrap.dll;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll?>
 
-	
 	<Product Id="*"
        Name="PowerToys (Preview)"
        Language="1033"
@@ -399,11 +398,6 @@
                         <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview">
                             <Directory Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" Name="customLanguages" />
                             <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
-                            <Directory Id="MonacoPreviewHandlerRuntimesFolder" Name="runtimes">
-                                <Directory Id="MonacoPreviewHandlerRuntimesWinX64Folder" Name="win-x64">
-                                    <Directory Id="MonacoPreviewHandlerRuntimesWinX64NativeFolder" Name="native" />
-                                </Directory>
-                            </Directory>
                         </Directory>
                         <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
                         <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
@@ -616,8 +610,8 @@
             <Component Id="WebcamReportTool_exe" Win64="yes">
                 <File Source="$(var.BinDir)WebcamReportTool\PowerToys.WebcamReportTool.exe" Id="WebcamReportTool.exe" Checksum="yes" />
             </Component>
-			<Component Id="WindowStylesReportTool_exe" Win64="yes">
-				<File Source="$(var.BinDir)WindowStylesReportTool\PowerToys.WindowStylesReportTool.exe" Id="WindowStylesReportTool.exe" Checksum="yes" />
+			<Component Id="StylesReportTool_exe" Win64="yes">
+				<File Source="$(var.BinDir)StylesReportTool\PowerToys.StylesReportTool.exe" Id="StylesReportTool.exe" Checksum="yes" />
 			</Component>
         </DirectoryRef>
 
@@ -877,11 +871,6 @@
                 </Component>
             <?endforeach?>
         </DirectoryRef>
-        <DirectoryRef Id="MonacoPreviewHandlerRuntimesWinX64NativeFolder" FileSource="$(var.BinDir)modules\FileExplorerPreview\runtimes\win-x64\native">
-            <Component Id="MonacoPreviewHandlerRuntimesWinX64NativeLibs" Win64="yes">
-                <File Id="MonacoPreviewHandler_WebView2Loader" Source="$(var.BinDir)modules\FileExplorerPreview\runtimes\win-x64\native\WebView2Loader.dll" />
-            </Component>
-        </DirectoryRef>
         <DirectoryRef Id="MonacoPreviewHandlerMonacoCustomLanguagesFolder" FileSource="$(var.BinDir)modules\FileExplorerPreview\customLanguages">
             <Component Id="MonacoPreviewHandlerMonacoCustomLanguagesRegJS" Win64="yes">
                 <File Id="MonacoPreviewHandler_MonacoCustomLanguagesRegJS" Source="$(var.BinDir)modules\FileExplorerPreview\customLanguages\reg.js" />
@@ -1012,7 +1001,6 @@
             <?foreach File in $(var.PowerPreviewFiles)?>
                 <ComponentRef Id="Module_PowerPreview_$(var.File)" />
             <?endforeach?>
-            <ComponentRef Id="MonacoPreviewHandlerRuntimesWinX64NativeLibs" />
             <ComponentRef Id="MonacoPreviewHandlerMonacoCustomLanguagesRegJS" />
             <ComponentRef Id="Module_PowerPreview_Registry" />
             <ComponentRef Id="Module_KeyboardManager" />
@@ -1052,7 +1040,7 @@
         <ComponentGroup Id="ToolComponents" Directory="ToolsFolder">
             <ComponentRef Id="BugReportTool_exe" />
             <ComponentRef Id="WebcamReportTool_exe" />
-			<ComponentRef Id="WindowStylesReportTool_exe" />
+			<ComponentRef Id="StylesReportTool_exe" />
         </ComponentGroup>
     </Fragment>
 
@@ -1360,9 +1348,9 @@
             </Component>
 
 			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
-            <Component Id="launcherInstallComponent" Guid="5E7074E9-155F-49A1-BD4C-470A09814618" Directory="LauncherInstallFolder" >
+            <Component Id="launcherInstallComponent" Guid="C3161BDF-C5F9-47C3-863A-E326D04EEC28" Directory="LauncherInstallFolder" >
                 <File Source="$(var.BinDir)modules\Launcher\PowerToys.Launcher.dll" />
-                <?foreach File in concrt140_app.dll;e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Text.Json.dll;Ijwhost.dll?>
+                <?foreach File in concrt140_app.dll;e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;System.Text.Json.dll;Ijwhost.dll?>
                 <File Id="File_$(var.File)" Source="$(var.BinDir)modules\launcher\$(var.File)" />
                 <?endforeach?>
                 <File Source="$(var.BinDir)Settings\PowerToys.Settings.UI.Lib.dll" />

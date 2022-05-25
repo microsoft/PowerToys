@@ -12,8 +12,6 @@
     <ApplicationIcon />
     <StartupObject />
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\WoxTest</OutputPath>
-    <PlatformTarget>$(Platform)</PlatformTarget>
-    <Platforms>$(Platform)</Platforms>	  
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

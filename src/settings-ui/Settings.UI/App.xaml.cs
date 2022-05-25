@@ -141,17 +141,19 @@ namespace Microsoft.PowerToys.Settings.UI
                 });
                 ipcmanager.Start();
 
-                settingsWindow = new MainWindow();
                 if (!ShowOobe && !ShowScoobe)
                 {
+                    settingsWindow = new MainWindow();
                     settingsWindow.Activate();
                     settingsWindow.NavigateToSection(StartupPage);
                 }
                 else
                 {
-                    // Create the Settings window so that it's fully initialized and
+                    // Create the Settings window hidden so that it's fully initialized and
                     // it will be ready to receive the notification if the user opens
                     // the Settings from the tray icon.
+                    settingsWindow = new MainWindow(true);
+
                     if (ShowOobe)
                     {
                         PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());

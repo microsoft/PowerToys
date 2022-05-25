@@ -98,9 +98,6 @@ namespace KeyboardEventHandlers
 
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
-                    // Log telemetry event when the key remap is invoked
-                    Trace::KeyRemapInvoked(remapToKey);
-
                     // If Caps Lock is being remapped to Ctrl/Alt/Shift, then reset the modifier key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that the modifier and Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
                     if (remapToKey)
                     {
@@ -318,9 +315,6 @@ namespace KeyboardEventHandlers
 
                     UINT res = ii.SendVirtualInput((UINT)key_count, keyEventList, sizeof(INPUT));
                     delete[] keyEventList;
-
-                    // Log telemetry event when shortcut remap is invoked
-                    Trace::ShortcutRemapInvoked(remapToShortcut, activatedApp.has_value());
 
                     return 1;
                 }

@@ -18,7 +18,7 @@ void Trace::UnregisterProvider() noexcept
     TraceLoggingUnregister(g_hProvider);
 }
 
-// Log if a key remap has been invoked
+// Log if a key remap has been invoked (not being used currently, due to being garrulous)
 void Trace::KeyRemapInvoked(bool isKeyToKey) noexcept
 {
     if (isKeyToKey)
@@ -39,7 +39,7 @@ void Trace::KeyRemapInvoked(bool isKeyToKey) noexcept
     }
 }
 
-// Log if a shortcut remap has been invoked
+// Log if a shortcut remap has been invoked (not being used currently, due to being garrulous)
 void Trace::ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) noexcept
 {
     if (isAppSpecific)

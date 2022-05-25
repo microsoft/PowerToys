@@ -1,7 +1,7 @@
 #pragma once
 #include "UIUpdates.g.h"
 
-namespace winrt::PowerRenameUILib::implementation
+namespace winrt::PowerRenameUI::implementation
 {
     struct UIUpdates : UIUpdatesT<UIUpdates>
     {
@@ -13,7 +13,7 @@ namespace winrt::PowerRenameUILib::implementation
         void ChangedExplorerItemId(int32_t value);
         bool Checked();
         void Checked(bool value);
-        winrt::event_token PropertyChanged(winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
+        winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
         void ToggleAll();
         bool CloseUIWindow();
@@ -34,10 +34,10 @@ namespace winrt::PowerRenameUILib::implementation
         bool m_buttonRenameEnabled;
         hstring m_originalCount;
         hstring m_renamedCount;
-        winrt::event<Windows::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
+        winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
     };
 }
-namespace winrt::PowerRenameUILib::factory_implementation
+namespace winrt::PowerRenameUI::factory_implementation
 {
     struct UIUpdates : UIUpdatesT<UIUpdates, implementation::UIUpdates>
     {

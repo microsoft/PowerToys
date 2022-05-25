@@ -34,8 +34,8 @@ namespace EditorConstants
     inline const long ShortcutArrowColumnWidth = 90;
     inline const DWORD64 ShortcutTableDropDownWidth = 110;
     inline const DWORD64 ShortcutTableDropDownSpacing = 10;
-    inline const long ShortcutOriginColumnWidth = 3 * ShortcutTableDropDownWidth + 2 * ShortcutTableDropDownSpacing;
-    inline const long ShortcutTargetColumnWidth = 3 * ShortcutTableDropDownWidth + 2 * ShortcutTableDropDownSpacing + 25;
+    inline const long ShortcutOriginColumnWidth = 3 * ShortcutTableDropDownWidth + 3 * ShortcutTableDropDownSpacing;
+    inline const long ShortcutTargetColumnWidth = 3 * ShortcutTableDropDownWidth + 3 * ShortcutTableDropDownSpacing + 15;
 
     // Drop down height used for both Edit Keyboard and Edit Shortcuts
     inline const DWORD64 TableDropDownHeight = 200;
@@ -48,6 +48,6 @@ namespace EditorConstants
     inline const DWORD64 HeaderButtonWidth = 100;
 
     // Minimum and maximum size of a shortcut
-    inline const long MinShortcutSize = 2;
-    inline const long MaxShortcutSize = 3;
+    inline const long MinShortcutSize = 2; // 1 modifier key
+    inline const long MaxShortcutSize = 5; // 4 modifier keys
 }

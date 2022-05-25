@@ -52,8 +52,7 @@ public:
     void UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId);
     ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId) const;
 
-    void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
-    void SyncVirtualDesktops(GUID currentVirtualDesktopId);
+    void SyncVirtualDesktops();
     void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
 
 private:
@@ -61,5 +60,4 @@ private:
     ~AppZoneHistory() = default;
 
     TAppZoneHistoryMap m_history;
-    std::function<bool(GUID)> m_virtualDesktopCheckCallback;
 };

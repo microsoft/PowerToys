@@ -15,8 +15,6 @@
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
     <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
-    <PlatformTarget>$(Platform)</PlatformTarget>
-    <Platforms>$(Platform)</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

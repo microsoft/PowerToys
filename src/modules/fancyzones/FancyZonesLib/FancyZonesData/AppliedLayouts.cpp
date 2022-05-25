@@ -9,6 +9,7 @@
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/util.h>
 
 namespace 
@@ -244,19 +245,17 @@ void AppliedLayouts::SaveData()
 {
     bool dirtyFlag = false;
     TAppliedLayoutsMap updatedMap;
-    if (m_virtualDesktopCheckCallback)
+    
+    for (const auto& [id, data] : m_layouts)
     {
-        for (const auto& [id, data] : m_layouts)
+        auto updatedId = id;
+        if (!VirtualDesktop::instance().IsVirtualDesktopIdSavedInRegistry(id.virtualDesktopId))
         {
-            auto updatedId = id;
-            if (!m_virtualDesktopCheckCallback(id.virtualDesktopId))
-            {
-                updatedId.virtualDesktopId = GUID_NULL;
-                dirtyFlag = true;
-            }
-
-            updatedMap.insert({ updatedId, data });
+            updatedId.virtualDesktopId = GUID_NULL;
+            dirtyFlag = true;
         }
+
+        updatedMap.insert({ updatedId, data });
     }
 
     if (dirtyFlag)
@@ -269,28 +268,31 @@ void AppliedLayouts::SaveData()
     }
 }
 
-void AppliedLayouts::SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback)
-{
-    m_virtualDesktopCheckCallback = callback;
-}
-
-void AppliedLayouts::SyncVirtualDesktops(GUID currentVirtualDesktopId)
+void AppliedLayouts::SyncVirtualDesktops()
 {
     // Explorer persists current virtual desktop identifier to registry on a per session basis,
     // but only after first virtual desktop switch happens. If the user hasn't switched virtual
     // desktops in this session value in registry will be empty and we will use default GUID in
     // that case (00000000-0000-0000-0000-000000000000).
 
-    auto currentVirtualDesktopStr = FancyZonesUtils::GuidToString(currentVirtualDesktopId);
-    if (currentVirtualDesktopStr)
+    auto savedInRegistryVirtualDesktopID = VirtualDesktop::instance().GetCurrentVirtualDesktopIdFromRegistry();
+    if (!savedInRegistryVirtualDesktopID.has_value() || savedInRegistryVirtualDesktopID.value() == GUID_NULL)
     {
-        Logger::info(L"AppliedLayouts Sync virtual desktops: current {}", currentVirtualDesktopStr.value());
-    }    
+        return;
+    }
+
+    auto currentVirtualDesktopStr = FancyZonesUtils::GuidToString(savedInRegistryVirtualDesktopID.value());
+    if (!currentVirtualDesktopStr.has_value())
+    {
+        Logger::error(L"Failed to convert virtual desktop GUID to string");
+        return;
+    }
+
+    Logger::info(L"AppliedLayouts Sync virtual desktops: current {}", currentVirtualDesktopStr.value());
 
     bool dirtyFlag = false;
 
     std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithCurrentId{};
-    std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithNullId{};
 
     for (const auto& [id, data] : m_layouts)
     {
@@ -299,38 +301,18 @@ void AppliedLayouts::SyncVirtualDesktops(GUID currentVirtualDesktopId)
             replaceWithCurrentId.push_back(id);
             dirtyFlag = true;
         }
-        else
-        {
-            if (m_virtualDesktopCheckCallback && !m_virtualDesktopCheckCallback(id.virtualDesktopId))
-            {
-                replaceWithNullId.push_back(id);
-                dirtyFlag = true;
-            }
-        }
     }
 
     for (const auto& id : replaceWithCurrentId)
     {
         auto mapEntry = m_layouts.extract(id);
-        mapEntry.key().virtualDesktopId = currentVirtualDesktopId;
-        m_layouts.insert(std::move(mapEntry));
-    }
-
-    for (const auto& id : replaceWithNullId)
-    {
-        auto mapEntry = m_layouts.extract(id);
-        mapEntry.key().virtualDesktopId = GUID_NULL;
+        mapEntry.key().virtualDesktopId = savedInRegistryVirtualDesktopID.value();
         m_layouts.insert(std::move(mapEntry));
     }
 
     if (dirtyFlag)
     {
-        wil::unique_cotaskmem_string virtualDesktopIdStr;
-        if (SUCCEEDED(StringFromCLSID(currentVirtualDesktopId, &virtualDesktopIdStr)))
-        {
-            Logger::info(L"Update Virtual Desktop id to {}", virtualDesktopIdStr.get());
-        }
-
+        Logger::info(L"Update Virtual Desktop id to {}", currentVirtualDesktopStr.value());
         SaveData();
     }
 }
@@ -420,8 +402,9 @@ bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::DeviceIdData&
 
     m_layouts[deviceId] = std::move(layout);
     
-    SaveData();
-
+    // Saving default layout data doesn't make sense, since it's ignored on parsing.
+    // Given that default layouts are ignored when parsing, 
+    // saving default data can cause an infinite loop of reading, reapplying default layout and saving the same file.
     return true;
 }
 

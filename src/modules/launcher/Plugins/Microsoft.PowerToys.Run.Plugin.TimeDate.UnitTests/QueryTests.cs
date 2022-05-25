@@ -38,8 +38,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("current", 3)]
         [DataRow("year", 0)]
         [DataRow("", 0)]
-        [DataRow("time::10:10:10", 2)]
-        [DataRow("date::10/10/10", 2)]
+        [DataRow("time::10:10:10", 0)]
+        [DataRow("date::10/10/10", 0)]
         public void CountWithoutPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
@@ -82,6 +82,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("and time", 1)] // match if term is conjunction and other words
         [DataRow("date and time", 1)] // Match if first word is a full word match
         [DataRow("ate and time", 0)] // Don't match if first word is not a full word match
+        [DataRow("10/10/10", 0)] // Don't match number only input (Setting 'Only Date, Time, Now on global results' is default on)
+        [DataRow("10:10:10", 0)] // Don't match number only input (Setting 'Only Date, Time, Now on global results' is default on)
+        [DataRow("10 10 10", 0)] // Don't match number only input (Setting 'Only Date, Time, Now on global results' is default on)
+        [DataRow("ft10", 1)] // Don't match number input with prefix (Setting 'Only Date, Time, Now on global results' is default on) => Test behave strange here.
         public void ValidateBehaviorOnGlobalQueries(string typedString, int expectedResultCount)
         {
             // Setup

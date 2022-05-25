@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI
     /// </summary>
     public sealed partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindow(bool createHidden = false)
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
@@ -37,6 +37,11 @@ namespace Microsoft.PowerToys.Settings.UI
             appWindow.SetIcon("icon.ico");
 
             var placement = Utils.DeserializePlacementOrDefault(hWnd);
+            if (createHidden)
+            {
+                placement.ShowCmd = NativeMethods.SW_HIDE;
+            }
+
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
@@ -105,12 +110,29 @@ namespace Microsoft.PowerToys.Settings.UI
             ShellPage.Navigate(type);
         }
 
+        public void CloseHiddenWindow()
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            if (!NativeMethods.IsWindowVisible(hWnd))
+            {
+                Close();
+            }
+        }
+
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            App.ClearSettingsWindow();
-
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             Utils.SerializePlacement(hWnd);
+
+            if (App.GetOobeWindow() == null)
+            {
+                App.ClearSettingsWindow();
+            }
+            else
+            {
+                args.Handled = true;
+                NativeMethods.ShowWindow(hWnd, NativeMethods.SW_HIDE);
+            }
         }
     }
 }

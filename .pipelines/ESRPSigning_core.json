@@ -17,7 +17,7 @@
                 "PowerToys.Interop.dll",
                 "BugReportTool\\PowerToys.BugReportTool.exe",
                 "WebcamReportTool\\PowerToys.WebcamReportTool.exe",
-                "WindowStylesReportTool\\PowerToys.WindowStylesReportTool.exe",
+                "StylesReportTool\\PowerToys.StylesReportTool.exe",
                 "Telemetry.dll",
                 "PowerToys.ManagedTelemetry.dll",
                 "PowerToys.ManagedCommon.dll",
@@ -105,7 +105,6 @@
                 "modules\\MouseUtils\\PowerToys.MousePointerCrosshairs.dll",
 
                 "modules\\PowerRename\\PowerToys.PowerRenameExt.dll",
-                "modules\\PowerRename\\PowerToys.PowerRenameUILib.dll",
                 "modules\\PowerRename\\PowerToys.PowerRename.exe",
 
                 "modules\\ShortcutGuide\\ShortcutGuide\\PowerToys.ShortcutGuide.exe",
@@ -114,6 +113,7 @@
                 "modules\\VideoConference\\PowerToys.VideoConferenceModule.dll",
                 "modules\\VideoConference\\PowerToys.VideoConferenceProxyFilter_x86.dll",
                 "modules\\VideoConference\\PowerToys.VideoConferenceProxyFilter_x64.dll",
+                "modules\\VideoConference\\PowerToys.VideoConferenceProxyFilter_arm64.dll",
 
                 "Settings\\PowerToys.Settings.dll",
                 "Settings\\PowerToys.Settings.exe"
@@ -187,7 +187,7 @@
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Core.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.WinForms.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Wpf.dll",
-                "modules\\FileExplorerPreview\\runtimes\\win-x64\\native\\WebView2Loader.dll",
+                "modules\\FileExplorerPreview\\WebView2Loader.dll",
                 "modules\\launcher\\e_sqlite3.dll",
                 "modules\\launcher\\SQLitePCLRaw.batteries_v2.dll",
                 "modules\\launcher\\SQLitePCLRaw.core.dll",

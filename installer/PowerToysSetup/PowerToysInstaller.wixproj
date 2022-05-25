@@ -35,14 +35,17 @@ call "..\..\publish.cmd" arm64
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>022a9d30-7c4f-416d-a9df-5ff2661cc0ad</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <!-- TODO: Remove hacks for arm64 after we adopt a Wix version that supports it -->
+    <OutputName Condition="'$(Platform)'=='x86'">PowerToysSetup-$(Version)-arm64</OutputName>
+    <OutputName Condition="'$(Platform)'!='x86'">PowerToysSetup-$(Version)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
-    <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
+    <OutputPath Condition="'$(Platform)'=='x86'">arm64\$(Configuration)\</OutputPath>
+    <OutputPath Condition="'$(Platform)'!='x86'">$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <SuppressIces>ICE91</SuppressIces>
     <SuppressValidation>True</SuppressValidation>

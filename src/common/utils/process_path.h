@@ -68,6 +68,23 @@ inline std::wstring get_process_path(HWND window) noexcept
     return name;
 }
 
+inline std::wstring get_process_path_waiting_uwp(HWND window)
+{
+    const static std::wstring appFrameHost = L"ApplicationFrameHost.exe";
+
+    int attempt = 0;
+    auto processPath = get_process_path(window);
+
+    while (++attempt < 30 && processPath.length() >= appFrameHost.length() &&
+           processPath.compare(processPath.length() - appFrameHost.length(), appFrameHost.length(), appFrameHost) == 0)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        processPath = get_process_path(window);
+    }
+
+    return processPath;
+}
+
 inline std::wstring get_module_filename(HMODULE mod = nullptr)
 {
     wchar_t buffer[MAX_PATH + 1];
