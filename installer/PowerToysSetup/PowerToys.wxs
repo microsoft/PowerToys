@@ -125,7 +125,7 @@
                     Hash="$(var.WinAppSDKPayloadHash)" />
             </ExePackage>            
             <ExePackage
-                Name="VCRedist.exe"
+                Name="VCRedist-14.32.31326.exe"
                 DetectCondition="DetectedVCRedistVersion >= 32"
                 Compressed="no"
                 Id="VCRedist"
