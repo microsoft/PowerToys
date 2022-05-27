@@ -130,8 +130,8 @@
                 Compressed="no"
                 Id="VCRedist"
                 DownloadUrl="$(var.VCRedistDownloadUrl)"
-                InstallCommand="/install /quiet"
-                RepairCommand="/repair /quiet"
+                InstallCommand="/install /quiet /norestart"
+                RepairCommand="/repair /quiet /norestart"
                 Permanent="yes">
                 <RemotePayload
                     Description="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31326"
