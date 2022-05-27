@@ -13,7 +13,7 @@ if ($Hash -ne 'B74ED29F1377AA759E764EDEF43B1E4C4312A7A4CED77108D2446F7117EF5D3B'
 }
 Invoke-WebRequest -Uri $WixBinariesDownloadUrl -OutFile "$($ENV:Temp)\wix314-binaries.zip"
 $Hash = (Get-FileHash -Algorithm SHA256 "$($ENV:Temp)\wix314-binaries.zip").Hash
-if($Hash -ne "FCBE136AB3D616B983C5BE19B46521745F842B7327BF2BC7011FD26DBE277F93")
+if($Hash -ne 'FCBE136AB3D616B983C5BE19B46521745F842B7327BF2BC7011FD26DBE277F93')
 {
     throw "wix314-binaries.zip has unexpected SHA256 hash: $Hash"
 }
