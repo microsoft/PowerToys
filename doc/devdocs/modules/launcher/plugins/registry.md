@@ -90,10 +90,8 @@ The plugin use only these interfaces (all inside the _Main.cs_):
 
 #### Packages
 
-<!-- fxcop is deprecated -->
 | Package                                                                             | Version |
 | ----------------------------------------------------------------------------------- | ------- |
-| [Microsoft.CodeAnalysis.FxCopAnalyzers](https://github.com/dotnet/roslyn-analyzers) | 3.3.0   |
 | [StyleCop.Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)          | 1.1.118 |
 
 #### Projects
