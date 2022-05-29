@@ -20,14 +20,14 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// <param name="errorMessage">Error message if applicable.</param>
         /// <param name="exception">Exception if applicable.</param>
         /// <returns>List of results to show. Either an error message or an empty list.</returns>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="errorMessage"/> and <paramref name="exception"/> are fille with their default values.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="errorMessage"/> and <paramref name="exception"/> are both filled with their default values.</exception>
         internal static List<Result> OnError(string icon, bool isGlobalQuery, string queryInput, string errorMessage, Exception exception = default)
         {
             string userMessage;
 
             if (errorMessage != default)
             {
-                Log.Error($"Error when query for <{queryInput}>: {errorMessage}", typeof(Calculator.Main));
+                Log.Error($"Failed to calculate <{queryInput}>: {errorMessage}", typeof(Calculator.Main));
                 userMessage = errorMessage;
             }
             else if (exception != default)
