@@ -106,6 +106,24 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use English (United States) number format for input.
+        /// </summary>
+        public static string wox_plugin_calculator_in_en_format {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_in_en_format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ignores your system setting and expects numbers in the format &apos;1,000.50&apos;.
+        /// </summary>
+        public static string wox_plugin_calculator_in_en_format_description {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_in_en_format_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Calculation result is not a valid number (NaN).
         /// </summary>
         public static string wox_plugin_calculator_not_a_number {
@@ -120,6 +138,24 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         public static string wox_plugin_calculator_not_covert_to_decimal {
             get {
                 return ResourceManager.GetString("wox_plugin_calculator_not_covert_to_decimal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use English (United States) number format for output.
+        /// </summary>
+        public static string wox_plugin_calculator_out_en_format {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_out_en_format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ignores your system setting and expects numbers in the format &apos;1,000.50&apos;.
+        /// </summary>
+        public static string wox_plugin_calculator_out_en_format_description {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_out_en_format_description", resourceCulture);
             }
         }
         
