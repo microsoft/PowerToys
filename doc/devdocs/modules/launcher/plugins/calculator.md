@@ -17,7 +17,7 @@ The Calculator plugin as the name suggests is used to perform calculations on th
 ## Technical details
 
 ### [`BracketHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/BracketHelper.cs)
-- This helper validates the braket usage in the input string.
+- This helper validates the bracket usage in the input string.
 
 ### [`CalculateHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs)
 - The [`CalculateHelper.cs`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs) class checks to see if the user entered query is a valid input to the calculator and only if the input is valid does it perform the operation.
@@ -36,7 +36,7 @@ var result = CalculateEngine.Interpret(query.Search, CultureInfo.CurrentUICultur
 
 ### [`ErrorHandler`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/ErrorHandler.cs)
 - The class which encapsulates the code to log errors and format the user message.
-- It returns an error result if the user searches with the activation command. This error result is schown to the ueser.
+- It returns an error result if the user searches with the activation command. This error result is shown to the user.
 
 ### Score
 The score of each result from the calculator plugin is `300`.
@@ -46,7 +46,7 @@ The score of each result from the calculator plugin is `300`.
 We have a [Unit Test project](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests) that executes various test to ensure that the plugin works as expected.
 
 ### [`BracketHelperTests`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/BracketHelperTests.cs)
-- The [`BracketHelperTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/BracketHelperTests.cs) class contains tests to validate that brakets are handled correctly.
+- The [`BracketHelperTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/BracketHelperTests.cs) class contains tests to validate that brackets are handled correctly.
 
 ### [`ExtendedCalculatorParserTests`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/ExtendedCalculatorParserTests.cs)
 - The [`ExtendedCalculatorParserTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests/ExtendedCalculatorParserTests.cs) class contains tests to validate that the input is parsed correctly and the result is correct.
