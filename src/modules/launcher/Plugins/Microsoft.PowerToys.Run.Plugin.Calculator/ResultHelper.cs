@@ -12,12 +12,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
     public static class ResultHelper
     {
-        public static Result CreateResult(CalculateResult result, string iconPath)
+        public static Result CreateResult(CalculateResult result, string iconPath, CultureInfo culture)
         {
-            return CreateResult(result.RoundedResult, iconPath);
+            return CreateResult(result.RoundedResult, iconPath, culture);
         }
 
-        public static Result CreateResult(decimal? roundedResult, string iconPath)
+        public static Result CreateResult(decimal? roundedResult, string iconPath, CultureInfo culture)
         {
             // Return null when the expression is not a valid calculator query.
             if (roundedResult == null)
@@ -28,15 +28,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             return new Result
             {
                 // Using CurrentCulture since this is user facing
-                Title = roundedResult?.ToString(CultureInfo.CurrentCulture),
+                Title = roundedResult?.ToString(culture),
                 IcoPath = iconPath,
                 Score = 300,
                 SubTitle = Properties.Resources.wox_plugin_calculator_copy_number_to_clipboard,
-                Action = c => Action(roundedResult),
+                Action = c => Action(roundedResult, culture),
             };
         }
 
-        public static bool Action(decimal? roundedResult)
+        public static bool Action(decimal? roundedResult, CultureInfo culture)
         {
             var ret = false;
 
@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 {
                     try
                     {
-                        Clipboard.SetText(roundedResult?.ToString(CultureInfo.CurrentCulture));
+                        Clipboard.SetText(roundedResult?.ToString(culture));
                         ret = true;
                     }
                     catch (ExternalException)

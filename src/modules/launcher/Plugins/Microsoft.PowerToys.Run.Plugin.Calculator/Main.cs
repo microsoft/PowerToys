@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.Calculator.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -14,7 +15,7 @@ using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
-    public class Main : IPlugin, IPluginI18n, IDisposable
+    public class Main : IPlugin, IPluginI18n, IDisposable, ISettingProvider
     {
         private static readonly CalculateEngine CalculateEngine = new CalculateEngine();
 
@@ -82,12 +83,13 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 // This could happen for some incorrect queries, like pi(2)
                 if (result.Equals(default(CalculateResult)))
                 {
+                    // If errorMessage is not default then do error handling
                     return errorMessage == default ? new List<Result>() : ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, errorMessage);
                 }
 
                 return new List<Result>
                 {
-                    ResultHelper.CreateResult(result.RoundedResult, IconPath),
+                    ResultHelper.CreateResult(result.RoundedResult, IconPath, outputCulture),
                 };
             }
             catch (Mages.Core.ParseException)
@@ -145,6 +147,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             return Resources.wox_plugin_calculator_plugin_description;
         }
 
+        public Control CreateSettingPanel()
+        {
+            throw new NotImplementedException();
+        }
+
         public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
             var inputUseEnglishFormat = false;
@@ -152,10 +159,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             if (settings != null && settings.AdditionalOptions != null)
             {
-                var optionInputEn = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ConfirmSystemCommands");
+                var optionInputEn = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "InputUseEnglishFormat");
                 inputUseEnglishFormat = optionInputEn?.Value ?? inputUseEnglishFormat;
 
-                var optionOutputEn = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LocalizeSystemCommands");
+                var optionOutputEn = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "OutputUseEnglishFormat");
                 outputUseEnglishFormat = optionOutputEn?.Value ?? outputUseEnglishFormat;
             }
 
