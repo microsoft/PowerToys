@@ -154,6 +154,6 @@
     <value>Use English (United States) number format for output</value>
   </data>
   <data name="wox_plugin_calculator_out_en_format_description" xml:space="preserve">
-    <value>Ignores your system setting and expects numbers in the format '1,000.50'</value>
+    <value>Ignores your system setting and returns numbers in the format '1000.50'</value>
   </data>
 </root>
