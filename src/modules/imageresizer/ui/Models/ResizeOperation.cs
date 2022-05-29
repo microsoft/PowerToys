@@ -75,29 +75,38 @@ namespace ImageResizer.Models
                 foreach (var originalFrame in decoder.Frames)
                 {
                     var transformedBitmap = Transform(originalFrame);
-                    BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
 
-#if DEBUG
-                    Debug.WriteLine($"### Processing metadata of file {_file}");
-                    originalMetadata.PrintsAllMetadataToDebugOutput();
-#endif
-
-                    var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
-
-                    if (_settings.RemoveMetadata && metadata != null)
+                    // if the frame was not modified, we should not replace the metadata
+                    if (transformedBitmap == originalFrame)
                     {
-                        // strip any metadata that doesn't affect rendering
-                        var newMetadata = new BitmapMetadata(metadata.Format);
-
-                        metadata.CopyMetadataPropertyTo(newMetadata, "System.Photo.Orientation");
-                        metadata.CopyMetadataPropertyTo(newMetadata, "System.Image.ColorSpace");
-
-                        metadata = newMetadata;
+                        encoder.Frames.Add(originalFrame);
                     }
+                    else
+                    {
+                        BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
 
-                    var frame = CreateBitmapFrame(transformedBitmap, metadata);
+    #if DEBUG
+                        Debug.WriteLine($"### Processing metadata of file {_file}");
+                        originalMetadata.PrintsAllMetadataToDebugOutput();
+    #endif
 
-                    encoder.Frames.Add(frame);
+                        var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
+
+                        if (_settings.RemoveMetadata && metadata != null)
+                        {
+                            // strip any metadata that doesn't affect rendering
+                            var newMetadata = new BitmapMetadata(metadata.Format);
+
+                            metadata.CopyMetadataPropertyTo(newMetadata, "System.Photo.Orientation");
+                            metadata.CopyMetadataPropertyTo(newMetadata, "System.Image.ColorSpace");
+
+                            metadata = newMetadata;
+                        }
+
+                        var frame = CreateBitmapFrame(transformedBitmap, metadata);
+
+                        encoder.Frames.Add(frame);
+                    }
                 }
 
                 path = GetDestinationPath(encoder);
