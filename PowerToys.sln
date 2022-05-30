@@ -278,8 +278,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\modulesRegistry.h = src\common\utils\modulesRegistry.h
 		src\common\utils\MsiUtils.h = src\common\utils\MsiUtils.h
 		src\common\utils\os-detect.h = src\common\utils\os-detect.h
-		src\common\utils\process_path.h = src\common\utils\process_path.h
 		src\common\utils\ProcessWaiter.h = src\common\utils\ProcessWaiter.h
+		src\common\utils\process_path.h = src\common\utils\process_path.h
 		src\common\utils\registry.h = src\common\utils\registry.h
 		src\common\utils\resources.h = src\common\utils\resources.h
 		src\common\utils\string_utils.h = src\common\utils\string_utils.h
@@ -402,6 +402,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings", "src\settings-ui\Settings.UI\PowerToys.Settings.csproj", "{020A7474-3601-4160-A159-D7B70B77B15F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUI", "src\modules\powerrename\PowerRenameUILib\PowerRenameUI.vcxproj", "{27718999-C175-450A-861C-89F911E16A88}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.OneNote", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.OneNote\Microsoft.PowerToys.Run.Plugin.OneNote.csproj", "{5A1DB2F0-0715-4B3B-98E6-79BC41540045}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1560,6 +1562,18 @@ Global
 		{27718999-C175-450A-861C-89F911E16A88}.Release|x64.Build.0 = Release|x64
 		{27718999-C175-450A-861C-89F911E16A88}.Release|x86.ActiveCfg = Release|x64
 		{27718999-C175-450A-861C-89F911E16A88}.Release|x86.Build.0 = Release|x64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Debug|ARM64.Build.0 = Debug|ARM64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Debug|x64.ActiveCfg = Debug|x64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Debug|x64.Build.0 = Debug|x64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Debug|x86.ActiveCfg = Debug|x64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Debug|x86.Build.0 = Debug|x64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Release|ARM64.ActiveCfg = Release|ARM64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Release|ARM64.Build.0 = Release|ARM64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Release|x64.ActiveCfg = Release|x64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Release|x64.Build.0 = Release|x64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Release|x86.ActiveCfg = Release|x64
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1693,6 +1707,7 @@ Global
 		{8FE5A5EE-1B59-401C-9FB3-B04ECD3E29C1} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{020A7474-3601-4160-A159-D7B70B77B15F} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 		{27718999-C175-450A-861C-89F911E16A88} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
+		{5A1DB2F0-0715-4B3B-98E6-79BC41540045} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
