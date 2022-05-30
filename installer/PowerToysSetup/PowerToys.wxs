@@ -110,7 +110,7 @@
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
             <ExePackage
-                Name="WindowsAppRuntimeInstall.exe"
+                Name="WindowsAppRuntimeInstall-1.0.3.exe"
                 Compressed="no"
                 Id="WinAppSDK101"
                 DownloadUrl="https://aka.ms/windowsappsdk/1.0/1.0.3/windowsappruntimeinstall-1.0.3-$(var.PowerToysPlatform).exe"
