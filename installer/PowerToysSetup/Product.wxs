@@ -15,8 +15,10 @@
 
     <?define RepoDir="$(var.ProjectDir)..\..\" ?>
     <?if $(var.Platform) = x64?>
+        <?define PlatformLK="x64" ?>
         <?define BinDir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
     <?else?>
+        <?define PlatformLK="arm64" ?>
         <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
     <?endif?>        
     <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
@@ -111,7 +113,7 @@
        Manufacturer="Microsoft Corporation"
        UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
 
-        <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="$(var.Platform)" />
+        <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="$(var.PlatformLK)" />
 
         <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
 
@@ -559,13 +561,6 @@
             <Component Id="powertoysinterop_dll" Win64="yes">
                 <File Id="PowerToys.Interop.dll" KeyPath="yes" Checksum="yes" />
             </Component>
-            <Component Id="vcredist_dlls" Guid="2CCA6607-3BE0-48FE-8617-AABE5B7F6843" Win64="yes">
-                <!-- VCRuntime -->
-			    <!-- !Warning! Make sure to change Component Guid if you update the file list -->
-                <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
-                <File Id="$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
-                <?endforeach?>
-            </Component>
         </DirectoryRef>
 
         <DirectoryRef Id="ApplicationProgramsFolder">
@@ -635,13 +630,6 @@
                     <File Id="Module_ImageResizer_File_$(var.File)" Source="$(var.BinDir)modules\$(var.ImageResizerProjectName)\$(var.File)" />
                 </Component>
             <?endforeach?>
-            <Component Id="Module_ImageResizer_vcredist_dlls" Win64="yes" Guid="52F2C34D-6F45-44B4-9718-2FDFBC2373B8">
-                <!-- VCRuntime -->
-			    <!-- !Warning! Make sure to change Component Guid if you update the file list -->
-                <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
-                <File Id="ImageResizer_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
-                <?endforeach?>
-            </Component>
             <Component Id="Module_ImageResizer_Registry" Win64="yes">
                 <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
                     <RegistryValue Value="[ImageResizerInstallFolder]PowerToys.ImageResizerExt.dll" Type="string" />
@@ -724,10 +712,6 @@
             <?endforeach?>        
 			<!-- !Warning! Make sure to change Component Guid if you update something here -->
             <Component Id="Module_PowerRename" Guid="40D43079-240E-402D-8CE8-571BFFA71175" Win64="yes">
-                <!-- VCRuntime -->
-                <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
-                <File Id="PowerRename_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
-                <?endforeach?>
                 <RegistryKey Root="HKLM" Key="Software\Classes\CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
                     <RegistryValue Type="string" Value="PowerRename Shell Extension" />
                     <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
@@ -976,7 +960,6 @@
             <ComponentRef Id="License_rtf" />
             <ComponentRef Id="Notice_md" />
             <ComponentRef Id="powertoysinterop_dll" />
-            <ComponentRef Id="vcredist_dlls" />
 			<?foreach File in $(var.ShortcutGuideSvgsFiles)?>
 			    <ComponentRef Id="ShortcutGuideSvgs_$(var.File)" />
 			<?endforeach?>
@@ -996,7 +979,6 @@
             <?foreach File in $(var.ImageResizerFiles)?>
                 <ComponentRef Id="Module_ImageResizer_$(var.File)" />
             <?endforeach?>                
-            <ComponentRef Id="Module_ImageResizer_vcredist_dlls" />
             <ComponentRef Id="Module_ImageResizer_Registry" />
             <?foreach File in $(var.PowerPreviewFiles)?>
                 <ComponentRef Id="Module_PowerPreview_$(var.File)" />
@@ -1350,14 +1332,10 @@
 			<!-- !Warning! Make sure to change Component Guid if you update the file list -->
             <Component Id="launcherInstallComponent" Guid="C3161BDF-C5F9-47C3-863A-E326D04EEC28" Directory="LauncherInstallFolder" >
                 <File Source="$(var.BinDir)modules\Launcher\PowerToys.Launcher.dll" />
-                <?foreach File in concrt140_app.dll;e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;System.Text.Json.dll;Ijwhost.dll?>
+                <?foreach File in e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;System.Text.Json.dll;Ijwhost.dll?>
                 <File Id="File_$(var.File)" Source="$(var.BinDir)modules\launcher\$(var.File)" />
                 <?endforeach?>
                 <File Source="$(var.BinDir)Settings\PowerToys.Settings.UI.Lib.dll" />
-                <!-- VCRuntime -->
-                <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
-                <File Id="File_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
-                <?endforeach?>
             </Component>
 			<?foreach File in $(var.launcherImagesComponentFiles)?>
 			    <Component Id="launcherImagesComponent_$(var.File)" Win64="yes" Directory="LauncherImagesFolder">
