@@ -146,56 +146,56 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 
 Find My Mouse:
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press any other key and verify the overlay disappears.
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press a mouse button and verify the overlay disappears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press any other key and verify the overlay disappears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press a mouse button and verify the overlay disappears.
   * Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice.
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
   * Enable the "Do not activate on game mode" option. Start playing a game that uses CG native full screen.
-    - [ ] Verify the overlay no longer appears when you press Left Ctrl twice.
+    - [x] Verify the overlay no longer appears when you press Left Ctrl twice.
   * Disable the "Do not activate on game mode" option. Start playing the same game.
-    - [ ] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
+    - [x] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
   * Test the different settings and verify they apply:
-    - [ ] Overlay opacity
-    - [ ] Background color
-    - [ ] Spotlight color
-    - [ ] Spotlight radius
-    - [ ] Spotlight initial zoom (1x vs 9x will show the difference)
-    - [ ] Animation duration
-    - [ ] Change activation method to shake and activate by shaking your mouse pointer
-    - [ ] Excluded apps
+    - [x] Overlay opacity
+    - [x] Background color
+    - [x] Spotlight color
+    - [x] Spotlight radius
+    - [x] Spotlight initial zoom (1x vs 9x will show the difference)
+    - [x] Animation duration
+    - [x] Change activation method to shake and activate by shaking your mouse pointer
+    - [x] Excluded apps
 
 Mouse Highlighter:
   * Enable Mouse Highlighter. Then:
-    - [ ] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
-    - [ ] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [ ] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [ ] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
-    - [ ] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
+    - [x] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
+    - [x] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [x] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [x] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
+    - [x] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
   * Test the different settings and verify they apply:
-    - [ ] Change activation shortcut and test it
-    - [ ] Left button highlight color
-    - [ ] Right button highlight color
-    - [ ] Opacity
-    - [ ] Radius
-    - [ ] Fade delay
-    - [ ] Fade duration
+    - [x] Change activation shortcut and test it
+    - [x] Left button highlight color
+    - [x] Right button highlight color
+    - [x] Opacity
+    - [x] Radius
+    - [x] Fade delay
+    - [x] Fade duration
 
 Mouse Pointer Crosshairs:
   * Enable Mouse Pointer Crosshairs. Then:
-    - [ ] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
-    - [ ] Press the activation shortcut again and verify the crosshairs disappear.
-    - [ ] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
+    - [x] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
+    - [x] Press the activation shortcut again and verify the crosshairs disappear.
+    - [x] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
   * Test the different settings and verify they apply:
-    - [ ] Change activation shortcut and test it
-    - [ ] Crosshairs color
-    - [ ] Crosshairs opacity
-    - [ ] Crosshairs center radius
-    - [ ] Crosshairs thickness
-    - [ ] Crosshairs border color
-    - [ ] Crosshairs border size
+    - [x] Change activation shortcut and test it
+    - [x] Crosshairs color
+    - [x] Crosshairs opacity
+    - [x] Crosshairs center radius
+    - [x] Crosshairs thickness
+    - [x] Crosshairs border color
+    - [x] Crosshairs border size
 
 ## Awake
  - [ ] Try out the features and see if they work, no list at this time.
