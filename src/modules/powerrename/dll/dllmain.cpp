@@ -6,10 +6,13 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/logger/logger.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include "Generated Files/resource.h"
 #include <atomic>
 #include <dll/PowerRenameConstants.h>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Management.Deployment.h>
 
 std::atomic<DWORD> g_dwModuleRefCount = 0;
 HINSTANCE g_hInst = 0;
@@ -161,6 +164,66 @@ private:
     std::wstring app_key;
 
 public:
+    bool registerSparsePackage(std::wstring externalLocation, std::wstring sparsePkgPath)
+    {
+        bool registration = false;
+        try
+        {
+            using namespace winrt::Windows::Foundation;
+            using namespace winrt::Windows::Management::Deployment;
+            Uri externalUri{ externalLocation };
+            Uri packageUri{ sparsePkgPath };
+
+    //        Console.WriteLine("exe Location {0}", externalLocation);
+    //        Console.WriteLine("msix Address {0}", sparsePkgPath);
+
+    //        Console.WriteLine("  exe Uri {0}", externalUri);
+    //        Console.WriteLine("  msix Uri {0}", packageUri);
+
+            PackageManager packageManager;
+
+            // Declare use of an external location
+            AddPackageOptions options;
+            options.ExternalLocationUri(externalUri);
+
+            IAsyncOperationWithProgress<DeploymentResult, DeploymentProgress> deploymentOperation = packageManager.AddPackageByUriAsync(packageUri, options);
+            //IAsyncOperationWithProgress<DeploymentResult, DeploymentProgress> deploymentOperation = packageManager.AddPackageAsync(packageUri, nullptr, DeploymentOptions::None);
+            deploymentOperation.get();
+
+            int returnValue = 0;
+            // Check the status of the operation
+            if (deploymentOperation.Status() == AsyncStatus::Error)
+            {
+                auto deploymentResult{ deploymentOperation.GetResults() };
+                auto asd = deploymentOperation.ErrorCode();
+                auto asd1 = deploymentResult.ErrorText().c_str();
+                returnValue = 1;
+            }
+            else if (deploymentOperation.Status() == AsyncStatus::Canceled)
+            {
+                returnValue = 1;
+            }
+            else if (deploymentOperation.Status() == AsyncStatus::Completed)
+            {
+                returnValue = 1;
+            }
+            else
+            {
+                returnValue = 1;
+            }
+            return returnValue;
+
+            // Other progress and error-handling code omitted for brevity...
+        }
+        catch (...)
+        {
+        
+        }
+
+        return true;
+    }
+
+
     // Return the localized display name of the powertoy
     virtual PCWSTR get_name() override
     {
@@ -176,6 +239,11 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        std::wstring path = get_module_folderpath(g_hInst);
+        std::wstring packageUri = path + L"\\PowerRenameContextMenuPackage.msix";
+        //std::wstring externalLocation = L"C:\\Users\\stefan\\Projects\\PowerToys\\x64\\Debug\\modules\\PowerRename";
+        //std::wstring packageUri = L"C:\\Users\\stefan\\Projects\\PowerToys\\src\\modules\\powerrename\\PowerRenameContextMenu\\MyPackage.msix";
+        registerSparsePackage(path, packageUri);
         Logger::info(L"PowerRename enabled");
         m_enabled = true;
         save_settings();
