@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\WiX.3.11.2\build\wix.props" Condition="Exists('..\packages\WiX.3.11.2\build\wix.props')" />
+  <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <Import Project="..\..\src\Version.props" />
 
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
@@ -35,17 +35,14 @@ call "..\..\publish.cmd" arm64
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>022a9d30-7c4f-416d-a9df-5ff2661cc0ad</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <!-- TODO: Remove hacks for arm64 after we adopt a Wix version that supports it -->
-    <OutputName Condition="'$(Platform)'=='x86'">PowerToysSetup-$(Version)-arm64</OutputName>
-    <OutputName Condition="'$(Platform)'!='x86'">PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
-    <OutputPath Condition="'$(Platform)'=='x86'">arm64\$(Configuration)\</OutputPath>
-    <OutputPath Condition="'$(Platform)'!='x86'">$(Platform)\$(Configuration)\</OutputPath>
+    <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <SuppressIces>ICE91</SuppressIces>
     <SuppressValidation>True</SuppressValidation>
@@ -96,7 +93,7 @@ call "..\..\publish.cmd" arm64
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\WiX.3.11.2\build\wix.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WiX.3.11.2\build\wix.props'))" />
+    <Error Condition="!Exists('..\wix.props')" Text="$([System.String]::Format('$(ErrorText)', '..\wix.props'))" />
   </Target>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.

@@ -13,6 +13,10 @@
     <?define WinAppSDKPayloadSize="57090456"?>
     <?define WinAppSDKPayloadHash="1269BB136655325EF6D66A018269BDAB3921E56B"?>
 
+    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/6b6923b0-3045-4379-a96f-ef5506a65d5b/426A34C6F10EA8F7DA58A8C976B586AD84DD4BAB42A0CFDBE941F1763B7755E5/VC_redist.x64.exe"?>
+    <?define VCRedistPayloadSize="25337776"?>
+    <?define VCRedistPayloadHash="47996AAB6A20DBBA69969C4B36F8FC718877751F"?>
+
     <?define PlatformProgramFiles="[ProgramFiles64Folder]"?>
 <?else?>
     <!-- stable WIX 3 doesn't support ARM64, so we build installers as x86 -->
@@ -26,7 +30,11 @@
     <?define WinAppSDKPayloadSize="57092528"?>
     <?define WinAppSDKPayloadHash="377ACE2157BE077C63C650588A18CBEFD93B5B51"?>
 
-    <!--TODO: define to ARM64 Program files once it's available-->
+    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/6b6923b0-3045-4379-a96f-ef5506a65d5b/6114C0A7A526EA47D9ADD78C718BEA0BA32EEF0826AA5610AF76877CC5FEB7F3/VC_redist.arm64.exe"?>
+    <?define VCRedistPayloadSize="11596400"?>
+    <?define VCRedistPayloadHash="DEF8E16367DE4BDDE0399614B7E358629A959942"?>
+
+<!--TODO: define to ARM64 Program files once it's available-->
     <?define PlatformProgramFiles="[ProgramFiles6432Folder]"?> 
 
 <?endif?>
@@ -66,6 +74,8 @@
       <Variable Name="DetectedWindowsBuildNumber" Type="version" Value="0"/>
       <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Format="raw" Variable="DetectedWindowsBuildNumber" />
       <bal:Condition Message="This application is only supported on Windows 10 version 1903 (build 18362) or higher.">DetectedWindowsBuildNumber &gt;= 18362 OR WixBundleInstalled</bal:Condition>
+    
+      <util:RegistrySearch Variable="DetectedVCRedistVersion" Root="HKLM" Key="Software\Microsoft\VisualStudio\14.0\VC\Runtimes\$(var.PowerToysPlatform)" Value="Minor" Result="value" Format="raw" />
 
         <Chain>
             <ExePackage
@@ -100,7 +110,7 @@
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
             <ExePackage
-                Name="WindowsAppRuntimeInstall.exe"
+                Name="WindowsAppRuntimeInstall-1.0.3.exe"
                 Compressed="no"
                 Id="WinAppSDK101"
                 DownloadUrl="https://aka.ms/windowsappsdk/1.0/1.0.3/windowsappruntimeinstall-1.0.3-$(var.PowerToysPlatform).exe"
@@ -113,6 +123,22 @@
                     Size="$(var.WinAppSDKPayloadSize)"
                     Version="1.0.3.0"
                     Hash="$(var.WinAppSDKPayloadHash)" />
+            </ExePackage>            
+            <ExePackage
+                Name="VCRedist-14.32.31326.exe"
+                DetectCondition="DetectedVCRedistVersion >= 32"
+                Compressed="no"
+                Id="VCRedist"
+                DownloadUrl="$(var.VCRedistDownloadUrl)"
+                InstallCommand="/install /quiet /norestart"
+                RepairCommand="/repair /quiet /norestart"
+                Permanent="yes">
+                <RemotePayload
+                    Description="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31326"
+                    ProductName="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31326"
+                    Size="$(var.VCRedistPayloadSize)"
+                    Version="14.32.31326.0"
+                    Hash="$(var.VCRedistPayloadHash)" />
             </ExePackage>
             <MsiPackage
                 SourceFile="$(var.PowerToysPlatform)\Release\PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform).msi"
