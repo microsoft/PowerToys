@@ -1758,6 +1758,7 @@ scancode
 scanled
 schedtasks
 Scip
+scipbe
 scoobe
 SCOPEID
 screenshot

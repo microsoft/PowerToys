@@ -102,7 +102,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
                     return true;
                 },
                 ContextData = p,
-                ToolTipData = new ToolTipData("OneNote", @$"{p.Notebook.Name}\{p.Section.Name}\{p.Name}"),
+                ToolTipData = new ToolTipData(Name, @$"{p.Notebook.Name}\{p.Section.Name}\{p.Name}"),
             }).ToList();
         }
 
