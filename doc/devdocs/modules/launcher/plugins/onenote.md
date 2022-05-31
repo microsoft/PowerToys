@@ -3,21 +3,34 @@ The OneNote plugin searches your locally synced OneNote notebooks based on the u
 
 ![Image of OneNote plugin](/doc/images/launcher/plugins/OneNote.png)
 
-### [`CalculateHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.OneNote/CalculateHelper.cs)
-- The [`CalculateHelper.cs`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs) class checks to see if the user entered query is a valid input to the calculator and only if the input is valid does it perform the operation.
-- It does so by matching the user query to a valid regex.
-
-### [`CalculateEngine`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs)
-- The main computation is done in the [`CalculateEngine.cs`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs) file using the `Mages` library.
+The code itself is very simple, basically just a call into OneNote interop via the https://github.com/scipbe/ScipBe-Common-Office library.
 
 ```csharp
-var result = CalculateEngine.Interpret(query.Search, CultureInfo.CurrentUICulture);
+var pages = OneNoteProvider.FindPages(query.Search);
 ```
 
-### [`CalculateResult`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateResult.cs)
-- The class which encapsulates the result of the computation.
-- It comprises of the `Result` and `RoundedResult` properties.
+If the user actions on a result, it'll open it in the OneNote app, and restore and/or focus the app as well if necessary.
 
-### Score
-The score of each result from the calculator plugin is `300`.
+```csharp
+if (PInvoke.IsIconic(handle))
+{
+    PInvoke.ShowWindow(handle, SHOW_WINDOW_CMD.SW_RESTORE);
+}
 
+PInvoke.SetForegroundWindow(handle);
+```
+
+The plugin attempts to call the library in the constructor, and if it fails with a COMException then it'll note that OneNote isn't available and not attempt to query it again.
+
+```csharp
+try
+{
+    _ = OneNoteProvider.PageItems.Any();
+    _oneNoteInstalled = true;
+}
+catch (COMException)
+{
+    // OneNote isn't installed, plugin won't do anything.
+    _oneNoteInstalled = false;
+}
+```

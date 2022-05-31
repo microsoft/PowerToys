@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
             UpdateIconPath(Theme.Light);
             try
             {
-                var count = OneNoteProvider.PageItems.Count();
+                _ = OneNoteProvider.PageItems.Any();
                 _oneNoteInstalled = true;
             }
             catch (COMException)
@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
 
         /// <summary>
         /// Gets the localized name.
-        /// </summary>yeahyeahyeah
+        /// </summary>
         public string Name => Resources.PluginTitle;
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         /// <returns>A filtered list, can be empty when nothing was found</returns>
         public List<Result> Query(Query query)
         {
-            if (_oneNoteInstalled || query is null || string.IsNullOrWhiteSpace(query.Search))
+            if (!_oneNoteInstalled || query is null || string.IsNullOrWhiteSpace(query.Search))
             {
                 return new List<Result>(0);
             }
@@ -102,7 +102,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
                     return true;
                 },
                 ContextData = p,
-                ToolTipData = new ToolTipData("OneNote", @$"{p.Notebook.Name}\{p.Section.Name}"),
+                ToolTipData = new ToolTipData("OneNote", @$"{p.Notebook.Name}\{p.Section.Name}\{p.Name}"),
             }).ToList();
         }
 

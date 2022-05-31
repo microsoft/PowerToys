@@ -1430,6 +1430,7 @@ OLECHAR
 OLEDB
 OLIVEGREEN
 onebranch
+onenote
 onstd
 oobe
 OOBEPT
@@ -1462,6 +1463,7 @@ PACL
 pagos
 PAINTSTRUCT
 PALEBLUE
+palenshus
 PALETTEWINDOW
 paramref
 params
@@ -1755,6 +1757,7 @@ scalability
 scancode
 scanled
 schedtasks
+Scip
 scoobe
 SCOPEID
 screenshot
