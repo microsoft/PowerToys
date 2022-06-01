@@ -60,8 +60,73 @@ void LogEnumDisplayMonitors()
             Logger::log(L"DeviceKey: {}", std::wstring(displayDevice.DeviceKey));
             Logger::log(L"DeviceName: {}", std::wstring(displayDevice.DeviceName));
             Logger::log(L"DeviceString: {}", std::wstring(displayDevice.DeviceString));
+            Logger::log(L"");
         }
     }
+
+    Logger::log(L"");
+}
+
+void LogWMIProp(IWbemClassObject* pclsObj, std::wstring_view prop)
+{
+    if (!pclsObj)
+    {
+        return;
+    }
+
+    VARIANT vtProp{};
+
+    // Get the value of the Name property
+    auto hres = pclsObj->Get(prop.data(), 0, &vtProp, 0, 0);
+    if (FAILED(hres))
+    {
+        Logger::log(L"Get {} Error code = {} ", prop, get_last_error_or_default(hres));
+        return;
+    }
+
+    switch (vtProp.vt)
+    {
+    case VT_I2: //short
+    {
+        Logger::log(L"{} : {}", prop, vtProp.iVal);
+    }
+    break;
+    case VT_I4: //int, long
+    {
+        Logger::log(L"{} : {}", prop, vtProp.lVal);
+    }
+    break;
+    case VT_BSTR: //BSTR
+    {
+        Logger::log(L"{} : {}", prop, vtProp.bstrVal);
+    }
+    break;
+    case VT_UI1: //BYTE (unsigned char)
+    {
+        Logger::log(L"{} : {}", prop, vtProp.bVal);
+    }
+    break;
+    case VT_ARRAY: // parray
+    case 8195: // also parray
+    {
+        std::u32string str(static_cast<const char32_t*>(vtProp.parray->pvData));
+        std::wstring wstr;
+        for (const char32_t& c : str)
+        {
+            wstr += (wchar_t)c;
+        }
+
+        Logger::log(L"{} : {}", prop, wstr);
+    }
+    break;
+    default:
+    {
+        Logger::log(L"{} : value is empty", prop);
+    }
+        break;
+    }
+
+    VariantClear(&vtProp);
 }
 
 void LogWMI()
@@ -79,17 +144,9 @@ void LogWMI()
     }
 
     // Initialize 
-    hres = CoInitializeSecurity(
-        NULL,
-        -1,      // COM negotiates service                  
-        NULL,    // Authentication services
-        NULL,    // Reserved
-        RPC_C_AUTHN_LEVEL_DEFAULT,    // authentication
-        RPC_C_IMP_LEVEL_IMPERSONATE,  // Impersonation
-        NULL,             // Authentication info 
-        EOAC_NONE,        // Additional capabilities
-        NULL              // Reserved
-    );
+    hres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT,
+        RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
+
     if (FAILED(hres))
     {
         Logger::log(L"Failed to initialize security. Error code = ", hres);
@@ -99,9 +156,9 @@ void LogWMI()
 
     // Obtain the initial locator to Windows Management
     // on a particular host computer.
-    IWbemLocator* pLoc = 0;
+    IWbemLocator* pLocator = 0;
 
-    hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLoc);
+    hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
     if (FAILED(hres))
     {
         Logger::log(L"Failed to create IWbemLocator object. Error code = ", hres);
@@ -109,178 +166,285 @@ void LogWMI()
         return;
     }
 
-    IWbemServices* pSvc = 0;
-
-    // Connect to the root\cimv2 namespace with the
-    // current user and obtain pointer pSvc
-    // to make IWbemServices calls.
-
-    hres = pLoc->ConnectServer(
-        _bstr_t(L"ROOT\\CIMV2"), // WMI namespace
-        NULL,                    // User name
-        NULL,                    // User password
-        0,                       // Locale
-        NULL,                    // Security flags                 
-        0,                       // Authority       
-        0,                       // Context object
-        &pSvc                    // IWbemServices proxy
-    );
+    IWbemServices* pServices = 0;
+    hres = pLocator->ConnectServer(_bstr_t(L"ROOT\\WMI"), NULL, NULL, 0, NULL, 0, 0, &pServices);
 
     if (FAILED(hres))
     {
         Logger::log(L"Could not connect WMI server. Error code = ", hres);
-        pLoc->Release();
+        pLocator->Release();
         CoUninitialize();
         return;
     }
 
-    Logger::log(L"Connected to ROOT\\CIMV2 WMI namespace");
+    Logger::log(L"Connected to ROOT\\WMI WMI namespace");
+    Logger::log(L"");
+
 
     // Set the IWbemServices proxy so that impersonation
     // of the user (client) occurs.
-    hres = CoSetProxyBlanket(
-        pSvc,                         // the proxy to set
-        RPC_C_AUTHN_WINNT,            // authentication service
-        RPC_C_AUTHZ_NONE,             // authorization service
-        NULL,                         // Server principal name
-        RPC_C_AUTHN_LEVEL_CALL,       // authentication level
-        RPC_C_IMP_LEVEL_IMPERSONATE,  // impersonation level
-        NULL,                         // client identity 
-        EOAC_NONE                     // proxy capabilities     
-    );
+    hres = CoSetProxyBlanket(pServices, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
+        RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
 
     if (FAILED(hres))
     {
         Logger::log(L"Could not set proxy blanket. Error code = ", hres);
-        pSvc->Release();
-        pLoc->Release();
+        pServices->Release();
+        pLocator->Release();
         CoUninitialize();
         return;
     }
 
-
     // Use the IWbemServices pointer to make requests of WMI. 
     // Make requests here:
-
     IEnumWbemClassObject* pEnumerator = NULL;
-    hres = pSvc->ExecQuery(
-        bstr_t("WQL"),
-        bstr_t("SELECT * FROM Win32_DesktopMonitor"),
-        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
-        NULL,
-        &pEnumerator);
+
+    hres = pServices->ExecQuery(bstr_t("WQL"), bstr_t("SELECT * FROM WmiMonitorID"),
+        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
 
     if (FAILED(hres))
     {
         Logger::log(L"Query for monitors failed. Error code = ", hres);
-        pSvc->Release();
-        pLoc->Release();
+        pServices->Release();
+        pLocator->Release();
         CoUninitialize();
         return;
     }
-    
-    IWbemClassObject* pclsObj;
+
+    IWbemClassObject* pClassObject;
     ULONG uReturn = 0;
 
     while (pEnumerator)
     {
-        hres = pEnumerator->Next(WBEM_INFINITE, 1,
-            &pclsObj, &uReturn);
+        hres = pEnumerator->Next(WBEM_INFINITE, 1, &pClassObject, &uReturn);
 
         if (0 == uReturn)
         {
             break;
         }
 
-        VARIANT vtProp;
-
-        // Get the value of the Name property
-        hres = pclsObj->Get(L"DeviceID", 0, &vtProp, 0, 0);
+        LPSAFEARRAY pFieldArray = NULL;
+        hres = pClassObject->GetNames(NULL, WBEM_FLAG_ALWAYS, NULL, &pFieldArray);
         if (FAILED(hres))
         {
-            Logger::log(L"Error code = ", hres);
-            continue;
+            Logger::log(L"Failed to get field names. Error code = {}", get_last_error_or_default(hres));
+            break;
         }
-        Logger::log(L"DeviceID : {}", vtProp.bstrVal);
-        VariantClear(&vtProp);
 
-        hres = pclsObj->Get(L"SystemName", 0, &vtProp, 0, 0);
-        if (FAILED(hres))
-        {
-            Logger::log(L"Error code = ", hres);
-            continue;
-        }
-        Logger::log(L"SystemName : {}", vtProp.bstrVal);
-        VariantClear(&vtProp);
+        LogWMIProp(pClassObject, L"InstanceName");
+        
+        LogWMIProp(pClassObject, L"YearOfManufacture");
+        LogWMIProp(pClassObject, L"WeekOfManufacture");
 
-        hres = pclsObj->Get(L"Description", 0, &vtProp, 0, 0);
-        if (FAILED(hres))
-        {
-            Logger::log(L"Error code = ", hres);
-            continue;
-        }
-        Logger::log(L"Description : {}", vtProp.bstrVal);
-        VariantClear(&vtProp);
+        LogWMIProp(pClassObject, L"UserFriendlyNameLength");
+        LogWMIProp(pClassObject, L"UserFriendlyName");
+        LogWMIProp(pClassObject, L"ManufacturerName");
 
-        hres = pclsObj->Get(L"DisplayType", 0, &vtProp, 0, 0);
-        if (FAILED(hres))
-        {
-            Logger::log(L"Error code = ", hres);
-            continue;
-        }
-        if (vtProp.bstrVal)
-        {
-            Logger::log(L"DisplayType : {}", vtProp.bstrVal);
-        }
-        VariantClear(&vtProp);
-
-        hres = pclsObj->Get(L"MonitorManufacturer", 0, &vtProp, 0, 0);
-        if (FAILED(hres))
-        {
-            Logger::log(L"Error code = ", hres);
-            continue;
-        }
-        if (vtProp.bstrVal)
-        {
-            Logger::log(L"MonitorManufacturer : {}", vtProp.bstrVal);
-        }
-        VariantClear(&vtProp);
-
-        hres = pclsObj->Get(L"Name", 0, &vtProp, 0, 0);
-        if (vtProp.bstrVal)
-        {
-            Logger::log(L"Name : {}", vtProp.bstrVal);
-        }
-        VariantClear(&vtProp);
-
-        hres = pclsObj->Get(L"Caption", 0, &vtProp, 0, 0);
-        if (vtProp.bstrVal)
-        {
-            Logger::log(L"Caption : {}", vtProp.bstrVal);
-        }
-        VariantClear(&vtProp);
-
-        hres = pclsObj->Get(L"SystemCreationClassName", 0, &vtProp, 0, 0);
-        if (vtProp.bstrVal)
-        {
-            Logger::log(L"SystemCreationClassName : {}", vtProp.bstrVal);
-        }
-        VariantClear(&vtProp);
-
+        LogWMIProp(pClassObject, L"SerialNumberID");
+        LogWMIProp(pClassObject, L"ProductCodeID");
+        
         Logger::log(L"");
 
-        pclsObj->Release();
-        pclsObj = NULL;
+        pClassObject->Release();
+        pClassObject = NULL;
     }
 
-    // Cleanup
-    // ========
-
-    pSvc->Release();
-    pLoc->Release();
+    pServices->Release();
+    pLocator->Release();
     pEnumerator->Release();
 
     CoUninitialize();
+}
+
+void LogWMICIM2()
+{
+    Logger::log(L" ---- WMI ---- ");
+
+    HRESULT hres;
+
+    hres = CoInitializeEx(0, COINIT_MULTITHREADED);
+    if (FAILED(hres))
+    {
+        Logger::log(L"Failed to initialize COM library. Error code = ", hres);
+        return;
+    }
+
+    hres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT,
+        RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
+
+    if (FAILED(hres))
+    {
+        Logger::log(L"Failed to initialize security. Error code = ", hres);
+        CoUninitialize();
+        return;
+    }
+
+    // Obtain the initial locator to Windows Management
+    // on a particular host computer.
+    IWbemLocator* pLocator = 0;
+
+    hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
+    if (FAILED(hres))
+    {
+        Logger::log(L"Failed to create IWbemLocator object. Error code = ", hres);
+        CoUninitialize();
+        return;
+    }
+
+    IWbemServices* pServices = 0;
+
+    // Connect to the root\cimv2 namespace with the
+    // current user and obtain pointer pSvc
+    // to make IWbemServices calls.
+
+    hres = pLocator->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), NULL, NULL, 0, NULL, 0, 0, &pServices);
+
+    if (FAILED(hres))
+    {
+        Logger::log(L"Could not connect WMI server. Error code = ", hres);
+        pLocator->Release();
+        CoUninitialize();
+        return;
+    }
+
+    Logger::log(L"Connected to ROOT\\CIMV2 WMI namespace");
+    Logger::log(L"");
+
+    // Set the IWbemServices proxy so that impersonation
+    // of the user (client) occurs.
+    hres = CoSetProxyBlanket(pServices, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
+        RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
+
+    if (FAILED(hres))
+    {
+        Logger::log(L"Could not set proxy blanket. Error code = ", hres);
+        pServices->Release();
+        pLocator->Release();
+        CoUninitialize();
+        return;
+    }
+
+    // Use the IWbemServices pointer to make requests of WMI. 
+    // Make requests here:
+    IEnumWbemClassObject* pEnumerator = NULL;
+    hres = pServices->ExecQuery(bstr_t("WQL"), bstr_t("SELECT * FROM Win32_DesktopMonitor"),
+        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+
+    if (FAILED(hres))
+    {
+        Logger::log(L"Query for monitors failed. Error code = ", hres);
+        pServices->Release();
+        pLocator->Release();
+        CoUninitialize();
+        return;
+    }
+
+    IWbemClassObject* pClassObject;
+    ULONG uReturn = 0;
+
+    while (pEnumerator)
+    {
+        hres = pEnumerator->Next(WBEM_INFINITE, 1, &pClassObject, &uReturn);
+
+        if (0 == uReturn)
+        {
+            break;
+        }
+
+        LogWMIProp(pClassObject, L"DeviceID");
+        LogWMIProp(pClassObject, L"Caption");
+        LogWMIProp(pClassObject, L"Description");
+        LogWMIProp(pClassObject, L"MonitorManufacturer");
+        LogWMIProp(pClassObject, L"MonitorType");
+        LogWMIProp(pClassObject, L"Name");
+        LogWMIProp(pClassObject, L"PNPDeviceID");
+        LogWMIProp(pClassObject, L"Status");
+
+        LogWMIProp(pClassObject, L"Availability");
+
+        Logger::log(L"");
+
+        pClassObject->Release();
+        pClassObject = NULL;
+    }
+
+    pServices->Release();
+    pLocator->Release();
+    pEnumerator->Release();
+
+    CoUninitialize();
+}
+
+void LogCCD()
+{
+    Logger::log(L" ---- CCD ---- ");
+
+    LONG result = ERROR_SUCCESS;
+    std::vector<DISPLAYCONFIG_PATH_INFO> paths;
+    std::vector<DISPLAYCONFIG_MODE_INFO> modes;
+
+    do
+    {
+        UINT32 pathCount{}, modeCount{};
+        auto sizesResult = GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS | QDC_INCLUDE_HMD | QDC_VIRTUAL_MODE_AWARE, &pathCount, &modeCount);
+
+        if (sizesResult != ERROR_SUCCESS)
+        {
+            Logger::log(L"GetDisplayConfigBufferSizes error {}", get_last_error_or_default(sizesResult));
+            return;
+        }
+
+        paths.resize(pathCount);
+        paths.resize(modeCount);
+
+        auto result = QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS | QDC_INCLUDE_HMD | QDC_VIRTUAL_MODE_AWARE, &pathCount, paths.data()
+            , &modeCount, modes.data(), nullptr);
+
+        // The function may have returned fewer paths/modes than estimated
+        paths.resize(pathCount);
+        modes.resize(modeCount);
+    } while (result == ERROR_INSUFFICIENT_BUFFER);
+
+    if (result != ERROR_SUCCESS)
+    {
+        Logger::log(L"QueryDisplayConfig error {}", get_last_error_or_default(result));
+        return;
+    }
+
+    // For each active path
+    for (auto& path : paths)
+    {
+        // Find the target (monitor) friendly name
+        DISPLAYCONFIG_TARGET_DEVICE_NAME targetName = {};
+        targetName.header.adapterId = path.targetInfo.adapterId;
+        targetName.header.id = path.targetInfo.id;
+        targetName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+        targetName.header.size = sizeof(targetName);
+        result = DisplayConfigGetDeviceInfo(&targetName.header);
+
+        if (result != ERROR_SUCCESS)
+        {
+            Logger::log(L"DisplayConfigGetDeviceInfo error {}", get_last_error_or_default(result));
+        }
+
+        // Find the adapter device name
+        DISPLAYCONFIG_ADAPTER_NAME adapterName = {};
+        adapterName.header.adapterId = path.targetInfo.adapterId;
+        adapterName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_ADAPTER_NAME;
+        adapterName.header.size = sizeof(adapterName);
+
+        result = DisplayConfigGetDeviceInfo(&adapterName.header);
+
+        if (result != ERROR_SUCCESS)
+        {
+            Logger::log(L"DisplayConfigGetDeviceInfo error {}", get_last_error_or_default(result));
+            continue;
+        }
+
+        Logger::log(L"Monitor: {} connected to adapter {}"
+            , (targetName.flags.friendlyNameFromEdid ? targetName.monitorFriendlyDeviceName : L"Unknown")
+            , adapterName.adapterDevicePath);
+    }
 }
 
 void LogInfo()
@@ -289,7 +453,9 @@ void LogInfo()
     Logger::log(L"");
 
     LogEnumDisplayMonitors();
+    LogWMICIM2();
     LogWMI();
+    LogCCD();
 
     Logger::log(L"=======================================");
     Logger::log(L"");
