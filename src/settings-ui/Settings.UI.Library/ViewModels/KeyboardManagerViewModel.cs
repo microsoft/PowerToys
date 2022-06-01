@@ -242,22 +242,46 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             var success = true;
             var readSuccessfully = false;
 
+            // The KBM process out of runner doesn't create the default.json file if it does not exist.
             string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
+            var profileExists = false;
 
             try
             {
-                if (_settingsUtils.SettingsExists(PowerToyName, fileName))
+                // retry loop for reading
+                CancellationTokenSource ts = new CancellationTokenSource();
+                Task t = Task.Run(() =>
                 {
-                    try
+                    while (!readSuccessfully && !ts.IsCancellationRequested)
                     {
-                        _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
-                        readSuccessfully = true;
+                        profileExists = _settingsUtils.SettingsExists(PowerToyName, fileName);
+                        if (!profileExists)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            try
+                            {
+                                _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
+                                readSuccessfully = true;
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.LogError($"Exception encountered when reading {PowerToyName} settings", e);
+                            }
+                        }
+
+                        if (!readSuccessfully)
+                        {
+                            Task.Delay(500).Wait();
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        Logger.LogError($"Exception encountered when reading {PowerToyName} settings", e);
-                    }
-                }
+                });
+
+                var completedInTime = t.Wait(3000, ts.Token);
+                ts.Cancel();
+                ts.Dispose();
 
                 if (readSuccessfully)
                 {
@@ -267,6 +291,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     success = false;
                 }
+
+                if (!completedInTime)
+                {
+                    Logger.LogError($"Timeout encountered when loading {PowerToyName} profile");
+                }
             }
             catch (Exception e)
             {
@@ -275,7 +304,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 success = false;
             }
 
-            if (!success)
+            if (!profileExists)
+            {
+                Logger.LogInfo($"Couldn't load {PowerToyName} profile because it doesn't exist");
+            }
+            else if (!success)
             {
                 Logger.LogError($"Couldn't load {PowerToyName} profile");
             }
