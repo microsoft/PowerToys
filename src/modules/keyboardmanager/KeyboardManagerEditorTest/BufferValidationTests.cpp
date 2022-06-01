@@ -259,6 +259,18 @@ namespace RemappingUITests
             testCases.push_back({ 0, 1, 2, std::vector<int32_t>({ VK_CONTROL, VK_SHIFT, -1 }), std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, 0x44 }, std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, 0x42 } }, std::wstring()) });
             // Case 19: Validate the element when making null-selection (-1 index) on third dropdown of second column of valid hybrid 3 key shortcut to shortcut row
             testCases.push_back({ 0, 1, 2, std::vector<int32_t>({ VK_CONTROL, VK_SHIFT, -1 }), std::wstring(), true, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, 0x44 }, std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, 0x42 } }, std::wstring()) });
+            // Case 20: Validate the element when making null-selection (-1 index) on fourth dropdown of first column of valid 4 key shortcut to shortcut row
+            testCases.push_back({ 0, 0, 3, std::vector<int32_t>({ VK_CONTROL, VK_SHIFT, VK_MENU, -1 }), std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, 0x44 }, std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, 0x42 } }, std::wstring()) });
+            // Case 21: Validate the element when making null-selection (-1 index) on fourth dropdown of second column of valid 4 key shortcut to shortcut row
+            testCases.push_back({ 0, 1, 3, std::vector<int32_t>({ VK_CONTROL, VK_SHIFT, VK_MENU, -1 }), std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, 0x44 }, std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, 0x42 } }, std::wstring()) });
+            // Case 22: Validate the element when making null-selection (-1 index) on fourth dropdown of second column of valid hybrid 4 key shortcut to shortcut row
+            testCases.push_back({ 0, 1, 3, std::vector<int32_t>({ VK_CONTROL, VK_SHIFT, VK_MENU, -1 }), std::wstring(), true, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, 0x44 }, std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, 0x42 } }, std::wstring()) });
+            // Case 23: Validate the element when making null-selection (-1 index) on fifth dropdown of first column of valid 5 key shortcut to shortcut row
+            testCases.push_back({ 0, 0, 3, std::vector<int32_t>({ VK_CONTROL, VK_SHIFT, VK_MENU, VK_LWIN, -1 }), std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, VK_LWIN, 0x44 }, std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, VK_LWIN, 0x42 } }, std::wstring()) });
+            // Case 24: Validate the element when making null-selection (-1 index) on fifth dropdown of second column of valid 5 key shortcut to shortcut row
+            testCases.push_back({ 0, 1, 3, std::vector<int32_t>({ VK_CONTROL, VK_SHIFT, VK_MENU, VK_LWIN, -1 }), std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, VK_LWIN, 0x44 }, std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, VK_LWIN, 0x42 } }, std::wstring()) });
+            // Case 25: Validate the element when making null-selection (-1 index) on fifth dropdown of second column of valid hybrid 5 key shortcut to shortcut row
+            testCases.push_back({ 0, 1, 3, std::vector<int32_t>({ VK_CONTROL, VK_SHIFT, VK_MENU, VK_LWIN, -1 }), std::wstring(), true, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, VK_LWIN, 0x44 }, std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, VK_MENU, VK_LWIN, 0x42 } }, std::wstring()) });
 
             RunTestCases(testCases, [this](const ValidateShortcutBufferElementArgs& testCase) {
                 // Arrange
@@ -519,24 +531,24 @@ namespace RemappingUITests
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutMaxShortcutSizeOneActionKeyErrorAndNoAction_OnSettingLastDropDownToNonRepeatedModifierKeyOnAColumnIfThereAre3OrMoreDropDowns)
         {
             std::vector<ValidateShortcutBufferElementArgs> testCases;
-            // Case 1: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of first column of 3 dropdown shortcut to shortcut row with middle empty
-            testCases.push_back({ 0, 0, 2, std::vector<int32_t>{ VK_CONTROL, -1, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
-            // Case 2: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 3 dropdown shortcut to shortcut row with middle empty
-            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ VK_CONTROL, -1, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
-            // Case 3: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 3 dropdown hybrid shortcut to shortcut row with middle empty
-            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ VK_CONTROL, -1, VK_SHIFT }, std::wstring(), true, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
-            // Case 4: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of first column of 3 dropdown shortcut to shortcut row with first two empty
-            testCases.push_back({ 0, 0, 2, std::vector<int32_t>{ -1, -1, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring()) });
-            // Case 5: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 3 dropdown shortcut to shortcut row with first two empty
-            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ -1, -1, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring()) });
-            // Case 6: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 3 dropdown hybrid shortcut to shortcut row with first two empty
-            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ -1, -1, VK_SHIFT }, std::wstring(), true, std::make_pair(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring()) });
-            // Case 7: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of first column of 3 dropdown shortcut to shortcut row
-            testCases.push_back({ 0, 0, 2, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x42 } }, std::wstring()) });
-            // Case 8: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 3 dropdown shortcut to shortcut row
-            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x42 } }, std::wstring()) });
-            // Case 9: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 3 dropdown hybrid shortcut to shortcut row
-            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_SHIFT }, std::wstring(), true, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x42 } }, std::wstring()) });
+            // Case 1: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of first column of 5 dropdown shortcut to shortcut row with middle empty
+            testCases.push_back({ 0, 0, 4, std::vector<int32_t>{ VK_CONTROL, -1, -1, -1, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
+            // Case 2: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 5 dropdown shortcut to shortcut row with middle empty
+            testCases.push_back({ 0, 1, 4, std::vector<int32_t>{ VK_CONTROL, -1, -1, -1, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
+            // Case 3: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 5 dropdown hybrid shortcut to shortcut row with middle empty
+            testCases.push_back({ 0, 1, 4, std::vector<int32_t>{ VK_CONTROL, -1, -1, -1, VK_SHIFT }, std::wstring(), true, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
+            // Case 4: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of first column of 5 dropdown shortcut to shortcut row with first four empty
+            testCases.push_back({ 0, 0, 4, std::vector<int32_t>{ -1, -1, -1, -1, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring()) });
+            // Case 5: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 5 dropdown shortcut to shortcut row with first four empty
+            testCases.push_back({ 0, 1, 4, std::vector<int32_t>{ -1, -1, -1, -1, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring()) });
+            // Case 6: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 5 dropdown hybrid shortcut to shortcut row with first four empty
+            testCases.push_back({ 0, 1, 4, std::vector<int32_t>{ -1, -1, -1, -1, VK_SHIFT }, std::wstring(), true, std::make_pair(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring()) });
+            // Case 7: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of first column of 5 dropdown shortcut to shortcut row
+            testCases.push_back({ 0, 0, 4, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_RWIN, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_RWIN, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_RWIN, 0x42 } }, std::wstring()) });
+            // Case 8: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 5 dropdown shortcut to shortcut row
+            testCases.push_back({ 0, 1, 4, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_RWIN, VK_SHIFT }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_RWIN, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_RWIN, 0x42 } }, std::wstring()) });
+            // Case 9: Validate the element when selecting Shift (VK_SHIFT) on last dropdown of second column of 5 dropdown hybrid shortcut to shortcut row
+            testCases.push_back({ 0, 1, 4, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_RWIN, VK_SHIFT }, std::wstring(), true, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_RWIN, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_RWIN, 0x42 } }, std::wstring()) });
 
             RunTestCases(testCases, [this](const ValidateShortcutBufferElementArgs& testCase) {
                 // Arrange
@@ -556,18 +568,18 @@ namespace RemappingUITests
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutMaxShortcutSizeOneActionKeyErrorAndNoAction_OnSettingLastDropDownToRepeatedModifierKeyOnAColumnIfThereAre3OrMoreDropDowns)
         {
             std::vector<ValidateShortcutBufferElementArgs> testCases;
-            // Case 1: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of first column of 3 dropdown shortcut to shortcut row with middle empty
-            testCases.push_back({ 0, 0, 2, std::vector<int32_t>{ VK_CONTROL, -1, VK_CONTROL }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
-            // Case 2: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of second column of 3 dropdown shortcut to shortcut row with middle empty
-            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ VK_CONTROL, -1, VK_CONTROL }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
-            // Case 3: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of second column of 3 dropdown hybrid shortcut to shortcut row with middle empty
-            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ VK_CONTROL, -1, VK_CONTROL }, std::wstring(), true, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
-            // Case 4: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of first column of 3 dropdown shortcut to shortcut row
-            testCases.push_back({ 0, 0, 2, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_CONTROL }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x42 } }, std::wstring()) });
-            // Case 5: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of second column of 3 dropdown shortcut to shortcut row
-            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_CONTROL }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x42 } }, std::wstring()) });
-            // Case 6: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of second column of 3 dropdown hybrid shortcut to shortcut row
-            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_CONTROL }, std::wstring(), true, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, 0x42 } }, std::wstring()) });
+            // Case 1: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of first column of 5 dropdown shortcut to shortcut row with middle empty
+            testCases.push_back({ 0, 0, 4, std::vector<int32_t>{ VK_CONTROL, -1, -1, -1, VK_CONTROL }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
+            // Case 2: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of second column of 5 dropdown shortcut to shortcut row with middle empty
+            testCases.push_back({ 0, 1, 4, std::vector<int32_t>{ VK_CONTROL, -1, -1, -1, VK_CONTROL }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
+            // Case 3: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of second column of 5 dropdown hybrid shortcut to shortcut row with middle empty
+            testCases.push_back({ 0, 1, 4, std::vector<int32_t>{ VK_CONTROL, -1, -1, -1, VK_CONTROL }, std::wstring(), true, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x42 } }, std::wstring()) });
+            // Case 4: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of first column of 5 dropdown shortcut to shortcut row
+            testCases.push_back({ 0, 0, 4, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_SHIFT, VK_CONTROL }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_SHIFT, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_SHIFT, 0x42 } }, std::wstring()) });
+            // Case 5: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of second column of 5 dropdown shortcut to shortcut row
+            testCases.push_back({ 0, 1, 4, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_SHIFT, VK_CONTROL }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_SHIFT, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_SHIFT, 0x42 } }, std::wstring()) });
+            // Case 6: Validate the element when selecting Ctrl (VK_CONTROL) on last dropdown of second column of 5 dropdown hybrid shortcut to shortcut row
+            testCases.push_back({ 0, 1, 4, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_SHIFT, VK_CONTROL }, std::wstring(), true, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_SHIFT, 0x43 }, std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_LWIN, VK_SHIFT, 0x42 } }, std::wstring()) });
 
             RunTestCases(testCases, [this](const ValidateShortcutBufferElementArgs& testCase) {
                 // Arrange

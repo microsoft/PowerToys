@@ -11,8 +11,8 @@
     <useWPF>true</useWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-	<OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\WebSearch\</OutputPath>
-    
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\WebSearch\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

@@ -3,8 +3,8 @@
   DefaultTargets="Build"
   InitialTargets="EnsureNuGetPackageBuildImports"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\WiX.3.11.2\build\wix.props"
-    Condition="Exists('..\packages\WiX.3.11.2\build\wix.props')" />
+  <Import Project="..\wix.props"
+    Condition="Exists('..\wix.props')" />
   <Import Project="..\..\src\Version.props" />
   <PropertyGroup>
     <DefineConstants>Version=$(Version)</DefineConstants>
@@ -14,12 +14,13 @@
   <PropertyGroup>
     <Configuration>Release</Configuration>
     <Platform Condition="'$(Platform)'=='x64'">x64</Platform>
-    <Platform Condition="'$(Platform)'!='x64'">x86</Platform>
+    <Platform Condition="'$(Platform)'!='x64'">arm64</Platform>
     <ProductVersion>3.10</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
     <OutputType>Bundle</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
+    <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
     <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <NuGetPackageImportStamp />
@@ -64,7 +65,7 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\WiX.3.11.2\build\wix.props')"
-      Text="$([System.String]::Format('$(ErrorText)', '..\packages\WiX.3.11.2\build\wix.props'))" />
+    <Error Condition="!Exists('..\wix.props')"
+      Text="$([System.String]::Format('$(ErrorText)', '..\wix.props'))" />
   </Target>
 </Project>

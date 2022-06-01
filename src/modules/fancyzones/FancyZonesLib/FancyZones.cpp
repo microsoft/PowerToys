@@ -17,6 +17,7 @@
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
+#include <FancyZonesLib/FancyZonesWindowProcessing.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/MonitorUtils.h>
@@ -376,28 +377,12 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    auto desktopId = VirtualDesktop::instance().GetDesktopId(window);
-    if (desktopId.has_value() && *desktopId != VirtualDesktop::instance().GetCurrentVirtualDesktopId())
-    {
-        // Switch between virtual desktops results with posting same windows messages that also indicate
-        // creation of new window. We need to check if window being processed is on currently active desktop.
-        return;
-    }
-
-    // Avoid processing splash screens, already stamped (zoned) windows, or those windows
-    // that belong to excluded applications list.
-    const bool isSplashScreen = FancyZonesWindowUtils::IsSplashScreen(window);
-    if (isSplashScreen)
+    if (!FancyZonesWindowProcessing::IsProcessable(window))
     {
         return;
     }
 
-    const bool windowMinimized = IsIconic(window);
-    if (windowMinimized)
-    {
-        return;
-    }
-
+    // Avoid already stamped (zoned) windows
     const bool isZoned = !FancyZonesWindowProperties::RetrieveZoneIndexProperty(window).empty();
     if (isZoned)
     {
@@ -1245,6 +1230,12 @@ void FancyZones::UpdateZoneSets() noexcept
 bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
+    
+    if (!FancyZonesWindowProcessing::IsProcessable(window))
+    {
+        return false;
+    }
+    
     if (FancyZonesSettings::settings().overrideSnapHotkeys && FancyZonesWindowUtils::IsCandidateForZoning(window))
     {
         HMONITOR monitor = WorkAreaKeyFromWindow(window);

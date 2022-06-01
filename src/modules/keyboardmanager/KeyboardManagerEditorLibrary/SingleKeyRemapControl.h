@@ -30,7 +30,7 @@ private:
     winrt::Windows::Foundation::IInspectable singleKeyRemapControlLayout;
 
     // Stack panel for the drop downs to display the selected shortcut for the hybrid case
-    winrt::Windows::Foundation::IInspectable hybridDropDownStackPanel;
+    winrt::Windows::Foundation::IInspectable hybridDropDownVariableSizedWrapGrid;
 
     // Function to set the accessible names for all the controls in a row
     static void UpdateAccessibleNames(StackPanel sourceColumn, StackPanel mappedToColumn, Button deleteButton, int rowIndex);

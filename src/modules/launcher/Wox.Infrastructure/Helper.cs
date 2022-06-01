@@ -150,7 +150,11 @@ namespace Wox.Infrastructure
 
         public static bool OpenCommandInShell(string path, string pattern, string arguments, string workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
         {
-            if (pattern.Contains("%1", StringComparison.Ordinal))
+            if (string.IsNullOrEmpty(pattern))
+            {
+                Log.Warn("Trying to run OpenCommandInShell with an empty pattern. The default browser definition might have issues.", typeof(Helper));
+            }
+            else if (pattern.Contains("%1", StringComparison.Ordinal))
             {
                 arguments = pattern.Replace("%1", arguments);
             }

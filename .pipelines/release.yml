@@ -15,6 +15,7 @@ parameters:
     type: object
     default:
       - x64
+      - arm64
   - name: versionNumber
     type: string
     default: '0.0.1'
@@ -86,7 +87,13 @@ jobs:
       restoreSolution: '**/*.sln'
       selectOrConfig: config
       nugetConfigPath: .pipelines/release-nuget.config
-      
+
+  - task: PowerShell@2
+    displayName: Download and install WiX 3.14 development build
+    inputs:
+      targetType: filePath
+      filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
+
   - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
     displayName: 'Download Localization Files -- PowerToys 37400'
     inputs:
@@ -312,7 +319,7 @@ jobs:
     displayName: 'Extracting MSI to verify contents'
     inputs:
       script: |
-        .\installer\packages\WiX.3.11.2\tools\dark.exe -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).msi 
+        "C:\Program Files (x86)\WiX Toolset v3.14\bin\dark.exe" -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).msi
         dir $(build.sourcesdirectory)\extractedMsi
 
 # Did we sign all files
@@ -347,7 +354,7 @@ jobs:
   - task: CmdLine@2
     displayName: 'Insignia: Extract Engine from Bundle'
     inputs:
-      script: '.\installer\packages\WiX.3.11.2\tools\insignia.exe -ib installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\engine.exe'
+      script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ib installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\engine.exe'
 
 
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
@@ -384,7 +391,7 @@ jobs:
   - task: CmdLine@2
     displayName: 'Insignia: Merge Engine into Bundle'
     inputs:
-      script: '.\installer\packages\WiX.3.11.2\tools\insignia.exe -ab installer\engine.exe installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe'
+      script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ab installer\engine.exe installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform).exe'
 
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     displayName: Sign Bootstrapper
@@ -414,14 +421,14 @@ jobs:
       contents: >-
         **/*.pdb
       flattenFolders: True
-      targetFolder: $(Build.ArtifactStagingDirectory)/Symbols/
+      targetFolder: $(Build.ArtifactStagingDirectory)/Symbols-$(BuildPlatform)/
    
   - task: PowerShell@2
     displayName: 'Remove unneeded files from ArtifactStagingDirectory'
     inputs:
       targetType: 'inline'
       script: |
-        cd $(Build.ArtifactStagingDirectory)/Symbols/
+        cd $(Build.ArtifactStagingDirectory)/Symbols-$(BuildPlatform)/
         Remove-Item vc143.pdb
         Remove-Item *test*
 
@@ -430,21 +437,21 @@ jobs:
     continueOnError: True
     inputs:
       SearchPattern: |
-        $(Build.ArtifactStagingDirectory)/Symbols/**/*.*
+        $(Build.ArtifactStagingDirectory)/Symbols-$(BuildPlatform)/**/*.*
       IndexSources: false
       SymbolServerType: TeamServices
       
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: Symbols'
     inputs:
-      PathtoPublish: $(System.ArtifactsDirectory)/Symbols/
-      ArtifactName: Symbols
+      PathtoPublish: $(System.ArtifactsDirectory)/Symbols-$(BuildPlatform)/
+      ArtifactName: Symbols-$(BuildPlatform)
 
   - task: DeleteFiles@1
     displayName: 'Remove symbols from ArtifactStagingDirectory'
     inputs:
       Contents: '*'
-      SourceFolder: $(Build.ArtifactStagingDirectory)/Symbols/
+      SourceFolder: $(Build.ArtifactStagingDirectory)/Symbols-$(BuildPlatform)/
       RemoveSourceFolder: True
 
   - task: CopyFiles@2

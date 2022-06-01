@@ -4,6 +4,7 @@
 
 using System;
 using System.Drawing;
+using System.IO;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -97,6 +98,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         }
 
         /// <summary>
+        /// Represent WebView2 user data folder path.
+        /// </summary>
+        private string _webView2UserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MarkdownPreview-Temp";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MarkdownPreviewHandlerControl"/> class.
         /// </summary>
         public MarkdownPreviewHandlerControl()
@@ -118,6 +125,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// <param name="dataSource">Path to the file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            CleanupWebView2UserDataFolder();
+
             _infoBarDisplayed = false;
 
             try
@@ -145,21 +154,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     Dock = DockStyle.Fill,
                 };
 
-                _browser.NavigationStarting += async (object sender, CoreWebView2NavigationStartingEventArgs args) =>
-                {
-                    if (args.Uri != null && args.IsUserInitiated)
-                    {
-                        args.Cancel = true;
-                        await Launcher.LaunchUriAsync(new Uri(args.Uri));
-                    }
-                };
-
                 InvokeOnControlThread(() =>
                 {
                     ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                         webView2EnvironmentAwaiter = CoreWebView2Environment
-                            .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
-                                                         "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MarkdownPreview-Temp")
+                            .CreateAsync(userDataFolder: _webView2UserDataFolder)
                             .ConfigureAwait(true).GetAwaiter();
                     webView2EnvironmentAwaiter.OnCompleted(() =>
                     {
@@ -171,8 +170,33 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                                 await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
                                 await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
                                 _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
-                                _browser.NavigateToString(markdownHTML);
+
+                                // WebView2.NavigateToString() limitation
+                                // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
+                                // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
+                                Uri filenameUri = null;
+                                if (markdownHTML.Length > 1_500_000)
+                                {
+                                    string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
+                                    File.WriteAllText(filename, markdownHTML);
+                                    filenameUri = new Uri(filename);
+                                    _browser.Source = filenameUri;
+                                }
+                                else
+                                {
+                                    _browser.NavigateToString(markdownHTML);
+                                }
+
                                 Controls.Add(_browser);
+
+                                _browser.NavigationStarting += async (object sender, CoreWebView2NavigationStartingEventArgs args) =>
+                                {
+                                    if (args.Uri != null && args.Uri != filenameUri?.ToString() && args.IsUserInitiated)
+                                    {
+                                        args.Cancel = true;
+                                        await Launcher.LaunchUriAsync(new Uri(args.Uri));
+                                    }
+                                };
 
                                 if (_infoBarDisplayed)
                                 {
@@ -190,9 +214,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
 
                 PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewed());
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewError { Message = ex.Message });
 
@@ -263,6 +285,26 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         private void ImagesBlockedCallBack()
         {
             _infoBarDisplayed = true;
+        }
+
+        /// <summary>
+        /// Cleanup the previously created tmp html files from svg files bigger than 2MB.
+        /// </summary>
+        private void CleanupWebView2UserDataFolder()
+        {
+            try
+            {
+                // Cleanup temp dir
+                var dir = new DirectoryInfo(_webView2UserDataFolder);
+
+                foreach (var file in dir.EnumerateFiles("*.html"))
+                {
+                    file.Delete();
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }

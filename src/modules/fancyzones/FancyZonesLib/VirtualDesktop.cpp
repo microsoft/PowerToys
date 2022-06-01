@@ -201,7 +201,7 @@ std::optional<GUID> VirtualDesktop::GetDesktopId(HWND window) const
     if (m_vdManager && m_vdManager->IsWindowOnCurrentVirtualDesktop(window, &isWindowOnCurrentDesktop) == S_OK && isWindowOnCurrentDesktop)
     {
         // Filter windows such as Windows Start Menu, Task Switcher, etc.
-        if (m_vdManager->GetWindowDesktopId(window, &id) == S_OK && id != GUID_NULL)
+        if (m_vdManager->GetWindowDesktopId(window, &id) == S_OK)
         {
             return id;
         }

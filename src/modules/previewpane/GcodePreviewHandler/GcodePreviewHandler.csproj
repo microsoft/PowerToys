@@ -9,6 +9,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <AssemblyName>PowerToys.GcodePreviewHandler</AssemblyName>
   </PropertyGroup>
 

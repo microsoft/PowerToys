@@ -43,6 +43,7 @@
     <ClInclude Include="FancyZonesData\Layout.h" />
     <ClInclude Include="FancyZonesData\LayoutDefaults.h" />
     <ClInclude Include="FancyZonesData\LayoutTemplates.h" />
+    <ClInclude Include="FancyZonesWindowProcessing.h" />
     <ClInclude Include="FancyZonesWinHookEventIDs.h" />
     <ClInclude Include="GenericKeyHook.h" />
     <ClInclude Include="FancyZonesData.h" />
