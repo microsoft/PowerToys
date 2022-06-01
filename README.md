@@ -155,7 +155,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 
 - Updated the .NET dependency to 6.0.5.
 - The installer is now built using a beta version of Wix 3.14 for arm64 support.
-- Added the VC++ redistributable binary as a requirement.
+- Added the VC++ Redistributable binary as a requirement.
 - Added the version Windows App SDK installer name so that it doesn't try to use an outdated local installer.
 
 ### Development

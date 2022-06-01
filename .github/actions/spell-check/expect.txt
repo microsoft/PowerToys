@@ -1872,6 +1872,7 @@ SOURCECLIENTAREAONLY
 SOURCEHEADER
 sourceid
 sourcesdirectory
+spam
 spdisp
 spdlog
 spdo
