@@ -138,6 +138,9 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - We've introduced a throttle before a query is done to ensure typing is done to increase performance. Thanks [@shandsj](https://github.com/shandsj)!
 - Fixed a crash in WebSearch when there's an empty pattern setup for the system's default browser.
 - Fixed a bug where VSCodeWorkspaces was not finding portable installations of VSCode. Thanks [@harvastum](https://github.com/harvastum)!
+- The Calculator plugin reacts better to invalid input and internal errors. Thanks [@htcfreek](https://github.com/htcfreek)!
+- The Calculator plugin can now be configured to use the US number format instead of the system one. Thanks [@htcfreek](https://github.com/htcfreek)!
+- The Folder plugin supports paths starting with "/". Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Settings
 
@@ -147,6 +150,8 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - Some minor UI fixes. Thanks [@niels9001](https://github.com/niels9001)!
 - The Settings screen should now open correctly if the OOBE screen was opened first.
 - The rounded corner settings for FancyZones now only show on Windows 11. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed a UI freeze when entering the Keyboard Manager page with clean settings.
+- Fixed a UI glitch where a message was being shown that all PowerToys Run plugins were disabled when using the search function. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Runner
 
