@@ -45,7 +45,7 @@
         <com:Extension Category="windows.comServer">
           <com:ComServer>
             <com:SurrogateServer  DisplayName="Context menu verb handler">
-              <com:Class Id="1861E28B-A1F0-4EF4-A1FE-4C8CA88E2174" Path="PowerRenameContextMenu.dll" ThreadingModel="STA"/>
+              <com:Class Id="1861E28B-A1F0-4EF4-A1FE-4C8CA88E2174" Path="PowerToys.PowerRenameContextMenu.dll" ThreadingModel="STA"/>
             </com:SurrogateServer>
           </com:ComServer>
         </com:Extension>

@@ -106,6 +106,7 @@
 
                 "modules\\PowerRename\\PowerToys.PowerRenameExt.dll",
                 "modules\\PowerRename\\PowerToys.PowerRename.exe",
+                "modules\\PowerRename\\PowerToys.PowerRenameContextMenu.dll",
                 "modules\\PowerRename\\PowerRenameContextMenuPackage.msix",
 
                 "modules\\ShortcutGuide\\ShortcutGuide\\PowerToys.ShortcutGuide.exe",

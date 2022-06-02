@@ -104,9 +104,11 @@
 
 	<?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
 
-    <?define PowerRenameFiles=PowerRenameUI.ico;Microsoft.WindowsAppRuntime.Bootstrap.dll;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll;PowerRenameContextMenuPackage.msix?>
+    <?define PowerRenameFiles=PowerRenameUI.ico;Microsoft.WindowsAppRuntime.Bootstrap.dll;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll;PowerRenameContextMenuPackage.msix;PowerToys.PowerRenameContextMenu.dll?>
 
-	<Product Id="*"
+    <?define PowerRenameSparsePackageAssets=BadgeLogo.scale-100.png;BadgeLogo.scale-125.png;BadgeLogo.scale-150.png;BadgeLogo.scale-200.png;BadgeLogo.scale-400.png;LargeTile.scale-100.png;LargeTile.scale-125.png;LargeTile.scale-150.png;LargeTile.scale-200.png;LargeTile.scale-400.png;SmallTile.scale-100.png;SmallTile.scale-125.png;SmallTile.scale-150.png;SmallTile.scale-200.png;SmallTile.scale-400.png;SplashScreen.png;SplashScreen.scale-100.png;SplashScreen.scale-125.png;SplashScreen.scale-150.png;SplashScreen.scale-200.png;SplashScreen.scale-400.png;Square150x150Logo.scale-100.png;Square150x150Logo.scale-125.png;Square150x150Logo.scale-150.png;Square150x150Logo.scale-200.png;Square150x150Logo.scale-400.png;Square44x44Logo.altform-lightunplated_targetsize-16.png;Square44x44Logo.altform-lightunplated_targetsize-24.png;Square44x44Logo.altform-lightunplated_targetsize-256.png;Square44x44Logo.altform-lightunplated_targetsize-32.png;Square44x44Logo.altform-lightunplated_targetsize-48.png;Square44x44Logo.altform-unplated_targetsize-16.png;Square44x44Logo.altform-unplated_targetsize-24.png;Square44x44Logo.altform-unplated_targetsize-256.png;Square44x44Logo.altform-unplated_targetsize-32.png;Square44x44Logo.altform-unplated_targetsize-48.png;Square44x44Logo.scale-100.png;Square44x44Logo.scale-125.png;Square44x44Logo.scale-150.png;Square44x44Logo.scale-200.png;Square44x44Logo.scale-400.png;Square44x44Logo.targetsize-16.png;Square44x44Logo.targetsize-24.png;Square44x44Logo.targetsize-256.png;Square44x44Logo.targetsize-32.png;Square44x44Logo.targetsize-48.png;storelogo.scale-100.png;storelogo.scale-125.png;storelogo.scale-150.png;storelogo.scale-200.png;storelogo.scale-400.png;Wide310x150Logo.scale-100.png;Wide310x150Logo.scale-125.png;Wide310x150Logo.scale-150.png;Wide310x150Logo.scale-200.png;Wide310x150Logo.scale-400.png?>
+
+    <Product Id="*"
        Name="PowerToys (Preview)"
        Language="1033"
        Version="$(var.Version)"
@@ -730,6 +732,12 @@
                 <File Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Assets\file.png" />
                 <File Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Assets\folder.png" />
             </Component>
+            <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+            <Component Id="PowerRename_PowerRenameSparsePackageAssets" Guid="A32B528D-2771-4853-9775-1791D39DF30E" Win64="yes">
+                <?foreach File in $(var.PowerRenameSparsePackageAssets)?>
+                    <File Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Assets\$(var.File)" />
+                <?endforeach?>
+            </Component>
         </DirectoryRef>
         <!-- MouseUtils -->
         <DirectoryRef Id="MouseUtilsInstallFolder" FileSource="$(var.BinDir)modules\$(var.MouseUtilsProjectName)">
@@ -976,6 +984,7 @@
 			    <ComponentRef Id="PowerRename_$(var.File)" />
 			<?endforeach?>
 			<ComponentRef Id="Module_PowerRename_Assets" />
+			<ComponentRef Id="PowerRename_PowerRenameSparsePackageAssets" />
             <?foreach File in $(var.ImageResizerFiles)?>
                 <ComponentRef Id="Module_ImageResizer_$(var.File)" />
             <?endforeach?>                
