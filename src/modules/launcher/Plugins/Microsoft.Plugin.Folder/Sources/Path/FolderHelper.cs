@@ -84,7 +84,9 @@ namespace Microsoft.Plugin.Folder.Sources
                 throw new ArgumentNullException(nameof(search));
             }
 
-            if (search[0] == '\\' && (search.Length == 1 || search[1] != '\\'))
+            var validRoots = new char[] { '\\', '/' };
+
+            if (validRoots.Contains(search[0]) && (search.Length == 1 || !validRoots.Contains(search[1])))
             {
                 // Absolute path of system drive: \Windows\System32
                 search = Path.Combine(Path.GetPathRoot(Environment.SystemDirectory), search.Substring(1));
