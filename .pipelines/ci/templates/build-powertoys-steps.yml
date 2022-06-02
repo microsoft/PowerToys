@@ -95,6 +95,12 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
+- task: PowerShell@2
+  displayName: Download and install WiX 3.14 development build
+  inputs:
+    targetType: filePath
+    filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
+
 - task: NuGetCommand@2
   displayName: Restore NuGet packages for PowerToysSetup.sln
   inputs:

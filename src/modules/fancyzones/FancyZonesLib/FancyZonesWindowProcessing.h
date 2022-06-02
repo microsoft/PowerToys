@@ -24,7 +24,13 @@ namespace FancyZonesWindowProcessing
         // For windows that FancyZones shouldn't process (start menu, tray, popup menus) 
         // VirtualDesktopManager is unable to retrieve virtual desktop id and returns an error.
         auto desktopId = VirtualDesktop::instance().GetDesktopId(window);
-        if (!desktopId.has_value() || (desktopId.has_value() && *desktopId != VirtualDesktop::instance().GetCurrentVirtualDesktopId()))
+        auto currentDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
+        if (!desktopId.has_value())
+        {
+            return false;
+        }
+
+        if (currentDesktopId != GUID_NULL && desktopId.value() != currentDesktopId)
         {
             return false;
         }

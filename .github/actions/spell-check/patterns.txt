@@ -37,6 +37,8 @@ std::wregex\(L"[^"]*"\)
 
 # hash
 Hash="[0-9A-F]{40}"
+# SHA256 hash
+'[0-9A-F]{64}'
 
 # hex digits including css/html color classes:
 (?:[\\0][xX]|\\u|[uU]\+|#x?|\%23|L")[0-9a-fA-FgGrR_]{2,}(?:[uU]?[lL]{0,2}|u\d+)\b

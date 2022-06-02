@@ -1691,7 +1691,7 @@
     <value>Pitt Islands (New Zealand)</value>
   </data>
   <data name="PluginDescription" xml:space="preserve">
-    <value>Gets the the current time of a time zone</value>
+    <value>Gets the current time of a time zone</value>
   </data>
   <data name="PluginTitle" xml:space="preserve">
     <value>Time zone</value>
