@@ -35,7 +35,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Via GitHub with EXE [Recommended]
 
- [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.59.0-x64.exe` or `PowerToysSetup-0.59.0-arm64.exe` to download the PowerToys installer that matches your machine's architecture. (Note: There's a known issue where PowerToys can't install correctly on Windows 10 on arm64.)
+ [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.59.0-x64.exe` or `PowerToysSetup-0.59.0-arm64.exe` to download the PowerToys installer that matches your machine's architecture. Note: There's a [known issue](https://github.com/microsoft/PowerToys/issues/18583) where PowerToys can't install correctly on Windows 10 on arm64, but installs correctly on Windows 11.
 
 This is our preferred method.
 
@@ -83,7 +83,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 ### Known issues
 - There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications in some cases (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this), or by some UAC settings which cause every application to run elevated. If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
 - Some users are [unable to install PowerToys](https://github.com/microsoft/PowerToys/issues/18021) due to the Windows App SDK runtime failing to install. If you're affected by this, please check the issue to verify if any of the presented solutions works for you.
-- PowerToys can't currently install on Windows 10 ARM64, due to the Windows App SDK installer dependency failing to install. We're aware of this and investigating a workaround until the Windows App SDK installer supports Windows 10 ARM64.
+- PowerToys [can't currently install on Windows 10 ARM64](https://github.com/microsoft/PowerToys/issues/18583), due to the Windows App SDK installer dependency failing to install. We're aware of this and investigating a workaround until the Windows App SDK installer supports Windows 10 ARM64. It installs correctly on Windows 11 ARM64.
 
 ### General
 
