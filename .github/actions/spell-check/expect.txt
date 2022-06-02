@@ -452,6 +452,7 @@ DLGFRAME
 DLGMODALFRAME
 dlib
 DLIMAGES
+dllimport
 dllexport
 dllhost
 dllmain
@@ -769,6 +770,7 @@ HWNDNEXT
 HWNDPREV
 IAction
 IActivated
+IActivation
 IAnimatable
 IApp
 IApplication
@@ -1399,6 +1401,7 @@ NTFS
 NTSTATUS
 nuget
 nuint
+nullonfailure
 nullopt
 nullptr
 numberbox
@@ -1530,6 +1533,7 @@ powercfg
 powerlauncher
 powerpreview
 powerrename
+POWERRENAMECONTEXTMENU
 POWERRENAMETEST
 powertoy
 powertoysinterop
@@ -1740,6 +1744,7 @@ RUNLEVEL
 runsettings
 runtimeclass
 runtimeconfig
+runtimeobject
 runtimes
 RUS
 rvalue
@@ -1932,6 +1937,7 @@ stl
 stoi
 stol
 stoll
+storelogo
 stoul
 stoull
 strcmp
@@ -2133,6 +2139,7 @@ unregister
 unregistering
 unremapped
 unsubscribe
+unvirtualized
 Updatelayout
 UPGRADINGPRODUCTCODE
 upto
@@ -2330,6 +2337,7 @@ wregex
 WResize
 writefile
 Wrk
+wrl
 wsf
 wsh
 wsl

@@ -104,7 +104,7 @@
 
 	<?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
 
-    <?define PowerRenameFiles=PowerRenameUI.ico;Microsoft.WindowsAppRuntime.Bootstrap.dll;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll?>
+    <?define PowerRenameFiles=PowerRenameUI.ico;Microsoft.WindowsAppRuntime.Bootstrap.dll;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll;PowerRenameContextMenuPackage.msix?>
 
 	<Product Id="*"
        Name="PowerToys (Preview)"
