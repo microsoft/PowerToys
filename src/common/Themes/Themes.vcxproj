@@ -31,13 +31,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="icon_helpers.h" />
-    <ClInclude Include="ThemeListener.h" />
+    <ClInclude Include="theme_listener.h" />
     <ClInclude Include="theme_helpers.h" />
     <ClInclude Include="windows_colors.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="icon_helpers.cpp" />
-    <ClCompile Include="ThemeListener.cpp" />
+    <ClCompile Include="theme_listener.cpp" />
     <ClCompile Include="theme_helpers.cpp" />
     <ClCompile Include="windows_colors.cpp" />
   </ItemGroup>
