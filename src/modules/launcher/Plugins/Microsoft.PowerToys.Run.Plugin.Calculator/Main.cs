@@ -5,14 +5,17 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
+using System.Windows.Controls;
 using ManagedCommon;
+using Microsoft.PowerToys.Run.Plugin.Calculator.Properties;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
-using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
-    public class Main : IPlugin, IPluginI18n, IDisposable
+    public class Main : IPlugin, IPluginI18n, IDisposable, ISettingProvider
     {
         private static readonly CalculateEngine CalculateEngine = new CalculateEngine();
 
@@ -20,20 +23,51 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         private string IconPath { get; set; }
 
-        public string Name => Properties.Resources.wox_plugin_calculator_plugin_name;
+        private bool _inputUseEnglishFormat;
+        private bool _outputUseEnglishFormat;
 
-        public string Description => Properties.Resources.wox_plugin_calculator_plugin_description;
+        public string Name => Resources.wox_plugin_calculator_plugin_name;
+
+        public string Description => Resources.wox_plugin_calculator_plugin_description;
 
         private bool _disposed;
 
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        {
+            new PluginAdditionalOption()
+            {
+                Key = "InputUseEnglishFormat",
+                DisplayLabel = Resources.wox_plugin_calculator_in_en_format,
+                DisplayDescription = Resources.wox_plugin_calculator_in_en_format_description,
+                Value = false,
+            },
+            new PluginAdditionalOption()
+            {
+                Key = "OutputUseEnglishFormat",
+                DisplayLabel = Resources.wox_plugin_calculator_out_en_format,
+                DisplayDescription = Resources.wox_plugin_calculator_out_en_format_description,
+                Value = false,
+            },
+        };
+
         public List<Result> Query(Query query)
         {
+            bool isGlobalQuery = string.IsNullOrEmpty(query.ActionKeyword);
+            CultureInfo inputCulture = _inputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
+            CultureInfo outputCulture = _outputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
+
             if (query == null)
             {
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            NumberTranslator translator = NumberTranslator.Create(CultureInfo.CurrentCulture, new CultureInfo("en-US"));
+            // Happens if the user has only typed the action key so far
+            if (string.IsNullOrEmpty(query.Search))
+            {
+                return new List<Result>();
+            }
+
+            NumberTranslator translator = NumberTranslator.Create(inputCulture, new CultureInfo("en-US"));
             var input = translator.Translate(query.Search.Normalize(NormalizationForm.FormKC));
 
             if (!CalculateHelper.InputValid(input))
@@ -44,27 +78,38 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             try
             {
                 // Using CurrentUICulture since this is user facing
-                var result = CalculateEngine.Interpret(input, CultureInfo.CurrentUICulture);
+                var result = CalculateEngine.Interpret(input, outputCulture, out string errorMessage);
 
                 // This could happen for some incorrect queries, like pi(2)
                 if (result.Equals(default(CalculateResult)))
                 {
-                    return new List<Result>();
+                    // If errorMessage is not default then do error handling
+                    return errorMessage == default ? new List<Result>() : ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, errorMessage);
                 }
 
                 return new List<Result>
                 {
-                    ResultHelper.CreateResult(result.RoundedResult, IconPath),
+                    ResultHelper.CreateResult(result.RoundedResult, IconPath, outputCulture),
                 };
-            } // We want to keep the process alive if any the mages library throws any exceptions.
+            }
+            catch (Mages.Core.ParseException)
+            {
+                // Invalid input
+                return ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, Properties.Resources.wox_plugin_calculator_expression_not_complete);
+            }
+            catch (OverflowException)
+            {
+                // Result to big to convert to decimal
+                return ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, Properties.Resources.wox_plugin_calculator_not_covert_to_decimal);
+            }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                Log.Exception("Exception when query for <{query}>", e, GetType());
+                // Any other crash occurred
+                // We want to keep the process alive if any the mages library throws any exceptions.
+                return ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, default, e);
             }
-
-            return new List<Result>();
         }
 
         public void Init(PluginInitContext context)
@@ -94,12 +139,35 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public string GetTranslatedPluginTitle()
         {
-            return Properties.Resources.wox_plugin_calculator_plugin_name;
+            return Resources.wox_plugin_calculator_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return Properties.Resources.wox_plugin_calculator_plugin_description;
+            return Resources.wox_plugin_calculator_plugin_description;
+        }
+
+        public Control CreateSettingPanel()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            var inputUseEnglishFormat = false;
+            var outputUseEnglishFormat = false;
+
+            if (settings != null && settings.AdditionalOptions != null)
+            {
+                var optionInputEn = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "InputUseEnglishFormat");
+                inputUseEnglishFormat = optionInputEn?.Value ?? inputUseEnglishFormat;
+
+                var optionOutputEn = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "OutputUseEnglishFormat");
+                outputUseEnglishFormat = optionOutputEn?.Value ?? outputUseEnglishFormat;
+            }
+
+            _inputUseEnglishFormat = inputUseEnglishFormat;
+            _outputUseEnglishFormat = outputUseEnglishFormat;
         }
 
         public void Dispose()

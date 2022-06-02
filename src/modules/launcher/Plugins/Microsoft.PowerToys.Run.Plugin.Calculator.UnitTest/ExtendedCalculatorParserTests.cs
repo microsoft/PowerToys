@@ -32,21 +32,21 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => engine.Interpret(input, CultureInfo.CurrentCulture));
+            Assert.ThrowsException<ArgumentNullException>(() => engine.Interpret(input, CultureInfo.CurrentCulture, out _));
         }
 
         [DataTestMethod]
-        [DataRow("42")]
         [DataRow("test")]
         [DataRow("pi(2)")] // Incorrect input, constant is being treated as a function.
         [DataRow("e(2)")]
+        [DataRow("[10,10]")] // '[10,10]' is interpreted as array by mages engine
         public void Interpret_NoResult_WhenCalled(string input)
         {
             // Arrange
             var engine = new CalculateEngine();
 
             // Act
-            var result = engine.Interpret(input, CultureInfo.CurrentCulture);
+            var result = engine.Interpret(input, CultureInfo.CurrentCulture, out _);
 
             // Assert
             Assert.AreEqual(default(CalculateResult), result);
@@ -87,7 +87,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
             // Act
             // Using InvariantCulture since this is internal
-            var result = engine.Interpret(input, CultureInfo.InvariantCulture);
+            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
             Assert.IsNotNull(result);
@@ -111,7 +111,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
             // Act
             // Using InvariantCulture since this is internal
-            var result = engine.Interpret(input, CultureInfo.InvariantCulture);
+            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
             Assert.IsNotNull(result);
@@ -135,7 +135,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
-            var result = engine.Interpret(input, cultureInfo);
+            var result = engine.Interpret(input, cultureInfo, out _);
 
             // Assert
             Assert.IsNotNull(result);
@@ -184,7 +184,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
             // Act
             // Using InvariantCulture since this is internal
-            var result = engine.Interpret(input, CultureInfo.InvariantCulture);
+            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
             Assert.IsNotNull(result);
@@ -210,7 +210,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
             // Act
             // Using InvariantCulture since this is internal
-            var result = engine.Interpret(input, CultureInfo.InvariantCulture);
+            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
             Assert.IsNotNull(result);
