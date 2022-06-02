@@ -8,6 +8,7 @@
     - [Calculator](/doc/devdocs/modules/launcher/plugins/calculator.md)
     - [Folder](/doc/devdocs/modules/launcher/plugins/folder.md)
     - [Indexer](/doc/devdocs/modules/launcher/plugins/indexer.md)
+    - [OneNote](/doc/devdocs/modules/launcher/plugins/onenote.md)
     - [Program](/doc/devdocs/modules/launcher/plugins/program.md)
     - [Registry](/doc/devdocs/modules/launcher/plugins/registry.md)
     - [Shell](/doc/devdocs/modules/launcher/plugins/shell.md)
