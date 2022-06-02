@@ -32,38 +32,6 @@ namespace
         RTL_OSVERSIONINFOW info = { 0 };
         return info;
     }
-
-    DWORD WINAPI CheckImmersiveDarkMode(LPVOID lpParam)
-    {
-        HWND window = (HWND)lpParam;
-        HANDLE hEvent;
-        HKEY hKey;
-
-        // Open the Key to listen
-        RegOpenKeyEx(HKEY_CURRENT_USER, HKEY_WINDOWS_THEME, 0, KEY_NOTIFY, &hKey);
-
-        while (true)
-        {
-            // Create an event.
-            hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-            if (hEvent != 0)
-            {
-                // Watch the registry key for a change of value.
-                RegNotifyChangeKeyValue(hKey,
-                                        TRUE,
-                                        REG_NOTIFY_CHANGE_LAST_SET,
-                                        hEvent,
-                                        TRUE);
-
-                WaitForSingleObject(hEvent, INFINITE);
-
-                auto theme = ThemeHelpers::GetAppTheme();
-                ThemeHelpers::SetImmersiveDarkMode(window, theme == AppTheme::Dark);
-            }
-        }
-
-        return 0;
-    }
 }
 
 // based on https://stackoverflow.com/questions/51334674/how-to-detect-windows-10-light-dark-mode-in-win32-application

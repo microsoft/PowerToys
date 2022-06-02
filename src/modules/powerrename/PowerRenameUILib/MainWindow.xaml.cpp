@@ -22,7 +22,7 @@
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <common/Themes/theme_helpers.h>
-#include <common/Themes/ThemeListener.h>
+#include <common/Themes/theme_listener.h>
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;

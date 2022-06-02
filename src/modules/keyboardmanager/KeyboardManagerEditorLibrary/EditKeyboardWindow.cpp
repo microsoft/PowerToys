@@ -22,7 +22,7 @@
 #include "UIHelpers.h"
 #include "ShortcutErrorType.h"
 #include "EditorConstants.h"
-#include <common/Themes/ThemeListener.h>
+#include <common/Themes/theme_listener.h>
 
 using namespace winrt::Windows::Foundation;
 
