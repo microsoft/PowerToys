@@ -1693,7 +1693,6 @@ Roboto
 roslyn
 Rothera
 ROUNDSMALL
-rovi
 royvou
 Rpc
 RRF

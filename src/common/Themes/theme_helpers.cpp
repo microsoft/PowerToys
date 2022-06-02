@@ -21,11 +21,11 @@ namespace
             RtlGetVersionPtr fxPtr = (RtlGetVersionPtr)::GetProcAddress(hMod, "RtlGetVersion");
             if (fxPtr != nullptr)
             {
-                RTL_OSVERSIONINFOW rovi = { 0 };
-                rovi.dwOSVersionInfoSize = sizeof(rovi);
-                if (STATUS_SUCCESS == fxPtr(&rovi))
+                RTL_OSVERSIONINFOW info = { 0 };
+                info.dwOSVersionInfoSize = sizeof(info);
+                if (STATUS_SUCCESS == fxPtr(&info))
                 {
-                    return rovi;
+                    return info;
                 }
             }
         }
