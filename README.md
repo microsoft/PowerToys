@@ -132,7 +132,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 ### PowerToys Run
 
 - The Services plugin is able to search for parts of the name, display name or service type. Thanks [@htcfreek](https://github.com/htcfreek)!
-- The Services plugin now supports the startup type 'Automatic (Delayed autostart)'. Thanks [@htcfreek](https://github.com/htcfreek)!
+- The Services plugin now supports the startup type 'Automatic (Delayed Autostart)'. Thanks [@htcfreek](https://github.com/htcfreek)!
 - The Services plugin now has tooltips for large service names and other UI improvements. Thanks [@htcfreek](https://github.com/htcfreek)!
 - The TimeDate plugin gave results for queries containing just numbers on global queries. This has been fixed. Thanks [@htcfreek](https://github.com/htcfreek)!
 - We've introduced a throttle before a query is done to ensure typing is done to increase performance. Thanks [@shandsj](https://github.com/shandsj)!
