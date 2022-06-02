@@ -121,7 +121,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 
 ### Keyboard Manager
 
-- Now up to 4 modifier keys can be used in shortcuts.  This will allow you to use the Office key as an example.
+- Now up to four modifier keys can be used in shortcuts. This will allow you to use the Office key (which sends Win+Ctrl+Shift+Alt), for example.
 - Fixed a bug locking Keyboard Manager when two shortcut mapping were pressed at the same time.
 - Removed event spam for certain telemetry events.
 
