@@ -186,7 +186,6 @@ private:
                 return hr;
             }
             CAtlFile writePipe(hWritePipe);
-            MessageBox(parent, L"AAAAAAAAAAAAA", path.c_str(), MB_OK);
 
             CString commandLine;
             commandLine.Format(_T("\"%s\""), lpApplicationName);
@@ -215,16 +214,9 @@ private:
                 NULL,
                 &startupInfo,
                 &processInformation);
-            HWND parent2 = nullptr;
-            if (m_site)
-            {
-                RETURN_IF_FAILED(IUnknown_GetWindow(m_site.Get(), &parent2));
 
-            MessageBox(parent, path.c_str(), L"IMA SAJT", MB_OK);
-            }
             RunNonElevatedEx(path.c_str(), {}, get_module_folderpath(g_hInst));
-            MessageBox(parent, path.c_str(), L"asd352432424", MB_OK);
-            ShellExecute(parent2, L"open", L"C:\\Users\\stefan\\Projects\\PowerToys\\x64\\Debug\\modules\\PowerRename\\PowerToys.PowerRename.exe", nullptr, nullptr, SW_SHOWNORMAL);
+
             delete[] lpszCommandLine;
             if (!CloseHandle(processInformation.hProcess))
             {
@@ -236,7 +228,6 @@ private:
                 hr = HRESULT_FROM_WIN32(GetLastError());
                 return hr;
             }
-            MessageBox(parent, path.c_str(), L"CCCCCCCCCCCCCCCC", MB_OK);
 
             //m_pdtobj will be NULL when invoked from the MSIX build as Initialize is never called (IShellExtInit functions aren't called in case of MSIX).
             DWORD fileCount = 0;
@@ -256,10 +247,6 @@ private:
                 // Write the file path into the input stream for image resizer
                 writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
             }
-            std::wstring asd = L"asdasdasd";
-            asd += L" " + std::to_wstring( fileCount) + L" SDASDASDAD";
-            MessageBox(parent, asd.c_str(), L"CCCCCCCCCCCCCCCC", MB_OK);
-
             writePipe.Close();
         }
         Trace::InvokedRet(hr);

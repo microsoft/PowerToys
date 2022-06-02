@@ -195,8 +195,8 @@ public:
             if (deploymentOperation.Status() == AsyncStatus::Error)
             {
                 auto deploymentResult{ deploymentOperation.GetResults() };
-                auto asd = deploymentOperation.ErrorCode();
-                auto asd1 = deploymentResult.ErrorText().c_str();
+                auto errorCode = deploymentOperation.ErrorCode();
+                auto errorText = deploymentResult.ErrorText().c_str();
                 returnValue = 1;
             }
             else if (deploymentOperation.Status() == AsyncStatus::Canceled)
