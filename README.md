@@ -135,7 +135,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - The Services plugin now supports the startup type 'Automatic (Delayed autostart)'. Thanks [@htcfreek](https://github.com/htcfreek)!
 - The Services plugin now has tooltips for large service names and other UI improvements. Thanks [@htcfreek](https://github.com/htcfreek)!
 - The TimeDate plugin gave results for queries containing just numbers on global queries. This has been fixed. Thanks [@htcfreek](https://github.com/htcfreek)!
-- There's now a little delay between input and starting the search, so that the performance issue of searching a query on each character and slowing down input is much better. Thanks [@shandsj](https://github.com/shandsj)!
+- We've introduced a throttle before a query is done to ensure typing is done to increase performance. Thanks [@shandsj](https://github.com/shandsj)!
 - Fixed a crash in WebSearch when there's an empty pattern setup for the system's default browser.
 - Fixed a bug where VSCodeWorkspaces was not finding portable installations of VSCode. Thanks [@harvastum](https://github.com/harvastum)!
 
