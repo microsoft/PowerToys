@@ -1731,6 +1731,7 @@ rst
 Rstrtmgr
 RTB
 RTLREADING
+RTSS
 ruleset
 RUNACTIVEXCTLS
 runas
