@@ -113,7 +113,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 
 - No longer tries to change metadata on files that were not actually resized. Thanks [@adamchilders](https://github.com/adamchilders)!
 
-### File explorer
+### File explorer add-ons
 
 - Fixed a bug where modules depending on WebView2 would be limited to opening files smaller than 2 MB.
 - Add a viewBox attribute to svgs that don't have one so that the preview tries to show the whole image.
