@@ -81,7 +81,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - Keyboard Manager now allows up to 4 modifier keys for shortcuts and has received some quality fixes.
 
 ### Known issues
-- There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications in some cases, or by some UAC settings which cause every application to run elevated. If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
+- There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications in some cases (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this), or by some UAC settings which cause every application to run elevated. If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
 - Some users are [unable to install PowerToys](https://github.com/microsoft/PowerToys/issues/18021) due to the Windows App SDK runtime failing to install. If you're affected by this, please check the issue to verify if any of the presented solutions works for you.
 - PowerToys can't currently install on Windows 10 ARM64, due to the Windows App SDK installer dependency failing to install. We're aware of this and investigating a workaround until the Windows App SDK installer supports Windows 10 ARM64.
 
@@ -115,7 +115,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 
 ### File explorer add-ons
 
-- Fixed a bug where modules depending on WebView2 would be limited to opening files smaller than 2 MB.
+- Fixed a bug where modules depending on WebView2 would be limited to opening files smaller than 2 MB. Now the resulting html is generated into a temporary file before presenting it.
 - Add a viewBox attribute to svgs that don't have one so that the preview tries to show the whole image.
 - Remove scrollbar that was showing when rendering svg thumbnails.
 
