@@ -1,4 +1,4 @@
-#include "ThemeListener.h"
+#include "theme_listener.h"
 
 #define HKEY_WINDOWS_THEME L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"
 
