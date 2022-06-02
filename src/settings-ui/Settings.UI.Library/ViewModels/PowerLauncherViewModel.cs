@@ -94,11 +94,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     break;
             }
 
-            foreach (var plugin in Plugins)
-            {
-                plugin.PropertyChanged += OnPluginInfoChange;
-            }
-
             SearchPluginsCommand = new RelayCommand(SearchPlugins);
         }
 
@@ -412,6 +407,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (_plugins == null)
                 {
                     _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(settings.Plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)));
+                    foreach (var plugin in Plugins)
+                    {
+                        plugin.PropertyChanged += OnPluginInfoChange;
+                    }
                 }
 
                 return _plugins;
@@ -420,7 +419,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public bool ShowAllPluginsDisabledWarning
         {
-            get => EnablePowerLauncher && Plugins.Any() && Plugins.All(x => x.Disabled);
+            get => EnablePowerLauncher && settings.Plugins.Any() && settings.Plugins.All(x => x.Disabled);
         }
 
         public bool ShowPluginsLoadingMessage
