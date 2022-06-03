@@ -44,6 +44,8 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string LnkResolvedPath { get; set; }
 
+        public string LnkResolvedExecutableName { get; set; }
+
         public string ParentDirectory { get; set; }
 
         public string ExecutableName { get; set; }
@@ -97,7 +99,8 @@ namespace Microsoft.Plugin.Program.Programs
             var nameMatch = StringMatcher.FuzzySearch(query, Name);
             var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
             var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
-            var score = new[] { nameMatch.Score, descriptionMatch.Score / 2, executableNameMatch.Score }.Max();
+            var lnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableName);
+            var score = new[] { nameMatch.Score, descriptionMatch.Score / 2, executableNameMatch.Score, lnkResolvedExecutableNameMatch.Score }.Max();
             return score;
         }
 
@@ -496,6 +499,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
 
                     program.LnkResolvedPath = program.FullPath;
+                    program.LnkResolvedExecutableName = Path.GetFileName(target);
 
                     // Using CurrentCulture since this is user facing
                     program.FullPath = Path.GetFullPath(target).ToLowerInvariant();
