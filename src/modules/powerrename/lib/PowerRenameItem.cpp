@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "PowerRenameItem.h"
-#include <common/themes/icon_helpers.h>
 
 int CPowerRenameItem::s_id = 0;
 
@@ -177,16 +176,6 @@ IFACEMETHODIMP CPowerRenameItem::GetId(_Out_ int* id)
 {
     CSRWSharedAutoLock lock(&m_lock);
     *id = m_id;
-    return S_OK;
-}
-
-IFACEMETHODIMP CPowerRenameItem::GetIconIndex(_Out_ int* iconIndex)
-{
-    if (m_iconIndex == -1)
-    {
-        GetIconIndexFromPath((PCWSTR)m_path, &m_iconIndex);
-    }
-    *iconIndex = m_iconIndex;
     return S_OK;
 }
 
