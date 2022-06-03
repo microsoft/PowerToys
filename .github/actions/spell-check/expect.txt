@@ -388,6 +388,7 @@ DCOM
 dcomp
 DComposition
 ddf
+DDLM
 Deact
 debian
 debugbreak
@@ -1295,6 +1296,7 @@ MYTZ
 NAMECHANGE
 nameof
 namespace
+namespaceanddescendants
 Navassa
 NCACTIVATE
 ncc
