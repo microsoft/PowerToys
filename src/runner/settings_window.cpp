@@ -11,7 +11,6 @@
 #include "restart_elevated.h"
 #include "UpdateUtils.h"
 #include "centralized_kb_hook.h"
-#include "Generated Files/resource.h"
 
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.cpp>
@@ -21,7 +20,6 @@
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/timeutil.h>
-#include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 #include <common/updating/updateState.h>
 #include <common/themes/windows_colors.h>
@@ -199,6 +197,67 @@ void receive_json_send_to_main_thread(const std::wstring& msg)
     dispatch_run_on_main_ui_thread(dispatch_received_json_callback, copy);
 }
 
+// Try to run the Settings process with non-elevated privileges.
+BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, PROCESS_INFORMATION* process_info)
+{
+    HWND hwnd = GetShellWindow();
+    if (!hwnd)
+    {
+        return false;
+    }
+
+    DWORD pid;
+    GetWindowThreadProcessId(hwnd, &pid);
+
+    winrt::handle process{ OpenProcess(PROCESS_CREATE_PROCESS, FALSE, pid) };
+    if (!process)
+    {
+        return false;
+    }
+
+    SIZE_T size = 0;
+    InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
+    auto pproc_buffer = std::unique_ptr<char[]>{ new (std::nothrow) char[size] };
+    auto pptal = reinterpret_cast<PPROC_THREAD_ATTRIBUTE_LIST>(pproc_buffer.get());
+    if (!pptal)
+    {
+        return false;
+    }
+
+    if (!InitializeProcThreadAttributeList(pptal, 1, 0, &size))
+    {
+        return false;
+    }
+
+    if (!UpdateProcThreadAttribute(pptal,
+                                   0,
+                                   PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
+                                   &process,
+                                   sizeof(process),
+                                   nullptr,
+                                   nullptr))
+    {
+        return false;
+    }
+
+    STARTUPINFOEX siex = { 0 };
+    siex.lpAttributeList = pptal;
+    siex.StartupInfo.cb = sizeof(siex);
+
+    BOOL process_created = CreateProcessW(executable_path,
+                                          executable_args,
+                                          nullptr,
+                                          nullptr,
+                                          FALSE,
+                                          EXTENDED_STARTUPINFO_PRESENT,
+                                          nullptr,
+                                          nullptr,
+                                          &siex.StartupInfo,
+                                          process_info);
+    g_isLaunchInProgress = false;
+    return process_created;
+}
+
 DWORD g_settings_process_id = 0;
 
 void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window)
@@ -296,24 +355,13 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
 
     if (is_process_elevated())
     {
-        const bool explorer_is_elevated = is_process_of_window_elevated(GetShellWindow());
-        if (explorer_is_elevated)
+        auto res = RunNonElevatedFailsafe(executable_path, executable_args, get_module_folderpath());
+        process_created = res.has_value();
+        if (process_created)
         {
-            MessageBoxW(nullptr,
-                        GET_RESOURCE_STRING(IDS_CANNOT_LAUNCH_SETTINGS_NONELEVATED).c_str(),
-                        L"PowerToys",
-                        MB_OK | MB_ICONERROR);
-        }
-        else
-        {
-            auto res = RunNonElevatedFailsafe(executable_path, executable_args, get_module_folderpath());
-            process_created = res.has_value();
-            if (process_created)
-            {
-                process_info.dwProcessId = res->processID;
-                process_info.hProcess = res->processHandle.release();
-                g_isLaunchInProgress = false;
-            }
+            process_info.dwProcessId = res->processID;
+            process_info.hProcess = res->processHandle.release();
+            g_isLaunchInProgress = false;
         }
     }
 
