@@ -122,7 +122,4 @@
   <data name="BUGREPORT_SUCCESS" xml:space="preserve">
     <value>Bug report .zip file has been created on your Desktop.</value>
   </data>
-  <data name="CANNOT_LAUNCH_SETTINGS_NONELEVATED" xml:space="preserve">
-    <value>Cannot start PowerToys.Settings process non-elevated, because explorer.exe process is elevated. Consider enabling UAC.</value>
-  </data>  
 </root>
