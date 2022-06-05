@@ -30,7 +30,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 - Our installer will install the following items:
    - [.NET 6.0.5 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0#runtime-desktop-6.0.5) or a newer 6.0.x runtime. 
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version. 
-   - [Windows App SDK Runtime 1.0.3](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads). This will install version 1.0.3 if this or newer version is not installed already.
+   - [Windows App SDK Runtime 1.1](https://docs.microsoft.com/windows/apps/windows-app-sdk/downloads). This will install version 1.1.0 if this or newer version is not installed already.
    - [Microsoft Visual C++ Redistributable](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022) installer. This will install one of the latest versions available.
 
 ### Via GitHub with EXE [Recommended]
