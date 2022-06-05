@@ -79,9 +79,10 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - The work for running natively on ARM64 has been wrapped up and a build is released. Thanks [@snickler](https://github.com/snickler)!
 - Power Rename no longer runs on WinUI 2 and is now running on WinUI 3.
 - Keyboard Manager now allows up to 4 modifier keys for shortcuts and has received some quality fixes.
+- Upgraded the Windows App SDK runtimes to 1.1.0, fixing an issue where Settings wouldn't start with UAC off and improved performance.
 
 ### Known issues
-- There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications in some cases (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this), or by some UAC settings which cause every application to run elevated. If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
+- There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
 - Some users are [unable to install PowerToys](https://github.com/microsoft/PowerToys/issues/18021) due to the Windows App SDK runtime failing to install. If you're affected by this, please check the issue to verify if any of the presented solutions works for you.
 - PowerToys [can't currently install on Windows 10 ARM64](https://github.com/microsoft/PowerToys/issues/18583), due to the Windows App SDK installer dependency failing to install. We're aware of this and investigating a workaround until the Windows App SDK installer supports Windows 10 ARM64. It installs correctly on Windows 11 ARM64.
 
@@ -152,6 +153,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - The rounded corner settings for FancyZones now only show on Windows 11. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Fixed a UI freeze when entering the Keyboard Manager page with clean settings.
 - Fixed a UI glitch where a message was being shown that all PowerToys Run plugins were disabled when using the search function. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Upgraded the Windows App SDK runtimes to 1.1.0, fixing an issue where Settings wouldn't start with UAC off and improved performance.
 
 ### Runner
 
@@ -163,6 +165,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - The installer is now built using a beta version of Wix 3.14 for arm64 support.
 - Added the VC++ Redistributable binary as a requirement.
 - Added the version Windows App SDK installer name so that it doesn't try to use an outdated local installer.
+- Upgraded the Windows App SDK dependency to 1.1.0.
 
 ### Development
 
