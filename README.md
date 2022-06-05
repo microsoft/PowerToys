@@ -79,7 +79,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - The work for running natively on ARM64 has been wrapped up and a build is released. Thanks [@snickler](https://github.com/snickler)!
 - Power Rename no longer runs on WinUI 2 and is now running on WinUI 3.
 - Keyboard Manager now allows up to 4 modifier keys for shortcuts and has received some quality fixes.
-- Upgraded the Windows App SDK runtimes to 1.1.0, fixing an issue where Settings wouldn't start with UAC off and improved performance.
+- Upgraded the Windows App SDK runtimes to 1.1.0, fixing an issue where Settings wouldn't start with UAC off and improving performance.
 
 ### Known issues
 - There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
@@ -153,7 +153,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - The rounded corner settings for FancyZones now only show on Windows 11. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Fixed a UI freeze when entering the Keyboard Manager page with clean settings.
 - Fixed a UI glitch where a message was being shown that all PowerToys Run plugins were disabled when using the search function. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Upgraded the Windows App SDK runtimes to 1.1.0, fixing an issue where Settings wouldn't start with UAC off and improved performance.
+- Upgraded the Windows App SDK runtimes to 1.1.0, fixing an issue where Settings wouldn't start with UAC off and improving performance.
 
 ### Runner
 
