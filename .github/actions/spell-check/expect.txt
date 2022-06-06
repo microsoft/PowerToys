@@ -433,6 +433,7 @@ devblogs
 devdocs
 devenum
 DEVMON
+devops
 devpkey
 DEVSOURCE
 dhcp
