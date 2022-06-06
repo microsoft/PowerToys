@@ -1654,11 +1654,11 @@
             <?define CompGUIDPrefix = 51B656B3-2D45-49D8-9871-F0A1C8BEEE?>
             <?endif?>
             <Component
-                Id="SettigsV2_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+                Id="SettingsV2_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
                 Directory="WinAppSDKLoc$(var.IdSafeLanguage)SettingsV2InstallFolder"
                 Guid="$(var.CompGUIDPrefix)01">
-                <File Id="SettigsV2_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)Settings\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
-                <File Id="SettigsV2_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)Settings\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+                <File Id="SettingsV2_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)Settings\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+                <File Id="SettingsV2_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)Settings\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
             </Component>
             <Component
                 Id="PowerRename_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
