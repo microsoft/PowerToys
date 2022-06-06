@@ -31,8 +31,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         public void EnvironmentIndependentQueryResults(string typedString, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new Mock<Main>();
-            Query expectedQuery = new Query(typedString);
+            var main = new Mock<Main>();
+            var expectedQuery = new Query(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
@@ -50,8 +50,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         public void DelayedQueryResults(string typedString, string expectedResult)
         {
             // Setup
-            Mock<Main> main = new Mock<Main>();
-            Query expectedQuery = new Query(typedString);
+            var main = new Mock<Main>();
+            var expectedQuery = new Query(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery, true).FirstOrDefault().SubTitle;
@@ -64,9 +64,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         public void UefiCommandIsAvailableOnUefiSystems()
         {
             // Setup
-            Mock<Main> main = new Mock<Main>();
+            var main = new Mock<Main>();
             main.Object.IsBootedInUefiMode = true; // Simulate system with UEFI.
-            Query expectedQuery = new Query("uefi firm");
+            var expectedQuery = new Query("Effie firm");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
@@ -79,9 +79,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         public void UefiCommandIsNotAvailableOnSystemsWithoutUefi()
         {
             // Setup
-            Mock<Main> main = new Mock<Main>();
+            var main = new Mock<Main>();
             main.Object.IsBootedInUefiMode = false; // Simulate system without UEFI.
-            Query expectedQuery = new Query("uefi firm");
+            var expectedQuery = new Query("Effie firm");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();
