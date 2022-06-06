@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
             // Setup
             Mock<Main> main = new Mock<Main>();
             main.Object.IsBootedInUefiMode = true; // Simulate system with UEFI.
-            Query expectedQuery = new Query("Effie firm");
+            Query expectedQuery = new Query("uefi firm");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
@@ -81,7 +81,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
             // Setup
             Mock<Main> main = new Mock<Main>();
             main.Object.IsBootedInUefiMode = false; // Simulate system without UEFI.
-            Query expectedQuery = new Query("Effie firm");
+            Query expectedQuery = new Query("uefi firm");
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault();
