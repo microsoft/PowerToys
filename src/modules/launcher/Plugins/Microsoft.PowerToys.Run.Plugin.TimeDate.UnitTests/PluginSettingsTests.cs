@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void SettingsCount()
         {
             // Setup
-            var settings = TimeDateSettings.Instance?.GetType()?.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance);
+            PropertyInfo[] settings = TimeDateSettings.Instance?.GetType()?.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance);
 
             // Act
             var result = settings?.Length;
@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void DoesSettingExist(string name)
         {
             // Setup
-            var settings = TimeDateSettings.Instance?.GetType();
+            Type settings = TimeDateSettings.Instance?.GetType();
 
             // Act
             var result = settings?.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
@@ -50,10 +50,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void DefaultValues(string name, bool valueExpected)
         {
             // Setup
-            var setting = TimeDateSettings.Instance;
+            TimeDateSettings setting = TimeDateSettings.Instance;
 
             // Act
-            var propertyInfo = setting?.GetType()?.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            PropertyInfo propertyInfo = setting?.GetType()?.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
             var result = propertyInfo?.GetValue(setting);
 
             // Assert
