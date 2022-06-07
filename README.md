@@ -30,12 +30,11 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 - Our installer will install the following items:
    - [.NET 6.0.5 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.5) or a newer 6.0.x runtime. 
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version. 
-   - [Windows App SDK Runtime 1.1](https://docs.microsoft.com/windows/apps/windows-app-sdk/downloads). This will install version 1.1.0 if this or newer version is not installed already.
    - [Microsoft Visual C++ Redistributable](https://docs.microsoft.com/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022) installer. This will install one of the latest versions available.
 
 ### Via GitHub with EXE [Recommended]
 
- [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.59.0-x64.exe` or `PowerToysSetup-0.59.0-arm64.exe` to download the PowerToys installer that matches your machine's architecture. Note: There's a [known issue](https://github.com/microsoft/PowerToys/issues/18583) where PowerToys can't install correctly on Windows 10 on arm64, but installs correctly on Windows 11.
+ [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.59.0-x64.exe` or `PowerToysSetup-0.59.0-arm64.exe` to download the PowerToys installer that matches your machine's architecture.
 
 This is our preferred method.
 
@@ -80,11 +79,10 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - Power Rename no longer runs on WinUI 2 and is now running on WinUI 3.
 - Keyboard Manager now allows up to 4 modifier keys for shortcuts and has received some quality fixes.
 - Upgraded the Windows App SDK runtimes to 1.1.0, fixing an issue where Settings wouldn't start with UAC off and improving performance.
+- The Windows App SDK runtime binaries are being shipped with PowerToys, to fix the installations issues that have been reported and allow running on Windows 10 ARM64.
 
 ### Known issues
 - There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
-- Some users are [unable to install PowerToys](https://github.com/microsoft/PowerToys/issues/18021) due to the Windows App SDK runtime failing to install. If you're affected by this, please check the issue to verify if any of the presented solutions works for you.
-- PowerToys [can't currently install on Windows 10 ARM64](https://github.com/microsoft/PowerToys/issues/18583), due to the Windows App SDK installer dependency failing to install. We're aware of this and investigating a workaround until the Windows App SDK installer supports Windows 10 ARM64. It installs correctly on Windows 11 ARM64.
 
 ### General
 
@@ -164,8 +162,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - Updated the .NET dependency to 6.0.5.
 - The installer is now built using a beta version of Wix 3.14 for arm64 support.
 - Added the VC++ Redistributable binary as a requirement.
-- Added the version Windows App SDK installer name so that it doesn't try to use an outdated local installer.
-- Upgraded the Windows App SDK dependency to 1.1.0.
+- The Windows App SDK runtime binaries are being shipped with PowerToys instead of running its installer. This should fix most of the install issues with 0.58.
 
 ### Development
 
