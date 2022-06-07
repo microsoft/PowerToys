@@ -67,9 +67,9 @@ void LogEnumDisplayMonitors()
     Logger::log(L"");
 }
 
-void LogWMIProp(IWbemClassObject* pclsObj, std::wstring_view prop)
+void LogWMIProp(IWbemClassObject* wbemClassObj, std::wstring_view prop)
 {
-    if (!pclsObj)
+    if (!wbemClassObj)
     {
         return;
     }
@@ -77,7 +77,7 @@ void LogWMIProp(IWbemClassObject* pclsObj, std::wstring_view prop)
     VARIANT vtProp{};
 
     // Get the value of the Name property
-    auto hres = pclsObj->Get(prop.data(), 0, &vtProp, 0, 0);
+    auto hres = wbemClassObj->Get(prop.data(), 0, &vtProp, 0, 0);
     if (FAILED(hres))
     {
         Logger::log(L"Get {} Error code = {} ", prop, get_last_error_or_default(hres));
@@ -256,7 +256,7 @@ void LogWMI()
     CoUninitialize();
 }
 
-void LogWMICIM2()
+void LogWMICIMV2()
 {
     Logger::log(L" ---- WMI ---- ");
 
@@ -453,7 +453,7 @@ void LogInfo()
     Logger::log(L"");
 
     LogEnumDisplayMonitors();
-    LogWMICIM2();
+    LogWMICIMV2();
     LogWMI();
     LogCCD();
 
