@@ -1740,6 +1740,7 @@ Rstrtmgr
 RTB
 RTCS
 RTLREADING
+RTSS
 ruleset
 RUNACTIVEXCTLS
 runas
@@ -1881,6 +1882,7 @@ SOURCECLIENTAREAONLY
 SOURCEHEADER
 sourceid
 sourcesdirectory
+spam
 spdisp
 spdlog
 spdo
