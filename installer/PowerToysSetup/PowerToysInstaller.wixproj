@@ -44,8 +44,9 @@ call "..\..\publish.cmd" arm64
   <PropertyGroup>
     <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-    <SuppressIces>ICE91</SuppressIces>
-    <SuppressValidation>True</SuppressValidation>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LinkerAdditionalOptions>-v -sh</LinkerAdditionalOptions>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CustomDialogs\PTInstallDirDlg.wxs" />
