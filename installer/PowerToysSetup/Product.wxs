@@ -221,8 +221,11 @@
             <Custom Action="UnApplyModulesRegistryChangeSets" Before="RemoveFiles">
                 Installed AND (REMOVE="ALL")
             </Custom>
+			<Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles">
+				Installed AND (REMOVE="ALL")
+			</Custom>
 
-            <!-- TODO: Use to activate embedded MSIX -->
+			<!-- TODO: Use to activate embedded MSIX -->
             <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
         Installed AND (REMOVE="ALL")
       </Custom>-->
@@ -369,8 +372,16 @@
                       DllEntry="UnApplyModulesRegistryChangeSetsCA"
                   />
 
+		<CustomAction Id="UnRegisterContextMenuPackages"
+                      Return="ignore"
+			          Impersonate="yes"
+			          Execute="deferred"
+			          BinaryKey="PTCustomActions"
+			          DllEntry="UnRegisterContextMenuPackagesCA"
+                  />
 
-        <!-- Close 'PowerToys.exe' before uninstall-->
+
+		<!-- Close 'PowerToys.exe' before uninstall-->
         <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />
         <Property Id="MSIFASTINSTALL" Value="DisableShutdown" />
         <util:CloseApplication CloseMessage="yes" Target="PowerToys.exe" ElevatedCloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />

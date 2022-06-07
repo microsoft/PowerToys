@@ -37,6 +37,12 @@
       <Extensions>
         <desktop4:Extension Category="windows.fileExplorerContextMenus">
           <desktop4:FileExplorerContextMenus>
+            <desktop5:ItemType Type="Directory">
+              <desktop5:Verb Id="PowerRenameCommand" Clsid="1861E28B-A1F0-4EF4-A1FE-4C8CA88E2174" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type="Directory\Background">
+              <desktop5:Verb Id="PowerRenameCommand" Clsid="1861E28B-A1F0-4EF4-A1FE-4C8CA88E2174" />
+            </desktop5:ItemType>
             <desktop5:ItemType Type="*">
               <desktop5:Verb Id="PowerRenameCommand" Clsid="1861E28B-A1F0-4EF4-A1FE-4C8CA88E2174" />
             </desktop5:ItemType>

@@ -18,9 +18,6 @@
     <ClInclude Include="framework.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PowerRenameContextMenu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -29,9 +26,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PowerRenameContextMenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -41,6 +35,177 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="PowerRenameUI.ico">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PowerRenameContextMenu.rc">
@@ -48,9 +213,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="PowerRenameUI.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="Assets\BadgeLogo.scale-125.png">
       <Filter>Resource Files</Filter>
     </Image>
@@ -541,12 +703,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Assets\*.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Assets\*.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Assets\BadgeLogo.scale-100.png">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Assets\BadgeLogo.scale-125.png">

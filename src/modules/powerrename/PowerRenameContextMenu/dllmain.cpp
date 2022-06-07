@@ -22,11 +22,14 @@
 #include <trace.h>
 
 #include <mutex>
+#include <thread>
 #include <shellapi.h>
 
 using namespace Microsoft::WRL;
 
 HINSTANCE g_hInst = 0;
+
+#define BUFSIZE 4096 * 4
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -94,34 +97,11 @@ public:
     IFACEMETHODIMP Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
     try
     {
-        HWND parent = nullptr;
-        if (m_site)
-        {
-            ComPtr<IOleWindow> oleWindow;
-            RETURN_IF_FAILED(m_site.As(&oleWindow));
-            RETURN_IF_FAILED(oleWindow->GetWindow(&parent));
-        }
-
-        std::wostringstream title;
-        title << Title();
-
         if (selection)
         {
-            DWORD count;
-            RETURN_IF_FAILED(selection->GetCount(&count));
-            title << L" (" << count << L" selected items)";
+            RunPowerRename(selection);
         }
-        else
-        {
-            title << L"(no selected items)";
-        }
-        std::filesystem::path modulePath{ wil::GetModuleFileNameW<std::wstring>() };
-        std::wstring path = get_module_folderpath(g_hInst);
-        path = path + L"\\PowerToys.PowerRename.exe";
-        std::wstring iconResourcePath = get_module_filename();
 
-        MessageBox(parent, iconResourcePath.c_str(), iconResourcePath.c_str(), MB_OK);
-        RunPowerRename(selection);
         return S_OK;
     }
     CATCH_RETURN();
@@ -149,111 +129,110 @@ protected:
     ComPtr<IUnknown> m_site;
 
 private:
-    HRESULT RunPowerRename(IShellItemArray* psiItemArray)
+
+    HRESULT StartNamedPipeServerAndSendData(std::wstring pipe_name, IShellItemArray* psiItemArray)
     {
-        HRESULT hr = E_FAIL;
-        HWND parent = nullptr;
-        if (m_site)
+        hPipe = CreateNamedPipe(
+            pipe_name.c_str(),
+            PIPE_ACCESS_DUPLEX |
+                WRITE_DAC,
+            PIPE_TYPE_MESSAGE |
+                PIPE_READMODE_MESSAGE |
+                PIPE_WAIT,
+            PIPE_UNLIMITED_INSTANCES,
+            BUFSIZE,
+            BUFSIZE,
+            0,
+            NULL);
+
+        if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
         {
-            ComPtr<IOleWindow> oleWindow;
-            RETURN_IF_FAILED(m_site.As(&oleWindow));
-            RETURN_IF_FAILED(oleWindow->GetWindow(&parent));
+            return E_FAIL;
         }
 
+        // This call blocks until a client process connects to the pipe
+        BOOL connected = ConnectNamedPipe(hPipe, NULL);
+        if (!connected)
+        {
+            if (GetLastError() == ERROR_PIPE_CONNECTED)
+            {
+                return S_OK;
+            }
+            else
+            {
+                CloseHandle(hPipe);
+            }
+            return E_FAIL;
+        }
 
+        return S_OK;
+    }
+
+    HRESULT RunPowerRename(IShellItemArray* psiItemArray)
+    {
         if (CSettingsInstance().GetEnabled())
         {
             Trace::Invoked();
             // Set the application path based on the location of the dll
             std::wstring path = get_module_folderpath(g_hInst);
             path = path + L"\\PowerToys.PowerRename.exe";
-            LPTSTR lpApplicationName = (LPTSTR)path.c_str();
-            // Create an anonymous pipe to stream filenames
-            SECURITY_ATTRIBUTES sa;
-            HANDLE hReadPipe;
-            HANDLE hWritePipe;
-            sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-            sa.lpSecurityDescriptor = NULL;
-            sa.bInheritHandle = TRUE;
-            if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
+
+            std::wstring pipe_name(L"\\\\.\\pipe\\powertoys_powerrenameinput_");
+            UUID temp_uuid;
+            wchar_t* uuid_chars = nullptr;
+            if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
             {
-                hr = HRESULT_FROM_WIN32(GetLastError());
-                return hr;
+                auto val = get_last_error_message(GetLastError());
+                Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
             }
-            if (!SetHandleInformation(hWritePipe, HANDLE_FLAG_INHERIT, 0))
+            else if (UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars) != RPC_S_OK)
             {
-                hr = HRESULT_FROM_WIN32(GetLastError());
-                return hr;
-            }
-            CAtlFile writePipe(hWritePipe);
-
-            CString commandLine;
-            commandLine.Format(_T("\"%s\""), lpApplicationName);
-            int nSize = commandLine.GetLength() + 1;
-            LPTSTR lpszCommandLine = new TCHAR[nSize];
-            _tcscpy_s(lpszCommandLine, nSize, commandLine);
-
-            STARTUPINFO startupInfo;
-            ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
-            startupInfo.cb = sizeof(STARTUPINFO);
-            startupInfo.hStdInput = hReadPipe;
-            startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-            startupInfo.wShowWindow = SW_SHOWNORMAL;
-
-            PROCESS_INFORMATION processInformation;
-
-            // Start the resizer
-            CreateProcess(
-                NULL,
-                lpszCommandLine,
-                NULL,
-                NULL,
-                TRUE,
-                0,
-                NULL,
-                NULL,
-                &startupInfo,
-                &processInformation);
-
-            RunNonElevatedEx(path.c_str(), {}, get_module_folderpath(g_hInst));
-
-            delete[] lpszCommandLine;
-            if (!CloseHandle(processInformation.hProcess))
-            {
-                hr = HRESULT_FROM_WIN32(GetLastError());
-                return hr;
-            }
-            if (!CloseHandle(processInformation.hThread))
-            {
-                hr = HRESULT_FROM_WIN32(GetLastError());
-                return hr;
+                auto val = get_last_error_message(GetLastError());
+                Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
             }
 
-            //m_pdtobj will be NULL when invoked from the MSIX build as Initialize is never called (IShellExtInit functions aren't called in case of MSIX).
-            DWORD fileCount = 0;
-            // Gets the list of files currently selected using the IShellItemArray
-            psiItemArray->GetCount(&fileCount);
-            // Iterate over the list of files
-            for (DWORD i = 0; i < fileCount; i++)
+            if (uuid_chars != nullptr)
             {
-                IShellItem* shellItem;
-                psiItemArray->GetItemAt(i, &shellItem);
-                LPWSTR itemName;
-                // Retrieves the entire file system path of the file from its shell item
-                shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
-                CString fileName(itemName);
-                // File name can't contain '?'
-                fileName.Append(_T("?"));
-                // Write the file path into the input stream for image resizer
-                writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+                pipe_name += std::wstring(uuid_chars);
+                RpcStringFree((RPC_WSTR*)&uuid_chars);
+                uuid_chars = nullptr;
             }
-            writePipe.Close();
+            create_pipe_thread = std::thread(&PowerRenameContextMenuCommand::StartNamedPipeServerAndSendData, this, pipe_name, psiItemArray);
+            RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst));
+            create_pipe_thread.join();
+
+            if (hPipe != INVALID_HANDLE_VALUE)
+            {
+                CAtlFile writePipe(hPipe);
+
+                DWORD fileCount = 0;
+                // Gets the list of files currently selected using the IShellItemArray
+                psiItemArray->GetCount(&fileCount);
+                // Iterate over the list of files
+                for (DWORD i = 0; i < fileCount; i++)
+                {
+                    IShellItem* shellItem;
+                    psiItemArray->GetItemAt(i, &shellItem);
+                    LPWSTR itemName;
+                    // Retrieves the entire file system path of the file from its shell item
+                    shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
+                    CString fileName(itemName);
+                    // File name can't contain '?'
+                    fileName.Append(_T("?"));
+                    // Write the file path into the input stream for image resizer
+                    writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+                }
+                writePipe.Close();
+            }
         }
-        Trace::InvokedRet(hr);
+        Trace::InvokedRet(S_OK);
 
-        return hr;
+        return S_OK;
     }
 
+
+    std::thread create_pipe_thread;
+    HANDLE hPipe = INVALID_HANDLE_VALUE;
     std::wstring app_name = L"PowerRename";
 };
 
