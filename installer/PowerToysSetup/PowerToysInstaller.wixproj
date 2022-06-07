@@ -44,8 +44,12 @@ call "..\..\publish.cmd" arm64
   <PropertyGroup>
     <OutputPath>$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-    <SuppressIces>ICE91</SuppressIces>
-    <SuppressValidation>True</SuppressValidation>
+    <SuppressIces>ICE40</SuppressIces>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- suppress warning 1108 regarding -sh being deprecated -->
+    <!-- -sh suppresses file file information which was causing wix build to hang in CI -->
+    <LinkerAdditionalOptions>-v -sh -sw1108</LinkerAdditionalOptions>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CustomDialogs\PTInstallDirDlg.wxs" />

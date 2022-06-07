@@ -10,9 +10,6 @@
     <?define Dotnet6PayloadSize="57791288"?>
     <?define Dotnet6PayloadHash="B5B1819CCA753B070181F50411375B80412860A3"?>
 
-    <?define WinAppSDKPayloadSize="57090456"?>
-    <?define WinAppSDKPayloadHash="1269BB136655325EF6D66A018269BDAB3921E56B"?>
-
     <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/6b6923b0-3045-4379-a96f-ef5506a65d5b/426A34C6F10EA8F7DA58A8C976B586AD84DD4BAB42A0CFDBE941F1763B7755E5/VC_redist.x64.exe"?>
     <?define VCRedistPayloadSize="25337776"?>
     <?define VCRedistPayloadHash="47996AAB6A20DBBA69969C4B36F8FC718877751F"?>
@@ -27,9 +24,6 @@
     <?define Dotnet6PayloadSize="51774400"?>
     <?define Dotnet6PayloadHash="62C15858951B123AFD4D3E14F8BE4829A7CAFF18"?>
     
-    <?define WinAppSDKPayloadSize="57092528"?>
-    <?define WinAppSDKPayloadHash="377ACE2157BE077C63C650588A18CBEFD93B5B51"?>
-
     <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/6b6923b0-3045-4379-a96f-ef5506a65d5b/6114C0A7A526EA47D9ADD78C718BEA0BA32EEF0826AA5610AF76877CC5FEB7F3/VC_redist.arm64.exe"?>
     <?define VCRedistPayloadSize="11596400"?>
     <?define VCRedistPayloadHash="DEF8E16367DE4BDDE0399614B7E358629A959942"?>
@@ -109,21 +103,6 @@
                 PerMachine="yes"
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
-            <ExePackage
-                Name="WindowsAppRuntimeInstall-1.0.3.exe"
-                Compressed="no"
-                Id="WinAppSDK101"
-                DownloadUrl="https://aka.ms/windowsappsdk/1.0/1.0.3/windowsappruntimeinstall-1.0.3-$(var.PowerToysPlatform).exe"
-                RepairCommand=""
-                Permanent="yes">
-                <ExitCode Value="-2147009274" Behavior="success"/>
-                <RemotePayload
-                    Description="Windows App SDK 1.0.3 Runtime Install"
-                    ProductName="Windows App SDK 1.0.3 Runtime Install"
-                    Size="$(var.WinAppSDKPayloadSize)"
-                    Version="1.0.3.0"
-                    Hash="$(var.WinAppSDKPayloadHash)" />
-            </ExePackage>            
             <ExePackage
                 Name="VCRedist-14.32.31326.exe"
                 DetectCondition="DetectedVCRedistVersion >= 32"
