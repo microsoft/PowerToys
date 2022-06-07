@@ -8,8 +8,8 @@
 
 | Architecture | Solution (Main) | Solution (Stable) | Installer (Main) |
 |--------------|-----------------|-------------------|------------------|
-| x64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_x64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
-| ARM64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | not on stable yet | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_arm64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
+| x64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main&jobName=Build%20x64%20Release) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_x64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
+| ARM64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_arm64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
 
 ## About
 
@@ -34,7 +34,10 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Via GitHub with EXE [Recommended]
 
- [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.59.0-x64.exe` or `PowerToysSetup-0.59.0-arm64.exe` to download the PowerToys installer that matches your machine's architecture.
+ [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture.  For most people, it is `x64`.
+ 
+ - **For x64 (most common):** click on `PowerToysSetup-0.59.0-x64.exe`
+ - **For ARM64:** `PowerToysSetup-0.59.0-arm64.exe` 
 
 This is our preferred method.
 
@@ -76,13 +79,13 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 **Highlights**
 
 - The work for running natively on ARM64 has been wrapped up and a build is released. Thanks [@snickler](https://github.com/snickler)!
-- Power Rename no longer runs on WinUI 2 and is now running on WinUI 3.
+- Power Rename now is running on WinUI 3.
 - Keyboard Manager now allows up to 4 modifier keys for shortcuts and has received some quality fixes.
 - Upgraded the Windows App SDK runtimes to 1.1.0, fixing an issue where Settings wouldn't start with UAC off and improving performance.
-- The Windows App SDK runtime binaries are being shipped with PowerToys, to fix the installations issues that have been reported and allow running on Windows 10 ARM64.
+- The Windows App SDK runtime binaries are being shipped with PowerToys which should resolve the installations issues reported with WinAppSDK.
 
 ### Known issues
-- There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
+- There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.  
 
 ### General
 
@@ -90,7 +93,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 
 ### ARM64
 
-- Added ARM64 configurations to the remaining projects.
+- ARM64 support now fully added!
 - Fixed PowerRename to work on ARM64.
 - Fixed File Explorer tools to work on ARM64.
 - Made changes for the installer projects to build ARM64 installers.
@@ -153,7 +156,7 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 - Fixed a UI glitch where a message was being shown that all PowerToys Run plugins were disabled when using the search function. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Upgraded the Windows App SDK runtimes to 1.1.0, fixing an issue where Settings wouldn't start with UAC off and improving performance.
 
-### Runner
+### Runner 
 
 - Auto-update takes into account if it's running on x64 or arm64 to download the right installer.
 
@@ -175,7 +178,6 @@ In this release, we focused on wrapping up building for native ARM64 and releasi
 
 We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 [@Aaron-Junker](https://github.com/Aaron-Junker), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@davidegiacometti](https://github.com/davidegiacometti), [@dend](https://github.com/dend), [@franky920920](https://github.com/franky920920), [@htcfreek](https://github.com/htcfreek), [@jay-o-way](https://github.com/jay-o-way), [@jsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), [@snickler](https://github.com/snickler).
-
 
 #### What is being planned for v0.60
 
