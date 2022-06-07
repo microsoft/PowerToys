@@ -183,7 +183,6 @@ For [v0.60][github-next-release-work], we'll work on below:
 
 - Environment Variables Editor PowerToy
 - Screen Measure PowerToy
-- Investigate how to embed Windows App SDK runtimes instead of having to install as a dependency.
 - Stability / bug fixes
 
 ## PowerToys Community
