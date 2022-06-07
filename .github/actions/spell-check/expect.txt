@@ -366,6 +366,7 @@ CXSMICON
 CXVIRTUALSCREEN
 cxxopts
 cyberrex
+Cyrl
 CYSMICON
 CYVIRTUALSCREEN
 cziplib
@@ -386,6 +387,7 @@ DBLCLKS
 DBLEPSILON
 DCOM
 dcomp
+dcompi
 DComposition
 ddf
 DDLM
@@ -431,6 +433,7 @@ devblogs
 devdocs
 devenum
 DEVMON
+devops
 devpkey
 DEVSOURCE
 dhcp
@@ -488,6 +491,7 @@ DVTARGETDEVICE
 DWINRT
 dwm
 dwmapi
+dwmcorei
 DWMCOLORIZATIONCOLORCHANGED
 DWMCOMPOSITIONCHANGED
 DWMNCRENDERINGCHANGED
@@ -1043,6 +1047,7 @@ Lambson
 lamotile
 langword
 Lastdevice
+Latn
 Laute
 laviusmotileng
 LAYOUTRTL
@@ -1252,6 +1257,7 @@ MOVESIZESTART
 MOVEWINDOWS
 mozilla
 mpmc
+MRM
 mru
 msbuild
 msc
@@ -1732,6 +1738,7 @@ Rsp
 rst
 Rstrtmgr
 RTB
+RTCS
 RTLREADING
 ruleset
 RUNACTIVEXCTLS
@@ -2091,6 +2098,7 @@ UAC
 UAL
 uap
 udit
+Udk
 Udmurtia
 Udp
 uefi
@@ -2345,6 +2353,7 @@ WTS
 wtsapi
 WTSAT
 Wubi
+wuceffectsi
 WVC
 Wwan
 Wwanpp
