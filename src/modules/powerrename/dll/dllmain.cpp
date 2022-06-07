@@ -48,26 +48,6 @@ namespace
             dwlConditionMask);
     }
 
-    bool IsPackageRegistered(std::wstring packageDisplayName)
-    {
-        using namespace winrt::Windows::Foundation;
-        using namespace winrt::Windows::Management::Deployment;
-
-        PackageManager packageManager;
-
-        for (auto const& package : packageManager.FindPackages())
-        {
-            const auto& packageFullName = std::wstring{ package.Id().FullName() };
-
-            if (packageFullName.contains(packageDisplayName))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     bool RegisterSparsePackage(std::wstring externalLocation, std::wstring sparsePkgPath)
     {
         using namespace winrt::Windows::Foundation;
@@ -294,12 +274,7 @@ public:
         {
             std::wstring path = get_module_folderpath(g_hInst);
             std::wstring packageUri = path + L"\\PowerRenameContextMenuPackage.msix";
-
-            std::wstring packageDisplayName{ L"PowerRenameContextMenu" };
-            if (!IsPackageRegistered(packageDisplayName))
-            {
-                RegisterSparsePackage(path, packageUri);
-            }
+            RegisterSparsePackage(path, packageUri);
         }
 
         save_settings();
