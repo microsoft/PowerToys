@@ -110,8 +110,6 @@ steps:
     restoreSolution: installer\PowerToysSetup.sln
     restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
 
-# Added the RunWixToolsOutOfProc argument because Wix candle.exe was hanging.
-# https://docs.microsoft.com/en-us/azure/devops/pipelines/troubleshooting/troubleshooting?view=azure-devops#wix-project
 - task: VSBuild@1
   displayName: 'Build PowerToys MSI'
   inputs:
@@ -119,7 +117,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:PowerToysInstaller /p:RunWixToolsOutOfProc=true ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: /t:PowerToysInstaller ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
 - task: VSBuild@1
