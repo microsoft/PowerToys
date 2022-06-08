@@ -17,22 +17,9 @@ namespace ManagedCommon
     public class ThemeListener : IDisposable
     {
         /// <summary>
-        /// Gets the Current Theme.
-        /// </summary>
-        public Theme CurrentTheme { get; private set; }
-
-        /// <summary>
         /// Gets the App Theme.
         /// </summary>
         public AppTheme AppTheme { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the current theme is high contrast.
-        /// </summary>
-        public bool IsHighContrast
-        {
-            get { return CurrentTheme != Theme.System; }
-        }
 
         /// <summary>
         /// An event that fires if the Theme changes.
@@ -46,25 +33,20 @@ namespace ManagedCommon
             var currentUser = WindowsIdentity.GetCurrent();
             var query = new WqlEventQuery(
                 $"SELECT * FROM RegistryValueChangeEvent WHERE Hive='HKEY_USERS' AND " +
-                $"((KeyPath='{currentUser.User.Value}\\\\{ThemeHelpers.HkeyWindowsPersonalizeTheme.Replace("\\", "\\\\")}' AND ValueName='{ThemeHelpers.HValueAppTheme}')" +
-                $"OR" +
-                $"(KeyPath='{currentUser.User.Value}\\\\{ThemeHelpers.HkeyWindowsTheme.Replace("\\", "\\\\")}' AND ValueName='{ThemeHelpers.HValueCurrentTheme}'))");
+                $"KeyPath='{currentUser.User.Value}\\\\{ThemeHelpers.HkeyWindowsPersonalizeTheme.Replace("\\", "\\\\")}' AND ValueName='{ThemeHelpers.HValueAppTheme}'");
             watcher = new ManagementEventWatcher(query);
             watcher.EventArrived += Watcher_EventArrived;
             watcher.Start();
 
-            CurrentTheme = ThemeHelpers.GetCurrentTheme();
             AppTheme = ThemeHelpers.GetAppTheme();
         }
 
         private void Watcher_EventArrived(object sender, EventArrivedEventArgs e)
         {
-            var currentTheme = ThemeHelpers.GetCurrentTheme();
             var appTheme = ThemeHelpers.GetAppTheme();
 
-            if (currentTheme != CurrentTheme || appTheme != AppTheme)
+            if (appTheme != AppTheme)
             {
-                CurrentTheme = currentTheme;
                 AppTheme = appTheme;
 
                 ThemeChanged?.Invoke(this);
