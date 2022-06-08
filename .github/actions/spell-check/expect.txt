@@ -190,6 +190,7 @@ buf
 BUFSIZE
 bugreport
 BUILDARCH
+BUILDNUMBER
 buildtransitive
 Burkina
 Buryatia
@@ -452,9 +453,9 @@ DLGFRAME
 DLGMODALFRAME
 dlib
 DLIMAGES
-dllimport
 dllexport
 dllhost
+dllimport
 dllmain
 dlls
 DNLEN
@@ -486,6 +487,7 @@ DVSD
 DVSL
 DVTARGETDEVICE
 DWINRT
+dwl
 dwm
 dwmapi
 DWMCOLORIZATIONCOLORCHANGED
@@ -499,6 +501,7 @@ DWMWCP
 DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 dword
+DWORDLONG
 dworigin
 dwrite
 dxgi
@@ -535,9 +538,9 @@ Eqn
 ERASEBKGND
 EREOF
 EResize
+ERole
 ERRORMESSAGE
 ERRORTITLE
-ERole
 ESettings
 esize
 esrp
@@ -708,6 +711,7 @@ HHOOK
 hhx
 Hiber
 Hiberboot
+HIBYTE
 HICON
 HIDEWINDOW
 highlighter
@@ -845,8 +849,8 @@ IInspectable
 IIO
 IItem
 IJson
-IKs
 Ijwhost
+IKs
 IList
 ILogon
 IMAGEHLP
@@ -1089,6 +1093,7 @@ LMEM
 LMENU
 lnk
 LOADSTRING
+LOBYTE
 LOCALAPPDATA
 LOCALDISPLAY
 LOCALPACKAGE
@@ -1149,6 +1154,7 @@ Macquarie
 Magadan
 Mainwindow
 majortype
+MAJORVERSION
 makeappx
 makecab
 MAKEINTRESOURCE
@@ -1220,6 +1226,7 @@ MINIMIZEEND
 MINIMIZESTART
 miniz
 minlevel
+MINORVERSION
 Miracast
 mirophone
 Mishkeegogamang
@@ -1447,7 +1454,9 @@ oss
 ostr
 ostream
 ostringstream
+OSVERSIONINFOEX
 OSVERSIONINFOEXW
+osvi
 otating
 OUTOFCONTEXT
 OUTOFMEMORY
@@ -2190,8 +2199,8 @@ VERIFYCONTEXT
 verrsrc
 VERSIONINFO
 Versioning
-VFT
 vformat
+VFT
 vid
 VIDCAP
 videoconference
@@ -2240,8 +2249,8 @@ wdp
 wdupenv
 weakme
 webcam
-webserver
 webpage
+webserver
 website
 webview
 wekyb
@@ -2271,8 +2280,8 @@ WINDOWPLACEMENT
 WINDOWPOSCHANGED
 WINDOWPOSCHANGING
 Windowsapp
-windowsappsdk
 windowsappruntimeinstall
+windowsappsdk
 WINDOWSBUILDNUMBER
 Windowscodecs
 windowsdesktop
@@ -2299,6 +2308,7 @@ winrt
 winsdk
 winsdkver
 winspool
+WINTHRESHOLD
 winui
 winxamlmanager
 wistd
