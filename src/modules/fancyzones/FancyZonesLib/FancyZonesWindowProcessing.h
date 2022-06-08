@@ -2,7 +2,6 @@
 
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowUtils.h>
-#include <FancyZonesLib/util.h>
 
 namespace FancyZonesWindowProcessing
 {
