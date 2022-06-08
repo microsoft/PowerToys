@@ -34,6 +34,9 @@ namespace CommonSharedConstants
 
     // Path to the event used by Awake
     const wchar_t AWAKE_EXIT_EVENT[] = L"Local\\PowerToysAwakeExitEvent-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe";
+    
+    // Path to the event used by AlwaysOnTop
+    const wchar_t ALWAYS_ON_TOP_PIN_EVENT[] = L"Local\\AlwaysOnTopPinEvent-892e0aa2-cfa8-4cc4-b196-ddeb32314ce8";
 
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;

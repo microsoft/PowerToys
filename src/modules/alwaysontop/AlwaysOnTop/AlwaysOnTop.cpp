@@ -9,6 +9,7 @@
 #include <common/utils/process_path.h>
 
 #include <WinHookEventIDs.h>
+#include <interop/shared_constants.h>
 
 namespace NonLocalizable
 {
@@ -23,11 +24,12 @@ bool isExcluded(HWND window)
     return find_app_name_in_path(processPath, AlwaysOnTopSettings::settings().excludedApps);
 }
 
-AlwaysOnTop::AlwaysOnTop() :
+AlwaysOnTop::AlwaysOnTop(bool powerToysPid) :
     SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps}),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase))
 {
     s_instance = this;
+    m_powerToysPid = powerToysPid;
     DPIAware::EnableDPIAwarenessForThisProcess();
 
     if (InitMainWindow())
@@ -38,6 +40,28 @@ AlwaysOnTop::AlwaysOnTop() :
         AlwaysOnTopSettings::instance().LoadSettings();
 
         RegisterHotkey();
+        
+        if (m_powerToysPid)
+        {
+            m_hPinEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
+
+            if (m_hPinEvent)
+            {
+                m_thread = std::thread([this]() {
+                    while (1)
+                    {
+                        if (WaitForSingleObject(m_hPinEvent, INFINITE) == WAIT_OBJECT_0)
+                        {
+                            if (HWND fw{ GetForegroundWindow() })
+                            {
+                                ProcessCommand(fw);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
         SubscribeToEvents();
         StartTrackingTopmostWindows();
     }
@@ -50,6 +74,13 @@ AlwaysOnTop::AlwaysOnTop() :
 
 AlwaysOnTop::~AlwaysOnTop()
 {
+    if (m_hPinEvent)
+    {
+        SetEvent(m_hPinEvent);
+        m_thread.join();
+        CloseHandle(m_hPinEvent);
+    }
+
     CleanUp();
 }
 
@@ -240,8 +271,11 @@ bool AlwaysOnTop::AssignBorder(HWND window)
 
 void AlwaysOnTop::RegisterHotkey() const
 {
-    UnregisterHotKey(m_window, static_cast<int>(HotkeyId::Pin));
-    RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), AlwaysOnTopSettings::settings().hotkey.get_modifiers(), AlwaysOnTopSettings::settings().hotkey.get_code());
+    if (!m_powerToysPid)
+    {
+        UnregisterHotKey(m_window, static_cast<int>(HotkeyId::Pin));
+        RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), AlwaysOnTopSettings::settings().hotkey.get_modifiers(), AlwaysOnTopSettings::settings().hotkey.get_code());
+    }
 }
 
 void AlwaysOnTop::SubscribeToEvents()

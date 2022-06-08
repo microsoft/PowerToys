@@ -13,7 +13,7 @@
 class AlwaysOnTop : public SettingsObserver
 {
 public:
-    AlwaysOnTop();
+    AlwaysOnTop(bool powerToysPid);
     ~AlwaysOnTop();
 
 protected:
@@ -47,6 +47,9 @@ private:
     HWND m_window{ nullptr };
     HINSTANCE m_hinstance;
     std::map<HWND, std::unique_ptr<WindowBorder>> m_topmostWindows{};
+    HANDLE m_hPinEvent;
+    std::thread m_thread;
+    bool m_powerToysPid;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
