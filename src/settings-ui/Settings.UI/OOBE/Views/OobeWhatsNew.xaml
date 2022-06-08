@@ -14,7 +14,6 @@
     <Grid Margin="0,24,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -42,29 +41,17 @@
                 IsClosable="False"
                 IsOpen="True"
                 IsTabStop="True" />
-        <muxc:StackPanel
-                    x:Name="ProxyStackPanel"
-                    Grid.Row="1"
-                    Visibility="Collapsed"
-                    Orientation="Vertical"
-                    VerticalAlignment="Top"
-                    IsTabStop="True">
-            <muxc:InfoBar
-                        x:Name="ProxyWarningInfoBar"
-                        Severity="Warning"
-                        Grid.Row="1"
-                        x:Uid="Oobe_WhatsNew_ProxyAuthenticationWarning"
-                        VerticalAlignment="Top"
-                        IsClosable="False"
-                        IsOpen="True"
-                        IsTabStop="True" />
-            <muxc:StackPanel Orientation="Horizontal">
-                <muxc:TextBox x:Name="UserNameBox" />
-                <muxc:PasswordBox x:Name="SecretPasswordBox" />
-                <muxc:Button x:Name="ReloadButton" Content="🗘" Click="ReloadButton_Click"/>
-            </muxc:StackPanel>
-        </muxc:StackPanel>
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+        <muxc:InfoBar
+            x:Name="ProxyWarningInfoBar"
+            Severity="Warning"
+            Grid.Row="1"
+            Visibility="Collapsed"
+            x:Uid="Oobe_WhatsNew_ProxyAuthenticationWarning"
+            VerticalAlignment="Top"
+            IsClosable="False"
+            IsOpen="True"
+            IsTabStop="True" />
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid Margin="32,24,32,24">
                 <muxc:ProgressRing
                 x:Name="LoadingProgressRing"

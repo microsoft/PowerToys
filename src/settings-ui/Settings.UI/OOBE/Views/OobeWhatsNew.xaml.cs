@@ -52,18 +52,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             DataContext = ViewModel;
         }
 
-        private static async Task<string> GetReleaseNotesMarkdown(string username = null, string password = null)
+        private static async Task<string> GetReleaseNotesMarkdown()
         {
             string releaseNotesJSON = string.Empty;
 
             // Let's use system proxy
-            var credentials = (username != null) ?
-                new NetworkCredential(username, password) :
-                CredentialCache.DefaultCredentials;
-
             using var proxyClientHandler = new HttpClientHandler
             {
-                DefaultProxyCredentials = credentials,
+                DefaultProxyCredentials = CredentialCache.DefaultCredentials,
+                Proxy = WebRequest.GetSystemWebProxy(),
                 PreAuthenticate = true,
             };
 
@@ -93,13 +90,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             return releaseNotesHtmlBuilder.ToString();
         }
 
-        private async Task Reload(string username = null, string password = null)
+        private async Task Reload()
         {
             try
             {
-                string releaseNotesMarkdown = await GetReleaseNotesMarkdown(username, password);
+                string releaseNotesMarkdown = await GetReleaseNotesMarkdown();
 
-                ProxyStackPanel.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                ProxyWarningInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 
                 ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
@@ -108,14 +105,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
             catch (HttpRequestException httpEx)
             {
+                Logger.LogError("Exception when loading the release notes", httpEx);
                 if (httpEx.Message.Contains("407", StringComparison.CurrentCulture))
                 {
-                    ProxyStackPanel.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                    ProxyWarningInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                 }
                 else
                 {
                     ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                    Logger.LogError("Exception when loading the release notes", httpEx);
                 }
             }
             catch (Exception ex)
@@ -132,11 +129,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private async void Page_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             await Reload();
-        }
-
-        private async void ReloadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            await Reload(UserNameBox.Text, SecretPasswordBox.Password);
         }
 
         /// <inheritdoc/>
