@@ -132,12 +132,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("12.0004", "12.0004")]
+        [DataRow("12,0004", "12.0004")]
         [DataRow("0xF000", "0xF000")]
         public void Translate_NoRemovalOfLeadingZeroesOnEdgeCases(string input, string expectedResult)
         {
             // Arrange
-            var translator = NumberTranslator.Create(new CultureInfo("pt-PT"), new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(new CultureInfo("de-de"), new CultureInfo("en-US"));
 
             // Act
             var result = translator.Translate(input);

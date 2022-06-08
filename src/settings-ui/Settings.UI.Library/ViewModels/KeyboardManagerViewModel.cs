@@ -239,11 +239,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
         public bool LoadProfile()
         {
-            // The KBM process out of runner creates the default.json file if it does not exist.
             var success = true;
             var readSuccessfully = false;
 
+            // The KBM process out of runner doesn't create the default.json file if it does not exist.
             string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
+            var profileExists = false;
 
             try
             {
@@ -253,7 +254,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     while (!readSuccessfully && !ts.IsCancellationRequested)
                     {
-                        if (_settingsUtils.SettingsExists(PowerToyName, fileName))
+                        profileExists = _settingsUtils.SettingsExists(PowerToyName, fileName);
+                        if (!profileExists)
+                        {
+                            break;
+                        }
+                        else
                         {
                             try
                             {
@@ -298,7 +304,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 success = false;
             }
 
-            if (!success)
+            if (!profileExists)
+            {
+                Logger.LogInfo($"Couldn't load {PowerToyName} profile because it doesn't exist");
+            }
+            else if (!success)
             {
                 Logger.LogError($"Couldn't load {PowerToyName} profile");
             }
