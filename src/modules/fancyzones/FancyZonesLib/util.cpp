@@ -16,62 +16,7 @@
 
 namespace FancyZonesUtils
 {
-    std::wstring TrimDeviceId(const std::wstring& deviceId)
-    {
-        // We're interested in the unique part between the first and last #'s
-        // Example input: \\?\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}
-        // Example output: DELA026#5&10a58c63&0&UID16777488
-        static const std::wstring defaultDeviceId = L"FallbackDevice";
-        if (deviceId.empty())
-        {
-            return defaultDeviceId;
-        }
-
-        size_t start = deviceId.find(L'#');
-        size_t end = deviceId.rfind(L'#');
-        if (start != std::wstring::npos && end != std::wstring::npos && start != end)
-        {
-            size_t size = end - (start + 1);
-            return deviceId.substr(start + 1, size);
-        }
-        else
-        {
-            return defaultDeviceId;
-        }
-    }
-
     typedef BOOL(WINAPI* GetDpiForMonitorInternalFunc)(HMONITOR, UINT, UINT*, UINT*);
-
-    std::wstring GetDisplayDeviceId(const std::wstring& device, std::unordered_map<std::wstring, DWORD>& displayDeviceIdxMap)
-    {
-        DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
-        std::wstring deviceId;
-        while (EnumDisplayDevicesW(device.c_str(), displayDeviceIdxMap[device], &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
-        {
-            ++displayDeviceIdxMap[device];
-
-            Logger::info(L"Get display device: {}", displayDevice.DeviceID);
-
-            // Only take active monitors (presented as being "on" by the respective GDI view) and monitors that don't
-            // represent a pseudo device used to mirror application drawing.
-            if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE) &&
-                WI_IsFlagClear(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
-            {
-                deviceId = displayDevice.DeviceID;
-                break;
-            }
-        }
-
-        if (deviceId.empty())
-        {
-            Logger::info(L"Didn't find display device, set default");
-            deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
-                           L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
-                           L"\\\\?\\DISPLAY#LOCALDISPLAY#";
-        }
-
-        return deviceId;
-    }
 
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept
     {
@@ -204,37 +149,6 @@ namespace FancyZonesUtils
         }
 
         return std::nullopt;
-    }
-
-    std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& deviceId, const std::wstring& virtualDesktopId)
-    {
-        MONITORINFOEXW mi;
-        mi.cbSize = sizeof(mi);
-        if (!virtualDesktopId.empty() && GetMonitorInfo(monitor, &mi))
-        {
-            Rect const monitorRect(mi.rcMonitor);
-            // Unique identifier format: <parsed-device-id>_<width>_<height>_<virtual-desktop-id>
-            return TrimDeviceId(deviceId) +
-                   L'_' +
-                   virtualDesktopId;
-        }
-        return {};
-    }
-
-    std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId)
-    {
-        std::wstring result{ ZonedWindowProperties::MultiMonitorDeviceID };
-
-        RECT combinedResolution = GetAllMonitorsCombinedRect<&MONITORINFO::rcMonitor>();
-
-        result += L'_';
-        result += std::to_wstring(combinedResolution.right - combinedResolution.left);
-        result += L'_';
-        result += std::to_wstring(combinedResolution.bottom - combinedResolution.top);
-        result += L'_';
-        result += virtualDesktopId;
-
-        return result;
     }
 
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept

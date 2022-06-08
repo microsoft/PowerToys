@@ -146,7 +146,7 @@ public:
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
-    void AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noexcept;
+    void AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& deviceId) noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -689,7 +689,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     }
 }
 
-void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noexcept
+void FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& deviceId) noexcept
 {
     if (m_workAreaHandler.IsNewWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor))
     {
@@ -699,18 +699,6 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noe
             Logger::debug(L"Add new work area on virtual desktop {}", virtualDesktopIdStr.get());
         }
         
-        FancyZonesDataTypes::DeviceIdData uniqueId;
-        uniqueId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
-
-        if (monitor)
-        {
-            uniqueId.deviceName = FancyZonesUtils::TrimDeviceId(deviceId);
-        }
-        else
-        {
-            uniqueId.deviceName = ZonedWindowProperties::MultiMonitorDeviceID;
-        }
-
         FancyZonesDataTypes::DeviceIdData parentId{};
         auto parentArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetPreviousVirtualDesktopId(), monitor);
         if (parentArea)
@@ -718,7 +706,7 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noe
             parentId = parentArea->UniqueId();
         }
 
-        auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId);
+        auto workArea = MakeWorkArea(m_hinstance, monitor, deviceId, parentId);
         if (workArea)
         {
             m_workAreaHandler.AddWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor, workArea);
@@ -745,34 +733,23 @@ void FancyZones::UpdateWorkAreas() noexcept
 {
     if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
     {
-        AddWorkArea(nullptr, {});
+        FancyZonesDataTypes::DeviceIdData deviceId;
+        deviceId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
+        deviceId.deviceName = ZonedWindowProperties::MultiMonitorDeviceID;
+
+        AddWorkArea(nullptr, deviceId);
     }
     else
     {
-        // Mapping between display device name and device index (operating system identifies each display device with an index value).
-        std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
-        struct capture
+        auto monitors = MonitorUtils::IdentifyMonitors();
+        for (const auto& monitor : monitors)
         {
-            FancyZones* fancyZones;
-            std::unordered_map<std::wstring, DWORD>* displayDeviceIdx;
-        };
+            FancyZonesDataTypes::DeviceIdData deviceId;
+            deviceId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
+            deviceId.deviceName = monitor.deviceId;
 
-        auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
-            capture* params = reinterpret_cast<capture*>(data);
-            MONITORINFOEX mi{ { .cbSize = sizeof(mi) } };
-            if (GetMonitorInfoW(monitor, &mi))
-            {
-                auto& displayDeviceIdxMap = *(params->displayDeviceIdx);
-                FancyZones* fancyZones = params->fancyZones;
-
-                std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(mi.szDevice, displayDeviceIdxMap);
-                fancyZones->AddWorkArea(monitor, deviceId);
-            }
-            return TRUE;
-        };
-
-        capture capture{ this, &displayDeviceIdxMap };
-        EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(&capture));
+            AddWorkArea(monitor.monitor, deviceId);
+        }
     }
 }
 
