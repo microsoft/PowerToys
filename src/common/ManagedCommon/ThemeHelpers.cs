@@ -19,7 +19,7 @@ namespace ManagedCommon
         internal const string HkeyWindowsTheme = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes";
         internal const string HkeyWindowsPersonalizeTheme = $@"{HkeyWindowsTheme}\Personalize";
         internal const string HValueAppTheme = "AppsUseLightTheme";
-        internal const int DWMWAImersiveDarkMode = 20;
+        internal const int DWMWAImmersiveDarkMode = 20;
 
         // based on https://stackoverflow.com/questions/51334674/how-to-detect-windows-10-light-dark-mode-in-win32-application
         public static AppTheme GetAppTheme()
@@ -31,7 +31,7 @@ namespace ManagedCommon
         public static void SetImmersiveDarkMode(IntPtr window, bool enabled)
         {
             int useImmersiveDarkMode = enabled ? 1 : 0;
-            _ = DwmSetWindowAttribute(window, DWMWAImersiveDarkMode, ref useImmersiveDarkMode, sizeof(int));
+            _ = DwmSetWindowAttribute(window, DWMWAImmersiveDarkMode, ref useImmersiveDarkMode, sizeof(int));
         }
     }
 }
