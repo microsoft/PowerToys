@@ -59,9 +59,7 @@ namespace ColorPicker.Mouse
                     Logger.LogInfo("Cursor file path was null");
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.LogError("Failed to change cursor", ex);
             }

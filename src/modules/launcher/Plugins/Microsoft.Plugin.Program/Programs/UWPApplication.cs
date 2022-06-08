@@ -125,7 +125,6 @@ namespace Microsoft.Plugin.Program.Programs
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive.")]
         public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
             if (api == null)
@@ -205,7 +204,6 @@ namespace Microsoft.Plugin.Program.Programs
             return contextMenus;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive, and showing the user an error message")]
         private async void Launch(IPublicAPI api, string queryArguments)
         {
             var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
@@ -288,9 +286,7 @@ namespace Microsoft.Plugin.Program.Programs
                             return true;
                         }
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         ProgramLogger.Exception($"Unable to parse manifest file for {DisplayName}", e, MethodBase.GetCurrentMethod().DeclaringType, manifest);
                     }

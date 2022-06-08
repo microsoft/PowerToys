@@ -119,7 +119,6 @@ namespace Wox.Infrastructure.Image
             Cache,
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         private static ImageResult LoadInternal(string path, bool loadFullImage = false)
         {
             ImageSource image;

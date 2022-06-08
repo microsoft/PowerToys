@@ -780,9 +780,7 @@ namespace PowerLauncher.ViewModel
                     _hotkeyHandle = HotkeyManager.RegisterHotkey(hotkey, action);
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 string errorMsg = string.Format(CultureInfo.InvariantCulture, Properties.Resources.registerHotkeyFailed, hotkeyStr);
                 MessageBox.Show(errorMsg);

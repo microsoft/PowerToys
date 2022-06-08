@@ -26,7 +26,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions should not crash the program but will be logged until we can understand common exception scenarios")]
         public PowerRenameViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
