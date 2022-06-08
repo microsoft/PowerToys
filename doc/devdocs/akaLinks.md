@@ -44,4 +44,4 @@
 | powerToysShortcutGuideSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/ShortcutGuide_large.png |
 | powerToysVideoConferenceImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/VideoConference_small.png |
 | powerToysVideoConferenceSettingImage | https://github.com/microsoft/PowerToys/wiki/images/overview/VideoConference_large.png |
-| powertoyswiki | https://github.com/microsoft/PowerToys/wiki |
+| powerToysWiki | https://github.com/microsoft/PowerToys/wiki |
