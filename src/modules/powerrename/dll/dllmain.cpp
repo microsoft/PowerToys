@@ -10,47 +10,43 @@
 #include <common/utils/resources.h>
 #include "Generated Files/resource.h"
 #include <atomic>
-#include <versionhelpers.h>
+#include <VersionHelpers.h>
 #include <dll/PowerRenameConstants.h>
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
-#include <bcrypt.h>
 
 std::atomic<DWORD> g_dwModuleRefCount = 0;
 HINSTANCE g_hInst = 0;
 
-#define STATUS_SUCCESS 0x00000000
-typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
-
 namespace
 {
-    RTL_OSVERSIONINFOW GetRealOSVersion()
+    BOOL IsWin11OrGreater()
     {
-        HMODULE hMod = ::GetModuleHandleW(L"ntdll.dll");
-        if (hMod)
-        {
-            RtlGetVersionPtr fxPtr = (RtlGetVersionPtr)::GetProcAddress(hMod, "RtlGetVersion");
-            if (fxPtr != nullptr)
-            {
-                RTL_OSVERSIONINFOW info = { 0 };
-                info.dwOSVersionInfoSize = sizeof(info);
-                if (STATUS_SUCCESS == fxPtr(&info))
-                {
-                    return info;
-                }
-            }
-        }
-        RTL_OSVERSIONINFOW info = { 0 };
-        return info;
-    }
+        OSVERSIONINFOEX osvi;
+        DWORDLONG dwlConditionMask = 0;
+        int op = VER_GREATER_EQUAL;
 
-    bool IsWindows11()
-    {
-        auto info = GetRealOSVersion();
-        return info.dwMajorVersion >= 10 && info.dwBuildNumber >= 22000;
-    }
+        // Initialize the OSVERSIONINFOEX structure.
 
+        ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+        osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+        osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_WINTHRESHOLD);
+        osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_WINTHRESHOLD);
+        // Windows 11 build number
+        osvi.dwBuildNumber = 22000;
+
+        // Initialize the condition mask.
+        VER_SET_CONDITION(dwlConditionMask, VER_MAJORVERSION, op);
+        VER_SET_CONDITION(dwlConditionMask, VER_MINORVERSION, op);
+        VER_SET_CONDITION(dwlConditionMask, VER_BUILDNUMBER, op);
+
+        // Perform the test.
+        return VerifyVersionInfo(
+            &osvi,
+            VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER,
+            dwlConditionMask);
+    }
 
     bool RegisterSparsePackage(std::wstring externalLocation, std::wstring sparsePkgPath)
     {
@@ -274,7 +270,7 @@ public:
         Logger::info(L"PowerRename enabled");
         m_enabled = true;
 
-        if (IsWindows11())
+        if (IsWin11OrGreater())
         {
             std::wstring path = get_module_folderpath(g_hInst);
             std::wstring packageUri = path + L"\\PowerRenameContextMenuPackage.msix";

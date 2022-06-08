@@ -1535,6 +1535,7 @@ powerlauncher
 powerpreview
 powerrename
 POWERRENAMECONTEXTMENU
+powerrenameinput
 POWERRENAMETEST
 powertoy
 powertoysinterop
