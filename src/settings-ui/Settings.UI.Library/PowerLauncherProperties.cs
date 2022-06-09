@@ -51,6 +51,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("use_centralized_keyboard_hook")]
         public bool UseCentralizedKeyboardHook { get; set; }
 
+        [JsonPropertyName("search_query_results_without_delay")]
+        public bool SearchQueryResultsWithoutDelay { get; set; }
+
         public PowerLauncherProperties()
         {
             OpenPowerLauncher = new HotkeySettings(false, false, true, false, 32);
@@ -65,6 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Theme = Theme.System;
             Position = StartupPosition.Cursor;
             UseCentralizedKeyboardHook = false;
+            SearchQueryResultsWithoutDelay = false;
         }
     }
 }

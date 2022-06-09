@@ -132,6 +132,11 @@ namespace PowerLauncher.ViewModel
             // SetCustomPluginHotkey();
         }
 
+        public void RegisterSettingsChangeListener(System.ComponentModel.PropertyChangedEventHandler handler)
+        {
+            _settings.PropertyChanged += handler;
+        }
+
         private void RegisterResultsUpdatedEvent()
         {
             foreach (var pair in PluginManager.GetPluginsForInterface<IResultUpdated>())
@@ -1103,6 +1108,11 @@ namespace PowerLauncher.ViewModel
             // Reset the stopwatch and return the time elapsed
             _hotkeyTimer.Reset();
             return recordedTime;
+        }
+
+        public bool GetSearchQueryResultsWithoutDelaySetting()
+        {
+            return _settings.SearchQueryResultsWithoutDelay;
         }
     }
 }

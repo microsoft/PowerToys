@@ -105,6 +105,11 @@ namespace PowerLauncher
                         _settings.UseCentralizedKeyboardHook = overloadSettings.Properties.UseCentralizedKeyboardHook;
                     }
 
+                    if (_settings.SearchQueryResultsWithoutDelay != overloadSettings.Properties.SearchQueryResultsWithoutDelay)
+                    {
+                        _settings.SearchQueryResultsWithoutDelay = overloadSettings.Properties.SearchQueryResultsWithoutDelay;
+                    }
+
                     if (_settings.MaxResultsToShow != overloadSettings.Properties.MaximumNumberOfResults)
                     {
                         _settings.MaxResultsToShow = overloadSettings.Properties.MaximumNumberOfResults;

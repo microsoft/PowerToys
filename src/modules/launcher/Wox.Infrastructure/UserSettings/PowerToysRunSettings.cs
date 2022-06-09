@@ -61,6 +61,25 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
+        private bool _searchQueryResultsWithoutDelay;
+
+        public bool SearchQueryResultsWithoutDelay
+        {
+            get
+            {
+                return _searchQueryResultsWithoutDelay;
+            }
+
+            set
+            {
+                if (_searchQueryResultsWithoutDelay != value)
+                {
+                    _searchQueryResultsWithoutDelay = value;
+                    OnPropertyChanged(nameof(SearchQueryResultsWithoutDelay));
+                }
+            }
+        }
+
         public string Language { get; set; } = "en";
 
         public Theme Theme { get; set; } = Theme.System;

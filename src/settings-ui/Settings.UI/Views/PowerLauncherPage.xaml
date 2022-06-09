@@ -106,7 +106,10 @@
                             </controls:Setting>
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
-                            <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" Margin="{StaticResource ExpanderSettingMargin}" />
+                            <StackPanel>
+                                <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" Margin="{StaticResource ExpanderSettingMargin}" />
+                                <CheckBox x:Uid="PowerLauncher_SearchQueryResultsWithoutDelay" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithoutDelay}" Margin="{StaticResource ExpanderSettingMargin}" />
+                            </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
                 </controls:SettingsGroup>

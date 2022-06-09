@@ -414,6 +414,9 @@
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
+  <data name="PowerLauncher_SearchQueryResultsWithoutDelay.Content" xml:space="preserve">
+    <value>Search query results without introducing a delay to wait for more input</value>
+  </data>
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
