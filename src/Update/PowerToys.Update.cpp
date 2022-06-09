@@ -49,23 +49,27 @@ std::optional<fs::path> CopySelfToTempDir()
     return std::move(dst_path);
 }
 
-std::optional<fs::path> ObtainInstallerPath()
+std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
 {
     using namespace updating;
 
+    isUpToDate = false;
+
     auto state = UpdateState::read();
+
+    const auto new_version_info = get_github_version_info_async().get();
+    if (std::holds_alternative<version_up_to_date>(*new_version_info))
+    {
+        isUpToDate = true;
+        Logger::error("Invoked with -update_now argument, but no update was available");
+        return std::nullopt;
+    }
+
     if (state.state == UpdateState::readyToDownload || state.state == UpdateState::errorDownloading)
     {
-        const auto new_version_info = get_github_version_info_async().get();
         if (!new_version_info)
         {
             Logger::error(L"Couldn't obtain github version info: {}", new_version_info.error());
-            return std::nullopt;
-        }
-
-        if (!std::holds_alternative<new_version_download_info>(*new_version_info))
-        {
-            Logger::error("Invoked with -update_now argument, but no update was available");
             return std::nullopt;
         }
 
@@ -90,21 +94,18 @@ std::optional<fs::path> ObtainInstallerPath()
             return std::nullopt;
         }
     }
-    else
+    else if (state.state == UpdateState::upToDate)
     {
-        Logger::error("Invoked with -update_now argument, but update state was invalid");
+        isUpToDate = true;
         return std::nullopt;
     }
+
+    Logger::error("Invoked with -update_now argument, but update state was invalid");
+    return std::nullopt;
 }
 
-bool InstallNewVersionStage1()
+bool InstallNewVersionStage1(fs::path installer)
 {
-    const auto installer = ObtainInstallerPath();
-    if (!installer)
-    {
-        return false;
-    }
-
     if (auto copy_in_temp = CopySelfToTempDir())
     {
         // Detect if PT was running
@@ -117,7 +118,7 @@ bool InstallNewVersionStage1()
 
         std::wstring arguments{ UPDATE_NOW_LAUNCH_STAGE2 };
         arguments += L" \"";
-        arguments += installer->c_str();
+        arguments += installer.c_str();
         arguments += L"\" \"";
         arguments += get_module_folderpath();
         arguments += L"\" ";
@@ -235,13 +236,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     if (action == UPDATE_NOW_LAUNCH_STAGE1)
     {
-        const bool failed = !InstallNewVersionStage1();
+        bool isUpToDate = false;
+        auto installerPath = ObtainInstaller(isUpToDate);
+        bool failed = !installerPath.has_value();
+        failed = failed || !InstallNewVersionStage1(std::move(*installerPath));
         if (failed)
         {
             UpdateState::store([&](UpdateState& state) {
-                state.downloadedInstallerFilename = {};
+                state = {};
                 state.githubUpdateLastCheckedDate.emplace(timeutil::now());
-                state.state = UpdateState::errorDownloading;
+                state.state = isUpToDate ? UpdateState::upToDate : UpdateState::errorDownloading;
             });
         }
         return failed;
@@ -253,7 +257,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         if (failed)
         {
             UpdateState::store([&](UpdateState& state) {
-                state.downloadedInstallerFilename = {};
+                state = {};
                 state.githubUpdateLastCheckedDate.emplace(timeutil::now());
                 state.state = UpdateState::errorDownloading;
             });
