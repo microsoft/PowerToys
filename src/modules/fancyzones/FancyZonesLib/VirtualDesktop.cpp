@@ -190,8 +190,13 @@ bool VirtualDesktop::IsVirtualDesktopIdSavedInRegistry(GUID id) const
 
 bool VirtualDesktop::IsWindowOnCurrentDesktop(HWND window) const
 {
-    std::optional<GUID> id = GetDesktopId(window);
-    return id.has_value();
+    BOOL isWindowOnCurrentDesktop = false;
+    if (m_vdManager)
+    {
+        m_vdManager->IsWindowOnCurrentVirtualDesktop(window, &isWindowOnCurrentDesktop);
+    }
+
+    return isWindowOnCurrentDesktop;
 }
 
 std::optional<GUID> VirtualDesktop::GetDesktopId(HWND window) const
