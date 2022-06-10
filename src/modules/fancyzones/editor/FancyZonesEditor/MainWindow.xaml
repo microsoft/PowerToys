@@ -588,7 +588,7 @@
                                        FontSize="16"
                                        ToolTip="{x:Static props:Resources.Distance_adjacent_zones}"
                                         AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
-                                       Text="&#xE944;" />
+                                       Text="&#xE78A;" />
 
                             <ui:NumberBox Text="{Binding SensitivityRadius}"
                                           Width="216"
