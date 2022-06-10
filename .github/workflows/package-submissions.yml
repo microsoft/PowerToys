@@ -6,9 +6,14 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
 
   winget:
+    permissions:
+      contents: none
     name: Publish winget package
     runs-on: windows-latest
     steps:
