@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         /// <summary>
         /// A value indicating if the OneNote interop library was able to successfully initialize.
         /// </summary>
-        private readonly bool _oneNoteInstalled;
+        private bool _oneNoteInstalled;
 
         /// <summary>
         /// The initial context for this plugin (contains API and meta-data)
@@ -41,16 +41,6 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         public Main()
         {
             UpdateIconPath(Theme.Light);
-            try
-            {
-                _ = OneNoteProvider.PageItems.Any();
-                _oneNoteInstalled = true;
-            }
-            catch (COMException)
-            {
-                // OneNote isn't installed, plugin won't do anything.
-                _oneNoteInstalled = false;
-            }
         }
 
         /// <summary>
@@ -70,6 +60,17 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         public void Init(PluginInitContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+
+            try
+            {
+                _ = OneNoteProvider.PageItems.Any();
+                _oneNoteInstalled = true;
+            }
+            catch (COMException)
+            {
+                // OneNote isn't installed, plugin won't do anything.
+                _oneNoteInstalled = false;
+            }
 
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(_context.API.GetCurrentTheme());

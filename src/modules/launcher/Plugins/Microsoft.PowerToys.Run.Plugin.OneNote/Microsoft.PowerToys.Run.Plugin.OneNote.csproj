@@ -11,7 +11,6 @@
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <Nullable>enable</Nullable>
     <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\OneNote\</OutputPath>
-    <NoWarn>NU1701</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -52,6 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.1.691-beta">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

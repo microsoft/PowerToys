@@ -19,7 +19,6 @@
     <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <NoWarn>NU1701</NoWarn>
   </PropertyGroup>
 
 
@@ -79,6 +78,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
     <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
     <PackageReference Include="Mages" Version="2.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
