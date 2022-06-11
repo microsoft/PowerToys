@@ -885,13 +885,17 @@ void FancyZones::UpdateWorkAreas() noexcept
 
 void FancyZones::UpdateWindowsPositions(bool suppressMove) noexcept
 {
-    for (const auto [window, desktopId] : VirtualDesktop::instance().GetWindowsRelatedToDesktops())
+    auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
+    
+    for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
     {
         auto zoneIndexSet = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
-        auto workArea = m_workAreaHandler.GetWorkArea(window, desktopId);
-        if (workArea)
+        if (zoneIndexSet.size() > 0)
         {
-            m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, workArea, suppressMove);
+            for (const auto& [monitor, workArea] : activeWorkAreas)
+            {
+                m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, workArea, suppressMove);
+            }
         }
     }
 }
