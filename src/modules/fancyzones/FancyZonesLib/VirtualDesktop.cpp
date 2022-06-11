@@ -240,6 +240,31 @@ std::vector<std::pair<HWND, GUID>> VirtualDesktop::GetWindowsRelatedToDesktops()
     return result;
 }
 
+std::vector<HWND> VirtualDesktop::GetWindowsFromCurrentDesktop() const
+{
+    using result_t = std::vector<HWND>;
+    result_t windows;
+
+    auto callback = [](HWND window, LPARAM data) -> BOOL {
+        result_t& result = *reinterpret_cast<result_t*>(data);
+        result.push_back(window);
+        return TRUE;
+    };
+    EnumWindows(callback, reinterpret_cast<LPARAM>(&windows));
+
+    std::vector<HWND> result;
+    for (auto window : windows)
+    {
+        BOOL isOnCurrentVD{};
+        if (m_vdManager->IsWindowOnCurrentVirtualDesktop(window, &isOnCurrentVD) == S_OK && isOnCurrentVD)
+        {
+            result.push_back(window);
+        }
+    }
+
+    return result;
+}
+
 GUID VirtualDesktop::GetCurrentVirtualDesktopId() const noexcept
 {
     return m_currentVirtualDesktopId;
