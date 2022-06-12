@@ -96,6 +96,29 @@
                 <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="PowerLauncher_SearchQueryResultsWithDelay" Icon="&#xF182;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
+                                <controls:Setting.ActionContent>
+                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithDelay}"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <controls:Setting x:Uid="PowerLauncher_SearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <muxc:NumberBox Minimum="0"
+                                        Maximum="1000"
+                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}"
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        SpinButtonPlacementMode="Compact"
+                                        HorizontalAlignment="Left"
+                                        SmallChange="10"
+                                        LargeChange="50"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="PowerLauncher_MaximumNumberOfResults" Icon="&#xE721;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
