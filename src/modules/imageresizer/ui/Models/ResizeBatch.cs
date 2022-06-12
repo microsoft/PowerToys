@@ -70,9 +70,7 @@ namespace ImageResizer.Models
                     {
                         Execute(file);
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         errors.Add(new ResizeError { File = _fileSystem.Path.GetFileName(file), Error = ex.Message });
                     }

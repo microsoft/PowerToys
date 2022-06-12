@@ -61,7 +61,6 @@ namespace Wox.Plugin.Common
         /// Consider using <see cref="UpdateIfTimePassed"/> to avoid updating multiple times.
         /// (because of multiple plugins calling update at the same time.)
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive but will log the exception")]
         public static void Update()
         {
             lock (_updateLock)

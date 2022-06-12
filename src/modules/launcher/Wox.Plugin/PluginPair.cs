@@ -136,9 +136,7 @@ namespace Wox.Plugin
             {
                 _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(Metadata.ExecuteFilePath);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log.Exception($"Couldn't load assembly for {Metadata.Name} in {Metadata.ExecuteFilePath}", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return false;
@@ -170,9 +168,7 @@ namespace Wox.Plugin
             {
                 Plugin = (IPlugin)Activator.CreateInstance(type);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log.Exception($"Can't create instance for <{Metadata.Name}> in {Metadata.ExecuteFilePath}", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return false;
@@ -197,9 +193,7 @@ namespace Wox.Plugin
                     API = api,
                 });
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log.Exception($"Fail to Init plugin: {Metadata.Name}", e, GetType());
                 return false;

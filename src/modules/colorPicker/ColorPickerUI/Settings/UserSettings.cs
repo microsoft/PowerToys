@@ -145,9 +145,7 @@ namespace ColorPicker.Settings
                             Logger.LogError("Failed to read changed settings", ex);
                             Thread.Sleep(500);
                         }
-#pragma warning disable CA1031 // Do not catch general exception types
                         catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             if (retryCount > MaxNumberOfRetry)
                             {

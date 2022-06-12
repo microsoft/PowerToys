@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Animation;
-using Microsoft.PowerToys.Run.Plugin.TimeZone.Classes;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -50,8 +48,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             return list;
         }
 
-#pragma warning disable CA1031 // Do not catch general exception types
-
         /// <summary>
         /// Copy the given text to the clipboard
         /// </summary>
@@ -71,7 +67,5 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 return false;
             }
         }
-
-        #pragma warning restore CA1031 // Do not catch general exception types
     }
 }
