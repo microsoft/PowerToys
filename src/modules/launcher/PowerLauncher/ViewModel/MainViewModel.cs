@@ -1110,9 +1110,14 @@ namespace PowerLauncher.ViewModel
             return recordedTime;
         }
 
-        public bool GetSearchQueryResultsWithoutDelaySetting()
+        public bool GetSearchQueryResultsWithDelaySetting()
         {
-            return _settings.SearchQueryResultsWithoutDelay;
+            return _settings.SearchQueryResultsWithDelay;
+        }
+
+        public int GetSearchInputDelaySetting()
+        {
+            return _settings.SearchInputDelay;
         }
     }
 }

@@ -61,21 +61,40 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
-        private bool _searchQueryResultsWithoutDelay;
+        private bool _searchQueryResultsWithDelay = true;
 
-        public bool SearchQueryResultsWithoutDelay
+        public bool SearchQueryResultsWithDelay
         {
             get
             {
-                return _searchQueryResultsWithoutDelay;
+                return _searchQueryResultsWithDelay;
             }
 
             set
             {
-                if (_searchQueryResultsWithoutDelay != value)
+                if (_searchQueryResultsWithDelay != value)
                 {
-                    _searchQueryResultsWithoutDelay = value;
-                    OnPropertyChanged(nameof(SearchQueryResultsWithoutDelay));
+                    _searchQueryResultsWithDelay = value;
+                    OnPropertyChanged(nameof(SearchQueryResultsWithDelay));
+                }
+            }
+        }
+
+        private int _searchInputDelay = 150;
+
+        public int SearchInputDelay
+        {
+            get
+            {
+                return _searchInputDelay;
+            }
+
+            set
+            {
+                if (_searchInputDelay != value)
+                {
+                    _searchInputDelay = value;
+                    OnPropertyChanged(nameof(SearchInputDelay));
                 }
             }
         }

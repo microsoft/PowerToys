@@ -106,10 +106,29 @@
                             </controls:Setting>
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
-                            <StackPanel>
-                                <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" Margin="{StaticResource ExpanderSettingMargin}" />
-                                <CheckBox x:Uid="PowerLauncher_SearchQueryResultsWithoutDelay" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithoutDelay}" Margin="{StaticResource ExpanderSettingMargin}" />
-                            </StackPanel>
+                            <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" Margin="{StaticResource ExpanderSettingMargin}" />
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="PowerLauncher_SearchQueryResultsWithDelay" Icon="&#xF182;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
+                                <controls:Setting.ActionContent>
+                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithDelay}"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <controls:Setting x:Uid="PowerLauncher_SearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <muxc:NumberBox Minimum="0"
+                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}"
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        SpinButtonPlacementMode="Compact"
+                                        HorizontalAlignment="Left"
+                                        SmallChange="10"
+                                        LargeChange="50"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
                 </controls:SettingsGroup>

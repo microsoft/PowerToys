@@ -162,15 +162,15 @@ namespace PowerLauncher
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += Launcher_KeyDown;
 
-            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithoutDelaySetting());
+            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting(), _viewModel.GetSearchInputDelaySetting());
             _viewModel.RegisterSettingsChangeListener(
                 (s, prop_e) =>
                 {
-                    if (prop_e.PropertyName == nameof(PowerToysRunSettings.SearchQueryResultsWithoutDelay))
+                    if (prop_e.PropertyName == nameof(PowerToysRunSettings.SearchQueryResultsWithDelay) || prop_e.PropertyName == nameof(PowerToysRunSettings.SearchInputDelay))
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithoutDelaySetting());
+                            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting(), _viewModel.GetSearchInputDelaySetting());
                         });
                     }
                 });
@@ -194,7 +194,7 @@ namespace PowerLauncher
             BringProcessToForeground();
         }
 
-        private void SetupSearchTextBoxReactiveness(bool showResultsImmediately)
+        private void SetupSearchTextBoxReactiveness(bool showResultsWithDelay, int searchInputDelayMs)
         {
             if (_reactiveSubscription != null)
             {
@@ -204,19 +204,19 @@ namespace PowerLauncher
 
             SearchBox.QueryTextBox.TextChanged -= QueryTextBox_TextChanged;
 
-            if (showResultsImmediately)
-            {
-                SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
-            }
-            else
+            if (showResultsWithDelay)
             {
                 _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
                     add => SearchBox.QueryTextBox.TextChanged += add,
                     remove => SearchBox.QueryTextBox.TextChanged -= remove)
                         .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
-                        .Throttle(TimeSpan.FromMilliseconds(150))
+                        .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
                         .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender)))
                         .Subscribe();
+            }
+            else
+            {
+                SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
             }
         }
 

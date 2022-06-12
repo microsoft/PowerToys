@@ -296,18 +296,35 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool SearchQueryResultsWithoutDelay
+        public bool SearchQueryResultsWithDelay
         {
             get
             {
-                return settings.Properties.SearchQueryResultsWithoutDelay;
+                return settings.Properties.SearchQueryResultsWithDelay;
             }
 
             set
             {
-                if (settings.Properties.SearchQueryResultsWithoutDelay != value)
+                if (settings.Properties.SearchQueryResultsWithDelay != value)
                 {
-                    settings.Properties.SearchQueryResultsWithoutDelay = value;
+                    settings.Properties.SearchQueryResultsWithDelay = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public int SearchInputDelay
+        {
+            get
+            {
+                return settings.Properties.SearchInputDelay;
+            }
+
+            set
+            {
+                if (settings.Properties.SearchInputDelay != value)
+                {
+                    settings.Properties.SearchInputDelay = value;
                     UpdateSettings();
                 }
             }
