@@ -42,6 +42,11 @@ public:
         return true;
     }
 
+    FancyZonesDataTypes::DeviceIdData UniqueId() const noexcept { return { m_uniqueId }; }
+    IZoneSet* ZoneSet() const noexcept { return m_zoneSet.get(); }
+    
+    ZoneIndexSet GetWindowZoneIndexes(HWND window) const noexcept;
+    
     HRESULT MoveSizeEnter(HWND window) noexcept;
     HRESULT MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
     HRESULT MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
@@ -50,17 +55,18 @@ public:
     bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
     bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
     bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
-    FancyZonesDataTypes::DeviceIdData UniqueId() const noexcept { return { m_uniqueId }; }
     void SaveWindowProcessToZoneIndex(HWND window) noexcept;
-    IZoneSet* ZoneSet() const noexcept { return m_zoneSet.get(); }
-    ZoneIndexSet GetWindowZoneIndexes(HWND window) const noexcept;
+    
+    void UpdateActiveZoneSet() noexcept;
+    void UpdateWindowsPositions() noexcept;
+
     void ShowZonesOverlay() noexcept;
     void HideZonesOverlay() noexcept;
-    void UpdateActiveZoneSet() noexcept;
-    void CycleTabs(HWND window, bool reverse) noexcept;
-    void ClearSelectedZones() noexcept;
     void FlashZones() noexcept;
-
+    void ClearSelectedZones() noexcept;
+    
+    void CycleTabs(HWND window, bool reverse) noexcept;
+    
     void LogInitializationError();
 
 protected:

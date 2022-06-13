@@ -152,7 +152,6 @@ protected:
 
 private:
     void UpdateWorkAreas() noexcept;
-    void UpdateWindowsPositions(bool suppressMove = false) noexcept;
     void CycleTabs(bool reverse) noexcept;
     bool OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept;
@@ -791,7 +790,11 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     {
         if (FancyZonesSettings::settings().displayChange_moveWindows)
         {
-            UpdateWindowsPositions();
+            auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
+            for (const auto& [monitor, workArea] : activeWorkAreas)
+            {
+                workArea->UpdateWindowsPositions();
+            }
         }
     }
 }
@@ -880,23 +883,6 @@ void FancyZones::UpdateWorkAreas() noexcept
 
         capture capture{ this, &displayDeviceIdxMap };
         EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(&capture));
-    }
-}
-
-void FancyZones::UpdateWindowsPositions(bool suppressMove) noexcept
-{
-    auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
-    
-    for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
-    {
-        auto zoneIndexSet = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
-        if (zoneIndexSet.size() > 0)
-        {
-            for (const auto& [monitor, workArea] : activeWorkAreas)
-            {
-                m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, workArea, suppressMove);
-            }
-        }
     }
 }
 
@@ -1227,8 +1213,14 @@ void FancyZones::UpdateZoneSets() noexcept
         workArea->UpdateActiveZoneSet();
     }
 
-    auto moveWindows = FancyZonesSettings::settings().zoneSetChange_moveWindows;
-    UpdateWindowsPositions(!moveWindows);
+    if (FancyZonesSettings::settings().zoneSetChange_moveWindows)
+    {
+        auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
+        for (const auto& [monitor, workArea] : activeWorkAreas)
+        {
+            workArea->UpdateWindowsPositions();
+        }
+    }
 }
 
 bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept

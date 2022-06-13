@@ -13,6 +13,8 @@
 #include "trace.h"
 #include "on_thread_executor.h"
 #include "Settings.h"
+#include <FancyZonesLib/FancyZonesWindowProperties.h>
+#include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowUtils.h>
 
 #include <ShellScalingApi.h>
@@ -344,6 +346,18 @@ void WorkArea::UpdateActiveZoneSet() noexcept
     {
         m_highlightZone.clear();
         m_zonesOverlay->DrawActiveZoneSet(m_zoneSet->GetZones(), m_highlightZone, Colors::GetZoneColors(), FancyZonesSettings::settings().showZoneNumber);
+    }
+}
+
+void WorkArea::UpdateWindowsPositions() noexcept
+{
+    for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
+    {
+        auto zoneIndexSet = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
+        if (zoneIndexSet.size() > 0)
+        {
+            MoveWindowIntoZoneByIndexSet(window, zoneIndexSet);
+        }
     }
 }
 
