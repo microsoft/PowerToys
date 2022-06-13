@@ -314,6 +314,26 @@ bool WindowMoveHandler::ExtendWindowByDirectionAndPosition(HWND window, DWORD vk
     return workArea && workArea->ExtendWindowByDirectionAndPosition(window, vkCode);
 }
 
+void WindowMoveHandler::UpdateWindowsPositions(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas) noexcept
+{
+    for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
+    {
+        auto zoneIndexSet = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
+        if (zoneIndexSet.size() == 0)
+        {
+            continue;
+        }
+
+        for (const auto& [monitor, workArea] : activeWorkAreas)
+        {
+            if (MonitorFromWindow(window, MONITOR_DEFAULTTONULL) == monitor)
+            {
+                workArea->MoveWindowIntoZoneByIndexSet(window, zoneIndexSet);
+            }
+        }
+    }
+}
+
 void WindowMoveHandler::WarnIfElevationIsRequired(HWND window) noexcept
 {
     using namespace notifications;

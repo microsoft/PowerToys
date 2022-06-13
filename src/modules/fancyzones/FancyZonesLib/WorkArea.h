@@ -58,7 +58,6 @@ public:
     void SaveWindowProcessToZoneIndex(HWND window) noexcept;
     
     void UpdateActiveZoneSet() noexcept;
-    void UpdateWindowsPositions() noexcept;
 
     void ShowZonesOverlay() noexcept;
     void HideZonesOverlay() noexcept;

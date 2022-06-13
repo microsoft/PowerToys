@@ -791,10 +791,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         if (FancyZonesSettings::settings().displayChange_moveWindows)
         {
             auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
-            for (const auto& [monitor, workArea] : activeWorkAreas)
-            {
-                workArea->UpdateWindowsPositions();
-            }
+            m_windowMoveHandler.UpdateWindowsPositions(activeWorkAreas);
         }
     }
 }
@@ -1216,10 +1213,7 @@ void FancyZones::UpdateZoneSets() noexcept
     if (FancyZonesSettings::settings().zoneSetChange_moveWindows)
     {
         auto activeWorkAreas = m_workAreaHandler.GetWorkAreasByDesktopId(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
-        for (const auto& [monitor, workArea] : activeWorkAreas)
-        {
-            workArea->UpdateWindowsPositions();
-        }
+        m_windowMoveHandler.UpdateWindowsPositions(activeWorkAreas);
     }
 }
 

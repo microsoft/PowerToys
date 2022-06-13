@@ -349,30 +349,6 @@ void WorkArea::UpdateActiveZoneSet() noexcept
     }
 }
 
-void WorkArea::UpdateWindowsPositions() noexcept
-{
-    if (!m_zoneSet)
-    {
-        return;
-    }
-
-    for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
-    {
-        auto zoneIndexSet = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
-        if (zoneIndexSet.size() == 0)
-        {
-            continue;
-        }
-
-        if (MonitorFromWindow(window, MONITOR_DEFAULTTONULL) != m_monitor)
-        {
-            continue;
-        }
-
-        m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, zoneIndexSet);
-    }
-}
-
 void WorkArea::CycleTabs(HWND window, bool reverse) noexcept
 {
     if (m_zoneSet)
