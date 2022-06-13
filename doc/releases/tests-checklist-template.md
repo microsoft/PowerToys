@@ -88,6 +88,9 @@
 - [ ] Create virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
 - [ ] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
 - [ ] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
+* Open `Task view` , right-click on the window, check the `Show this window on all desktops` or the `Show windows from this app on all desktops` option to turn it on.
+    - [ ] Turn Show this window on all desktops on, verify you can snap this window to a zone.
+    - [ ] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
 * Switch between layouts with quick keys.
     - [ ] Switch with `Win` + `Ctrl` + `Alt` + `key`
     - [ ] Switch with just a key while dragging a window.
