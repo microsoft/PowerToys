@@ -294,6 +294,8 @@ companding
 Compat
 COMPOSITIONFULL
 comsupp
+comsuppw
+comsuppwd
 comutil
 Concat
 concrt
@@ -2233,6 +2235,7 @@ VSTT
 vtable
 Vtbl
 wbem
+wbemuuid
 WBounds
 wca
 wcautil
