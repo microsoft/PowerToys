@@ -48,14 +48,27 @@ AlwaysOnTop::AlwaysOnTop(bool powerToysPid) :
             if (m_hPinEvent)
             {
                 m_thread = std::thread([this]() {
-                    while (1)
+                    MSG msg;
+					while (1)
                     {
-                        if (WaitForSingleObject(m_hPinEvent, INFINITE) == WAIT_OBJECT_0)
+                        DWORD dwEvt = MsgWaitForMultipleObjects(1, &m_hPinEvent, false, INFINITE, QS_ALLINPUT);
+                        switch (dwEvt)
                         {
+                        case WAIT_OBJECT_0:
                             if (HWND fw{ GetForegroundWindow() })
                             {
                                 ProcessCommand(fw);
                             }
+                            break;
+                        case WAIT_OBJECT_0 + 1:
+                            if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+                            {
+                                TranslateMessage(&msg);
+                                DispatchMessageW(&msg);
+                            }
+                            break;
+                        default:
+                            return false;
                         }
                     }
                 });
