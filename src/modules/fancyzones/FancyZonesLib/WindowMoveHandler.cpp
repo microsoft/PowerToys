@@ -291,11 +291,11 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
     }
 }
 
-void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, std::shared_ptr<WorkArea> workArea, bool suppressMove) noexcept
+void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, std::shared_ptr<WorkArea> workArea) noexcept
 {
     if (window != m_draggedWindow)
     {
-        workArea->MoveWindowIntoZoneByIndexSet(window, indexSet, suppressMove);
+        workArea->MoveWindowIntoZoneByIndexSet(window, indexSet);
     }
 }
 

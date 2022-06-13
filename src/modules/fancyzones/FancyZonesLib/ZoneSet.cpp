@@ -40,7 +40,7 @@ public:
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, HWND workAreaWindow, ZoneIndex index) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const ZoneIndexSet& indexSet, bool suppressMove = false) noexcept;
+    MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const ZoneIndexSet& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND workAreaWindow, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
@@ -188,7 +188,7 @@ ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND workAreaWindow, ZoneIndex i
 }
 
 IFACEMETHODIMP_(void)
-ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const ZoneIndexSet& zoneIds, bool suppressMove) noexcept
+ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const ZoneIndexSet& zoneIds) noexcept
 {
     if (m_zones.empty())
     {
@@ -239,17 +239,14 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
 
     if (!sizeEmpty)
     {
-        if (!suppressMove)
+        FancyZonesWindowUtils::SaveWindowSizeAndOrigin(window);
+
+        auto rect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, size, workAreaWindow);
+        FancyZonesWindowUtils::SizeWindowToRect(window, rect);
+
+        if (FancyZonesSettings::settings().disableRoundCorners)
         {
-            FancyZonesWindowUtils::SaveWindowSizeAndOrigin(window);
-
-            auto rect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, size, workAreaWindow);
-            FancyZonesWindowUtils::SizeWindowToRect(window, rect);
-
-            if (FancyZonesSettings::settings().disableRoundCorners)
-            {
-                FancyZonesWindowUtils::DisableRoundCorners(window);
-            }
+            FancyZonesWindowUtils::DisableRoundCorners(window);
         }
 
         FancyZonesWindowProperties::StampZoneIndexProperty(window, indexSet);

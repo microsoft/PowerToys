@@ -220,11 +220,11 @@ void WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
     MoveWindowIntoZoneByIndexSet(window, { index });
 }
 
-void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool suppressMove) noexcept
+void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept
 {
     if (m_zoneSet)
     {
-        m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet, suppressMove);
+        m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet);
     }
 }
 
