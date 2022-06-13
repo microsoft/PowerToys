@@ -35,6 +35,7 @@ ALarger
 alekhyareddy
 alignas
 ALLAPPS
+ALLINPUT
 Alloc
 ALLOWUNDO
 ALPHATYPE
