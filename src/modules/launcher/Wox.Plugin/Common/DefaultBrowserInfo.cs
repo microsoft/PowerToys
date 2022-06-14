@@ -15,7 +15,7 @@ namespace Wox.Plugin.Common
     public static class DefaultBrowserInfo
     {
         private static readonly object _updateLock = new object();
-        private static int _lastUpdateTickCount = -1;
+        private static long _lastUpdateTickCount = -1;
 
         /// <summary>Gets the path to the MS Edge browser executable.</summary>
         public static string MSEdgePath =>
@@ -41,7 +41,9 @@ namespace Wox.Plugin.Common
 
         public static bool IsDefaultBrowserSet { get => !string.IsNullOrEmpty(Path); }
 
-        public const int UpdateTimeout = 300;
+        public const long UpdateTimeout = 300;
+
+        private static bool haveIRanUpdateOnce;
 
         /// <summary>
         /// Updates only if at least more than 300ms has passed since the last update, to avoid multiple calls to <see cref="Update"/>.
@@ -49,7 +51,7 @@ namespace Wox.Plugin.Common
         /// </summary>
         public static void UpdateIfTimePassed()
         {
-            int curTickCount = Environment.TickCount;
+            long curTickCount = Environment.TickCount64;
             if (curTickCount - _lastUpdateTickCount > UpdateTimeout)
             {
                 _lastUpdateTickCount = curTickCount;
@@ -65,6 +67,12 @@ namespace Wox.Plugin.Common
         {
             lock (_updateLock)
             {
+                if (!haveIRanUpdateOnce)
+                {
+                    Log.Warn("I've tried updating the chosen Web Browser info at least once", typeof(DefaultBrowserInfo));
+                    haveIRanUpdateOnce = true;
+                }
+
                 try
                 {
                     string progId = GetRegistryValue(
