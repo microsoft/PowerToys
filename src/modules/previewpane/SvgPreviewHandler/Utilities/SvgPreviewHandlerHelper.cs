@@ -158,6 +158,34 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
         }
 
         /// <summary>
+        /// Swaps positions of default and svg namespace definitions in original SVG data
+        /// </summary>
+        /// <param name="svgData">SVG data</param>
+        /// <returns>Returns modified SVG data</returns>
+        public static string SwapNamespaces(string svgData)
+        {
+            const string defaultNamespacePrefix = "xmlns=\"";
+            const string svgNamespacePrefix = "xmlns:svg=\"";
+
+            int defaultNamespacePrefixIndex = svgData.IndexOf(defaultNamespacePrefix, StringComparison.InvariantCultureIgnoreCase);
+            int svgNamespacePrefixIndex = svgData.IndexOf(svgNamespacePrefix, StringComparison.InvariantCultureIgnoreCase);
+
+            if (defaultNamespacePrefixIndex != -1 && svgNamespacePrefixIndex != -1 && defaultNamespacePrefixIndex < svgNamespacePrefixIndex)
+            {
+                int defaultNamespacePrefixEndIndex = svgData.IndexOf("\"", defaultNamespacePrefixIndex + defaultNamespacePrefix.Length, StringComparison.InvariantCultureIgnoreCase);
+                int svgNamespacePrefixEndIndex = svgData.IndexOf("\"", svgNamespacePrefixIndex + svgNamespacePrefix.Length, StringComparison.InvariantCultureIgnoreCase);
+                string defaultNamespace = svgData.Substring(defaultNamespacePrefixIndex, defaultNamespacePrefixEndIndex - defaultNamespacePrefixIndex + 1);
+                string svgNamespace = svgData.Substring(svgNamespacePrefixIndex, svgNamespacePrefixEndIndex - svgNamespacePrefixIndex + 1);
+
+                svgData = svgData.Replace(defaultNamespace, "{0}", StringComparison.InvariantCultureIgnoreCase);
+                svgData = svgData.Replace(svgNamespace, "{1}", StringComparison.InvariantCultureIgnoreCase);
+                svgData = string.Format(CultureInfo.InvariantCulture, svgData, svgNamespace, defaultNamespace);
+            }
+
+            return svgData;
+        }
+
+        /// <summary>
         /// Remove a CSS unit from the end of the string
         /// </summary>
         /// <param name="length">CSS length</param>
