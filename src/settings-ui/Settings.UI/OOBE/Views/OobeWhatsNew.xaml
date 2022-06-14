@@ -31,15 +31,7 @@
                     TextWrapping="Wrap" />
             </HyperlinkButton>
         </StackPanel>
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <Grid Margin="32,24,32,24">
-                <muxc:ProgressRing Grid.Row="1"
-                x:Name="LoadingProgressRing"
-                IsIndeterminate="True"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Center"
-                Visibility="Visible"/>
-                <muxc:InfoBar
+        <muxc:InfoBar
                 Severity="Error"
                 x:Name="ErrorInfoBar"
                 Grid.Row="1"
@@ -49,9 +41,26 @@
                 IsClosable="False"
                 IsOpen="True"
                 IsTabStop="True" />
+        <muxc:InfoBar
+            x:Name="ProxyWarningInfoBar"
+            Severity="Warning"
+            Grid.Row="1"
+            Visibility="Collapsed"
+            x:Uid="Oobe_WhatsNew_ProxyAuthenticationWarning"
+            VerticalAlignment="Top"
+            IsClosable="False"
+            IsOpen="True"
+            IsTabStop="True" />
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="32,24,32,24">
+                <muxc:ProgressRing
+                x:Name="LoadingProgressRing"
+                IsIndeterminate="True"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Visibility="Visible"/>
                 <toolkitcontrols:MarkdownTextBlock x:Name="ReleaseNotesMarkdown"
                                                    Visibility="Collapsed"
-                                                   Grid.Row="1"
                                                    Header1FontSize="20"
                                                    Header2FontSize="17"
                                                    Header2FontWeight="SemiBold"
