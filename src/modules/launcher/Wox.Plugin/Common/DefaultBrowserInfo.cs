@@ -70,7 +70,7 @@ namespace Wox.Plugin.Common
             {
                 if (!haveIRanUpdateOnce)
                 {
-                    Log.Warn("I've tried updating the chosen Web Browser info at least once", typeof(DefaultBrowserInfo));
+                    Log.Warn("I've tried updating the chosen Web Browser info at least once.", typeof(DefaultBrowserInfo));
                     haveIRanUpdateOnce = true;
                 }
 
