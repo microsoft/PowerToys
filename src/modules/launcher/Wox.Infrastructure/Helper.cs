@@ -152,7 +152,7 @@ namespace Wox.Infrastructure
         {
             if (string.IsNullOrEmpty(pattern))
             {
-                Log.Warn("Trying to run OpenCommandInShell with an empty pattern. The default browser definition might have issues.", typeof(Helper));
+                Log.Warn($"Trying to run OpenCommandInShell with an empty pattern. The default browser definition might have issues. Path: '${path ?? string.Empty}' ; Arguments: '${arguments ?? string.Empty}' ; Working Directory: '${workingDir ?? string.Empty}'", typeof(Helper));
             }
             else if (pattern.Contains("%1", StringComparison.Ordinal))
             {
