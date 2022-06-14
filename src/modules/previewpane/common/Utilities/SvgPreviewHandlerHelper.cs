@@ -155,7 +155,7 @@ namespace Common.Utilities
         }
 
         /// <summary>
-        /// Swaps positions of default and svg namespace definitions in original SVG data
+        /// Swaps positions of default and svg namespace definitions if default namespace comes first in original SVG data
         /// </summary>
         /// <param name="svgData">SVG data</param>
         /// <returns>Returns modified SVG data</returns>
