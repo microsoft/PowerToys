@@ -17,6 +17,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <shellscalingapi.h>
 
 #include "microsoft.ui.xaml.window.h"
 #include <winrt/Microsoft.UI.Interop.h>
@@ -65,31 +66,37 @@ namespace winrt::PowerRenameUI::implementation
         Microsoft::UI::WindowId windowId =
             Microsoft::UI::GetWindowIdFromWindow(m_window);
 
+        Microsoft::UI::Windowing::AppWindow appWindow =
+            Microsoft::UI::Windowing::AppWindow::GetFromWindowId(windowId);
+        appWindow.SetIcon(PowerRenameUIIco);
+
         POINT cursorPosition{};
         if (GetCursorPos(&cursorPosition))
         {
+            ::Windows::Graphics::PointInt32 point{ cursorPosition.x, cursorPosition.y};
+            Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromPoint(point, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
+
             HMONITOR hMonitor = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
             MONITORINFOEX monitorInfo;
             monitorInfo.cbSize = sizeof(MONITORINFOEX);
             GetMonitorInfo(hMonitor, &monitorInfo);
-            RECT rect;
-            if (GetWindowRect(m_window, &rect))
-            {
-                int width = rect.right - rect.left;
-                int height = rect.bottom - rect.top;
+            UINT x_dpi;
+            GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE::MDT_EFFECTIVE_DPI, &x_dpi, &x_dpi);
+            UINT window_dpi = GetDpiForWindow(m_window);
 
-                MoveWindow(m_window,
-                             monitorInfo.rcWork.left + (monitorInfo.rcWork.right - monitorInfo.rcWork.left - width) / 2,
-                             monitorInfo.rcWork.top + (monitorInfo.rcWork.bottom - monitorInfo.rcWork.top - height) / 2,
-                             width,
-                             height,
-                             true);
-            }
+            int width = 1400;
+            int height = 800;
+
+            winrt::Windows::Graphics::RectInt32 rect;
+            // Scale window size
+            rect.Width = (int32_t)(width * (float)window_dpi / x_dpi);
+            rect.Height = (int32_t)(height * (float)window_dpi / x_dpi);
+            // Center to screen
+            rect.X = displayArea.WorkArea().X + displayArea.WorkArea().Width / 2 - width / 2;
+            rect.Y = displayArea.WorkArea().Y + displayArea.WorkArea().Height / 2 - height / 2;
+
+            appWindow.MoveAndResize(rect);
         }
-
-        Microsoft::UI::Windowing::AppWindow appWindow =
-            Microsoft::UI::Windowing::AppWindow::GetFromWindowId(windowId);
-        appWindow.SetIcon(PowerRenameUIIco);
 
         Title(hstring{ L"PowerRename" });
         
