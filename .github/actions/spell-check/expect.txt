@@ -2318,6 +2318,7 @@ wpf
 wpr
 wprintf
 wprp
+wql
 WQL
 wregex
 WResize
