@@ -15,7 +15,6 @@ namespace Wox.Plugin.Common
     public static class DefaultBrowserInfo
     {
         private static readonly object _updateLock = new object();
-        private static long _lastUpdateTickCount = -1;
 
         /// <summary>Gets the path to the MS Edge browser executable.</summary>
         public static string MSEdgePath =>
@@ -43,6 +42,8 @@ namespace Wox.Plugin.Common
 
         public const long UpdateTimeout = 300;
 
+        private static long _lastUpdateTickCount = -UpdateTimeout;
+
         private static bool haveIRanUpdateOnce;
 
         /// <summary>
@@ -52,7 +53,7 @@ namespace Wox.Plugin.Common
         public static void UpdateIfTimePassed()
         {
             long curTickCount = Environment.TickCount64;
-            if (curTickCount - _lastUpdateTickCount > UpdateTimeout)
+            if (curTickCount - _lastUpdateTickCount >= UpdateTimeout)
             {
                 _lastUpdateTickCount = curTickCount;
                 Update();
