@@ -193,9 +193,7 @@ namespace PowerLauncher.ViewModel
                     {
                         return Result.Icon();
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         Log.Exception($"IcoPath is empty and exception when calling Icon() for result <{Result.Title}> of plugin <{Result.PluginDirectory}>", e, GetType());
                         imagePath = ImageLoader.ErrorIconPath;

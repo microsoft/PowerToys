@@ -50,7 +50,6 @@ namespace Microsoft.Plugin.Shell
             _storage.Save();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Keeping the process alive, but logging the exception")]
         public List<Result> Query(Query query)
         {
             if (query == null)

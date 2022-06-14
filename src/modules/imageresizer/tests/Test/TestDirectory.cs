@@ -57,9 +57,7 @@ namespace ImageResizer
                             Directory.Delete(_path, recursive: true);
                             break;
                         }
-#pragma warning disable CA1031 // Do not catch general exception types
                         catch
-#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             Thread.Sleep(150);
                         }

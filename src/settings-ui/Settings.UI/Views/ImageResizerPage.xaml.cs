@@ -65,7 +65,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "JSON exceptions from saving new settings should be caught and logged.")]
         private void AddSizeButton_Click(object sender, RoutedEventArgs e)
         {
             try

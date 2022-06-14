@@ -132,6 +132,11 @@ namespace PowerLauncher.ViewModel
             // SetCustomPluginHotkey();
         }
 
+        public void RegisterSettingsChangeListener(System.ComponentModel.PropertyChangedEventHandler handler)
+        {
+            _settings.PropertyChanged += handler;
+        }
+
         private void RegisterResultsUpdatedEvent()
         {
             foreach (var pair in PluginManager.GetPluginsForInterface<IResultUpdated>())
@@ -780,9 +785,7 @@ namespace PowerLauncher.ViewModel
                     _hotkeyHandle = HotkeyManager.RegisterHotkey(hotkey, action);
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 string errorMsg = string.Format(CultureInfo.InvariantCulture, Properties.Resources.registerHotkeyFailed, hotkeyStr);
                 MessageBox.Show(errorMsg);
@@ -1103,6 +1106,16 @@ namespace PowerLauncher.ViewModel
             // Reset the stopwatch and return the time elapsed
             _hotkeyTimer.Reset();
             return recordedTime;
+        }
+
+        public bool GetSearchQueryResultsWithDelaySetting()
+        {
+            return _settings.SearchQueryResultsWithDelay;
+        }
+
+        public int GetSearchInputDelaySetting()
+        {
+            return _settings.SearchInputDelay;
         }
     }
 }

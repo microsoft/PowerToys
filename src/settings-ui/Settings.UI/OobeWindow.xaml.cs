@@ -48,7 +48,6 @@ namespace Microsoft.PowerToys.Settings.UI
             }
 
             OverlappedPresenter presenter = _appWindow.Presenter as OverlappedPresenter;
-            presenter.IsResizable = false;
             presenter.IsMinimizable = false;
             presenter.IsMaximizable = false;
 

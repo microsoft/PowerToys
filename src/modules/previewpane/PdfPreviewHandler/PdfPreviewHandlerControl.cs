@@ -130,9 +130,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                             });
                         }
                     }
-#pragma warning disable CA1031 // Password protected files throws an generic Exception
                     catch (Exception ex)
-#pragma warning restore CA1031
                     {
                         if (ex.Message.Contains("Unable to update the password. The value provided as the current password is incorrect.", StringComparison.Ordinal))
                         {
@@ -156,9 +154,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
 
                 PowerToysTelemetry.Log.WriteEvent(new PdfFilePreviewed());
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 PowerToysTelemetry.Log.WriteEvent(new PdfFilePreviewError { Message = ex.Message });
 

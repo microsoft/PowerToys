@@ -92,7 +92,6 @@ namespace Microsoft.Plugin.Program.Storage
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive>")]
         private void OnAppRenamed(object sender, RenamedEventArgs e)
         {
             string oldPath = e.OldFullPath;
@@ -142,7 +141,6 @@ namespace Microsoft.Plugin.Program.Storage
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive")]
         private void OnAppDeleted(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;

@@ -132,7 +132,6 @@ namespace Microsoft.Plugin.Program.Programs
         public bool HasArguments { get; set; }
 
         // Retrieve the target path using Shell Link
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "HRESULT E_FAIL is thrown while fetching description and E_FAIL does not relate to any specific exception.")]
         public string RetrieveTargetPath(string path)
         {
             var link = new ShellLink();
