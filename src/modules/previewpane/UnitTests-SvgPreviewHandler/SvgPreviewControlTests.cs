@@ -21,7 +21,8 @@ namespace SvgPreviewHandlerUnitTests
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "new Exception() is fine in test projects.")]
     public class SvgPreviewControlTests
     {
-        private static readonly int ThreeSecondsInMilliseconds = 3000;
+        // A long timeout is needed. WebView2 can take a long time to load the first time in some CI systems.
+        private static readonly int HardTimeoutInMilliseconds = 30000;
         private static readonly int SleepTimeInMilliseconds = 200;
 
         [TestMethod]
@@ -35,7 +36,7 @@ namespace SvgPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -58,7 +59,7 @@ namespace SvgPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -85,7 +86,7 @@ namespace SvgPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -119,7 +120,7 @@ namespace SvgPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -156,7 +157,7 @@ namespace SvgPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count < 2 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count < 2 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -186,7 +187,7 @@ namespace SvgPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
@@ -212,7 +213,7 @@ namespace SvgPreviewHandlerUnitTests
 
                 int beforeTick = Environment.TickCount;
 
-                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + ThreeSecondsInMilliseconds)
+                while (svgPreviewControl.Controls.Count == 0 && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
                 {
                     Application.DoEvents();
                     Thread.Sleep(SleepTimeInMilliseconds);
