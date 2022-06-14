@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -169,10 +170,10 @@ namespace Common.Utilities
 
             if (defaultNamespacePrefixIndex != -1 && svgNamespacePrefixIndex != -1 && defaultNamespacePrefixIndex < svgNamespacePrefixIndex)
             {
-                int defaultNamespacePrefixEndIndex = svgData.IndexOf("\"", defaultNamespacePrefixIndex + defaultNamespacePrefix.Length, StringComparison.InvariantCultureIgnoreCase);
-                int svgNamespacePrefixEndIndex = svgData.IndexOf("\"", svgNamespacePrefixIndex + svgNamespacePrefix.Length, StringComparison.InvariantCultureIgnoreCase);
-                string defaultNamespace = svgData.Substring(defaultNamespacePrefixIndex, defaultNamespacePrefixEndIndex - defaultNamespacePrefixIndex + 1);
-                string svgNamespace = svgData.Substring(svgNamespacePrefixIndex, svgNamespacePrefixEndIndex - svgNamespacePrefixIndex + 1);
+                int defaultNamespaceEndIndex = svgData.IndexOf("\"", defaultNamespacePrefixIndex + defaultNamespacePrefix.Length, StringComparison.InvariantCultureIgnoreCase);
+                int svgNamespaceEndIndex = svgData.IndexOf("\"", svgNamespacePrefixIndex + svgNamespacePrefix.Length, StringComparison.InvariantCultureIgnoreCase);
+                string defaultNamespace = svgData.Substring(defaultNamespacePrefixIndex, defaultNamespaceEndIndex - defaultNamespacePrefixIndex + 1);
+                string svgNamespace = svgData.Substring(svgNamespacePrefixIndex, svgNamespaceEndIndex - svgNamespacePrefixIndex + 1);
 
                 svgData = svgData.Replace(defaultNamespace, "{0}", StringComparison.InvariantCultureIgnoreCase);
                 svgData = svgData.Replace(svgNamespace, "{1}", StringComparison.InvariantCultureIgnoreCase);
