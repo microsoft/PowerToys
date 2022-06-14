@@ -50,7 +50,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("download_updates_automatically")]
         public bool AutoDownloadUpdates { get; set; }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any error from calling interop code should not prevent the program from loading.")]
         public GeneralSettings()
         {
             Startup = false;

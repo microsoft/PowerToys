@@ -4,11 +4,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
+namespace Common.Utilities
 {
     /// <summary>
     /// Helper utilities for Svg Preview Handler.
@@ -60,9 +59,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
                     }
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
             }
 

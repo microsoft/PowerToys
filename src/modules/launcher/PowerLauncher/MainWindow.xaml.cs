@@ -36,6 +36,7 @@ namespace PowerLauncher
         private Timer _firstDeleteTimer = new Timer();
         private bool _coldStateHotkeyPressed;
         private bool _disposedValue;
+        private IDisposable _reactiveSubscription;
 
         public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM)
             : this()
@@ -68,9 +69,7 @@ namespace PowerLauncher
                 var telemetryEvent = new RunPluginsSettingsEvent(plugins);
                 PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log.Exception("Unhandled exception when trying to send PowerToys Run settings telemetry.", ex, GetType());
             }
@@ -161,13 +160,18 @@ namespace PowerLauncher
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += Launcher_KeyDown;
 
-            Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
-                add => SearchBox.QueryTextBox.TextChanged += add,
-                remove => SearchBox.QueryTextBox.TextChanged -= remove)
-                    .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
-                    .Throttle(TimeSpan.FromMilliseconds(150))
-                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender)))
-                    .Subscribe();
+            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting(), _viewModel.GetSearchInputDelaySetting());
+            _viewModel.RegisterSettingsChangeListener(
+                (s, prop_e) =>
+                {
+                    if (prop_e.PropertyName == nameof(PowerToysRunSettings.SearchQueryResultsWithDelay) || prop_e.PropertyName == nameof(PowerToysRunSettings.SearchInputDelay))
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting(), _viewModel.GetSearchInputDelaySetting());
+                        });
+                    }
+                });
 
             // Set initial language flow direction
             SearchBox_UpdateFlowDirection();
@@ -186,6 +190,32 @@ namespace PowerLauncher
             _viewModel.LoadedAtLeastOnce = true;
 
             BringProcessToForeground();
+        }
+
+        private void SetupSearchTextBoxReactiveness(bool showResultsWithDelay, int searchInputDelayMs)
+        {
+            if (_reactiveSubscription != null)
+            {
+                _reactiveSubscription.Dispose();
+                _reactiveSubscription = null;
+            }
+
+            SearchBox.QueryTextBox.TextChanged -= QueryTextBox_TextChanged;
+
+            if (showResultsWithDelay)
+            {
+                _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                    add => SearchBox.QueryTextBox.TextChanged += add,
+                    remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                        .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                        .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
+                        .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender)))
+                        .Subscribe();
+            }
+            else
+            {
+                SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
+            }
         }
 
         private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -428,6 +458,13 @@ namespace PowerLauncher
                     _viewModel.Results.SelectedItem?.SearchBoxDisplayText(),
                     _viewModel.QueryText);
             }
+        }
+
+        private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textBox = (TextBox)sender;
+            ClearAutoCompleteText(textBox);
+            PerformSearchQuery(textBox);
         }
 
         private void ClearAutoCompleteText(TextBox textBox)

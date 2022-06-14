@@ -137,9 +137,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
             {
                 appManager.ActivateApplication(id, queryArguments, noFlags, out var unusedPid);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 var name = "Plugin: " + Resources.plugin_name;
                 var message = Resources.run_terminal_failed;
@@ -155,9 +153,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
                 string path = "shell:AppsFolder\\" + id;
                 Helper.OpenInShell(path, TerminalHelper.GetArguments(profile, _openNewTab), runAs: Helper.ShellRunAsType.Administrator);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 var name = "Plugin: " + Resources.plugin_name;
                 var message = Resources.run_terminal_failed;

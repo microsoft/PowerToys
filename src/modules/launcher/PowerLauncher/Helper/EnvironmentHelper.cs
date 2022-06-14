@@ -139,9 +139,7 @@ namespace PowerLauncher.Helper
                                 }
                             }
                         }
-#pragma warning disable CA1031 // Do not catch general exception types
                         catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             // The dotnet method "System.Environment.SetEnvironmentVariable" has it's own internal method to check the input parameters. Here we catch the exceptions that we don't check before updating the environment variable and log it to avoid crashes of PT Run.
                             Log.Exception($"Unhandled exception while updating the environment variable [{kv.Key}] for the PT Run process. (The variable value has a length of [{varValueLength}].)", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
@@ -215,9 +213,7 @@ namespace PowerLauncher.Helper
             {
                 return Environment.GetEnvironmentVariables(target);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log.Exception($"Unhandled exception while getting the environment variables for target '{target}'.", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
                 return new Hashtable();

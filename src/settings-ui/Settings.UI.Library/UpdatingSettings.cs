@@ -55,9 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     string version = ReleasePageLink.Substring(ReleasePageLink.LastIndexOf('/') + 1);
                     return version.Trim();
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                 }
 
@@ -75,9 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     var date = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
                     return date.ToLocalTime().ToString(CultureInfo.CurrentCulture);
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                 }
 
@@ -108,9 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                     return JsonSerializer.Deserialize<UpdatingSettings>(data);
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                 }
             }

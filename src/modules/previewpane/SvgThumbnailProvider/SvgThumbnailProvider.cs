@@ -252,6 +252,13 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 using (var reader = new StreamReader(stream))
                 {
                     svgData = reader.ReadToEnd();
+                    try
+                    {
+                        svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
             }
 

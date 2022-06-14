@@ -61,6 +61,44 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
+        private bool _searchQueryResultsWithDelay = true;
+
+        public bool SearchQueryResultsWithDelay
+        {
+            get
+            {
+                return _searchQueryResultsWithDelay;
+            }
+
+            set
+            {
+                if (_searchQueryResultsWithDelay != value)
+                {
+                    _searchQueryResultsWithDelay = value;
+                    OnPropertyChanged(nameof(SearchQueryResultsWithDelay));
+                }
+            }
+        }
+
+        private int _searchInputDelay = 150;
+
+        public int SearchInputDelay
+        {
+            get
+            {
+                return _searchInputDelay;
+            }
+
+            set
+            {
+                if (_searchInputDelay != value)
+                {
+                    _searchInputDelay = value;
+                    OnPropertyChanged(nameof(SearchInputDelay));
+                }
+            }
+        }
+
         public string Language { get; set; } = "en";
 
         public Theme Theme { get; set; } = Theme.System;
