@@ -1488,6 +1488,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_WhatsNew_LoadingError.Message" xml:space="preserve">
     <value>Please check your internet connection.</value>
   </data>
+  <data name="Oobe_WhatsNew_ProxyAuthenticationWarning.Title" xml:space="preserve">
+    <value>Couldn't load the release notes.</value>
+  </data>
+  <data name="Oobe_WhatsNew_ProxyAuthenticationWarning.Message" xml:space="preserve">
+    <value>Your proxy server requires authentication.</value>
+  </data>
   <data name="Oobe_WhatsNew_DetailedReleaseNotesLink.Text" xml:space="preserve">
     <value>See more detailed release notes on GitHub</value>
     <comment>Don't loc "GitHub", it's the name of a product</comment>
