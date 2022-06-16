@@ -1095,6 +1095,7 @@ LINQTo
 Linux
 listview
 lld
+LLKH
 llkhf
 Llvm
 lmcons
