@@ -54,14 +54,13 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
     LoggerHelpers::init_logger(moduleName, L"", LogSettings::powerRenameLoggerName);
 
     auto args = std::wstring{ GetCommandLine() };
-    size_t pos{ args.rfind(' ') };
+    size_t pos{ args.rfind(L"\\\\.\\pipe\\") };
 
     std::wstring pipe_name;
     if (pos != std::wstring::npos)
     {
-        pipe_name = args.substr(pos + 1);
+        pipe_name = args.substr(pos);
     }
-
 
     HANDLE hStdin;
 
