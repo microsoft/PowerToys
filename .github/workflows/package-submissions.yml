@@ -22,8 +22,9 @@ jobs:
           
           $targetRelease = $github | Where-Object -Property name -match 'Release'| Select -First 1
           $installerUrl = $targetRelease | Select -ExpandProperty assets -First 1 | Where-Object -Property name -match 'PowerToysSetup.*x64' | Select -ExpandProperty browser_download_url
+          $installerUrlArm = $targetRelease | Select -ExpandProperty assets -First 1 | Where-Object -Property name -match 'PowerToysSetup.*arm64' | Select -ExpandProperty browser_download_url
           $ver = $targetRelease.tag_name.Trim("v")
           
           # getting latest wingetcreate file
           iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
-          .\wingetcreate.exe update $wingetPackage -s -v $ver -u $installerUrl -t $gitToken
+          .\wingetcreate.exe update $wingetPackage -s -v $ver -u $installerUrl $installerUrlArm -t $gitToken

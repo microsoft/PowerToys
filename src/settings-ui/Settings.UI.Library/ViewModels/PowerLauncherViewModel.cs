@@ -296,6 +296,40 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool SearchQueryResultsWithDelay
+        {
+            get
+            {
+                return settings.Properties.SearchQueryResultsWithDelay;
+            }
+
+            set
+            {
+                if (settings.Properties.SearchQueryResultsWithDelay != value)
+                {
+                    settings.Properties.SearchQueryResultsWithDelay = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public int SearchInputDelay
+        {
+            get
+            {
+                return settings.Properties.SearchInputDelay;
+            }
+
+            set
+            {
+                if (settings.Properties.SearchInputDelay != value)
+                {
+                    settings.Properties.SearchInputDelay = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         public HotkeySettings OpenFileLocation
         {
             get

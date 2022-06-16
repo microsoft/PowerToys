@@ -2,6 +2,7 @@
 
 #include <FancyZonesLib/LayoutConfigurator.h>
 #include "Settings.h"
+#include "util.h"
 
 namespace FancyZonesDataTypes
 {
@@ -55,9 +56,8 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * @param   workAreaWindow The m_window of a WorkArea, it's a hidden window representing the
      *                         current monitor desktop work area.
      * @param   indexSet       The set of zone indices within zone layout.
-     * @param   suppressMove   Whether we should just update the records or move window to the zone.
      */
-    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, HWND workAreaWindow, const ZoneIndexSet& indexSet, bool suppressMove = false) = 0;
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, HWND workAreaWindow, const ZoneIndexSet& indexSet) = 0;
     /**
      * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow), based on zone index numbers,
      * not their on-screen position.
@@ -135,7 +135,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      *
      * @returns Boolean indicating if calculation was successful.
      */
-    IFACEMETHOD_(bool, CalculateZones)(RECT workAreaRect, int zoneCount, int spacing) = 0;
+    IFACEMETHOD_(bool, CalculateZones)(FancyZonesUtils::Rect workAreaRect, int zoneCount, int spacing) = 0;
     /**
      * Check if the zone with the specified index is empty. Returns true if the zone with passed zoneIndex does not exist.
      * 

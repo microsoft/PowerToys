@@ -47,7 +47,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private Func<List<KeysDataModel>, int> FilterRemapKeysList { get; }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions should not crash the program but will be logged until we can understand common exception scenarios")]
         public KeyboardManagerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
             if (settingsRepository == null)
@@ -200,7 +199,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             NativeMethods.SetForegroundWindow(handle);
         }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
         private void OpenEditor(int type)
         {
             try
@@ -236,7 +234,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             OnPropertyChanged(nameof(RemapShortcuts));
         }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
         public bool LoadProfile()
         {
             var success = true;

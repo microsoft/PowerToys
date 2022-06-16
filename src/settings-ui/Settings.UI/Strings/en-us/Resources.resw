@@ -414,6 +414,17 @@
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
+  <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
+    <value>Delay search</value>
+    <comment>This is about adding a delay to wait for more input before executing a search</comment>
+  </data>
+  <data name="PowerLauncher_SearchQueryResultsWithDelay.Description" xml:space="preserve">
+    <value>Add a delay to wait for more input before executing a search</value>
+  </data>
+  <data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
+    <value>Search delay (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
@@ -1476,6 +1487,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_WhatsNew_LoadingError.Message" xml:space="preserve">
     <value>Please check your internet connection.</value>
+  </data>
+  <data name="Oobe_WhatsNew_ProxyAuthenticationWarning.Title" xml:space="preserve">
+    <value>Couldn't load the release notes.</value>
+  </data>
+  <data name="Oobe_WhatsNew_ProxyAuthenticationWarning.Message" xml:space="preserve">
+    <value>Your proxy server requires authentication.</value>
   </data>
   <data name="Oobe_WhatsNew_DetailedReleaseNotesLink.Text" xml:space="preserve">
     <value>See more detailed release notes on GitHub</value>

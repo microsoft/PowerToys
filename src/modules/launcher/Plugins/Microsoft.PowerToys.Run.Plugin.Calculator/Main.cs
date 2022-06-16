@@ -102,9 +102,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 // Result to big to convert to decimal
                 return ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, Properties.Resources.wox_plugin_calculator_not_covert_to_decimal);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 // Any other crash occurred
                 // We want to keep the process alive if any the mages library throws any exceptions.

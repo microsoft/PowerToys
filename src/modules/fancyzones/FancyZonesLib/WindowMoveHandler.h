@@ -7,22 +7,24 @@
 #include <functional>
 
 interface IFancyZonesSettings;
-interface IWorkArea;
+class WorkArea;
 
 class WindowMoveHandler
 {
 public:
     WindowMoveHandler(const std::function<void()>& keyUpdateCallback);
 
-    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept;
-    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept;
-    void MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept;
+    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
+    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
+    void MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept;
 
-    void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, winrt::com_ptr<IWorkArea> workArea, bool suppressMove = false) noexcept;
-    bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IWorkArea> workArea) noexcept;
-    bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IWorkArea> workArea) noexcept;
-    bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode, winrt::com_ptr<IWorkArea> workArea) noexcept;
+    void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, std::shared_ptr<WorkArea> workArea) noexcept;
+    bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, std::shared_ptr<WorkArea> workArea) noexcept;
+    bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, std::shared_ptr<WorkArea> workArea) noexcept;
+    bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode, std::shared_ptr<WorkArea> workArea) noexcept;
 
+    void UpdateWindowsPositions(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas) noexcept;
+    
     inline void OnMouseDown() noexcept
     {
         m_mouseState = !m_mouseState;
@@ -67,7 +69,7 @@ private:
     bool m_inDragging{}; // Whether or not a move/size operation is currently active
     HWND m_draggedWindow{}; // The window that is being moved/sized
     MoveSizeWindowInfo m_draggedWindowInfo; // MoveSizeWindowInfo of the window at the moment when dragging started
-    winrt::com_ptr<IWorkArea> m_draggedWindowWorkArea; // "Active" WorkArea, where the move/size is happening. Will update as drag moves between monitors.
+    std::shared_ptr<WorkArea> m_draggedWindowWorkArea; // "Active" WorkArea, where the move/size is happening. Will update as drag moves between monitors.
     bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
 
     WindowTransparencyProperties m_windowTransparencyProperties;
