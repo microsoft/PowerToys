@@ -162,19 +162,14 @@ namespace Common.Utilities
         /// <returns>Returns modified SVG data</returns>
         public static string SwapNamespaces(string svgData)
         {
-            const string defaultNamespacePrefix = "xmlns=\"";
-            const string svgNamespacePrefix = "xmlns:svg=\"";
+            const string defaultNamespace = "xmlns=\"http://www.w3.org/2000/svg\"";
+            const string svgNamespace = "xmlns:svg=\"http://www.w3.org/2000/svg\"";
 
-            int defaultNamespacePrefixIndex = svgData.IndexOf(defaultNamespacePrefix, StringComparison.InvariantCultureIgnoreCase);
-            int svgNamespacePrefixIndex = svgData.IndexOf(svgNamespacePrefix, StringComparison.InvariantCultureIgnoreCase);
+            int defaultNamespaceIndex = svgData.IndexOf(defaultNamespace, StringComparison.InvariantCultureIgnoreCase);
+            int svgNamespaceIndex = svgData.IndexOf(svgNamespace, StringComparison.InvariantCultureIgnoreCase);
 
-            if (defaultNamespacePrefixIndex != -1 && svgNamespacePrefixIndex != -1 && defaultNamespacePrefixIndex < svgNamespacePrefixIndex)
+            if (defaultNamespaceIndex != -1 && svgNamespaceIndex != -1 && defaultNamespaceIndex < svgNamespaceIndex)
             {
-                int defaultNamespaceEndIndex = svgData.IndexOf("\"", defaultNamespacePrefixIndex + defaultNamespacePrefix.Length, StringComparison.InvariantCultureIgnoreCase);
-                int svgNamespaceEndIndex = svgData.IndexOf("\"", svgNamespacePrefixIndex + svgNamespacePrefix.Length, StringComparison.InvariantCultureIgnoreCase);
-                string defaultNamespace = svgData.Substring(defaultNamespacePrefixIndex, defaultNamespaceEndIndex - defaultNamespacePrefixIndex + 1);
-                string svgNamespace = svgData.Substring(svgNamespacePrefixIndex, svgNamespaceEndIndex - svgNamespacePrefixIndex + 1);
-
                 svgData = svgData.Replace(defaultNamespace, "{0}", StringComparison.InvariantCultureIgnoreCase);
                 svgData = svgData.Replace(svgNamespace, "{1}", StringComparison.InvariantCultureIgnoreCase);
                 svgData = string.Format(CultureInfo.InvariantCulture, svgData, svgNamespace, defaultNamespace);
