@@ -13,7 +13,7 @@
 class AlwaysOnTop : public SettingsObserver
 {
 public:
-    AlwaysOnTop(bool powerToysPid);
+    AlwaysOnTop(bool useLLKH);
     ~AlwaysOnTop();
 
 protected:
@@ -49,13 +49,14 @@ private:
     std::map<HWND, std::unique_ptr<WindowBorder>> m_topmostWindows{};
     HANDLE m_hPinEvent;
     std::thread m_thread;
-    bool m_powerToysPid;
+    const bool m_useCentralizedLLKH;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
     
     bool InitMainWindow();
     void RegisterHotkey() const;
+    void RegisterLLKH();
     void SubscribeToEvents();
 
     void ProcessCommand(HWND window);

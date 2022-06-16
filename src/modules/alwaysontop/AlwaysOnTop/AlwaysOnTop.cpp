@@ -24,12 +24,12 @@ bool isExcluded(HWND window)
     return find_app_name_in_path(processPath, AlwaysOnTopSettings::settings().excludedApps);
 }
 
-AlwaysOnTop::AlwaysOnTop(bool powerToysPid) :
+AlwaysOnTop::AlwaysOnTop(bool useLLKH) :
     SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps}),
-    m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase))
+    m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
+    m_useCentralizedLLKH(useLLKH)
 {
     s_instance = this;
-    m_powerToysPid = powerToysPid;
     DPIAware::EnableDPIAwarenessForThisProcess();
 
     if (InitMainWindow())
@@ -40,40 +40,7 @@ AlwaysOnTop::AlwaysOnTop(bool powerToysPid) :
         AlwaysOnTopSettings::instance().LoadSettings();
 
         RegisterHotkey();
-        
-        if (m_powerToysPid)
-        {
-            m_hPinEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
-
-            if (m_hPinEvent)
-            {
-                m_thread = std::thread([this]() {
-                    MSG msg;
-					while (1)
-                    {
-                        DWORD dwEvt = MsgWaitForMultipleObjects(1, &m_hPinEvent, false, INFINITE, QS_ALLINPUT);
-                        switch (dwEvt)
-                        {
-                        case WAIT_OBJECT_0:
-                            if (HWND fw{ GetForegroundWindow() })
-                            {
-                                ProcessCommand(fw);
-                            }
-                            break;
-                        case WAIT_OBJECT_0 + 1:
-                            if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
-                            {
-                                TranslateMessage(&msg);
-                                DispatchMessageW(&msg);
-                            }
-                            break;
-                        default:
-                            return false;
-                        }
-                    }
-                });
-            }
-        }
+        RegisterLLKH();
         
         SubscribeToEvents();
         StartTrackingTopmostWindows();
@@ -284,11 +251,55 @@ bool AlwaysOnTop::AssignBorder(HWND window)
 
 void AlwaysOnTop::RegisterHotkey() const
 {
-    if (!m_powerToysPid)
+    if (m_useCentralizedLLKH)
     {
-        UnregisterHotKey(m_window, static_cast<int>(HotkeyId::Pin));
-        RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), AlwaysOnTopSettings::settings().hotkey.get_modifiers(), AlwaysOnTopSettings::settings().hotkey.get_code());
+        return;
     }
+
+    UnregisterHotKey(m_window, static_cast<int>(HotkeyId::Pin));
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), AlwaysOnTopSettings::settings().hotkey.get_modifiers(), AlwaysOnTopSettings::settings().hotkey.get_code());
+}
+
+void AlwaysOnTop::RegisterLLKH()
+{
+    if (!m_useCentralizedLLKH)
+    {
+        return;
+    }
+	
+    m_hPinEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
+
+    if (!m_hPinEvent)
+    {
+        Logger::warn(L"Failed to create pinEvent. {}", get_last_error_or_default(GetLastError()));
+        return;
+    }
+	
+    m_thread = std::thread([this]() {
+        MSG msg;
+        while (1)
+        {
+            DWORD dwEvt = MsgWaitForMultipleObjects(1, &m_hPinEvent, false, INFINITE, QS_ALLINPUT);
+            switch (dwEvt)
+            {
+            case WAIT_OBJECT_0:
+                if (HWND fw{ GetForegroundWindow() })
+                {
+                    ProcessCommand(fw);
+                }
+                break;
+            case WAIT_OBJECT_0 + 1:
+                if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+                {
+                    TranslateMessage(&msg);
+                    DispatchMessageW(&msg);
+                }
+                break;
+            default:
+                return false;
+            }
+        }
+    });
 }
 
 void AlwaysOnTop::SubscribeToEvents()
