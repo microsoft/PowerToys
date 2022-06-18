@@ -3,6 +3,7 @@
 
 #include <common/logger/call_tracer.h>
 #include <common/logger/logger.h>
+#include <common/utils/winapi_error.h>
 
 #include "FancyZonesData/AppliedLayouts.h"
 #include "FancyZonesData/AppZoneHistory.h"
@@ -12,6 +13,8 @@
 #include "trace.h"
 #include "on_thread_executor.h"
 #include "Settings.h"
+#include <FancyZonesLib/FancyZonesWindowProperties.h>
+#include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowUtils.h>
 
 #include <ShellScalingApi.h>
@@ -27,8 +30,6 @@ namespace NonLocalizable
 }
 
 using namespace FancyZonesUtils;
-
-struct WorkArea;
 
 namespace
 {
@@ -103,71 +104,6 @@ namespace
     WindowPool windowPool;
 }
 
-struct WorkArea : public winrt::implements<WorkArea, IWorkArea>
-{
-public:
-    WorkArea(HINSTANCE hinstance);
-    ~WorkArea();
-
-    bool Init(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId);
-
-    IFACEMETHODIMP MoveSizeEnter(HWND window) noexcept;
-    IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
-    IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
-    IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept;
-    IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool suppressMove = false) noexcept;
-    IFACEMETHODIMP_(bool)
-    MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
-    IFACEMETHODIMP_(bool)
-    MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
-    IFACEMETHODIMP_(bool)
-    ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
-    IFACEMETHODIMP_(FancyZonesDataTypes::DeviceIdData)
-    UniqueId() const noexcept { return { m_uniqueId }; }
-    IFACEMETHODIMP_(void)
-    SaveWindowProcessToZoneIndex(HWND window) noexcept;
-    IFACEMETHODIMP_(IZoneSet*)
-    ZoneSet() const noexcept { return m_zoneSet.get(); }
-    IFACEMETHODIMP_(ZoneIndexSet)
-    GetWindowZoneIndexes(HWND window) const noexcept;
-    IFACEMETHODIMP_(void)
-    ShowZonesOverlay() noexcept;
-    IFACEMETHODIMP_(void)
-    HideZonesOverlay() noexcept;
-    IFACEMETHODIMP_(void)
-    UpdateActiveZoneSet() noexcept;
-    IFACEMETHODIMP_(void)
-    CycleTabs(HWND window, bool reverse) noexcept;
-    IFACEMETHODIMP_(void)
-    ClearSelectedZones() noexcept;
-    IFACEMETHODIMP_(void)
-    FlashZones() noexcept;
-
-protected:
-    static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-
-private:
-    void InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept;
-    void CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
-    void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
-    LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-    ZoneIndexSet ZonesFromPoint(POINT pt) noexcept;
-    void SetAsTopmostWindow() noexcept;
-
-    HMONITOR m_monitor{};
-    FancyZonesDataTypes::DeviceIdData m_uniqueId;
-    HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
-    HWND m_windowMoveSize{};
-    winrt::com_ptr<IZoneSet> m_zoneSet;
-    ZoneIndexSet m_initialHighlightZone;
-    ZoneIndexSet m_highlightZone;
-    WPARAM m_keyLast{};
-    size_t m_keyCycle{};
-    std::unique_ptr<ZonesOverlay> m_zonesOverlay;
-};
-
 WorkArea::WorkArea(HINSTANCE hinstance)
 {
     WNDCLASSEXW wcex{};
@@ -184,30 +120,12 @@ WorkArea::~WorkArea()
     windowPool.FreeZonesOverlayWindow(m_window);
 }
 
-bool WorkArea::Init(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId)
+bool WorkArea::Init(HINSTANCE hinstance, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId)
 {
-    Rect workAreaRect;
-    m_monitor = monitor;
-    if (monitor)
-    {
-        MONITORINFO mi{};
-        mi.cbSize = sizeof(mi);
-        if (!GetMonitorInfoW(monitor, &mi))
-        {
-            Logger::error(L"GetMonitorInfo failed on work area initialization");
-            return false;
-        }
-        workAreaRect = Rect(mi.rcWork);
-    }
-    else
-    {
-        workAreaRect = GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
-    }
-
     m_uniqueId = uniqueId;
     InitializeZoneSets(parentUniqueId);
 
-    m_window = windowPool.NewZonesOverlayWindow(workAreaRect, hinstance, this);
+    m_window = windowPool.NewZonesOverlayWindow(m_workAreaRect, hinstance, this);
 
     if (!m_window)
     {
@@ -220,7 +138,7 @@ bool WorkArea::Init(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataT
     return true;
 }
 
-IFACEMETHODIMP WorkArea::MoveSizeEnter(HWND window) noexcept
+HRESULT WorkArea::MoveSizeEnter(HWND window) noexcept
 {
     m_windowMoveSize = window;
     m_highlightZone = {};
@@ -230,7 +148,7 @@ IFACEMETHODIMP WorkArea::MoveSizeEnter(HWND window) noexcept
     return S_OK;
 }
 
-IFACEMETHODIMP WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept
+HRESULT WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept
 {
     bool redraw = false;
     POINT ptClient = ptScreen;
@@ -274,7 +192,7 @@ IFACEMETHODIMP WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled,
     return S_OK;
 }
 
-IFACEMETHODIMP WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
+HRESULT WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
     if (m_windowMoveSize != window)
     {
@@ -299,23 +217,20 @@ IFACEMETHODIMP WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcep
     return S_OK;
 }
 
-IFACEMETHODIMP_(void)
-WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
+void WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
 {
     MoveWindowIntoZoneByIndexSet(window, { index });
 }
 
-IFACEMETHODIMP_(void)
-WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool suppressMove) noexcept
+void WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept
 {
     if (m_zoneSet)
     {
-        m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet, suppressMove);
+        m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet);
     }
 }
 
-IFACEMETHODIMP_(bool)
-WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept
+bool WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept
 {
     if (m_zoneSet)
     {
@@ -331,8 +246,7 @@ WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool 
     return false;
 }
 
-IFACEMETHODIMP_(bool)
-WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept
+bool WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept
 {
     if (m_zoneSet)
     {
@@ -345,8 +259,7 @@ WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bo
     return false;
 }
 
-IFACEMETHODIMP_(bool)
-WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept
+bool WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept
 {
     if (m_zoneSet)
     {
@@ -359,8 +272,7 @@ WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept
     return false;
 }
 
-IFACEMETHODIMP_(void)
-WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
+void WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
 {
     if (m_zoneSet)
     {
@@ -378,8 +290,7 @@ WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
     }
 }
 
-IFACEMETHODIMP_(ZoneIndexSet)
-WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
+ZoneIndexSet WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
 {
     if (m_zoneSet)
     {
@@ -401,8 +312,7 @@ WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
     return {};
 }
 
-IFACEMETHODIMP_(void)
-WorkArea::ShowZonesOverlay() noexcept
+void WorkArea::ShowZonesOverlay() noexcept
 {
     if (m_window)
     {
@@ -412,8 +322,7 @@ WorkArea::ShowZonesOverlay() noexcept
     }
 }
 
-IFACEMETHODIMP_(void)
-WorkArea::HideZonesOverlay() noexcept
+void WorkArea::HideZonesOverlay() noexcept
 {
     if (m_window)
     {
@@ -424,8 +333,7 @@ WorkArea::HideZonesOverlay() noexcept
     }
 }
 
-IFACEMETHODIMP_(void)
-WorkArea::UpdateActiveZoneSet() noexcept
+void WorkArea::UpdateActiveZoneSet() noexcept
 {
     bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
     if (!isLayoutAlreadyApplied)
@@ -441,8 +349,7 @@ WorkArea::UpdateActiveZoneSet() noexcept
     }
 }
 
-IFACEMETHODIMP_(void)
-WorkArea::CycleTabs(HWND window, bool reverse) noexcept
+void WorkArea::CycleTabs(HWND window, bool reverse) noexcept
 {
     if (m_zoneSet)
     {
@@ -450,8 +357,7 @@ WorkArea::CycleTabs(HWND window, bool reverse) noexcept
     }
 }
 
-IFACEMETHODIMP_(void)
-WorkArea::ClearSelectedZones() noexcept
+void WorkArea::ClearSelectedZones() noexcept
 {
     if (m_highlightZone.size())
     {
@@ -460,8 +366,7 @@ WorkArea::ClearSelectedZones() noexcept
     }
 }
 
-IFACEMETHODIMP_(void)
-WorkArea::FlashZones() noexcept
+void WorkArea::FlashZones() noexcept
 {
     if (m_window)
     {
@@ -513,31 +418,11 @@ void WorkArea::CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) 
         appliedLayout->sensitivityRadius,
         overlappingAlgorithm));
 
-    RECT workArea;
-    if (m_monitor)
-    {
-        MONITORINFO monitorInfo{};
-        monitorInfo.cbSize = sizeof(monitorInfo);
-        if (GetMonitorInfoW(m_monitor, &monitorInfo))
-        {
-            workArea = monitorInfo.rcWork;
-        }
-        else
-        {
-            Logger::error(L"CalculateZoneSet: GetMonitorInfo failed");
-            return;
-        }
-    }
-    else
-    {
-        workArea = GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
-    }
-
     bool showSpacing = appliedLayout->showSpacing;
     int spacing = showSpacing ? appliedLayout->spacing : 0;
     int zoneCount = appliedLayout->zoneCount;
 
-    zoneSet->CalculateZones(workArea, zoneCount, spacing);
+    zoneSet->CalculateZones(m_workAreaRect, zoneCount, spacing);
     UpdateActiveZoneSet(zoneSet.get());
 }
 
@@ -595,6 +480,11 @@ void WorkArea::SetAsTopmostWindow() noexcept
     SetWindowPos(m_window, windowInsertAfter, 0, 0, 0, 0, flags);
 }
 
+void WorkArea::LogInitializationError()
+{
+    Logger::error(L"Unable to get monitor info, {}", get_last_error_or_default(GetLastError()));
+}
+
 #pragma endregion
 
 LRESULT CALLBACK WorkArea::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
@@ -611,13 +501,3 @@ LRESULT CALLBACK WorkArea::s_WndProc(HWND window, UINT message, WPARAM wparam, L
                                   DefWindowProc(window, message, wparam, lparam);
 }
 
-winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept
-{
-    auto self = winrt::make_self<WorkArea>(hinstance);
-    if (self->Init(hinstance, monitor, uniqueId, parentUniqueId))
-    {
-        return self;
-    }
-
-    return nullptr;
-}

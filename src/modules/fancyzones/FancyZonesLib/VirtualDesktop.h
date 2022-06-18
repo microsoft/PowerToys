@@ -15,6 +15,7 @@ public:
     std::optional<GUID> GetDesktopId(HWND window) const;
     std::optional<GUID> GetDesktopIdByTopLevelWindows() const;
     std::vector<std::pair<HWND, GUID>> GetWindowsRelatedToDesktops() const;
+    std::vector<HWND> GetWindowsFromCurrentDesktop() const;
 
     // registry
     std::optional<GUID> GetCurrentVirtualDesktopIdFromRegistry() const;
