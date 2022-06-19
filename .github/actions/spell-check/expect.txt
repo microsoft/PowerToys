@@ -616,6 +616,7 @@ Filterx
 finalizer
 findfast
 findstr
+Firefox
 FIXEDFILEINFO
 FLASHZONES
 FLASHZONESONQUICKSWITCH
@@ -886,6 +887,7 @@ ingbuffer
 inheritdoc
 INITDIALOG
 initguid
+Inkscape
 Inlines
 inorder
 INotification
