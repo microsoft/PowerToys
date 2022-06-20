@@ -11,8 +11,15 @@ namespace PowerLauncher.Storage
 {
     public class UserSelectedRecord
     {
+        public class UserSelectedRecordItem
+        {
+            public int SelectedCount { get; set; }
+
+            public DateTime LastSelected { get; set; }
+        }
+
         [JsonInclude]
-        public Dictionary<string, int> Records { get; private set; } = new Dictionary<string, int>();
+        public Dictionary<string, UserSelectedRecordItem> Records { get; private set; } = new Dictionary<string, UserSelectedRecordItem>();
 
         public void Add(Result result)
         {
@@ -22,13 +29,14 @@ namespace PowerLauncher.Storage
             }
 
             var key = result.ToString();
-            if (Records.TryGetValue(key, out int value))
+            if (Records.TryGetValue(key, out var value))
             {
-                Records[key] = value + 1;
+                Records[key].SelectedCount = value.SelectedCount + 1;
+                Records[key].LastSelected = DateTime.UtcNow;
             }
             else
             {
-                Records.Add(key, 1);
+                Records.Add(key, new UserSelectedRecordItem { SelectedCount = 0, LastSelected = DateTime.UtcNow });
             }
         }
 
@@ -39,9 +47,9 @@ namespace PowerLauncher.Storage
                 throw new ArgumentNullException(nameof(result));
             }
 
-            if (result != null && Records.TryGetValue(result.ToString(), out int value))
+            if (result != null && Records.TryGetValue(result.ToString(), out var value))
             {
-                return value;
+                return value.SelectedCount;
             }
 
             return 0;

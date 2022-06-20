@@ -255,7 +255,7 @@ namespace PowerLauncher.ViewModel
 
         public void Sort()
         {
-            var sorted = Results.OrderByDescending(x => x.Result.Score).ToList();
+            var sorted = Results.OrderByDescending(x => x.Result.SelectedCount).ThenByDescending(x => x.Result.Score).ToList();
             Clear();
             Results.AddRange(sorted);
         }

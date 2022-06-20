@@ -945,6 +945,7 @@ namespace PowerLauncher.ViewModel
             foreach (var result in list)
             {
                 result.Score += _userSelectedRecord.GetSelectedCount(result) * 5;
+                result.SelectedCount = _userSelectedRecord.GetSelectedCount(result);
             }
 
             // Using CurrentCultureIgnoreCase since this is user facing
