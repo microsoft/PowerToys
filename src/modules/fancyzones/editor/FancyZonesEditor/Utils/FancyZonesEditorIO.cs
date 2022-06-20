@@ -85,9 +85,13 @@ namespace FancyZonesEditor.Utils
 
             public int TopCoordinate { get; set; }
 
-            public int Width { get; set; }
+            public int WorkAreaWidth { get; set; }
 
-            public int Height { get; set; }
+            public int WorkAreaHeight { get; set; }
+
+            public int MonitorWidth { get; set; }
+
+            public int MonitorHeight { get; set; }
 
             public bool IsSelected { get; set; }
 
@@ -107,6 +111,11 @@ namespace FancyZonesEditor.Utils
                 sb.AppendLine(LeftCoordinate.ToString(CultureInfo.InvariantCulture));
                 sb.Append("Y: ");
                 sb.AppendLine(TopCoordinate.ToString(CultureInfo.InvariantCulture));
+
+                sb.Append("Width: ");
+                sb.AppendLine(MonitorWidth.ToString(CultureInfo.InvariantCulture));
+                sb.Append("Height: ");
+                sb.AppendLine(MonitorHeight.ToString(CultureInfo.InvariantCulture));
 
                 return sb.ToString();
             }
@@ -477,14 +486,16 @@ namespace FancyZonesEditor.Utils
 
                         foreach (NativeMonitorData nativeData in editorParams.Monitors)
                         {
-                            Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
+                            Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.WorkAreaWidth, nativeData.WorkAreaHeight);
                             if (nativeData.IsSelected)
                             {
                                 targetMonitorId = nativeData.Monitor;
                                 targetVirtualDesktop = nativeData.VirtualDesktop;
                             }
 
-                            var monitor = new Monitor(workArea, workArea);
+                            Size monitorSize = new Size(nativeData.MonitorWidth, nativeData.MonitorHeight);
+
+                            var monitor = new Monitor(workArea, monitorSize);
                             monitor.Device.MonitorName = nativeData.Monitor;
                             monitor.Device.VirtualDesktopId = nativeData.VirtualDesktop;
                             monitor.Device.Dpi = nativeData.Dpi;
@@ -512,9 +523,10 @@ namespace FancyZonesEditor.Utils
                         }
 
                         var nativeData = editorParams.Monitors[0];
-                        Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
+                        Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.WorkAreaWidth, nativeData.WorkAreaHeight);
+                        Size monitorSize = new Size(nativeData.MonitorWidth, nativeData.MonitorHeight);
 
-                        var monitor = new Monitor(workArea, workArea);
+                        var monitor = new Monitor(workArea, monitorSize);
                         monitor.Device.MonitorName = nativeData.Monitor;
                         monitor.Device.VirtualDesktopId = nativeData.VirtualDesktop;
 
