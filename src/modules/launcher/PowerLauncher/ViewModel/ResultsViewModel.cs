@@ -255,7 +255,19 @@ namespace PowerLauncher.ViewModel
 
         public void Sort()
         {
-            var sorted = Results.OrderByDescending(x => x.Result.Score).ToList();
+            var sorted = Results.OrderByDescending(
+                x =>
+                {
+                    if (_selectedItem == x && x == Results.FirstOrDefault())
+                    {
+                        // When receiving delayed results, don't displace the current first result if it's the selected one.
+                        return int.MaxValue;
+                    }
+                    else
+                    {
+                        return x.Result.Score;
+                    }
+                }).ToList();
             Clear();
             Results.AddRange(sorted);
         }
