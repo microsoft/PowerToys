@@ -28,12 +28,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 throw new ArgumentNullException(paramName: nameof(input));
             }
 
-            bool singleDigitFactorial = input.EndsWith("!", StringComparison.InvariantCulture);
-            if (input.Length <= 2 && !singleDigitFactorial)
-            {
-                return false;
-            }
-
             if (!RegValidExpressChar.IsMatch(input))
             {
                 return false;

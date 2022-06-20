@@ -88,14 +88,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         private static Regex GetSplitRegex(CultureInfo culture)
         {
-            // HACK: Specifically adding the decimal point here since some people expect that to work everywhere.
-            // This allows avoiding some unexpected errors users are getting when . is not part of the number representation.
-            // Users were getting errors where leading zeros were being removed from the decimal part of numbers like 56.0002.
-            // 56.0002 would be transformed into 56.2 due to it being translated as two different numbers and this would be accepted into the engine.
-            // Now, even if . is not part of the culture representation, users won't hit this error since the number will
-            // be passed as is to the calculator engine.
-            // This shouldn't add any regressions into accepted strings while it will have a behavior the users expect.
-            var splitPattern = $"((?:\\d|[a-fA-F]|\\.|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
+            var splitPattern = $"((?:\\d|[a-fA-F]|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
             if (!string.IsNullOrEmpty(culture.NumberFormat.NumberGroupSeparator))
             {
                 splitPattern += $"|{Regex.Escape(culture.NumberFormat.NumberGroupSeparator)}";

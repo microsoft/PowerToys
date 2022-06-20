@@ -44,6 +44,8 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string LnkResolvedPath { get; set; }
 
+        public string LnkResolvedExecutableName { get; set; }
+
         public string ParentDirectory { get; set; }
 
         public string ExecutableName { get; set; }
@@ -97,7 +99,8 @@ namespace Microsoft.Plugin.Program.Programs
             var nameMatch = StringMatcher.FuzzySearch(query, Name);
             var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
             var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
-            var score = new[] { nameMatch.Score, descriptionMatch.Score / 2, executableNameMatch.Score }.Max();
+            var lnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableName);
+            var score = new[] { nameMatch.Score, descriptionMatch.Score / 2, executableNameMatch.Score, lnkResolvedExecutableNameMatch.Score }.Max();
             return score;
         }
 
@@ -244,7 +247,6 @@ namespace Microsoft.Plugin.Program.Programs
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive.")]
         public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
             if (api == null)
@@ -358,8 +360,6 @@ namespace Microsoft.Plugin.Program.Programs
             return ExecutableName;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any error in CreateWin32Program should not prevent other programs from loading.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "User facing path needs to be shown in lowercase.")]
         private static Win32Program CreateWin32Program(string path)
         {
             try
@@ -397,8 +397,6 @@ namespace Microsoft.Plugin.Program.Programs
         private static readonly Regex InternetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
 
         // This function filters Internet Shortcut programs
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any error in InternetShortcutProgram should not prevent other programs from loading.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "User facing path needs to be shown in lowercase.")]
         private static Win32Program InternetShortcutProgram(string path)
         {
             try
@@ -478,8 +476,6 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Unsure of what exceptions are caught here while enabling static analysis")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "User facing path needs to be shown in lowercase.")]
         private static Win32Program LnkProgram(string path)
         {
             try
@@ -496,6 +492,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
 
                     program.LnkResolvedPath = program.FullPath;
+                    program.LnkResolvedExecutableName = Path.GetFileName(target);
 
                     // Using CurrentCulture since this is user facing
                     program.FullPath = Path.GetFullPath(target).ToLowerInvariant();
@@ -540,7 +537,6 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any error in ExeProgram should not prevent other programs from loading.")]
         private static Win32Program ExeProgram(string path)
         {
             try
@@ -648,7 +644,6 @@ namespace Microsoft.Plugin.Program.Programs
                 : null;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Minimise the effect of error on other programs")]
         private static IEnumerable<string> ProgramPaths(string directory, IList<string> suffixes, bool recursiveSearch = true)
         {
             if (!Directory.Exists(directory))
@@ -921,7 +916,6 @@ namespace Microsoft.Plugin.Program.Programs
             return program;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Keeping the process alive but logging the exception")]
         public static IList<Win32Program> All(ProgramPluginSettings settings)
         {
             if (settings == null)

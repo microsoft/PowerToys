@@ -25,8 +25,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// Interpret
         /// </summary>
         /// <param name="cultureInfo">Use CultureInfo.CurrentCulture if something is user facing</param>
-        public CalculateResult Interpret(string input, CultureInfo cultureInfo)
+        public CalculateResult Interpret(string input, CultureInfo cultureInfo, out string error)
         {
+            error = default;
+
             if (!CalculateHelper.InputValid(input))
             {
                 return default;
@@ -43,10 +45,16 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             // This could happen for some incorrect queries, like pi(2)
             if (result == null)
             {
+                error = Properties.Resources.wox_plugin_calculator_expression_not_complete;
                 return default;
             }
 
             result = TransformResult(result);
+            if (result is string)
+            {
+                error = result as string;
+                return default;
+            }
 
             if (string.IsNullOrEmpty(result?.ToString()))
             {
@@ -68,7 +76,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             return Math.Round(value, RoundingDigits, MidpointRounding.AwayFromZero);
         }
 
-        private static object TransformResult(object result)
+        private static dynamic TransformResult(object result)
         {
             if (result.ToString() == "NaN")
             {
@@ -78,6 +86,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             if (result is Function)
             {
                 return Properties.Resources.wox_plugin_calculator_expression_not_complete;
+            }
+
+            if (result is double[,])
+            {
+                // '[10,10]' is interpreted as array by mages engine
+                return Properties.Resources.wox_plugin_calculator_double_array_returned;
             }
 
             return result;

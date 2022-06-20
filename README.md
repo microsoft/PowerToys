@@ -8,8 +8,8 @@
 
 | Architecture | Solution (Main) | Solution (Stable) | Installer (Main) |
 |--------------|-----------------|-------------------|------------------|
-| x64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_x64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
-| ARM64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | not on stable yet | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_arm64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
+| x64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main&jobName=Build%20x64%20Release) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_x64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
+| ARM64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_arm64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
 
 ## About
 
@@ -28,13 +28,16 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 - Windows 11 or Windows 10 v1903 (18362) or newer.
 - Our installer will install the following items:
-   - [.NET 6.0.4 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-6.0.4-windows-x64-installer) or a newer 6.0.x runtime. 
+   - [.NET 6.0.5 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.5) or a newer 6.0.x runtime. 
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version. 
-   - [Windows App SDK Runtime 1.0.3](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads). This will install version 1.0.3 if this or newer version is not installed already.
+   - [Microsoft Visual C++ Redistributable](https://docs.microsoft.com/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022) installer. This will install one of the latest versions available.
 
 ### Via GitHub with EXE [Recommended]
 
- [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.58.0-x64.exe` to download the PowerToys installer.
+ [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture.  For most people, it is `x64`.
+ 
+ - **For x64 (most common):** click on `PowerToysSetup-0.59.1-x64.exe`
+ - **For ARM64:** `PowerToysSetup-0.59.1-arm64.exe` 
 
 This is our preferred method.
 
@@ -69,116 +72,119 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.58 - April 2022 Update
+### 0.59 - May 2022 Update
 
-In this release, we focused on upgrading to new dependencies and building for native ARM64.  Below are some of the highlights!
+In this release, we focused on wrapping up building for native ARM64 and releasing the first experimental build. Below are some of the highlights!
 
 **Highlights**
 
-- Most of the work for running natively on ARM64 has been included in the repo. Thanks [@snickler](https://github.com/snickler)!
-- Uses of the obsolete WebBrowser control were replaced with WebView 2.
-- All uses of .NET Core 3.1 were removed. PowerToys now runs on .NET 6.
-- Settings no longer runs on XAML Islands and is now running on WinUI 3, fixing many bugs related to XAML islands.
+- The work for running natively on ARM64 has been wrapped up and a build is released. Thanks [@snickler](https://github.com/snickler)!
+- Power Rename now is running on WinUI 3.
+- Keyboard Manager now allows up to 4 modifier keys for shortcuts and has received some quality fixes.
+- Upgraded the Windows App SDK runtimes to 1.1.0, fixing an issue where Settings wouldn't start with UAC off and improving performance.
+- The Windows App SDK runtime binaries are being shipped with PowerToys which should resolve the installations issues reported with WinAppSDK.
+
+### Known issues
+- There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.  
 
 ### General
 
-- Spell checking fixes in the code. Thanks [@jsoref](https://github.com/jsoref)!
-- Fix for a CI error related to spell checking due to a GitHub API change. Thanks [@jsoref](https://github.com/jsoref)!
-- Fixed the documentation references to GitHub. Thanks [@Cyl18](https://github.com/Cyl18)!
+- Some typos were fixed. Thanks [@eltociear](https://github.com/eltociear), [@rcmaehl](https://github.com/rcmaehl) and [@ShyPixie](https://github.com/ShyPixie)!
 
 ### ARM64
 
-- Prepare solution and property files for ARM64 port. Thanks [@snickler](https://github.com/snickler)!
-- Port unhandled exception handler to ARM64. Thanks [@snickler](https://github.com/snickler)!
-- Port of the Settings projects to ARM64. Thanks [@snickler](https://github.com/snickler)!
-- Port of most of the PowerToys to ARM64. Thanks [@snickler](https://github.com/snickler)!
-- Port of the debug utilities to ARM64.
+- ARM64 support now fully added!
+- Fixed PowerRename to work on ARM64.
+- Fixed File Explorer tools to work on ARM64.
+- Made changes for the installer projects to build ARM64 installers.
+- Configured the CI and Release pipelines to build for ARM64.
+- Added ARM64 build status to the README.
 
 ### Always on Top
 
-- Fix for topmost state of the window resetting for some applications. (This was a hotfix for 0.57)
-
-### ColorPicker
-
-- The CIEXYZ format is now properly show in upper case.
+- Fixed an issue where the borders where sticking around when a window was minimized with Win+D.
 
 ### FancyZones
 
-- Restore rounded corners on Windows 11 and add a setting to control this behavior. (This was a hotfix for 0.57)
-- Fixed an edge case where the Windows Terminal window wouldn't be snapped when opened. (This was a hotfix for 0.57)
-- Improved narrator support in the Grid Editor. (This was a hotfix for 0.57)
-- Fixed a bug when restoring rounded corners on Windows 11. (This was a hotfix for 0.57)
-- Fix for windows not being resized correctly on different dpi settings. (This was a hotfix for 0.57)
-- Removed resolution from the screen identifier so zones aren't reset when resolution changes.
-- Scale the canvas layout when editing according to new scaling/resolution.
-- Shipping a new tool to help debug windows interactions with FancyZones.
+- Fixed a bug that was consuming CPU cycles when the default layout was set.
+- Fixed a bug where apps were not opened in their last known zones due to Virtual Desktop ID changes.
+- Fixed a bug that was snapping popup menus opened by applications.
+- Fixed a bug causing windows not to be snapped under some configurations.
 
-### File explorer
+### Image Resizer
 
-- Fix for a crash in dev file preview if the settings file hadn't been created yet. (This was a hotfix for 0.57)
-- New file types were added to dev file preview (".reg", ".xslt", ".xsd", ".wsdl", ".ino", ".pde", ".razor"). Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Fix an existing "file still in use" issue in dev file preview. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Dev file preview is now able to interpret file extensions in a case-insensitive way. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- SVG and markdown viewers no longer use WebBrowser and use WebView2 instead.
-- Markdown preview now respects the dark mode settings on Windows. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- No longer tries to change metadata on files that were not actually resized. Thanks [@adamchilders](https://github.com/adamchilders)!
 
-### Mouse utility
+### File explorer add-ons
 
-- Fix for the bug causing shortcuts set on icons to not activate when a mouse utility was active on specific monitor configurations.
+- Fixed a bug where modules depending on WebView2 would be limited to opening files smaller than 2 MB. Now the resulting html is generated into a temporary file before presenting it.
+- Add a viewBox attribute to svg files that don't have one so that the preview tries to show the whole image.
+- Remove scrollbar that was showing when rendering svg thumbnails.
+
+### Keyboard Manager
+
+- Now up to four modifier keys can be used in shortcuts. This will allow you to use the Office key (which sends Win+Ctrl+Shift+Alt), for example.
+- Fixed a bug locking Keyboard Manager when two shortcut mapping were pressed at the same time.
+- Removed event spam for certain telemetry events.
+
+### PowerRename
+
+- Ported to use WinUI 3 instead of WinUI 2.
 
 ### PowerToys Run
 
-- Fix for PowerToys Run using high CPU and memory when updating its settings. (This was a hotfix for 0.57)
-- Add the "Run as different user" feature to the Program, Shell, and Search plugins. Thanks [@htcfreek](https://github.com/htcfreek)! (This was a hotfix for 0.57)
-- Fix for a WindowWalker crash when a Virtual Desktop registry key is not set. Thanks [@htcfreek](https://github.com/htcfreek)! (This was a hotfix for 0.57)
-- Fix for VS Code Workspaces not using the user's path variable right after an install or update. Thanks [@ricardosantos9521](https://github.com/ricardosantos9521)! (This was a hotfix for 0.57)
-- Fix for the System plugin causing PowerToys Run to be slow when many network interfaces exist. Thanks [@htcfreek](https://github.com/htcfreek)! (This was a hotfix for 0.57)
-- Fix for the Program plugin not showing special shortcuts with empty targets, like Control Panel. (This was a hotfix for 0.57)
-- Additional logging for the Terminal plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! (This was a hotfix for 0.57)
-- Web Search and URI plugins have better code for detecting the default browser now.
-- Fix for the Services plugin not manipulating service names with spaces correctly. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fix for the Terminal plugin not recognizing profiles correctly. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fix for latest VSCode insiders build not showing up in the VSCode Workspaces plugin. Thanks [@JacobDeuchert](https://github.com/JacobDeuchert)!
-- Increased floating number precision in the Unit Converter plugin.
-- VSCode Workspaces now finds portable installations of VS Code. Thanks [@harvastum](https://github.com/harvastum)
-- Fixed an issue starting PowerToys Run when the desktop is not initialized. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- The Services plugin is able to search for parts of the name, display name or the service type or state. Thanks [@htcfreek](https://github.com/htcfreek)!
+- The Services plugin now supports the startup type 'Automatic (Delayed Autostart)'. Thanks [@htcfreek](https://github.com/htcfreek)!
+- The Services plugin now has tooltips for large service names and other UI improvements. Thanks [@htcfreek](https://github.com/htcfreek)!
+- The TimeDate plugin gave results for queries containing just numbers on global queries. This has been fixed. Thanks [@htcfreek](https://github.com/htcfreek)!
+- We've introduced a throttle before a query is done to ensure typing is done to increase performance. Thanks [@shandsj](https://github.com/shandsj)!
+- Fixed a crash in WebSearch when there's an empty pattern setup for the system's default browser.
+- Fixed a bug where VSCodeWorkspaces was not finding portable installations of VSCode. Thanks [@harvastum](https://github.com/harvastum)!
+- The Calculator plugin reacts better to invalid input and internal errors. Thanks [@htcfreek](https://github.com/htcfreek)!
+- The Calculator plugin can now be configured to use the US number format instead of the system one. Thanks [@htcfreek](https://github.com/htcfreek)!
+- The Folder plugin supports paths containing "/". Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Settings
 
-- Settings now runs on WinUI3 instead of XAML islands.
-- Settings no longer runs as an administrator when runner is started as an administrator.
+- Now the UI for adding excluded apps for FindMyMouse is disabled when the module is disabled. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Text was improved in the Settings UI for File Explorer. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+- Settings won't try to launch if everything runs elevated in the machine, and a warning message is shown instead.
+- Some minor UI fixes. Thanks [@niels9001](https://github.com/niels9001)!
+- The Settings screen should now open correctly if the OOBE screen was opened first.
+- The rounded corner settings for FancyZones now only show on Windows 11. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed a UI freeze when entering the Keyboard Manager page with clean settings.
+- Fixed a UI glitch where a message was being shown that all PowerToys Run plugins were disabled when using the search function. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Upgraded the Windows App SDK runtimes to 1.1.0, fixing an issue where Settings wouldn't start with UAC off and improving performance.
 
-### Runner
+### Runner 
 
-- Use sensible default times for rechecking for an update, to avoid writing to the logs in a loop. (This was a hotfix for 0.57)
-- Runner cleans up the update directory if the installation is up to date. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Auto-update takes into account if it's running on x64 or arm64 to download the right installer.
 
 ### Installer
 
-- Distribute a signed .msi inside the .exe installer bootstrapper. (This was a hotfix for 0.57)
-- Removed the .NET core dependency from the installer.
-- Partial support for an ARM64 installer.
-- Updated the .NET to 6.0.4.
-- Force update all files on reinstall/update, to try and fix installation issues.
-
+- Updated the .NET dependency to 6.0.5.
+- The installer is now built using a beta version of Wix 3.14 for arm64 support.
+- Added the VC++ Redistributable binary as a requirement.
+- The Windows App SDK runtime binaries are being shipped with PowerToys instead of running its installer. This should fix most of the install issues with 0.58.
 
 ### Development
 
-- PowerToys no longer takes a dependency on .NET core.
-- WinUI3 is a new dependency. Settings now targets win10-x64 and win10-arm64 due to this.
+- New action added to GitHub to publish the winget package to PowerToys.
+- New action added to GitHub to publish for the Microsoft Store. Thanks [azchohfi](https://github.com/azchohfi)!
+- Documentation for installing the Windows App SDK dependencies and building the installer was updated.
+- FxCop removed from the PowerToys Run TimeZone plugin and was replaced with NetAnalyzers. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 #### Community contributions
 
 We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 [@Aaron-Junker](https://github.com/Aaron-Junker), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@davidegiacometti](https://github.com/davidegiacometti), [@dend](https://github.com/dend), [@franky920920](https://github.com/franky920920), [@htcfreek](https://github.com/htcfreek), [@jay-o-way](https://github.com/jay-o-way), [@jsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), [@snickler](https://github.com/snickler).
 
+#### What is being planned for v0.60
 
-#### What is being planned for v0.59
-
-For [v0.59][github-next-release-work], we'll work on below:
+For [v0.60][github-next-release-work], we'll work on below:
 
 - Environment Variables Editor PowerToy
-- Wrap up the ARM64 build
+- Screen Measure PowerToy
 - Stability / bug fixes
 
 ## PowerToys Community
@@ -206,5 +212,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F32
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F31
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F33
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F32

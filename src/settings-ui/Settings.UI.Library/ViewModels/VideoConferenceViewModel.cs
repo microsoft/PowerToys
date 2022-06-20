@@ -53,9 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Settings = _settingsUtils.GetSettings<VideoConferenceSettings>(GetSettingsSubPath());
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Settings = new VideoConferenceSettings();
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
@@ -177,9 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     RaisePropertyChanged(nameof(CameraImageOverlayPath));
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch
-#pragma warning restore CA1031 // Do not catch general exception types
             {
             }
         }

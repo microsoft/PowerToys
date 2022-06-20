@@ -18,6 +18,7 @@ jobs:
           assets=$(jq -n "$release" | jq '.assets')
           powerToysSetup=$(jq -n "$assets" | jq '[.[]|select(.name | contains("PowerToysSetup"))]')
           echo ::set-output name=powerToysInstallerX64Url::$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("x64"))][0].browser_download_url')
+          echo ::set-output name=powerToysInstallerArm64Url::$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("arm64"))][0].browser_download_url')
 
       - name: Configure Store Credentials
         uses: microsoft/store-submission@v1
@@ -40,7 +41,14 @@ jobs:
                     "packageUrl":"${{ steps.releaseVars.outputs.powerToysInstallerX64Url }}",
                     "languages":["zh-hans", "zh-hant", "en", "cs", "nl", "fr", "pt", "pt-br", "de", "hu", "it", "ja", "ko", "pl", "ru", "es", "tr"],
                     "architectures":["X64"],
-                    "installerParameters":"-passive",
+                    "installerParameters":"/passive /norestart",
+                    "isSilentInstall":true
+                  },
+                  {
+                    "packageUrl":"${{ steps.releaseVars.outputs.powerToysInstallerArm64Url }}",
+                    "languages":["zh-hans", "zh-hant", "en", "cs", "nl", "fr", "pt", "pt-br", "de", "hu", "it", "ja", "ko", "pl", "ru", "es", "tr"],
+                    "architectures":["Arm64"],
+                    "installerParameters":"/passive /norestart",
                     "isSilentInstall":true
                   }
               ]

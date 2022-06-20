@@ -86,8 +86,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
             return list;
         }
 
-        #pragma warning disable CA1031 // Do not catch general exception types
-
         /// <summary>
         /// Open the Windows registry editor and jump to registry key inside the given key (inside the <see cref="RegistryEntry"/>
         /// </summary>
@@ -135,7 +133,5 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 return false;
             }
         }
-
-        #pragma warning restore CA1031 // Do not catch general exception types
     }
 }

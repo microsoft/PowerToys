@@ -36,7 +36,8 @@ $items | ForEach-Object {
 			(-not $_.Name.EndsWith("Microsoft.Windows.System.Power.Projection.dll")) -and
 			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Bootstrap.Net.dll")) -and
 			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactions.dll")) -and
-			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactivity.dll"))
+			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactivity.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Release.Net.dll"))
 		)
 		{
 			Write-Host "Version not set: " + $_.FullName

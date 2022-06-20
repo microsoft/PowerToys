@@ -124,7 +124,7 @@
     <value>Does mathematical calculations (e.g. 5*3-2).</value>
   </data>
   <data name="wox_plugin_calculator_not_a_number" xml:space="preserve">
-    <value>Not a number (NaN)</value>
+    <value>Calculation result is not a valid number (NaN)</value>
   </data>
   <data name="wox_plugin_calculator_expression_not_complete" xml:space="preserve">
     <value>Expression wrong or incomplete (Did you forget some parentheses?)</value>
@@ -134,5 +134,26 @@
   </data>
   <data name="wox_plugin_calculator_copy_failed" xml:space="preserve">
     <value>Copy failed, please try later</value>
+  </data>
+  <data name="wox_plugin_calculator_calculation_failed" xml:space="preserve">
+    <value>Failed to calculate the input</value>
+  </data>
+  <data name="wox_plugin_calculator_double_array_returned" xml:space="preserve">
+    <value>Unsupported use of square brackets</value>
+  </data>
+  <data name="wox_plugin_calculator_not_covert_to_decimal" xml:space="preserve">
+    <value>Result value was either too large or too small for a decimal number</value>
+  </data>
+  <data name="wox_plugin_calculator_in_en_format" xml:space="preserve">
+    <value>Use English (United States) number format for input</value>
+  </data>
+  <data name="wox_plugin_calculator_in_en_format_description" xml:space="preserve">
+    <value>Ignores your system setting and expects numbers in the format '1,000.50'</value>
+  </data>
+  <data name="wox_plugin_calculator_out_en_format" xml:space="preserve">
+    <value>Use English (United States) number format for output</value>
+  </data>
+  <data name="wox_plugin_calculator_out_en_format_description" xml:space="preserve">
+    <value>Ignores your system setting and returns numbers in the format '1000.50'</value>
   </data>
 </root>
