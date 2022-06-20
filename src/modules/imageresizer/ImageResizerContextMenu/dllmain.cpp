@@ -3,27 +3,17 @@
 
 #include <atlfile.h>
 #include <atlstr.h>
+#include <Shlwapi.h>
 #include <shobjidl_core.h>
 #include <string>
-#include <filesystem>
-#include <sstream>
-#include <Shlwapi.h>
-#include <vector>
-#include <wil\resource.h>
-#include <wil\win32_helpers.h>
-#include <wil\stl.h>
-#include <wrl/module.h>
-#include <wrl/implements.h>
-#include <wrl/client.h>
 
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <Settings.h>
 #include <trace.h>
 
-#include <mutex>
-#include <thread>
-#include <shellapi.h>
+#include <wil/win32_helpers.h>
+#include <wrl/module.h>
 
 using namespace Microsoft::WRL;
 
@@ -49,10 +39,10 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     return TRUE;
 }
 
-class __declspec(uuid("1861E28B-A1F0-4EF4-A1FE-4C8CA88E2174")) PowerRenameContextMenuCommand final : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IExplorerCommand, IObjectWithSite>
+class __declspec(uuid("8F491918-259F-451A-950F-8C3EBF4864AF")) ImageResizerContextMenuCommand final : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IExplorerCommand, IObjectWithSite>
 {
 public:
-    virtual const wchar_t* Title() { return L"PowerRename"; }
+    virtual const wchar_t* Title() { return L"ImageResizer"; }
     virtual const EXPCMDFLAGS Flags() { return ECF_DEFAULT; }
     virtual const EXPCMDSTATE State(_In_opt_ IShellItemArray* selection) { return ECS_ENABLED; }
 
@@ -64,15 +54,9 @@ public:
 
     IFACEMETHODIMP GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)
     {
-        if (!CSettingsInstance().GetShowIconOnMenu())
-        {
-            *icon = nullptr;
-            return E_NOTIMPL;
-        }
-
         std::wstring iconResourcePath = get_module_folderpath(g_hInst);
         iconResourcePath += L"\\";
-        iconResourcePath += L"PowerRenameUI.ico";
+        iconResourcePath += L"ImageResizer.ico";
         return SHStrDup(iconResourcePath.c_str(), icon);
     }
 
@@ -90,19 +74,53 @@ public:
 
     IFACEMETHODIMP GetState(_In_opt_ IShellItemArray* selection, _In_ BOOL okToBeSlow, _Out_ EXPCMDSTATE* cmdState)
     {
-        *cmdState = CSettingsInstance().GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
+        if (!CSettingsInstance().GetEnabled())
+        {
+            *cmdState = ECS_HIDDEN;
+            return S_OK;
+        }
+        // Hide if the file is not an image
+        *cmdState = ECS_HIDDEN;
+        // Suppressing C26812 warning as the issue is in the shtypes.h library
+#pragma warning(suppress : 26812)
+        PERCEIVED type;
+        PERCEIVEDFLAG flag;
+        IShellItem* shellItem;
+        //Check extension of first item in the list (the item which is right-clicked on)
+        selection->GetItemAt(0, &shellItem);
+        LPTSTR pszPath;
+        // Retrieves the entire file system path of the file from its shell item
+        shellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszPath);
+        LPTSTR pszExt = PathFindExtension(pszPath);
+
+        // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
+        AssocGetPerceivedType(pszExt, &type, &flag, NULL);
+
+        CoTaskMemFree(pszPath);
+        // If selected file is an image...
+
+        if (type == PERCEIVED_TYPE_IMAGE)
+        {
+            *cmdState = ECS_ENABLED;
+        }
         return S_OK;
     }
 
     IFACEMETHODIMP Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
     try
     {
+
+        Trace::Invoked();
+        HRESULT hr = S_OK;
+
         if (selection)
         {
-            RunPowerRename(selection);
+            hr = ResizePictures(selection);
         }
 
-        return S_OK;
+        Trace::InvokedRet(hr);
+
+        return hr;
     }
     CATCH_RETURN();
 
@@ -129,7 +147,6 @@ protected:
     ComPtr<IUnknown> m_site;
 
 private:
-
     HRESULT StartNamedPipeServerAndSendData(std::wstring pipe_name)
     {
         hPipe = CreateNamedPipe(
@@ -168,76 +185,71 @@ private:
         return S_OK;
     }
 
-    HRESULT RunPowerRename(IShellItemArray* psiItemArray)
+    HRESULT ResizePictures(IShellItemArray* psiItemArray)
     {
-        if (CSettingsInstance().GetEnabled())
+        // Set the application path based on the location of the dll
+        std::wstring path = get_module_folderpath(g_hInst);
+        path = path + L"\\PowerToys.ImageResizer.exe";
+
+        std::wstring pipe_name(L"\\\\.\\pipe\\powertoys_imageresizerinput_");
+        UUID temp_uuid;
+        wchar_t* uuid_chars = nullptr;
+        if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
         {
-            Trace::Invoked();
-            // Set the application path based on the location of the dll
-            std::wstring path = get_module_folderpath(g_hInst);
-            path = path + L"\\PowerToys.PowerRename.exe";
-
-            std::wstring pipe_name(L"\\\\.\\pipe\\powertoys_powerrenameinput_");
-            UUID temp_uuid;
-            wchar_t* uuid_chars = nullptr;
-            if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
-            {
-                auto val = get_last_error_message(GetLastError());
-                Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
-            }
-            else if (UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars) != RPC_S_OK)
-            {
-                auto val = get_last_error_message(GetLastError());
-                Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
-            }
-
-            if (uuid_chars != nullptr)
-            {
-                pipe_name += std::wstring(uuid_chars);
-                RpcStringFree((RPC_WSTR*)&uuid_chars);
-                uuid_chars = nullptr;
-            }
-            create_pipe_thread = std::thread(&PowerRenameContextMenuCommand::StartNamedPipeServerAndSendData, this, pipe_name);
-            RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst));
-            create_pipe_thread.join();
-
-            if (hPipe != INVALID_HANDLE_VALUE)
-            {
-                CAtlFile writePipe(hPipe);
-
-                DWORD fileCount = 0;
-                // Gets the list of files currently selected using the IShellItemArray
-                psiItemArray->GetCount(&fileCount);
-                // Iterate over the list of files
-                for (DWORD i = 0; i < fileCount; i++)
-                {
-                    IShellItem* shellItem;
-                    psiItemArray->GetItemAt(i, &shellItem);
-                    LPWSTR itemName;
-                    // Retrieves the entire file system path of the file from its shell item
-                    shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
-                    CString fileName(itemName);
-                    // File name can't contain '?'
-                    fileName.Append(_T("?"));
-                    // Write the file path into the input stream for image resizer
-                    writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
-                }
-                writePipe.Close();
-            }
+            auto val = get_last_error_message(GetLastError());
+            Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
         }
-        Trace::InvokedRet(S_OK);
+        else if (UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars) != RPC_S_OK)
+        {
+            auto val = get_last_error_message(GetLastError());
+            Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
+        }
+
+        if (uuid_chars != nullptr)
+        {
+            pipe_name += std::wstring(uuid_chars);
+            RpcStringFree((RPC_WSTR*)&uuid_chars);
+            uuid_chars = nullptr;
+        }
+        create_pipe_thread = std::thread(&ImageResizerContextMenuCommand::StartNamedPipeServerAndSendData, this, pipe_name);
+        RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst));
+        create_pipe_thread.join();
+
+        if (hPipe != INVALID_HANDLE_VALUE)
+        {
+            CAtlFile writePipe(hPipe);
+
+            //m_pdtobj will be NULL when invoked from the MSIX build as Initialize is never called (IShellExtInit functions aren't called in case of MSIX).
+            DWORD fileCount = 0;
+            // Gets the list of files currently selected using the IShellItemArray
+            psiItemArray->GetCount(&fileCount);
+            // Iterate over the list of files
+            for (DWORD i = 0; i < fileCount; i++)
+            {
+                IShellItem* shellItem;
+                psiItemArray->GetItemAt(i, &shellItem);
+                LPWSTR itemName;
+                // Retrieves the entire file system path of the file from its shell item
+                shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
+                CString fileName(itemName);
+                fileName.Append(_T("\r\n"));
+                // Write the file path into the input stream for image resizer
+                writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+            }
+            writePipe.Close();
+        }
 
         return S_OK;
     }
 
-
     std::thread create_pipe_thread;
     HANDLE hPipe = INVALID_HANDLE_VALUE;
-    std::wstring app_name = L"PowerRename";
+    std::wstring app_name = L"ImageResizer";
 };
 
-CoCreatableClass(PowerRenameContextMenuCommand)
-CoCreatableClassWrlCreatorMapInclude(PowerRenameContextMenuCommand)
+CoCreatableClass(ImageResizerContextMenuCommand)
+CoCreatableClassWrlCreatorMapInclude(ImageResizerContextMenuCommand)
+
 
 STDAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ IActivationFactory** factory)
 {

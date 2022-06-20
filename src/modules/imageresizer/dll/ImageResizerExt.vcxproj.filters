@@ -28,15 +28,6 @@
     <ClCompile Include="ContextMenuHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Settings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="trace.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="trace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="ImageResizerExt_i.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -54,9 +45,6 @@
     <ClInclude Include="ContextMenuHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Settings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ImageResizerExt_i.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -65,9 +53,6 @@
     </ClInclude>
     <ClInclude Include="Generated Files/resource.h">
       <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ImageResizerConstants.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

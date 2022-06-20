@@ -2,13 +2,14 @@
 
 #include "pch.h"
 #include "ContextMenuHandler.h"
-#include "Settings.h"
+
+#include <Settings.h>
+#include <trace.h>
+
 #include <common/themes/icon_helpers.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/HDropIterator.h>
-
-#include "trace.h"
 
 extern HINSTANCE g_hInst_imageResizer;
 
