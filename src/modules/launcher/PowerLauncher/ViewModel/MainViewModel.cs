@@ -643,7 +643,10 @@ namespace PowerLauncher.ViewModel
                             QueryLength = queryText.Length,
                         };
                         PowerToysTelemetry.Log.WriteEvent(queryEvent);
-                    }, currentCancellationToken);
+                    }, currentCancellationToken).Wait();
+
+                    Results.Sort();
+                    Results.SelectedItem = Results.Results.FirstOrDefault();
                 }
             }
             else
