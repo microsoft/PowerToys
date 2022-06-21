@@ -100,11 +100,13 @@ bool EditorParameters::Save() noexcept
 
     if (spanZonesAcrossMonitors)
     {
-        RECT combinedWorkArea, combinedMonitorArea;
+        RECT combinedWorkArea;
         dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&]() {
             combinedWorkArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcWork>();
-            combinedMonitorArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcMonitor>();
+            
         } }).wait();
+
+        RECT combinedMonitorArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcMonitor>();
 
         JsonUtils::MonitorInfo monitorJson;
         monitorJson.monitorName = ZonedWindowProperties::MultiMonitorDeviceID;
@@ -176,8 +178,13 @@ bool EditorParameters::Save() noexcept
             monitorJson.left = monitorInfo.rcWork.left;
             monitorJson.workAreaWidth = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
             monitorJson.workAreaHeight = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
-            monitorJson.monitorWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
-            monitorJson.monitorHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+
+            float width = static_cast<float>(monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left);
+            float height = static_cast<float>(monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top);
+            DPIAware::Convert(monitor, width, height);
+
+            monitorJson.monitorWidth = static_cast<int>(std::roundf(width));
+            monitorJson.monitorHeight = static_cast<int>(std::roundf(height));
 
             argsJson.monitors.emplace_back(std::move(monitorJson));
         }
