@@ -239,6 +239,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool measureTool = true;
+
+        [JsonPropertyName("MeasureTool")]
+        public bool MeasureTool
+        {
+            get => measureTool;
+            set
+            {
+                if (measureTool != value)
+                {
+                    LogTelemetryEvent(value);
+                    measureTool = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

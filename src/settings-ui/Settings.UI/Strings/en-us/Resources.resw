@@ -121,6 +121,42 @@
     <value>Video Conference Mute</value>
     <comment>Navigation view item name for Video Conference</comment>
   </data>
+  <data name="Shell_MeasureTool.Content" xml:space="preserve">
+    <value>Measure Tool</value>
+    <comment>Navigation view item name for Measure Tool</comment>
+  </data>
+  <data name="MeasureTool.ModuleDescription" xml:space="preserve">
+    <value>Measure Tool is a quick and easy way to measure something on your screen.</value>
+    <comment>"Measure Tool" is the name of the utility</comment>
+  </data>
+  <data name="MeasureTool.ModuleTitle" xml:space="preserve">
+    <value>Measure Tool</value>
+    <comment>"Measure Tool" is the name of the utility</comment>
+  </data>
+    <data name="MeasureTool_Settings.Header" xml:space="preserve">
+    <value>Behavior</value>
+    <comment>"Measure Tool" is the name of the utility</comment>
+  </data>
+  <data name="MeasureTool_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MeasureTool_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to bring up tool's window</value>
+    <comment>"Measure Tool" is the name of the utility</comment>
+  </data>
+  <data name="MeasureTool_PixelTolerance.Header" xml:space="preserve">
+    <value>Pixel tolerance for edge detection</value>
+  </data>
+  <data name="MeasureTool_MeasureCrossColor.Header" xml:space="preserve">
+    <value>Cross color</value>
+  </data>
+  <data name="MeasureTool_ContinuousCapture.Header" xml:space="preserve">
+    <value>Capture screen continuously during measuring</value>
+  </data>
+  <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
+    <value>Enable Measure Tool</value>
+    <comment>"Measure Tool" is the name of the utility</comment>
+  </data>
   <data name="VideoConference_Enable.Header" xml:space="preserve">
     <value>Enable Video Conference Mute</value>
   </data>
