@@ -488,7 +488,7 @@ void FancyZones::ToggleEditor() noexcept
 
     m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
 
-    EditorParameters::Save(m_dpiUnawareThread);
+    EditorParameters::Save();
     
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };

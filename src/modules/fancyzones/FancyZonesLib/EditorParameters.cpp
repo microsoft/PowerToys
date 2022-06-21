@@ -2,6 +2,7 @@
 #include "EditorParameters.h"
 
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
+#include <FancyZonesLib/on_thread_executor.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/util.h>
@@ -76,7 +77,7 @@ namespace JsonUtils
     };
 }
 
-bool EditorParameters::Save(OnThreadExecutor& dpiUnawareThread) noexcept
+bool EditorParameters::Save() noexcept
 {
     const auto virtualDesktopIdStr = FancyZonesUtils::GuidToString(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
     if (!virtualDesktopIdStr)
@@ -84,6 +85,12 @@ bool EditorParameters::Save(OnThreadExecutor& dpiUnawareThread) noexcept
         Logger::error(L"Save editor params: no virtual desktop id");
         return false;
     }
+
+    OnThreadExecutor dpiUnawareThread;
+    dpiUnawareThread.submit(OnThreadExecutor::task_t{ [] {
+        SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
+        SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
+    } }).wait();
 
     const bool spanZonesAcrossMonitors = FancyZonesSettings::settings().spanZonesAcrossMonitors;
 

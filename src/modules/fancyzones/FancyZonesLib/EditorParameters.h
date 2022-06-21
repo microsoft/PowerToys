@@ -1,7 +1,5 @@
 #pragma once
 
-#include <FancyZonesLib/on_thread_executor.h>
-
 namespace NonLocalizable
 {
     namespace EditorParametersIds
@@ -25,5 +23,5 @@ namespace NonLocalizable
 class EditorParameters
 {
 public:
-    static bool Save(OnThreadExecutor& dpiUnawareThread) noexcept;
+    static bool Save() noexcept;
 };
