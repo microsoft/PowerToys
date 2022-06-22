@@ -12,7 +12,7 @@
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
-    
+
     <Page.Resources>
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
         <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
@@ -143,7 +143,7 @@
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
-                                <controls:Setting x:Uid="PowerLauncher_SearchClickedItemWeight" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="PowerLauncher_SearchClickedItemWeight" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
                                     <controls:Setting.ActionContent>
                                         <muxc:NumberBox Minimum="0"
                                         Maximum="1000"
@@ -155,13 +155,22 @@
                                         LargeChange="50"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
-                                <controls:Setting x:Uid="PowerLauncher_WaitForSlowResults" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                
+                                <!--<controls:Setting x:Uid="PowerLauncher_WaitForSlowResults" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <CheckBox
                                           IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}"
                                           Margin="{StaticResource ExpanderSettingMargin}" />
                                     </controls:Setting.ActionContent>
-                                </controls:Setting>
+                                </controls:Setting>-->
+                                
+                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <controls:CheckBoxWithDescriptionControl 
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}"
+                                                                 Margin="56, -2, 40, 14"
+                                                                 x:Uid="PowerLauncher_WaitForSlowResults"/>
+                                
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
@@ -280,6 +289,14 @@
                                                                  MinWidth="{StaticResource SettingActionControlMinWidth}" />
                                                     </controls:Setting.ActionContent>
                                                 </controls:Setting>
+
+                                                <controls:Setting x:Uid="PowerLauncher_PluginWeightBoost" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                                    <controls:Setting.ActionContent>
+                                                        <TextBox Text="{x:Bind Path=WeightBoost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                 MinWidth="{StaticResource SettingActionControlMinWidth}" />
+                                                    </controls:Setting.ActionContent>
+                                                </controls:Setting>
+
                                                 <muxc:InfoBar Severity="Error" x:Uid="Run_NotAccessibleWarning"
                                                               IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                               IsOpen="{x:Bind ShowNotAccessibleWarning}"

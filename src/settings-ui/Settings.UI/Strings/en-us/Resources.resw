@@ -2132,15 +2132,24 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Results display tuning</value>
   </data>
   <data name="PowerLauncher_SearchClickedItemWeight.Description" xml:space="preserve">
-    <value>The default is 5. Use a higher number to get clicked results to rise faster. Use 0 to disable.</value>
+    <value>Use a higher number to get clicked results to rise faster. The default is 5, 0 to disable.</value>
   </data>
   <data name="PowerLauncher_SearchClickedItemWeight.Header" xml:space="preserve">
-    <value>A weight that allow clicked results to rise to the top of the results</value>
+    <value>Clicked item weight</value>
   </data>
   <data name="PowerLauncher_WaitForSlowResults.Description" xml:space="preserve">
-    <value>Selecting this can help select the top result but at the risk of jumpiness in what's selected</value>
+    <value>Selecting this can help preselect the top, more relevent result, but at the risk of jumpiness</value>
   </data>
   <data name="PowerLauncher_WaitForSlowResults.Header" xml:space="preserve">
-    <value>Wait on some slower or delayed results</value>
+    <value>Wait on async results before selecting</value>
+  </data>
+  <data name="PowerLauncher_PluginWeightBoost.Content" xml:space="preserve">
+    <value>PowerLauncher_PluginWeightBoost.Content</value>
+  </data>
+  <data name="PowerLauncher_PluginWeightBoost.Description" xml:space="preserve">
+    <value>Increase this number to have these result show higher in the results. Default is 0.</value>
+  </data>
+  <data name="PowerLauncher_PluginWeightBoost.Header" xml:space="preserve">
+    <value>Sort weight boost</value>
   </data>
 </root>

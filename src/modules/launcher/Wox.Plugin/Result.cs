@@ -21,6 +21,8 @@ namespace Wox.Plugin
         private string _pluginDirectory;
         private string _icoPath;
 
+        public PluginMetadata Metadata { get; set; }
+
         public string Title
         {
             get

@@ -256,9 +256,12 @@ namespace PowerLauncher.ViewModel
         public void Sort(MainViewModel.QueryTuningOptions options)
         {
             var sorted = Results.OrderByDescending(x => (x.Result.Score + (x.Result.SelectedCount * 5))).ToList();
+
+            sorted = Results.OrderByDescending(x => (x.Result.Metadata.WeightBoost + x.Result.Score + (x.Result.SelectedCount * 5))).ToList();
+
             if (options.SearchQueryTuningEnabled)
             {
-                sorted = Results.OrderByDescending(x => (x.Result.Score + (x.Result.SelectedCount * options.SearchClickedItemWeight))).ToList();
+                sorted = Results.OrderByDescending(x => (x.Result.Metadata.WeightBoost + x.Result.Score + (x.Result.SelectedCount * options.SearchClickedItemWeight))).ToList();
             }
 
             Clear();

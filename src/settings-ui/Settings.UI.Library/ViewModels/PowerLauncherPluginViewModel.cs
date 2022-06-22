@@ -85,6 +85,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public int WeightBoost
+        {
+            get
+            {
+                return settings.WeightBoost;
+            }
+
+            set
+            {
+                if (settings.WeightBoost != value)
+                {
+                    settings.WeightBoost = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
+                    NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
+                }
+            }
+        }
+
         public string ActionKeyword
         {
             get
