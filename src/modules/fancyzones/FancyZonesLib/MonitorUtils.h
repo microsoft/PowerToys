@@ -1,21 +1,21 @@
 #pragma once
 
+#include <FancyZonesLib/FancyZonesDataTypes.h>
+
 namespace MonitorUtils
 {
-    void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept;
-
-    struct MonitorData
-    {
-        HMONITOR monitor;
-        std::wstring deviceId;
-        std::wstring serialNumber;
-    };
-
     namespace Display
     {
-        std::wstring TrimDeviceId(const std::wstring& deviceId) noexcept;
-        std::vector<std::wstring> GetDisplays();
+        std::vector<FancyZonesDataTypes::DeviceId> GetDisplays();
+        FancyZonesDataTypes::DeviceId SplitDisplayDeviceId(const std::wstring& str) noexcept;
     }
 
-    std::vector<MonitorData> IdentifyMonitors() noexcept;
+    namespace WMI
+    {
+        std::vector<FancyZonesDataTypes::MonitorId> GetHardwareMonitorIds();
+        FancyZonesDataTypes::DeviceId SplitWMIDeviceId(const std::wstring& str) noexcept;
+    }
+
+    std::vector<FancyZonesDataTypes::MonitorId> IdentifyMonitors() noexcept;
+    void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept;
 };
