@@ -128,17 +128,4 @@ namespace FancyZonesDataTypes
 
         return high + 1;
     }
-
-    std::wstring DeviceIdData::toString() const
-    {
-        wil::unique_cotaskmem_string virtualDesktopIdStr;
-        if (!SUCCEEDED(StringFromCLSID(virtualDesktopId, &virtualDesktopIdStr)))
-        {
-            return std::wstring();
-        }
-
-        std::wstring result = deviceName + L"_" + virtualDesktopIdStr.get();
-
-        return result;
-    }
 }

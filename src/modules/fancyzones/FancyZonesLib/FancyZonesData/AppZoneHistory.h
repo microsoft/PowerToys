@@ -40,17 +40,17 @@ public:
     void LoadData();
     void SaveData();
 
-    bool SetAppLastZones(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet);
-    bool RemoveAppLastZone(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId);
+    bool SetAppLastZones(HWND window, const FancyZonesDataTypes::WorkAreaId& deviceId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet);
+    bool RemoveAppLastZone(HWND window, const FancyZonesDataTypes::WorkAreaId& deviceId, const std::wstring_view& zoneSetId);
 
     void RemoveApp(const std::wstring& appPath);
 
     const TAppZoneHistoryMap& GetFullAppZoneHistory() const noexcept;
-    std::optional<FancyZonesDataTypes::AppZoneHistoryData> GetZoneHistory(const std::wstring& appPath, const FancyZonesDataTypes::DeviceIdData& deviceId) const noexcept;
+    std::optional<FancyZonesDataTypes::AppZoneHistoryData> GetZoneHistory(const std::wstring& appPath, const FancyZonesDataTypes::WorkAreaId& deviceId) const noexcept;
 
-    bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId) const noexcept;
-    void UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId);
-    ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId) const;
+    bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::WorkAreaId& deviceId) const noexcept;
+    void UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::WorkAreaId& deviceId);
+    ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& deviceId, const std::wstring_view& zoneSetId) const;
 
     void SyncVirtualDesktops();
     void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);

@@ -9,6 +9,7 @@
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/util.h>
 
@@ -72,7 +73,7 @@ namespace JsonUtils
     struct AppliedLayoutsJSON
     {
     private:
-        static std::optional<FancyZonesDataTypes::DeviceIdData> DeviceIdFromJson(const json::JsonObject& json)
+        static std::optional<FancyZonesDataTypes::WorkAreaId> DeviceIdFromJson(const json::JsonObject& json)
         {
             try
             {
@@ -88,8 +89,8 @@ namespace JsonUtils
                         return std::nullopt;
                     }
 
-                    return FancyZonesDataTypes::DeviceIdData{
-                        .deviceName = monitor,
+                    return FancyZonesDataTypes::WorkAreaId{
+                        .monitorId = { .deviceId = MonitorUtils::Display::SplitDisplayDeviceId(monitor) },
                         .virtualDesktopId = virtualDesktopGuid.value(),
                     };
                 }
@@ -102,8 +103,8 @@ namespace JsonUtils
                         return std::nullopt;
                     }
 
-                    return FancyZonesDataTypes::DeviceIdData{
-                        .deviceName = bcDeviceId->deviceName,
+                    return FancyZonesDataTypes::WorkAreaId{
+                        .monitorId = { .deviceId = MonitorUtils::Display::SplitDisplayDeviceId(bcDeviceId->deviceName) },
                         .virtualDesktopId = bcDeviceId->virtualDesktopId,
                     };
                 }
@@ -115,7 +116,7 @@ namespace JsonUtils
         }
 
     public:
-        FancyZonesDataTypes::DeviceIdData deviceId;
+        FancyZonesDataTypes::WorkAreaId deviceId;
         Layout data;
 
         static std::optional<AppliedLayoutsJSON> FromJson(const json::JsonObject& json)
@@ -149,7 +150,7 @@ namespace JsonUtils
         static json::JsonObject ToJson(const AppliedLayoutsJSON& value)
         {
             json::JsonObject device{};
-            device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::MonitorID, json::value(value.deviceId.deviceName));
+            device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::MonitorID, json::value(value.deviceId.toString()));
 
             auto virtualDesktopStr = FancyZonesUtils::GuidToString(value.deviceId.virtualDesktopId);
             if (virtualDesktopStr)
@@ -292,7 +293,7 @@ void AppliedLayouts::SyncVirtualDesktops()
 
     bool dirtyFlag = false;
 
-    std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithCurrentId{};
+    std::vector<FancyZonesDataTypes::WorkAreaId> replaceWithCurrentId{};
 
     for (const auto& [id, data] : m_layouts)
     {
@@ -351,7 +352,7 @@ void AppliedLayouts::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activ
     }
 }
 
-std::optional<Layout> AppliedLayouts::GetDeviceLayout(const FancyZonesDataTypes::DeviceIdData& id) const noexcept
+std::optional<Layout> AppliedLayouts::GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept
 {
     auto iter = m_layouts.find(id);
     if (iter != m_layouts.end())
@@ -367,19 +368,19 @@ const AppliedLayouts::TAppliedLayoutsMap& AppliedLayouts::GetAppliedLayoutMap() 
     return m_layouts;
 }
 
-bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::DeviceIdData& id) const noexcept
+bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::WorkAreaId& id) const noexcept
 {
     auto iter = m_layouts.find(id);
     return iter != m_layouts.end();
 }
 
-bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, Layout layout)
+bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, Layout layout)
 {
     m_layouts[deviceId] = std::move(layout);
     return true;
 }
 
-bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::DeviceIdData& deviceId)
+bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::WorkAreaId& deviceId)
 {
     Logger::info(L"Set default layout on {}", deviceId.toString());
 
@@ -408,7 +409,7 @@ bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::DeviceIdData&
     return true;
 }
 
-bool AppliedLayouts::CloneLayout(const FancyZonesDataTypes::DeviceIdData& srcId, const FancyZonesDataTypes::DeviceIdData& dstId)
+bool AppliedLayouts::CloneLayout(const FancyZonesDataTypes::WorkAreaId& srcId, const FancyZonesDataTypes::WorkAreaId& dstId)
 {
     if (srcId == dstId || m_layouts.find(srcId) == m_layouts.end())
     {

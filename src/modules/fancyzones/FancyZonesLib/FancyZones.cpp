@@ -146,7 +146,7 @@ public:
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
-    void AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& deviceId) noexcept;
+    void AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id) noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -689,7 +689,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     }
 }
 
-void FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& deviceId) noexcept
+void FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id) noexcept
 {
     if (m_workAreaHandler.IsNewWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor))
     {
@@ -699,14 +699,14 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::Device
             Logger::debug(L"Add new work area on virtual desktop {}", virtualDesktopIdStr.get());
         }
         
-        FancyZonesDataTypes::DeviceIdData parentId{};
+        FancyZonesDataTypes::WorkAreaId parentId{};
         auto parentArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetPreviousVirtualDesktopId(), monitor);
         if (parentArea)
         {
             parentId = parentArea->UniqueId();
         }
 
-        auto workArea = MakeWorkArea(m_hinstance, monitor, deviceId, parentId);
+        auto workArea = MakeWorkArea(m_hinstance, monitor, id, parentId);
         if (workArea)
         {
             m_workAreaHandler.AddWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor, workArea);
@@ -733,9 +733,9 @@ void FancyZones::UpdateWorkAreas() noexcept
 {
     if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
     {
-        FancyZonesDataTypes::DeviceIdData deviceId;
+        FancyZonesDataTypes::WorkAreaId deviceId;
         deviceId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
-        deviceId.deviceName = ZonedWindowProperties::MultiMonitorDeviceID;
+        deviceId.monitorId = { .deviceId = ZonedWindowProperties::MultiMonitorDeviceID };
 
         AddWorkArea(nullptr, deviceId);
     }
@@ -744,9 +744,9 @@ void FancyZones::UpdateWorkAreas() noexcept
         auto monitors = MonitorUtils::IdentifyMonitors();
         for (const auto& monitor : monitors)
         {
-            FancyZonesDataTypes::DeviceIdData deviceId;
+            FancyZonesDataTypes::WorkAreaId deviceId;
             deviceId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
-            deviceId.deviceName = monitor.deviceId;
+            deviceId.monitorId = { .deviceId = monitor.deviceId };
 
             AddWorkArea(monitor.monitor, deviceId);
         }

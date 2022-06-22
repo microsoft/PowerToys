@@ -13,7 +13,7 @@ public:
     ~WorkArea();
 
 public:
-    bool Init(HINSTANCE hinstance, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId);
+    bool Init(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId);
     inline bool InitWorkAreaRect(HMONITOR monitor)
     {
         m_monitor = monitor;
@@ -42,7 +42,7 @@ public:
         return true;
     }
 
-    FancyZonesDataTypes::DeviceIdData UniqueId() const noexcept { return { m_uniqueId }; }
+    FancyZonesDataTypes::WorkAreaId UniqueId() const noexcept { return { m_uniqueId }; }
     IZoneSet* ZoneSet() const noexcept { return m_zoneSet.get(); }
     
     ZoneIndexSet GetWindowZoneIndexes(HWND window) const noexcept;
@@ -72,7 +72,7 @@ protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
 private:
-    void InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept;
+    void InitializeZoneSets(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept;
     void CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -82,7 +82,7 @@ private:
     HMONITOR m_monitor{};
     FancyZonesUtils::Rect m_workAreaRect{};
 
-    FancyZonesDataTypes::DeviceIdData m_uniqueId;
+    FancyZonesDataTypes::WorkAreaId m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
     winrt::com_ptr<IZoneSet> m_zoneSet;
@@ -93,7 +93,7 @@ private:
     std::unique_ptr<ZonesOverlay> m_zonesOverlay;
 };
 
-inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept
+inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept
 {
     auto self = std::make_shared<WorkArea>(hinstance);
     if (!self->InitWorkAreaRect(monitor))

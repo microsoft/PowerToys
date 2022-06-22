@@ -113,20 +113,54 @@ namespace FancyZonesDataTypes
         ZoneSetLayoutType type;
     };
 
-    struct DeviceIdData
+    struct DeviceId
     {
-        std::wstring deviceName = L"FallbackDevice";
+        std::wstring id;
+        std::wstring instanceId;
+
+        std::wstring toString() const
+        {
+            return id + L"_" + instanceId;
+        }
+    };
+
+    struct MonitorId
+    {
+        HMONITOR monitor;
+        DeviceId deviceId;
+        std::wstring serialNumber;
+
+        std::wstring toString() const
+        {
+            return deviceId.toString() + L"_" + serialNumber;
+        }
+    };
+
+    struct WorkAreaId
+    {
+        MonitorId monitorId;
         GUID virtualDesktopId;
 
-        std::wstring toString() const;
-    };
+        std::wstring toString() const
+        {
+            wil::unique_cotaskmem_string virtualDesktopIdStr;
+            if (!SUCCEEDED(StringFromCLSID(virtualDesktopId, &virtualDesktopIdStr)))
+            {
+                return std::wstring();
+            }
+
+            std::wstring result = monitorId.toString() + L"_" + virtualDesktopIdStr.get();
+
+            return result;
+        }
+    }; 
 
     struct AppZoneHistoryData
     {
         std::unordered_map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
 
         std::wstring zoneSetUuid;
-        DeviceIdData deviceId;
+        WorkAreaId deviceId;
         ZoneIndexSet zoneIndexSet;
     };
 
@@ -144,33 +178,48 @@ namespace FancyZonesDataTypes
         return lhs.type == rhs.type && lhs.uuid == rhs.uuid;
     }
 
-    inline bool operator==(const DeviceIdData& lhs, const DeviceIdData& rhs)
-    {
-        return lhs.deviceName.compare(rhs.deviceName) == 0 && (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL);
-    }
-
-    inline bool operator!=(const DeviceIdData& lhs, const DeviceIdData& rhs)
-    {
-        return !(lhs == rhs);
-    }
-
-    inline bool operator<(const DeviceIdData& lhs, const DeviceIdData& rhs)
-    {
-        return lhs.deviceName.compare(rhs.deviceName) < 0;
-    }
-
     inline bool operator==(const DeviceInfoData& lhs, const DeviceInfoData& rhs)
     {
         return lhs.activeZoneSet == rhs.activeZoneSet && lhs.showSpacing == rhs.showSpacing && lhs.spacing == rhs.spacing && lhs.zoneCount == rhs.zoneCount && lhs.sensitivityRadius == rhs.sensitivityRadius;
+    }
+
+    inline bool operator==(const DeviceId& lhs, const DeviceId& rhs)
+    {
+        return lhs.id.compare(rhs.id) == 0 && lhs.instanceId.compare(rhs.instanceId) == 0;
+    }
+
+    inline bool operator<(const DeviceId& lhs, const DeviceId& rhs)
+    {
+        return lhs.toString().compare(rhs.toString()) < 0;
+    }
+
+    inline bool operator==(const MonitorId& lhs, const MonitorId& rhs)
+    {
+        return lhs.deviceId == rhs.deviceId && lhs.monitor == rhs.monitor && lhs.serialNumber == rhs.serialNumber;
+    }
+
+    inline bool operator==(const WorkAreaId& lhs, const WorkAreaId& rhs)
+    {
+        return lhs.monitorId == rhs.monitorId && lhs.virtualDesktopId == rhs.virtualDesktopId;
+    }
+
+    inline bool operator!=(const WorkAreaId& lhs, const WorkAreaId& rhs)
+    {
+        return lhs.monitorId != rhs.monitorId || lhs.virtualDesktopId != rhs.virtualDesktopId;
+    }
+
+    inline bool operator<(const WorkAreaId& lhs, const WorkAreaId& rhs)
+    {
+        return lhs.monitorId.toString() < rhs.monitorId.toString();
     }
 }
 
 namespace std
 {
     template<>
-    struct hash<FancyZonesDataTypes::DeviceIdData>
+    struct hash<FancyZonesDataTypes::WorkAreaId>
     {
-        size_t operator()(const FancyZonesDataTypes::DeviceIdData& Value) const
+        size_t operator()(const FancyZonesDataTypes::WorkAreaId& Value) const
         {
             return 0;
         }

@@ -120,7 +120,7 @@ WorkArea::~WorkArea()
     windowPool.FreeZonesOverlayWindow(m_window);
 }
 
-bool WorkArea::Init(HINSTANCE hinstance, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId)
+bool WorkArea::Init(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
 {
     m_uniqueId = uniqueId;
     InitializeZoneSets(parentUniqueId);
@@ -378,7 +378,7 @@ void WorkArea::FlashZones() noexcept
 
 #pragma region private
 
-void WorkArea::InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept
+void WorkArea::InitializeZoneSets(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept
 {
     wil::unique_cotaskmem_string virtualDesktopId;
     if (SUCCEEDED(StringFromCLSID(m_uniqueId.virtualDesktopId, &virtualDesktopId)))
