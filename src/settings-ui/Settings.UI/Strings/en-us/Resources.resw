@@ -1996,7 +1996,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
     <value>Geometric Code</value>
     <comment>File type, do not translate</comment>
-    </data>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
   </data>
@@ -2124,5 +2124,23 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable round corners when window is snapped</value>
+  </data>
+  <data name="PowerLauncher_SearchQueryTuningEnabled.Description" xml:space="preserve">
+    <value>Options to fine tune how the results are shown</value>
+  </data>
+  <data name="PowerLauncher_SearchQueryTuningEnabled.Header" xml:space="preserve">
+    <value>Results display tuning</value>
+  </data>
+  <data name="PowerLauncher_SearchClickedItemWeight.Description" xml:space="preserve">
+    <value>The default is 5. Use a higher number to get clicked results to rise faster. Use 0 to disable.</value>
+  </data>
+  <data name="PowerLauncher_SearchClickedItemWeight.Header" xml:space="preserve">
+    <value>A weight that allow clicked results to rise to the top of the results</value>
+  </data>
+  <data name="PowerLauncher_WaitForSlowResults.Description" xml:space="preserve">
+    <value>Selecting this can help select the top result but at the risk of jumpiness in what's selected</value>
+  </data>
+  <data name="PowerLauncher_WaitForSlowResults.Header" xml:space="preserve">
+    <value>Wait on some slower or delayed results</value>
   </data>
 </root>

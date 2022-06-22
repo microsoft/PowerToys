@@ -253,11 +253,21 @@ namespace PowerLauncher.ViewModel
             Results.AddRange(newResults);
         }
 
-        public void Sort()
+        public void Sort(MainViewModel.QueryTuningOptions options)
         {
-            var sorted = Results.OrderByDescending(x => x.Result.Score).ToList();
+            var sorted = Results.OrderByDescending(x => (x.Result.Score + (x.Result.SelectedCount * 5))).ToList();
+            if (options.SearchQueryTuningEnabled)
+            {
+                sorted = Results.OrderByDescending(x => (x.Result.Score + (x.Result.SelectedCount * options.SearchClickedItemWeight))).ToList();
+            }
+
             Clear();
-            Results.AddRange(sorted);
+            foreach (var result in sorted)
+            {
+                Results.Add(result);
+            }
+
+            // Results.AddRange(sorted);
         }
 
         public static readonly DependencyProperty FormattedTextProperty = DependencyProperty.RegisterAttached(

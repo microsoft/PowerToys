@@ -159,7 +159,6 @@ namespace PowerLauncher
 
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += Launcher_KeyDown;
-
             SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting(), _viewModel.GetSearchInputDelaySetting());
             _viewModel.RegisterSettingsChangeListener(
                 (s, prop_e) =>
@@ -489,8 +488,20 @@ namespace PowerLauncher
             }
             else
             {
+                var options = new MainViewModel.QueryTuningOptions
+                {
+                    SearchClickedItemWeight = _viewModel.GetSearchClickedItemWeight(),
+                    SearchQueryTuningEnabled = _viewModel.GetSearchQueryTuningEnabled(),
+                    SearchWaitForSlowResults = _viewModel.GetSearchWaitForSlowResults(),
+                };
+
+                // options.SearchClickedItemWeight = 50;
+
+                // options.SearchQueryTuningEnabled = false;
                 _viewModel.QueryText = text;
-                _viewModel.Query();
+
+                // System.Diagnostics.Debugger.Launch();
+                _viewModel.Query(options);
             }
         }
 

@@ -57,6 +57,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("search_input_delay")]
         public int SearchInputDelay { get; set; }
 
+        [JsonPropertyName("search_clicked_item_weight")]
+        public int SearchClickedItemWeight { get; set; }
+
+        [JsonPropertyName("search_query_tuning_enabled")]
+        public bool SearchQueryTuningEnabled { get; set; }
+
+        [JsonPropertyName("search_wait_for_slow_results")]
+        public bool SearchWaitForSlowResults { get; set; }
+
         public PowerLauncherProperties()
         {
             OpenPowerLauncher = new HotkeySettings(false, false, true, false, 32);
@@ -73,6 +82,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             UseCentralizedKeyboardHook = false;
             SearchQueryResultsWithDelay = true;
             SearchInputDelay = 150;
+            SearchClickedItemWeight = 5;
+            SearchQueryTuningEnabled = false;
+            SearchWaitForSlowResults = false;
         }
     }
 }

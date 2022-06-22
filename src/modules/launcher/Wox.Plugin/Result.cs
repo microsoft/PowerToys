@@ -100,6 +100,10 @@ namespace Wox.Plugin
 
         public int Score { get; set; }
 
+        public int SelectedCount { get; set; }
+
+        public DateTime LastSelected { get; set; } = DateTime.MinValue;
+
         public Result(IList<int> titleHighlightData = null, IList<int> subTitleHighlightData = null)
         {
             TitleHighlightData = titleHighlightData;
