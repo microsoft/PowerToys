@@ -620,7 +620,7 @@ namespace PowerLauncher.ViewModel
                                         {
                                             lock (_addResultsLock)
                                             {
-                                                // Using CurrentCultureIgnoreCase since this is user facing
+                                                // Using CurrentCultureIgnoreCase since this is user fcoltacing
                                                 if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                                                 {
                                                     currentCancellationToken.ThrowIfCancellationRequested();
