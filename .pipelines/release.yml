@@ -279,6 +279,17 @@ jobs:
       configuration: $(BuildConfiguration)
       maximumCpuCount: true
 
+  - task: VSBuild@1
+    displayName: Build Bootstrapper
+    inputs:
+      solution: '**/installer/PowerToysSetup.sln'
+      vsVersion: 17.0
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog /t:PowerToysSetupCustomActions
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: false # don't undo our hard work above by deleting the MSI
+      maximumCpuCount: true
+
 #### MAIN SIGNING AREA
 # reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
 # https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/CIPolicy.xml&version=GBarm64-netcore&_a=contents
@@ -312,7 +323,7 @@ jobs:
       msbuildArgs: /p:CIBuild=true /target:PowerToysInstaller /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
-      clean: true
+      clean: false # don't undo our hard work above by deleting the CustomActions dll
       maximumCpuCount: true
 
   - task: CmdLine@2
