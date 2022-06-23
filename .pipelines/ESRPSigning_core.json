@@ -70,6 +70,8 @@
                 "modules\\ImageResizer\\PowerToys.ImageResizer.exe",
                 "modules\\ImageResizer\\PowerToys.ImageResizer.dll",
                 "modules\\ImageResizer\\PowerToys.ImageResizerExt.dll",
+                "modules\\ImageResizer\\PowerToys.ImageResizerContextMenu.dll",
+                "modules\\ImageResizer\\ImageResizerContextMenuPackage.msix",
 
                 "modules\\KeyboardManager\\PowerToys.KeyboardManager.dll",
                 "modules\\KeyboardManager\\KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",

@@ -869,7 +869,9 @@ IList
 ILogon
 IMAGEHLP
 imageresizer
+IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
+imageresizerinput
 imageresizersettings
 imagingdevices
 IMain
