@@ -140,8 +140,8 @@
     <Property Id="WINDOWSBUILDNUMBER" Secure="yes">
       <RegistrySearch Id="BuildNumberSearch" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Name="CurrentBuildNumber" Type="raw" />
     </Property>
-    <Condition Message="This application is only supported on Windows 10 version 1903 (build 18362) or higher.">
-      <![CDATA[(WINDOWSBUILDNUMBER >= 18362)]]>
+    <Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher.">
+      <![CDATA[(WINDOWSBUILDNUMBER >= 19041)]]>
     </Condition>
 
     <Icon Id="powertoys.exe" SourceFile="$(var.BinDir)svgs\icon.ico"/>
@@ -811,7 +811,7 @@
     <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
       <Component Id="Module_VideoConference" Guid="21DA4677-4AE8-4F01-BFC9-448E338DF864" Win64="yes">
-        <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
+        <Condition>WINDOWSBUILDNUMBER >= 19041</Condition>
         <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceModule.dll" />
         <File Source="$(var.BinX32Dir)modules\$(var.VideoConferenceProjectName)\PowerToys.VideoConferenceProxyFilter_x86.dll" />
         <?if $(var.Platform) = x64?>
@@ -825,7 +825,7 @@
     <DirectoryRef Id="VideoConferenceIconsFolder" FileSource="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
       <Component Id="Module_VideoConferenceIcons" Guid="9910F3D9-1BDF-43DB-BA0C-C558B121DF18" Win64="yes">
-        <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
+        <Condition>WINDOWSBUILDNUMBER >= 19041</Condition>
         <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Dark.png" />
         <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Light.png" />
         <File Source="$(var.BinDir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Dark.png" />
