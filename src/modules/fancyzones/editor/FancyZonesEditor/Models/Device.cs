@@ -13,6 +13,10 @@ namespace FancyZonesEditor.Utils
     {
         public string MonitorName { get; set; }
 
+        public string MonitorInstanceId { get; set; }
+
+        public string MonitorSerialNumber { get; set; }
+
         public Size MonitorSize { get; set; }
 
         public string VirtualDesktopId { get; set; }
@@ -23,9 +27,11 @@ namespace FancyZonesEditor.Utils
 
         public int Dpi { get; set; }
 
-        public Device(string monitorName, string virtualDesktopId, int dpi, Rect workArea, Size monitorSize)
+        public Device(string monitorName, string monitorInstanceId, string monitorSerialNumber, string virtualDesktopId, int dpi, Rect workArea, Size monitorSize)
         {
             MonitorName = monitorName;
+            MonitorInstanceId = monitorInstanceId;
+            MonitorSerialNumber = monitorSerialNumber;
             VirtualDesktopId = virtualDesktopId;
             Dpi = dpi;
             WorkAreaRect = workArea;
@@ -48,6 +54,8 @@ namespace FancyZonesEditor.Utils
             var sb = new StringBuilder();
 
             sb.AppendFormat(CultureInfo.InvariantCulture, "MonitorName: {0}{1}", MonitorName, Environment.NewLine);
+            sb.AppendFormat(CultureInfo.InvariantCulture, "Monitor InstanceId {0}{1}", MonitorInstanceId, Environment.NewLine);
+            sb.AppendFormat(CultureInfo.InvariantCulture, "Monitor Serial Number {0}{1}", MonitorSerialNumber, Environment.NewLine);
             sb.AppendFormat(CultureInfo.InvariantCulture, "Virtual desktop: {0}{1}", VirtualDesktopId, Environment.NewLine);
             sb.AppendFormat(CultureInfo.InvariantCulture, "DPI: {0}{1}", Dpi, Environment.NewLine);
 
