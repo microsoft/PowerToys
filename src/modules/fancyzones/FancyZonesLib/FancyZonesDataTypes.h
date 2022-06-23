@@ -190,27 +190,56 @@ namespace FancyZonesDataTypes
 
     inline bool operator<(const DeviceId& lhs, const DeviceId& rhs)
     {
-        return lhs.toString().compare(rhs.toString()) < 0;
+        return lhs.id < rhs.id || lhs.instanceId < rhs.instanceId;
     }
 
     inline bool operator==(const MonitorId& lhs, const MonitorId& rhs)
     {
-        return lhs.deviceId == rhs.deviceId && lhs.monitor == rhs.monitor && lhs.serialNumber == rhs.serialNumber;
+        if (lhs.monitor && lhs.monitor == rhs.monitor)
+        {
+            return true;
+        }
+        
+        if (!lhs.serialNumber.empty() && lhs.serialNumber == rhs.serialNumber)
+        {
+            return true;
+        }
+
+        return lhs.deviceId == rhs.deviceId;
     }
 
     inline bool operator==(const WorkAreaId& lhs, const WorkAreaId& rhs)
     {
-        return lhs.monitorId == rhs.monitorId && lhs.virtualDesktopId == rhs.virtualDesktopId;
+        bool vdEqual = (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL);
+        return vdEqual && lhs.monitorId == rhs.monitorId;
     }
 
     inline bool operator!=(const WorkAreaId& lhs, const WorkAreaId& rhs)
     {
-        return lhs.monitorId != rhs.monitorId || lhs.virtualDesktopId != rhs.virtualDesktopId;
+        bool vdEqual = (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL);
+        return !vdEqual || lhs.monitorId != rhs.monitorId;
     }
 
     inline bool operator<(const WorkAreaId& lhs, const WorkAreaId& rhs)
     {
-        return lhs.monitorId.toString() < rhs.monitorId.toString();
+        if (lhs.monitorId.monitor && rhs.monitorId.monitor)
+        {
+            return lhs.monitorId.monitor < rhs.monitorId.monitor;
+        }
+
+        if (lhs.virtualDesktopId != GUID_NULL || rhs.virtualDesktopId != GUID_NULL)
+        {
+            return lhs.virtualDesktopId.Data1 < rhs.virtualDesktopId.Data1 ||
+                   lhs.virtualDesktopId.Data2 < rhs.virtualDesktopId.Data2 ||
+                   lhs.virtualDesktopId.Data3 < rhs.virtualDesktopId.Data3;
+        }
+        
+        if (!lhs.monitorId.serialNumber.empty() || rhs.monitorId.serialNumber.empty())
+        {
+            return lhs.monitorId.serialNumber < rhs.monitorId.serialNumber;
+        }
+
+        return lhs.monitorId.deviceId < rhs.monitorId.deviceId;
     }
 }
 
