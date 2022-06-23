@@ -12,7 +12,6 @@ using System.Windows.Forms;
 using Common;
 using Common.Utilities;
 using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
-using Microsoft.PowerToys.PreviewHandler.Svg.Utilities;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -103,6 +102,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
 
             try
             {
+                // Fixes #17527 - Inkscape v1.1 swapped order of default and svg namespaces in svg file (default first, svg after).
+                // That resulted in parser being unable to parse it correctly and instead of svg, text was previewed.
+                // MS Edge and Firefox also couldn't preview svg files with mentioned order of namespaces definitions.
+                svgData = SvgPreviewHandlerHelper.SwapNamespaces(svgData);
                 svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
             }
             catch (Exception ex)

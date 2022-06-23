@@ -71,7 +71,6 @@ namespace Microsoft.Plugin.Indexer
         }
 
         // This function uses the Windows indexer and returns the list of results obtained
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive but will log the exception")]
         public List<Result> Query(Query query, bool isFullQuery)
         {
             var results = new List<Result>();

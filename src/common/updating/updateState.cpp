@@ -69,7 +69,10 @@ UpdateState UpdateState::read()
     {
         std::error_code _;
         fs::remove(filename, _);
-        return UpdateState{};
+        UpdateState new_state;
+        json::to_file(filename, serialize(new_state));
+
+        return new_state;
     }
 }
 

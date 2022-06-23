@@ -26,9 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     tempSettingsUtils.DeleteSettings("Find My Mouse");
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (System.Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
             }
 

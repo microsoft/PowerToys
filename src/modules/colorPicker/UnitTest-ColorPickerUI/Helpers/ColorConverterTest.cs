@@ -441,11 +441,9 @@ namespace Microsoft.ColorPicker.UnitTests
                         {
                             _ = ColorHelper.ConvertToCMYKColor(color);
                         }
-#pragma warning disable CA1031 // Do not catch general exception types
 
                         // intentionally trying to catch
                         catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             exception = ex;
                         }

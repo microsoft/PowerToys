@@ -109,7 +109,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         // Save settings to a json file.
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "General exceptions will be logged until we can better understand runtime exception scenarios")]
         public void SaveSettings(string jsonSettings, string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
             try

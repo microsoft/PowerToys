@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -18,7 +19,6 @@ using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using Windows.UI.Core;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -52,17 +52,30 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             DataContext = ViewModel;
         }
 
+        /// <summary>
+        /// Regex to remove installer hash sections from the release notes.
+        /// </summary>
+        private const string RemoveInstallerHashesRegex = @"((\r\n)+#+ installer hashes)?((\r\n)+#+( x64)?( arm64)? installer( SHA256)? hash(\r\n)+[0-9A-F]{64})+";
+        private const RegexOptions RemoveInstallerHashesRegexOptions = RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
+
         private static async Task<string> GetReleaseNotesMarkdown()
         {
             string releaseNotesJSON = string.Empty;
-            using (HttpClient getReleaseInfoClient = new HttpClient())
-            {
-                // GitHub APIs require sending an user agent
-                // https://docs.github.com/en/rest/overview/resources-in-the-rest-api#user-agent-required
-                getReleaseInfoClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
-                releaseNotesJSON = await getReleaseInfoClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases");
-            }
 
+            // Let's use system proxy
+            using var proxyClientHandler = new HttpClientHandler
+            {
+                DefaultProxyCredentials = CredentialCache.DefaultCredentials,
+                Proxy = WebRequest.GetSystemWebProxy(),
+                PreAuthenticate = true,
+            };
+
+            using var getReleaseInfoClient = new HttpClient(proxyClientHandler);
+
+            // GitHub APIs require sending an user agent
+            // https://docs.github.com/en/rest/overview/resources-in-the-rest-api#user-agent-required
+            getReleaseInfoClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
+            releaseNotesJSON = await getReleaseInfoClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases");
             IList<PowerToysReleaseInfo> releases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(releaseNotesJSON);
 
             // Get the latest releases
@@ -71,35 +84,58 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             StringBuilder releaseNotesHtmlBuilder = new StringBuilder(string.Empty);
 
             // Regex to remove installer hash sections from the release notes.
-            Regex removeHashRegex = new Regex(@"(\r\n)+#+ installer( SHA256)? hash(\r\n)+[0-9A-F]{64}", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            Regex removeHashRegex = new Regex(RemoveInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
 
             foreach (var release in latestReleases)
             {
                 releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
-                releaseNotesHtmlBuilder.AppendLine(removeHashRegex.Replace(release.ReleaseNotes, string.Empty));
+                var notes = removeHashRegex.Replace(release.ReleaseNotes, string.Empty);
+                releaseNotesHtmlBuilder.AppendLine(notes);
                 releaseNotesHtmlBuilder.AppendLine("&nbsp;");
             }
 
             return releaseNotesHtmlBuilder.ToString();
         }
 
-        private async void Page_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async Task Reload()
         {
             try
             {
                 string releaseNotesMarkdown = await GetReleaseNotesMarkdown();
 
+                ProxyWarningInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+
                 ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
                 ReleaseNotesMarkdown.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                 LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
             }
+            catch (HttpRequestException httpEx)
+            {
+                Logger.LogError("Exception when loading the release notes", httpEx);
+                if (httpEx.Message.Contains("407", StringComparison.CurrentCulture))
+                {
+                    ProxyWarningInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                }
+                else
+                {
+                    ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                }
+            }
             catch (Exception ex)
             {
                 Logger.LogError("Exception when loading the release notes", ex);
-
-                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
             }
+            finally
+            {
+                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
+        }
+
+        private async void Page_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            await Reload();
         }
 
         /// <inheritdoc/>

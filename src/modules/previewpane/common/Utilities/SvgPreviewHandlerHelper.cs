@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
+namespace Common.Utilities
 {
     /// <summary>
     /// Helper utilities for Svg Preview Handler.
@@ -60,9 +60,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
                     }
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
             }
 
@@ -155,6 +153,29 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
             }
 
             return length + "px";
+        }
+
+        /// <summary>
+        /// Swaps positions of default and svg namespace definitions if default namespace comes first in original SVG data
+        /// </summary>
+        /// <param name="svgData">SVG data</param>
+        /// <returns>Returns modified SVG data</returns>
+        public static string SwapNamespaces(string svgData)
+        {
+            const string defaultNamespace = "xmlns=\"http://www.w3.org/2000/svg\"";
+            const string svgNamespace = "xmlns:svg=\"http://www.w3.org/2000/svg\"";
+
+            int defaultNamespaceIndex = svgData.IndexOf(defaultNamespace, StringComparison.InvariantCultureIgnoreCase);
+            int svgNamespaceIndex = svgData.IndexOf(svgNamespace, StringComparison.InvariantCultureIgnoreCase);
+
+            if (defaultNamespaceIndex != -1 && svgNamespaceIndex != -1 && defaultNamespaceIndex < svgNamespaceIndex)
+            {
+                svgData = svgData.Replace(defaultNamespace, "{0}", StringComparison.InvariantCultureIgnoreCase);
+                svgData = svgData.Replace(svgNamespace, "{1}", StringComparison.InvariantCultureIgnoreCase);
+                svgData = string.Format(CultureInfo.InvariantCulture, svgData, svgNamespace, defaultNamespace);
+            }
+
+            return svgData;
         }
 
         /// <summary>
