@@ -48,7 +48,7 @@ namespace JsonUtils
                     }
 
                     return FancyZonesDataTypes::WorkAreaId{
-                        .monitorId = { .deviceId = MonitorUtils::Display::SplitDisplayDeviceId(bcDeviceId->deviceName) },
+                        .monitorId = { .deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(bcDeviceId->deviceName) },
                         .virtualDesktopId = bcDeviceId->virtualDesktopId,
                     };
                 }

@@ -213,11 +213,27 @@ namespace MonitorUtils
             return { .id = str.substr(nameStartPos + 1, uidStartPos - nameStartPos - 1), .instanceId = str.substr(uidStartPos + 1, uidEndPos - uidStartPos - 1) };
         }
 
+        FancyZonesDataTypes::DeviceId ConvertObsoleteDeviceId(const std::wstring& str) noexcept
+        {
+            // format:  {device id}#{instance id}
+            // example: TLX1388#4&125707d6&0&UID8388688
+            // output:  { TLX1388, 4&125707d6&0&UID8388688 }
+
+            size_t dividerPos = str.find_first_of('#');
+
+            if (dividerPos == std::string::npos)
+            {
+                return { str, L"" };
+            }
+
+            return { .id = str.substr(0, dividerPos), .instanceId = str.substr(dividerPos + 1) };
+        }
+
         std::vector<FancyZonesDataTypes::DeviceId> GetDisplays()
         {
             auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
             std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
-            std::vector<FancyZonesDataTypes::DeviceId> result{};
+            std::vector<FancyZonesDataTypes::MonitorId> result{};
 
             for (auto& monitorData : allMonitors)
             {

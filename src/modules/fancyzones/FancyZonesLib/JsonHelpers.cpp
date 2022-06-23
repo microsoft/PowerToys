@@ -273,8 +273,8 @@ namespace
             return std::nullopt;
         }
 
-        data.deviceId = FancyZonesDataTypes::WorkAreaId{
-            .monitorId = { .deviceId = MonitorUtils::Display::SplitDisplayDeviceId(deviceId->deviceName) },
+        data.workAreaId = FancyZonesDataTypes::WorkAreaId{
+            .monitorId = { .deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(deviceId->deviceName) },
             .virtualDesktopId = deviceId->virtualDesktopId
         };
         data.zoneSetUuid = json.GetNamedString(NonLocalizable::ZoneSetUuidStr);

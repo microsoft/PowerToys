@@ -8,6 +8,7 @@ namespace MonitorUtils
     {
         std::vector<FancyZonesDataTypes::DeviceId> GetDisplays();
         FancyZonesDataTypes::DeviceId SplitDisplayDeviceId(const std::wstring& str) noexcept;
+        FancyZonesDataTypes::DeviceId ConvertObsoleteDeviceId(const std::wstring& str) noexcept;
     }
 
     namespace WMI
