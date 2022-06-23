@@ -160,7 +160,7 @@ namespace FancyZonesDataTypes
         std::unordered_map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
 
         std::wstring zoneSetUuid;
-        WorkAreaId deviceId;
+        WorkAreaId workAreaId;
         ZoneIndexSet zoneIndexSet;
     };
 

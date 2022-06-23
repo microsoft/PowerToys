@@ -175,7 +175,8 @@ namespace MonitorUtils
                 data.deviceId = SplitWMIDeviceId(name);
                 data.serialNumber = GetWMIProp(pClassObject, L"SerialNumberID");
 
-                Logger::info(L"Id: {}, serial number: {}", name, data.serialNumber);
+                Logger::info(L"InstanceName: {}", name);
+                Logger::info(L"Serial number: {}", data.serialNumber);
 
                 result.emplace_back(std::move(data));
 
@@ -229,7 +230,7 @@ namespace MonitorUtils
             return { .id = str.substr(0, dividerPos), .instanceId = str.substr(dividerPos + 1) };
         }
 
-        std::vector<FancyZonesDataTypes::DeviceId> GetDisplays()
+        std::vector<FancyZonesDataTypes::MonitorId> GetDisplays()
         {
             auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
             std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
@@ -250,7 +251,7 @@ namespace MonitorUtils
                 }
 
                 Logger::info(L"Display: {}", displayDevice.DeviceID);
-                result.emplace_back(std::move(SplitDisplayDeviceId(displayDevice.DeviceID)));
+                result.push_back({ .monitor = monitorData.first, .deviceId = SplitDisplayDeviceId(displayDevice.DeviceID) });
             }
 
             return result;
@@ -332,24 +333,20 @@ namespace MonitorUtils
         std::vector<FancyZonesDataTypes::MonitorId> result{};
         Logger::info(L"Identifying monitors");
 
+        auto displays = Display::GetDisplays();
         auto monitors = WMI::GetHardwareMonitorIds();
-        if (!monitors.empty())
-        {
-            return monitors;
-        }
-
-        Logger::info(L"WMI result is empty, get displays");
         
-        // RDP or VM
-        if (result.empty())
+        for (const auto& monitor : monitors)
         {
-            auto displays = Display::GetDisplays();
-            for (const auto& data : displays)
+            for (auto& display : displays)
             {
-                result.push_back({ .deviceId = data });
+                if (monitor.deviceId.id == display.deviceId.id)
+                {
+                    display.serialNumber = monitor.serialNumber;    
+                }
             }
         }
         
-        return {};
+        return displays;
     }
 }

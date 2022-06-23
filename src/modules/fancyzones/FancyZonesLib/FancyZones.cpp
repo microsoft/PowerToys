@@ -733,22 +733,22 @@ void FancyZones::UpdateWorkAreas() noexcept
 {
     if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
     {
-        FancyZonesDataTypes::WorkAreaId deviceId;
-        deviceId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
-        deviceId.monitorId = { .deviceId = ZonedWindowProperties::MultiMonitorDeviceID };
+        FancyZonesDataTypes::WorkAreaId workAreaId;
+        workAreaId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
+        workAreaId.monitorId = { .deviceId = ZonedWindowProperties::MultiMonitorDeviceID };
 
-        AddWorkArea(nullptr, deviceId);
+        AddWorkArea(nullptr, workAreaId);
     }
     else
     {
         auto monitors = MonitorUtils::IdentifyMonitors();
         for (const auto& monitor : monitors)
         {
-            FancyZonesDataTypes::WorkAreaId deviceId;
-            deviceId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
-            deviceId.monitorId = { .deviceId = monitor.deviceId };
+            FancyZonesDataTypes::WorkAreaId workAreaId;
+            workAreaId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
+            workAreaId.monitorId = monitor;
 
-            AddWorkArea(monitor.monitor, deviceId);
+            AddWorkArea(monitor.monitor, workAreaId);
         }
     }
 }
