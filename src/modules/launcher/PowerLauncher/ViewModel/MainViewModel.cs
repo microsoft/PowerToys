@@ -472,7 +472,7 @@ namespace PowerLauncher.ViewModel
             public bool SearchWaitForSlowResults { get; set; }
         }
 
-        public void Query(QueryTuningOptions options = null)
+        public void Query(QueryTuningOptions options)
         {
             if (SelectedIsFromQueryResults())
             {
