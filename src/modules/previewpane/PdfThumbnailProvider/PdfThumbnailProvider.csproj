@@ -6,7 +6,7 @@
     <AssemblyName>PowerToys.PdfThumbnailProvider</AssemblyName>
     <AssemblyTitle>PowerToys.PdfThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys PdfPreviewHandler</AssemblyDescription>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Description>PowerToys PdfPreviewHandler</Description>

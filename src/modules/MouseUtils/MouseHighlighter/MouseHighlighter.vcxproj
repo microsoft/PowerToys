@@ -6,7 +6,7 @@
     <ProjectGuid>{782a61be-9d85-4081-b35c-1ccc9dcc1e88}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MouseHighlighter</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <ProjectName>MouseHighlighter</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
