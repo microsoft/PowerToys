@@ -250,6 +250,22 @@ FancyZones::Run() noexcept
         }
     }
 
+    // Initialize COM. Needed for WMI monitor identifying
+    HRESULT comInitHres = CoInitializeEx(0, COINIT_MULTITHREADED);
+    if (FAILED(comInitHres))
+    {
+        Logger::error(L"Failed to initialize COM library. {}", get_last_error_or_default(comInitHres));
+        return;
+    }
+
+    // Initialize security. Needed for WMI monitor identifying
+    HRESULT comSecurityInitHres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
+    if (FAILED(comSecurityInitHres))
+    {
+        Logger::error(L"Failed to initialize security. {}", get_last_error_or_default(comSecurityInitHres));
+        return;
+    }
+
     m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [] {
                           SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
                           SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
@@ -278,6 +294,8 @@ FancyZones::Destroy() noexcept
         DestroyWindow(m_window);
         m_window = nullptr;
     }
+
+    CoUninitialize();
 }
 
 // IFancyZonesCallback

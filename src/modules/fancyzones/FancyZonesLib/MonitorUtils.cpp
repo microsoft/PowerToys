@@ -84,23 +84,6 @@ namespace MonitorUtils
         {
             HRESULT hres;
 
-            // Initialize COM.
-            hres = CoInitializeEx(0, COINIT_MULTITHREADED);
-            if (FAILED(hres))
-            {
-                Logger::error(L"Failed to initialize COM library. Error code = ", hres);
-                return {};
-            }
-
-            // Initialize
-            hres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
-            if (FAILED(hres))
-            {
-                Logger::error(L"Failed to initialize security. Error code = ", hres);
-                CoUninitialize();
-                return {};
-            }
-
             // Obtain the initial locator to Windows Management
             // on a particular host computer.
             IWbemLocator* pLocator = 0;
@@ -108,8 +91,7 @@ namespace MonitorUtils
             hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
             if (FAILED(hres))
             {
-                Logger::error(L"Failed to create IWbemLocator object. Error code = ", hres);
-                CoUninitialize();
+                Logger::error(L"Failed to create IWbemLocator object. {}", get_last_error_or_default(hres));
                 return {};
             }
 
@@ -117,9 +99,8 @@ namespace MonitorUtils
             hres = pLocator->ConnectServer(_bstr_t(L"ROOT\\WMI"), NULL, NULL, 0, NULL, 0, 0, &pServices);
             if (FAILED(hres))
             {
-                Logger::error(L"Could not connect WMI server. Error code = ", hres);
+                Logger::error(L"Could not connect WMI server. {}", get_last_error_or_default(hres));
                 pLocator->Release();
-                CoUninitialize();
                 return {};
             }
 
@@ -128,10 +109,9 @@ namespace MonitorUtils
             hres = CoSetProxyBlanket(pServices, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
             if (FAILED(hres))
             {
-                Logger::error(L"Could not set proxy blanket. Error code = ", hres);
+                Logger::error(L"Could not set proxy blanket. {}", get_last_error_or_default(hres));
                 pServices->Release();
                 pLocator->Release();
-                CoUninitialize();
                 return {};
             }
 
@@ -141,10 +121,9 @@ namespace MonitorUtils
             hres = pServices->ExecQuery(bstr_t("WQL"), bstr_t("SELECT * FROM WmiMonitorID"), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
             if (FAILED(hres))
             {
-                Logger::error(L"Query for monitors failed. Error code = ", hres);
+                Logger::error(L"Query for monitors failed. {}", get_last_error_or_default(hres));
                 pServices->Release();
                 pLocator->Release();
-                CoUninitialize();
                 return {};
             }
 
@@ -165,7 +144,7 @@ namespace MonitorUtils
                 hres = pClassObject->GetNames(NULL, WBEM_FLAG_ALWAYS, NULL, &pFieldArray);
                 if (FAILED(hres))
                 {
-                    Logger::error(L"Failed to get field names. Error code = {}", get_last_error_or_default(hres));
+                    Logger::error(L"Failed to get field names. {}", get_last_error_or_default(hres));
                     break;
                 }
 
@@ -187,8 +166,6 @@ namespace MonitorUtils
             pServices->Release();
             pLocator->Release();
             pEnumerator->Release();
-
-            CoUninitialize();
 
             return result;
         }
@@ -330,7 +307,6 @@ namespace MonitorUtils
    
     std::vector<FancyZonesDataTypes::MonitorId> IdentifyMonitors() noexcept
     {
-        std::vector<FancyZonesDataTypes::MonitorId> result{};
         Logger::info(L"Identifying monitors");
 
         auto displays = Display::GetDisplays();
