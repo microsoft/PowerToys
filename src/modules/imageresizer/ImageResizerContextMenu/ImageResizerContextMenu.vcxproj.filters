@@ -21,6 +21,9 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Generated Files/resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -34,63 +37,23 @@
     <None Include="Assets\**">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="ImageResizer.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="packages.config" />
-    <None Include="Assets\**">
+    <None Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ImageResizerContextMenu.base.rc">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Assets\**">
+    <None Include="Resources.resx">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Assets\**">
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files/ImageResizerContextMenu.rc">
       <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

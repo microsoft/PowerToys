@@ -9,11 +9,13 @@
 
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
+#include <common/utils/resources.h>
 #include <Settings.h>
 #include <trace.h>
 
 #include <wil/win32_helpers.h>
 #include <wrl/module.h>
+#include "Generated Files/resource.h"
 
 using namespace Microsoft::WRL;
 
@@ -42,14 +44,17 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 class __declspec(uuid("8F491918-259F-451A-950F-8C3EBF4864AF")) ImageResizerContextMenuCommand final : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IExplorerCommand, IObjectWithSite>
 {
 public:
-    virtual const wchar_t* Title() { return L"ImageResizer"; }
+    virtual const wchar_t* Title() { return L"Image Resizer"; }
     virtual const EXPCMDFLAGS Flags() { return ECF_DEFAULT; }
     virtual const EXPCMDSTATE State(_In_opt_ IShellItemArray* selection) { return ECS_ENABLED; }
 
     // IExplorerCommand
     IFACEMETHODIMP GetTitle(_In_opt_ IShellItemArray* items, _Outptr_result_nullonfailure_ PWSTR* name)
     {
-        return SHStrDup(app_name.c_str(), name);
+        wchar_t strResizePictures[64] = { 0 };
+        LoadString(g_hInst, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
+
+        return SHStrDup(strResizePictures, name);
     }
 
     IFACEMETHODIMP GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)
