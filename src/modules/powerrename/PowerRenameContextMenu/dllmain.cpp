@@ -18,6 +18,7 @@
 
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
+#include <Helpers.h>
 #include <Settings.h>
 #include <trace.h>
 
@@ -90,7 +91,28 @@ public:
 
     IFACEMETHODIMP GetState(_In_opt_ IShellItemArray* selection, _In_ BOOL okToBeSlow, _Out_ EXPCMDSTATE* cmdState)
     {
-        *cmdState = CSettingsInstance().GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
+        *cmdState = ECS_ENABLED;
+
+        if (!CSettingsInstance().GetEnabled())
+        {
+            *cmdState = ECS_HIDDEN;
+            return S_OK;
+        }
+
+        // Check if we should only be on the extended context menu
+        if (CSettingsInstance().GetExtendedContextMenuOnly())
+        {
+            *cmdState = ECS_HIDDEN;
+            return S_OK;
+        }
+
+        // Check if at least one of the selected items is actually renamable.
+        if (!ShellItemArrayContainsRenamableItem(selection))
+        {
+            *cmdState = ECS_HIDDEN;
+            return S_OK;
+        }
+
         return S_OK;
     }
 

@@ -520,6 +520,31 @@ BOOL GetEnumeratedFileName(__out_ecount(cchMax) PWSTR pszUniqueName, UINT cchMax
     return fRet;
 }
 
+// Iterate through the shell items array and checks if at least 1 item has SFGAO_CANRENAME.
+// We do not enumerate child items - only the items the user selected.
+bool ShellItemArrayContainsRenamableItem(_In_ IShellItemArray* shellItemArray)
+{
+    bool hasRenamable = false;
+    IEnumShellItems* spesi;
+    if (SUCCEEDED(shellItemArray->EnumItems(&spesi)))
+    {
+        ULONG celtFetched;
+        IShellItem* spsi;
+        while ((S_OK == spesi->Next(1, &spsi, &celtFetched)))
+        {
+            SFGAOF attrs;
+            if (SUCCEEDED(spsi->GetAttributes(SFGAO_CANRENAME, &attrs)) &&
+                attrs & SFGAO_CANRENAME)
+            {
+                hasRenamable = true;
+                break;
+            }
+        }
+    }
+
+    return hasRenamable;
+}
+
 // Iterate through the data source and checks if at least 1 item has SFGAO_CANRENAME.
 // We do not enumerate child items - only the items the user selected.
 bool DataObjectContainsRenamableItem(_In_ IUnknown* dataSource)

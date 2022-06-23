@@ -14,13 +14,11 @@
 namespace package {
     BOOL IsWin11OrGreater()
     {
-        OSVERSIONINFOEX osvi;
+        OSVERSIONINFOEX osvi{};
         DWORDLONG dwlConditionMask = 0;
         int op = VER_GREATER_EQUAL;
 
         // Initialize the OSVERSIONINFOEX structure.
-
-        ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
         osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
         osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_WINTHRESHOLD);
         osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_WINTHRESHOLD);
