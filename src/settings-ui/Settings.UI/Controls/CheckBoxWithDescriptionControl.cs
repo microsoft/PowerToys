@@ -59,7 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(
             "Description",
-            typeof(object),
+            typeof(string),
             typeof(CheckBoxWithDescriptionControl),
             new PropertyMetadata(default(string)));
 

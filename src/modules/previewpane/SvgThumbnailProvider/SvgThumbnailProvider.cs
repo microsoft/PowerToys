@@ -164,6 +164,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 Application.DoEvents();
             }
 
+            _browser.Dispose();
+
             return thumbnail;
         }
 

@@ -10,10 +10,24 @@
 #include <AlwaysOnTop/ModuleConstants.h>
 
 #include <shellapi.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/interop/shared_constants.h>
 
 namespace NonLocalizable
 {
     const wchar_t ModulePath[] = L"modules\\AlwaysOnTop\\PowerToys.AlwaysOnTop.exe";
+}
+
+namespace
+{
+    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_WIN[] = L"win";
+    const wchar_t JSON_KEY_ALT[] = L"alt";
+    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
+    const wchar_t JSON_KEY_SHIFT[] = L"shift";
+    const wchar_t JSON_KEY_CODE[] = L"code";
+    const wchar_t JSON_KEY_HOTKEY[] = L"hotkey";
+    const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
@@ -52,15 +66,73 @@ public:
 
     // Return JSON with the configuration options.
     // These are the settings shown on the settings page along with their current values.
-    virtual bool get_config(_Out_ PWSTR buffer, _Out_ int* buffer_size) override
+    virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
         return false;
+        HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
+
+        // Create a Settings object.
+        PowerToysSettings::Settings settings(hinstance, get_name());
+
+        return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
     // Passes JSON with the configuration settings for the powertoy.
     // This is called when the user hits Save on the settings page.
-    virtual void set_config(PCWSTR config) override
+    virtual void set_config(const wchar_t* config) override
     {
+        try
+        {
+            // Parse the input JSON string.
+            PowerToysSettings::PowerToyValues values =
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
+
+            parse_hotkey(values);
+            // If you don't need to do any custom processing of the settings, proceed
+            // to persists the values calling:
+            values.save_to_settings_file();
+            // Otherwise call a custom function to process the settings before saving them to disk:
+            // save_settings();
+        }
+        catch (std::exception ex)
+        {
+            // Improper JSON.
+        }
+    }
+
+    virtual bool on_hotkey(size_t hotkeyId) override
+    {
+        if (m_enabled)
+        {
+            Logger::trace(L"AlwaysOnTop hotkey pressed");
+            if (!is_process_running())
+            {
+                Enable();
+            }
+
+            SetEvent(m_hPinEvent);
+
+            return true;
+        }
+
+        return false;
+    }
+    
+    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
+    {
+        if (m_hotkey.key)
+        {
+            if (hotkeys && buffer_size >= 1)
+            {
+                hotkeys[0] = m_hotkey;
+            }
+
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     // Enable the powertoy
@@ -96,6 +168,8 @@ public:
     {
         app_name = L"AlwaysOnTop"; //TODO: localize
         app_key = NonLocalizable::ModuleKey;
+        m_hPinEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
+        init_settings();
     }
 
 private:
@@ -109,6 +183,7 @@ private:
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
+        ResetEvent(m_hPinEvent);
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -133,6 +208,8 @@ private:
     void Disable(bool const traceEvent)
     {
         m_enabled = false;
+        ResetEvent(m_hPinEvent);
+
         // Log telemetry
         if (traceEvent)
         {
@@ -146,11 +223,72 @@ private:
         }
     }
 
+    void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
+    {
+        auto settingsObject = settings.get_raw_json();
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
+                m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize AlwaysOnTop start shortcut");
+            }
+        }
+        else
+        {
+            Logger::info("AlwaysOnTop settings are empty");
+        }
+
+        if (!m_hotkey.key)
+        {
+            Logger::info("AlwaysOnTop is going to use default shortcut");
+            m_hotkey.win = true;
+            m_hotkey.alt = false;
+            m_hotkey.shift = false;
+            m_hotkey.ctrl = true;
+            m_hotkey.key = 'T';
+        }
+    }
+
+    bool is_process_running()
+    {
+        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
+    }
+
+    void init_settings()
+    {
+        try
+        {
+            // Load and parse the settings file for this PowerToy.
+            PowerToysSettings::PowerToyValues settings =
+                PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
+
+            parse_hotkey(settings);
+        }
+        catch (std::exception ex)
+        {
+            Logger::warn(L"An exception occurred while loading the settings file");
+            // Error while loading from the settings file. Let default values stay as they are.
+        }
+    }
+
     std::wstring app_name;
     std::wstring app_key; //contains the non localized key of the powertoy
 
     bool m_enabled = false;
     HANDLE m_hProcess = nullptr;
+    Hotkey m_hotkey;
+
+    // Handle to event used to pin/unpin windows
+    HANDLE m_hPinEvent;
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
