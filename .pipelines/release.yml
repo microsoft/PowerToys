@@ -348,7 +348,13 @@ jobs:
     inputs:
       scriptName: .pipelines/versionAndSignCheck.ps1
       arguments: -targetDir '$(build.sourcesdirectory)\extractedMsi\File'
-      
+
+  - task: PowerShell@1
+    displayName: Verifying MSI Custom Actions DLL is signed
+    inputs:
+      scriptName: .pipelines/versionAndSignCheck.ps1
+      arguments: -targetDir '$(build.sourcesdirectory)\extractedMsi\Binary'
+
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     displayName: Sign MSI
     inputs:
