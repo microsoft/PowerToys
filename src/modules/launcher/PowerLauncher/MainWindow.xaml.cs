@@ -495,12 +495,7 @@ namespace PowerLauncher
                     SearchWaitForSlowResults = _viewModel.GetSearchWaitForSlowResults(),
                 };
 
-                // options.SearchClickedItemWeight = 50;
-
-                // options.SearchQueryTuningEnabled = false;
                 _viewModel.QueryText = text;
-
-                // System.Diagnostics.Debugger.Launch();
                 _viewModel.Query(options);
             }
         }

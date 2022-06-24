@@ -2126,13 +2126,13 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Disable round corners when window is snapped</value>
   </data>
   <data name="PowerLauncher_SearchQueryTuningEnabled.Description" xml:space="preserve">
-    <value>Options to fine tune how the results are shown</value>
+    <value>Fine tune results ordering</value>
   </data>
   <data name="PowerLauncher_SearchQueryTuningEnabled.Header" xml:space="preserve">
-    <value>Results display tuning</value>
+    <value>Results order tuning</value>
   </data>
   <data name="PowerLauncher_SearchClickedItemWeight.Description" xml:space="preserve">
-    <value>Use a higher number to get clicked results to rise faster. The default is 5, 0 to disable.</value>
+    <value>Use a higher number to get selected results to rise faster. The default is 5, 0 to disable.</value>
   </data>
   <data name="PowerLauncher_SearchClickedItemWeight.Header" xml:space="preserve">
     <value>Clicked item weight</value>
@@ -2142,10 +2142,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="PowerLauncher_WaitForSlowResults.Header" xml:space="preserve">
     <value>Wait on async results before selecting</value>
-  </data>
-  <data name="PowerLauncher_PluginWeightBoost.Content" xml:space="preserve">
-    <value>PowerLauncher_PluginWeightBoost.Content</value>
-  </data>
+  </data>  
   <data name="PowerLauncher_PluginWeightBoost.Description" xml:space="preserve">
     <value>Increase this number to have these result show higher in the results. Default is 0.</value>
   </data>

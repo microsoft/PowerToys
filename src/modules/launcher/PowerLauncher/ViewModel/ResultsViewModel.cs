@@ -255,22 +255,19 @@ namespace PowerLauncher.ViewModel
 
         public void Sort(MainViewModel.QueryTuningOptions options)
         {
-            var sorted = Results.OrderByDescending(x => (x.Result.Score + (x.Result.SelectedCount * 5))).ToList();
-
-            sorted = Results.OrderByDescending(x => (x.Result.Metadata.WeightBoost + x.Result.Score + (x.Result.SelectedCount * 5))).ToList();
+            List<ResultViewModel> sorted = null;
 
             if (options.SearchQueryTuningEnabled)
             {
                 sorted = Results.OrderByDescending(x => (x.Result.Metadata.WeightBoost + x.Result.Score + (x.Result.SelectedCount * options.SearchClickedItemWeight))).ToList();
             }
-
-            Clear();
-            foreach (var result in sorted)
+            else
             {
-                Results.Add(result);
+                sorted = Results.OrderByDescending(x => (x.Result.Metadata.WeightBoost + x.Result.Score + (x.Result.SelectedCount * 5))).ToList();
             }
 
-            // Results.AddRange(sorted);
+            Clear();
+            Results.AddRange(sorted);
         }
 
         public static readonly DependencyProperty FormattedTextProperty = DependencyProperty.RegisterAttached(
