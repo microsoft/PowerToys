@@ -6,8 +6,6 @@
             "MatchedPath": [
                 "*.resources.dll",
 
-                "PowerToysSetupCustomActions.dll",
-                
                 "PowerToys.ActionRunner.exe",
                 "PowerToys.Update.exe",
                 "PowerToys.BackgroundActivatorDLL.dll",
