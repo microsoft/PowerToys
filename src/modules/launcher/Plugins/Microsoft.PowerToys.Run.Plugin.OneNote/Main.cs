@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         /// <summary>
         /// LazyCache CachingService instance to speed up repeated queries.
         /// </summary>
-        private CachingService? cache;
+        private CachingService? _cache;
 
         /// <summary>
         /// The initial context for this plugin (contains API and meta-data)
@@ -72,8 +72,8 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
                 _ = OneNoteProvider.PageItems.Any();
                 _oneNoteInstalled = true;
 
-                cache = new CachingService();
-                cache.DefaultCachePolicy.DefaultCacheDurationSeconds = (int)TimeSpan.FromDays(1).TotalSeconds;
+                _cache = new CachingService();
+                _cache.DefaultCachePolicy.DefaultCacheDurationSeconds = (int)TimeSpan.FromDays(1).TotalSeconds;
             }
             catch (COMException)
             {
@@ -92,13 +92,13 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         /// <returns>A filtered list, can be empty when nothing was found</returns>
         public List<Result> Query(Query query)
         {
-            if (!_oneNoteInstalled || query is null || string.IsNullOrWhiteSpace(query.Search) || cache is null)
+            if (!_oneNoteInstalled || query is null || string.IsNullOrWhiteSpace(query.Search) || _cache is null)
             {
                 return new List<Result>(0);
             }
 
             // If there's cached results for this query, return immediately, otherwise wait for delayedExecution.
-            var results = cache.Get<List<Result>>(query.Search);
+            var results = _cache.Get<List<Result>>(query.Search);
             return results ?? Query(query, false);
         }
 
@@ -110,13 +110,13 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         /// <returns>A filtered list, can be empty when nothing was found</returns>
         public List<Result> Query(Query query, bool delayedExecution)
         {
-            if (!delayedExecution || !_oneNoteInstalled || query is null || string.IsNullOrWhiteSpace(query.Search) || cache is null)
+            if (!delayedExecution || !_oneNoteInstalled || query is null || string.IsNullOrWhiteSpace(query.Search) || _cache is null)
             {
                 return new List<Result>(0);
             }
 
             // Get results from cache if they already exist for this query, otherwise query OneNote. Results will be cached for 1 day.
-            var results = cache.GetOrAdd(query.Search, () =>
+            var results = _cache.GetOrAdd(query.Search, () =>
             {
                 var pages = OneNoteProvider.FindPages(query.Search);
 
@@ -126,12 +126,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
                     Title = p.Name,
                     QueryTextDisplay = p.Name,
                     SubTitle = @$"{p.Notebook.Name}\{p.Section.Name}",
-                    Action = (_) =>
-                    {
-                        p.OpenInOneNote();
-                        ShowOneNote();
-                        return true;
-                    },
+                    Action = (_) => OpenPageInOneNote(p),
                     ContextData = p,
                     ToolTipData = new ToolTipData(Name, @$"{p.Notebook.Name}\{p.Section.Name}\{p.Name}"),
                 }).ToList();
@@ -161,6 +156,21 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         private void UpdateIconPath(Theme theme)
         {
             _iconPath = theme == Theme.Light || theme == Theme.HighContrastWhite ? "Images/oneNote.light.png" : "Images/oneNote.dark.png";
+        }
+
+        private bool OpenPageInOneNote(IOneNoteExtPage page)
+        {
+            try
+            {
+                page.OpenInOneNote();
+                ShowOneNote();
+                return true;
+            }
+            catch (COMException)
+            {
+                // The page, section or even notebook may no longer exist, ignore and do nothing.
+                return false;
+            }
         }
 
         /// <summary>
