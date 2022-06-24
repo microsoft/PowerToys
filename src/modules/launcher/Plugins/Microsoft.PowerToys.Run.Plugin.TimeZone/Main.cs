@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Classes;
@@ -13,6 +14,8 @@ using Microsoft.PowerToys.Run.Plugin.TimeZone.Helper;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
+
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests")]
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone
 {

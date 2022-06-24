@@ -52,7 +52,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     Trace::RegisterProvider();
 
-    AlwaysOnTop app;
+    AlwaysOnTop app(!pid.empty());
 
     run_message_loop();
 
