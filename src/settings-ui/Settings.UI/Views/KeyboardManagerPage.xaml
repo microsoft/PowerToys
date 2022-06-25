@@ -101,7 +101,7 @@
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                     </ItemsControl>
-                                    <TextBlock Text="to"
+                                    <TextBlock x:Uid="To"
                                                Style="{StaticResource SecondaryTextStyle}"
                                                VerticalAlignment="Center" 
                                                Margin="8,0,8,0"/>
