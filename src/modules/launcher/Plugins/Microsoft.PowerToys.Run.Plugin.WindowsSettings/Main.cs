@@ -97,6 +97,21 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         /// <returns>A filtered list, can be empty when nothing was found.</returns>
         public List<Result> Query(Query query)
         {
+            // clean the superfluous trailing or leading 'settings' if it exists, all of these are settings.
+            var localSearchText = query.Search;
+            if (!string.IsNullOrEmpty(localSearchText))
+            {
+                if (localSearchText.EndsWith(" settings", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    localSearchText = localSearchText.Substring(0, localSearchText.Length - 9);
+                }
+
+                if (localSearchText.StartsWith("settings ", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    localSearchText = localSearchText.Substring(9);
+                }
+            }
+
             if (_windowsSettings?.Settings is null)
             {
                 return new List<Result>(0);
@@ -106,18 +121,18 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                 .Where(Predicate)
                 .OrderBy(found => found.Name);
 
-            var newList = ResultHelper.GetResultList(filteredList, query.Search, _defaultIconPath);
+            var newList = ResultHelper.GetResultList(filteredList, localSearchText, _defaultIconPath);
             return newList;
 
             bool Predicate(WindowsSetting found)
             {
-                if (string.IsNullOrWhiteSpace(query.Search))
+                if (string.IsNullOrWhiteSpace(localSearchText))
                 {
                     // If no search string is entered skip query comparison.
                     return true;
                 }
 
-                if (found.Name.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
+                if (found.Name.Contains(localSearchText, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return true;
                 }
@@ -127,14 +142,14 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                     foreach (var area in found.Areas)
                     {
                         // Search for areas on normal queries.
-                        if (area.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
+                        if (area.Contains(localSearchText, StringComparison.CurrentCultureIgnoreCase))
                         {
                             return true;
                         }
 
                         // Search for Area only on queries with action char.
-                        if (area.Contains(query.Search.Replace(":", string.Empty), StringComparison.CurrentCultureIgnoreCase)
-                        && query.Search.EndsWith(":", StringComparison.CurrentCultureIgnoreCase))
+                        if (area.Contains(localSearchText.Replace(":", string.Empty), StringComparison.CurrentCultureIgnoreCase)
+                        && localSearchText.EndsWith(":", StringComparison.CurrentCultureIgnoreCase))
                         {
                             return true;
                         }
@@ -145,7 +160,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                 {
                     foreach (var altName in found.AltNames)
                     {
-                        if (altName.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
+                        if (altName.Contains(localSearchText, StringComparison.CurrentCultureIgnoreCase))
                         {
                             return true;
                         }
@@ -153,9 +168,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                 }
 
                 // Search by key char '>' for app name and settings path
-                if (query.Search.Contains('>'))
+                if (localSearchText.Contains('>'))
                 {
-                    return ResultHelper.FilterBySettingsPath(found, query.Search);
+                    return ResultHelper.FilterBySettingsPath(found, localSearchText);
                 }
 
                 return false;
