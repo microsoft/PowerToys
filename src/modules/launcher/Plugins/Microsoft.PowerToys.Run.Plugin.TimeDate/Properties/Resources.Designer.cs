@@ -297,9 +297,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Calendar week.
         /// </summary>
-        internal static string Microsoft_plugin_timedate_plugin_description_example_calweek {
+        internal static string Microsoft_plugin_timedate_plugin_description_example_calendarWeek {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_plugin_description_example_calweek", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_plugin_description_example_calendarWeek", resourceCulture);
             }
         }
         

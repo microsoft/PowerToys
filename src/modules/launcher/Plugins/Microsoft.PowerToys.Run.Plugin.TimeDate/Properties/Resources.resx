@@ -201,7 +201,7 @@
     <value>Provides time and date values for the system time or a custom time stamp (Examples: '{0}', '{1}', '{2}', '{3}')</value>
     <comment>Do not translate the placeholders like '{0}' because it will be replaced in code.</comment>
   </data>
-  <data name="Microsoft_plugin_timedate_plugin_description_example_calweek" xml:space="preserve">
+  <data name="Microsoft_plugin_timedate_plugin_description_example_calendarWeek" xml:space="preserve">
     <value>Calendar week</value>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_description_example_day" xml:space="preserve">
