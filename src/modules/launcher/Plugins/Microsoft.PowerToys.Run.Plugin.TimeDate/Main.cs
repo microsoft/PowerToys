@@ -92,9 +92,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 
         public string GetTranslatedPluginDescription()
         {
-            string timeExample = DateTime.Now.ToString("T", CultureInfo.CurrentCulture);
-            string dateExample = DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
-            return string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_plugin_description, dateExample, timeExample);
+            string timeExample = Resources.Microsoft_plugin_timedate_Time + "::" + DateTime.Now.ToString("T", CultureInfo.CurrentCulture);
+            string dayExample = Resources.Microsoft_plugin_timedate_Day + "::" + DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
+            string calWeekExample = Resources.Microsoft_plugin_timedate_plugin_description_example_calweek + "::" + DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
+            return string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_plugin_description, Resources.Microsoft_plugin_timedate_Day, dayExample, timeExample, calWeekExample);
         }
 
         public string GetTranslatedPluginTitle()

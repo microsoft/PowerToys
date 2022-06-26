@@ -286,11 +286,20 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provides time and date values for the system time or a custom time stamp (Examples: &apos;day&apos;, &apos;day::{0}&apos;, &apos;time::{1}&apos;, &apos;calendar week::{0}&apos;).
+        ///   Looks up a localized string similar to Provides time and date values for the system time or a custom time stamp (Examples: &apos;{0}&apos;, &apos;{1}&apos;, &apos;{2}&apos;, &apos;{3}&apos;).
         /// </summary>
         internal static string Microsoft_plugin_timedate_plugin_description {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_plugin_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Calendar week.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_plugin_description_example_calweek {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_plugin_description_example_calweek", resourceCulture);
             }
         }
         
