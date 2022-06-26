@@ -304,6 +304,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Day.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_plugin_description_example_day {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_plugin_description_example_day", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_plugin_description_example_time {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_plugin_description_example_time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Time and Date.
         /// </summary>
         internal static string Microsoft_plugin_timedate_plugin_name {

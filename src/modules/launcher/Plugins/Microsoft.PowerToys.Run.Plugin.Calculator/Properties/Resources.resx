@@ -148,14 +148,14 @@
     <value>Use English (United States) number format for input</value>
   </data>
   <data name="wox_plugin_calculator_in_en_format_description" xml:space="preserve">
-    <value>Ignores your system setting and expects numbers in the format '[0}'</value>
+    <value>Ignores your system setting and expects numbers in the format '{0}'.</value>
     <comment>{0} is a placeholder and will be replaced in code.</comment>
   </data>
   <data name="wox_plugin_calculator_out_en_format" xml:space="preserve">
     <value>Use English (United States) number format for output</value>
   </data>
   <data name="wox_plugin_calculator_out_en_format_description" xml:space="preserve">
-    <value>Ignores your system setting and returns numbers in the format '{0}'</value>
+    <value>Ignores your system setting and returns numbers in the format '{0}'.</value>
     <comment>{0} is a placeholder and will be replaced in code.</comment>
   </data>
 </root>

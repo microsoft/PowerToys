@@ -204,6 +204,12 @@
   <data name="Microsoft_plugin_timedate_plugin_description_example_calweek" xml:space="preserve">
     <value>Calendar week</value>
   </data>
+  <data name="Microsoft_plugin_timedate_plugin_description_example_day" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description_example_time" xml:space="preserve">
+    <value>Time</value>
+  </data>
   <data name="Microsoft_plugin_timedate_plugin_name" xml:space="preserve">
     <value>Time and Date</value>
   </data>
