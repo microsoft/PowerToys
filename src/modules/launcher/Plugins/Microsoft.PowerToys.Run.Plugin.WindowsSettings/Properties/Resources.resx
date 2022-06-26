@@ -982,7 +982,7 @@
     <comment>Area Personalization</comment>
   </data>
   <data name="NearbyShareSettings" xml:space="preserve">
-    <value>Nearby share settings</value>
+    <value>Nearby sharing settings</value>
     <comment>Area System</comment>
   </data>
   <data name="netcpl.cpl" xml:space="preserve">
