@@ -92,6 +92,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 
         public string GetTranslatedPluginDescription()
         {
+            // The extra strings for the examples are required for correct translations.
             string timeExample = Resources.Microsoft_plugin_timedate_plugin_description_example_time + "::" + DateTime.Now.ToString("T", CultureInfo.CurrentCulture);
             string dayExample = Resources.Microsoft_plugin_timedate_plugin_description_example_day + "::" + DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
             string calWeekExample = Resources.Microsoft_plugin_timedate_plugin_description_example_calweek + "::" + DateTime.Now.ToString("d", CultureInfo.CurrentCulture);

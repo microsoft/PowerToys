@@ -34,6 +34,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
+            // The number examples has to be created at runtime to prevent translation.
             new PluginAdditionalOption()
             {
                 Key = "InputUseEnglishFormat",
