@@ -201,14 +201,18 @@ namespace FancyZonesDataTypes
 
     inline bool operator==(const MonitorId& lhs, const MonitorId& rhs)
     {
-        if (lhs.monitor && lhs.monitor == rhs.monitor)
+        if (lhs.monitor && rhs.monitor)
         {
-            return true;
+            return lhs.monitor == rhs.monitor;
         }
         
-        if (!lhs.serialNumber.empty() && lhs.serialNumber == rhs.serialNumber)
+        if (!lhs.serialNumber.empty() || !rhs.serialNumber.empty())
         {
-            return true;
+            bool serialNumbersEqual = lhs.serialNumber == rhs.serialNumber;
+            if (!serialNumbersEqual)
+            {
+                return false;
+            }
         }
 
         return lhs.deviceId == rhs.deviceId;
