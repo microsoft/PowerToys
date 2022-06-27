@@ -185,7 +185,13 @@ namespace FancyZonesDataTypes
 
     inline bool operator==(const DeviceId& lhs, const DeviceId& rhs)
     {
-        return lhs.id.compare(rhs.id) == 0 && lhs.instanceId.compare(rhs.instanceId) == 0;
+        static const std::wstring defaultMonitorId = L"Default_Monitor";
+        if (lhs.id == defaultMonitorId)
+        {
+            return lhs.instanceId == rhs.instanceId; 
+        }
+
+        return lhs.id == rhs.id;
     }
 
     inline bool operator<(const DeviceId& lhs, const DeviceId& rhs)
