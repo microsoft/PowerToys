@@ -35,6 +35,7 @@ ALarger
 alekhyareddy
 alignas
 ALLAPPS
+ALLINPUT
 Alloc
 ALLOWUNDO
 ALPHATYPE
@@ -1105,6 +1106,7 @@ LINQTo
 Linux
 listview
 lld
+LLKH
 llkhf
 Llvm
 lmcons
