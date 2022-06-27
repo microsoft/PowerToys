@@ -741,14 +741,8 @@ namespace FancyZonesUnitTests
     TEST_CLASS (DeviceInfoUnitTests)
     {
     private:
-        FancyZonesDataTypes::DeviceIdData m_defaultDeviceId{ .deviceName = L"AOC2460#4&fe3a015&0&UID65793", .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{33A2B101-06E0-437B-A61E-CDBECF502907}").value() };
         DeviceInfoJSON m_defaultDeviceInfo = DeviceInfoJSON{ BackwardsCompatibility::DeviceIdData::ParseDeviceId(L"AOC2460#4&fe3a015&0&UID65793_1920_1080_{33A2B101-06E0-437B-A61E-CDBECF502907}").value(), DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
         json::JsonObject m_defaultJson = json::JsonObject::Parse(L"{\"device-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"active-zoneset\": {\"type\": \"custom\", \"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}");
-
-        TEST_METHOD_INITIALIZE(Init)
-        {
-            CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_defaultDeviceId.virtualDesktopId);
-        }
 
     public:
         TEST_METHOD (FromJson)
@@ -791,9 +785,7 @@ namespace FancyZonesUnitTests
         const std::wstring m_defaultCustomDeviceStr = L"{\"device-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"active-zoneset\": {\"type\": \"custom\", \"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}";
         const std::wstring m_defaultCustomLayoutStr = L"{\"device-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"applied-layout\": {\"type\": \"custom\", \"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"show-spacing\": true, \"spacing\": 16, \"zone-count\": 3, \"sensitivity-radius\": 30}}";
         const json::JsonValue m_defaultCustomDeviceValue = json::JsonValue::Parse(m_defaultCustomDeviceStr);
-        
-        const FancyZonesDataTypes::DeviceIdData m_defaultDeviceId = FancyZonesDataTypes::DeviceIdData{ .deviceName = L"AOC2460#4&fe3a015&0&UID65793", .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value() };
-        
+                
         TEST_METHOD_INITIALIZE(Init)
         {
             std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));

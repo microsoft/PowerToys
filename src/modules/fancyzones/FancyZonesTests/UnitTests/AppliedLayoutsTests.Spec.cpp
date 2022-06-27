@@ -58,8 +58,8 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().LoadData();
             Assert::AreEqual((size_t)1, AppliedLayouts::instance().GetAppliedLayoutMap().size());
 
-            FancyZonesDataTypes::DeviceIdData id{
-                .deviceName = L"DELA026#5&10a58c63&0&UID16777488",
+            FancyZonesDataTypes::WorkAreaId id{
+                .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" }, .serialNumber = L"abcd" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value()
             };
             Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(id).has_value());
@@ -94,8 +94,8 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().LoadData();
             Assert::AreEqual((size_t)1, AppliedLayouts::instance().GetAppliedLayoutMap().size());
 
-            FancyZonesDataTypes::DeviceIdData id{
-                .deviceName = L"DELA026#5&10a58c63&0&UID16777488",
+            FancyZonesDataTypes::WorkAreaId id{
+                .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" }, .serialNumber = L"abcd" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value()
             };
             Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(id).has_value());
@@ -147,8 +147,8 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().LoadData();
             Assert::AreEqual((size_t)1, AppliedLayouts::instance().GetAppliedLayoutMap().size());
 
-            FancyZonesDataTypes::DeviceIdData id{
-                .deviceName = L"DELA026#5&10a58c63&0&UID16777488",
+            FancyZonesDataTypes::WorkAreaId id{
+                .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" }, .serialNumber = L"abcd" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value()
             };
             Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(id).has_value());
@@ -202,8 +202,8 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().LoadData();
             Assert::AreEqual((size_t)1, AppliedLayouts::instance().GetAppliedLayoutMap().size());
 
-            FancyZonesDataTypes::DeviceIdData id{
-                .deviceName = L"DELA026#5&10a58c63&0&UID16777488",
+            FancyZonesDataTypes::WorkAreaId id{
+                .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" }, .serialNumber = L"abcd" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value()
             };
             Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(id).has_value());
@@ -262,8 +262,8 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().LoadData();
             Assert::AreEqual((size_t)1, AppliedLayouts::instance().GetAppliedLayoutMap().size());
 
-            FancyZonesDataTypes::DeviceIdData id{
-                .deviceName = L"VSC9636#5&37ac4db&0&UID160005",
+            FancyZonesDataTypes::WorkAreaId id{
+                .monitorId = { .deviceId = { .id = L"VSC9636", .instanceId = L"5&37ac4db&0&UID160005" }, .serialNumber = L"abcd" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
             };
             Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(id).has_value());
@@ -295,12 +295,12 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (CloneDeviceInfo)
         {
-            FancyZonesDataTypes::DeviceIdData deviceSrc{
-                .deviceName = L"Device1",
+            FancyZonesDataTypes::WorkAreaId deviceSrc{
+                .monitorId = { .deviceId = { .id = L"Device1", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
             };
-            FancyZonesDataTypes::DeviceIdData deviceDst{
-                .deviceName = L"Device2",
+            FancyZonesDataTypes::WorkAreaId deviceDst{
+                .monitorId = { .deviceId = { .id = L"Device2", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
             };
 
@@ -323,12 +323,12 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (CloneDeviceInfoIntoUnknownDevice)
         {
-            FancyZonesDataTypes::DeviceIdData deviceSrc{
-                .deviceName = L"Device1",
+            FancyZonesDataTypes::WorkAreaId deviceSrc{
+                .monitorId = { .deviceId = { .id = L"Device1", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
             };
-            FancyZonesDataTypes::DeviceIdData deviceDst{
-                .deviceName = L"Device2",
+            FancyZonesDataTypes::WorkAreaId deviceDst{
+                .monitorId = { .deviceId = { .id = L"Device2", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
             };
 
@@ -350,12 +350,12 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (CloneDeviceInfoFromUnknownDevice)
         {
-            FancyZonesDataTypes::DeviceIdData deviceSrc{
-                .deviceName = L"Device1",
+            FancyZonesDataTypes::WorkAreaId deviceSrc{
+                .monitorId = { .deviceId = { .id = L"Device1", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
             };
-            FancyZonesDataTypes::DeviceIdData deviceDst{
-                .deviceName = L"Device2",
+            FancyZonesDataTypes::WorkAreaId deviceDst{
+                .monitorId = { .deviceId = { .id = L"Device2", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
             };
 
@@ -370,12 +370,12 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (CloneDeviceInfoNullVirtualDesktopId)
         {
-            FancyZonesDataTypes::DeviceIdData deviceSrc{
-                .deviceName = L"Device1",
+            FancyZonesDataTypes::WorkAreaId deviceSrc{
+                .monitorId = { .deviceId = { .id = L"Device1", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = GUID_NULL
             };
-            FancyZonesDataTypes::DeviceIdData deviceDst{
-                .deviceName = L"Device2",
+            FancyZonesDataTypes::WorkAreaId deviceDst{
+                .monitorId = { .deviceId = { .id = L"Device2", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
             };
 
@@ -399,8 +399,8 @@ namespace FancyZonesUnitTests
         TEST_METHOD (ApplyLayout)
         {
             // prepare
-            FancyZonesDataTypes::DeviceIdData deviceId {
-                .deviceName = L"DELA026#5&10a58c63&0&UID16777488",
+            FancyZonesDataTypes::WorkAreaId deviceId {
+                .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value()
             };
 
@@ -430,8 +430,8 @@ namespace FancyZonesUnitTests
         TEST_METHOD (ApplyLayoutReplace)
         {
             // prepare
-            FancyZonesDataTypes::DeviceIdData deviceId{
-                .deviceName = L"DELA026#5&10a58c63&0&UID16777488",
+            FancyZonesDataTypes::WorkAreaId deviceId{
+                .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value()
             };
 
@@ -482,8 +482,8 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (ApplyDefaultLayout)
         {
-            FancyZonesDataTypes::DeviceIdData expected{
-                .deviceName = L"Device",
+            FancyZonesDataTypes::WorkAreaId expected{
+                .monitorId = { .deviceId = { .id = L"Device", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
             };
 
@@ -497,8 +497,8 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (ApplyDefaultLayoutWithNullVirtualDesktopId)
         {
-            FancyZonesDataTypes::DeviceIdData expected{
-                .deviceName = L"Device",
+            FancyZonesDataTypes::WorkAreaId expected{
+                .monitorId = { .deviceId = { .id = L"Device", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = GUID_NULL
             };
 
