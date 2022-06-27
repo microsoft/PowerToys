@@ -31,9 +31,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("&MEZ", 1)]
+        [DataRow("&MEST", 1)]
         [DataRow("&GMT", 1)]
-
         [DataRow("&Germany", 1)] // https://github.com/microsoft/PowerToys/issues/17349
         [DataRow("&AWST", 1)] // https://github.com/microsoft/PowerToys/issues/16695
         [DataRow("&AEDT", 1)] // https://github.com/microsoft/PowerToys/issues/16695
@@ -43,7 +42,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests
             var query = new Query(search, _actionKeyword);
             var results = ResultHelper.GetResults(_timeZoneList.TimeZones, _timeZoneSettings, query, string.Empty);
 
-            Assert.AreEqual(results.Count(), expectedResultCount);
+            Assert.AreEqual(expectedResultCount, results.Count());
 
             foreach (var result in results)
             {
