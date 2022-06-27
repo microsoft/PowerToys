@@ -488,7 +488,11 @@ void FancyZones::ToggleEditor() noexcept
 
     m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
 
-    EditorParameters::Save();
+    if (!EditorParameters::Save())
+    {
+        Logger::error(L"Failed to save editor startup parameters");
+        return;
+    }
     
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
