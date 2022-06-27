@@ -380,11 +380,7 @@ void WorkArea::FlashZones() noexcept
 
 void WorkArea::InitializeZoneSets(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept
 {
-    wil::unique_cotaskmem_string virtualDesktopId;
-    if (SUCCEEDED(StringFromCLSID(m_uniqueId.virtualDesktopId, &virtualDesktopId)))
-    {
-        Logger::debug(L"Initialize layout on the virtual desktop {}", virtualDesktopId.get());
-    }
+    Logger::info(L"Initialize layout on {}", m_uniqueId.toString());
     
     bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
     if (!isLayoutAlreadyApplied)
