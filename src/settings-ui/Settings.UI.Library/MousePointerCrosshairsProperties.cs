@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public MousePointerCrosshairsProperties()
         {
-            ActivationShortcut = new HotkeySettings(false, true, true, false, 0x50); // Ctrl + Alt + P
+            ActivationShortcut = new HotkeySettings(true, false, true, false, 0x50); // Win + Alt + P
             CrosshairsColor = new StringProperty("#FF0000");
             CrosshairsOpacity = new IntProperty(75);
             CrosshairsRadius = new IntProperty(20);
