@@ -52,7 +52,7 @@ public:
     IFACEMETHODIMP GetTitle(_In_opt_ IShellItemArray* items, _Outptr_result_nullonfailure_ PWSTR* name)
     {
         wchar_t strResizePictures[64] = { 0 };
-        LoadString(g_hInst, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
+        LoadString(g_hInst, IDS_RESIZE_PICTURES_TITLE, strResizePictures, ARRAYSIZE(strResizePictures));
 
         return SHStrDup(strResizePictures, name);
     }

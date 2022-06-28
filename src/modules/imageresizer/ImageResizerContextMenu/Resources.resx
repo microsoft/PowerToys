@@ -117,10 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Resize_Pictures" xml:space="preserve">
+  <data name="Resize_Pictures_Title" xml:space="preserve">
     <value>Resize pictures</value>
   </data>
-  <data name="ImageResizer" xml:space="preserve">
+  <data name="ImageResizer_App_Name" xml:space="preserve">
     <value>Image Resizer</value>
   </data>
 </root>
