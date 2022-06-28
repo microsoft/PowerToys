@@ -189,7 +189,7 @@
                                         <RowDefinition Height="48" />
                                     </Grid.RowDefinitions>
                                     <TextBlock x:Uid="RegExCheatSheet_Title" FontWeight="SemiBold" />
-                                    <ListView ItemsSource="{x:Bind SearchRegExShortcuts}" Grid.Row="1" IsItemClickEnabled="True" Margin="-4,12,0,0" ItemClick="RegExItemClick">
+                                    <ListView ItemsSource="{x:Bind SearchRegExShortcuts}" SelectionMode="None" Grid.Row="1" IsItemClickEnabled="True" Margin="-4,12,0,0" ItemClick="RegExItemClick">
                                         <ListView.ItemTemplate>
                                             <DataTemplate x:DataType="local:PatternSnippet">
                                                 <Grid ColumnSpacing="8" Margin="-10,0,0,0">
@@ -248,7 +248,7 @@
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <TextBlock x:Uid="DateTimeCheatSheet_Title" FontWeight="SemiBold" />
-                                    <ListView ItemsSource="{x:Bind DateTimeShortcuts}" Grid.Row="1" IsItemClickEnabled="True" Margin="-4,12,0,0" ItemClick="DateTimeItemClick">
+                                    <ListView ItemsSource="{x:Bind DateTimeShortcuts}" SelectionMode="None" Grid.Row="1" IsItemClickEnabled="True" Margin="-4,12,0,0" ItemClick="DateTimeItemClick">
                                         <ListView.ItemTemplate>
                                             <DataTemplate x:DataType="local:PatternSnippet">
                                                 <Grid ColumnSpacing="8" Margin="-10,0,0,0">
