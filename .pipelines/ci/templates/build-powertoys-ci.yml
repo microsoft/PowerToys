@@ -22,3 +22,9 @@ jobs:
   - template: build-powertoys-steps.yml
     parameters:
       additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
+
+  # It appears that the Component Governance build task that gets automatically injected stopped working
+  # when we renamed our main branch.
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+    condition: and(succeededOrFailed(), not(eq(variables['Build.Reason'], 'PullRequest')))

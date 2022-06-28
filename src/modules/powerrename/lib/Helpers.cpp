@@ -409,7 +409,7 @@ BOOL GetEnumeratedFileName(__out_ecount(cchMax) PWSTR pszUniqueName, UINT cchMax
                 pszEndUniq++;
             }
 
-            if (*pszEndUniq == L')')
+            if (*pszEndUniq == L')' && (*CharNext(pszEndUniq) == L'\0' || CharNext(pszEndUniq) == PathFindExtension(pszTemplate)))
             {
                 break;
             }
