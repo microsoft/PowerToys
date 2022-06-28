@@ -128,4 +128,27 @@ namespace FancyZonesDataTypes
 
         return high + 1;
     }
+    
+    std::wstring DeviceId::toString() const noexcept
+    {
+        return id + L"_" + instanceId;
+    }
+    
+    std::wstring MonitorId::toString() const noexcept
+    {
+        return deviceId.toString() + L"_" + serialNumber;
+    }
+
+    std::wstring WorkAreaId::toString() const noexcept
+    {
+        wil::unique_cotaskmem_string virtualDesktopIdStr;
+        if (!SUCCEEDED(StringFromCLSID(virtualDesktopId, &virtualDesktopIdStr)))
+        {
+            return std::wstring();
+        }
+
+        std::wstring result = monitorId.toString() + L"_" + virtualDesktopIdStr.get();
+
+        return result;
+    }
 }

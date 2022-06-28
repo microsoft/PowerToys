@@ -118,10 +118,7 @@ namespace FancyZonesDataTypes
         std::wstring id;
         std::wstring instanceId;
 
-        std::wstring toString() const
-        {
-            return id + L"_" + instanceId;
-        }
+        std::wstring toString() const noexcept;
     };
 
     struct MonitorId
@@ -130,10 +127,7 @@ namespace FancyZonesDataTypes
         DeviceId deviceId;
         std::wstring serialNumber;
 
-        std::wstring toString() const
-        {
-            return deviceId.toString() + L"_" + serialNumber;
-        }
+        std::wstring toString() const noexcept;
     };
 
     struct WorkAreaId
@@ -141,18 +135,7 @@ namespace FancyZonesDataTypes
         MonitorId monitorId;
         GUID virtualDesktopId;
 
-        std::wstring toString() const
-        {
-            wil::unique_cotaskmem_string virtualDesktopIdStr;
-            if (!SUCCEEDED(StringFromCLSID(virtualDesktopId, &virtualDesktopIdStr)))
-            {
-                return std::wstring();
-            }
-
-            std::wstring result = monitorId.toString() + L"_" + virtualDesktopIdStr.get();
-
-            return result;
-        }
+        std::wstring toString() const noexcept;
     }; 
 
     struct AppZoneHistoryData
