@@ -1,23 +1,17 @@
-// Microsoft Visual C++ generated resource script.
-//
-#include "resource.h"
+#include <windows.h>
+#include "Generated Files/resource.h"
 #include "../../../../common/version/version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 2 resource.
-//
-#ifndef APSTUDIO_INVOKED
-#include "../targetver.h"
-#endif
 #include "winres.h"
-#include "verrsrc.h"
-
-/////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
-///////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+/////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
@@ -40,11 +34,11 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", COMPANY_NAME
-            VALUE "FileDescription", "PowerToys Image Resizer Context Menu"
+            VALUE "FileDescription", FILE_DESCRIPTION
             VALUE "FileVersion", FILE_VERSION_STRING
-            VALUE "InternalName", "PowerToys.ImageResizerContextMenu.dll"
+            VALUE "InternalName", INTERNAL_NAME
             VALUE "LegalCopyright", COPYRIGHT_NOTE
-            VALUE "OriginalFilename", "PowerToys.ImageResizerContextMenu.dll"
+            VALUE "OriginalFilename", ORIGINAL_FILENAME
             VALUE "ProductName", PRODUCT_NAME
             VALUE "ProductVersion", PRODUCT_VERSION_STRING
         END
