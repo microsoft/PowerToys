@@ -97,14 +97,35 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         private static IEnumerable<object[]> Interpret_QuirkOutput_WhenCalled_Data =>
             new[]
             {
-                new object[] { "0.100000000000000000000", 0.00776627963145224M }, // BUG: Because data structure
-                new object[] { "0.200000000000000000000000", 0.000000400752841041379M }, // BUG: Because data structure
                 new object[] { "123 456", 56088M }, // BUG: Framework accepts ' ' as multiplication
             };
 
         [DynamicData(nameof(Interpret_QuirkOutput_WhenCalled_Data))]
         [DataTestMethod]
         public void Interpret_QuirkOutput_WhenCalled(string input, decimal expectedResult)
+        {
+            // Arrange
+            var engine = new CalculateEngine();
+
+            // Act
+            // Using InvariantCulture since this is internal
+            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result.Result);
+        }
+
+        private static IEnumerable<object[]> Interpret_GreaterPrecision_WhenCalled_Data =>
+    new[]
+    {
+                new object[] { "0.100000000000000000000", 0.1M },
+                new object[] { "0.200000000000000000000000", 0.2M },
+    };
+
+        [DynamicData(nameof(Interpret_GreaterPrecision_WhenCalled_Data))]
+        [DataTestMethod]
+        public void Interpret_GreaterPrecision_WhenCalled(string input, decimal expectedResult)
         {
             // Arrange
             var engine = new CalculateEngine();
