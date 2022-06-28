@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
     <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h ImageResizerContextMenu.base.rc ImageResizerContextMenu.rc" />
   </Target>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{93b72a06-c8bd-484f-a6f7-c9f280b150bf}</ProjectGuid>
     <RootNamespace>ImageResizerContextMenu</RootNamespace>
@@ -15,14 +14,12 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -119,9 +116,7 @@ MakeAppx.exe pack /d . /p $(OutDir)ImageResizerContextMenuPackage.msix /nv</Comm
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources.resx">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="Resources.resx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
