@@ -113,6 +113,15 @@
                                VerticalAlignment="Center"
                                Opacity="0.6"
                                Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
+                    <TextBlock Name="ScalingText"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding Scaling}"
+                               Margin="0,0,0,0"
+                               FontSize="9"
+                               FontWeight="Thin"
+                               HorizontalAlignment="Center"
+                               Opacity="0.6"
+                               Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
                 </StackPanel>
             </Border>
 
