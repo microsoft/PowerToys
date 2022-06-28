@@ -1771,7 +1771,7 @@
     <value>Windows search settings</value>
     <comment>Area Cortana</comment>
   </data>
-	<data name="WindowsSecurity" xml:space="preserve">
+  <data name="WindowsSecurity" xml:space="preserve">
     <value>Windows Security</value>
     <comment>Area UpdateAndSecurity</comment>
   </data>
