@@ -677,6 +677,7 @@ globals
 GNumber
 google
 GPTR
+GSM
 gsuberland
 gtm
 gui
@@ -2128,6 +2129,7 @@ Udp
 uefi
 UHash
 UIA
+uid
 Uid
 uint
 uintptr

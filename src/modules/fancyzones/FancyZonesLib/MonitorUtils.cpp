@@ -176,8 +176,8 @@ namespace MonitorUtils
         FancyZonesDataTypes::DeviceId SplitDisplayDeviceId(const std::wstring& str) noexcept
         {
             // format:  \\?\DISPLAY#{device id}#{instance id}#{some other id}
-            // example: \\?\DISPLAY#TLX1388#4&125707d6&0&UID8388688#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}
-            // output:  { TLX1388, 4&125707d6&0&UID8388688 }
+            // example: \\?\DISPLAY#GSM1388#4&125707d6&0&UID8388688#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}
+            // output:  { GSM1388, 4&125707d6&0&UID8388688 }
 
             size_t nameStartPos = str.find_first_of('#');
             size_t uidStartPos = str.find('#', nameStartPos + 1);
@@ -194,8 +194,8 @@ namespace MonitorUtils
         FancyZonesDataTypes::DeviceId ConvertObsoleteDeviceId(const std::wstring& str) noexcept
         {
             // format:  {device id}#{instance id}
-            // example: TLX1388#4&125707d6&0&UID8388688
-            // output:  { TLX1388, 4&125707d6&0&UID8388688 }
+            // example: GSM1388#4&125707d6&0&UID8388688
+            // output:  { GSM1388, 4&125707d6&0&UID8388688 }
 
             size_t dividerPos = str.find_first_of('#');
 
