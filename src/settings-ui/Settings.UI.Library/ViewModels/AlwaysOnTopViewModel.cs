@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
@@ -97,6 +99,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                     Settings.Properties.Hotkey.Value = _hotkey;
                     NotifyPropertyChanged();
+
+                    // Using InvariantCulture as this is an IPC message
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            AlwaysOnTopSettings.ModuleName,
+                            JsonSerializer.Serialize(Settings)));
                 }
             }
         }

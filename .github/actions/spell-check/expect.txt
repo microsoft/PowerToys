@@ -35,6 +35,7 @@ ALarger
 alekhyareddy
 alignas
 ALLAPPS
+ALLINPUT
 Alloc
 ALLOWUNDO
 ALPHATYPE
@@ -191,6 +192,7 @@ buf
 BUFSIZE
 bugreport
 BUILDARCH
+buildtask
 buildtransitive
 Burkina
 Buryatia
@@ -1096,6 +1098,7 @@ LINQTo
 Linux
 listview
 lld
+LLKH
 llkhf
 Llvm
 lmcons

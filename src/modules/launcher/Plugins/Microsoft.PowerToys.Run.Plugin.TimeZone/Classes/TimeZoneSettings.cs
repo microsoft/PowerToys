@@ -86,7 +86,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         {
             var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == name);
 
-            // As a fallback if a setting isn't available, we use the value defined in the method GetAdditionalOptions()
+            // As a fall-back if a setting isn't available, we use the value defined in the method GetAdditionalOptions()
             var settingsValue = option?.Value
                 ?? GetAdditionalOptions().FirstOrDefault(x => x.Key == name)?.Value
                 ?? default;
