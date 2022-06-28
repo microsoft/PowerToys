@@ -298,7 +298,7 @@ public:
         if (!m_hotkey.modifiersMask)
         {
             Logger::info("Mouse Pointer Crosshairs  is going to use default shortcut");
-            m_hotkey.modifiersMask = MOD_CONTROL | MOD_ALT;
+            m_hotkey.modifiersMask = MOD_WIN | MOD_ALT;
             m_hotkey.vkCode = 0x50; // P key
         }
         m_inclusiveCrosshairsSettings = inclusiveCrosshairsSettings;
