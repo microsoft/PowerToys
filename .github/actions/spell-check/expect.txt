@@ -193,6 +193,7 @@ BUFSIZE
 bugreport
 BUILDARCH
 BUILDNUMBER
+buildtask
 buildtransitive
 Burkina
 Buryatia
