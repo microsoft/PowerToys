@@ -165,7 +165,7 @@ steps:
       !**\ref\**
 
 # TODO: Enable these tests after figuring out what caused the tests that depend on WebView2 to start timing out in CI.
-#  **\PreviewPaneUnitTests.dll # UnitTests-MarkdownPreviewHandler
+#  **\PreviewPaneUnitTests.dll # It's UnitTests-MarkdownPreviewHandler
 #  **\UnitTests-SvgThumbnailProvider.dll
 #  **\UnitTests-SvgPreviewHandler.dll
 
