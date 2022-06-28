@@ -147,7 +147,6 @@ steps:
       **\UnitTests-GcodePreviewHandler.dll
       **\UnitTests-PdfPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
-      **\PreviewPaneUnitTests.dll
       **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll
       **\UnitTest-ColorPickerUI.dll
       **\Microsoft.Interop.Tests.dll
@@ -166,8 +165,8 @@ steps:
       !**\ref\**
 
 # TODO: Enable these tests after figuring out what caused the tests that depend on WebView2 to start timing out in CI.
+#  **\PreviewPaneUnitTests.dll # UnitTests-MarkdownPreviewHandler
 #  **\UnitTests-SvgThumbnailProvider.dll
-#  **\UnitTests-MarkdownPreviewHandler.dll
 #  **\UnitTests-SvgPreviewHandler.dll
 
 # Native dlls
