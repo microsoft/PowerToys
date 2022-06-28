@@ -290,13 +290,6 @@
                                                     </controls:Setting.ActionContent>
                                                 </controls:Setting>
 
-                                                <controls:Setting x:Uid="PowerLauncher_PluginWeightBoost" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
-                                                    <controls:Setting.ActionContent>
-                                                        <TextBox Text="{x:Bind Path=WeightBoost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                 MinWidth="{StaticResource SettingActionControlMinWidth}" />
-                                                    </controls:Setting.ActionContent>
-                                                </controls:Setting>
-
                                                 <muxc:InfoBar Severity="Error" x:Uid="Run_NotAccessibleWarning"
                                                               IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                               IsOpen="{x:Bind ShowNotAccessibleWarning}"
@@ -307,19 +300,34 @@
                                                               IsOpen="{x:Bind ShowNotAllowedKeywordWarning}"
                                                               IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                                <CheckBox AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
+                                                
+                                                <StackPanel Orientation="Vertical">
+                                                    <CheckBox AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
                                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
                                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}"
                                                           Margin="56, 0, 40, 16">
-                                                    <StackPanel Orientation="Vertical">
-                                                        <TextBlock x:Name="IncludeInGlobalResultTitle"
+                                                        <StackPanel Orientation="Vertical">
+                                                            <TextBlock x:Name="IncludeInGlobalResultTitle"
                                                                    Margin="0,10,0,0"
                                                                    x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
-                                                        <controls:IsEnabledTextBlock x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
+                                                            <controls:IsEnabledTextBlock x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
                                                                                    FontSize="{StaticResource SecondaryTextFontSize}"
                                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                                    </StackPanel>
-                                                </CheckBox>
+
+                                                        </StackPanel>
+                                                    </CheckBox>
+
+                                                    <controls:Setting x:Uid="PowerLauncher_PluginWeightBoost" 
+                                                                          Style="{StaticResource ExpanderContentSettingStyleTight}" 
+                                                                          IsEnabled="{x:Bind IsGlobal, Mode=OneWay}">
+                                                        <controls:Setting.ActionContent>
+                                                            <TextBox Text="{x:Bind Path=WeightBoost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                 MinWidth="{StaticResource SettingActionControlMinWidth}" />
+                                                        </controls:Setting.ActionContent>
+                                                    </controls:Setting>
+                                                    
+                                                    
+                                                </StackPanel>
 
                                                 <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
                                                           SelectionMode="None"
