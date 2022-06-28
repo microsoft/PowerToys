@@ -5,19 +5,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Reflection;
 using System.Windows;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.Toolkit.Uwp.Notifications;
-using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
 using Windows.UI.Notifications;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
-using Wox.Plugin.Logger;
 
 namespace Wox
 {
@@ -36,7 +32,6 @@ namespace Wox
             _mainVM = mainVM ?? throw new ArgumentNullException(nameof(mainVM));
             _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
             _themeManager.ThemeChanged += OnThemeChanged;
-            WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
 
             ToastNotificationManagerCompat.OnActivated += args =>
             {
