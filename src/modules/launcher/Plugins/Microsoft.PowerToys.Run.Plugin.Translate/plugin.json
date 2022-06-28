@@ -1,0 +1,14 @@
+{
+  "ID": "AC2FAE571E574333B1695652416B58A3",
+  "Disabled": false,
+  "ActionKeyword": "t:",
+  "IsGlobal": false,
+  "Name": "Translate",
+  "Author": "joch",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://aka.ms/powertoys",
+  "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.Translate.dll",
+  "IcoPathDark": "Images\\translate.dark.png",
+  "IcoPathLight": "Images\\translate.light.png"
+}

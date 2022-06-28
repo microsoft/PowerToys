@@ -89,6 +89,8 @@
   <?define WindowWlkrImagesCompFiles=windowwalker.dark.png;windowwalker.light.png;info.dark.png;info.light.png?>
 
   <?define OneNoteComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.OneNote.deps.json;Microsoft.PowerToys.Run.Plugin.OneNote.dll;PowerToys.ManagedTelemetry.dll?>
+  
+  <?define TranslateComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Translate.deps.json;Microsoft.PowerToys.Run.Plugin.Translate.dll;PowerToys.ManagedTelemetry.dll?>
 
   <?define RegistryComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;PowerToys.ManagedTelemetry.dll?>
 
@@ -485,6 +487,10 @@
                 <Directory Id="OneNotePluginFolder" Name="OneNote">
                   <Directory Id="OneNoteImagesFolder" Name="Images" />
                   <Directory Id="OneNoteLanguagesFolder" Name="Languages" />
+                </Directory>
+                <Directory Id="TranslatePluginFolder" Name="Translate">
+                  <Directory Id="TranslateImagesFolder" Name="Images" />
+                  <Directory Id="TranslateLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="RegistryPluginFolder" Name="Registry">
                   <Directory Id="RegistryImagesFolder" Name="Images" />
@@ -1071,7 +1077,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;TranslatePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
     <DirectoryRef Id="$(var.ParentDirectory)">
       <!-- Resource file directories -->
       <?foreach Language in $(var.LocLanguageList)?>
@@ -1356,6 +1362,12 @@
           Guid="$(var.CompGUIDPrefix)19"
           Directory="Resource$(var.IdSafeLanguage)OneNotePluginFolder">
         <File Id="Launcher_OneNote_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\OneNote\$(var.Language)\Microsoft.PowerToys.Run.Plugin.OneNote.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_Translate_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)19"
+          Directory="Resource$(var.IdSafeLanguage)TranslatePluginFolder">
+        <File Id="Launcher_Translate_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Translate\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Translate.resources.dll" />
       </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
@@ -1697,7 +1709,7 @@
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
       <Component Id="launcherInstallComponent" Guid="ab0d0567-1e41-4da4-9934-dcb74b7048a4" Directory="LauncherInstallFolder" >
         <File Source="$(var.BinDir)modules\Launcher\PowerToys.Launcher.dll" />
-                <?foreach File in e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;System.Text.Json.dll;Ijwhost.dll;ScipBe.Common.Office.OneNote.dll;Interop.Microsoft.Office.Interop.OneNote.dll?>
+                <?foreach File in e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;System.Text.Json.dll;Ijwhost.dll;ScipBe.Common.Office.OneNote.dll;GTranslate.dll;Interop.Microsoft.Office.Interop.OneNote.dll?>
         <File Id="File_$(var.File)" Source="$(var.BinDir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinDir)Settings\PowerToys.Settings.UI.Lib.dll" />
@@ -1854,6 +1866,19 @@
       </Component>
       <Component Id="OneNoteImagesComponentDark" Directory="OneNoteImagesFolder" >
         <File Id="OneNoteDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\OneNote\Images\oneNote.dark.png" />
+      </Component>
+
+      <!-- Translate Plugin -->
+      <?foreach File in $(var.TranslateComponentFiles)?>
+      <Component Id="TranslateComp_$(var.File)" Win64="yes" Directory="TranslatePluginFolder">
+        <File Id="TranslateCompFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Translate\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="TranslateImagesComponentLight" Directory="TranslateImagesFolder" >
+        <File Id="TranslateLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\Translate\Images\translate.light.png" />
+      </Component>
+      <Component Id="TranslateImagesComponentDark" Directory="TranslateImagesFolder" >
+        <File Id="TranslateDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\Translate\Images\translate.dark.png" />
       </Component>
 
       <!-- Registry Plugin -->

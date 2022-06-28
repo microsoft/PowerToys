@@ -1454,6 +1454,7 @@ OLEDB
 OLIVEGREEN
 onebranch
 onenote
+translate
 onstd
 oobe
 OOBEPT
