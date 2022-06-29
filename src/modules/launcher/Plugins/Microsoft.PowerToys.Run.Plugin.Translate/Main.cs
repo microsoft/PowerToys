@@ -2,18 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using System.Windows;
 using GTranslate.Results;
 using GTranslate.Translators;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.Translate.Properties;
-using ScipBe.Common.Office.OneNote;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.UI.WindowsAndMessaging;
+using Microsoft.PowerToys.Run.Plugin.Translate.Utils;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -71,6 +66,28 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate
             UpdateIconPath(_context.API.GetCurrentTheme());
         }
 
+        public List<Result> ConvertArrayOfLanguagesToResult(Language[] langs)
+        {
+            var results = new List<Result>();
+
+            foreach (var lang in langs)
+            {
+                results.Add(new Result
+                {
+                    Title = lang.Code,
+                    SubTitle = $"{lang.DisplayName} - {lang.Name}",
+                    IcoPath = _iconPath,
+                    Action = (_) =>
+                    {
+                        Console.WriteLine("Action");
+                        return true;
+                    },
+                });
+            }
+
+            return results;
+        }
+
         /// <summary>
         /// Return a filtered list, based on the given query
         /// </summary>
@@ -78,52 +95,44 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate
         /// <returns>A filtered list, can be empty when nothing was found</returns>
         public List<Result> Query(Query query)
         {
-            if (query is null || string.IsNullOrWhiteSpace(query.Search))
+            var arguments = query?.Search.Split(' ', 2);
+
+            var languageSearch = arguments?[0] ?? string.Empty;
+
+            var langs = LanguageHelper.FindLanguages(languageSearch);
+            var suggestedLangs = ConvertArrayOfLanguagesToResult(langs);
+
+            var targetText = (arguments?.Length > 1 && !string.IsNullOrWhiteSpace(arguments[1])) ? arguments[1] : null;
+            if (langs.Length > 0 && targetText is not null)
             {
-                return new List<Result>(0);
-            }
+                var translation = _translator.TranslateAsync(targetText, langs.First().Code);
+                var completed = translation.Wait(5000);
 
-            var translation = _translator.TranslateAsync(query.Search, "ru");
-            var completed = translation.Wait(5000);
-
-            ITranslationResult? translationResult = null;
-            if (completed)
-            {
-                translationResult = translation.Result;
-            }
-
-            /*var pages = OneNoteProvider.FindPages(query.Search);
-
-            return pages.Select(p => new Result
-            {
-                IcoPath = _iconPath,
-                Title = p.Name,
-                QueryTextDisplay = p.Name,
-                SubTitle = @$"{p.Notebook.Name}\{p.Section.Name}",
-                Action = (_) =>
+                ITranslationResult? translationResult = null;
+                if (completed)
                 {
-                    p.OpenInOneNote();
-                    Console.WriteLine("show");
-                    return true;
-                },
-                ContextData = p,
-                ToolTipData = new ToolTipData(Name, @$"{p.Notebook.Name}\{p.Section.Name}\{p.Name}"),
-            }).ToList();*/
+                    translationResult = translation.Result;
+                }
 
-            var translatedText = translationResult?.Translation ?? Resources.TranslateError;
+                var translatedText = translationResult?.Translation ?? Resources.TranslateError;
 
-            return new List<Result>()
-            {
-                new Result
+                return new List<Result>()
                 {
-                    IcoPath = _iconPath,
-                    Title = translatedText,
-                    QueryTextDisplay = translatedText,
-                    SubTitle = Resources.CopyTranslation,
-                    Action = _ => TryToCopyToClipBoard(translatedText),
-                    ToolTipData = new ToolTipData(Name, translationResult != null ? $"Source: {translationResult.Source};\nInput text: {translationResult.SourceLanguage.Name}" : string.Empty),
-                },
-            };
+                    new Result
+                    {
+                        IcoPath = _iconPath,
+                        Title = translatedText,
+                        QueryTextDisplay = translatedText,
+                        SubTitle = Resources.CopyTranslation,
+                        Action = _ => TryToCopyToClipBoard(translatedText),
+                        ToolTipData = new ToolTipData(Name, translationResult != null ? $"Source: {translationResult.Source};\nInput text: {translationResult.SourceLanguage.Name}" : string.Empty),
+                    },
+                };
+            }
+            else
+            {
+                return suggestedLangs;
+            }
         }
 
         /// <summary>
