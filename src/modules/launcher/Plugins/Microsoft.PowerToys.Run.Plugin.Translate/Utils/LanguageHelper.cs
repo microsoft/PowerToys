@@ -6,6 +6,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate.Utils
 {
     public static class LanguageHelper
     {
+        /// <summary>
+        /// apply filter to list
+        /// </summary>
+        /// <param name="targetList">the list of languages</param>
+        /// <param name="filterText">filter that needs to be applied to this list</param>
+        /// <returns>filtered & sorted list of languages</returns>
         private static IEnumerable<Language> ApplyFilter(this IEnumerable<Language> targetList, string filterText)
         {
             return targetList.Where(x =>
@@ -29,6 +35,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate.Utils
             }).OrderByDescending(c => c.Code.Equals(filterText, StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <summary>
+        /// Find language by text
+        /// </summary>
+        /// <param name="searchText">Search text</param>
+        /// <returns>List of found languages</returns>
         public static Language[] FindLanguages(string searchText = "")
         {
             var languages = LanguageDictionary.GetLanguagesList().AsEnumerable();

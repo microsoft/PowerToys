@@ -6,6 +6,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate.Utils
 {
     public static class LanguageDictionary
     {
+        /// <summary>
+        /// List of languages supported by the Translate plugin.
+        /// </summary>
         private static readonly IDictionary<string, Language> _languages = new Dictionary<string, Language>()
         {
             ["af"] = new Language("Afrikaans", "Afrikaans", "af"),
@@ -119,11 +122,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate.Utils
             ["zu"] = new Language("Zulu", "Isi-Zulu", "zu"),
         };
 
-        public static IDictionary<string, Language> GetLanguages()
-        {
-            return _languages;
-        }
-
+        /// <summary>
+        /// Get languages list
+        /// </summary>
+        /// <returns>List of languages</returns>
         public static ICollection<Language> GetLanguagesList()
         {
             return _languages.Values;

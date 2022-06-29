@@ -66,6 +66,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate
             UpdateIconPath(_context.API.GetCurrentTheme());
         }
 
+        /// <summary>
+        /// sd
+        /// </summary>
+        /// <param name="langs">Array of languages</param>
+        /// <returns>A converted list of 'language' to 'result'</returns>
         public List<Result> ConvertArrayOfLanguagesToResult(Language[] langs)
         {
             var results = new List<Result>();

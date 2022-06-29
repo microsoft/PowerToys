@@ -4,6 +4,9 @@
 
 namespace Microsoft.PowerToys.Run.Plugin.Translate.Utils
 {
+    /// <summary>
+    /// Basic language object
+    /// </summary>
     public class Language
     {
         public string Name { get; set; }
