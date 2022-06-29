@@ -156,6 +156,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
 
                 InvokeOnControlThread(() =>
                 {
+                    Console.Error.WriteLine("DEBUG: This is the available browser version string \"" + CoreWebView2Environment.GetAvailableBrowserVersionString() + "\"");
                     ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                         webView2EnvironmentAwaiter = CoreWebView2Environment
                             .CreateAsync(userDataFolder: _webView2UserDataFolder)
