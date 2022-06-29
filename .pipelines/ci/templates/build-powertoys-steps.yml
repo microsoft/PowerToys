@@ -38,103 +38,106 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for BugReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\BugReportTool\BugReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\BugReportTool\packages'
+      #- task: NuGetCommand@2
+      #  displayName: Restore NuGet packages for BugReportTool.sln
+      #  inputs:
+      #    command: restore
+      #    feedsToUse: config
+      #    configPath: NuGet.config
+      #    restoreSolution: tools\BugReportTool\BugReportTool.sln
+      #    restoreDirectory: '$(Build.SourcesDirectory)\tools\BugReportTool\packages'
+      #
+      #- task: VSBuild@1
+      #  displayName: 'Build BugReportTool.sln'
+      #  inputs:
+      #    solution: '**\BugReportTool.sln'
+      #    vsVersion: 17.0
+      #    platform: '$(BuildPlatform)'
+      #    configuration: '$(BuildConfiguration)'
+      #    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+      #    maximumCpuCount: true
+      #
+      #- task: NuGetCommand@2
+      #  displayName: Restore NuGet packages for WebcamReportTool.sln
+      #  inputs:
+      #    command: restore
+      #    feedsToUse: config
+      #    configPath: NuGet.config
+      #    restoreSolution: tools\WebcamReportTool\WebcamReportTool.sln
+      #    restoreDirectory: '$(Build.SourcesDirectory)\tools\WebcamReportTool\packages'
+      #
+      #- task: VSBuild@1
+      #  displayName: 'Build WebcamReportTool.sln'
+      #  inputs:
+      #    solution: '**\WebcamReportTool.sln'
+      #    vsVersion: 17.0
+      #    platform: '$(BuildPlatform)'
+      #    configuration: '$(BuildConfiguration)'
+      #    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+      #    maximumCpuCount: true
+      #
+      #- task: NuGetCommand@2
+      #  displayName: Restore NuGet packages for StylesReportTool.sln
+      #  inputs:
+      #    command: restore
+      #    feedsToUse: config
+      #    configPath: NuGet.config
+      #    restoreSolution: tools\StylesReportTool\StylesReportTool.sln
+      #    restoreDirectory: '$(Build.SourcesDirectory)\tools\StylesReportTool\packages'
+      #
+      #- task: VSBuild@1
+      #  displayName: 'Build StylesReportTool.sln'
+      #  inputs:
+      #    solution: '**\StylesReportTool.sln'
+      #    vsVersion: 17.0
+      #    platform: '$(BuildPlatform)'
+      #    configuration: '$(BuildConfiguration)'
+      #    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+      #    maximumCpuCount: true
+      #
+      #- task: PowerShell@2
+      #  displayName: Download and install WiX 3.14 development build
+      #  inputs:
+      #    targetType: filePath
+      #    filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
+      #
+      #- task: NuGetCommand@2
+      #  displayName: Restore NuGet packages for PowerToysSetup.sln
+      #  inputs:
+      #    command: restore
+      #    feedsToUse: config
+      #    configPath: NuGet.config
+      #    restoreSolution: installer\PowerToysSetup.sln
+      #    restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
+      #
+      #- task: VSBuild@1
+      #  displayName: 'Build PowerToys MSI'
+      #  inputs:
+      #    solution: '**\installer\PowerToysSetup.sln'
+      #    vsVersion: 17.0
+      #    platform: '$(BuildPlatform)'
+      #    configuration: '$(BuildConfiguration)'
+      #    msbuildArgs: /t:PowerToysInstaller ${{ parameters.additionalBuildArguments }}
+      #    maximumCpuCount: true
+      #
+      #- task: VSBuild@1
+      #  displayName: 'Build PowerToys Bootstrapper'
+      #  inputs:
+      #    solution: '**\installer\PowerToysSetup.sln'
+      #    vsVersion: 17.0
+      #    platform: '$(BuildPlatform)'
+      #    configuration: '$(BuildConfiguration)'
+      #    msbuildArgs: /t:PowerToysBootstrapper ${{ parameters.additionalBuildArguments }}
+      #    clean: false
+      #    maximumCpuCount: true
 
-- task: VSBuild@1
-  displayName: 'Build BugReportTool.sln'
-  inputs:
-    solution: '**\BugReportTool.sln'
-    vsVersion: 17.0
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArgs: ${{ parameters.additionalBuildArguments }}
-    maximumCpuCount: true
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for WebcamReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\WebcamReportTool\WebcamReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\WebcamReportTool\packages'
-
-- task: VSBuild@1
-  displayName: 'Build WebcamReportTool.sln'
-  inputs:
-    solution: '**\WebcamReportTool.sln'
-    vsVersion: 17.0
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArgs: ${{ parameters.additionalBuildArguments }}
-    maximumCpuCount: true
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for StylesReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\StylesReportTool\StylesReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\StylesReportTool\packages'
-
-- task: VSBuild@1
-  displayName: 'Build StylesReportTool.sln'
-  inputs:
-    solution: '**\StylesReportTool.sln'
-    vsVersion: 17.0
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArgs: ${{ parameters.additionalBuildArguments }}
-    maximumCpuCount: true
-
-- task: PowerShell@2
-  displayName: Download and install WiX 3.14 development build
-  inputs:
-    targetType: filePath
-    filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for PowerToysSetup.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: installer\PowerToysSetup.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
-
-- task: VSBuild@1
-  displayName: 'Build PowerToys MSI'
-  inputs:
-    solution: '**\installer\PowerToysSetup.sln'
-    vsVersion: 17.0
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:PowerToysInstaller ${{ parameters.additionalBuildArguments }}
-    maximumCpuCount: true
-
-- task: VSBuild@1
-  displayName: 'Build PowerToys Bootstrapper'
-  inputs:
-    solution: '**\installer\PowerToysSetup.sln'
-    vsVersion: 17.0
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:PowerToysBootstrapper ${{ parameters.additionalBuildArguments }}
-    clean: false
-    maximumCpuCount: true
+- pwsh: 'curl.exe -JLO https://terminalnuget.blob.core.windows.net/packages/wpr2.tar.gz; tar.exe -x -v -f wpr2.tar.gz; .\wpr\wpr.exe -start .\wv2.wprp -filemode'
 
 # directly not doing WinAppDriver testing
 - task: VSTest@2
   displayName: 'MS Tests'
   condition: ne(variables['BuildPlatform'], 'arm64') # No arm64 agents to run the tests.
+  timeoutInMinutes: 10
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
@@ -168,6 +171,14 @@ steps:
 #      **\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests.dll
 #      **\Microsoft.Plugin.WindowsTerminal.UnitTests.dll
 #      **\Microsoft.Plugin.WindowWalker.UnitTests.dll
+
+# just in case.
+- script: .\wpr\wpr.exe -stop webview2.etl
+  condition: always()
+
+- publish: webview2.etl
+  condition: always()
+  artifact: webview-traces
 
 # Native dlls
 - task: VSTest@2

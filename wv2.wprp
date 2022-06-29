@@ -1,0 +1,239 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0" Comments="Test" Company="Microsoft Corporation" Copyright="Microsoft Corporation">
+  <Profiles>
+    <SystemProvider Id="SystemProvider_Light" Base="SystemProvider_Base">
+      <Keywords>
+        <!-- CPU -->
+        <Keyword Value="ProcessThread"/>
+        <Keyword Value="Loader"/>
+        <Keyword Value="Power"/>
+        <Keyword Value="CSwitch"/>
+        <Keyword Value="ReadyThread"/>
+        <Keyword Value="SampledProfile"/>
+        <Keyword Value="DPC"/>
+        <Keyword Value="Interrupt"/>
+        <Keyword Value="IdleStates"/>
+
+        <!-- Disk -->
+        <Keyword Value="DiskIO"/>
+        <Keyword Value="FileIO"/>
+        <Keyword Value="HardFaults"/>
+
+        <!-- Memory -->
+        <Keyword Value="MemoryInfo"/>
+        <Keyword Value="MemoryInfoWS"/>
+      </Keywords>
+      <Stacks>
+        <Stack Value="CSwitch"/>
+        <Stack Value="ReadyThread"/>
+      </Stacks>
+    </SystemProvider>
+    <EventProvider Id="Microsoft.Windows.AppLifeCycle.UI" Name="ee97cdc4-b095-5c70-6e37-a541eb74c2b5"/>
+    <EventProvider Id="EventProvider-Microsoft-Windows-XAML" Name="531a35ab-63ce-4bcf-aa98-f88c7a89e455" />
+    <EventProvider Id="EventProvider-Microsoft_Windows_ForegroundManager" Name="AA6F6A10-8A13-417D-8799-52361684BD76" />
+    <EventProvider Id="EventProvider-Microsoft_Windows_ActivationManager" Name="cf7f94b3-08dc-5257-422f-497d7dc86ab3" />
+    <EventProvider Id="EventProvider-Microsoft_Windows_AppModel_Exec" Name="eb65a492-86c0-406a-bace-9912d595bd69" />
+    <EventProvider Id="EventProvider-Microsoft-Windows-ProcessLifetimeManager" Name="072665fb-8953-5a85-931d-d06aeab3d109" />
+    <EventProvider Id="EventProvider-Microsoft-Windows-CoreUIComponents" Name="a0b7550f-4e9a-4f03-ad41-b8042d06a2f7"/>
+    <EventProvider Id="EventProvider-Microsoft-Windows-CoreWindow" Name="A3D95055-34CC-4E4A-B99F-EC88F5370495"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.Desktop.Shell.ViewManagerInterop" Name="15322370-3694-59f5-f979-0c7a918b81da"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.Shell.SingleViewExperience" Name="2ca51213-29c5-564f-fd60-355148e8b47f"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.Shell.ExperienceHost" Name="53e167d9-e368-4150-9563-4ed25700ccc7"/>
+    <EventProvider Id="EventProvider-Microsoft-Windows-WindowsErrorReporting" Name="cc79cf77-70d9-4082-9b52-23f3a3e92fe4"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.FaultReportingTracingGuid" Name="1377561D-9312-452C-AD13-C4A1C9C906E0"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.ErrorHandling.Fallback" Name="bf4c9654-66d1-5720-7b51-d2ae226735ea"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.ShellExperienceDispatcher" Name="273c19b2-6643-5a58-6288-c336d3688b8d"/>
+    <EventProvider Id="EventProvider-Microsoft-Windows-Immersive-Shell" Name="Microsoft-Windows-Immersive-Shell">
+      <Keywords>
+        <Keyword Value="0xFFFFFFFFFFFFFFFF"/>
+      </Keywords>
+    </EventProvider>
+    <EventProvider Id="EventProvider-Microsoft.Windows.ResourceManager" Name="4180c4f7-e238-5519-338f-ec214f0b49aa">
+      <CaptureStateOnSave>
+        <Keyword Value="0xFFFFFFFFFFFFFF"/>
+      </CaptureStateOnSave>
+    </EventProvider>
+    <EventProvider Id="EventProvider-Microsoft.Windows.HostActivityManager" Name="f6a774e5-2fc7-5151-6220-e514f1f387b6">
+      <CaptureStateOnSave>
+        <Keyword Value="0xFFFFFFFFFFFFFF"/>
+      </CaptureStateOnSave>
+    </EventProvider>
+    <EventProvider Id="EventProvider-Microsoft.Windows.BackgroundManager" Name="1941f2b9-0939-5d15-d529-cd333c8fed83" />
+    <EventProvider Id="EventProvider-Microsoft.Windows.BrokerInfrastructure" Name="63b6c2d2-0440-44de-a674-aa51a251b123" />
+    <EventProvider Id="EventProvider-Microsoft-Windows-ProcessStateManager" Name="D49918CF-9489-4BF1-9D7B-014D864CF71F" />
+    <EventProvider Id="EventProvider-Microsoft.Windows.ProcessStateManager" Name="0001376b-930d-50cd-2b29-491ca938cd54" />
+    <EventProvider Id="EventProvider-Microsoft-Windows-AppModel-Exec" Name="EB65A492-86C0-406A-BACE-9912D595BD69" />
+    <EventProvider Id="EventProvider-Microsoft-WindowsPhone-CoreUIComponents" Name="a0b7550f-4e9a-4f03-ad41-b8042d06a2f7">
+      <!-- N.B. The high-order 4 bytes are explicitly omitted because they cause chatty and low value events. -->
+      <Keywords>
+        <Keyword Value="0xffffffff"/>
+      </Keywords>
+    </EventProvider>
+    <EventProvider Id="EventProvider-Microsoft.Windows.AppLifeCycle" Name="EF00584A-2655-462C-BC24-E7DE630E7FBF" />
+    <EventProvider Id="EventProvider-Microsoft.Windows.ResourcePolicy" Name="969e8d6b-df02-56e3-a058-ec3bef103534" />
+    <EventProvider Id="EventProvider-CombaseTraceLoggingProvider" Name="1aff6089-e863-4d36-bdfd-3581f07440be" />
+    <EventProvider Id="EventProvider-Microsoft.Windows.AppModel.Tiles" Name="98CCAAD9-6464-48D7-9A66-C13718226668"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.StateRepository" Name="89592015-D996-4636-8F61-066B5D4DD739"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.StateRepository.Common" Name="1ded4f74-5def-425d-ae55-4fd4e9bbe0a7"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.StateRepository.Client" Name="a89336e8-e6cf-485c-9c6a-ddb6614f278a"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.StateRepository.Broker" Name="312326fa-036d-4888-bc77-c3de2ff9ae06"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.StateRepository.Service" Name="551ff9b3-0b7e-4408-b008-0068c8da2ff1"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.StateRepository.Tools" Name="7237c668-b9a2-4fbd-9987-87d4502b9e00"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.StateRepository.Upgrade" Name="80a49605-87cb-4480-be97-d6ccb3dde5f2"/>
+    <EventProvider Id="EventProvider-Microsoft-Windows-AppXDeployment" Name="8127F6D4-59F9-4abf-8952-3E3A02073D5F"/>
+    <EventProvider Id="EventProvider-Microsoft.Windows.AppXDeployment.Server" Name="3F471139-ACB7-4A01-B7A7-FF5DA4BA2D43"/>
+    <EventProvider Id="EventProvider-Microsoft-Windows-AppModel-Runtime" Name="F1EF270A-0D32-4352-BA52-DBAB41E1D859"/>
+    <EventProvider Id="Microsoft-Windows-TwinAPI-Events" Name="5f0e257f-c224-43e5-9555-2adcb8540a58" />
+    <EventProvider Id="EventProvider-Microsoft.Windows.CoreApplication" Level="5" Name="a9da4dcc-e78e-5ce7-4078-411a9928f082"/>
+    <EventProvider Id="EventProvider-Microsoft-Windows-ComposableShell-CoreShell" Name="48DCC4B8-1A33-4625-B042-95CE02602863" Level="5" />
+    <EventProvider Id="EventProvider-Microsoft-Windows-ComposableShell-Framework-Composer" Name="CC459D2F-F4BD-4E6C-901E-08BEA752A7D3" Level="5" />
+    <EventProvider Id="EventProvider-Microsoft-Windows-ComposableShell-Components-Viewhosting" Name="8a562815-f309-41ff-a52c-ec0764f8daee" Level="5" />
+    <EventProvider Id="Microsoft.Windows.Start.SharedStartModel.Cache" Name="66FEB609-F4B6-4224-BF13-121F8A4829B4"/>
+    <EventProvider Id="EventProvider_Microsoft-Web-Platform" Name="ff32ada1-5a4b-583c-889e-a3c027b201f5"/>
+    <EventProvider Id="EventProvider_Microsoft-JScript" Name="57277741-3638-4A4B-BDBA-0AC6E45DA56C"/>
+    <EventProvider Id="EventProvider_Microsoft.Windows.ComposableShell.Products.ModernUX" Name="614a8b00-6e01-4881-bbd8-521214aba0a3"/>
+    <EventProvider Id="EventProvider_WindowsInternal.ComposableShell.Composers.ModernUXComposer" Name="8F55AE14-9A05-40C6-8340-ECEC3601457E"/>
+
+    <!-- Render perf providers -->
+    <EventProvider Id="EventProvider-Microsoft-Windows-Dwm-Core" Name="Microsoft-Windows-Dwm-Core" />
+    <EventProvider Id="EventProvider-Microsoft-Windows-DxgKrnl" Name="Microsoft-Windows-DxgKrnl" NonPagedMemory="true" Level="5">
+      <Keywords>
+        <Keyword Value="0x45"/>
+      </Keywords>
+      <CaptureStateOnSave>
+        <Keyword Value="0x45"/>
+      </CaptureStateOnSave>
+    </EventProvider>
+    <EventProvider Id="EventProvider-Microsoft-Windows-Win32k" Name="Microsoft-Windows-Win32k" />
+
+    <!-- Power providers -->
+    <EventProvider Id="EventProvider_Microsoft-Windows-Kernel-Power" Name="Microsoft-Windows-Kernel-Power" NonPagedMemory="true" Level="6">
+      <Keywords>
+        <Keyword Value="0xFFFFFFFF"/>
+      </Keywords>
+      <CaptureStateOnSave>
+        <Keyword Value="0xFFFFFFFF"/>
+      </CaptureStateOnSave>
+    </EventProvider>
+    <EventProvider Id="EventProvider_Microsoft-Windows-Kernel-Processor-Power" Name="Microsoft-Windows-Kernel-Processor-Power" NonPagedMemory="true" Level="6">
+      <Keywords>
+        <Keyword Value="0xFFFFFFFF"/>
+      </Keywords>
+      <CaptureStateOnSave>
+        <Keyword Value="0xFFFFFFFF"/>
+      </CaptureStateOnSave>
+    </EventProvider>
+    <EventProvider Id="Microsoft.Windows.Dashboard" Level="0" Name="87ba0ea5-fe69-5002-9a52-849c32319a2b" NonPagedMemory="true" EventKey="true">
+      <Keywords>
+        <Keyword Value="0xFFFFFFFFFFFFFFFF" />
+      </Keywords>
+    </EventProvider>
+    <EventProvider Id="Microsoft.Windows.Shell.Feeds" Name="340F4F05-4323-4107-A062-DF977AC7E5D8"/>
+
+   <EventProvider Id="EventProvider_Microsoft-Windows-Kernel-Process_16_0_68_1_0_0" Name="22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716" NonPagedMemory="true" Level="0" EventKey="true">
+      <Keywords>
+        <Keyword Value="0x190" />
+      </Keywords>
+    </EventProvider>
+    <EventProvider Id="EventProvider_Microsoft-Windows-Win32k_2531328_0_4491_0_0_0" Name="8c416c79-d49b-4f01-a467-e56d3aa8234c" NonPagedMemory="true" Level="0" EventKey="true">
+      <Keywords>
+        <Keyword Value="0x26A000" />
+      </Keywords>
+    </EventProvider>
+    <EventProvider Id="Chrome" Name="d2d578d9-2936-45b6-a09f-30e32715f42d" Level="5">
+       <Keywords>
+         <Keyword Value="0x10000000202F"/>
+       </Keywords>
+    </EventProvider>
+    <EventProvider Id="Edge" Name="3A5F2396-5C8F-4F1F-9B67-6CCA6C990E61" Level="5">
+       <Keywords>
+         <Keyword Value="0x10000000202F"/>
+       </Keywords>
+    </EventProvider>
+    <EventProvider Id="Edge_Canary" Name="C56B8664-45C5-4E65-B3C7-A8D6BD3F2E67" Level="5">
+       <Keywords>
+         <Keyword Value="0x3F0000054404"/>
+       </Keywords>
+    </EventProvider>
+    <EventProvider Id="Edge_Dev" Name="D30B5C9F-B58F-4DC9-AFAF-134405D72107" Level="5">
+       <Keywords>
+         <Keyword Value="0x3F0000054404"/>
+       </Keywords>
+    </EventProvider>
+    <EventProvider Id="Edge_Beta" Name="BD089BAA-4E52-4794-A887-9E96868570D2" Level="5">
+       <Keywords>
+         <Keyword Value="0x3F0000054404"/>
+       </Keywords>
+    </EventProvider>
+    <EventProvider Id="Edge_Internal" Name="49C85E08-E8A5-49D6-81EA-7270531EC8AF" Level="5">
+       <Keywords>
+         <Keyword Value="0x3F0000054404"/>
+       </Keywords>
+    </EventProvider>
+    <EventProvider Id="Edge_WebView" Name="E16EC3D2-BB0F-4E8F-BDB8-DE0BEA82DC3D" Level="5">
+       <Keywords>
+         <Keyword Value="0x3F0000054404"/>
+       </Keywords>
+    </EventProvider>
+
+
+    <Profile Id="Edge.WebView2.General.EventsOnly.Verbose.File" Name="Edge.WebView2.General.EventsOnly" LoggingMode="File" DetailLevel="Verbose" Description="Edge.WebView2.General.EventsOnly" Default="true">
+      <Collectors Operation="Add">
+        <SystemCollectorId Value="SystemCollector_WPRSystemCollectorInFile">
+          <BufferSize Value="1024"/>
+          <Buffers Value="100"/>
+          <SystemProviderId Value="SystemProvider_Light" />
+        </SystemCollectorId>
+        <EventCollectorId Value="EventCollector_WPREventCollectorInFile">
+          <BufferSize Value="1024" />
+          <Buffers Value="3" PercentageOfTotalMemory="true"/>
+          <EventProviders Operation="Add">
+            <EventProviderId Value="Microsoft.Windows.AppLifeCycle.UI"/>
+            <EventProviderId Value="EventProvider-Microsoft-Windows-XAML"/>
+            <EventProviderId Value="EventProvider-Microsoft_Windows_ForegroundManager"/>
+            <EventProviderId Value="EventProvider-Microsoft_Windows_ActivationManager"/>
+            <EventProviderId Value="EventProvider-Microsoft_Windows_AppModel_Exec"/>
+            <EventProviderId Value="EventProvider-Microsoft-Windows-ProcessLifetimeManager"/>
+            <EventProviderId Value="EventProvider-Microsoft-Windows-CoreUIComponents"/>
+            <EventProviderId Value="EventProvider-Microsoft-Windows-CoreWindow"/>
+            <EventProviderId Value="EventProvider-Microsoft-Windows-WindowsErrorReporting"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.FaultReportingTracingGuid"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.ErrorHandling.Fallback"/>
+            <EventProviderId Value="EventProvider-Microsoft-Windows-Immersive-Shell"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.ResourceManager"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.HostActivityManager"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.BackgroundManager"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.BrokerInfrastructure"/>
+            <EventProviderId Value="EventProvider-Microsoft-Windows-ProcessStateManager"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.ProcessStateManager"/>
+            <EventProviderId Value="EventProvider-Microsoft-Windows-AppModel-Exec"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.AppLifeCycle"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.ResourcePolicy"/>
+            <EventProviderId Value="EventProvider-CombaseTraceLoggingProvider"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.AppModel.Tiles"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.StateRepository"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.StateRepository.Common"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.StateRepository.Client"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.StateRepository.Broker"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.StateRepository.Service"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.StateRepository.Tools"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.StateRepository.Upgrade"/>
+            <EventProviderId Value="EventProvider-Microsoft-Windows-AppModel-Runtime"/>
+            <EventProviderId Value="Microsoft-Windows-TwinAPI-Events"/>
+            <EventProviderId Value="EventProvider-Microsoft.Windows.CoreApplication"/>
+	    <EventProviderId Value="Microsoft.Windows.Dashboard"/>
+	    <EventProviderId Value="Microsoft.Windows.Shell.Feeds"/>
+	    <EventProviderId Value="EventProvider_Microsoft-Windows-Kernel-Process_16_0_68_1_0_0" />
+	    <EventProviderId Value="EventProvider_Microsoft-Windows-Win32k_2531328_0_4491_0_0_0" />
+            <EventProviderId Value="Edge" />
+            <EventProviderId Value="Edge_Canary" />
+            <EventProviderId Value="Edge_Dev" />
+            <EventProviderId Value="Edge_Beta" />
+            <EventProviderId Value="Edge_WebView" />
+            <EventProviderId Value="Edge_Internal" />
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+   </Profiles>
+</WindowsPerformanceRecorder>
