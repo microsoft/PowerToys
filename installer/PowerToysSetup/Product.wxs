@@ -90,6 +90,8 @@
 
   <?define OneNoteComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.OneNote.deps.json;Microsoft.PowerToys.Run.Plugin.OneNote.dll;PowerToys.ManagedTelemetry.dll?>
 
+  <?define TranslateComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Translate.deps.json;Microsoft.PowerToys.Run.Plugin.Translate.dll;PowerToys.ManagedTelemetry.dll?>
+
   <?define RegistryComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;PowerToys.ManagedTelemetry.dll?>
 
   <?define ServiceComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Service.deps.json;Microsoft.PowerToys.Run.Plugin.Service.dll?>
@@ -485,6 +487,10 @@
                 <Directory Id="OneNotePluginFolder" Name="OneNote">
                   <Directory Id="OneNoteImagesFolder" Name="Images" />
                   <Directory Id="OneNoteLanguagesFolder" Name="Languages" />
+                </Directory>
+                <Directory Id="TranslatePluginFolder" Name="Translate">
+                  <Directory Id="TranslateImagesFolder" Name="Images" />
+                  <Directory Id="TranslateLanguagesFolder" Name="Languages" />
                 </Directory>
                 <Directory Id="RegistryPluginFolder" Name="Registry">
                   <Directory Id="RegistryImagesFolder" Name="Images" />
@@ -1357,6 +1363,12 @@
           Directory="Resource$(var.IdSafeLanguage)OneNotePluginFolder">
         <File Id="Launcher_OneNote_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\OneNote\$(var.Language)\Microsoft.PowerToys.Run.Plugin.OneNote.resources.dll" />
       </Component>
+      <Component
+          Id="Launcher_Translate_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)19"
+          Directory="Resource$(var.IdSafeLanguage)TranslatePluginFolder">
+        <File Id="Launcher_Translate_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Translate\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Translate.resources.dll" />
+      </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>
@@ -1854,6 +1866,19 @@
       </Component>
       <Component Id="OneNoteImagesComponentDark" Directory="OneNoteImagesFolder" >
         <File Id="OneNoteDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\OneNote\Images\oneNote.dark.png" />
+      </Component>
+
+      <!-- Translate Plugin -->
+      <?foreach File in $(var.TranslateComponentFiles)?>
+      <Component Id="TranslateComp_$(var.File)" Win64="yes" Directory="TranslatePluginFolder">
+        <File Id="TranslateCompFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Translate\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="TranslateImagesComponentLight" Directory="TranslateImagesFolder" >
+        <File Id="TranslateLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\Translate\Images\translate.light.png" />
+      </Component>
+      <Component Id="TranslateImagesComponentDark" Directory="TranslateImagesFolder" >
+        <File Id="TranslateDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\Translate\Images\translate.dark.png" />
       </Component>
 
       <!-- Registry Plugin -->
