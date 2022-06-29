@@ -6,6 +6,7 @@
 
 #include <FrameDrawer.h>
 #include <Settings.h>
+#include <WindowCornersUtil.h>
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -187,7 +188,8 @@ void WindowBorder::UpdateBorderProperties() const
         color = AlwaysOnTopSettings::settings().frameColor;
     }
 
-    m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness);
+    const int cornerRadius = WindowBordersUtils::AreCornersRounded(m_trackingWindow) ? 8 : 0;
+    m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness, cornerRadius);
 }
 
 LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept

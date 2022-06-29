@@ -136,6 +136,7 @@
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="VirtualDesktopUtils.cpp" />
     <ClCompile Include="WindowBorder.cpp" />
+    <ClCompile Include="WindowCornersUtil.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -150,6 +151,7 @@
     <ClInclude Include="trace.h" />
     <ClInclude Include="VirtualDesktopUtils.h" />
     <ClInclude Include="WindowBorder.h" />
+    <ClInclude Include="WindowCornersUtil.h" />
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>
