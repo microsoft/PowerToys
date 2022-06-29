@@ -50,8 +50,6 @@
         </BootstrapperApplicationRef>
 
         <util:FileSearch Variable="HasDotnet605" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\6.0.5\System.Xaml.dll" Result="exists" />
-        <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
-        <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
         <Variable Name="InstallFolder" Type="string" Value="$(var.PlatformProgramFiles)PowerToys" bal:Overridable="yes"/>
 
@@ -90,18 +88,6 @@
                     Size="$(var.Dotnet6PayloadSize)"
                     Version="6.0.5.31215"
                     Hash="$(var.Dotnet6PayloadHash)" />
-            </ExePackage>
-            <ExePackage
-                Name="MicrosoftEdgeWebview2Setup.exe"
-                Compressed="yes"
-                Id="WebView2"
-                DetectCondition="HasWebView2PerMachine OR HasWebView2PerUser"
-                SourceFile="WebView2\MicrosoftEdgeWebview2Setup.exe"
-                InstallCommand="/silent /install"
-                RepairCommand="/repair /passive"
-                Permanent="yes"
-                PerMachine="yes"
-                UninstallCommand="/silent /uninstall">
             </ExePackage>
             <ExePackage
                 Name="VCRedist-14.32.31332.exe"
