@@ -288,11 +288,15 @@ namespace winrt::PowerRenameUI::implementation
     void MainWindow::RegExItemClick(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e)
     {
         auto s = e.ClickedItem().try_as<PatternSnippet>();
+        RegExFlyout().Hide();
+        textBox_search().Text(textBox_search().Text() + s->Code());
     }
 
     void MainWindow::DateTimeItemClick(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e)
     {
         auto s = e.ClickedItem().try_as<PatternSnippet>();
+        DateTimeFlyout().Hide();
+        textBox_replace().Text(textBox_replace().Text() + s->Code());
     }
 
     void MainWindow::button_rename_Click(winrt::Microsoft::UI::Xaml::Controls::SplitButton const&, winrt::Microsoft::UI::Xaml::Controls::SplitButtonClickEventArgs const&)

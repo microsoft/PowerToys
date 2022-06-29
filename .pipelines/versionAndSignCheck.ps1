@@ -7,7 +7,7 @@ Param(
 )
 
 $DirPath = $targetDir;  #this file is in pipeline, we need root.
-$items = Get-ChildItem -Path $DirPath -File -Include *.exe,*.dll,*.ttf -Recurse -Force -ErrorAction SilentlyContinue
+$items = Get-ChildItem -Path $DirPath -File -Include *.exe,*.dll,*.ttf,PTCustomActions -Recurse -Force -ErrorAction SilentlyContinue
 $totalFailure = 0;
 
 Write-Host $DirPath;

@@ -35,6 +35,7 @@ ALarger
 alekhyareddy
 alignas
 ALLAPPS
+ALLINPUT
 Alloc
 ALLOWUNDO
 ALPHATYPE
@@ -189,6 +190,8 @@ Bto
 buf
 BUFSIZE
 bugreport
+BUILDARCH
+buildtask
 buildtransitive
 Burkina
 Buryatia
@@ -606,6 +609,7 @@ Filterx
 finalizer
 findfast
 findstr
+Firefox
 FIXEDFILEINFO
 FLASHZONES
 FLASHZONESONQUICKSWITCH
@@ -868,6 +872,7 @@ Infotip
 ingbuffer
 inheritdoc
 initguid
+Inkscape
 Inlines
 inorder
 INotification
@@ -1072,6 +1077,7 @@ LINQTo
 Linux
 listview
 lld
+LLKH
 llkhf
 Llvm
 lmcons
