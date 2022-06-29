@@ -154,6 +154,7 @@
       "Name": "WindowsSearch",
       "Areas": [ "AreaCortana" ],
       "Type": "AppSettingsApp",
+      "AltNames": [ "WindowsSearchSettings" ],
       "Command": "ms-settings:cortana-windowssearch"
     },
     {
