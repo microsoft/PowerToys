@@ -929,6 +929,7 @@ IObservable
 IOle
 iolewindowcontextsensitivehelp
 iomanip
+IOne
 iostream
 IPackage
 IPath
