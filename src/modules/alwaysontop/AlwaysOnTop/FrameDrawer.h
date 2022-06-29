@@ -33,7 +33,7 @@ private:
     static ID2D1Factory* GetD2DFactory();
     static IDWriteFactory* GetWriteFactory();
     static D2D1_COLOR_F ConvertColor(COLORREF color);
-    static D2D1_ROUNDED_RECT ConvertRect(RECT rect, int radius);
+    static D2D1_ROUNDED_RECT ConvertRect(RECT rect, int thickness, int radius);
     void Render();
 
     HWND m_window = nullptr;

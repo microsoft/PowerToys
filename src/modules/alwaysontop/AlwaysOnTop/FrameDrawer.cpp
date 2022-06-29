@@ -89,9 +89,9 @@ void FrameDrawer::Show()
 void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, int thickness, int radius)
 {
     const auto newSceneRect = DrawableRect{
-        .rect = ConvertRect(windowRect, radius),
+        .rect = ConvertRect(windowRect, thickness, radius),
         .borderColor = ConvertColor(color),
-        .thickness = thickness
+        .thickness = thickness,
     };
 
     const bool colorUpdated = std::memcmp(&m_sceneRect.borderColor, &newSceneRect.borderColor, sizeof(newSceneRect.borderColor));
@@ -170,26 +170,26 @@ D2D1_COLOR_F FrameDrawer::ConvertColor(COLORREF color)
                         1.f);
 }
 
-D2D1_ROUNDED_RECT FrameDrawer::ConvertRect(RECT rect, int radius)
+D2D1_ROUNDED_RECT FrameDrawer::ConvertRect(RECT rect, int thickness, int radius)
 {
-    auto d2d1Rect = D2D1::RectF((float)rect.left, (float)rect.top, (float)rect.right, (float)rect.bottom);
+    auto diff = std::round(thickness / 2.f);
+    auto d2d1Rect = D2D1::RectF((float)rect.left + thickness, (float)rect.top + thickness, (float)rect.right - thickness, (float)rect.bottom - thickness);
     return D2D1::RoundedRect(d2d1Rect, (float)radius, (float)radius);
 }
 
 void FrameDrawer::Render()
 {
-    if (!m_renderTarget)
+    if (!m_renderTarget || !m_borderBrush)
+    {
         return;
+    }
 
     m_renderTarget->BeginDraw();
 
     m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
 
-    if (m_borderBrush)
-    {
-        // The border stroke is centered on the line.
-        m_renderTarget->DrawRoundedRectangle(m_sceneRect.rect, m_borderBrush.get(), static_cast<float>(m_sceneRect.thickness * 2));
-    }
+    // The border stroke is centered on the line.
+    m_renderTarget->DrawRoundedRectangle(m_sceneRect.rect, m_borderBrush.get(), static_cast<float>(m_sceneRect.thickness * 2));
 
     m_renderTarget->EndDraw();
 }
