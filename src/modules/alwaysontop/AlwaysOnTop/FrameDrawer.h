@@ -18,14 +18,14 @@ public:
 
     void Show();
     void Hide();
-    void SetBorderRect(RECT windowRect, COLORREF color, int thickness);
+    void SetBorderRect(RECT windowRect, COLORREF color, int thickness, int radius);
 
 private:
     bool CreateRenderTargets(const RECT& clientRect);
 
     struct DrawableRect
     {
-        D2D1_RECT_F rect;
+        D2D1_ROUNDED_RECT rect;
         D2D1_COLOR_F borderColor;
         int thickness;
     };
@@ -33,7 +33,7 @@ private:
     static ID2D1Factory* GetD2DFactory();
     static IDWriteFactory* GetWriteFactory();
     static D2D1_COLOR_F ConvertColor(COLORREF color);
-    static D2D1_RECT_F ConvertRect(RECT rect);
+    static D2D1_ROUNDED_RECT ConvertRect(RECT rect, int radius);
     void Render();
 
     HWND m_window = nullptr;
