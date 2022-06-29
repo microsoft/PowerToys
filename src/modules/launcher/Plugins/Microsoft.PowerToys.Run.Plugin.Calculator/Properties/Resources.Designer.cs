@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ignores your system setting and expects numbers in the format &apos;1,000.50&apos;.
+        ///   Looks up a localized string similar to Ignores your system setting and expects numbers in the format &apos;{0}&apos;..
         /// </summary>
         public static string wox_plugin_calculator_in_en_format_description {
             get {
@@ -151,7 +151,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ignores your system setting and returns numbers in the format &apos;1000.50&apos;.
+        ///   Looks up a localized string similar to Ignores your system setting and returns numbers in the format &apos;{0}&apos;..
         /// </summary>
         public static string wox_plugin_calculator_out_en_format_description {
             get {

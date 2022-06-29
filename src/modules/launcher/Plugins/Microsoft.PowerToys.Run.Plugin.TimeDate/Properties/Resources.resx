@@ -198,8 +198,17 @@
     <comment>'UTC' means here 'Universal Time Convention'</comment>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_description" xml:space="preserve">
-    <value>Provides time and date values for the system time or a custom time stamp (Examples: 'day', 'day::{0}', 'time::{1}', 'calendar week::{0}')</value>
-    <comment>The character sequence '::' is a fixed delimiter in plugin code. Do not translate the placeholders '{0}' and '{1}' because it will be replaced in code.</comment>
+    <value>Provides time and date values for the system time or a custom time stamp (Examples: '{0}', '{1}', '{2}', '{3}')</value>
+    <comment>Do not translate the placeholders like '{0}' because it will be replaced in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description_example_calendarWeek" xml:space="preserve">
+    <value>Calendar week</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description_example_day" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description_example_time" xml:space="preserve">
+    <value>Time</value>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_name" xml:space="preserve">
     <value>Time and Date</value>
