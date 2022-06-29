@@ -10,6 +10,7 @@
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/HDropIterator.h>
+#include <common/utils/package.h>
 
 extern HINSTANCE g_hInst_imageResizer;
 
@@ -62,6 +63,9 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
 
 HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags)
 {
+    if (package::IsWin11OrGreater())
+        return E_FAIL;
+
     if (uFlags & CMF_DEFAULTONLY)
     {
         return S_OK;

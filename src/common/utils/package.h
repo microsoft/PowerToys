@@ -12,7 +12,7 @@
 #include "../logger/logger.h"
 
 namespace package {
-    BOOL IsWin11OrGreater()
+    inline BOOL IsWin11OrGreater()
     {
         OSVERSIONINFOEX osvi{};
         DWORDLONG dwlConditionMask = 0;
@@ -37,7 +37,7 @@ namespace package {
             dwlConditionMask);
     }
 
-    bool IsPackageRegistered(std::wstring packageDisplayName)
+    inline bool IsPackageRegistered(std::wstring packageDisplayName)
     {
         using namespace winrt::Windows::Foundation;
         using namespace winrt::Windows::Management::Deployment;
@@ -57,7 +57,7 @@ namespace package {
         return false;
     }
 
-    bool RegisterSparsePackage(std::wstring externalLocation, std::wstring sparsePkgPath)
+    inline bool RegisterSparsePackage(std::wstring externalLocation, std::wstring sparsePkgPath)
     {
         using namespace winrt::Windows::Foundation;
         using namespace winrt::Windows::Management::Deployment;
