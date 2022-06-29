@@ -85,9 +85,13 @@ namespace FancyZonesEditor.Utils
 
             public int TopCoordinate { get; set; }
 
-            public int Width { get; set; }
+            public int WorkAreaWidth { get; set; }
 
-            public int Height { get; set; }
+            public int WorkAreaHeight { get; set; }
+
+            public int MonitorWidth { get; set; }
+
+            public int MonitorHeight { get; set; }
 
             public bool IsSelected { get; set; }
 
@@ -107,6 +111,11 @@ namespace FancyZonesEditor.Utils
                 sb.AppendLine(LeftCoordinate.ToString(CultureInfo.InvariantCulture));
                 sb.Append("Y: ");
                 sb.AppendLine(TopCoordinate.ToString(CultureInfo.InvariantCulture));
+
+                sb.Append("Width: ");
+                sb.AppendLine(MonitorWidth.ToString(CultureInfo.InvariantCulture));
+                sb.Append("Height: ");
+                sb.AppendLine(MonitorHeight.ToString(CultureInfo.InvariantCulture));
 
                 return sb.ToString();
             }
@@ -278,179 +287,6 @@ namespace FancyZonesEditor.Utils
             FancyZonesEditorParamsFile = localAppDataDir + ParamsFile;
         }
 
-        // All strings in this function shouldn't be localized.
-        public static void ParseCommandLineArguments()
-        {
-            Logger.LogTrace();
-
-            string[] args = Environment.GetCommandLineArgs();
-
-            if (args.Length < 2 && !App.DebugMode)
-            {
-                MessageBox.Show(Properties.Resources.Error_Not_Standalone_App, Properties.Resources.Error_Message_Box_Title);
-                ((App)Application.Current).Shutdown();
-            }
-
-            try
-            {
-                /*
-                * Divider: /
-                * Parts:
-                * (1) Process id
-                * (2) Span zones across monitors
-                * (3) Monitor id where the Editor should be opened
-                * (4) Monitors count
-                *
-                * Data for each monitor:
-                * (5) Monitor id
-                * (6) DPI
-                * (7) work area left
-                * (8) work area top
-                * (9) work area width
-                * (10) work area height
-                * ...
-                * Using CultureInfo.InvariantCulture since this is us parsing our own data
-                */
-                var argsParts = args[1].Split('/');
-
-                // Process ID
-                App.PowerToysPID = int.Parse(argsParts[(int)CmdArgs.PowerToysPID], CultureInfo.InvariantCulture);
-
-                // Span zones across monitors
-                App.Overlay.SpanZonesAcrossMonitors = int.Parse(argsParts[(int)CmdArgs.SpanZones], CultureInfo.InvariantCulture) == 1;
-
-                // Target monitor id
-                string targetMonitorName = argsParts[(int)CmdArgs.TargetMonitorId];
-
-                if (!App.Overlay.SpanZonesAcrossMonitors)
-                {
-                    // Test launch with custom monitors configuration
-                    bool isCustomMonitorConfigurationMode = targetMonitorName.StartsWith("Monitor#", StringComparison.Ordinal);
-                    if (isCustomMonitorConfigurationMode)
-                    {
-                        App.Overlay.Monitors.Clear();
-                    }
-
-                    // Monitors count
-                    int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount], CultureInfo.InvariantCulture);
-
-                    // Parse the native monitor data
-                    List<NativeMonitorData> nativeMonitorData = new List<NativeMonitorData>();
-                    const int monitorArgsCount = 6;
-                    for (int i = 0; i < count; i++)
-                    {
-                        var nativeData = default(NativeMonitorData);
-                        nativeData.Monitor = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
-                        nativeData.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
-                        nativeData.LeftCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
-                        nativeData.TopCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
-                        nativeData.Width = int.Parse(argsParts[(int)CmdArgs.MonitorWidth + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
-                        nativeData.Height = int.Parse(argsParts[(int)CmdArgs.MonitorHeight + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
-
-                        nativeMonitorData.Add(nativeData);
-                    }
-
-                    var monitors = App.Overlay.Monitors;
-
-                    // Update monitors data
-                    if (isCustomMonitorConfigurationMode)
-                    {
-                        foreach (NativeMonitorData nativeData in nativeMonitorData)
-                        {
-                            var splittedId = nativeData.Monitor.Split('_');
-
-                            Rect bounds = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
-
-                            Monitor monitor = new Monitor(bounds, bounds);
-                            monitor.Device.MonitorName = nativeData.Monitor.Substring(0, nativeData.Monitor.LastIndexOf("_", StringComparison.Ordinal));
-                            monitor.Device.VirtualDesktopId = nativeData.Monitor.Substring(nativeData.Monitor.LastIndexOf("_", StringComparison.Ordinal) + 1);
-                            monitor.Device.Dpi = nativeData.Dpi;
-
-                            monitors.Add(monitor);
-                        }
-                    }
-                    else
-                    {
-                        foreach (NativeMonitorData nativeData in nativeMonitorData)
-                        {
-                            Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
-                            if (nativeData.IsSelected)
-                            {
-                                targetMonitorName = nativeData.Monitor;
-                            }
-
-                            var monitor = new Monitor(workArea, workArea);
-                            monitor.Device.MonitorName = nativeData.Monitor.Substring(0, nativeData.Monitor.LastIndexOf("_", StringComparison.Ordinal));
-                            monitor.Device.VirtualDesktopId = nativeData.Monitor.Substring(nativeData.Monitor.LastIndexOf("_", StringComparison.Ordinal) + 1);
-                            monitor.Device.Dpi = nativeData.Dpi;
-
-                            App.Overlay.AddMonitor(monitor);
-                        }
-                    }
-
-                    // Set active desktop
-                    for (int i = 0; i < monitors.Count; i++)
-                    {
-                        var monitor = monitors[i];
-
-                        var monitorName = targetMonitorName.Substring(0, targetMonitorName.LastIndexOf("_", StringComparison.Ordinal));
-                        var virtualDesktop = targetMonitorName.Substring(targetMonitorName.LastIndexOf("_", StringComparison.Ordinal) + 1);
-
-                        if (monitor.Device.MonitorName == monitorName && monitor.Device.VirtualDesktopId == virtualDesktop)
-                        {
-                            App.Overlay.CurrentDesktop = i;
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    // Monitors count
-                    int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount], CultureInfo.InvariantCulture);
-
-                    // Parse the native monitor data
-                    List<NativeMonitorData> nativeMonitorData = new List<NativeMonitorData>();
-                    const int monitorArgsCount = 6;
-                    for (int i = 0; i < count; i++)
-                    {
-                        var nativeData = default(NativeMonitorData);
-                        nativeData.Monitor = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
-                        nativeData.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
-                        nativeData.LeftCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
-                        nativeData.TopCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
-                        nativeData.Width = int.Parse(argsParts[(int)CmdArgs.MonitorWidth + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
-                        nativeData.Height = int.Parse(argsParts[(int)CmdArgs.MonitorHeight + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
-
-                        nativeMonitorData.Add(nativeData);
-                    }
-
-                    Rect workAreaUnion = default;
-
-                    // Update monitors data
-                    foreach (NativeMonitorData nativeData in nativeMonitorData)
-                    {
-                        Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
-                        workAreaUnion = Rect.Union(workAreaUnion, workArea);
-                    }
-
-                    var monitor = new Monitor(workAreaUnion, workAreaUnion);
-
-                    var monitorName = targetMonitorName.Substring(0, targetMonitorName.LastIndexOf("_", StringComparison.Ordinal));
-                    var virtualDesktop = targetMonitorName.Substring(targetMonitorName.LastIndexOf("_", StringComparison.Ordinal) + 1);
-                    monitor.Device.MonitorName = monitorName;
-                    monitor.Device.VirtualDesktopId = virtualDesktop;
-
-                    App.Overlay.Monitors.Add(monitor);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Invalid command line arguments: " + args[1], ex);
-                MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
-                ((App)Application.Current).Shutdown();
-            }
-        }
-
         public ParsingResult ParseParams()
         {
             Logger.LogTrace();
@@ -477,14 +313,16 @@ namespace FancyZonesEditor.Utils
 
                         foreach (NativeMonitorData nativeData in editorParams.Monitors)
                         {
-                            Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
+                            Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.WorkAreaWidth, nativeData.WorkAreaHeight);
                             if (nativeData.IsSelected)
                             {
                                 targetMonitorId = nativeData.Monitor;
                                 targetVirtualDesktop = nativeData.VirtualDesktop;
                             }
 
-                            var monitor = new Monitor(workArea, workArea);
+                            Size monitorSize = new Size(nativeData.MonitorWidth, nativeData.MonitorHeight);
+
+                            var monitor = new Monitor(workArea, monitorSize);
                             monitor.Device.MonitorName = nativeData.Monitor;
                             monitor.Device.VirtualDesktopId = nativeData.VirtualDesktop;
                             monitor.Device.Dpi = nativeData.Dpi;
@@ -512,9 +350,10 @@ namespace FancyZonesEditor.Utils
                         }
 
                         var nativeData = editorParams.Monitors[0];
-                        Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
+                        Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.WorkAreaWidth, nativeData.WorkAreaHeight);
+                        Size monitorSize = new Size(nativeData.MonitorWidth, nativeData.MonitorHeight);
 
-                        var monitor = new Monitor(workArea, workArea);
+                        var monitor = new Monitor(workArea, monitorSize);
                         monitor.Device.MonitorName = nativeData.Monitor;
                         monitor.Device.VirtualDesktopId = nativeData.VirtualDesktop;
 

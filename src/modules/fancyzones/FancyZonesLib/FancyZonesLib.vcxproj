@@ -35,6 +35,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="EditorParameters.h" />
     <ClInclude Include="FancyZonesData\CustomLayouts.h" />
     <ClInclude Include="FancyZonesData\AppliedLayouts.h" />
     <ClInclude Include="FancyZonesData\AppZoneHistory.h" />
@@ -77,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Colors.cpp" />
+    <ClCompile Include="EditorParameters.cpp" />
     <ClCompile Include="FancyZonesData\AppZoneHistory.cpp">
       <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
