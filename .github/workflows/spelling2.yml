@@ -66,7 +66,7 @@ jobs:
       run: |
         mkdir /tmp/data
     - name: retrieve-comment
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: "check-spelling-comment-${{ github.run_id }}"
         path: /tmp/data
