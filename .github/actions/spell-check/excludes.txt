@@ -47,6 +47,7 @@ ignore$
 ^src/modules/powerrename/testapp/PowerRenameTest\.vcxproj\.filters$
 ^src/modules/previewpane/PreviewPaneUnitTests/HelperFiles/MarkdownWithHTMLImageTag\.txt$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag.txt$
+^src/modules/launcher/Plugins/HelperFiles/Microsoft.PowerToys.Run.Plugin.Translate/Utils/Language.cs/MarkdownWithHTMLImageTag.txt$
 ^tools/CleanUp_tool/CleanUp_tool\.vcxproj\.filters$
 ^tools/Verification scripts/Check preview handler registration\.ps1$
 ^\.github/
