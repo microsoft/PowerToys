@@ -4,15 +4,15 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
+using Community.PowerToys.Run.Plugin.Translate.Properties;
+using Community.PowerToys.Run.Plugin.Translate.Utils;
 using GTranslate.Results;
 using GTranslate.Translators;
 using ManagedCommon;
-using Microsoft.PowerToys.Run.Plugin.Translate.Properties;
-using Microsoft.PowerToys.Run.Plugin.Translate.Utils;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
-namespace Microsoft.PowerToys.Run.Plugin.Translate
+namespace Community.PowerToys.Run.Plugin.Translate
 {
     /// <summary>
     /// A power launcher plugin to search across time zones.

@@ -90,7 +90,7 @@
 
   <?define OneNoteComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.OneNote.deps.json;Microsoft.PowerToys.Run.Plugin.OneNote.dll;PowerToys.ManagedTelemetry.dll?>
 
-  <?define TranslateComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Translate.deps.json;Microsoft.PowerToys.Run.Plugin.Translate.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define TranslateComponentFiles=plugin.json;Community.PowerToys.Run.Plugin.Translate.deps.json;Community.PowerToys.Run.Plugin.Translate.dll;PowerToys.ManagedTelemetry.dll?>
 
   <?define RegistryComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;PowerToys.ManagedTelemetry.dll?>
 
@@ -1367,7 +1367,7 @@
           Id="Launcher_Translate_$(var.IdSafeLanguage)_Component"
           Guid="$(var.CompGUIDPrefix)19"
           Directory="Resource$(var.IdSafeLanguage)TranslatePluginFolder">
-        <File Id="Launcher_Translate_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Translate\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Translate.resources.dll" />
+        <File Id="Launcher_Translate_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Translate\$(var.Language)\Community.PowerToys.Run.Plugin.Translate.resources.dll" />
       </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>

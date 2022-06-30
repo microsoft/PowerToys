@@ -408,7 +408,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.OneNote", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.OneNote\Microsoft.PowerToys.Run.Plugin.OneNote.csproj", "{5A1DB2F0-0715-4B3B-98E6-79BC41540045}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Translate", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Translate\Microsoft.PowerToys.Run.Plugin.Translate.csproj", "{CF617A61-3331-467E-A9AA-904F39000A1E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.Translate", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.Translate\Community.PowerToys.Run.Plugin.Translate.csproj", "{CF617A61-3331-467E-A9AA-904F39000A1E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

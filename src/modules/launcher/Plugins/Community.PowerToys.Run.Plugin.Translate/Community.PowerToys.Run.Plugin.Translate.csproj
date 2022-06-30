@@ -2,8 +2,8 @@
   <Import Project="..\..\..\..\Version.props" />
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
-    <RootNamespace>Microsoft.PowerToys.Run.Plugin.Translate</RootNamespace>
-    <AssemblyName>Microsoft.PowerToys.Run.Plugin.Translate</AssemblyName>
+    <RootNamespace>Community.PowerToys.Run.Plugin.Translate</RootNamespace>
+    <AssemblyName>Community.PowerToys.Run.Plugin.Translate</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
     <Version>$(Version).0</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
