@@ -290,6 +290,41 @@ void AppliedLayouts::SaveData()
     }
 }
 
+void AppliedLayouts::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids)
+{
+    bool dirtyFlag = false;
+
+    std::vector<std::pair<FancyZonesDataTypes::WorkAreaId, std::wstring>> replaceWithSerialNumber{};
+    for (auto iter = m_layouts.begin(); iter != m_layouts.end(); ++iter)
+    {
+        const auto& [id, layout] = *iter;
+        if (id.monitorId.serialNumber.empty() && !id.monitorId.deviceId.isDefault())
+        {
+            for (const auto& monitorId : ids)
+            {
+                if (id.monitorId.deviceId.id == monitorId.deviceId.id && id.monitorId.deviceId.instanceId == monitorId.deviceId.instanceId)
+                {
+                    replaceWithSerialNumber.push_back({ id, monitorId.serialNumber });
+                    dirtyFlag = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    for (const auto& id : replaceWithSerialNumber)
+    {
+        auto mapEntry = m_layouts.extract(id.first);
+        mapEntry.key().monitorId.serialNumber = id.second;
+        m_layouts.insert(std::move(mapEntry));
+    }
+
+    if (dirtyFlag)
+    {
+        SaveData();
+    }
+}
+
 void AppliedLayouts::SyncVirtualDesktops()
 {
     // Explorer persists current virtual desktop identifier to registry on a per session basis,

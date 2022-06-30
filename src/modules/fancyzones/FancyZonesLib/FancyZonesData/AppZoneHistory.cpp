@@ -298,6 +298,37 @@ void AppZoneHistory::SaveData()
     }
 }
 
+void AppZoneHistory::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids)
+{
+    bool dirtyFlag = false;
+
+    for (auto iter = m_history.begin(); iter != m_history.end(); ++iter)
+    {
+        auto& [app, data] = *iter;
+        for (auto& dataIter = data.begin(); dataIter != data.end(); ++dataIter)
+        {
+            auto& dataMonitorId = dataIter->workAreaId.monitorId;
+            if (dataMonitorId.serialNumber.empty() && !dataMonitorId.deviceId.isDefault())
+            {
+                for (const auto& monitorId : ids)
+                {
+                    if (dataMonitorId.deviceId.id == monitorId.deviceId.id && dataMonitorId.deviceId.instanceId == monitorId.deviceId.instanceId)
+                    {
+                        dataMonitorId.serialNumber = monitorId.serialNumber;
+                        dirtyFlag = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    if (dirtyFlag)
+    {
+        SaveData();
+    }
+}
+
 bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet)
 {
     if (IsAnotherWindowOfApplicationInstanceZoned(window, workAreaId))

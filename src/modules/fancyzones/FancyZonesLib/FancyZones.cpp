@@ -692,6 +692,11 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         if (changeType == DisplayChangeType::Initialization)
         {
             RegisterVirtualDesktopUpdates();
+
+            // id format of applied-layouts and app-zone-history was changed in 0.60
+            auto monitors = MonitorUtils::IdentifyMonitors();
+            AppliedLayouts::instance().AdjustWorkAreaIds(monitors);
+            AppZoneHistory::instance().AdjustWorkAreaIds(monitors);
         }
     }
 
