@@ -4741,7 +4741,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Gets the the current time of a time zone.
+        ///   Looks up a localized string similar to Gets the current time of a time zone.
         /// </summary>
         internal static string PluginDescription {
             get {
