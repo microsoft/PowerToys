@@ -11,6 +11,7 @@
 #include <common/utils/window.h>
 #include <common/SettingsAPI/FileWatcher.h>
 
+#include <FancyZonesLib/EditorParameters.h>
 #include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
@@ -487,124 +488,16 @@ void FancyZones::ToggleEditor() noexcept
 
     m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
 
-    HMONITOR targetMonitor{};
-
-    const bool use_cursorpos_editor_startupscreen = FancyZonesSettings::settings().use_cursorpos_editor_startupscreen;
-    if (use_cursorpos_editor_startupscreen)
+    if (!EditorParameters::Save())
     {
-        POINT currentCursorPos{};
-        GetCursorPos(&currentCursorPos);
-        targetMonitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
-    }
-    else
-    {
-        targetMonitor = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTOPRIMARY);
-    }
-
-    if (!targetMonitor)
-    {
+        Logger::error(L"Failed to save editor startup parameters");
         return;
     }
-
-    wil::unique_cotaskmem_string virtualDesktopId;
-    if (!SUCCEEDED(StringFromCLSID(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), &virtualDesktopId)))
-    {
-        return;
-    }
-
-    /*
-    * Divider: /
-    * Parts:
-    * (1) Process id
-    * (2) Span zones across monitors
-    * (3) Monitor id where the Editor should be opened
-    * (4) Monitors count
-    *
-    * Data for each monitor:
-    * (5) Monitor id
-    * (6) DPI
-    * (7) work area left
-    * (8) work area top
-    * (9) work area width
-    * (10) work area height
-    * ...
-    */
-    std::wstring params;
-    const std::wstring divider = L"/";
-    params += std::to_wstring(GetCurrentProcessId()) + divider; /* Process id */
-    const bool spanZonesAcrossMonitors = FancyZonesSettings::settings().spanZonesAcrossMonitors;
-    params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
-    std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
-
-    m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-        allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-    } }).wait();
-
-    if (spanZonesAcrossMonitors)
-    {
-        params += FancyZonesUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId.get()) + divider; /* Monitor id where the Editor should be opened */
-    }
-
-    // device id map
-    std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
-
-    bool showDpiWarning = false;
-    int prevDpi = -1;
-    std::wstring monitorsDataStr;
-
-    for (auto& monitorData : allMonitors)
-    {
-        HMONITOR monitor = monitorData.first;
-        auto monitorInfo = monitorData.second;
-
-        std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(monitorInfo.szDevice, displayDeviceIdxMap);
-        std::wstring monitorId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
-
-        if (monitor == targetMonitor && !spanZonesAcrossMonitors)
-        {
-            params += monitorId + divider; /* Monitor id where the Editor should be opened */
-        }
-        
-        UINT dpi = 0;
-        if (DPIAware::GetScreenDPIForMonitor(monitor, dpi) != S_OK)
-        {
-            continue;
-        }
-        
-        if (spanZonesAcrossMonitors && prevDpi != -1 && prevDpi != dpi)
-        {
-            showDpiWarning = true;
-        }
-
-        monitorsDataStr += std::move(monitorId) + divider; /* Monitor id */
-        monitorsDataStr += std::to_wstring(dpi) + divider; /* DPI */
-        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.left) + divider; /* Top coordinate */
-        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.top) + divider; /* Left coordinate */
-        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.right - monitorInfo.rcWork.left) + divider; /* Width */
-        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.bottom - monitorInfo.rcWork.top) + divider; /* Height */
-    }
-
-    params += std::to_wstring(allMonitors.size()) + divider; /* Monitors count */
-    params += monitorsDataStr;
-
-    FancyZonesDataInstance().SaveFancyZonesEditorParameters(spanZonesAcrossMonitors, virtualDesktopId.get(), targetMonitor, allMonitors); /* Write parameters to json file */
-
-    if (showDpiWarning)
-    {
-        // We must show the message box in a separate thread, since this code is called from a low-level
-        // keyboard hook callback, and launching messageboxes from it has unexpected side effects
-        //std::thread{ [] {
-        //    MessageBoxW(nullptr,
-        //                GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),
-        //                GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
-        //                MB_OK | MB_ICONWARNING);
-        //} }.detach();
-    }
-
+    
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
     sei.lpFile = NonLocalizable::FZEditorExecutablePath;
-    sei.lpParameters = params.c_str();
+    sei.lpParameters = L"";
     sei.nShow = SW_SHOWDEFAULT;
     ShellExecuteEx(&sei);
     Trace::FancyZones::EditorLaunched(1);

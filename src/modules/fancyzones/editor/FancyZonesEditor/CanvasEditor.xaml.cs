@@ -83,6 +83,8 @@ namespace FancyZonesEditor
             Preview.Width = workArea.Width;
             Preview.Height = workArea.Height;
 
+            _model.ScaleLayout(workAreaWidth: workArea.Width, workAreaHeight: workArea.Height);
+
             UIElementCollection previewChildren = Preview.Children;
             int previewChildrenCount = previewChildren.Count;
             while (previewChildrenCount < _model.Zones.Count)

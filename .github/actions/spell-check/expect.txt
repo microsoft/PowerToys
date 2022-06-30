@@ -912,6 +912,7 @@ IObservable
 IOle
 iolewindowcontextsensitivehelp
 iomanip
+IOne
 iostream
 IPackage
 IPath
@@ -1719,6 +1720,7 @@ robmensching
 Roboto
 roslyn
 Rothera
+roundf
 ROUNDSMALL
 royvou
 Rpc

@@ -884,39 +884,4 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)10, deviceInfoMap->size());
             }
     };
-
-    TEST_CLASS(EditorArgsUnitTests)
-    {
-        TEST_METHOD(MonitorToJson)
-        {
-            MonitorInfo monitor{ L"AOC2460#4&fe3a015&0&UID65793", L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", 144, -10, 0, 1920, 1080, true };
-
-            const auto expectedStr = L"{\"monitor\": \"AOC2460#4&fe3a015&0&UID65793\", \"virtual-desktop\": \"{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"dpi\": 144, \"top-coordinate\": -10, \"left-coordinate\": 0, \"width\": 1920, \"height\": 1080, \"is-selected\": true}";
-            const auto expected = json::JsonObject::Parse(expectedStr);
-
-            const auto actual = MonitorInfo::ToJson(monitor);
-
-            auto res = CustomAssert::CompareJsonObjects(expected, actual);
-            Assert::IsTrue(res.first, res.second.c_str());
-        }
-
-        TEST_METHOD(EditorArgsToJson)
-        {
-            MonitorInfo monitor1{ L"AOC2460#4&fe3a015&0&UID65793", L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", 144, -10, 0, 1920, 1080, true };
-            MonitorInfo monitor2{ L"AOC2460#4&fe3a015&0&UID65793", L"{39B25DD2-130D-4B5D-8851-4791D66B1538}", 96, 0, 1920, 1920, 1080, false };
-            EditorArgs args{
-                1, true, std::vector<MonitorInfo>{ monitor1, monitor2 }
-            };
-
-            const std::wstring expectedMonitor1 = L"{\"monitor\": \"AOC2460#4&fe3a015&0&UID65793\", \"virtual-desktop\": \"{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"dpi\": 144, \"top-coordinate\": -10, \"left-coordinate\": 0, \"width\": 1920, \"height\": 1080, \"is-selected\": true}";
-            const std::wstring expectedMonitor2 = L"{\"monitor\": \"AOC2460#4&fe3a015&0&UID65793\", \"virtual-desktop\": \"{39B25DD2-130D-4B5D-8851-4791D66B1538}\", \"dpi\": 96, \"top-coordinate\": 0, \"left-coordinate\": 1920, \"width\": 1920, \"height\": 1080, \"is-selected\": false}";
-            const std::wstring expectedStr = L"{\"process-id\": 1, \"span-zones-across-monitors\": true, \"monitors\": [" + expectedMonitor1 + L", " + expectedMonitor2 + L"]}";
-            
-            const auto expected = json::JsonObject::Parse(expectedStr);
-            const auto actual = EditorArgs::ToJson(args);
-
-            auto res = CustomAssert::CompareJsonObjects(expected, actual);
-            Assert::IsTrue(res.first, res.second.c_str());
-        }
-    };
 }

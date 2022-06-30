@@ -4075,6 +4075,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Windows search settings.
+        /// </summary>
+        internal static string WindowsSearchSettings {
+            get {
+                return ResourceManager.GetString("WindowsSearchSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Windows Security.
         /// </summary>
         internal static string WindowsSecurity {
