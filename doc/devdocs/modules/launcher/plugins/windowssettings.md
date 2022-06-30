@@ -61,7 +61,7 @@ A full entry for the `WindowsSettings.json` looks like:
 * The integer value for `IntroducedInBuild` and  `DeprecatedInBuild` must be in range of `0` to `4294967295`
 * The strings for `Name`, `AltNames`, `Areas`, `Type` and `Note` must not contain whitespace(s) or special characters (#, €, $, etc.)
 * The strings for `Name`, `AltNames`, `Areas`, `Type` and `Note` are used as ids for the resource file under `Properties\Resources.resx`
-* When you add new strings make sure you have add add all translations for it.
+* When you add new strings make sure you have added all translations for it.
 
 ## Scores
 
