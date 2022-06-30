@@ -23,12 +23,12 @@ jobs:
     steps:
     - name: checkout-merge
       if: "contains(github.event_name, 'pull_request')"
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: refs/pull/${{github.event.pull_request.number}}/merge
     - name: checkout
       if: github.event_name == 'push'
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: check-spelling
       id: spelling
       uses: check-spelling/check-spelling@v0.0.20-alpha3
@@ -61,7 +61,7 @@ jobs:
     if: always() && needs.spelling.result == 'failure' && needs.spelling.outputs.internal_state_directory
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: set up
       run: |
         mkdir /tmp/data
