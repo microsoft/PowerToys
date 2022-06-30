@@ -11,6 +11,10 @@
 #include "../../src/common/updating/installer.h"
 #include "../../src/common/version/version.h"
 
+#include <winrt/Windows.ApplicationModel.h>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Management.Deployment.h>
+
 using namespace std;
 
 HINSTANCE DLL_HANDLE = nullptr;
@@ -912,13 +916,85 @@ LExit:
     if (!SUCCEEDED(hr))
     {
         PMSIHANDLE hRecord = MsiCreateRecord(0);
-        MsiRecordSetString(hRecord, 0, TEXT("Filed to iminstall virtual camera driver"));
+        MsiRecordSetString(hRecord, 0, TEXT("Failed to uninstall virtual camera driver"));
         MsiProcessMessage(hInstall, INSTALLMESSAGE(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
     }
 
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
+
+UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
+{
+    using namespace winrt::Windows::Foundation;
+    using namespace winrt::Windows::Management::Deployment;
+
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+
+    hr = WcaInitialize(hInstall, "UnRegisterContextMenuPackagesCA"); // original func name is too long
+
+    try
+    {
+        // Packages to unregister
+        const std::vector<std::wstring> packagesToRemoveDisplayName{ { L"PowerRenameContextMenu" }, { L"ImageResizerContextMenu" } };
+
+        PackageManager packageManager;
+
+        for (auto const& package : packageManager.FindPackages())
+        {
+            const auto& packageFullName = std::wstring{ package.Id().FullName() };
+
+            for (const auto& packageToRemove : packagesToRemoveDisplayName)
+            {
+                if (packageFullName.contains(packageToRemove))
+                {
+                    auto deploymentOperation{ packageManager.RemovePackageAsync(packageFullName) };
+                    deploymentOperation.get();
+
+                    // Check the status of the operation
+                    if (deploymentOperation.Status() == AsyncStatus::Error)
+                    {
+                        auto deploymentResult{ deploymentOperation.GetResults() };
+                        auto errorCode = deploymentOperation.ErrorCode();
+                        auto errorText = deploymentResult.ErrorText();
+
+                        Logger::error(L"Unregister {} package failed. ErrorCode: {}, ErrorText: {}", packageFullName, std::to_wstring(errorCode), errorText);
+
+                        er = ERROR_INSTALL_FAILURE;
+                    }
+                    else if (deploymentOperation.Status() == AsyncStatus::Canceled)
+                    {
+                        Logger::error(L"Unregister {} package canceled.", packageFullName);
+
+                        er = ERROR_INSTALL_FAILURE;
+                    }
+                    else if (deploymentOperation.Status() == AsyncStatus::Completed)
+                    {
+                        Logger::info(L"Unregister {} package completed.", packageFullName);
+                    }
+                    else
+                    {
+                        Logger::debug(L"Unregister {} package started.", packageFullName);
+                    }
+                }
+
+            }
+        }
+    }
+    catch (std::exception e)
+    {
+        std::string errorMessage{ "Exception thrown while trying to unregister sparse packages: " };
+        errorMessage += e.what();
+        Logger::error(errorMessage);
+
+        er = ERROR_INSTALL_FAILURE;
+    }
+
+    er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
+    return WcaFinalize(er);
+}
+
 
 UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
 {

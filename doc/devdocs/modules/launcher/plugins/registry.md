@@ -78,7 +78,7 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 
 | Name            | Value                                                                          |
 | --------------- | ------------------------------------------------------------------------------ |
-| TargetFramework | `net6.0-windows` (.NET 5) or `net6.0-windows10.0.18362.0` (OS version specific)|
+| TargetFramework | `net6.0-windows` (.NET 5) or `net6.0-windows10.0.19041.0` (OS version specific)|
 | LangVersion     | `8.0` (mean C# 8.0)                                                            |
 | Platforms       | `x64`                                                                          |
 | Nullable        | `true`                                                                         |

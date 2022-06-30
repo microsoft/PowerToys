@@ -67,7 +67,7 @@
 
       <Variable Name="DetectedWindowsBuildNumber" Type="version" Value="0"/>
       <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Format="raw" Variable="DetectedWindowsBuildNumber" />
-      <bal:Condition Message="This application is only supported on Windows 10 version 1903 (build 18362) or higher.">DetectedWindowsBuildNumber &gt;= 18362 OR WixBundleInstalled</bal:Condition>
+      <bal:Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher.">DetectedWindowsBuildNumber &gt;= 19041 OR WixBundleInstalled</bal:Condition>
     
       <util:RegistrySearch Variable="DetectedVCRedistVersion" Root="HKLM" Key="Software\Microsoft\VisualStudio\14.0\VC\Runtimes\$(var.PowerToysPlatform)" Value="Minor" Result="value" Format="raw" />
 

@@ -3,7 +3,7 @@
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <application>
 		<!-- Required for C++ XAML Islands projects that execute from runner (i.e. Keyboard Manager). More details at https://docs.microsoft.com/en-us/windows/apps/desktop/modernize/host-standard-control-with-xaml-islands-cpp#create-a-desktop-application-project -->
-		<maxversiontested Id="10.0.18362.0"/>
+		<maxversiontested Id="10.0.19041.0"/>
     </application>
   </compatibility>
 </assembly>

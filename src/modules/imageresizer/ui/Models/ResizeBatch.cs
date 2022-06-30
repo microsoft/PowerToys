@@ -7,6 +7,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.IO.Pipes;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ImageResizer.Properties;
@@ -24,16 +26,8 @@ namespace ImageResizer.Models
         public static ResizeBatch FromCommandLine(TextReader standardInput, string[] args)
         {
             var batch = new ResizeBatch();
-
-            // NB: We read these from stdin since there are limits on the number of args you can have
-            string file;
-            if (standardInput != null)
-            {
-                while ((file = standardInput.ReadLine()) != null)
-                {
-                    batch.Files.Add(file);
-                }
-            }
+            const string pipeNamePrefix = "\\\\.\\pipe\\";
+            string pipeName = null;
 
             for (var i = 0; i < args?.Length; i++)
             {
@@ -42,8 +36,46 @@ namespace ImageResizer.Models
                     batch.DestinationDirectory = args[++i];
                     continue;
                 }
+                else if (args[i].Contains(pipeNamePrefix))
+                {
+                    pipeName = args[i].Substring(pipeNamePrefix.Length);
+                    continue;
+                }
 
                 batch.Files.Add(args[i]);
+            }
+
+            if (string.IsNullOrEmpty(pipeName))
+            {
+                // NB: We read these from stdin since there are limits on the number of args you can have
+                string file;
+                if (standardInput != null)
+                {
+                    while ((file = standardInput.ReadLine()) != null)
+                    {
+                        batch.Files.Add(file);
+                    }
+                }
+            }
+            else
+            {
+                using (NamedPipeClientStream pipeClient =
+                    new NamedPipeClientStream(".", pipeName, PipeDirection.In))
+                {
+                    // Connect to the pipe or wait until the pipe is available.
+                    pipeClient.Connect();
+
+                    using (StreamReader sr = new StreamReader(pipeClient, Encoding.Unicode))
+                    {
+                        string file;
+
+                        // Display the read text to the console
+                        while ((file = sr.ReadLine()) != null)
+                        {
+                            batch.Files.Add(file);
+                        }
+                    }
+                }
             }
 
             return batch;

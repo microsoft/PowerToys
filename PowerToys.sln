@@ -279,6 +279,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\modulesRegistry.h = src\common\utils\modulesRegistry.h
 		src\common\utils\MsiUtils.h = src\common\utils\MsiUtils.h
 		src\common\utils\os-detect.h = src\common\utils\os-detect.h
+		src\common\utils\package.h = src\common\utils\package.h
 		src\common\utils\ProcessWaiter.h = src\common\utils\ProcessWaiter.h
 		src\common\utils\process_path.h = src\common\utils\process_path.h
 		src\common\utils\registry.h = src\common\utils\registry.h
@@ -404,9 +405,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings", "src\s
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUI", "src\modules\powerrename\PowerRenameUILib\PowerRenameUI.vcxproj", "{27718999-C175-450A-861C-89F911E16A88}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameContextMenu", "src\modules\powerrename\PowerRenameContextMenu\PowerRenameContextMenu.vcxproj", "{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests.csproj", "{C5D46169-5334-48C3-8C28-644C72832E54}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.OneNote", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.OneNote\Microsoft.PowerToys.Run.Plugin.OneNote.csproj", "{5A1DB2F0-0715-4B3B-98E6-79BC41540045}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageResizerContextMenu", "src\modules\imageresizer\ImageResizerContextMenu\ImageResizerContextMenu.vcxproj", "{93B72A06-C8BD-484F-A6F7-C9F280B150BF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageResizerLib", "src\modules\imageresizer\ImageResizerLib\ImageResizerLib.vcxproj", "{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1565,6 +1572,18 @@ Global
 		{27718999-C175-450A-861C-89F911E16A88}.Release|x64.Build.0 = Release|x64
 		{27718999-C175-450A-861C-89F911E16A88}.Release|x86.ActiveCfg = Release|x64
 		{27718999-C175-450A-861C-89F911E16A88}.Release|x86.Build.0 = Release|x64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Debug|ARM64.Build.0 = Debug|ARM64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Debug|x64.ActiveCfg = Debug|x64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Debug|x64.Build.0 = Debug|x64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Debug|x86.ActiveCfg = Debug|x64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Debug|x86.Build.0 = Debug|x64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Release|ARM64.ActiveCfg = Release|ARM64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Release|ARM64.Build.0 = Release|ARM64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Release|x64.ActiveCfg = Release|x64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Release|x64.Build.0 = Release|x64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Release|x86.ActiveCfg = Release|x64
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}.Release|x86.Build.0 = Release|x64
 		{C5D46169-5334-48C3-8C28-644C72832E54}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{C5D46169-5334-48C3-8C28-644C72832E54}.Debug|ARM64.Build.0 = Debug|ARM64
 		{C5D46169-5334-48C3-8C28-644C72832E54}.Debug|x64.ActiveCfg = Debug|x64
@@ -1589,6 +1608,30 @@ Global
 		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Release|x64.Build.0 = Release|x64
 		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Release|x86.ActiveCfg = Release|x64
 		{5A1DB2F0-0715-4B3B-98E6-79BC41540045}.Release|x86.Build.0 = Release|x64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Debug|ARM64.Build.0 = Debug|ARM64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Debug|x64.ActiveCfg = Debug|x64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Debug|x64.Build.0 = Debug|x64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Debug|x86.ActiveCfg = Debug|x64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Debug|x86.Build.0 = Debug|x64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Release|ARM64.ActiveCfg = Release|ARM64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Release|ARM64.Build.0 = Release|ARM64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Release|x64.ActiveCfg = Release|x64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Release|x64.Build.0 = Release|x64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Release|x86.ActiveCfg = Release|x64
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF}.Release|x86.Build.0 = Release|x64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Debug|ARM64.Build.0 = Debug|ARM64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Debug|x64.ActiveCfg = Debug|x64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Debug|x64.Build.0 = Debug|x64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Debug|x86.ActiveCfg = Debug|x64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Debug|x86.Build.0 = Debug|x64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|ARM64.ActiveCfg = Release|ARM64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|ARM64.Build.0 = Release|ARM64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|x64.ActiveCfg = Release|x64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|x64.Build.0 = Release|x64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|x86.ActiveCfg = Release|x64
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1722,8 +1765,11 @@ Global
 		{8FE5A5EE-1B59-401C-9FB3-B04ECD3E29C1} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{020A7474-3601-4160-A159-D7B70B77B15F} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 		{27718999-C175-450A-861C-89F911E16A88} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
+		{1DBBB112-4BB1-444B-8EBB-E66555C76BA6} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{C5D46169-5334-48C3-8C28-644C72832E54} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{5A1DB2F0-0715-4B3B-98E6-79BC41540045} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{93B72A06-C8BD-484F-A6F7-C9F280B150BF} = {6C7F47CC-2151-44A3-A546-41C70025132C}
+		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853} = {6C7F47CC-2151-44A3-A546-41C70025132C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

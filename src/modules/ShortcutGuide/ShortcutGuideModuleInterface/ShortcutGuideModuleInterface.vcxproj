@@ -9,7 +9,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{2d604c07-51fc-46bb-9eb7-75aecc7f5e81}</ProjectGuid>
     <RootNamespace>ShortcutGuideModuleInterface</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <ProjectName>ShortcutGuideModuleInterface</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

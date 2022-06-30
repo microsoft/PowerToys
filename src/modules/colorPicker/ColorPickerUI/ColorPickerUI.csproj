@@ -15,7 +15,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>ColorPicker</RootNamespace>
     <AssemblyName>PowerToys.ColorPickerUI</AssemblyName>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
   </PropertyGroup>

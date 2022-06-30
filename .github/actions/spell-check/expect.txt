@@ -192,6 +192,7 @@ buf
 BUFSIZE
 bugreport
 BUILDARCH
+BUILDNUMBER
 buildtask
 buildtransitive
 Burkina
@@ -466,6 +467,7 @@ dlib
 DLIMAGES
 dllexport
 dllhost
+dllimport
 dllmain
 dlls
 DNLEN
@@ -497,6 +499,7 @@ DVSD
 DVSL
 DVTARGETDEVICE
 DWINRT
+dwl
 dwm
 dwmapi
 dwmcorei
@@ -511,6 +514,7 @@ DWMWCP
 DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 dword
+DWORDLONG
 dworigin
 dwrite
 dxgi
@@ -548,9 +552,9 @@ Eqn
 ERASEBKGND
 EREOF
 EResize
+ERole
 ERRORMESSAGE
 ERRORTITLE
-ERole
 ESettings
 esize
 esrp
@@ -722,6 +726,7 @@ HHOOK
 hhx
 Hiber
 Hiberboot
+HIBYTE
 HICON
 HIDEWINDOW
 highlighter
@@ -785,6 +790,7 @@ HWNDNEXT
 HWNDPREV
 IAction
 IActivated
+IActivation
 IAnimatable
 IApp
 IApplication
@@ -859,13 +865,15 @@ IInspectable
 IIO
 IItem
 IJson
-IKs
 Ijwhost
+IKs
 IList
 ILogon
 IMAGEHLP
 imageresizer
+IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
+imageresizerinput
 imageresizersettings
 imagingdevices
 IMain
@@ -1092,6 +1100,7 @@ LIBID
 Lifecycle
 LIGHTORANGE
 LIGHTTURQUOISE
+lightunplated
 lindex
 linkedin
 linq
@@ -1107,6 +1116,7 @@ LMEM
 LMENU
 lnk
 LOADSTRING
+LOBYTE
 LOCALAPPDATA
 LOCALDISPLAY
 LOCALPACKAGE
@@ -1168,6 +1178,7 @@ Macquarie
 Magadan
 Mainwindow
 majortype
+MAJORVERSION
 makeappx
 makecab
 MAKEINTRESOURCE
@@ -1239,6 +1250,7 @@ MINIMIZEEND
 MINIMIZESTART
 miniz
 minlevel
+MINORVERSION
 Miracast
 mirophone
 Mishkeegogamang
@@ -1423,6 +1435,7 @@ NTFS
 NTSTATUS
 nuget
 nuint
+nullonfailure
 nullopt
 nullptr
 numberbox
@@ -1468,7 +1481,9 @@ oss
 ostr
 ostream
 ostringstream
+OSVERSIONINFOEX
 OSVERSIONINFOEXW
+osvi
 otating
 OUTOFCONTEXT
 OUTOFMEMORY
@@ -1556,6 +1571,8 @@ powercfg
 powerlauncher
 powerpreview
 powerrename
+POWERRENAMECONTEXTMENU
+powerrenameinput
 POWERRENAMETEST
 powertoy
 powertoysinterop
@@ -1770,6 +1787,7 @@ RUNLEVEL
 runsettings
 runtimeclass
 runtimeconfig
+runtimeobject
 runtimes
 RUS
 rvalue
@@ -1965,6 +1983,7 @@ stl
 stoi
 stol
 stoll
+storelogo
 stoul
 stoull
 strcmp
@@ -2167,6 +2186,7 @@ unregister
 unregistering
 unremapped
 unsubscribe
+unvirtualized
 Updatelayout
 UPGRADINGPRODUCTCODE
 upto
@@ -2215,8 +2235,8 @@ VERIFYCONTEXT
 verrsrc
 VERSIONINFO
 Versioning
-VFT
 vformat
+VFT
 vid
 VIDCAP
 videoconference
@@ -2267,8 +2287,8 @@ wdp
 wdupenv
 weakme
 webcam
-webserver
 webpage
+webserver
 website
 webview
 wekyb
@@ -2298,8 +2318,8 @@ WINDOWPLACEMENT
 WINDOWPOSCHANGED
 WINDOWPOSCHANGING
 Windowsapp
-windowsappsdk
 windowsappruntimeinstall
+windowsappsdk
 WINDOWSBUILDNUMBER
 Windowscodecs
 windowsdesktop
@@ -2326,6 +2346,7 @@ winrt
 winsdk
 winsdkver
 winspool
+WINTHRESHOLD
 winui
 winxamlmanager
 wistd
@@ -2369,6 +2390,7 @@ wregex
 WResize
 writefile
 Wrk
+wrl
 wsf
 wsh
 wsl
