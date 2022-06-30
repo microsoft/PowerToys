@@ -20,6 +20,7 @@ namespace NonLocalizable
     const static wchar_t* BlockInGameModeID = L"do-not-activate-on-game-mode";
     const static wchar_t* ExcludedAppsID = L"excluded-apps";
     const static wchar_t* FrameAccentColor = L"frame-accent-color";
+    const static wchar_t* RoundCornersEnabledID = L"round-corners-enabled";
 }
 
 // TODO: move to common utils
@@ -150,6 +151,16 @@ void AlwaysOnTopSettings::LoadSettings()
             {
                 m_settings.blockInGameMode = val;
                 NotifyObservers(SettingId::BlockInGameMode);
+            }
+        }
+
+        if (const auto jsonVal = values.get_bool_value(NonLocalizable::RoundCornersEnabledID))
+        {
+            auto val = *jsonVal;
+            if (m_settings.roundCornersEnabled != val)
+            {
+                m_settings.roundCornersEnabled = val;
+                NotifyObservers(SettingId::RoundCornersEnabled);
             }
         }
 

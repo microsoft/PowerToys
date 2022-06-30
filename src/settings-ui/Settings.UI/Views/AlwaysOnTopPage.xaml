@@ -12,6 +12,7 @@
     <Page.Resources>
         <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
         <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+        <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="AlwaysOnTop" IsTabStop="False"
@@ -84,6 +85,12 @@
                                                 LargeChange="5"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
+
+                                <CheckBox x:Uid="AlwaysOnTop_RoundCorners" 
+                                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RoundCornersEnabled}" 
+                                          Margin="{StaticResource ExpanderSettingMargin}"
+                                          Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource TrueToVisibleConverter}}"/>
+
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>

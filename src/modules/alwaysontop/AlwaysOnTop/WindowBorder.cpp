@@ -32,7 +32,7 @@ std::optional<RECT> GetFrameRect(HWND window)
 }
 
 WindowBorder::WindowBorder(HWND window) :
-    SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor }),
+    SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor, SettingId::RoundCornersEnabled }),
     m_window(nullptr),
     m_trackingWindow(window),
     m_frameDrawer(nullptr)
@@ -188,7 +188,12 @@ void WindowBorder::UpdateBorderProperties() const
         color = AlwaysOnTopSettings::settings().frameColor;
     }
 
-    const int cornerRadius = WindowBordersUtils::AreCornersRounded(m_trackingWindow) ? 8 : 0;
+    int cornerRadius = 0;
+    if (AlwaysOnTopSettings::settings().roundCornersEnabled)
+    {
+        cornerRadius = WindowBordersUtils::AreCornersRounded(m_trackingWindow) ? 8 : 0;
+    }
+    
     m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness, cornerRadius);
 }
 
@@ -261,6 +266,12 @@ void WindowBorder::SettingsUpdate(SettingId id)
     break;
 
     case SettingId::FrameAccentColor:
+    {
+        UpdateBorderProperties();
+    }
+    break;
+
+    case SettingId::RoundCornersEnabled:
     {
         UpdateBorderProperties();
     }

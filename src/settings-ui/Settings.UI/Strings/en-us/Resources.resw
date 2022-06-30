@@ -1996,7 +1996,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
     <value>Geometric Code</value>
     <comment>File type, do not translate</comment>
-    </data>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
   </data>
@@ -2124,5 +2124,8 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable round corners when window is snapped</value>
+  </data>
+  <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
+    <value>Enable round corners</value>
   </data>
 </root>
