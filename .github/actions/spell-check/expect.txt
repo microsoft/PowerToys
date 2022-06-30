@@ -2436,3 +2436,4 @@ GTranslate
 ITranslation
 langs
 ranslate
+Yandex
