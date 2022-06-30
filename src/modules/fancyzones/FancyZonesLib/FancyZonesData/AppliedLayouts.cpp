@@ -73,7 +73,7 @@ namespace JsonUtils
     struct AppliedLayoutsJSON
     {
     private:
-        static std::optional<FancyZonesDataTypes::WorkAreaId> DeviceIdFromJson(const json::JsonObject& json)
+        static std::optional<FancyZonesDataTypes::WorkAreaId> WorkAreaIdFromJson(const json::JsonObject& json)
         {
             try
             {
@@ -144,7 +144,7 @@ namespace JsonUtils
             {
                 AppliedLayoutsJSON result;
 
-                auto deviceIdOpt = DeviceIdFromJson(json);
+                auto deviceIdOpt = WorkAreaIdFromJson(json);
                 if (!deviceIdOpt.has_value())
                 {
                     return std::nullopt;

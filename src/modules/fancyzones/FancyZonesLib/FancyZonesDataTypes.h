@@ -118,6 +118,7 @@ namespace FancyZonesDataTypes
         std::wstring id;
         std::wstring instanceId;
 
+        bool isDefault() const noexcept;
         std::wstring toString() const noexcept;
     };
 
@@ -168,8 +169,7 @@ namespace FancyZonesDataTypes
 
     inline bool operator==(const DeviceId& lhs, const DeviceId& rhs)
     {
-        static const std::wstring defaultMonitorId = L"Default_Monitor";
-        if (lhs.id == defaultMonitorId)
+        if (lhs.isDefault())
         {
             return lhs.instanceId == rhs.instanceId; 
         }

@@ -133,6 +133,12 @@ namespace FancyZonesDataTypes
     {
         return id + L"_" + instanceId;
     }
+
+    bool DeviceId::isDefault() const noexcept
+    {
+        static const std::wstring defaultMonitorId = L"Default_Monitor";
+        return id == defaultMonitorId;
+    }
     
     std::wstring MonitorId::toString() const noexcept
     {
