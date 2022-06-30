@@ -70,6 +70,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Translation problem. Check your internet connection.
+        /// </summary>
+        internal static string InternetConnectionIssues {
+            get {
+                return ResourceManager.GetString("InternetConnectionIssues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Translates your text. Test (Uses the following online services: Google Translate, Bing Translator, Microsoft Translator and Yandex.Translate).
         /// </summary>
         internal static string PluginDescription {
@@ -84,15 +93,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate.Properties {
         internal static string PluginTitle {
             get {
                 return ResourceManager.GetString("PluginTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An error occurred while translating..
-        /// </summary>
-        internal static string TranslateError {
-            get {
-                return ResourceManager.GetString("TranslateError", resourceCulture);
             }
         }
     }

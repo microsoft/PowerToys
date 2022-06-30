@@ -126,7 +126,7 @@
   <data name="CopyTranslation" xml:space="preserve">
     <value>Copy this translation to the clipboard</value>
   </data>
-  <data name="TranslateError" xml:space="preserve">
-    <value>An error occurred while translating.</value>
+  <data name="InternetConnectionIssues" xml:space="preserve">
+    <value>Translation problem. Check your internet connection</value>
   </data>
 </root>

@@ -106,7 +106,17 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate
             if (langs.Length > 0 && targetText is not null)
             {
                 var translation = _translator.TranslateAsync(targetText, langs.First().Code);
-                var completed = translation.Wait(5000);
+
+                // Catch an AggregateException ( it happends when u don't have internet connection )
+                var completed = false;
+                try
+                {
+                    completed = translation.Wait(5000);
+                }
+                catch (AggregateException e)
+                {
+                    Log.Exception(e.Message, e, typeof(Main));
+                }
 
                 ITranslationResult? translationResult = null;
                 if (completed)
@@ -114,7 +124,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate
                     translationResult = translation.Result;
                 }
 
-                var translatedText = translationResult?.Translation ?? Resources.TranslateError;
+                var translatedText = translationResult?.Translation ?? Resources.InternetConnectionIssues;
 
                 return new List<Result>()
                 {
