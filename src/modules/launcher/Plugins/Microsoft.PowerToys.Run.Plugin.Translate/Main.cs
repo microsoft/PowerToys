@@ -125,7 +125,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate
                         QueryTextDisplay = translatedText,
                         SubTitle = Resources.CopyTranslation,
                         Action = _ => TryToCopyToClipBoard(translatedText),
-                        ToolTipData = new ToolTipData(Name, translationResult != null ? $"Source: {translationResult.Source};\nInput text: {translationResult.SourceLanguage.Name}" : string.Empty),
+                        ToolTipData = new ToolTipData(Name, translationResult != null ? $"Service: {translationResult.Service};\nSource language: {translationResult.SourceLanguage.Name}" : string.Empty),
                     },
                 };
             }
