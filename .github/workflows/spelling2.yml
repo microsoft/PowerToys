@@ -31,7 +31,7 @@ jobs:
       uses: actions/checkout@v2
     - name: check-spelling
       id: spelling
-      uses: check-spelling/check-spelling@v0.0.20-alpha3
+      uses: check-spelling/check-spelling@v0.0.20-alpha7
       with:
         config: .github/actions/spell-check
         suppress_push_for_open_pull_request: 1
@@ -71,7 +71,7 @@ jobs:
         name: "check-spelling-comment-${{ github.run_id }}"
         path: /tmp/data
     - name: comment
-      uses: check-spelling/check-spelling@v0.0.20-alpha3
+      uses: check-spelling/check-spelling@v0.0.20-alpha7
       with:
         config: .github/actions/spell-check
         custom_task: comment
