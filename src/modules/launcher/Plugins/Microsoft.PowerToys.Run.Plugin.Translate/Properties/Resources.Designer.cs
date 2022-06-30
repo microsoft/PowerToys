@@ -61,6 +61,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t copy to clipboard.
+        /// </summary>
+        internal static string CopyFailed {
+            get {
+                return ResourceManager.GetString("CopyFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy this translation to the clipboard.
         /// </summary>
         internal static string CopyTranslation {

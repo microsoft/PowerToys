@@ -129,4 +129,7 @@
   <data name="InternetConnectionIssues" xml:space="preserve">
     <value>Translation problem. Check your internet connection</value>
   </data>
+  <data name="CopyFailed" xml:space="preserve">
+    <value>Can't copy to clipboard</value>
+  </data>
 </root>

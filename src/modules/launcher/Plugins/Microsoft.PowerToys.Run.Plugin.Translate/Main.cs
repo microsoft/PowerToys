@@ -107,7 +107,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate
             {
                 var translation = _translator.TranslateAsync(targetText, langs.First().Code);
 
-                // Catch an AggregateException ( it happends when u don't have internet connection )
+                // Catch an AggregateException ( it happens when u don't have internet connection )
                 var completed = false;
                 try
                 {
@@ -161,6 +161,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate
             catch (Exception exception)
             {
                 Log.Exception("Can't copy to clipboard", exception, typeof(Main));
+                MessageBox.Show(Resources.CopyFailed);
                 return false;
             }
         }
