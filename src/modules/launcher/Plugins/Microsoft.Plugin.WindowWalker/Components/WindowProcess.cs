@@ -124,7 +124,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="name">New process name.</param>
         internal void UpdateProcessInfo(uint pid, uint tid, string name)
         {
-            // TODO: Add verification as to wether the process id and thread id is valid
+            // TODO: Add verification as to whether the process id and thread id is valid
             ProcessID = pid;
             ThreadID = tid;
             Name = name;
