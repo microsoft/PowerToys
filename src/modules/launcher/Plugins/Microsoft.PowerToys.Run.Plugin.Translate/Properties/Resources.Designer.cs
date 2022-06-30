@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Translates your text..
+        ///   Looks up a localized string similar to Translates your text. Test (Uses the following online services: Google Translate, Bing Translator, Microsoft Translator and Yandex.Translate).
         /// </summary>
         internal static string PluginDescription {
             get {
