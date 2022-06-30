@@ -104,7 +104,8 @@ void FrameDrawer::SetBorderRect(RECT windowRect, COLORREF color, int thickness, 
     
     const bool colorUpdated = std::memcmp(&m_sceneRect.borderColor, &newSceneRect.borderColor, sizeof(newSceneRect.borderColor));
     const bool thicknessUpdated = m_sceneRect.thickness != newSceneRect.thickness;
-    const bool needsRedraw = colorUpdated || thicknessUpdated;
+    const bool cornersUpdated = m_sceneRect.rect.has_value() != newSceneRect.rect.has_value() || m_sceneRect.roundedRect.has_value() != newSceneRect.roundedRect.has_value();
+    const bool needsRedraw = colorUpdated || thicknessUpdated || cornersUpdated;
 
     RECT clientRect;
     if (!SUCCEEDED(DwmGetWindowAttribute(m_window, DWMWA_EXTENDED_FRAME_BOUNDS, &clientRect, sizeof(clientRect))))
