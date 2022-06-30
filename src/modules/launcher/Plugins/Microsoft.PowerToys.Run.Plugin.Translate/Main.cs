@@ -82,11 +82,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Translate
                     Title = lang.Code,
                     SubTitle = $"{lang.DisplayName} - {lang.Name}",
                     IcoPath = _iconPath,
-                    Action = (_) =>
-                    {
-                        Console.WriteLine("Action");
-                        return true;
-                    },
                 });
             }
 
