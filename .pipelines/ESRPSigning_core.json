@@ -68,6 +68,8 @@
                 "modules\\ImageResizer\\PowerToys.ImageResizer.exe",
                 "modules\\ImageResizer\\PowerToys.ImageResizer.dll",
                 "modules\\ImageResizer\\PowerToys.ImageResizerExt.dll",
+                "modules\\ImageResizer\\PowerToys.ImageResizerContextMenu.dll",
+                "modules\\ImageResizer\\ImageResizerContextMenuPackage.msix",
 
                 "modules\\KeyboardManager\\PowerToys.KeyboardManager.dll",
                 "modules\\KeyboardManager\\KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
@@ -105,6 +107,8 @@
 
                 "modules\\PowerRename\\PowerToys.PowerRenameExt.dll",
                 "modules\\PowerRename\\PowerToys.PowerRename.exe",
+                "modules\\PowerRename\\PowerToys.PowerRenameContextMenu.dll",
+                "modules\\PowerRename\\PowerRenameContextMenuPackage.msix",
 
                 "modules\\ShortcutGuide\\ShortcutGuide\\PowerToys.ShortcutGuide.exe",
                 "modules\\ShortcutGuide\\ShortcutGuideModuleInterface\\PowerToys.ShortcutGuideModuleInterface.dll",

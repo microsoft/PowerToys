@@ -53,14 +53,59 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
     LoggerHelpers::init_logger(moduleName, L"", LogSettings::powerRenameLoggerName);
 
-#define BUFSIZE 4096 * 4
+    auto args = std::wstring{ GetCommandLine() };
+    size_t pos{ args.rfind(L"\\\\.\\pipe\\") };
 
-    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    std::wstring pipe_name;
+    if (pos != std::wstring::npos)
+    {
+        pipe_name = args.substr(pos);
+    }
+
+    HANDLE hStdin;
+
+    if (pipe_name.size() > 0)
+    {
+        while (1)
+        {
+            hStdin = CreateFile(
+                pipe_name.c_str(), // pipe name
+                GENERIC_READ | GENERIC_WRITE, // read and write
+                0, // no sharing
+                NULL, // default security attributes
+                OPEN_EXISTING, // opens existing pipe
+                0, // default attributes
+                NULL); // no template file
+
+            // Break if the pipe handle is valid.
+            if (hStdin != INVALID_HANDLE_VALUE)
+                break;
+
+            // Exit if an error other than ERROR_PIPE_BUSY occurs.
+            auto error = GetLastError();
+            if (error != ERROR_PIPE_BUSY)
+            {
+                break;
+            }
+
+            if (!WaitNamedPipe(pipe_name.c_str(), 3))
+            {
+                printf("Could not open pipe: 20 second wait timed out.");
+            }
+        }
+    }
+    else
+    {
+        hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    }
+
     if (hStdin == INVALID_HANDLE_VALUE)
     {
         Logger::error(L"Invalid input handle.");
         ExitProcess(1);
     }
+
+#define BUFSIZE 4096 * 4
 
     BOOL bSuccess;
     WCHAR chBuf[BUFSIZE];
@@ -86,6 +131,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
         if (!bSuccess)
             break;
     }
+    CloseHandle(hStdin);
 
     Logger::debug(L"Starting PowerRename with {} files selected", g_files.size());
 

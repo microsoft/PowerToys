@@ -28,6 +28,7 @@ struct LogSettings
     inline const static std::string findMyMouseLoggerName = "find-my-mouse";
     inline const static std::string mouseHighlighterLoggerName = "mouse-highlighter";
     inline const static std::string mousePointerCrosshairsLoggerName = "mouse-pointer-crosshairs";
+    inline const static std::string imageResizerLoggerName = "imageresizer";
     inline const static std::string powerRenameLoggerName = "powerrename";
     inline const static std::string alwaysOnTopLoggerName = "always-on-top";
     inline const static std::wstring alwaysOnTopLogPath = L"always-on-top-log.txt";

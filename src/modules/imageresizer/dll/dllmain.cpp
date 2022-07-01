@@ -2,12 +2,18 @@
 #include "Generated Files/resource.h"
 #include "ImageResizerExt_i.h"
 #include "dllmain.h"
-#include <interface/powertoy_module_interface.h>
+
+#include <ImageResizerConstants.h>
+#include <Settings.h>
+#include <trace.h>
+
+#include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/package.h>
+#include <common/utils/process_path.h>
 #include <common/utils/resources.h>
-#include "Settings.h"
-#include "trace.h"
-#include <imageresizer/dll/ImageResizerConstants.h>
+#include <common/utils/logger_helper.h>
+#include <interface/powertoy_module_interface.h>
 
 CImageResizerExtModule _AtlModule;
 HINSTANCE g_hInst_imageResizer = 0;
@@ -43,6 +49,7 @@ public:
         m_enabled = CSettingsInstance().GetEnabled();
         app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
         app_key = ImageResizerConstants::ModuleKey;
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::imageResizerLoggerName);
     };
 
     // Destroy the powertoy and free memory
@@ -89,6 +96,20 @@ public:
     {
         m_enabled = true;
         CSettingsInstance().SetEnabled(m_enabled);
+
+        if (package::IsWin11OrGreater())
+        {
+            std::wstring path = get_module_folderpath(g_hInst_imageResizer);
+            std::wstring packageUri = path + L"\\ImageResizerContextMenuPackage.msix";
+
+            std::wstring packageDisplayName{ L"ImageResizerContextMenu" };
+            if (!package::IsPackageRegistered(packageDisplayName))
+            {
+                package::RegisterSparsePackage(path, packageUri);
+            }
+        }
+
+
         Trace::EnableImageResizer(m_enabled);
     }
 
