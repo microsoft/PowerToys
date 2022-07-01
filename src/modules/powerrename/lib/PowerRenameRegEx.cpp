@@ -270,7 +270,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
             if (_useBoostLib)
             {
                 boost::wregex pattern(m_searchTerm, (!(m_flags & CaseSensitive)) ? boost::regex::icase | boost::regex::ECMAScript : boost::regex::ECMAScript);
-                if (m_flags & MatchAllOccurences)
+                if (m_flags & MatchAllOccurrences)
                 {
                     res = boost::regex_replace(wstring(source), pattern, replaceTerm);
                 }
@@ -282,7 +282,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
             else
             {
                 std::wregex pattern(m_searchTerm, (!(m_flags & CaseSensitive)) ? regex_constants::icase | regex_constants::ECMAScript : regex_constants::ECMAScript);
-                if (m_flags & MatchAllOccurences)
+                if (m_flags & MatchAllOccurrences)
                 {
                     res = regex_replace(wstring(source), pattern, replaceTerm);
                 }
@@ -305,7 +305,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
                     pos += replaceTerm.length();
                 }
 
-                if (!(m_flags & MatchAllOccurences))
+                if (!(m_flags & MatchAllOccurrences))
                 {
                     break;
                 }

@@ -64,8 +64,8 @@
     <ProjectGuid>{8df78b53-200e-451f-9328-01eb907193ae}</ProjectGuid>
     <RootNamespace>KeyboardManagerEditor</RootNamespace>
     <OverrideWindowsTargetPlatformVersion>true</OverrideWindowsTargetPlatformVersion>
-    <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <!-- Props that are constant for both Debug and Release configurations -->
   <PropertyGroup Label="Configuration">
@@ -102,7 +102,7 @@
       <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Display.lib;shcore.lib;Dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Display.lib;shcore.lib;Dbghelp.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -113,7 +113,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Display.lib;shcore.lib;Dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Display.lib;shcore.lib;Dbghelp.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

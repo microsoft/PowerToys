@@ -22,6 +22,7 @@
 #include "UIHelpers.h"
 #include "ShortcutErrorType.h"
 #include "EditorConstants.h"
+#include <common/Themes/theme_listener.h>
 
 using namespace winrt::Windows::Foundation;
 
@@ -41,6 +42,20 @@ std::mutex editKeyboardWindowMutex;
 
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
 static XamlBridge* xamlBridgePtr = nullptr;
+
+// Theming
+ThemeListener theme_listener{};
+
+void handleTheme()
+{
+    auto theme = theme_listener.AppTheme;
+    auto isDark = theme == AppTheme::Dark;
+    Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
+    if (hwndEditKeyboardNativeWindow != nullptr)
+    {
+        ThemeHelpers::SetImmersiveDarkMode(hwndEditKeyboardNativeWindow, isDark);
+    }
+}
 
 static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     KBMEditor::KeyboardManagerState& state,
@@ -130,7 +145,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
             48,
             48,
             LR_DEFAULTCOLOR);
-        
+
         if (RegisterClassEx(&windowClass) == NULL)
         {
             MessageBox(NULL, GET_RESOURCE_STRING(IDS_REGISTERCLASSFAILED_ERRORMESSAGE).c_str(), GET_RESOURCE_STRING(IDS_REGISTERCLASSFAILED_ERRORTITLE).c_str(), NULL);
@@ -149,7 +164,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
 
     DPIAware::ConvertByCursorPosition(windowWidth, windowHeight);
     DPIAware::GetScreenDPIForCursor(g_currentDPI);
-    
+
     // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
@@ -163,7 +178,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
         NULL,
         hInst,
         NULL);
-    
+
     if (_hWndEditKeyboardWindow == NULL)
     {
         MessageBox(NULL, GET_RESOURCE_STRING(IDS_CREATEWINDOWFAILED_ERRORMESSAGE).c_str(), GET_RESOURCE_STRING(IDS_CREATEWINDOWFAILED_ERRORTITLE).c_str(), NULL);
@@ -181,12 +196,15 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     hwndEditKeyboardNativeWindow = _hWndEditKeyboardWindow;
     hwndLock.unlock();
 
+    handleTheme();
+    theme_listener.AddChangedHandler(handleTheme);
+
     // Create the xaml bridge object
     XamlBridge xamlBridge(_hWndEditKeyboardWindow);
 
     // DesktopSource needs to be declared before the RelativePanel xamlContainer object to avoid errors
     winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource desktopSource;
-    
+
     // Create the desktop window xaml source object and set its content
     hWndXamlIslandEditKeyboardWindow = xamlBridge.InitDesktopWindowsXamlSource(desktopSource);
 
@@ -253,10 +271,10 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     SingleKeyRemapControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::mappingConfiguration = &mappingConfiguration;
-    
+
     // Clear the single key remap buffer
     SingleKeyRemapControl::singleKeyRemapBuffer.clear();
-    
+
     // Vector to store dynamically allocated control objects to avoid early destruction
     std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>> keyboardRemapControlObjects;
 
@@ -378,6 +396,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     xamlBridgePtr = nullptr;
     hWndXamlIslandEditKeyboardWindow = nullptr;
     hwndLock.lock();
+    theme_listener.DelChangedHandler(handleTheme);
     hwndEditKeyboardNativeWindow = nullptr;
     keyboardManagerState.ResetUIState();
     keyboardManagerState.ClearRegisteredKeyDelays();
@@ -450,8 +469,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
             rect->top,
             rect->right - rect->left,
             rect->bottom - rect->top,
-            SWP_NOZORDER | SWP_NOACTIVATE
-        );
+            SWP_NOZORDER | SWP_NOACTIVATE);
 
         Logger::trace(L"WM_DPICHANGED: new dpi {} rect {} {} ", newDPI, rect->right - rect->left, rect->bottom - rect->top);
     }
@@ -487,7 +505,7 @@ bool CheckEditKeyboardWindowActive()
         {
             ShowWindow(hwndEditKeyboardNativeWindow, SW_RESTORE);
         }
-        
+
         // If there is an already existing window no need to create a new open bring it on foreground.
         SetForegroundWindow(hwndEditKeyboardNativeWindow);
         result = true;

@@ -2,7 +2,7 @@
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>

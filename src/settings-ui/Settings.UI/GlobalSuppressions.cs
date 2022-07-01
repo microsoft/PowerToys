@@ -54,8 +54,8 @@ using System.Diagnostics.CodeAnalysis;
 // FxCop warning suppression for uninstantiated TestFixture classes
 [assembly: SuppressMessage("Microsoft.Performance", "CA1812: Avoid uninstantiated internal classes", Scope = "module", Justification = "CA1812 will be thrown for every file in the test project. This is mentioned here: dotnet/roslyn-analyzers#1830")]
 
-// WindowsAppSDK files supressions
-[assembly: SuppressMessage("CodeQuality", "IDE0076:Invalid global 'SuppressMessageAttribute'", Justification = "Affect predefined supressions.")]
+// WindowsAppSDK files suppressions
+[assembly: SuppressMessage("CodeQuality", "IDE0076:Invalid global 'SuppressMessageAttribute'", Justification = "Affect predefined suppressions.")]
 [assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Not part of the project. WindowsAppSDK file.", Scope = "type", Target = "~T:Microsoft.Windows.ApplicationModel.DynamicDependency.BootstrapCS.AutoInitialize")]
 [assembly: SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Not part of the project. WindowsAppSDK file.", Scope = "type", Target = "~T:Microsoft.WindowsAppSDK.Runtime.Version")]
 [assembly: SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Not part of the project. WindowsAppSDK file.", Scope = "type", Target = "~T:Microsoft.WindowsAppSDK.Runtime.Identity")]

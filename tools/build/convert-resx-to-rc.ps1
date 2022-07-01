@@ -141,15 +141,17 @@ Foreach-Object {
         exit 0
     }
 
-    # Add string table syntax
-    $newLinesForRCFile = "`r`nSTRINGTABLE`r`nBEGIN" + $newLinesForRCFile + "`r`nEND"
+    if ($newLinesForRCFile -ne "") {
+        # Add string table syntax
+        $newLinesForRCFile = "`r`nSTRINGTABLE`r`nBEGIN" + $newLinesForRCFile + "`r`nEND"
 
-    $langStart = "`r`n/////////////////////////////////////////////////////////////////////////////`r`n// " + $langData[3]  + " resources`r`n`r`n"
-    $langStart += "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_" + $langData[0] + ")`r`nLANGUAGE LANG_" + $langData[1] + ", SUBLANG_" + $langData[2] + "`r`n"
+        $langStart = "`r`n/////////////////////////////////////////////////////////////////////////////`r`n// " + $langData[3]  + " resources`r`n`r`n"
+        $langStart += "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_" + $langData[0] + ")`r`nLANGUAGE LANG_" + $langData[1] + ", SUBLANG_" + $langData[2] + "`r`n"
 
-    $langEnd = "`r`n`r`n#endif    // " + $langData[3] + " resources`r`n/////////////////////////////////////////////////////////////////////////////`r`n"
+        $langEnd = "`r`n`r`n#endif    // " + $langData[3] + " resources`r`n/////////////////////////////////////////////////////////////////////////////`r`n"
 
-    $newLinesForRCFile = $langStart + $newLinesForRCFile + $langEnd
+        $newLinesForRCFile = $langStart + $newLinesForRCFile + $langEnd
+    }
 
     # Initialize the rc file with an auto-generation warning and content from the base rc
     if (!$rcFileUpdated) {

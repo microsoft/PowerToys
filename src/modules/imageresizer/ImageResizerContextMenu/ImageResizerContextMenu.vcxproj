@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h ImageResizerContextMenu.base.rc ImageResizerContextMenu.rc" />
+  </Target>
+  <PropertyGroup Label="Globals">
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{93b72a06-c8bd-484f-a6f7-c9f280b150bf}</ProjectGuid>
+    <RootNamespace>ImageResizerContextMenu</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <TargetName>PowerToys.ImageResizerContextMenu</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\ImageResizer\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;IMAGERESIZERCONTEXTMENU_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>..\ImageResizerLib;..\..\..\common\inc;..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+    </Link>
+    <PreBuildEvent>
+      <Command>del $(OutDir)*.msix /q
+MakeAppx.exe pack /d . /p $(OutDir)ImageResizerContextMenuPackage.msix /nv</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;IMAGERESIZERCONTEXTMENU_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>..\ImageResizerLib;..\..\..\common\inc;..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+    </Link>
+    <PreBuildEvent>
+      <Command>del $(OutDir)*.msix /q
+MakeAppx.exe pack /d . /p $(OutDir)ImageResizerContextMenuPackage.msix /nv</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="pch.h" />
+    <None Include="resource.base.h" />
+    <ClInclude Include="Generated Files/resource.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files/ImageResizerContextMenu.rc" />
+    <None Include="ImageResizerContextMenu.base.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ImageResizer.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
+      <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
+      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ImageResizerLib\ImageResizerLib.vcxproj">
+      <Project>{18b3db45-4ffe-4d01-97d6-5223feee1853}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources.resx" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="..\..\..\..\deps\spdlog.props" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+</Project>

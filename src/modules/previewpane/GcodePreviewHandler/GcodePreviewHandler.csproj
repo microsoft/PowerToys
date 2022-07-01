@@ -16,7 +16,7 @@
   <PropertyGroup>
     <ProjectGuid>{805306FF-A562-4415-8DEF-E493BDC45918}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Gcode</RootNamespace>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
   </PropertyGroup>

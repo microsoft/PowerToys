@@ -21,6 +21,8 @@
 #include "microsoft.ui.xaml.window.h"
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Microsoft.UI.Windowing.h>
+#include <common/Themes/theme_helpers.h>
+#include <common/Themes/theme_listener.h>
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;
@@ -35,15 +37,31 @@ HINSTANCE g_hostHInst;
 
 extern std::vector<std::wstring> g_files;
 
+// Theming
+ThemeListener theme_listener{};
+HWND CurrentWindow;
+
+void handleTheme() {
+    auto theme = theme_listener.AppTheme;
+    auto isDark = theme == AppTheme::Dark;
+    Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
+    ThemeHelpers::SetImmersiveDarkMode(CurrentWindow, isDark);
+}
+
 namespace winrt::PowerRenameUI::implementation
 {
     MainWindow::MainWindow() :
         m_instance{ nullptr }, m_allSelected{ true }, m_managerEvents{ this }
     {
-
         auto windowNative{ this->try_as<::IWindowNative>() };
         winrt::check_bool(windowNative);
         windowNative->get_WindowHandle(&m_window);
+        CurrentWindow = m_window;
+
+        // Attach theme handling
+        theme_listener.AddChangedHandler(handleTheme);
+        handleTheme();
+
         Microsoft::UI::WindowId windowId =
             Microsoft::UI::GetWindowIdFromWindow(m_window);
 
@@ -68,7 +86,6 @@ namespace winrt::PowerRenameUI::implementation
                              true);
             }
         }
-
 
         Microsoft::UI::Windowing::AppWindow appWindow =
             Microsoft::UI::Windowing::AppWindow::GetFromWindowId(windowId);
@@ -638,13 +655,13 @@ namespace winrt::PowerRenameUI::implementation
             }
         });
 
-        // CheckBox MatchAllOccurences
+        // CheckBox MatchAllOccurrences
         checkBox_matchAll().Checked([&](auto const&, auto const&) {
-            ValidateFlags(MatchAllOccurences);
-            UpdateFlag(MatchAllOccurences, UpdateFlagCommand::Set);
+            ValidateFlags(MatchAllOccurrences);
+            UpdateFlag(MatchAllOccurrences, UpdateFlagCommand::Set);
         });
         checkBox_matchAll().Unchecked([&](auto const&, auto const&) {
-            UpdateFlag(MatchAllOccurences, UpdateFlagCommand::Reset);
+            UpdateFlag(MatchAllOccurrences, UpdateFlagCommand::Reset);
         });
 
         // ToggleButton IncludeFiles
@@ -867,7 +884,7 @@ namespace winrt::PowerRenameUI::implementation
         {
             checkBox_case().IsChecked(true);
         }
-        if (flags & MatchAllOccurences)
+        if (flags & MatchAllOccurrences)
         {
             checkBox_matchAll().IsChecked(true);
         }

@@ -25,6 +25,7 @@
         <File DestinationPath="modules\Newtonsoft.Json.dll" SourcePath="..\..\x64\Release\modules\Newtonsoft.Json.dll"/>
         <File DestinationPath="modules\PowerKeys.dll" SourcePath="..\..\x64\Release\modules\PowerKeys.dll"/>
         <File DestinationPath="modules\System.Text.Json.dll" SourcePath="..\..\x64\Release\modules\System.Text.Json.dll"/>
+        <File DestinationPath="modules\System.Management.dll" SourcePath="..\..\x64\Release\modules\System.Management.dll"/>
         <File DestinationPath="modules\System.Memory.dll" SourcePath="..\..\x64\Release\modules\System.Memory.dll"/>
         <File DestinationPath="modules\System.Buffers.dll" SourcePath="..\..\x64\Release\modules\System.Buffers.dll"/>
         <File DestinationPath="modules\System.Runtime.CompilerServices.Unsafe.dll" SourcePath="..\..\x64\Release\modules\System.Runtime.CompilerServices.Unsafe.dll"/>
@@ -33,6 +34,7 @@
         <File DestinationPath="modules\System.ValueTuple.dll" SourcePath="..\..\x64\Release\modules\System.ValueTuple.dll"/>
         <File DestinationPath="modules\System.Numerics.Vectors.dll" SourcePath="..\..\x64\Release\modules\System.Numerics.Vectors.dll"/>
         <File DestinationPath="modules\Microsoft.Bcl.AsyncInterfaces.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Bcl.AsyncInterfaces.dll"/>
+        <File DestinationPath="modules\Microsoft.Win32.Registry.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Win32.Registry.dll"/>
         <File DestinationPath="modules\PowerToys.powerpreview.dll" SourcePath="..\..\x64\Release\modules\PowerToys.powerpreview.dll"/>
         <File DestinationPath="modules\PowerToys.PreviewHandlerCommon.dll" SourcePath="..\..\x64\Release\modules\PowerToys.PreviewHandlerCommon.dll"/>
         <File DestinationPath="modules\PowerToys.SvgPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\PowerToys.SvgPreviewHandler.dll"/>

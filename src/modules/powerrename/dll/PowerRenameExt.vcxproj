@@ -8,7 +8,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{B25AC7A5-FB9F-4789-B392-D5C85E948670}</ProjectGuid>
     <RootNamespace>PowerRenameExt</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -63,6 +63,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\version\version.vcxproj">
+      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
     </ProjectReference>
     <ProjectReference Include="..\lib\PowerRenameLib.vcxproj">
       <Project>{51920f1f-c28c-4adf-8660-4238766796c2}</Project>

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyTitle>PowerToys.Run</AssemblyTitle>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <StartupObject>PowerLauncher.App</StartupObject>

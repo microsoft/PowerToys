@@ -14,6 +14,7 @@
 #include <common/utils/timeutil.h>
 #include <common/utils/exec.h>
 
+#include "Package.h"
 #include "ReportMonitorInfo.h"
 #include "RegistryUtils.h"
 #include "EventViewer.h"
@@ -350,6 +351,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     ReportVCMLogs(tempDir, reportDir);
     
     ReportInstallerLogs(tempDir, reportDir);
+
+    ReportInstalledContextMenuPackages(reportDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);

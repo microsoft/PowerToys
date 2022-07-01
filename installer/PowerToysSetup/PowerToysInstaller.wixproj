@@ -10,7 +10,7 @@
     using a specific profile. If you're doing local installer builds, this will
     simulate the build pipeline doing that for you. -->
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
-call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.18362.0
+call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0
 SET PTRoot=..\..\..\..
 call "..\..\publish.cmd" x64
 )</PreBuildEvent>
@@ -19,7 +19,7 @@ call "..\..\publish.cmd" x64
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\modules\FileExplorerPreview\monacoSRC</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
-call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.18362.0
+call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0
 SET PTRoot=..\..\..\..
 call "..\..\publish.cmd" arm64
 )</PreBuildEvent>
@@ -48,7 +48,7 @@ call "..\..\publish.cmd" arm64
   </PropertyGroup>
   <PropertyGroup>
     <!-- suppress warning 1108 regarding -sh being deprecated -->
-    <!-- -sh suppresses file file information which was causing wix build to hang in CI -->
+    <!-- -sh suppresses file information which was causing wix build to hang in CI -->
     <LinkerAdditionalOptions>-v -sh -sw1108</LinkerAdditionalOptions>
   </PropertyGroup>
   <ItemGroup>

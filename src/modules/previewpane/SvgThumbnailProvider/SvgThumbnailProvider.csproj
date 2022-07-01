@@ -6,7 +6,7 @@
     <AssemblyName>PowerToys.SvgThumbnailProvider</AssemblyName>
     <AssemblyTitle>PowerToys.SvgThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys SvgPreviewHandler</AssemblyDescription>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Description>PowerToys SvgPreviewHandler</Description>
