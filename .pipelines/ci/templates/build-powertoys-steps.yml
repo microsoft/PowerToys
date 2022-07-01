@@ -132,7 +132,7 @@ steps:
       #    maximumCpuCount: true
 
 # start explorer.exe in the background, so that WebView2 tests are able to run
-pwsh: 'Start-Process PowerShell -ArgumentList "explorer.exe"'
+- pwsh: 'Start-Process PowerShell -ArgumentList "explorer.exe"'
 
 # directly not doing WinAppDriver testing
 - task: VSTest@2
