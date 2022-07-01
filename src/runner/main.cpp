@@ -112,7 +112,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 
 #if _DEBUG && _WIN64
 //Global error handlers to diagnose errors.
-//We prefer this not not show any longer until there's a bug to diagnose.
+//We prefer this not to show any longer until there's a bug to diagnose.
 //init_global_error_handlers();
 #endif
     Trace::RegisterProvider();

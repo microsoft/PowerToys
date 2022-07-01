@@ -187,7 +187,7 @@ namespace ColorPicker
             public int Flags;
 
             /// <summary>
-            /// The time stamp stamp for this message, equivalent to what GetMessageTime would return for this message.
+            /// The time stamp for this message, equivalent to what GetMessageTime would return for this message.
             /// </summary>
             public int TimeStamp;
 

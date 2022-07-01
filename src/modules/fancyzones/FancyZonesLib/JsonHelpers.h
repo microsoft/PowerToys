@@ -88,29 +88,6 @@ namespace JSONHelpers
     using TCustomZoneSetsMap = std::unordered_map<std::wstring, FancyZonesDataTypes::CustomLayoutData>;
     using TLayoutQuickKeysMap = std::unordered_map<std::wstring, int>;
 
-    struct MonitorInfo
-    {
-        std::wstring monitorName;
-        std::wstring virtualDesktop;
-        int dpi;
-        int top;
-        int left;
-        int width;
-        int height;
-        bool isSelected = false;
-
-        static json::JsonObject ToJson(const MonitorInfo& monitor);
-    };
-    
-    struct EditorArgs
-    {
-        DWORD processId;
-        bool spanZonesAcrossMonitors;
-        std::vector<MonitorInfo> monitors;
-
-        static json::JsonObject ToJson(const EditorArgs& args);
-    };
-
     json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName);
 
     // replace zones-settings: applied layouts

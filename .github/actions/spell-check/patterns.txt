@@ -43,8 +43,6 @@ Hash="[0-9A-F]{40}"
 # hex digits including css/html color classes:
 (?:[\\0][xX]|\\u|[uU]\+|#x?|\%23|L")[0-9a-fA-FgGrR_]{2,}(?:[uU]?[lL]{0,2}|u\d+)\b
 
-# ignore long runs of a single character:
-\b([A-Za-z])\g{-1}{3,}\b
 (?:L"[abAB]+", ){3}L"[abAB]+"
 "Lorem[^"]+?\."
 TestCase\("[^"]+"
@@ -105,3 +103,14 @@ http://tes/
 
 # tar arguments
 \b(?:\\n|)tar(?:\s+-[a-zA-Z]+|\s[a-z]+)+
+
+# acceptable duplicates
+# /bin/ls -l output
+[-bcdlpsw](?:[-r][-w][-sx]){3}\s+\d+\s+(\S+)\s+\g{-1}\s+\d+\s+
+# C types
+\s(long|LONG) \g{-1}\s
+# javadoc / .net
+(?:\@(?:groupname|param)|(?:public|private)(?:\s+static|\s+readonly)*)\s+(\w+)\s+\g{-1}\s
+
+# ignore long runs of a single character:
+\b([A-Za-z])\g{-1}{3,}\b

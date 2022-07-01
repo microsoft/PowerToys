@@ -41,28 +41,6 @@ namespace FancyZonesUnitTests
 
     TEST_CLASS(UtilUnitTests)
     {
-        TEST_METHOD (TestTrimDeviceId)
-        {
-            // We're interested in the unique part between the first and last #'s
-            // Example input: \\?\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}
-            // Example output: DELA026#5&10a58c63&0&UID16777488
-            const std::wstring input = L"\\\\?\\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
-            const std::wstring actual = TrimDeviceId(input);
-            const std::wstring expected = L"DELA026#5&10a58c63&0&UID16777488";
-            Assert::AreEqual(expected, actual);
-        }
-
-        TEST_METHOD(TestTrimInvalidDeviceId)
-        {
-            // We're interested in the unique part between the first and last #'s
-            // Example input: \\?\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}
-            // Example output: DELA026#5&10a58c63&0&UID16777488
-            const std::wstring input = L"AnInvalidDeviceId";
-            const std::wstring actual = TrimDeviceId(input);
-            const std::wstring expected = L"FallbackDevice";
-            Assert::AreEqual(expected, actual);
-        }
-
         TEST_METHOD(TestParseDeviceId01)
         {
             const std::wstring input = L"AOC0001#5&37ac4db&0&UID160002_1536_960_{E0A2904E-889C-4532-95B1-28FE15C16F66}";

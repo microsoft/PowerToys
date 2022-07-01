@@ -741,14 +741,8 @@ namespace FancyZonesUnitTests
     TEST_CLASS (DeviceInfoUnitTests)
     {
     private:
-        FancyZonesDataTypes::DeviceIdData m_defaultDeviceId{ .deviceName = L"AOC2460#4&fe3a015&0&UID65793", .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{33A2B101-06E0-437B-A61E-CDBECF502907}").value() };
         DeviceInfoJSON m_defaultDeviceInfo = DeviceInfoJSON{ BackwardsCompatibility::DeviceIdData::ParseDeviceId(L"AOC2460#4&fe3a015&0&UID65793_1920_1080_{33A2B101-06E0-437B-A61E-CDBECF502907}").value(), DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
         json::JsonObject m_defaultJson = json::JsonObject::Parse(L"{\"device-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"active-zoneset\": {\"type\": \"custom\", \"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}");
-
-        TEST_METHOD_INITIALIZE(Init)
-        {
-            CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_defaultDeviceId.virtualDesktopId);
-        }
 
     public:
         TEST_METHOD (FromJson)
@@ -791,9 +785,7 @@ namespace FancyZonesUnitTests
         const std::wstring m_defaultCustomDeviceStr = L"{\"device-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"active-zoneset\": {\"type\": \"custom\", \"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\"}, \"editor-show-spacing\": true, \"editor-spacing\": 16, \"editor-zone-count\": 3}";
         const std::wstring m_defaultCustomLayoutStr = L"{\"device-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"applied-layout\": {\"type\": \"custom\", \"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"show-spacing\": true, \"spacing\": 16, \"zone-count\": 3, \"sensitivity-radius\": 30}}";
         const json::JsonValue m_defaultCustomDeviceValue = json::JsonValue::Parse(m_defaultCustomDeviceStr);
-        
-        const FancyZonesDataTypes::DeviceIdData m_defaultDeviceId = FancyZonesDataTypes::DeviceIdData{ .deviceName = L"AOC2460#4&fe3a015&0&UID65793", .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value() };
-        
+                
         TEST_METHOD_INITIALIZE(Init)
         {
             std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
@@ -883,40 +875,5 @@ namespace FancyZonesUnitTests
 
                 Assert::AreEqual((size_t)10, deviceInfoMap->size());
             }
-    };
-
-    TEST_CLASS(EditorArgsUnitTests)
-    {
-        TEST_METHOD(MonitorToJson)
-        {
-            MonitorInfo monitor{ L"AOC2460#4&fe3a015&0&UID65793", L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", 144, -10, 0, 1920, 1080, true };
-
-            const auto expectedStr = L"{\"monitor\": \"AOC2460#4&fe3a015&0&UID65793\", \"virtual-desktop\": \"{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"dpi\": 144, \"top-coordinate\": -10, \"left-coordinate\": 0, \"width\": 1920, \"height\": 1080, \"is-selected\": true}";
-            const auto expected = json::JsonObject::Parse(expectedStr);
-
-            const auto actual = MonitorInfo::ToJson(monitor);
-
-            auto res = CustomAssert::CompareJsonObjects(expected, actual);
-            Assert::IsTrue(res.first, res.second.c_str());
-        }
-
-        TEST_METHOD(EditorArgsToJson)
-        {
-            MonitorInfo monitor1{ L"AOC2460#4&fe3a015&0&UID65793", L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", 144, -10, 0, 1920, 1080, true };
-            MonitorInfo monitor2{ L"AOC2460#4&fe3a015&0&UID65793", L"{39B25DD2-130D-4B5D-8851-4791D66B1538}", 96, 0, 1920, 1920, 1080, false };
-            EditorArgs args{
-                1, true, std::vector<MonitorInfo>{ monitor1, monitor2 }
-            };
-
-            const std::wstring expectedMonitor1 = L"{\"monitor\": \"AOC2460#4&fe3a015&0&UID65793\", \"virtual-desktop\": \"{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"dpi\": 144, \"top-coordinate\": -10, \"left-coordinate\": 0, \"width\": 1920, \"height\": 1080, \"is-selected\": true}";
-            const std::wstring expectedMonitor2 = L"{\"monitor\": \"AOC2460#4&fe3a015&0&UID65793\", \"virtual-desktop\": \"{39B25DD2-130D-4B5D-8851-4791D66B1538}\", \"dpi\": 96, \"top-coordinate\": 0, \"left-coordinate\": 1920, \"width\": 1920, \"height\": 1080, \"is-selected\": false}";
-            const std::wstring expectedStr = L"{\"process-id\": 1, \"span-zones-across-monitors\": true, \"monitors\": [" + expectedMonitor1 + L", " + expectedMonitor2 + L"]}";
-            
-            const auto expected = json::JsonObject::Parse(expectedStr);
-            const auto actual = EditorArgs::ToJson(args);
-
-            auto res = CustomAssert::CompareJsonObjects(expected, actual);
-            Assert::IsTrue(res.first, res.second.c_str());
-        }
     };
 }

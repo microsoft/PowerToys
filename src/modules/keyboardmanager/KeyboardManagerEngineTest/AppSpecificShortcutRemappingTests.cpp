@@ -94,7 +94,7 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
         }
 
-        // Test if the the keyboard manager state's activated app is correctly set after an app specific remap takes place
+        // Test if the keyboard manager state's activated app is correctly set after an app specific remap takes place
         TEST_METHOD (AppSpecificShortcut_ShouldSetCorrectActivatedApp_WhenRemapOccurs)
         {
             // Remap Ctrl+A to Alt+V
@@ -236,7 +236,7 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
         }
 
-        // Test if the the keyboard manager state's activated app is correctly set after an app specific shortcut to key remap takes place
+        // Test if the keyboard manager state's activated app is correctly set after an app specific shortcut to key remap takes place
         TEST_METHOD (AppSpecificShortcutToSingleKey_ShouldSetCorrectActivatedApp_WhenRemapOccurs)
         {
             // Remap Ctrl+A to V

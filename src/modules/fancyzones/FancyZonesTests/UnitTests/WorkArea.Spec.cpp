@@ -23,12 +23,14 @@ namespace FancyZonesUnitTests
 
     TEST_CLASS (WorkAreaCreationUnitTests)
     {
-        FancyZonesDataTypes::DeviceIdData m_uniqueId;
-        FancyZonesDataTypes::DeviceIdData m_emptyUniqueId;
+        FancyZonesDataTypes::WorkAreaId m_uniqueId;
+        FancyZonesDataTypes::WorkAreaId m_emptyUniqueId;
 
         TEST_METHOD_INITIALIZE(Init)
         {
-            m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
+            m_uniqueId.monitorId.deviceId.id = L"DELA026";
+            m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
+            m_uniqueId.monitorId.serialNumber = L"serial-number";
             auto res = CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
             Assert::IsTrue(SUCCEEDED(res));
 
@@ -70,8 +72,10 @@ namespace FancyZonesUnitTests
         {
             using namespace FancyZonesDataTypes;
 
-            FancyZonesDataTypes::DeviceIdData parentUniqueId;
-            parentUniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
+            FancyZonesDataTypes::WorkAreaId parentUniqueId;
+            parentUniqueId.monitorId.deviceId.id = L"DELA026";
+            parentUniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
+            parentUniqueId.monitorId.serialNumber = L"serial-number";
             parentUniqueId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value();
 
             Layout layout{
@@ -104,15 +108,17 @@ namespace FancyZonesUnitTests
 
     TEST_CLASS (WorkAreaUnitTests)
     {
-        FancyZonesDataTypes::DeviceIdData m_uniqueId;
-        FancyZonesDataTypes::DeviceIdData m_parentUniqueId; // default empty
+        FancyZonesDataTypes::WorkAreaId m_uniqueId;
+        FancyZonesDataTypes::WorkAreaId m_parentUniqueId; // default empty
 
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};
 
         TEST_METHOD_INITIALIZE(Init)
         {
-            m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
+            m_uniqueId.monitorId.deviceId.id = L"DELA026";
+            m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
+            m_uniqueId.monitorId.serialNumber = L"serial-number";
             CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
 
             AppZoneHistory::instance().LoadData();

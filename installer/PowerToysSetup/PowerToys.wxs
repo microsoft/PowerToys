@@ -10,9 +10,9 @@
     <?define Dotnet6PayloadSize="57791288"?>
     <?define Dotnet6PayloadHash="B5B1819CCA753B070181F50411375B80412860A3"?>
 
-    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/6b6923b0-3045-4379-a96f-ef5506a65d5b/426A34C6F10EA8F7DA58A8C976B586AD84DD4BAB42A0CFDBE941F1763B7755E5/VC_redist.x64.exe"?>
-    <?define VCRedistPayloadSize="25337776"?>
-    <?define VCRedistPayloadHash="47996AAB6A20DBBA69969C4B36F8FC718877751F"?>
+    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/ed95ef9e-da02-4735-9064-bd1f7f69b6ed/CE6593A1520591E7DEA2B93FD03116E3FC3B3821A0525322B0A430FAA6B3C0B4/VC_redist.x64.exe"?>
+    <?define VCRedistPayloadSize="25234792"?>
+    <?define VCRedistPayloadHash="D4F9181E70E3F1AA6C8EDFFCC15B3C3D4BABE36B"?>
 
     <?define PlatformProgramFiles="[ProgramFiles64Folder]"?>
 <?else?>
@@ -24,9 +24,9 @@
     <?define Dotnet6PayloadSize="51774400"?>
     <?define Dotnet6PayloadHash="62C15858951B123AFD4D3E14F8BE4829A7CAFF18"?>
     
-    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/6b6923b0-3045-4379-a96f-ef5506a65d5b/6114C0A7A526EA47D9ADD78C718BEA0BA32EEF0826AA5610AF76877CC5FEB7F3/VC_redist.arm64.exe"?>
-    <?define VCRedistPayloadSize="11596400"?>
-    <?define VCRedistPayloadHash="DEF8E16367DE4BDDE0399614B7E358629A959942"?>
+    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/ed95ef9e-da02-4735-9064-bd1f7f69b6ed/8E126191012691AE22A0D5A89FAC01B59BABC7B680E5D9B65828935FD366E375/VC_redist.arm64.exe"?>
+    <?define VCRedistPayloadSize="11500416"?>
+    <?define VCRedistPayloadHash="FEECAC80EF04125B058381487332872896F38477"?>
 
 <!--TODO: define to ARM64 Program files once it's available-->
     <?define PlatformProgramFiles="[ProgramFiles6432Folder]"?> 
@@ -67,7 +67,7 @@
 
       <Variable Name="DetectedWindowsBuildNumber" Type="version" Value="0"/>
       <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Format="raw" Variable="DetectedWindowsBuildNumber" />
-      <bal:Condition Message="This application is only supported on Windows 10 version 1903 (build 18362) or higher.">DetectedWindowsBuildNumber &gt;= 18362 OR WixBundleInstalled</bal:Condition>
+      <bal:Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher.">DetectedWindowsBuildNumber &gt;= 19041 OR WixBundleInstalled</bal:Condition>
     
       <util:RegistrySearch Variable="DetectedVCRedistVersion" Root="HKLM" Key="Software\Microsoft\VisualStudio\14.0\VC\Runtimes\$(var.PowerToysPlatform)" Value="Minor" Result="value" Format="raw" />
 
@@ -104,7 +104,7 @@
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
             <ExePackage
-                Name="VCRedist-14.32.31326.exe"
+                Name="VCRedist-14.32.31332.exe"
                 DetectCondition="DetectedVCRedistVersion >= 32"
                 Compressed="no"
                 Id="VCRedist"
@@ -112,11 +112,12 @@
                 InstallCommand="/install /quiet /norestart"
                 RepairCommand="/repair /quiet /norestart"
                 Permanent="yes">
+                <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
-                    Description="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31326"
-                    ProductName="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31326"
+                    Description="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31332"
+                    ProductName="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31332"
                     Size="$(var.VCRedistPayloadSize)"
-                    Version="14.32.31326.0"
+                    Version="14.32.31332.0"
                     Hash="$(var.VCRedistPayloadHash)" />
             </ExePackage>
             <MsiPackage

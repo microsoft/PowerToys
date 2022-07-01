@@ -13,7 +13,7 @@
         xmlns:controls="clr-namespace:ModernWpf.Controls;assembly=ModernWpf"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="FancyZones Editor"
+        Title="{x:Static props:Resources.Fancy_Zones_Editor_App_Title}"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
         ui:TitleBar.Background="{DynamicResource TertiaryBackgroundBrush}"
@@ -84,7 +84,7 @@
                     <ToolTip>
                         <StackPanel>
                             <TextBlock FontWeight="SemiBold">
-                                <Run Text="Monitor" />
+                                <Run Text="{x:Static props:Resources.Monitor}" />
                                 <Run Text="{Binding Index}" />
                             </TextBlock>
                             <TextBlock Text="{Binding Dimensions}" />
@@ -111,7 +111,13 @@
                                FontWeight="SemiBold"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               Opacity="0.6"
+                               Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
+                    <TextBlock Name="ScalingText"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding Scaling}"
+                               Margin="0,0,0,0"
+                               FontSize="8"
+                               HorizontalAlignment="Center"
                                Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
                 </StackPanel>
             </Border>
@@ -588,7 +594,7 @@
                                        FontSize="16"
                                        ToolTip="{x:Static props:Resources.Distance_adjacent_zones}"
                                         AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
-                                       Text="&#xF617;" />
+                                       Text="&#xE78A;" />
 
                             <ui:NumberBox Text="{Binding SensitivityRadius}"
                                           Width="216"

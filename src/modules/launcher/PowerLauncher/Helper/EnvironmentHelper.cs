@@ -221,9 +221,9 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// Checks wether this process is running under the system user/account.
+        /// Checks whether this process is running under the system user/account.
         /// </summary>
-        /// <returns>A boolean value that indicates wether this process is running under system account (true) or not (false).</returns>
+        /// <returns>A boolean value that indicates whether this process is running under system account (true) or not (false).</returns>
         private static bool IsRunningAsSystem()
         {
             using (var identity = WindowsIdentity.GetCurrent())

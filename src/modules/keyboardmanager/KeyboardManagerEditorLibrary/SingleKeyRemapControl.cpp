@@ -147,7 +147,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         UIElementCollection children = parent.Children();
         bool indexFound = children.IndexOf(row, rowIndex);
 
-        // IndexOf could fail if the the row got deleted and the button handler was invoked twice. In this case it should return
+        // IndexOf could fail if the row got deleted and the button handler was invoked twice. In this case it should return
         if (!indexFound)
         {
             return;

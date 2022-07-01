@@ -18,11 +18,11 @@ namespace FancyZonesEditor.Models
 
         public Device Device { get; set; }
 
-        public Monitor(Rect bounds, Rect workArea)
+        public Monitor(Rect workArea, Size monitorSize)
         {
             Window = new LayoutOverlayWindow();
             Settings = new LayoutSettings();
-            Device = new Device(bounds, workArea);
+            Device = new Device(workArea, monitorSize);
 
             if (App.DebugMode)
             {
@@ -41,10 +41,10 @@ namespace FancyZonesEditor.Models
             Window.Height = workArea.Height;
         }
 
-        public Monitor(string monitorName, string virtualDesktop, int dpi, Rect bounds, Rect workArea)
-            : this(bounds, workArea)
+        public Monitor(string monitorName, string monitorInstanceId, string monitorSerialNumber, string virtualDesktop, int dpi, Rect workArea, Size monitorSize)
+            : this(workArea, monitorSize)
         {
-            Device = new Device(monitorName, virtualDesktop, dpi, bounds, workArea);
+            Device = new Device(monitorName, monitorInstanceId, monitorSerialNumber, virtualDesktop, dpi, workArea, monitorSize);
         }
 
         public void Scale(double scaleFactor)

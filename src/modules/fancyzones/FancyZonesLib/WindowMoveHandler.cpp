@@ -375,20 +375,22 @@ void WindowMoveHandler::SetWindowTransparency(HWND window) noexcept
     if (FancyZonesSettings::settings().makeDraggedWindowTransparent)
     {
         m_windowTransparencyProperties.draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
-
-        m_windowTransparencyProperties.draggedWindow = window;
+        
         SetWindowLong(window,
                       GWL_EXSTYLE,
                       m_windowTransparencyProperties.draggedWindowExstyle | WS_EX_LAYERED);
 
         if (!GetLayeredWindowAttributes(window, &m_windowTransparencyProperties.draggedWindowCrKey, &m_windowTransparencyProperties.draggedWindowInitialAlpha, &m_windowTransparencyProperties.draggedWindowDwFlags))
         {
-            Logger::error(L"SetWindowTransparency: GetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Window transparency: GetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            return;
         }
+
+        m_windowTransparencyProperties.draggedWindow = window;
 
         if (!SetLayeredWindowAttributes(window, 0, (255 * 50) / 100, LWA_ALPHA))
         {
-            Logger::error(L"SetWindowTransparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
         }
     }
 }
@@ -399,12 +401,12 @@ void WindowMoveHandler::ResetWindowTransparency() noexcept
     {
         if (!SetLayeredWindowAttributes(m_windowTransparencyProperties.draggedWindow, m_windowTransparencyProperties.draggedWindowCrKey, m_windowTransparencyProperties.draggedWindowInitialAlpha, m_windowTransparencyProperties.draggedWindowDwFlags))
         {
-            Logger::error(L"ResetWindowTransparency: SetLayeredWindowAttributes failed");
+            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed");
         }
         
         if (SetWindowLong(m_windowTransparencyProperties.draggedWindow, GWL_EXSTYLE, m_windowTransparencyProperties.draggedWindowExstyle) == 0)
         {
-            Logger::error(L"ResetWindowTransparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Window transparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));
         }
 
         m_windowTransparencyProperties.draggedWindow = nullptr;

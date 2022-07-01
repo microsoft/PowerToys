@@ -61,7 +61,7 @@ A full entry for the `WindowsSettings.json` looks like:
 * The integer value for `IntroducedInBuild` and  `DeprecatedInBuild` must be in range of `0` to `4294967295`
 * The strings for `Name`, `AltNames`, `Areas`, `Type` and `Note` must not contain whitespace(s) or special characters (#, €, $, etc.)
 * The strings for `Name`, `AltNames`, `Areas`, `Type` and `Note` are used as ids for the resource file under `Properties\Resources.resx`
-* When you add new strings make sure you have add add all translations for it.
+* When you add new strings make sure you have added all translations for it.
 
 ## Scores
 
@@ -141,7 +141,7 @@ Because the JSON file must have a object as root type, instead of a array.
 
 | Name            | Value                                                                                               |
 | --------------- | --------------------------------------------------------------------------------------------------- |
-| TargetFramework | `net6.0-windows` (.NET 5) or `net6.0-windows10.0.18362.0` (OS version specific)                     |
+| TargetFramework | `net6.0-windows` (.NET 5) or `net6.0-windows10.0.19041.0` (OS version specific)                     |
 | Platforms       | `x64`                                                                                               |
 | Output          | `..\..\..\..\..\x64\Debug\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\` |
 | RootNamespace   | `Microsoft.PowerToys.Run.Plugin.WindowsSettings`                                                    |

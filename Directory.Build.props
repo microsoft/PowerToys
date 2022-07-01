@@ -16,7 +16,7 @@
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
-    <RepositoryType>Github</RepositoryType>
+    <RepositoryType>GitHub</RepositoryType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">

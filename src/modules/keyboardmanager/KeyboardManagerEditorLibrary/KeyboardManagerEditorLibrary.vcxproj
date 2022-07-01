@@ -7,8 +7,8 @@
     <ProjectGuid>{23d2070d-e4ad-4add-85a7-083d9c76ad49}</ProjectGuid>
     <RootNamespace>KeyboardManagerEditorLibrary</RootNamespace>
     <OverrideWindowsTargetPlatformVersion>true</OverrideWindowsTargetPlatformVersion>
-    <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">

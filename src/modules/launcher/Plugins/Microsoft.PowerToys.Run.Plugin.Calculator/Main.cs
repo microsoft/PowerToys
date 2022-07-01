@@ -34,18 +34,19 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
+            // The number examples has to be created at runtime to prevent translation.
             new PluginAdditionalOption()
             {
                 Key = "InputUseEnglishFormat",
                 DisplayLabel = Resources.wox_plugin_calculator_in_en_format,
-                DisplayDescription = Resources.wox_plugin_calculator_in_en_format_description,
+                DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_calculator_in_en_format_description, 1000.55.ToString("N2", new CultureInfo("en-us"))),
                 Value = false,
             },
             new PluginAdditionalOption()
             {
                 Key = "OutputUseEnglishFormat",
                 DisplayLabel = Resources.wox_plugin_calculator_out_en_format,
-                DisplayDescription = Resources.wox_plugin_calculator_out_en_format_description,
+                DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_calculator_out_en_format_description, 1000.55.ToString("G", new CultureInfo("en-us"))),
                 Value = false,
             },
         };

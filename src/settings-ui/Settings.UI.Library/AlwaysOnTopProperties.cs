@@ -14,9 +14,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const bool DefaultFrameEnabled = true;
         public const int DefaultFrameThickness = 15;
         public const string DefaultFrameColor = "#0099cc";
+        public const bool DefaultFrameAccentColor = true;
         public const bool DefaultSoundEnabled = true;
         public const bool DefaultDoNotActivateOnGameMode = true;
-        public const bool DefaultFrameAccentColor = true;
+        public const bool DefaultRoundCornersEnabled = true;
 
         public AlwaysOnTopProperties()
         {
@@ -24,10 +25,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FrameEnabled = new BoolProperty(DefaultFrameEnabled);
             FrameThickness = new IntProperty(DefaultFrameThickness);
             FrameColor = new StringProperty(DefaultFrameColor);
+            FrameAccentColor = new BoolProperty(DefaultFrameAccentColor);
             SoundEnabled = new BoolProperty(DefaultSoundEnabled);
             DoNotActivateOnGameMode = new BoolProperty(DefaultDoNotActivateOnGameMode);
+            RoundCornersEnabled = new BoolProperty(DefaultRoundCornersEnabled);
             ExcludedApps = new StringProperty();
-            FrameAccentColor = new BoolProperty(DefaultFrameAccentColor);
         }
 
         [JsonPropertyName("hotkey")]
@@ -42,6 +44,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("frame-color")]
         public StringProperty FrameColor { get; set; }
 
+        [JsonPropertyName("frame-accent-color")]
+        public BoolProperty FrameAccentColor { get; set; }
+
         [JsonPropertyName("sound-enabled")]
         public BoolProperty SoundEnabled { get; set; }
 
@@ -51,8 +56,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("excluded-apps")]
         public StringProperty ExcludedApps { get; set; }
 
-        [JsonPropertyName("frame-accent-color")]
-        public BoolProperty FrameAccentColor { get; set; }
+        [JsonPropertyName("round-corners-enabled")]
+        public BoolProperty RoundCornersEnabled { get; set; }
 
         public string ToJsonString()
         {

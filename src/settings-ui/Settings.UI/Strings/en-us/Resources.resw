@@ -2149,4 +2149,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="PowerLauncher_PluginWeightBoost.Header" xml:space="preserve">
     <value>Global sort order score modifier</value>
   </data>
+  <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
+    <value>Enable round corners</value>
+  </data>
 </root>

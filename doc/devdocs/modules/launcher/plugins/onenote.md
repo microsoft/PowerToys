@@ -9,6 +9,8 @@ The code itself is very simple, basically just a call into OneNote interop via t
 var pages = OneNoteProvider.FindPages(query.Search);
 ```
 
+The query results will be cached for 1 day, and if cached results are found they'll be returned in the initial `Query()` call, otherwise OneNote itself will be queried in the `delayedExecution:true` overload.
+
 If the user actions on a result, it'll open it in the OneNote app, and restore and/or focus the app as well if necessary.
 
 ```csharp

@@ -132,6 +132,9 @@
     <ClInclude Include="FancyZonesWindowProcessing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EditorParameters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -216,6 +219,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LayoutConfigurator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorParameters.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

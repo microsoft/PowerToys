@@ -9,6 +9,7 @@
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/util.h>
 
@@ -72,7 +73,7 @@ namespace JsonUtils
     struct AppliedLayoutsJSON
     {
     private:
-        static std::optional<FancyZonesDataTypes::DeviceIdData> DeviceIdFromJson(const json::JsonObject& json)
+        static std::optional<FancyZonesDataTypes::WorkAreaId> WorkAreaIdFromJson(const json::JsonObject& json)
         {
             try
             {
@@ -80,6 +81,8 @@ namespace JsonUtils
                 {
                     json::JsonObject device = json.GetNamedObject(NonLocalizable::AppliedLayoutsIds::DeviceID);
                     std::wstring monitor = device.GetNamedString(NonLocalizable::AppliedLayoutsIds::MonitorID).c_str();
+                    std::wstring monitorInstance = device.GetNamedString(NonLocalizable::AppliedLayoutsIds::MonitorInstanceID, L"").c_str();
+                    std::wstring monitorSerialNumber = device.GetNamedString(NonLocalizable::AppliedLayoutsIds::MonitorSerialNumberID, L"").c_str();
                     std::wstring virtualDesktop = device.GetNamedString(NonLocalizable::AppliedLayoutsIds::VirtualDesktopID).c_str();
 
                     auto virtualDesktopGuid = FancyZonesUtils::GuidFromString(virtualDesktop);
@@ -88,8 +91,25 @@ namespace JsonUtils
                         return std::nullopt;
                     }
 
-                    return FancyZonesDataTypes::DeviceIdData{
-                        .deviceName = monitor,
+                    FancyZonesDataTypes::DeviceId deviceId{};
+                    if (monitorInstance.empty())
+                    {
+                        // old data
+                        deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(monitor);
+                    }
+                    else
+                    {
+                        deviceId.id = monitor;
+                        deviceId.instanceId = monitorInstance;
+                    }
+                    
+                    FancyZonesDataTypes::MonitorId monitorId{
+                        .deviceId = deviceId,
+                        .serialNumber = monitorSerialNumber
+                    };
+
+                    return FancyZonesDataTypes::WorkAreaId{
+                        .monitorId = monitorId,
                         .virtualDesktopId = virtualDesktopGuid.value(),
                     };
                 }
@@ -102,8 +122,8 @@ namespace JsonUtils
                         return std::nullopt;
                     }
 
-                    return FancyZonesDataTypes::DeviceIdData{
-                        .deviceName = bcDeviceId->deviceName,
+                    return FancyZonesDataTypes::WorkAreaId{
+                        .monitorId = { .deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(bcDeviceId->deviceName) },
                         .virtualDesktopId = bcDeviceId->virtualDesktopId,
                     };
                 }
@@ -115,7 +135,7 @@ namespace JsonUtils
         }
 
     public:
-        FancyZonesDataTypes::DeviceIdData deviceId;
+        FancyZonesDataTypes::WorkAreaId workAreaId;
         Layout data;
 
         static std::optional<AppliedLayoutsJSON> FromJson(const json::JsonObject& json)
@@ -124,7 +144,7 @@ namespace JsonUtils
             {
                 AppliedLayoutsJSON result;
 
-                auto deviceIdOpt = DeviceIdFromJson(json);
+                auto deviceIdOpt = WorkAreaIdFromJson(json);
                 if (!deviceIdOpt.has_value())
                 {
                     return std::nullopt;
@@ -136,7 +156,7 @@ namespace JsonUtils
                     return std::nullopt;
                 }
                 
-                result.deviceId = std::move(deviceIdOpt.value());
+                result.workAreaId = std::move(deviceIdOpt.value());
                 result.data = std::move(layout.value());
                 return result;
             }
@@ -149,9 +169,11 @@ namespace JsonUtils
         static json::JsonObject ToJson(const AppliedLayoutsJSON& value)
         {
             json::JsonObject device{};
-            device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::MonitorID, json::value(value.deviceId.deviceName));
+            device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::MonitorID, json::value(value.workAreaId.monitorId.deviceId.id));
+            device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::MonitorInstanceID, json::value(value.workAreaId.monitorId.deviceId.instanceId));
+            device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::MonitorSerialNumberID, json::value(value.workAreaId.monitorId.serialNumber));
 
-            auto virtualDesktopStr = FancyZonesUtils::GuidToString(value.deviceId.virtualDesktopId);
+            auto virtualDesktopStr = FancyZonesUtils::GuidToString(value.workAreaId.virtualDesktopId);
             if (virtualDesktopStr)
             {
                 device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::VirtualDesktopID, json::value(virtualDesktopStr.value()));
@@ -176,9 +198,9 @@ namespace JsonUtils
             {
                 // skip default layouts in case if they were applied to different resolutions on the same monitor.
                 // NOTE: keep the default layout check for users who update PT version from the v0.57 
-                if (!map.contains(obj->deviceId) && !isLayoutDefault(obj->data))
+                if (!map.contains(obj->workAreaId) && !isLayoutDefault(obj->data))
                 {
-                    map[obj->deviceId] = std::move(obj->data);
+                    map[obj->workAreaId] = std::move(obj->data);
                 }
             }
         }
@@ -194,7 +216,7 @@ namespace JsonUtils
         for (const auto& [id, data] : map)
         {
             AppliedLayoutsJSON obj{};
-            obj.deviceId = id;
+            obj.workAreaId = id;
             obj.data = data;
             layoutArray.Append(AppliedLayoutsJSON::ToJson(obj));
         }
@@ -268,6 +290,41 @@ void AppliedLayouts::SaveData()
     }
 }
 
+void AppliedLayouts::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids)
+{
+    bool dirtyFlag = false;
+
+    std::vector<std::pair<FancyZonesDataTypes::WorkAreaId, std::wstring>> replaceWithSerialNumber{};
+    for (auto iter = m_layouts.begin(); iter != m_layouts.end(); ++iter)
+    {
+        const auto& [id, layout] = *iter;
+        if (id.monitorId.serialNumber.empty() && !id.monitorId.deviceId.isDefault())
+        {
+            for (const auto& monitorId : ids)
+            {
+                if (id.monitorId.deviceId.id == monitorId.deviceId.id && id.monitorId.deviceId.instanceId == monitorId.deviceId.instanceId)
+                {
+                    replaceWithSerialNumber.push_back({ id, monitorId.serialNumber });
+                    dirtyFlag = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    for (const auto& id : replaceWithSerialNumber)
+    {
+        auto mapEntry = m_layouts.extract(id.first);
+        mapEntry.key().monitorId.serialNumber = id.second;
+        m_layouts.insert(std::move(mapEntry));
+    }
+
+    if (dirtyFlag)
+    {
+        SaveData();
+    }
+}
+
 void AppliedLayouts::SyncVirtualDesktops()
 {
     // Explorer persists current virtual desktop identifier to registry on a per session basis,
@@ -292,7 +349,7 @@ void AppliedLayouts::SyncVirtualDesktops()
 
     bool dirtyFlag = false;
 
-    std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithCurrentId{};
+    std::vector<FancyZonesDataTypes::WorkAreaId> replaceWithCurrentId{};
 
     for (const auto& [id, data] : m_layouts)
     {
@@ -351,7 +408,7 @@ void AppliedLayouts::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activ
     }
 }
 
-std::optional<Layout> AppliedLayouts::GetDeviceLayout(const FancyZonesDataTypes::DeviceIdData& id) const noexcept
+std::optional<Layout> AppliedLayouts::GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept
 {
     auto iter = m_layouts.find(id);
     if (iter != m_layouts.end())
@@ -367,19 +424,19 @@ const AppliedLayouts::TAppliedLayoutsMap& AppliedLayouts::GetAppliedLayoutMap() 
     return m_layouts;
 }
 
-bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::DeviceIdData& id) const noexcept
+bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::WorkAreaId& id) const noexcept
 {
     auto iter = m_layouts.find(id);
     return iter != m_layouts.end();
 }
 
-bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, Layout layout)
+bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, Layout layout)
 {
     m_layouts[deviceId] = std::move(layout);
     return true;
 }
 
-bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::DeviceIdData& deviceId)
+bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::WorkAreaId& deviceId)
 {
     Logger::info(L"Set default layout on {}", deviceId.toString());
 
@@ -408,7 +465,7 @@ bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::DeviceIdData&
     return true;
 }
 
-bool AppliedLayouts::CloneLayout(const FancyZonesDataTypes::DeviceIdData& srcId, const FancyZonesDataTypes::DeviceIdData& dstId)
+bool AppliedLayouts::CloneLayout(const FancyZonesDataTypes::WorkAreaId& srcId, const FancyZonesDataTypes::WorkAreaId& dstId)
 {
     if (srcId == dstId || m_layouts.find(srcId) == m_layouts.end())
     {
