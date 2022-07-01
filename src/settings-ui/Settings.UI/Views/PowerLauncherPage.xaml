@@ -12,8 +12,9 @@
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
-    
+
     <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
         <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
     </Page.Resources>
@@ -34,7 +35,19 @@
 
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <controls:SettingExpander IsExpanded="True">
+
+
+                    <controls:Setting x:Uid="PowerLauncher_IsWindowsSearchReplacementMode">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.IsWindowsSearchReplacementMode, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="Run_Radio_WindowsSearchAddOnMode"/>
+                                <ComboBoxItem x:Uid="Run_Radio_WindowsSearchReplacementMode"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+
+                    <controls:SettingExpander IsExpanded="True" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsWindowsSearchReplacementMode, Converter={StaticResource BoolNegationConverter}}">
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>

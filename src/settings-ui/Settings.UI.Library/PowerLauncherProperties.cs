@@ -51,6 +51,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("use_centralized_keyboard_hook")]
         public bool UseCentralizedKeyboardHook { get; set; }
 
+        [JsonPropertyName("is_windows_search_replacement_mode")]
+        public bool IsWindowsSearchReplacementMode { get; set; }
+
         [JsonPropertyName("search_query_results_with_delay")]
         public bool SearchQueryResultsWithDelay { get; set; }
 

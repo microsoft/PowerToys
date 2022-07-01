@@ -61,12 +61,30 @@ void PowertoyModule::update_hotkeys()
 
     auto modulePtr = pt_module.get();
 
-    for (size_t i = 0; i < hotkeyCount; i++)
+    std::wstring name = modulePtr->get_name();
+
+    // HACK:
+    // is_windows_search_replacement_mode is a VERY special case, provided ONLY for PTRun
+    // This is not the sort of behavior we'd like to have generalized on other modules, sorry.
+    if ((name == L"PowerToys Run") && modulePtr->is_windows_search_replacement_mode())
     {
-        CentralizedKeyboardHook::SetHotkeyAction(pt_module->get_key(), hotkeys[i], [modulePtr, i] {
-            Logger::trace(L"{} hotkey is invoked from Centralized keyboard hook", modulePtr->get_key());
-            return modulePtr->on_hotkey(i);
-        });
+        for (size_t i = 0; i < hotkeyCount; i++)
+        {
+            CentralizedKeyboardHook::AddPressedKeyActionForWindowsSearchReplacement(pt_module->get_key(), [modulePtr, i] {
+                Logger::trace(L"{} hotkey is invoked from Special Centralized keyboard hook for {}", modulePtr->get_key(), modulePtr->get_name());
+                return modulePtr->on_hotkey(i);
+            });
+        }
+    }
+    else
+    {
+        for (size_t i = 0; i < hotkeyCount; i++)
+        {
+            CentralizedKeyboardHook::SetHotkeyAction(pt_module->get_key(), hotkeys[i], [modulePtr, i] {
+                Logger::trace(L"{} hotkey is invoked from Centralized keyboard hook", modulePtr->get_key());
+                return modulePtr->on_hotkey(i);
+            });
+        }
     }
 }
 
@@ -74,16 +92,33 @@ void PowertoyModule::UpdateHotkeyEx()
 {
     CentralizedHotkeys::UnregisterHotkeysForModule(pt_module->get_key());
     auto container = pt_module->GetHotkeyEx();
-    if (container.has_value() && pt_module->is_enabled())
-    {
-        auto hotkey = container.value();
-        auto modulePtr = pt_module.get();
-        auto action = [modulePtr](WORD modifiersMask, WORD vkCode) {
-            Logger::trace(L"{} hotkey Ex is invoked from Centralized keyboard hook", modulePtr->get_key());
-            modulePtr->OnHotkeyEx();
-        };
 
-        CentralizedHotkeys::AddHotkeyAction({ hotkey.modifiersMask, hotkey.vkCode }, { pt_module->get_key(), action });
+    if (container.has_value())
+    {
+        if (pt_module->is_enabled())
+        {
+            auto hotkey = container.value();
+            auto modulePtr = pt_module.get();
+
+            if (hotkey.vkCode > 0)
+            {
+                auto action = [modulePtr](WORD modifiersMask, WORD vkCode) {
+                    Logger::trace(L"{} hotkey Ex is invoked from Centralized keyboard hook", modulePtr->get_key());
+                    modulePtr->OnHotkeyEx();
+                };
+
+                CentralizedHotkeys::AddHotkeyAction({ hotkey.modifiersMask, hotkey.vkCode }, { pt_module->get_key(), action });
+            }
+            else
+            {
+                auto action = [modulePtr] {
+                    modulePtr->OnHotkeyEx();
+                    return false;
+                };
+
+                CentralizedKeyboardHook::AddPressedKeyActionForWindowsSearchReplacement(pt_module->get_key(), action);
+            }
+        }
     }
 
     // HACK:

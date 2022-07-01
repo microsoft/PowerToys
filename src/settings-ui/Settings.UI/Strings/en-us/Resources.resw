@@ -411,6 +411,12 @@
   <data name="PowerLauncher_UseCentralizedKeyboardHook.Description" xml:space="preserve">
     <value>Try this if there are issues with the shortcut</value>
   </data>
+  <data name="PowerLauncher_IsWindowsSearchReplacementMode.Header" xml:space="preserve">
+    <value>PowerToys Run activation mode</value>
+  </data>
+  <data name="PowerLauncher_IsWindowsSearchReplacementMode.Description" xml:space="preserve">
+    <value>You can use PowerToys Run by picking a keyboard shortcut below or just by using the Windows key, replacing the Windows Search. If you do replace Windows Search, you can still access it with the normal Win+S shortcut.</value>
+  </data>	
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
@@ -1284,7 +1290,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
     <value>Primary monitor</value>
   </data>
-  <data name="Run_PluginsLoading.Text" xml:space="preserve">
+	<data name="Run_Radio_WindowsSearchAddOnMode.Content" xml:space="preserve">
+    <value>Use custom shortcut</value>
+  </data>
+	<data name="Run_Radio_WindowsSearchReplacementMode.Content" xml:space="preserve">
+    <value>Replace Windows Search</value>
+  </data>
+	<data name="Run_PluginsLoading.Text" xml:space="preserve">
     <value>Plugins are loading...</value>
   </data>
   <data name="ColorPicker_ButtonDown.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">

@@ -20,6 +20,8 @@ namespace CentralizedKeyboardHook
     };
 
     std::multiset<HotkeyDescriptor> hotkeyDescriptors;
+    std::set<int> keysPressed;
+    bool dirtyKeysStack = false;
     std::mutex mutex;
     HHOOK hHook{};
 
@@ -31,6 +33,7 @@ namespace CentralizedKeyboardHook
         std::function<bool()> action;
         UINT_PTR idTimer; // Timer ID for calling SET_TIMER with.
         UINT millisecondsToPress; // How much time the key must be pressed.
+        BOOL isWindowsSearchReplacement; // Do 'this' instead of Windows Search on WinUp
         bool operator<(const PressedKeyDescriptor& other) const
         {
             // We'll use the virtual key as the real key, since looking for a hit with the key is done in the more time sensitive path (low level keyboard hook).
@@ -88,9 +91,76 @@ namespace CentralizedKeyboardHook
 
         const auto& keyPressInfo = *reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
 
+        bool fileWindowsSearchReplacement = false;
         // Check if the keys are pressed.
         if (!pressedKeyDescriptors.empty())
         {
+            // this section is for managing 'isWindowsSearchReplacement' keys.
+            if ((wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
+            {
+                if (keyPressInfo.vkCode == VK_LWIN)
+                {
+                    // if a fresh Win key comes in, we restart tracking
+                    //keysPressed.clear();
+                    dirtyKeysStack = false;
+                }
+                else
+                {
+                    // if a non Win key comes in, we're dirty
+                    dirtyKeysStack = true;
+                }
+
+                //if (keysPressed.contains(VK_LWIN))
+                //{
+                //    // if a non Win key comes in, we're dirty
+                //    dirtyKeysStack = true;
+                //}
+
+                // save these keys
+                // keysPressed.insert(keyPressInfo.vkCode);
+            }
+
+            if ((wParam == WM_KEYUP || wParam == WM_SYSKEYUP))
+            {
+                if (keyPressInfo.vkCode == VK_LWIN)
+                {
+                    //if (keysPressed.size() == 1 && !dirtyKeysStack)
+                    if (!dirtyKeysStack)
+                    {
+                        // win-up, escape to kill old win-down
+                        INPUT dummyEvent[1] = {};
+                        dummyEvent[0].type = INPUT_KEYBOARD;
+                        dummyEvent[0].ki.wVk = VK_ESCAPE;
+                        dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                        SendInput(1, dummyEvent, sizeof(INPUT));
+
+                        PressedKeyDescriptor dummy{ .virtualKey = keyPressInfo.vkCode };
+                        auto [it, last] = pressedKeyDescriptors.equal_range(dummy);
+                        for (; it != last; ++it)
+                        {
+                            if (it->isWindowsSearchReplacement)
+                            {
+                                it->action();
+                            }
+
+                            if (it->idTimer > 0)
+                            {
+                                // kill others waiting on this
+                                KillTimer(runnerWindow, it->idTimer);
+                            }
+                        }
+                        return CallNextHookEx(hHook, nCode, wParam, lParam);
+                    }
+                }
+                else
+                {
+                    /*if (keysPressed.contains(keyPressInfo.vkCode))
+                    {
+                        keysPressed.erase(keysPressed.find(keyPressInfo.vkCode));
+                    }*/
+                }
+            }
+
             bool wasKeyPressed = vkCodePressed != VK_DISABLED;
             // Hold the lock for the shortest possible duration
             if ((wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
@@ -103,7 +173,10 @@ namespace CentralizedKeyboardHook
                     auto [it, last] = pressedKeyDescriptors.equal_range(dummy);
                     for (; it != last; ++it)
                     {
-                        SetTimer(runnerWindow, it->idTimer, it->millisecondsToPress, PressedKeyTimerProc);
+                        if (it->idTimer > 0)
+                        {
+                            SetTimer(runnerWindow, it->idTimer, it->millisecondsToPress, PressedKeyTimerProc);
+                        }
                     }
                 }
                 else if (vkCodePressed != keyPressInfo.vkCode)
@@ -192,6 +265,11 @@ namespace CentralizedKeyboardHook
         const UINT timerId = upperId << 16 | lowerId;
         std::unique_lock lock{ pressedKeyMutex };
         pressedKeyDescriptors.insert({ .virtualKey = vk, .moduleName = moduleName, .action = std::move(action), .idTimer = timerId, .millisecondsToPress = milliseconds });
+    }
+
+    void AddPressedKeyActionForWindowsSearchReplacement(const std::wstring& moduleName, std::function<bool()>&& action) noexcept
+    {
+        pressedKeyDescriptors.insert({ .virtualKey = VK_LWIN, .moduleName = moduleName, .action = std::move(action), .isWindowsSearchReplacement = true });
     }
 
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept

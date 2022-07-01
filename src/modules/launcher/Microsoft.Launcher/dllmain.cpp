@@ -27,6 +27,7 @@ namespace
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_OPEN_POWERLAUNCHER[] = L"open_powerlauncher";
     const wchar_t JSON_KEY_USE_CENTRALIZED_KEYBOARD_HOOK[] = L"use_centralized_keyboard_hook";
+    const wchar_t JSON_KEY_IS_WINDOWS_SEARCH_REPLACEMENT_MODE[] = L"is_windows_search_replacement_mode";
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
@@ -79,6 +80,9 @@ private:
 
     // If the centralized keyboard hook should be used to activate PowerToys Run
     bool m_use_centralized_keyboard_hook = false;
+
+    // Allow RTRun to replace Windows Search
+    bool m_is_windows_search_replacement_mode = false;
 
     // Helper function to extract the hotkey from the settings
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings);
@@ -353,6 +357,11 @@ public:
         Logger::info("Send settings telemetry");
         SetEvent(send_telemetry_event);
     }
+
+    virtual bool is_windows_search_replacement_mode() override
+    {
+        return m_is_windows_search_replacement_mode;
+    }
 };
 
 // Load the settings file.
@@ -375,6 +384,7 @@ void Microsoft_Launcher::init_settings()
 void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& settings)
 {
     m_use_centralized_keyboard_hook = false;
+    m_is_windows_search_replacement_mode = false;
     auto settingsObject = settings.get_raw_json();
     if (settingsObject.GetView().Size())
     {
@@ -395,6 +405,12 @@ void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& setting
         {
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
             m_use_centralized_keyboard_hook = (bool)jsonPropertiesObject.GetNamedBoolean(JSON_KEY_USE_CENTRALIZED_KEYBOARD_HOOK);
+            m_is_windows_search_replacement_mode = (bool)jsonPropertiesObject.GetNamedBoolean(JSON_KEY_IS_WINDOWS_SEARCH_REPLACEMENT_MODE);
+
+            if (m_is_windows_search_replacement_mode)
+            {
+                m_use_centralized_keyboard_hook = true;
+            }
         }
         catch (...)
         {

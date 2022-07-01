@@ -106,6 +106,11 @@ public:
     virtual bool keep_track_of_pressed_win_key() { return false; }
     virtual UINT milliseconds_win_key_must_be_pressed() { return 0; }
 
+    /* Even more special case, danger, look away. is_windows_search_replacement_mode allows using Win key by itself to open PTRun, but also allow Win+[other-key] to do whatever it does.
+     * Don't use these for new modules.
+     */
+    virtual bool is_windows_search_replacement_mode() { return false; }
+
     virtual void send_settings_telemetry()
     {
     }

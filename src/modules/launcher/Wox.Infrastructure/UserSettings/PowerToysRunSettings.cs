@@ -61,6 +61,25 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
+        private bool _isWindowsSearchReplacementMode;
+
+        public bool IsWindowsSearchReplacementMode
+        {
+            get
+            {
+                return _isWindowsSearchReplacementMode;
+            }
+
+            set
+            {
+                if (_isWindowsSearchReplacementMode != value)
+                {
+                    _isWindowsSearchReplacementMode = value;
+                    OnPropertyChanged(nameof(IsWindowsSearchReplacementMode));
+                }
+            }
+        }
+
         private bool _searchQueryResultsWithDelay = true;
 
         public bool SearchQueryResultsWithDelay

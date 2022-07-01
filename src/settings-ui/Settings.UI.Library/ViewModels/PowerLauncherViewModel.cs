@@ -296,6 +296,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool IsWindowsSearchReplacementMode
+        {
+            get
+            {
+                return settings.Properties.IsWindowsSearchReplacementMode;
+            }
+
+            set
+            {
+                if (settings.Properties.IsWindowsSearchReplacementMode != value)
+                {
+                    settings.Properties.IsWindowsSearchReplacementMode = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         public bool SearchQueryResultsWithDelay
         {
             get
