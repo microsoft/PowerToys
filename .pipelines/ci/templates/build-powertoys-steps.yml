@@ -131,8 +131,6 @@ steps:
       #    clean: false
       #    maximumCpuCount: true
 
-- pwsh: 'curl.exe -JLO https://terminalnuget.blob.core.windows.net/packages/wpr2.tar.gz; tar.exe -x -v -f wpr2.tar.gz; .\wpr\wpr.exe -start .\wv2.wprp -filemode'
-
 # directly not doing WinAppDriver testing
 - task: VSTest@2
   displayName: 'MS Tests'
@@ -171,14 +169,6 @@ steps:
 #      **\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests.dll
 #      **\Microsoft.Plugin.WindowsTerminal.UnitTests.dll
 #      **\Microsoft.Plugin.WindowWalker.UnitTests.dll
-
-# just in case.
-- script: .\wpr\wpr.exe -stop webview2.etl
-  condition: always()
-
-- publish: webview2.etl
-  condition: always()
-  artifact: webview-traces
 
 # Native dlls
 - task: VSTest@2
