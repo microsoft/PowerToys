@@ -525,6 +525,7 @@ Emoji
 emptyrecyclebin
 ENABLEDPOPUP
 endforeach
+endian
 endif
 endl
 endpointvolume
@@ -762,6 +763,7 @@ hsv
 htcfreek
 HTHUMBNAIL
 HTTRANSPARENT
+HValue
 Hvci
 hwb
 HWINEVENTHOOK
@@ -794,6 +796,7 @@ IComparer
 ICompositor
 ICONERROR
 IContext
+ICONWARNING
 ICreate
 IData
 IDD
@@ -980,6 +983,7 @@ IVirtual
 IWbem
 IWIC
 iwindow
+IWork
 IXml
 IYUV
 IZone
@@ -1122,6 +1126,7 @@ LPSAFEARRAY
 LPSTR
 lpsz
 lpt
+LPTHREAD
 LPTOP
 lptpm
 LPTSTR
@@ -1193,6 +1198,7 @@ memset
 MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
+messageboxes
 Metadatas
 metafile
 mfapi
@@ -1443,6 +1449,7 @@ ostream
 ostringstream
 OSVERSIONINFOEX
 OSVERSIONINFOEXW
+OSVERSIONINFOW
 osvi
 OUTOFCONTEXT
 OUTOFMEMORY
@@ -1579,6 +1586,7 @@ PROPBAG
 PROPERTYKEY
 propkey
 propvarutil
+PRTL
 prvpane
 psapi
 PSECURITY
@@ -2323,6 +2331,7 @@ wpf
 wpr
 wprintf
 wprp
+wql
 WQL
 wregex
 WResize
