@@ -91,7 +91,6 @@ namespace CentralizedKeyboardHook
 
         const auto& keyPressInfo = *reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
 
-        bool fileWindowsSearchReplacement = false;
         // Check if the keys are pressed.
         if (!pressedKeyDescriptors.empty())
         {
@@ -100,31 +99,18 @@ namespace CentralizedKeyboardHook
             {
                 if (keyPressInfo.vkCode == VK_LWIN)
                 {
-                    // if a fresh Win key comes in, we restart tracking
-                    //keysPressed.clear();
                     dirtyKeysStack = false;
                 }
                 else
                 {
-                    // if a non Win key comes in, we're dirty
                     dirtyKeysStack = true;
                 }
-
-                //if (keysPressed.contains(VK_LWIN))
-                //{
-                //    // if a non Win key comes in, we're dirty
-                //    dirtyKeysStack = true;
-                //}
-
-                // save these keys
-                // keysPressed.insert(keyPressInfo.vkCode);
             }
 
             if ((wParam == WM_KEYUP || wParam == WM_SYSKEYUP))
             {
                 if (keyPressInfo.vkCode == VK_LWIN)
-                {
-                    //if (keysPressed.size() == 1 && !dirtyKeysStack)
+                {                    
                     if (!dirtyKeysStack)
                     {
                         // win-up, escape to kill old win-down
@@ -151,13 +137,6 @@ namespace CentralizedKeyboardHook
                         }
                         return CallNextHookEx(hHook, nCode, wParam, lParam);
                     }
-                }
-                else
-                {
-                    /*if (keysPressed.contains(keyPressInfo.vkCode))
-                    {
-                        keysPressed.erase(keysPressed.find(keyPressInfo.vkCode));
-                    }*/
                 }
             }
 
