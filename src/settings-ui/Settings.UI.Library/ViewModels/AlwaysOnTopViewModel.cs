@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
@@ -51,10 +52,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _frameEnabled = Settings.Properties.FrameEnabled.Value;
             _frameThickness = Settings.Properties.FrameThickness.Value;
             _frameColor = Settings.Properties.FrameColor.Value;
+            _frameAccentColor = Settings.Properties.FrameAccentColor.Value;
             _soundEnabled = Settings.Properties.SoundEnabled.Value;
             _doNotActivateOnGameMode = Settings.Properties.DoNotActivateOnGameMode.Value;
+            _roundCornersEnabled = Settings.Properties.RoundCornersEnabled.Value;
             _excludedApps = Settings.Properties.ExcludedApps.Value;
-            _frameAccentColor = Settings.Properties.FrameAccentColor.Value;
+            _windows11 = Helper.Windows11();
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -186,6 +189,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool RoundCornersEnabled
+        {
+            get => _roundCornersEnabled;
+
+            set
+            {
+                if (value != _roundCornersEnabled)
+                {
+                    _roundCornersEnabled = value;
+                    Settings.Properties.RoundCornersEnabled.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public string ExcludedApps
         {
             get => _excludedApps;
@@ -216,6 +234,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool Windows11
+        {
+            get => _windows11;
+
+            set
+            {
+                _windows11 = value;
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -227,9 +255,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _frameEnabled;
         private int _frameThickness;
         private string _frameColor;
+        private bool _frameAccentColor;
         private bool _soundEnabled;
         private bool _doNotActivateOnGameMode;
+        private bool _roundCornersEnabled;
         private string _excludedApps;
-        private bool _frameAccentColor;
+        private bool _windows11;
     }
 }

@@ -6,6 +6,7 @@
 
 #include <FrameDrawer.h>
 #include <Settings.h>
+#include <WindowCornersUtil.h>
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -31,7 +32,7 @@ std::optional<RECT> GetFrameRect(HWND window)
 }
 
 WindowBorder::WindowBorder(HWND window) :
-    SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor }),
+    SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor, SettingId::RoundCornersEnabled }),
     m_window(nullptr),
     m_trackingWindow(window),
     m_frameDrawer(nullptr)
@@ -187,7 +188,13 @@ void WindowBorder::UpdateBorderProperties() const
         color = AlwaysOnTopSettings::settings().frameColor;
     }
 
-    m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness);
+    int cornerRadius = 0;
+    if (AlwaysOnTopSettings::settings().roundCornersEnabled)
+    {
+        cornerRadius = WindowBordersUtils::AreCornersRounded(m_trackingWindow) ? 8 : 0;
+    }
+    
+    m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness, cornerRadius);
 }
 
 LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
@@ -259,6 +266,12 @@ void WindowBorder::SettingsUpdate(SettingId id)
     break;
 
     case SettingId::FrameAccentColor:
+    {
+        UpdateBorderProperties();
+    }
+    break;
+
+    case SettingId::RoundCornersEnabled:
     {
         UpdateBorderProperties();
     }
