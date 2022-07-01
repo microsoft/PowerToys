@@ -147,7 +147,6 @@ betadele
 betsegaw
 BGR
 bgra
-BGSOUNDS
 bhid
 Bicubic
 bigbar
@@ -245,7 +244,6 @@ CLASSNOTAVAILABLE
 clickable
 clickonce
 CLIENTEDGE
-CLIENTPULL
 clientside
 CLIPCHILDREN
 Clipperton
@@ -452,19 +450,14 @@ dimm
 directshow
 dirs
 DISABLEASACTIONKEY
-dispid
-DISPIDAMBIENTDLCONTROL
 DISPLAYCHANGE
 DISPLAYCONFIG
 displayname
 divyan
-DLACTIVEXCTLS
-DLCONTROL
 Dlg
 DLGFRAME
 DLGMODALFRAME
 dlib
-DLIMAGES
 dllexport
 dllhost
 dllimport
@@ -476,7 +469,6 @@ doctype
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
-DOWNLOADONLY
 DPICHANGED
 DPIs
 DPolicy
@@ -536,6 +528,7 @@ Emoji
 emptyrecyclebin
 ENABLEDPOPUP
 endforeach
+endian
 endif
 endl
 endpointvolume
@@ -547,7 +540,6 @@ enum
 EOAC
 eol
 epicgames
-epo
 Eqn
 ERASEBKGND
 EREOF
@@ -595,7 +587,6 @@ fallthrough
 fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
-FANCYZONESWINDOWSTYLES
 Farbraum
 Faroe
 FARPROC
@@ -634,11 +625,9 @@ FOFX
 FOLDERID
 folderpath
 FORCEMINIMIZE
-FORCEOFFLINE
 foreach
 formatetc
 FRAMECHANGED
-FRAMEDOWNLOAD
 franky
 frankychen
 Froml
@@ -681,7 +670,6 @@ globals
 GNumber
 google
 GPTR
-gsuberland
 gtm
 gui
 guiddef
@@ -718,7 +706,6 @@ helptext
 Heure
 HEVC
 hfile
-HFONT
 hglobal
 hhk
 HHmmss
@@ -778,8 +765,8 @@ hstring
 hsv
 htcfreek
 HTHUMBNAIL
-Htmdid
 HTTRANSPARENT
+HValue
 Hvci
 hwb
 HWINEVENTHOOK
@@ -813,10 +800,8 @@ ICompositor
 ICONERROR
 IContext
 ICONWARNING
-ICore
 ICreate
 IData
-IDCANCEL
 IDD
 IDelayed
 IDesktop
@@ -827,7 +812,6 @@ IDispatcher
 IDisposable
 idl
 IDLIST
-IDOK
 IDOn
 IDR
 IDrive
@@ -895,7 +879,6 @@ INFOEXAMPLE
 Infotip
 ingbuffer
 inheritdoc
-INITDIALOG
 initguid
 Inkscape
 Inlines
@@ -958,7 +941,6 @@ IPublic
 IQuery
 IRead
 IReference
-IReflect
 IRegistered
 IRegistration
 IRegistry
@@ -1006,9 +988,7 @@ IWbem
 IWeb
 IWIC
 iwindow
-IWindows
 IWork
-IXaml
 IXml
 IYUV
 IZone
@@ -1066,7 +1046,6 @@ Kyrgyzstan
 Kyzylorda
 LAlt
 Lambson
-lamotile
 langword
 Lastdevice
 Latn
@@ -1153,6 +1132,7 @@ LPSAFEARRAY
 LPSTR
 lpsz
 lpt
+LPTHREAD
 LPTOP
 lptpm
 LPTSTR
@@ -1225,7 +1205,6 @@ MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 messageboxes
-METACHARSET
 Metadatas
 metafile
 mfapi
@@ -1252,7 +1231,6 @@ miniz
 minlevel
 MINORVERSION
 Miracast
-mirophone
 Mishkeegogamang
 mjpg
 mkd
@@ -1296,7 +1274,6 @@ msdata
 MSDN
 msedge
 MSGFLT
-mshtmdid
 MSIFASTINSTALL
 MSIHANDLE
 msiquery
@@ -1362,10 +1339,8 @@ netcore
 netcoreapp
 netcpl
 netframework
-NETFX
 netsetup
 netsh
-netstandard
 Neue
 newcolor
 newdev
@@ -1443,7 +1418,6 @@ NUMLOCK
 NUMPAD
 Nunavut
 Nusa
-Nvidia
 nwc
 NWSE
 Objbase
@@ -1483,6 +1457,7 @@ ostream
 ostringstream
 OSVERSIONINFOEX
 OSVERSIONINFOEXW
+OSVERSIONINFOW
 osvi
 otating
 OUTOFCONTEXT
@@ -1566,7 +1541,6 @@ Pohnpei
 popup
 POPUPWINDOW
 posix
-Postion
 powercfg
 powerlauncher
 powerpreview
@@ -1596,7 +1570,6 @@ Prefixer
 Preinstalled
 preload
 PREMULTIPLIED
-preperty
 prevhost
 previewer
 PREVIEWHANDLERFRAMEINFO
@@ -1623,6 +1596,7 @@ PROPBAG
 PROPERTYKEY
 propkey
 propvarutil
+PRTL
 prvpane
 psapi
 PSECURITY
@@ -1824,7 +1798,6 @@ SENDCHANGE
 sendvirtualinput
 serializationexception
 serializer
-serizalization
 serverside
 SETCONTEXT
 setcursor
@@ -1839,8 +1812,6 @@ SETTEXT
 SETTINGCHANGE
 settingsheader
 settingshotkeycontrol
-settingsv
-Setttings
 SETWORKAREA
 sfgao
 SFGAOF
@@ -1920,7 +1891,6 @@ somil
 Soref
 SOURCECLIENTAREAONLY
 SOURCEHEADER
-sourceid
 sourcesdirectory
 spam
 spdisp
@@ -2076,7 +2046,6 @@ Tenggara
 testcase
 testhost
 testprocess
-testtrocess
 testzones
 TEXCOORD
 textblock
@@ -2100,7 +2069,6 @@ TMPVAR
 TNP
 todo
 toggleswitch
-Toolchain
 toolkitcontrols
 toolkitconverters
 Toolset
@@ -2227,7 +2195,6 @@ vcruntime
 vcvars
 VDesktop
 vdi
-VDId
 vec
 VERBSONLY
 VERBW
@@ -2385,6 +2352,7 @@ wpf
 wpr
 wprintf
 wprp
+wql
 WQL
 wregex
 WResize
@@ -2410,8 +2378,6 @@ Wwan
 Wwanpp
 xamarin
 XAttribute
-xbf
-XBind
 Xbox
 XBUTTON
 XBUTTONDBLCLK
@@ -2422,7 +2388,6 @@ XDocument
 XElement
 XFile
 XIncrement
-XInstance
 XLoc
 XNamespace
 XOffset

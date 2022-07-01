@@ -39,7 +39,7 @@
     <Link>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>Shcore.lib;gdiplus.lib;Msi.lib;WindowsApp.lib;taskschd.lib;Rstrtmgr.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shcore.lib;gdiplus.lib;Msi.lib;WindowsApp.lib;taskschd.lib;Rstrtmgr.lib;Shlwapi.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>false</EnableDpiAwareness>

@@ -15,7 +15,6 @@ using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Windows.UI.Popups;
-using Windows.UI.ViewManagement;
 using WinRT.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI
@@ -73,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             if (settingsWindow == null)
             {
-                settingsWindow = new MainWindow();
+                settingsWindow = new MainWindow(IsDarkTheme());
             }
 
             settingsWindow.Activate();
@@ -88,6 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
+            var isDark = IsDarkTheme();
 
             if (cmdArgs != null && cmdArgs.Length >= RequiredArgumentsQty)
             {
@@ -143,7 +143,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
                 if (!ShowOobe && !ShowScoobe)
                 {
-                    settingsWindow = new MainWindow();
+                    settingsWindow = new MainWindow(isDark);
                     settingsWindow.Activate();
                     settingsWindow.NavigateToSection(StartupPage);
                 }
@@ -152,19 +152,19 @@ namespace Microsoft.PowerToys.Settings.UI
                     // Create the Settings window hidden so that it's fully initialized and
                     // it will be ready to receive the notification if the user opens
                     // the Settings from the tray icon.
-                    settingsWindow = new MainWindow(true);
+                    settingsWindow = new MainWindow(isDark, true);
 
                     if (ShowOobe)
                     {
                         PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
-                        OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview);
+                        OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview, isDark);
                         oobeWindow.Activate();
                         SetOobeWindow(oobeWindow);
                     }
                     else if (ShowScoobe)
                     {
                         PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                        OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
+                        OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew, isDark);
                         scoobeWindow.Activate();
                         SetOobeWindow(scoobeWindow);
                     }
@@ -174,7 +174,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 // For debugging purposes
                 // Window is also needed to show MessageDialog
-                settingsWindow = new MainWindow();
+                settingsWindow = new MainWindow(isDark);
                 settingsWindow.Activate();
                 ShowMessageDialog("The application cannot be run as a standalone process. Please start the application through the runner.", "Forbidden");
             }
@@ -203,18 +203,50 @@ namespace Microsoft.PowerToys.Settings.UI
             return ipcmanager;
         }
 
+        public static string SelectedTheme()
+        {
+            return SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture);
+        }
+
         public static bool IsDarkTheme()
         {
-            var selectedTheme = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture);
-            var defaultTheme = new UISettings();
-            var uiTheme = defaultTheme.GetColorValue(UIColorType.Background).ToString(System.Globalization.CultureInfo.InvariantCulture);
-            return selectedTheme == "DARK" || (selectedTheme == "SYSTEM" && uiTheme == "#FF000000");
+            var selectedTheme = SelectedTheme();
+            return selectedTheme == "DARK" || (selectedTheme == "SYSTEM" && ThemeHelpers.GetAppTheme() == AppTheme.Dark);
+        }
+
+        public static void HandleThemeChange()
+        {
+            var isDark = IsDarkTheme();
+            if (settingsWindow != null)
+            {
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(settingsWindow);
+                ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+            }
+
+            if (oobeWindow != null)
+            {
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(oobeWindow);
+                ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+            }
+
+            var selectedTheme = SelectedTheme();
+            if (selectedTheme == "SYSTEM")
+            {
+                themeListener = new ThemeListener();
+                themeListener.ThemeChanged += (_) => HandleThemeChange();
+            }
+            else if (themeListener != null)
+            {
+                themeListener.Dispose();
+                themeListener = null;
+            }
         }
 
         private static ISettingsUtils settingsUtils = new SettingsUtils();
 
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
+        private static ThemeListener themeListener;
 
         public static void ClearSettingsWindow()
         {

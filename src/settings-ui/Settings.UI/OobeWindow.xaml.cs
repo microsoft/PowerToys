@@ -4,6 +4,7 @@
 
 using System;
 using interop;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
@@ -30,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private IntPtr _hWnd;
         private AppWindow _appWindow;
 
-        public OobeWindow(PowerToysModules initialModule)
+        public OobeWindow(PowerToysModules initialModule, bool isDark)
         {
             this.InitializeComponent();
 
@@ -39,6 +40,12 @@ namespace Microsoft.PowerToys.Settings.UI
             _windowId = Win32Interop.GetWindowIdFromWindow(_hWnd);
             _appWindow = AppWindow.GetFromWindowId(_windowId);
             _appWindow.SetIcon("icon.ico");
+
+            // Passed by parameter, as it needs to be evaluated ASAP, otherwise there is a white flash
+            if (isDark)
+            {
+                ThemeHelpers.SetImmersiveDarkMode(_hWnd, isDark);
+            }
 
             OverlappedPresenter presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsMinimizable = false;
