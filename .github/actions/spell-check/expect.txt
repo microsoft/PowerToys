@@ -20,6 +20,7 @@ actioned
 activatable
 ACTIVATEAPP
 activationaction
+adamchilders
 ADDUNDORECORD
 ADifferent
 ADMINS
@@ -94,7 +95,6 @@ ARPPRODUCTICON
 ARRAYSIZE
 arsinh
 artanh
-Artboard
 Artsakh
 asdf
 AShortcut
@@ -133,6 +133,7 @@ awakeness
 awakeversion
 AWAYMODE
 AYUV
+azchohfi
 backend
 backtracer
 BADD
@@ -190,7 +191,6 @@ Bto
 buf
 BUFSIZE
 bugreport
-BUILDARCH
 BUILDNUMBER
 buildtask
 buildtransitive
@@ -268,7 +268,6 @@ cnt
 Cocklebiddy
 coclass
 codebase
-codecvt
 CODENAME
 codeofconduct
 codereview
@@ -299,7 +298,6 @@ comsuppw
 comsuppwd
 comutil
 Concat
-concrt
 configs
 Configurator
 CONFLICTINGMODIFIERKEY
@@ -337,6 +335,7 @@ crlf
 cron
 Crossdevice
 CRSEL
+crutkas
 CSearch
 CSettings
 csharp
@@ -439,11 +438,9 @@ devblogs
 devdocs
 devenum
 DEVMON
-devops
 devpkey
 DEVSOURCE
 dhcp
-diffing
 difftime
 DIIRFLAG
 dimm
@@ -460,7 +457,6 @@ DLGMODALFRAME
 dlib
 dllexport
 dllhost
-dllimport
 dllmain
 dlls
 DNLEN
@@ -494,9 +490,9 @@ DWINRT
 dwl
 dwm
 dwmapi
-dwmcorei
 DWMCOLORIZATIONCOLORCHANGED
 DWMCOMPOSITIONCHANGED
+dwmcorei
 DWMNCRENDERINGCHANGED
 Dwmp
 DWMSENDICONICLIVEPREVIEWBITMAP
@@ -524,6 +520,7 @@ EFile
 ekus
 elif
 elseif
+eltociear
 Emoji
 emptyrecyclebin
 ENABLEDPOPUP
@@ -538,7 +535,7 @@ entrypoint
 ENU
 enum
 EOAC
-eol
+EOL
 epicgames
 Eqn
 ERASEBKGND
@@ -683,6 +680,7 @@ hanselman
 hardcoded
 Hardlines
 HARDWAREINPUT
+harvastum
 hashcode
 Hashset
 Hashtable
@@ -743,7 +741,6 @@ homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush
 hostname
-hotfix
 hotkeycontrol
 hotkeys
 hotlight
@@ -867,7 +864,6 @@ IMedia
 IMem
 IMessage
 imeutil
-iminstall
 IMoniker
 IMouse
 impl
@@ -985,7 +981,6 @@ IVector
 IView
 IVirtual
 IWbem
-IWeb
 IWIC
 iwindow
 IWork
@@ -1079,7 +1074,6 @@ LIBID
 Lifecycle
 LIGHTORANGE
 LIGHTTURQUOISE
-lightunplated
 lindex
 linkedin
 linq
@@ -1288,7 +1282,6 @@ msp
 msrc
 mst
 msvc
-msvcp
 MTND
 Mul
 multiline
@@ -1424,7 +1417,6 @@ Objbase
 OBJID
 objidl
 oblitum
-octodex
 odbc
 odbccp
 Oem
@@ -1459,7 +1451,6 @@ OSVERSIONINFOEX
 OSVERSIONINFOEXW
 OSVERSIONINFOW
 osvi
-otating
 OUTOFCONTEXT
 OUTOFMEMORY
 outpin
@@ -1498,7 +1489,6 @@ PCIDLIST
 PCWSTR
 pdb
 pdbonly
-pde
 pdfpreviewhandler
 pdo
 pdto
@@ -1653,6 +1643,7 @@ RBUTTONDBLCLK
 RBUTTONDOWN
 RBUTTONUP
 rclsid
+rcmaehl
 RCONTROL
 RCtrl
 readme
@@ -1752,8 +1743,6 @@ RTB
 RTCS
 RTLREADING
 RTSS
-ruleset
-RUNACTIVEXCTLS
 runas
 rundll
 rungameid
@@ -1816,6 +1805,7 @@ SETWORKAREA
 sfgao
 SFGAOF
 SFP
+shandsj
 sharpkeys
 SHCNE
 SHCNF
@@ -1864,6 +1854,7 @@ SIGABRT
 sigdn
 SIGNINGSCENARIO
 signtool
+sinclairinat
 SINGLEKEY
 singlekeyremapcontrol
 singletones
@@ -1877,7 +1868,6 @@ SIZENWSE
 sizeof
 sizeread
 SIZEWE
-sketchapp
 SKIPOWNPROCESS
 sku
 SLGP
@@ -1885,6 +1875,7 @@ sln
 SMALLICON
 SMTO
 snd
+snickler
 snwprintf
 softline
 somil
@@ -1982,7 +1973,6 @@ subquery
 substr
 Sul
 Superbar
-supressions
 Suri
 sut
 SVE
@@ -2054,7 +2044,6 @@ THH
 THICKFRAME
 THISCOMPONENT
 THotkey
-thre
 TILEDWINDOW
 timedate
 timediff
@@ -2091,7 +2080,6 @@ TRK
 trl
 trunc
 Tshuapa
-tspan
 TStr
 Tuva
 TValue
@@ -2184,14 +2172,10 @@ uxtheme
 UYVY
 validmodulename
 vcamp
-vccorlib
 vcdl
 VCINSTALLDIR
 vcm
-vcomp
-vcredist
 VCRT
-vcruntime
 vcvars
 VDesktop
 vdi
@@ -2262,13 +2246,11 @@ wekyb
 Wevtapi
 wformat
 wgpocpl
-Whichdoes
 whitespaces
 WIC
 wifi
 wiki
 wikipedia
-wil
 wildcards
 winapi
 winappdriver
@@ -2277,7 +2259,6 @@ Wincodecsdk
 wincolor
 windef
 windir
-Windowcontrols
 WINDOWCREATED
 WINDOWEDGE
 WINDOWNAME
@@ -2285,8 +2266,6 @@ WINDOWPLACEMENT
 WINDOWPOSCHANGED
 WINDOWPOSCHANGING
 Windowsapp
-windowsappruntimeinstall
-windowsappsdk
 WINDOWSBUILDNUMBER
 Windowscodecs
 windowsdesktop

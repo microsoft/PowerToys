@@ -27,7 +27,7 @@ namespace Microsoft.Plugin.Program.Storage
                 // Using OrdinalIgnoreCase since this is used internally with paths
                 if (string.IsNullOrEmpty(previousAppPath) || previousAppPath.Equals(currentAppPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    // To dequeue a path only if it is the first one in the queue or if the path was the same as thre previous one (to avoid trying to create apps on duplicate events)
+                    // To dequeue a path only if it is the first one in the queue or if the path was the same as the previous one (to avoid trying to create apps on duplicate events)
                     previousAppPath = currentAppPath;
                     eventHandlingQueue.TryDequeue(out _);
                 }

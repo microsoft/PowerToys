@@ -12,8 +12,9 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
+      actions: read
     outputs:
-      internal_state_directory: ${{ steps.spelling.outputs.internal_state_directory }}
+      followup: ${{ steps.spelling.outputs.followup }}
     runs-on: ubuntu-latest
     if: "contains(github.event_name, 'pull_request') || github.event_name == 'push'"
     concurrency:
@@ -21,35 +22,19 @@ jobs:
       # note: If you use only_check_changed_files, you do not want cancel-in-progress
       cancel-in-progress: true
     steps:
-    - name: checkout-merge
-      if: "contains(github.event_name, 'pull_request')"
-      uses: actions/checkout@v2
-      with:
-        ref: refs/pull/${{github.event.pull_request.number}}/merge
-    - name: checkout
-      if: github.event_name == 'push'
-      uses: actions/checkout@v2
     - name: check-spelling
       id: spelling
-      uses: check-spelling/check-spelling@v0.0.20-alpha3
+      uses: check-spelling/check-spelling@v0.0.20-alpha7
       with:
         config: .github/actions/spell-check
         suppress_push_for_open_pull_request: 1
+        checkout: true
         post_comment: 0
-        dictionary_source_prefixes: '{"cspell": "https://raw.githubusercontent.com/check-spelling/cspell-dicts/master/dictionaries/"}'
         extra_dictionaries:
           cspell:filetypes/filetypes.txt
           cspell:html/html.txt
           cspell:css/css.txt
         check_extra_dictionaries: ''
-    - name: store-comment
-      if: failure()
-      uses: actions/upload-artifact@v2
-      with:
-        retention-days: 1
-        name: "check-spelling-comment-${{ github.run_id }}"
-        path: |
-          ${{ steps.spelling.outputs.internal_state_directory }}
 
   comment:
     name: Comment
@@ -58,21 +43,16 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    if: always() && needs.spelling.result == 'failure' && needs.spelling.outputs.internal_state_directory
+    if: (success() || failure()) && needs.spelling.outputs.followup
     steps:
-    - name: checkout
-      uses: actions/checkout@v2
-    - name: set up
-      run: |
-        mkdir /tmp/data
-    - name: retrieve-comment
-      uses: actions/download-artifact@v2
-      with:
-        name: "check-spelling-comment-${{ github.run_id }}"
-        path: /tmp/data
     - name: comment
-      uses: check-spelling/check-spelling@v0.0.20-alpha3
+      uses: check-spelling/check-spelling@v0.0.20-alpha7
       with:
         config: .github/actions/spell-check
-        custom_task: comment
-        internal_state_directory: /tmp/data
+        checkout: true
+        task: ${{ needs.spelling.outputs.followup }}
+        extra_dictionaries:
+          cspell:filetypes/filetypes.txt
+          cspell:html/html.txt
+          cspell:css/css.txt
+        check_extra_dictionaries: ''

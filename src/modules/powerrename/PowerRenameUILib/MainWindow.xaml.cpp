@@ -655,13 +655,13 @@ namespace winrt::PowerRenameUI::implementation
             }
         });
 
-        // CheckBox MatchAllOccurences
+        // CheckBox MatchAllOccurrences
         checkBox_matchAll().Checked([&](auto const&, auto const&) {
-            ValidateFlags(MatchAllOccurences);
-            UpdateFlag(MatchAllOccurences, UpdateFlagCommand::Set);
+            ValidateFlags(MatchAllOccurrences);
+            UpdateFlag(MatchAllOccurrences, UpdateFlagCommand::Set);
         });
         checkBox_matchAll().Unchecked([&](auto const&, auto const&) {
-            UpdateFlag(MatchAllOccurences, UpdateFlagCommand::Reset);
+            UpdateFlag(MatchAllOccurrences, UpdateFlagCommand::Reset);
         });
 
         // ToggleButton IncludeFiles
@@ -884,7 +884,7 @@ namespace winrt::PowerRenameUI::implementation
         {
             checkBox_case().IsChecked(true);
         }
-        if (flags & MatchAllOccurences)
+        if (flags & MatchAllOccurrences)
         {
             checkBox_matchAll().IsChecked(true);
         }

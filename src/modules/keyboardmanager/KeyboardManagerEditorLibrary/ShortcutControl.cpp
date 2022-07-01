@@ -138,7 +138,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             return;
         }
 
-        // rowIndex could be out of bounds if the the row got deleted after LostFocus handler was invoked. In this case it should return
+        // rowIndex could be out of bounds if the row got deleted after LostFocus handler was invoked. In this case it should return
         if (rowIndex >= keyboardRemapControlObjects.size())
         {
             return;
@@ -207,7 +207,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         UIElementCollection children = parent.Children();
         bool indexFound = children.IndexOf(row, rowIndex);
 
-        // IndexOf could fail if the the row got deleted and the button handler was invoked twice. In this case it should return
+        // IndexOf could fail if the row got deleted and the button handler was invoked twice. In this case it should return
         if (!indexFound)
         {
             return;
