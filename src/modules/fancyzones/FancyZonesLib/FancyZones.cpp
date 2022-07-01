@@ -146,7 +146,7 @@ public:
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
-    void AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noexcept;
+    void AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id) noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -250,6 +250,22 @@ FancyZones::Run() noexcept
         }
     }
 
+    // Initialize COM. Needed for WMI monitor identifying
+    HRESULT comInitHres = CoInitializeEx(0, COINIT_MULTITHREADED);
+    if (FAILED(comInitHres))
+    {
+        Logger::error(L"Failed to initialize COM library. {}", get_last_error_or_default(comInitHres));
+        return;
+    }
+
+    // Initialize security. Needed for WMI monitor identifying
+    HRESULT comSecurityInitHres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
+    if (FAILED(comSecurityInitHres))
+    {
+        Logger::error(L"Failed to initialize security. {}", get_last_error_or_default(comSecurityInitHres));
+        return;
+    }
+
     m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [] {
                           SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
                           SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
@@ -278,6 +294,8 @@ FancyZones::Destroy() noexcept
         DestroyWindow(m_window);
         m_window = nullptr;
     }
+
+    CoUninitialize();
 }
 
 // IFancyZonesCallback
@@ -674,6 +692,11 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         if (changeType == DisplayChangeType::Initialization)
         {
             RegisterVirtualDesktopUpdates();
+
+            // id format of applied-layouts and app-zone-history was changed in 0.60
+            auto monitors = MonitorUtils::IdentifyMonitors();
+            AppliedLayouts::instance().AdjustWorkAreaIds(monitors);
+            AppZoneHistory::instance().AdjustWorkAreaIds(monitors);
         }
     }
 
@@ -689,7 +712,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     }
 }
 
-void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noexcept
+void FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id) noexcept
 {
     if (m_workAreaHandler.IsNewWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor))
     {
@@ -699,26 +722,14 @@ void FancyZones::AddWorkArea(HMONITOR monitor, const std::wstring& deviceId) noe
             Logger::debug(L"Add new work area on virtual desktop {}", virtualDesktopIdStr.get());
         }
         
-        FancyZonesDataTypes::DeviceIdData uniqueId;
-        uniqueId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
-
-        if (monitor)
-        {
-            uniqueId.deviceName = FancyZonesUtils::TrimDeviceId(deviceId);
-        }
-        else
-        {
-            uniqueId.deviceName = ZonedWindowProperties::MultiMonitorDeviceID;
-        }
-
-        FancyZonesDataTypes::DeviceIdData parentId{};
+        FancyZonesDataTypes::WorkAreaId parentId{};
         auto parentArea = m_workAreaHandler.GetWorkArea(VirtualDesktop::instance().GetPreviousVirtualDesktopId(), monitor);
         if (parentArea)
         {
             parentId = parentArea->UniqueId();
         }
 
-        auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId);
+        auto workArea = MakeWorkArea(m_hinstance, monitor, id, parentId);
         if (workArea)
         {
             m_workAreaHandler.AddWorkArea(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), monitor, workArea);
@@ -745,34 +756,23 @@ void FancyZones::UpdateWorkAreas() noexcept
 {
     if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
     {
-        AddWorkArea(nullptr, {});
+        FancyZonesDataTypes::WorkAreaId workAreaId;
+        workAreaId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
+        workAreaId.monitorId = { .deviceId = ZonedWindowProperties::MultiMonitorDeviceID };
+
+        AddWorkArea(nullptr, workAreaId);
     }
     else
     {
-        // Mapping between display device name and device index (operating system identifies each display device with an index value).
-        std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
-        struct capture
+        auto monitors = MonitorUtils::IdentifyMonitors();
+        for (const auto& monitor : monitors)
         {
-            FancyZones* fancyZones;
-            std::unordered_map<std::wstring, DWORD>* displayDeviceIdx;
-        };
+            FancyZonesDataTypes::WorkAreaId workAreaId;
+            workAreaId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
+            workAreaId.monitorId = monitor;
 
-        auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
-            capture* params = reinterpret_cast<capture*>(data);
-            MONITORINFOEX mi{ { .cbSize = sizeof(mi) } };
-            if (GetMonitorInfoW(monitor, &mi))
-            {
-                auto& displayDeviceIdxMap = *(params->displayDeviceIdx);
-                FancyZones* fancyZones = params->fancyZones;
-
-                std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(mi.szDevice, displayDeviceIdxMap);
-                fancyZones->AddWorkArea(monitor, deviceId);
-            }
-            return TRUE;
-        };
-
-        capture capture{ this, &displayDeviceIdxMap };
-        EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(&capture));
+            AddWorkArea(monitor.monitor, workAreaId);
+        }
     }
 }
 

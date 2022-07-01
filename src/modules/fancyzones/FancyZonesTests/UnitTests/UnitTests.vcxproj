@@ -37,7 +37,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;shlwapi.lib;uxtheme.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;shlwapi.lib;uxtheme.lib;shcore.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -55,6 +55,7 @@
     <ClCompile Include="Util.Spec.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="WorkArea.Spec.cpp" />
+    <ClCompile Include="WorkAreaIdTests.Spec.cpp" />
     <ClCompile Include="Zone.Spec.cpp" />
     <ClCompile Include="ZoneSet.Spec.cpp" />
   </ItemGroup>

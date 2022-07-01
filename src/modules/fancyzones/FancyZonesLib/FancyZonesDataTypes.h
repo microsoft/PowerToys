@@ -113,20 +113,38 @@ namespace FancyZonesDataTypes
         ZoneSetLayoutType type;
     };
 
-    struct DeviceIdData
+    struct DeviceId
     {
-        std::wstring deviceName = L"FallbackDevice";
+        std::wstring id;
+        std::wstring instanceId;
+
+        bool isDefault() const noexcept;
+        std::wstring toString() const noexcept;
+    };
+
+    struct MonitorId
+    {
+        HMONITOR monitor;
+        DeviceId deviceId;
+        std::wstring serialNumber;
+
+        std::wstring toString() const noexcept;
+    };
+
+    struct WorkAreaId
+    {
+        MonitorId monitorId;
         GUID virtualDesktopId;
 
-        std::wstring toString() const;
-    };
+        std::wstring toString() const noexcept;
+    }; 
 
     struct AppZoneHistoryData
     {
         std::unordered_map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
 
         std::wstring zoneSetUuid;
-        DeviceIdData deviceId;
+        WorkAreaId workAreaId;
         ZoneIndexSet zoneIndexSet;
     };
 
@@ -144,33 +162,86 @@ namespace FancyZonesDataTypes
         return lhs.type == rhs.type && lhs.uuid == rhs.uuid;
     }
 
-    inline bool operator==(const DeviceIdData& lhs, const DeviceIdData& rhs)
-    {
-        return lhs.deviceName.compare(rhs.deviceName) == 0 && (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL);
-    }
-
-    inline bool operator!=(const DeviceIdData& lhs, const DeviceIdData& rhs)
-    {
-        return !(lhs == rhs);
-    }
-
-    inline bool operator<(const DeviceIdData& lhs, const DeviceIdData& rhs)
-    {
-        return lhs.deviceName.compare(rhs.deviceName) < 0;
-    }
-
     inline bool operator==(const DeviceInfoData& lhs, const DeviceInfoData& rhs)
     {
         return lhs.activeZoneSet == rhs.activeZoneSet && lhs.showSpacing == rhs.showSpacing && lhs.spacing == rhs.spacing && lhs.zoneCount == rhs.zoneCount && lhs.sensitivityRadius == rhs.sensitivityRadius;
+    }
+
+    inline bool operator==(const DeviceId& lhs, const DeviceId& rhs)
+    {
+        if (lhs.isDefault())
+        {
+            return lhs.instanceId == rhs.instanceId; 
+        }
+
+        return lhs.id == rhs.id;
+    }
+
+    inline bool operator<(const DeviceId& lhs, const DeviceId& rhs)
+    {
+        return lhs.id < rhs.id || lhs.instanceId < rhs.instanceId;
+    }
+
+    inline bool operator==(const MonitorId& lhs, const MonitorId& rhs)
+    {
+        if (lhs.monitor && rhs.monitor)
+        {
+            return lhs.monitor == rhs.monitor;
+        }
+        
+        if (!lhs.serialNumber.empty() || !rhs.serialNumber.empty())
+        {
+            bool serialNumbersEqual = lhs.serialNumber == rhs.serialNumber;
+            if (!serialNumbersEqual)
+            {
+                return false;
+            }
+        }
+
+        return lhs.deviceId == rhs.deviceId;
+    }
+
+    inline bool operator==(const WorkAreaId& lhs, const WorkAreaId& rhs)
+    {
+        bool vdEqual = (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL);
+        return vdEqual && lhs.monitorId == rhs.monitorId;
+    }
+
+    inline bool operator!=(const WorkAreaId& lhs, const WorkAreaId& rhs)
+    {
+        bool vdEqual = (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL);
+        return !vdEqual || lhs.monitorId != rhs.monitorId;
+    }
+
+    inline bool operator<(const WorkAreaId& lhs, const WorkAreaId& rhs)
+    {
+        if (lhs.monitorId.monitor && rhs.monitorId.monitor)
+        {
+            return lhs.monitorId.monitor < rhs.monitorId.monitor;
+        }
+
+        if (lhs.virtualDesktopId != GUID_NULL || rhs.virtualDesktopId != GUID_NULL)
+        {
+            return lhs.virtualDesktopId.Data1 < rhs.virtualDesktopId.Data1 ||
+                   lhs.virtualDesktopId.Data2 < rhs.virtualDesktopId.Data2 ||
+                   lhs.virtualDesktopId.Data3 < rhs.virtualDesktopId.Data3;
+        }
+        
+        if (!lhs.monitorId.serialNumber.empty() || rhs.monitorId.serialNumber.empty())
+        {
+            return lhs.monitorId.serialNumber < rhs.monitorId.serialNumber;
+        }
+
+        return lhs.monitorId.deviceId < rhs.monitorId.deviceId;
     }
 }
 
 namespace std
 {
     template<>
-    struct hash<FancyZonesDataTypes::DeviceIdData>
+    struct hash<FancyZonesDataTypes::WorkAreaId>
     {
-        size_t operator()(const FancyZonesDataTypes::DeviceIdData& Value) const
+        size_t operator()(const FancyZonesDataTypes::WorkAreaId& Value) const
         {
             return 0;
         }

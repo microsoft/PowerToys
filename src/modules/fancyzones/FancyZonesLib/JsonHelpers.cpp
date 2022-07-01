@@ -10,6 +10,7 @@
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
+#include <FancyZonesLib/MonitorUtils.h>
 
 #include <common/logger/logger.h>
 
@@ -272,8 +273,8 @@ namespace
             return std::nullopt;
         }
 
-        data.deviceId = FancyZonesDataTypes::DeviceIdData{
-            .deviceName = deviceId->deviceName,
+        data.workAreaId = FancyZonesDataTypes::WorkAreaId{
+            .monitorId = { .deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(deviceId->deviceName) },
             .virtualDesktopId = deviceId->virtualDesktopId
         };
         data.zoneSetUuid = json.GetNamedString(NonLocalizable::ZoneSetUuidStr);

@@ -8,6 +8,7 @@
 #include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/util.h>
 
@@ -16,7 +17,7 @@ namespace JsonUtils
     struct AppZoneHistoryJSON
     {
     private:
-        static std::optional<FancyZonesDataTypes::DeviceIdData> DeviceIdFromJson(const json::JsonObject& json)
+        static std::optional<FancyZonesDataTypes::WorkAreaId> DeviceIdFromJson(const json::JsonObject& json)
         {
             try
             {
@@ -24,6 +25,8 @@ namespace JsonUtils
                 {
                     json::JsonObject device = json.GetNamedObject(NonLocalizable::AppZoneHistoryIds::DeviceID);
                     std::wstring monitor = device.GetNamedString(NonLocalizable::AppZoneHistoryIds::MonitorID).c_str();
+                    std::wstring monitorInstance = device.GetNamedString(NonLocalizable::AppZoneHistoryIds::MonitorInstanceID, L"").c_str();
+                    std::wstring monitorSerialNumber = device.GetNamedString(NonLocalizable::AppZoneHistoryIds::MonitorSerialNumberID, L"").c_str();
                     std::wstring virtualDesktop = device.GetNamedString(NonLocalizable::AppZoneHistoryIds::VirtualDesktopID).c_str();
 
                     auto virtualDesktopGuid = FancyZonesUtils::GuidFromString(virtualDesktop);
@@ -32,8 +35,25 @@ namespace JsonUtils
                         return std::nullopt;
                     }
 
-                    return FancyZonesDataTypes::DeviceIdData{
-                        .deviceName = monitor,
+                    FancyZonesDataTypes::DeviceId deviceId{};
+                    if (monitorInstance.empty())
+                    {
+                        // old data
+                        deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(monitor);
+                    }
+                    else
+                    {
+                        deviceId.id = monitor;
+                        deviceId.instanceId = monitorInstance;
+                    }
+
+                    FancyZonesDataTypes::MonitorId monitorId{
+                        .deviceId = deviceId,
+                        .serialNumber = monitorSerialNumber
+                    };
+
+                    return FancyZonesDataTypes::WorkAreaId{
+                        .monitorId = monitorId,
                         .virtualDesktopId = virtualDesktopGuid.value(),
                     };
                 }
@@ -46,8 +66,8 @@ namespace JsonUtils
                         return std::nullopt;
                     }
 
-                    return FancyZonesDataTypes::DeviceIdData{
-                        .deviceName = bcDeviceId->deviceName,
+                    return FancyZonesDataTypes::WorkAreaId{
+                        .monitorId = { .deviceId = MonitorUtils::Display::ConvertObsoleteDeviceId(bcDeviceId->deviceName) },
                         .virtualDesktopId = bcDeviceId->virtualDesktopId,
                     };
                 }
@@ -80,7 +100,7 @@ namespace JsonUtils
                 return std::nullopt;
             }
 
-            data.deviceId = deviceIdOpt.value();
+            data.workAreaId = deviceIdOpt.value();
             data.zoneSetUuid = json.GetNamedString(NonLocalizable::AppZoneHistoryIds::LayoutIdID);
 
             if (!FancyZonesUtils::IsValidGuid(data.zoneSetUuid))
@@ -152,8 +172,11 @@ namespace JsonUtils
                 }
 
                 json::JsonObject device{};
-                device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorID, json::value(data.deviceId.deviceName));
-                auto virtualDesktopStr = FancyZonesUtils::GuidToString(data.deviceId.virtualDesktopId);
+                device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorID, json::value(data.workAreaId.monitorId.deviceId.id));
+                device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorInstanceID, json::value(data.workAreaId.monitorId.deviceId.instanceId));
+                device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorSerialNumberID, json::value(data.workAreaId.monitorId.serialNumber));
+
+                auto virtualDesktopStr = FancyZonesUtils::GuidToString(data.workAreaId.virtualDesktopId);
                 if (virtualDesktopStr)
                 {
                     device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::VirtualDesktopID, json::value(virtualDesktopStr.value()));
@@ -255,9 +278,9 @@ void AppZoneHistory::SaveData()
         auto updatedVector = dataVector;
         for (auto& data : updatedVector)
         {
-            if (!VirtualDesktop::instance().IsVirtualDesktopIdSavedInRegistry(data.deviceId.virtualDesktopId))
+            if (!VirtualDesktop::instance().IsVirtualDesktopIdSavedInRegistry(data.workAreaId.virtualDesktopId))
             {
-                data.deviceId.virtualDesktopId = GUID_NULL;
+                data.workAreaId.virtualDesktopId = GUID_NULL;
                 dirtyFlag = true;
             }
         }
@@ -275,9 +298,40 @@ void AppZoneHistory::SaveData()
     }
 }
 
-bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet)
+void AppZoneHistory::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids)
 {
-    if (IsAnotherWindowOfApplicationInstanceZoned(window, deviceId))
+    bool dirtyFlag = false;
+
+    for (auto iter = m_history.begin(); iter != m_history.end(); ++iter)
+    {
+        auto& [app, data] = *iter;
+        for (auto& dataIter = data.begin(); dataIter != data.end(); ++dataIter)
+        {
+            auto& dataMonitorId = dataIter->workAreaId.monitorId;
+            if (dataMonitorId.serialNumber.empty() && !dataMonitorId.deviceId.isDefault())
+            {
+                for (const auto& monitorId : ids)
+                {
+                    if (dataMonitorId.deviceId.id == monitorId.deviceId.id && dataMonitorId.deviceId.instanceId == monitorId.deviceId.instanceId)
+                    {
+                        dataMonitorId.serialNumber = monitorId.serialNumber;
+                        dirtyFlag = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    if (dirtyFlag)
+    {
+        SaveData();
+    }
+}
+
+bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet)
+{
+    if (IsAnotherWindowOfApplicationInstanceZoned(window, workAreaId))
     {
         return false;
     }
@@ -288,7 +342,7 @@ bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::Dev
         return false;
     }
 
-    Logger::info(L"Add app zone history, device: {}, layout: {}", deviceId.toString(), zoneSetId);
+    Logger::info(L"Add app zone history, device: {}, layout: {}", workAreaId.toString(), zoneSetId);
 
     DWORD processId = 0;
     GetWindowThreadProcessId(window, &processId);
@@ -299,7 +353,7 @@ bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::Dev
         auto& perDesktopData = history->second;
         for (auto& data : perDesktopData)
         {
-            if (data.deviceId == deviceId)
+            if (data.workAreaId == workAreaId)
             {
                 // application already has history on this work area, update it with new window position
                 data.processIdToHandleMap[processId] = window;
@@ -315,7 +369,7 @@ bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::Dev
     processIdToHandleMap[processId] = window;
     FancyZonesDataTypes::AppZoneHistoryData data{ .processIdToHandleMap = processIdToHandleMap,
                                                   .zoneSetUuid = zoneSetId,
-                                                  .deviceId = deviceId,
+                                                  .workAreaId = workAreaId,
                                                   .zoneIndexSet = zoneIndexSet };
 
     if (m_history.contains(processPath))
@@ -333,9 +387,9 @@ bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::Dev
     return true;
 }
 
-bool AppZoneHistory::RemoveAppLastZone(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId)
+bool AppZoneHistory::RemoveAppLastZone(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring_view& zoneSetId)
 {
-    Logger::info(L"Add app zone history, device: {}, layout: {}", deviceId.toString(), zoneSetId);
+    Logger::info(L"Add app zone history, device: {}, layout: {}", workAreaId.toString(), zoneSetId);
 
     auto processPath = get_process_path_waiting_uwp(window);
     if (!processPath.empty())
@@ -346,9 +400,9 @@ bool AppZoneHistory::RemoveAppLastZone(HWND window, const FancyZonesDataTypes::D
             auto& perDesktopData = history->second;
             for (auto data = std::begin(perDesktopData); data != std::end(perDesktopData);)
             {
-                if (data->deviceId == deviceId && data->zoneSetUuid == zoneSetId)
+                if (data->workAreaId == workAreaId && data->zoneSetUuid == zoneSetId)
                 {
-                    if (!IsAnotherWindowOfApplicationInstanceZoned(window, deviceId))
+                    if (!IsAnotherWindowOfApplicationInstanceZoned(window, workAreaId))
                     {
                         DWORD processId = 0;
                         GetWindowThreadProcessId(window, &processId);
@@ -396,7 +450,7 @@ const AppZoneHistory::TAppZoneHistoryMap& AppZoneHistory::GetFullAppZoneHistory(
     return m_history;
 }
 
-std::optional<FancyZonesDataTypes::AppZoneHistoryData> AppZoneHistory::GetZoneHistory(const std::wstring& appPath, const FancyZonesDataTypes::DeviceIdData& deviceId) const noexcept
+std::optional<FancyZonesDataTypes::AppZoneHistoryData> AppZoneHistory::GetZoneHistory(const std::wstring& appPath, const FancyZonesDataTypes::WorkAreaId& workAreaId) const noexcept
 {
     auto app = appPath;
     auto pos = appPath.find_last_of('\\');
@@ -405,10 +459,10 @@ std::optional<FancyZonesDataTypes::AppZoneHistoryData> AppZoneHistory::GetZoneHi
         app = appPath.substr(pos + 1);
     }
 
-    auto srcVirtualDesktopIDStr = FancyZonesUtils::GuidToString(deviceId.virtualDesktopId);
+    auto srcVirtualDesktopIDStr = FancyZonesUtils::GuidToString(workAreaId.virtualDesktopId);
     if (srcVirtualDesktopIDStr)
     {
-        Logger::debug(L"Get {} zone history on monitor: {}, virtual desktop: {}", app, deviceId.deviceName, srcVirtualDesktopIDStr.value());
+        Logger::debug(L"Get {} zone history on monitor: {}, virtual desktop: {}", app, workAreaId.toString(), srcVirtualDesktopIDStr.value());
     }
 
     auto iter = m_history.find(appPath);
@@ -421,15 +475,15 @@ std::optional<FancyZonesDataTypes::AppZoneHistoryData> AppZoneHistory::GetZoneHi
     auto historyVector = iter->second;
     for (const auto& history : historyVector)
     {
-        if (history.deviceId.deviceName == deviceId.deviceName)
+        if (history.workAreaId == workAreaId)
         {
-            auto vdStr = FancyZonesUtils::GuidToString(history.deviceId.virtualDesktopId);
+            auto vdStr = FancyZonesUtils::GuidToString(history.workAreaId.virtualDesktopId);
             if (vdStr)
             {
-                Logger::debug(L"App zone history found on the device {} with virtual desktop {}", history.deviceId.deviceName, vdStr.value());
+                Logger::debug(L"App zone history found on the device {} with virtual desktop {}", history.workAreaId.toString(), vdStr.value());
             }
 
-            if (history.deviceId.virtualDesktopId == deviceId.virtualDesktopId || history.deviceId.virtualDesktopId == GUID_NULL)
+            if (history.workAreaId.virtualDesktopId == workAreaId.virtualDesktopId || history.workAreaId.virtualDesktopId == GUID_NULL)
             {
                 return history;
             }
@@ -439,7 +493,7 @@ std::optional<FancyZonesDataTypes::AppZoneHistoryData> AppZoneHistory::GetZoneHi
     return std::nullopt;
 }
 
-bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId) const noexcept
+bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId) const noexcept
 {
     auto processPath = get_process_path_waiting_uwp(window);
     if (!processPath.empty())
@@ -450,7 +504,7 @@ bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, cons
             auto& perDesktopData = history->second;
             for (auto& data : perDesktopData)
             {
-                if (data.deviceId == deviceId)
+                if (data.workAreaId == workAreaId)
                 {
                     DWORD processId = 0;
                     GetWindowThreadProcessId(window, &processId);
@@ -473,7 +527,7 @@ bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, cons
     return false;
 }
 
-void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId)
+void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId)
 {
     auto processPath = get_process_path_waiting_uwp(window);
     if (!processPath.empty())
@@ -484,7 +538,7 @@ void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDat
             auto& perDesktopData = history->second;
             for (auto& data : perDesktopData)
             {
-                if (data.deviceId == deviceId)
+                if (data.workAreaId == workAreaId)
                 {
                     DWORD processId = 0;
                     GetWindowThreadProcessId(window, &processId);
@@ -496,7 +550,7 @@ void AppZoneHistory::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDat
     }
 }
 
-ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId) const
+ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const std::wstring_view& zoneSetId) const
 {
     auto processPath = get_process_path_waiting_uwp(window);
     if (processPath.empty())
@@ -505,7 +559,7 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
         return {};
     }
 
-    auto srcVirtualDesktopIDStr = FancyZonesUtils::GuidToString(deviceId.virtualDesktopId);
+    auto srcVirtualDesktopIDStr = FancyZonesUtils::GuidToString(workAreaId.virtualDesktopId);
     auto app = processPath;
     auto pos = processPath.find_last_of('\\');
     if (pos != std::string::npos && pos + 1 < processPath.length())
@@ -515,7 +569,7 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
 
     if (srcVirtualDesktopIDStr)
     {
-        Logger::debug(L"Get {} zone history on monitor: {}, virtual desktop: {}", app, deviceId.deviceName, srcVirtualDesktopIDStr.value());
+        Logger::debug(L"Get {} zone history on monitor: {}, virtual desktop: {}", app, workAreaId.toString(), srcVirtualDesktopIDStr.value());
     }
 
     auto history = m_history.find(processPath);
@@ -527,15 +581,15 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
     const auto& perDesktopData = history->second;
     for (const auto& data : perDesktopData)
     {
-        if (data.zoneSetUuid == zoneSetId && data.deviceId.deviceName == deviceId.deviceName)
+        if (data.zoneSetUuid == zoneSetId && data.workAreaId == workAreaId)
         {
-            auto vdStr = FancyZonesUtils::GuidToString(data.deviceId.virtualDesktopId);
+            auto vdStr = FancyZonesUtils::GuidToString(data.workAreaId.virtualDesktopId);
             if (vdStr)
             {
-                Logger::debug(L"App zone history found on the device {} with virtual desktop {}", data.deviceId.deviceName, vdStr.value()); 
+                Logger::debug(L"App zone history found on the device {} with virtual desktop {}", data.workAreaId.toString(), vdStr.value()); 
             }
 
-            if (data.deviceId.virtualDesktopId == deviceId.virtualDesktopId || data.deviceId.virtualDesktopId == GUID_NULL)
+            if (data.workAreaId.virtualDesktopId == workAreaId.virtualDesktopId || data.workAreaId.virtualDesktopId == GUID_NULL)
             {
                 return data.zoneIndexSet;
             }
@@ -573,9 +627,9 @@ void AppZoneHistory::SyncVirtualDesktops()
     {
         for (auto& data : perDesktopData)
         {
-            if (data.deviceId.virtualDesktopId == GUID_NULL)
+            if (data.workAreaId.virtualDesktopId == GUID_NULL)
             {
-                data.deviceId.virtualDesktopId = savedInRegistryVirtualDesktopID.value();
+                data.workAreaId.virtualDesktopId = savedInRegistryVirtualDesktopID.value();
                 dirtyFlag = true;
             }
         }
@@ -598,9 +652,9 @@ void AppZoneHistory::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activ
         auto& perDesktopData = it->second;
         for (auto desktopIt = std::begin(perDesktopData); desktopIt != std::end(perDesktopData);)
         {
-            if (desktopIt->deviceId.virtualDesktopId != GUID_NULL && !active.contains(desktopIt->deviceId.virtualDesktopId))
+            if (desktopIt->workAreaId.virtualDesktopId != GUID_NULL && !active.contains(desktopIt->workAreaId.virtualDesktopId))
             {
-                auto virtualDesktopIdStr = FancyZonesUtils::GuidToString(desktopIt->deviceId.virtualDesktopId);
+                auto virtualDesktopIdStr = FancyZonesUtils::GuidToString(desktopIt->workAreaId.virtualDesktopId);
                 if (virtualDesktopIdStr)
                 {
                     Logger::info(L"Remove Virtual Desktop id {} from app-zone-history", virtualDesktopIdStr.value());

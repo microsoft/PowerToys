@@ -18,6 +18,8 @@ namespace NonLocalizable
         const static wchar_t* DeviceIdID = L"device-id";
         const static wchar_t* DeviceID = L"device";
         const static wchar_t* MonitorID = L"monitor";
+        const static wchar_t* MonitorInstanceID = L"monitor-instance";
+        const static wchar_t* MonitorSerialNumberID = L"serial-number";
         const static wchar_t* VirtualDesktopID = L"virtual-desktop";
         const static wchar_t* AppliedLayoutID = L"applied-layout";
         const static wchar_t* UuidID = L"uuid";
@@ -32,7 +34,7 @@ namespace NonLocalizable
 class AppliedLayouts
 {
 public:
-    using TAppliedLayoutsMap = std::unordered_map<FancyZonesDataTypes::DeviceIdData, Layout>;
+    using TAppliedLayoutsMap = std::unordered_map<FancyZonesDataTypes::WorkAreaId, Layout>;
     
     static AppliedLayouts& instance();
 
@@ -47,18 +49,19 @@ public:
 
     void LoadData();
     void SaveData();
+    void AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids);
 
     void SyncVirtualDesktops();
     void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
 
-    std::optional<Layout> GetDeviceLayout(const FancyZonesDataTypes::DeviceIdData& id) const noexcept;
+    std::optional<Layout> GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept;
     const TAppliedLayoutsMap& GetAppliedLayoutMap() const noexcept;
 
-    bool IsLayoutApplied(const FancyZonesDataTypes::DeviceIdData& id) const noexcept;
+    bool IsLayoutApplied(const FancyZonesDataTypes::WorkAreaId& id) const noexcept;
 
-    bool ApplyLayout(const FancyZonesDataTypes::DeviceIdData& deviceId, Layout layout);
-    bool ApplyDefaultLayout(const FancyZonesDataTypes::DeviceIdData& deviceId);
-    bool CloneLayout(const FancyZonesDataTypes::DeviceIdData& srcId, const FancyZonesDataTypes::DeviceIdData& dstId);
+    bool ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, Layout layout);
+    bool ApplyDefaultLayout(const FancyZonesDataTypes::WorkAreaId& deviceId);
+    bool CloneLayout(const FancyZonesDataTypes::WorkAreaId& srcId, const FancyZonesDataTypes::WorkAreaId& dstId);
 
 private:
     AppliedLayouts();

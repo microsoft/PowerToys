@@ -2,6 +2,7 @@
 #include "EditorParameters.h"
 
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
+#include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/on_thread_executor.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/VirtualDesktop.h>
@@ -22,6 +23,8 @@ namespace JsonUtils
     struct MonitorInfo
     {
         std::wstring monitorName;
+        std::wstring monitorInstanceId;
+        std::wstring monitorSerialNumber;
         std::wstring virtualDesktop;
         int dpi;
         int top;
@@ -37,6 +40,8 @@ namespace JsonUtils
             json::JsonObject result{};
 
             result.SetNamedValue(NonLocalizable::EditorParametersIds::MonitorNameId, json::value(monitor.monitorName));
+            result.SetNamedValue(NonLocalizable::EditorParametersIds::MonitorInstanceId, json::value(monitor.monitorInstanceId));
+            result.SetNamedValue(NonLocalizable::EditorParametersIds::MonitorSerialNumberId, json::value(monitor.monitorSerialNumber));
             result.SetNamedValue(NonLocalizable::EditorParametersIds::VirtualDesktopId, json::value(monitor.virtualDesktop));
             result.SetNamedValue(NonLocalizable::EditorParametersIds::Dpi, json::value(monitor.dpi));
             result.SetNamedValue(NonLocalizable::EditorParametersIds::TopCoordinate, json::value(monitor.top));
@@ -82,7 +87,7 @@ bool EditorParameters::Save() noexcept
     const auto virtualDesktopIdStr = FancyZonesUtils::GuidToString(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
     if (!virtualDesktopIdStr)
     {
-        Logger::error(L"Save editor params: no virtual desktop id");
+        Logger::error(L"Save editor params: invalid virtual desktop id");
         return false;
     }
 
@@ -124,13 +129,7 @@ bool EditorParameters::Save() noexcept
     }
     else
     {
-        // device id map for correct device ids
-        std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
-
-        std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
-        dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&]() {
-            allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-        } }).wait();
+        auto monitors = MonitorUtils::IdentifyMonitors();
 
         HMONITOR targetMonitor{};
         if (FancyZonesSettings::settings().use_cursorpos_editor_startupscreen)
@@ -150,21 +149,29 @@ bool EditorParameters::Save() noexcept
             return false;
         }
 
-        for (auto& monitorData : allMonitors)
+        for (auto& monitorData : monitors)
         {
-            HMONITOR monitor = monitorData.first;
-            auto monitorInfo = monitorData.second;
+            HMONITOR monitor = monitorData.monitor;
+
+            MONITORINFOEX monitorInfo{};
+            dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
+                monitorInfo.cbSize = sizeof(monitorInfo);
+                if (!GetMonitorInfo(monitor, &monitorInfo))
+                {
+                    return;
+                }
+            } }).wait();
 
             JsonUtils::MonitorInfo monitorJson;
-
-            std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(monitorInfo.szDevice, displayDeviceIdxMap);
 
             if (monitor == targetMonitor)
             {
                 monitorJson.isSelected = true; /* Is monitor selected for the main editor window opening */
             }
 
-            monitorJson.monitorName = FancyZonesUtils::TrimDeviceId(deviceId);
+            monitorJson.monitorName = monitorData.deviceId.id;
+            monitorJson.monitorInstanceId = monitorData.deviceId.instanceId;
+            monitorJson.monitorSerialNumber = monitorData.serialNumber;
             monitorJson.virtualDesktop = virtualDesktopIdStr.value();
 
             UINT dpi = 0;
