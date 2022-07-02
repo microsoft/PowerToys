@@ -24,6 +24,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private string _searchText;
 
+        private bool _isElevated;
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private PowerLauncherSettings settings;
@@ -36,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(PowerLauncherSettings settings, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<bool> isDark)
+        public PowerLauncherViewModel(PowerLauncherSettings settings, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<bool> isDark, bool isElevated)
         {
             if (settings == null)
             {
@@ -45,6 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             this.settings = settings;
             this.isDark = isDark;
+            this._isElevated = isElevated;
 
             // To obtain the general Settings configurations of PowerToys
             if (settingsRepository == null)
@@ -293,6 +296,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.Properties.UseCentralizedKeyboardHook = value;
                     UpdateSettings();
                 }
+            }
+        }
+
+        public bool IsPTElevated
+        {
+            get
+            {
+                return _isElevated;
             }
         }
 

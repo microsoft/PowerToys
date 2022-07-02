@@ -77,7 +77,18 @@
                                           Severity="Informational"
                                           IsTabStop="True"
                                           IsClosable="False"
-                                          IsOpen="True">
+                                          IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsPTElevated}">
+                        <muxc:InfoBar.ActionButton>
+                            <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp"
+                                                         x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
+                        </muxc:InfoBar.ActionButton>
+                    </muxc:InfoBar>
+
+                    <muxc:InfoBar x:Uid="PowerLauncher_WindowsSearchReplacementModeEnabledWarning" 
+                                          Severity="Warning"
+                                          IsTabStop="True"
+                                          IsClosable="False"
+                                          IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsPTElevated, Converter={StaticResource BoolNegationConverter}}">
                         <muxc:InfoBar.ActionButton>
                             <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp"
                                                          x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>

@@ -420,6 +420,9 @@
   <data name="PowerLauncher_WindowsSearchReplacementModeEnabled.Title" xml:space="preserve">
     <value>For PowerToys Run to work in all cases PowerToys needs to be running as Administrator.</value>
   </data>	
+  <data name="PowerLauncher_WindowsSearchReplacementModeEnabledWarning.Title" xml:space="preserve">
+    <value>For PowerToys Run to work in all cases PowerToys needs to be running as Administrator.  Enable this under General settings.</value>
+  </data>	
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
