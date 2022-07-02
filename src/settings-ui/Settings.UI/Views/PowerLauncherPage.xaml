@@ -17,6 +17,8 @@
         <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
         <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+        <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="PowerLauncher"
@@ -47,7 +49,9 @@
                     </controls:Setting>
 
 
-                    <controls:SettingExpander IsExpanded="True" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsWindowsSearchReplacementMode, Converter={StaticResource BoolNegationConverter}}">
+                    <controls:SettingExpander 
+                                            IsExpanded="True"
+                                            Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsWindowsSearchReplacementMode, Converter={StaticResource FalseToVisibleConverter}}">
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
@@ -70,7 +74,7 @@
                     </controls:SettingExpander>
 
                     <muxc:InfoBar x:Uid="PowerLauncher_WindowsSearchReplacementModeEnabled" 
-                                          Severity="Warning"
+                                          Severity="Informational"
                                           IsTabStop="True"
                                           IsClosable="False"
                                           IsOpen="True">

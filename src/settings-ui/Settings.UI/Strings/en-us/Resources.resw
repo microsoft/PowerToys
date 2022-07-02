@@ -418,7 +418,7 @@
     <value>You can activate PowerToys Run by either picking an Activation shortcut or by using the Windows key. Using the Windows key replaces 'Windows Search'. If you replace Windows Search, you can still access it with the normal Win+S shortcut.</value>
   </data>
   <data name="PowerLauncher_WindowsSearchReplacementModeEnabled.Title" xml:space="preserve">
-    <value>For PowerToys Run to work in all cases with any activation shortcut, PowerToys needs to be running as Administrator.</value>
+    <value>For PowerToys Run to work in all cases PowerToys needs to be running as Administrator.</value>
   </data>	
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
