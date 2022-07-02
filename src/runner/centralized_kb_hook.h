@@ -14,4 +14,5 @@ namespace CentralizedKeyboardHook
     void AddPressedKeyActionForWindowsSearchReplacement(const std::wstring& moduleName, std::function<bool()>&& action) noexcept;
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept;
     void RegisterWindow(HWND hwnd) noexcept;
+    void UpdateHasAnyWindowsSearchReplacement() noexcept;
 };

@@ -86,6 +86,8 @@ void PowertoyModule::update_hotkeys()
             });
         }
     }
+
+    CentralizedKeyboardHook::UpdateHasAnyWindowsSearchReplacement();
 }
 
 void PowertoyModule::UpdateHotkeyEx()
@@ -135,4 +137,6 @@ void PowertoyModule::UpdateHotkeyEx()
         CentralizedKeyboardHook::AddPressedKeyAction(pt_module->get_key(), VK_LWIN, pt_module->milliseconds_win_key_must_be_pressed(), action);
         CentralizedKeyboardHook::AddPressedKeyAction(pt_module->get_key(), VK_RWIN, pt_module->milliseconds_win_key_must_be_pressed(), action);
     }
+
+    CentralizedKeyboardHook::UpdateHasAnyWindowsSearchReplacement();
 }
