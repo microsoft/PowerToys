@@ -415,7 +415,10 @@
     <value>PowerToys Run activation mode</value>
   </data>
   <data name="PowerLauncher_IsWindowsSearchReplacementMode.Description" xml:space="preserve">
-    <value>You can use PowerToys Run by picking a keyboard shortcut below or just by using the Windows key, replacing the Windows Search. If you do replace Windows Search, you can still access it with the normal Win+S shortcut.</value>
+    <value>You can activate PowerToys Run by either picking an Activation shortcut or by using the Windows key. Using the Windows key replaces 'Windows Search'. If you replace Windows Search, you can still access it with the normal Win+S shortcut.</value>
+  </data>
+  <data name="PowerLauncher_WindowsSearchReplacementModeEnabled.Title" xml:space="preserve">
+    <value>For PowerToys Run to work in all cases with any activation shortcut, PowerToys needs to be running as Administrator.</value>
   </data>	
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
@@ -1291,7 +1294,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Primary monitor</value>
   </data>
 	<data name="Run_Radio_WindowsSearchAddOnMode.Content" xml:space="preserve">
-    <value>Use custom shortcut</value>
+    <value>Activation shortcut</value>
   </data>
 	<data name="Run_Radio_WindowsSearchReplacementMode.Content" xml:space="preserve">
     <value>Replace Windows Search</value>
