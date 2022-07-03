@@ -66,7 +66,7 @@ namespace ViewModelTests
 
             // Initialise View Model with test Config files
             Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
-            PowerLauncherViewModel viewModel = new PowerLauncherViewModel(originalSettings, generalSettingsRepository, sendMockIPCConfigMSG, () => true);
+            PowerLauncherViewModel viewModel = new PowerLauncherViewModel(originalSettings, generalSettingsRepository, sendMockIPCConfigMSG, () => true, true);
 
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.PowerLauncher, viewModel.EnablePowerLauncher);
