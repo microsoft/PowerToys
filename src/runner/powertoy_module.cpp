@@ -2,6 +2,7 @@
 #include "powertoy_module.h"
 #include "centralized_kb_hook.h"
 #include "centralized_hotkeys.h"
+#include "common/utils/elevation.h"
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
 
@@ -60,6 +61,8 @@ void PowertoyModule::update_hotkeys()
     pt_module->get_hotkeys(hotkeys.data(), hotkeyCount);
 
     auto modulePtr = pt_module.get();
+
+    // auto isElevated = is_process_elevated();
 
     std::wstring name = modulePtr->get_name();
 

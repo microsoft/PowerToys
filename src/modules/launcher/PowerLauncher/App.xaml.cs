@@ -135,6 +135,16 @@ namespace PowerLauncher
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();
                 _themeManager.ThemeChanged += OnThemeChanged;
+
+                var ptIsElevated = e.Args.Contains("--is-elevated-true");
+                if (_settings.IsWindowsSearchReplacementMode && !ptIsElevated)
+                {
+                    textToLog.AppendLine("Bad combo, IsWindowsSearchReplacementMode AND non elevated PT");
+
+                    // _settings.IsWindowsSearchReplacementMode = false;
+                    MessageBox.Show("Current PowerToys Run settings requires elevated permission to work properly. PowerToys Run will not activate if an elevated program is the foreground application. \r\n\r\nYou should change PowerToys to run as Administrator to correct this.", "PowerToys Run");
+                }
+
                 textToLog.AppendLine("End PowerToys Run startup ----------------------------------------------------  ");
 
                 bootTime.Stop();

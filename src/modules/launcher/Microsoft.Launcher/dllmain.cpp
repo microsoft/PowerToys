@@ -242,7 +242,7 @@ public:
             std::wstring runExecutablePath = modulePath;
             std::wstring params;
             params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
-            params += L"--started-from-runner ";
+            params += L"--started-from-runner  --is-elevated-true";
             runExecutablePath += L"\\modules\\launcher\\PowerToys.PowerLauncher.exe";
             processStarted = RunNonElevatedFailsafe(runExecutablePath, params, modulePath).has_value();
         }
@@ -252,7 +252,7 @@ public:
             std::wstring executable_args;
             executable_args += L" -powerToysPid ";
             executable_args += std::to_wstring(powertoys_pid);
-            executable_args += L" --started-from-runner";
+            executable_args += L" --started-from-runner --is-elevated-false";
 
             SHELLEXECUTEINFOW sei{ sizeof(sei) };
             sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
