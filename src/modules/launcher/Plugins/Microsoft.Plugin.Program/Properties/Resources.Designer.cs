@@ -106,6 +106,15 @@ namespace Microsoft.Plugin.Program.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Original name.
+        /// </summary>
+        public static string powertoys_run_plugin_program_org_name {
+            get {
+                return ResourceManager.GetString("powertoys_run_plugin_program_org_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Packaged application.
         /// </summary>
         public static string powertoys_run_plugin_program_packaged_application {
