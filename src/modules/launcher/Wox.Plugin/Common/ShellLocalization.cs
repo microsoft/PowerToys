@@ -35,7 +35,7 @@ namespace Wox.Plugin.Common
         /// Returns the localized name of a shell item.
         /// </summary>
         /// <param name="path">Path to the shell item (e. g. shortcut 'File Explorer.lnk').</param>
-        /// <returns>The localized anme as string or <see cref="string.Empty"/>.</returns>
+        /// <returns>The localized name as string or <see cref="string.Empty"/>.</returns>
         public static string GetLocalizedName(string path)
         {
             StringBuilder resourcePath = new StringBuilder(1024);
