@@ -34,7 +34,7 @@ namespace FancyZonesUnitTests
             m_uniqueId.monitorId.deviceId.id = L"DELA026";
             m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
             m_uniqueId.monitorId.serialNumber = L"serial-number";
-            m_uniqueId.monitorId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value();
+            m_uniqueId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value();
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
@@ -120,7 +120,7 @@ namespace FancyZonesUnitTests
             m_uniqueId.monitorId.deviceId.id = L"DELA026";
             m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
             m_uniqueId.monitorId.serialNumber = L"serial-number";
-            m_uniqueId.monitorId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value();
+            m_uniqueId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value();
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
