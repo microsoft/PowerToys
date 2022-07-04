@@ -197,26 +197,8 @@ namespace PowerLauncher.ViewModel
 
                         if (SelectedIsFromQueryResults())
                         {
-                            // todo: revert _userSelectedRecordStorage.Save() and _historyItemsStorage.Save() after https://github.com/microsoft/PowerToys/issues/9164 is done
                             _userSelectedRecord.Add(result);
-                            try
-                            {
-                                _userSelectedRecordStorage.Save();
-                            }
-                            catch (UnauthorizedAccessException ex)
-                            {
-                                Log.Warn($"Failed to save file. ${ex.Message}", this.GetType());
-                            }
-
                             _history.Add(result.OriginQuery.RawQuery);
-                            try
-                            {
-                                _historyItemsStorage.Save();
-                            }
-                            catch (UnauthorizedAccessException ex)
-                            {
-                                Log.Warn($"Failed to save file. ${ex.Message}", this.GetType());
-                            }
                         }
                         else
                         {
