@@ -488,15 +488,8 @@ namespace PowerLauncher
             }
             else
             {
-                var options = new MainViewModel.QueryTuningOptions
-                {
-                    SearchClickedItemWeight = _viewModel.GetSearchClickedItemWeight(),
-                    SearchQueryTuningEnabled = _viewModel.GetSearchQueryTuningEnabled(),
-                    SearchWaitForSlowResults = _viewModel.GetSearchWaitForSlowResults(),
-                };
-
                 _viewModel.QueryText = text;
-                _viewModel.Query(options);
+                _viewModel.Query();
             }
         }
 

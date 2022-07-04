@@ -362,14 +362,14 @@ namespace PowerLauncher.ViewModel
         /// </summary>
         /// <param name="queryText">Text that is being queried from user</param>
         /// <param name="requery">Optional Parameter that if true, will automatically execute a query against the updated text</param>
-        public void ChangeQueryText(string queryText, bool requery = false, QueryTuningOptions tuningOptions = null)
+        public void ChangeQueryText(string queryText, bool requery = false)
         {
             SystemQueryText = queryText;
 
             if (requery)
             {
                 QueryText = queryText;
-                Query(tuningOptions);
+                Query();
             }
         }
 
@@ -472,11 +472,11 @@ namespace PowerLauncher.ViewModel
             public bool SearchWaitForSlowResults { get; set; }
         }
 
-        public void Query(QueryTuningOptions options)
+        public void Query()
         {
             if (SelectedIsFromQueryResults())
             {
-                QueryResults(options);
+                QueryResults();
             }
             else if (HistorySelected())
             {
@@ -527,8 +527,9 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        private void QueryResults(QueryTuningOptions queryTuning)
+        private void QueryResults()
         {
+            var queryTuning = GetQueryTuningOptions();
             var doFinalSort = queryTuning.SearchQueryTuningEnabled && queryTuning.SearchWaitForSlowResults;
 
             if (!string.IsNullOrEmpty(QueryText))
@@ -1155,6 +1156,16 @@ namespace PowerLauncher.ViewModel
         public int GetSearchInputDelaySetting()
         {
             return _settings.SearchInputDelay;
+        }
+
+        public QueryTuningOptions GetQueryTuningOptions()
+        {
+            return new MainViewModel.QueryTuningOptions
+            {
+                SearchClickedItemWeight = GetSearchClickedItemWeight(),
+                SearchQueryTuningEnabled = GetSearchQueryTuningEnabled(),
+                SearchWaitForSlowResults = GetSearchWaitForSlowResults(),
+            };
         }
 
         public int GetSearchClickedItemWeight()
