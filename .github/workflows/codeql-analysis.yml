@@ -15,7 +15,6 @@ jobs:
     permissions:
       actions: read  # for github/codeql-action/init to get workflow details
       contents: read  # for actions/checkout to fetch code
-      security-events: write  # for github/codeql-action/analyze to upload SARIF results
     name: Analyze
     runs-on: windows-latest
 
