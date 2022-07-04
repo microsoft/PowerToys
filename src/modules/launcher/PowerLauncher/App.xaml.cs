@@ -212,7 +212,7 @@ namespace PowerLauncher
         private void OnThemeChanged(Theme oldTheme, Theme newTheme)
         {
             ImageLoader.UpdateIconPath(newTheme);
-            _mainVM.Query();
+            _mainVM.Query(new MainViewModel.QueryTuningOptions());
         }
 
         /// <summary>

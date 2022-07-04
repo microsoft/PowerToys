@@ -79,6 +79,8 @@ namespace Wox.Plugin
             }
 
             Metadata.ActionKeyword = setting.ActionKeyword;
+            Metadata.WeightBoost = setting.WeightBoost;
+
             Metadata.IsGlobal = setting.IsGlobal;
 
             (Plugin as ISettingProvider)?.UpdateSettings(setting);

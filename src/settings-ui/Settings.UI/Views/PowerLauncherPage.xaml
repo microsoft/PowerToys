@@ -12,7 +12,7 @@
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
-    
+
     <Page.Resources>
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
         <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
@@ -132,6 +132,49 @@
                             <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" Margin="{StaticResource ExpanderSettingMargin}" />
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
+
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="PowerLauncher_SearchQueryTuningEnabled" Icon="&#xE14C;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
+                                <controls:Setting.ActionContent>
+                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryTuningEnabled}"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel>
+                                <controls:Setting x:Uid="PowerLauncher_SearchClickedItemWeight" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox Minimum="0"
+                                        Maximum="1000"
+                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchClickedItemWeight}"
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        SpinButtonPlacementMode="Compact"
+                                        HorizontalAlignment="Left"
+                                        SmallChange="5"
+                                        LargeChange="50"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                
+                                <!--<controls:Setting x:Uid="PowerLauncher_WaitForSlowResults" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <CheckBox
+                                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}"
+                                          Margin="{StaticResource ExpanderSettingMargin}" />
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>-->
+                                
+                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <controls:CheckBoxWithDescriptionControl 
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}"
+                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}"
+                                                                 Margin="56, -2, 40, 14"
+                                                                 x:Uid="PowerLauncher_WaitForSlowResults"/>
+                                
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+
                 </controls:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
@@ -246,6 +289,7 @@
                                                                  MinWidth="{StaticResource SettingActionControlMinWidth}" />
                                                     </controls:Setting.ActionContent>
                                                 </controls:Setting>
+
                                                 <muxc:InfoBar Severity="Error" x:Uid="Run_NotAccessibleWarning"
                                                               IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                               IsOpen="{x:Bind ShowNotAccessibleWarning}"
@@ -256,19 +300,34 @@
                                                               IsOpen="{x:Bind ShowNotAllowedKeywordWarning}"
                                                               IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                                <CheckBox AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
+                                                
+                                                <StackPanel Orientation="Vertical">
+                                                    <CheckBox AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
                                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
                                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}"
                                                           Margin="56, 0, 40, 16">
-                                                    <StackPanel Orientation="Vertical">
-                                                        <TextBlock x:Name="IncludeInGlobalResultTitle"
+                                                        <StackPanel Orientation="Vertical">
+                                                            <TextBlock x:Name="IncludeInGlobalResultTitle"
                                                                    Margin="0,10,0,0"
                                                                    x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
-                                                        <controls:IsEnabledTextBlock x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
+                                                            <controls:IsEnabledTextBlock x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
                                                                                    FontSize="{StaticResource SecondaryTextFontSize}"
                                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                                    </StackPanel>
-                                                </CheckBox>
+
+                                                        </StackPanel>
+                                                    </CheckBox>
+
+                                                    <controls:Setting x:Uid="PowerLauncher_PluginWeightBoost" 
+                                                                          Style="{StaticResource ExpanderContentSettingStyleTight}" 
+                                                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                                        <controls:Setting.ActionContent>
+                                                            <TextBox Text="{x:Bind Path=WeightBoost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                 MinWidth="{StaticResource SettingActionControlMinWidth}" />
+                                                        </controls:Setting.ActionContent>
+                                                    </controls:Setting>
+                                                    
+                                                    
+                                                </StackPanel>
 
                                                 <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
                                                           SelectionMode="None"

@@ -7,6 +7,7 @@
     <!-- Thickness -->
     <Thickness x:Key="ExpanderContentPadding">0</Thickness>
     <Thickness x:Key="ExpanderSettingMargin">56, 8, 40, 8</Thickness>
+    <Thickness x:Key="ExpanderSettingMarginTight">86, 0, 40, 8</Thickness>
 
     <SolidColorBrush x:Key="ExpanderChevronPointerOverBackground">Transparent</SolidColorBrush>
 
@@ -33,6 +34,16 @@
         <Setter Property="HorizontalAlignment" Value="Stretch" />
     </Style>
 
+    <Style x:Key="ExpanderContentSettingStyleTight" TargetType="controls:Setting">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0,0,0,0" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardBorderBrush}" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Padding" Value="{StaticResource ExpanderSettingMarginTight}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+    
+    
     <!-- Setting expander style -->
     <Style x:Key="SettingExpanderStyle" TargetType="muxc:Expander">
         <Setter Property="Background" Value="{ThemeResource CardBackgroundBrush}" />
