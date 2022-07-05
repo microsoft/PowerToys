@@ -11,7 +11,8 @@ namespace ZonedWindowProperties
     const wchar_t PropertyRestoreOriginID[] = L"FancyZones_RestoreOrigin";
     const wchar_t PropertyCornerPreference[] = L"FancyZones_CornerPreference";
 
-    const wchar_t MultiMonitorDeviceID[] = L"FancyZones#MultiMonitorDevice";
+    const wchar_t MultiMonitorName[] = L"FancyZones";
+    const wchar_t MultiMonitorInstance[] = L"MultiMonitorDevice";
 }
 
 namespace FancyZonesWindowProperties

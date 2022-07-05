@@ -369,6 +369,8 @@ namespace FancyZonesEditor.Utils
 
                         var monitor = new Monitor(workArea, monitorSize);
                         monitor.Device.MonitorName = nativeData.Monitor;
+                        monitor.Device.MonitorInstanceId = nativeData.MonitorInstanceId;
+                        monitor.Device.MonitorSerialNumber = nativeData.MonitorSerialNumber;
                         monitor.Device.VirtualDesktopId = nativeData.VirtualDesktop;
 
                         App.Overlay.AddMonitor(monitor);

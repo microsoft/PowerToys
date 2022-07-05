@@ -114,7 +114,8 @@ bool EditorParameters::Save() noexcept
         RECT combinedMonitorArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcMonitor>();
 
         JsonUtils::MonitorInfo monitorJson;
-        monitorJson.monitorName = ZonedWindowProperties::MultiMonitorDeviceID;
+        monitorJson.monitorName = ZonedWindowProperties::MultiMonitorName;
+        monitorJson.monitorInstanceId = ZonedWindowProperties::MultiMonitorInstance;
         monitorJson.virtualDesktop = virtualDesktopIdStr.value();
         monitorJson.top = combinedWorkArea.top;
         monitorJson.left = combinedWorkArea.left;
