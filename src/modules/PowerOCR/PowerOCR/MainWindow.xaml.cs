@@ -204,9 +204,9 @@ namespace PowerOCR
             if (string.IsNullOrWhiteSpace(grabbedText) == false)
             {
                 Clipboard.SetText(grabbedText);
-                Close();
                 // WindowUtilities.CloseAllFullscreenGrabs();
             }
+            Close();
         }
 
         private void CancelMenuItem_Click(object sender, RoutedEventArgs e)
