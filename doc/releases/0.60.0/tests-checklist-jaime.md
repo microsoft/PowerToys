@@ -221,4 +221,4 @@ Mouse Pointer Crosshairs:
     - [x] Crosshairs border size
 
 ## Awake
- - [ ] Try out the features and see if they work, no list at this time.
+ - [x] Try out the features and see if they work, no list at this time.
