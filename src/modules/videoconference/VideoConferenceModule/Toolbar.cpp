@@ -42,7 +42,14 @@ void Toolbar::scheduleGeneralSettingsUpdate()
 {
     generalSettingsUpdateScheduled = true;
 }
+constexpr uint32_t hash(const char* data, size_t const size) noexcept{
+    uint32_t hash = 5381;
 
+    for(const char *c = data; c < data + size; ++c)
+        hash = ((hash << 5) + hash) + (unsigned char) *c;
+
+    return hash;
+}    
 LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
@@ -156,7 +163,16 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 
         if (toolbar->cameraInUse)
         {
-            show = toolbar->HideToolbarWhenUnmuted ? toolbar->microphoneMuted || toolbar->cameraMuted : true;
+            if (toolbar->HideToolbarWhen == L"Never")
+            {
+                show = true;
+            } else if(toolbar->HideToolbarWhen == L"When both camera and microphone are muted")
+            {
+                show = toolbar->microphoneMuted || toolbar->cameraMuted;
+            } else if(toolbar->HideToolbarWhen == L"When both camera and microphone are unmuted")
+            {
+                show = !toolbar->microphoneMuted || !toolbar->cameraMuted;
+            }
         }
         else if (toolbar->previouscameraInUse)
         {
@@ -331,9 +347,9 @@ void Toolbar::setMicrophoneMute(bool mute)
     microphoneMuted = mute;
 }
 
-void Toolbar::setHideToolbarWhenUnmuted(bool hide)
+void Toolbar::setHideToolbarWhen(std::wstring hide)
 {
-    HideToolbarWhenUnmuted = hide;
+    HideToolbarWhen = hide;
 }
 
 void Toolbar::setTheme(std::wstring theme)

@@ -250,9 +250,9 @@ void VideoConferenceModule::onModuleSettingsChanged()
                 settings.imageOverlayPath = val.value();
                 sendOverlayImageUpdate();
             }
-            if (const auto val = values.get_bool_value(L"hide_toolbar_when_unmuted"))
+            if (const auto val = values.get_string_value(L"hide_toolbar_when"))
             {
-                toolbar.setHideToolbarWhenUnmuted(val.value());
+                toolbar.setHideToolbarWhen(val.value());
             }
 
             const auto selectedMic = values.get_string_value(L"selected_mic");
@@ -397,9 +397,9 @@ void VideoConferenceModule::init_settings()
         {
             settings.imageOverlayPath = val.value();
         }
-        if (const auto val = powerToysSettings.get_bool_value(L"hide_toolbar_when_unmuted"))
+        if (const auto val = powerToysSettings.get_string_value(L"hide_toolbar_when"))
         {
-            toolbar.setHideToolbarWhenUnmuted(val.value());
+            toolbar.setHideToolbarWhen(val.value());
         }
         if (const auto val = powerToysSettings.get_string_value(L"selected_mic"); val && *val != settings.selectedMicrophone)
         {

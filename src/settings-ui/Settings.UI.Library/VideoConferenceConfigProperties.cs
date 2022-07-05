@@ -44,7 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 Code = 79,
             });
 
-            this.HideToolbarWhenUnmuted = new BoolProperty(true);
+            this.HideToolbarWhen = new StringProperty("Never");
         }
 
         [JsonPropertyName("mute_camera_and_microphone_hotkey")]
@@ -74,8 +74,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("theme")]
         public StringProperty Theme { get; set; }
 
-        [JsonPropertyName("hide_toolbar_when_unmuted")]
-        public BoolProperty HideToolbarWhenUnmuted { get; set; }
+        [JsonPropertyName("hide_toolbar_when")]
+        public StringProperty HideToolbarWhen { get; set; }
+
+        // public StringProperty HideToolbarWhenUnmuted { get; set; }
 
         // converts the current to a json string.
         public string ToJsonString()
