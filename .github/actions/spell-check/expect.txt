@@ -743,6 +743,7 @@ homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush
 hostname
+hotfix
 hotkeycontrol
 hotkeys
 hotlight
@@ -1660,7 +1661,7 @@ rects
 recyclebin
 redirectedfrom
 Redist
-Redistributable
+redistributable
 reencode
 reencoded
 refactor
@@ -1698,7 +1699,7 @@ requerying
 rescap
 resgen
 resheader
-Resizable
+resizable
 resizers
 resmimetype
 RESOURCEID

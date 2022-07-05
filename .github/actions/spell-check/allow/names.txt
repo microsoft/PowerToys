@@ -1,13 +1,17 @@
+ABradley
 adamchilders
 azchohfi
 bdoserror
 crutkas
+dependabot
 Deuchert
 edwinzap
 eltociear
 hallatore
 harvastum
+jefflord
 mshtang
+naveensrinivasan
 nVidia
 rcmaehl
 robmen

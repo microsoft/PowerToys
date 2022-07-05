@@ -112,7 +112,7 @@ In this release, we focused heavily on stability and improvements. Below are som
 
 - Add a viewBox attribute to svg file thumbnails so that it tries to show the whole image, similar to what was done in the preview handler.
 - Removed access to a remote image in the tests for markdown preview.
-- Fixed flakiness in the markdown preview test suite with proper compenent initialization timeouts.
+- Fixed flakiness in the markdown preview test suite with proper component initialization timeouts.
 - Fixed the leaking WebView2 resources caused by svg thumbnails.
 
 ### Keyboard Manager
