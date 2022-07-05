@@ -8,10 +8,47 @@
     Title="PowerOCR"
     Width="800"
     Height="450"
+    AllowsTransparency="True"
+    Background="Transparent"
+    Loaded="Window_Loaded"
+    ResizeMode="NoResize"
+    Topmost="True"
+    WindowStyle="None"
     mc:Ignorable="d">
     <Grid>
-        <TextBlock>
-            Hello from Power OCR!
-        </TextBlock>
+        <Viewbox>
+            <Image x:Name="BackgroundImage" Stretch="UniformToFill" />
+        </Viewbox>
+        <Canvas
+            Name="RegionClickCanvas"
+            Cursor="Cross"
+            MouseDown="RegionClickCanvas_MouseDown"
+            MouseMove="RegionClickCanvas_MouseMove"
+            MouseUp="RegionClickCanvas_MouseUp">
+            <Canvas.Clip>
+                <CombinedGeometry GeometryCombineMode="Exclude">
+                    <CombinedGeometry.Geometry1>
+                        <RectangleGeometry x:Name="FullWindow" />
+                    </CombinedGeometry.Geometry1>
+                    <CombinedGeometry.Geometry2>
+                        <RectangleGeometry x:Name="clippingGeometry" />
+                    </CombinedGeometry.Geometry2>
+                </CombinedGeometry>
+            </Canvas.Clip>
+            <Canvas.Background>
+                <SolidColorBrush
+                    x:Name="BackgroundBrush"
+                    Opacity="0"
+                    Color="Beige" />
+            </Canvas.Background>
+            <Canvas.ContextMenu>
+                <ContextMenu>
+                    <MenuItem
+                        Name="CancelMenuItem"
+                        Click="CancelMenuItem_Click"
+                        Header="Cancel" />
+                </ContextMenu>
+            </Canvas.ContextMenu>
+        </Canvas>
     </Grid>
 </Window>
