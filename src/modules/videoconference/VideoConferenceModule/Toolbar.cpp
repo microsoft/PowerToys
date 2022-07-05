@@ -133,6 +133,8 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     }
     case WM_TIMER:
     {
+        LOG("AT LEAST REACHING HERE")
+
         if (toolbar->audioConfChangesNotifier.PullPendingNotifications())
         {
             instance->onMicrophoneConfigurationChanged();
@@ -160,7 +162,6 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 
         static bool previousShow = false;
         bool show = false;
-        LOG("AT LEAST REACHING HERE")
 
         if (toolbar->cameraInUse)
         {

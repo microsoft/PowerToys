@@ -77,8 +77,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("hide_toolbar")]
         public StringProperty HideToolbar { get; set; }
 
-        // public StringProperty HideToolbarUnmuted { get; set; }
-
         // converts the current to a json string.
         public string ToJsonString()
         {
