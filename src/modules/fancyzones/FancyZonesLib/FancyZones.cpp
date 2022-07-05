@@ -758,7 +758,7 @@ void FancyZones::UpdateWorkAreas() noexcept
     {
         FancyZonesDataTypes::WorkAreaId workAreaId;
         workAreaId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
-        workAreaId.monitorId = { .deviceId = ZonedWindowProperties::MultiMonitorDeviceID };
+        workAreaId.monitorId = { .deviceId = { .id = ZonedWindowProperties::MultiMonitorName, .instanceId = ZonedWindowProperties::MultiMonitorInstance } };
 
         AddWorkArea(nullptr, workAreaId);
     }
