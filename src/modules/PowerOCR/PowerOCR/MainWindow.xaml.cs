@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace PowerOCR
 {
@@ -29,7 +20,7 @@ namespace PowerOCR
         private Border selectBorder = new();
         private DpiScale? dpiScale;
 
-        private System.Windows.Point GetMousePos() => this.PointToScreen(Mouse.GetPosition(this));
+        private System.Windows.Point GetMousePos() => PointToScreen(Mouse.GetPosition(this));
 
         double selectLeft;
         double selectTop;
@@ -46,8 +37,8 @@ namespace PowerOCR
         {
             WindowState = WindowState.Maximized;
             FullWindow.Rect = new System.Windows.Rect(0, 0, Width, Height);
-            this.KeyDown += MainWindow_KeyDown;
-            this.KeyUp += MainWindow_KeyUp;
+            KeyDown += MainWindow_KeyDown;
+            KeyUp += MainWindow_KeyUp;
 
             BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this);
             BackgroundBrush.Opacity = 0.2;
@@ -76,7 +67,7 @@ namespace PowerOCR
             {
                 case Key.Escape:
                     // WindowUtilities.CloseAllFullscreenGrabs();
-                    this.Close();
+                    Close();
                     break;
                 default:
                     break;
@@ -143,8 +134,8 @@ namespace PowerOCR
 
             isShiftDown = false;
 
-            var left = Math.Min(clickedPoint.X, movingPoint.X);
-            var top = Math.Min(clickedPoint.Y, movingPoint.Y);
+            double left = Math.Min(clickedPoint.X, movingPoint.X);
+            double top = Math.Min(clickedPoint.Y, movingPoint.Y);
 
             selectBorder.Height = Math.Max(clickedPoint.Y, movingPoint.Y) - top;
             selectBorder.Width = Math.Max(clickedPoint.X, movingPoint.X) - left;
@@ -213,14 +204,14 @@ namespace PowerOCR
             if (string.IsNullOrWhiteSpace(grabbedText) == false)
             {
                 Clipboard.SetText(grabbedText);
-                this.Close();
+                Close();
                 // WindowUtilities.CloseAllFullscreenGrabs();
             }
         }
 
         private void CancelMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
     }
 }
