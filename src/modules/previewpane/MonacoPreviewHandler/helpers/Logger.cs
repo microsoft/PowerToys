@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco.Helpers
             }
 
             // Using InvariantCulture since this is used for a log file name
-            var logFilePath = _fileSystem.Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
+            var logFilePath = _fileSystem.Path.Combine(ApplicationLogPath, "Monaco-log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
