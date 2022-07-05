@@ -593,6 +593,7 @@ FILESYSPATH
 filesystem
 FILETIME
 FILETYPE
+filetype
 FILEVERSION
 Filtergraph
 Filterkeyboard
