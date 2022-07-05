@@ -88,6 +88,7 @@
   <PropertyGroup Label="Globals"
     Condition="'$(OverrideWindowsTargetPlatformVersion)'!='True'">
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
   </PropertyGroup>
 
   <!-- Props that are constant for both Debug and Release configurations -->
