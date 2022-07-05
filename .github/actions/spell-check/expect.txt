@@ -20,7 +20,6 @@ actioned
 activatable
 ACTIVATEAPP
 activationaction
-adamchilders
 ADDUNDORECORD
 ADifferent
 ADMINS
@@ -152,7 +151,6 @@ bhid
 Bicubic
 bigbar
 bigobj
-binaryformatter
 binlog
 bitmapimage
 BITMAPINFO
@@ -520,7 +518,6 @@ EFile
 ekus
 elif
 elseif
-eltociear
 Emoji
 emptyrecyclebin
 ENABLEDPOPUP
@@ -668,7 +665,6 @@ GNumber
 google
 GPTR
 GSM
-gsuberland
 gtm
 gui
 guiddef
@@ -682,7 +678,6 @@ hanselman
 hardcoded
 Hardlines
 HARDWAREINPUT
-harvastum
 hashcode
 Hashset
 Hashtable
@@ -1646,7 +1641,6 @@ RBUTTONDBLCLK
 RBUTTONDOWN
 RBUTTONUP
 rclsid
-rcmaehl
 RCONTROL
 RCtrl
 readme
@@ -1808,7 +1802,6 @@ SETWORKAREA
 sfgao
 SFGAOF
 SFP
-shandsj
 sharpkeys
 SHCNE
 SHCNF
@@ -2149,7 +2142,6 @@ unsubscribe
 unvirtualized
 Updatelayout
 UPGRADINGPRODUCTCODE
-upto
 Uptool
 upvote
 uri
