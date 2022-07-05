@@ -128,7 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     break;
             }
 
-            switch (Settings.Properties.HideToolbarWhen.Value)
+            switch (Settings.Properties.HideToolbar.Value)
             {
                 case "Never":
                     _toolbarHideIndex = 2;
@@ -401,14 +401,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     switch (_toolbarHideIndex)
                     {
-                        case 2:
-                            Settings.Properties.HideToolbarWhen.Value = "Never";
+                        case 0:
+                            Settings.Properties.HideToolbar.Value = "When both camera and microphone are unmuted";
                             break;
                         case 1:
-                            Settings.Properties.HideToolbarWhen.Value = "When both camera and microphone are muted";
+                            Settings.Properties.HideToolbar.Value = "When both camera and microphone are muted";
                             break;
-                        case 0:
-                            Settings.Properties.HideToolbarWhen.Value = "When both camera and microphone are unmuted";
+                        case 2:
+                            Settings.Properties.HideToolbar.Value = "Never";
                             break;
                     }
 
