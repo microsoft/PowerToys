@@ -5,6 +5,7 @@ abgr
 abi
 ABlocked
 ABOUTBOX
+ABradley
 Abug
 accctrl
 Acceleratorkeys
@@ -419,6 +420,7 @@ delims
 dend
 DENORMAL
 Deondre
+dependabot
 depersist
 deprioritized
 deps
@@ -989,6 +991,7 @@ IZoom
 JArray
 jarro
 Jarryd
+jefflord
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
@@ -1300,6 +1303,7 @@ nameof
 namespace
 namespaceanddescendants
 Navassa
+naveensrinivasan
 NCACTIVATE
 ncc
 NCCALCSIZE
