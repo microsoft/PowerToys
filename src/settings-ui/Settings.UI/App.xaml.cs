@@ -12,6 +12,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Windows.UI.Popups;
@@ -57,6 +58,8 @@ namespace Microsoft.PowerToys.Settings.UI
         public Type StartupPage { get; set; } = typeof(Views.GeneralPage);
 
         public static Action<string> IPCMessageReceivedCallback { get; set; }
+
+        private static bool loggedImmersiveDarkException;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -216,29 +219,40 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public static void HandleThemeChange()
         {
-            var isDark = IsDarkTheme();
-            if (settingsWindow != null)
+            try
             {
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(settingsWindow);
-                ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
-            }
+                var isDark = IsDarkTheme();
+                if (settingsWindow != null)
+                {
+                    var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(settingsWindow);
+                    ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+                }
 
-            if (oobeWindow != null)
-            {
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(oobeWindow);
-                ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
-            }
+                if (oobeWindow != null)
+                {
+                    var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(oobeWindow);
+                    ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+                }
 
-            var selectedTheme = SelectedTheme();
-            if (selectedTheme == "SYSTEM")
-            {
-                themeListener = new ThemeListener();
-                themeListener.ThemeChanged += (_) => HandleThemeChange();
+                var selectedTheme = SelectedTheme();
+                if (selectedTheme == "SYSTEM")
+                {
+                    themeListener = new ThemeListener();
+                    themeListener.ThemeChanged += (_) => HandleThemeChange();
+                }
+                else if (themeListener != null)
+                {
+                    themeListener.Dispose();
+                    themeListener = null;
+                }
             }
-            else if (themeListener != null)
+            catch (Exception e)
             {
-                themeListener.Dispose();
-                themeListener = null;
+                if (!loggedImmersiveDarkException)
+                {
+                    Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
+                    loggedImmersiveDarkException = true;
+                }
             }
         }
 
