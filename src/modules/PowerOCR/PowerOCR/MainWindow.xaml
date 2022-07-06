@@ -39,7 +39,7 @@
                 <SolidColorBrush
                     x:Name="BackgroundBrush"
                     Opacity="0"
-                    Color="Beige" />
+                    Color="Black" />
             </Canvas.Background>
             <Canvas.ContextMenu>
                 <ContextMenu>

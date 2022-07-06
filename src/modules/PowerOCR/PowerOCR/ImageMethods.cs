@@ -66,10 +66,10 @@ internal class ImageMethods
         g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
         // bmp = PadImage(bmp);
 
-        string? ocrText = await ExtractText(bmp);
+        string? ResultText = await ExtractText(bmp);
 
-        if (ocrText != null)
-            return ocrText.Trim();
+        if (ResultText != null)
+            return ResultText.Trim();
         else
             return "";
     }
@@ -88,8 +88,8 @@ internal class ImageMethods
 
         System.Windows.Point adjustedPoint = new System.Windows.Point(clickedPoint.X, clickedPoint.Y);
 
-        string ocrText = await ExtractText(bmp, adjustedPoint);
-        return ocrText.Trim();
+        string ResultText = await ExtractText(bmp, adjustedPoint);
+        return ResultText.Trim();
     }
 
     public static async Task<string> ExtractText(Bitmap bmp, System.Windows.Point? singlePoint = null)
@@ -188,12 +188,12 @@ internal class ImageMethods
         bitmapimage.StreamSource = memory;
         bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
         bitmapimage.EndInit();
-        TransformedBitmap tbmpImg = new();
-        tbmpImg.BeginInit();
-        tbmpImg.Source = bitmapimage;
-        tbmpImg.Transform = new ScaleTransform(scale, scale);
-        tbmpImg.EndInit();
-        return BitmapSourceToBitmap(tbmpImg.Source);
+        TransformedBitmap transformedBmp = new();
+        transformedBmp.BeginInit();
+        transformedBmp.Source = bitmapimage;
+        transformedBmp.Transform = new ScaleTransform(scale, scale);
+        transformedBmp.EndInit();
+        return BitmapSourceToBitmap(transformedBmp.Source);
     }
 
     public static Bitmap BitmapSourceToBitmap(BitmapSource source)

@@ -54,8 +54,8 @@ static class WPFExtensionMethods
             return new Point(w.Left, w.Top);
 
         Int32Rect r;
-        bool multimonSupported = OSInterop.GetSystemMetrics(OSInterop.SM_CMONITORS) != 0;
-        if (!multimonSupported)
+        bool MultiMonitorSupported = OSInterop.GetSystemMetrics(OSInterop.SM_CMONITORS) != 0;
+        if (!MultiMonitorSupported)
         {
             OSInterop.RECT rc = new OSInterop.RECT();
             OSInterop.SystemParametersInfo(48, 0, ref rc, 0);
