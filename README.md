@@ -156,7 +156,7 @@ In this release, we focused heavily on stability and improvements. Below are som
 - Minor UI fix in the Keyboard Manager page. Thanks [@ZetaSp](https://github.com/ZetaSp)!
 - Fix in internal data type of CheckBox controls. Thanks [@ghost1372](https://github.com/ghost1372)!
 - The title bar is now shown in the immersive dark mode theme. Thanks [@WilliamABradley](https://github.com/WilliamABradley)!
-- Fixed a crash accessing the loading the System.Management API on ARM64 versions of Windows.
+- Fixed a crash accessing/loading the System.Management API on ARM64 versions of Windows.
 
 ### Installer
 - Fixed signing of the setup custom actions dll in the new pipeline.
