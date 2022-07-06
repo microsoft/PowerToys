@@ -13,14 +13,14 @@ namespace PowerOCR
     public partial class MainWindow : Window
     {
         private bool isShiftDown;
-        private System.Windows.Point clickedPoint;
-        private System.Windows.Point shiftPoint;
+        private Point clickedPoint;
+        private Point shiftPoint;
 
         private bool IsSelecting { get; set; }
         private Border selectBorder = new();
         private DpiScale? dpiScale;
 
-        private System.Windows.Point GetMousePos() => PointToScreen(Mouse.GetPosition(this));
+        private Point GetMousePos() => PointToScreen(Mouse.GetPosition(this));
 
         double selectLeft;
         double selectTop;
@@ -36,7 +36,7 @@ namespace PowerOCR
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Maximized;
-            FullWindow.Rect = new System.Windows.Rect(0, 0, Width, Height);
+            FullWindow.Rect = new Rect(0, 0, Width, Height);
             KeyDown += MainWindow_KeyDown;
             KeyUp += MainWindow_KeyUp;
 
@@ -50,11 +50,11 @@ namespace PowerOCR
             {
                 case Key.LeftShift:
                     isShiftDown = false;
-                    clickedPoint = new System.Windows.Point(clickedPoint.X + xShiftDelta, clickedPoint.Y + yShiftDelta);
+                    clickedPoint = new Point(clickedPoint.X + xShiftDelta, clickedPoint.Y + yShiftDelta);
                     break;
                 case Key.RightShift:
                     isShiftDown = false;
-                    clickedPoint = new System.Windows.Point(clickedPoint.X + xShiftDelta, clickedPoint.Y + yShiftDelta);
+                    clickedPoint = new Point(clickedPoint.X + xShiftDelta, clickedPoint.Y + yShiftDelta);
                     break;
                 default:
                     break;
@@ -96,9 +96,6 @@ namespace PowerOCR
             _ = RegionClickCanvas.Children.Add(selectBorder);
             Canvas.SetLeft(selectBorder, clickedPoint.X);
             Canvas.SetTop(selectBorder, clickedPoint.Y);
-
-            // var screens = System.Windows.Forms.Screen.AllScreens;
-            System.Drawing.Point formsPoint = new System.Drawing.Point((int)clickedPoint.X, (int)clickedPoint.Y);
         }
 
         private void RegionClickCanvas_MouseMove(object sender, MouseEventArgs e)
@@ -125,8 +122,8 @@ namespace PowerOCR
                 double topValue = selectTop + yShiftDelta;
 
                 clippingGeometry.Rect = new Rect(
-                    new System.Windows.Point(leftValue, topValue),
-                    new System.Windows.Size(selectBorder.Width - 2, selectBorder.Height - 2));
+                    new Point(leftValue, topValue),
+                    new Size(selectBorder.Width - 2, selectBorder.Height - 2));
                 Canvas.SetLeft(selectBorder, leftValue - 1);
                 Canvas.SetTop(selectBorder, topValue - 1);
                 return;
@@ -139,12 +136,12 @@ namespace PowerOCR
 
             selectBorder.Height = Math.Max(clickedPoint.Y, movingPoint.Y) - top;
             selectBorder.Width = Math.Max(clickedPoint.X, movingPoint.X) - left;
-            selectBorder.Height = selectBorder.Height + 2;
-            selectBorder.Width = selectBorder.Width + 2;
+            selectBorder.Height += 2;
+            selectBorder.Width += 2;
 
             clippingGeometry.Rect = new Rect(
-                new System.Windows.Point(left, top),
-                new System.Windows.Size(selectBorder.Width - 2, selectBorder.Height - 2));
+                new Point(left, top),
+                new Size(selectBorder.Width - 2, selectBorder.Height - 2));
             Canvas.SetLeft(selectBorder, left - 1);
             Canvas.SetTop(selectBorder, top - 1);
         }
@@ -160,8 +157,8 @@ namespace PowerOCR
             RegionClickCanvas.ReleaseMouseCapture();
             Matrix m = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice;
 
-            System.Windows.Point mPt = GetMousePos();
-            System.Windows.Point movingPoint = e.GetPosition(this);
+            Point mPt = GetMousePos();
+            Point movingPoint = e.GetPosition(this);
             movingPoint.X *= m.M11;
             movingPoint.Y *= m.M22;
 
@@ -171,32 +168,23 @@ namespace PowerOCR
             if (mPt == movingPoint)
                 Debug.WriteLine("Probably on Screen 1");
 
-            double correctedLeft = Left;
-            double correctedTop = Top;
-
-            if (correctedLeft < 0)
-                correctedLeft = 0;
-
-            if (correctedTop < 0)
-                correctedTop = 0;
-
             double xDimScaled = Canvas.GetLeft(selectBorder) * m.M11;
             double yDimScaled = Canvas.GetTop(selectBorder) * m.M22;
 
-            System.Drawing.Rectangle regionScaled = new System.Drawing.Rectangle(
+            System.Drawing.Rectangle regionScaled = new(
                 (int)xDimScaled,
                 (int)yDimScaled,
                 (int)(selectBorder.Width * m.M11),
                 (int)(selectBorder.Height * m.M22));
 
-            string grabbedText = "";
+            string grabbedText;
 
             try { RegionClickCanvas.Children.Remove(selectBorder); } catch { }
 
             if (regionScaled.Width < 3 || regionScaled.Height < 3)
             {
                 BackgroundBrush.Opacity = 0;
-                grabbedText = await ImageMethods.GetClickedWord(this, new System.Windows.Point(xDimScaled, yDimScaled));
+                grabbedText = await ImageMethods.GetClickedWord(this, new Point(xDimScaled, yDimScaled));
             }
             else
                 grabbedText = await ImageMethods.GetRegionsText(this, regionScaled);

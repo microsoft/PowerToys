@@ -53,12 +53,7 @@ internal class ImageMethods
         Bitmap bmp = new(selectedRegion.Width, selectedRegion.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         Graphics g = Graphics.FromImage(bmp);
 
-        System.Windows.Point absPosPoint;
-
-        if (passedWindow == null)
-            absPosPoint = new();
-        else
-            absPosPoint = passedWindow.GetAbsolutePosition();
+        System.Windows.Point absPosPoint = passedWindow == null ? (new()) : passedWindow.GetAbsolutePosition();
 
         int thisCorrectedLeft = (int)absPosPoint.X + selectedRegion.Left;
         int thisCorrectedTop = (int)absPosPoint.Y + selectedRegion.Top;
@@ -68,10 +63,7 @@ internal class ImageMethods
 
         string? ResultText = await ExtractText(bmp);
 
-        if (ResultText != null)
-            return ResultText.Trim();
-        else
-            return "";
+        return ResultText != null ? ResultText.Trim() : "";
     }
 
     internal static async Task<string> GetClickedWord(Window passedWindow, System.Windows.Point clickedPoint)
@@ -86,7 +78,7 @@ internal class ImageMethods
 
         g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
 
-        System.Windows.Point adjustedPoint = new System.Windows.Point(clickedPoint.X, clickedPoint.Y);
+        System.Windows.Point adjustedPoint = new(clickedPoint.X, clickedPoint.Y);
 
         string ResultText = await ExtractText(bmp, adjustedPoint);
         return ResultText.Trim();
@@ -118,12 +110,7 @@ internal class ImageMethods
             scaleBMP = false;
         }
 
-        Bitmap scaledBitmap;
-        if (scaleBMP)
-            scaledBitmap = ScaleBitmapUniform(bmp, 1.5);
-        else
-            scaledBitmap = ScaleBitmapUniform(bmp, 1.0);
-
+        Bitmap scaledBitmap = scaleBMP ? ScaleBitmapUniform(bmp, 1.5) : ScaleBitmapUniform(bmp, 1.0);
         StringBuilder text = new();
 
         await using (MemoryStream memory = new())
@@ -142,7 +129,7 @@ internal class ImageMethods
             }
             else
             {
-                Windows.Foundation.Point fPoint = new Windows.Foundation.Point(singlePoint.Value.X, singlePoint.Value.Y);
+                Windows.Foundation.Point fPoint = new(singlePoint.Value.X, singlePoint.Value.Y);
                 foreach (OcrLine ocrLine in ocrResult.Lines)
                 {
                     foreach (OcrWord ocrWord in ocrLine.Words)
@@ -162,10 +149,7 @@ internal class ImageMethods
             {
                 List<string> wordArray = textLine.Split().ToList();
                 wordArray.Reverse();
-                if (isCJKLang == true)
-                    _ = text.Append(string.Join("", wordArray));
-                else
-                    _ = text.Append(string.Join(' ', wordArray));
+                _ = isCJKLang == true ? text.Append(string.Join("", wordArray)) : text.Append(string.Join(' ', wordArray));
 
                 if (textLine.Length > 0)
                     _ = text.Append('\n');
