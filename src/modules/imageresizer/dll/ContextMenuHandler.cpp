@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "ContextMenuHandler.h"
+#include <ImageResizerConstants.h>
 
 #include <Settings.h>
 #include <trace.h>
@@ -64,7 +65,12 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
 HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags)
 {
     if (package::IsWin11OrGreater())
-        return E_FAIL;
+    {
+        if(package::IsPackageRegistered(ImageResizerConstants::ModulePackageDisplayName))
+        {
+            return E_FAIL;
+        }
+    }
 
     if (uFlags & CMF_DEFAULTONLY)
     {

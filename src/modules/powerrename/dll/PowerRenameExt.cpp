@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PowerRenameExt.h"
+#include "PowerRenameConstants.h"
 #include <trace.h>
 #include <Helpers.h>
 #include <common/themes/icon_helpers.h>
@@ -71,7 +72,7 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
         {
             // continue
         }
-        else
+        else if (package::IsPackageRegistered(PowerRenameConstants::ModulePackageDisplayName))
         {
             return E_FAIL;
         }
