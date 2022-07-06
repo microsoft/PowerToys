@@ -166,13 +166,13 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         if (toolbar->cameraInUse)
         {
             LOG("SHOW LOGIC")
-            if (toolbar->HideToolbar == L"Never")
+            if (toolbar->ToolbarHide == L"Never")
             {
                 show = true;
-            } else if(toolbar->HideToolbar == L"When both camera and microphone are muted")
+            } else if(toolbar->ToolbarHide == L"When both camera and microphone are muted")
             {
                 show = toolbar->microphoneMuted && toolbar->cameraMuted;
-            } else if(toolbar->HideToolbar == L"When both camera and microphone are unmuted")
+            } else if(toolbar->ToolbarHide == L"When both camera and microphone are unmuted")
             {
                 show = !toolbar->microphoneMuted && !toolbar->cameraMuted;
             }
@@ -350,9 +350,9 @@ void Toolbar::setMicrophoneMute(bool mute)
     microphoneMuted = mute;
 }
 
-void Toolbar::setHideToolbar(std::wstring hide)
+void Toolbar::setToolbarHide(std::wstring hide)
 {
-    HideToolbar = hide;
+    ToolbarHide = hide;
 }
 
 void Toolbar::setTheme(std::wstring theme)

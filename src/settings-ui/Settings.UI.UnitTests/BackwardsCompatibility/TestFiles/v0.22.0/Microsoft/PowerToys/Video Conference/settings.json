@@ -3,7 +3,7 @@
   "name": "Video Conference",
   "properties": {
     "camera_overlay_image_path": { "value": "" },
-    "hide_toolbar": { "value": "Never" },
+    "toolbar_hide": { "value": "Never" },
     "mute_camera_and_microphone_hotkey": {
       "value": {
         "win": false,

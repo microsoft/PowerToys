@@ -35,7 +35,7 @@ public:
     void setMicrophoneMute(bool mute);
 
     void setTheme(std::wstring theme);
-    void setHideToolbar(std::wstring hide);
+    void setToolbarHide(std::wstring hide);
 
 private:
     static LRESULT CALLBACK WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -54,7 +54,7 @@ private:
 
     std::wstring theme = L"system";
 
-    std::wstring HideToolbar = L"Never";
+    std::wstring ToolbarHide = L"Never";
 
     uint64_t lastTimeCamOrMicMuteStateChanged;
 
