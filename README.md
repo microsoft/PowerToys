@@ -182,8 +182,7 @@ In this release, we focused heavily on stability and improvements. Below are som
 
 #### Community contributions
 
-We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
-[@Aaron-Junker](https://github.com/Aaron-Junker), [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper), [@davidegiacometti](https://github.com/davidegiacometti), [@dend](https://github.com/dend), [@franky920920](https://github.com/franky920920), [@htcfreek](https://github.com/htcfreek), [@jay-o-way](https://github.com/jay-o-way), [@jsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), [@snickler](https://github.com/snickler).
+We would like to directly thank all the community help PowerToys received this month.  From filling issues to docs to actual pull requests, it directly helps make PowerToys a better piece of software.
 
 #### What is being planned for v0.61
 
