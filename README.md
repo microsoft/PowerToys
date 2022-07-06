@@ -134,7 +134,7 @@ In this release, we focused heavily on stability and improvements. Below are som
 
 - A setting was added to disable and configure the input delay on searching queries. (This was a hotfix for 0.59)
 - Fixed and added logs for default Web Browser detection. (This was a hotfix for 0.59)
-- The Program plugin can now search shortcuts by their executable name. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- The Program plugin can now search .lnk shortcuts by their executable name. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - A new plugin for OneNote was added. Thanks [@palenshus](https://github.com/palenshus)!
 - Query caching and delayed execution was added to the OneNote plugin. Thanks [@palenshus](https://github.com/palenshus)!
 - Quality of life fixes for the TimeZone plugin, including fixes for empty subtitles, missing time zones and results not being found when expected. Thanks [@TobiasSekan](https://github.com/TobiasSekan)!
