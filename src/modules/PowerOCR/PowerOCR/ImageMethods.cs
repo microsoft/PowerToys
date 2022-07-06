@@ -106,9 +106,7 @@ internal class ImageMethods
 
         if (singlePoint != null
             || bmp.Width * 1.5 > OcrEngine.MaxImageDimension)
-        {
             scaleBMP = false;
-        }
 
         Bitmap scaledBitmap = scaleBMP ? ScaleBitmapUniform(bmp, 1.5) : ScaleBitmapUniform(bmp, 1.0);
         StringBuilder text = new();
@@ -124,20 +122,14 @@ internal class ImageMethods
             OcrResult ocrResult = await ocrEngine.RecognizeAsync(softwareBmp);
 
             if (singlePoint == null)
-            {
                 foreach (OcrLine line in ocrResult.Lines) text.AppendLine(line.Text);
-            }
             else
             {
                 Windows.Foundation.Point fPoint = new(singlePoint.Value.X, singlePoint.Value.Y);
                 foreach (OcrLine ocrLine in ocrResult.Lines)
-                {
                     foreach (OcrWord ocrWord in ocrLine.Words)
-                    {
                         if (ocrWord.BoundingRect.Contains(fPoint))
                             _ = text.Append(ocrWord.Text);
-                    }
-                }
             }
         }
         if (culture.TextInfo.IsRightToLeft)
