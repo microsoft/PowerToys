@@ -180,10 +180,6 @@ In this release, we focused heavily on stability and improvements. Below are som
 - Added a dependabot configuration for updating GitHub actions dependencies. Thanks [@naveensrinivasan](https://github.com/naveensrinivasan)!
 - Updated the check-spelling action and added quality of life fixes to the workflow. Thanks [@jsoref](https://github.com/jsoref)!
 
-#### Community contributions
-
-We would like to directly thank all the community help PowerToys received this month.  From filling issues to docs to actual pull requests, it directly helps make PowerToys a better piece of software.
-
 #### What is being planned for v0.61
 
 For [v0.61][github-next-release-work], we'll work on below:
@@ -194,7 +190,7 @@ For [v0.61][github-next-release-work], we'll work on below:
 
 ## PowerToys Community
 
-The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.
+The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.  Month over month, you directly help make PowerToys a better piece of software.
 
 ## Code of Conduct
 
