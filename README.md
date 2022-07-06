@@ -85,7 +85,7 @@ In this release, we focused heavily on stability and improvements. Below are som
 - Added settings to PowerToys Run to better control the query results order. Thanks [@jefflord](https://github.com/jefflord)!
 
 ### Known issues
-- After installing PowerToys, [the Windows 11 new context menu entries for PowerRename and Image Resizer may not appear before a restart](https://github.com/microsoft/PowerToys/issues/19124).
+- After installing PowerToys, [the new Windows 11 context menu entries for PowerRename and Image Resizer may not appear before a restart](https://github.com/microsoft/PowerToys/issues/19124).
 - There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
 
 ### General
