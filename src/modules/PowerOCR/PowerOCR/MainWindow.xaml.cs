@@ -41,7 +41,7 @@ namespace PowerOCR
             KeyUp += MainWindow_KeyUp;
 
             BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this);
-            BackgroundBrush.Opacity = 0.2;
+            BackgroundBrush.Opacity = 0.4;
         }
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)
