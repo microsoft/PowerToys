@@ -5,6 +5,7 @@ abgr
 abi
 ABlocked
 ABOUTBOX
+ABradley
 Abug
 accctrl
 Acceleratorkeys
@@ -20,7 +21,6 @@ actioned
 activatable
 ACTIVATEAPP
 activationaction
-adamchilders
 ADDUNDORECORD
 ADifferent
 ADMINS
@@ -152,7 +152,6 @@ bhid
 Bicubic
 bigbar
 bigobj
-binaryformatter
 binlog
 bitmapimage
 BITMAPINFO
@@ -421,6 +420,7 @@ delims
 dend
 DENORMAL
 Deondre
+dependabot
 depersist
 deprioritized
 deps
@@ -520,7 +520,6 @@ EFile
 ekus
 elif
 elseif
-eltociear
 Emoji
 emptyrecyclebin
 ENABLEDPOPUP
@@ -668,7 +667,6 @@ GNumber
 google
 GPTR
 GSM
-gsuberland
 gtm
 gui
 guiddef
@@ -682,7 +680,6 @@ hanselman
 hardcoded
 Hardlines
 HARDWAREINPUT
-harvastum
 hashcode
 Hashset
 Hashtable
@@ -743,6 +740,7 @@ homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush
 hostname
+hotfix
 hotkeycontrol
 hotkeys
 hotlight
@@ -993,6 +991,7 @@ IZoom
 JArray
 jarro
 Jarryd
+jefflord
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
@@ -1304,6 +1303,7 @@ nameof
 namespace
 namespaceanddescendants
 Navassa
+naveensrinivasan
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1645,7 +1645,6 @@ RBUTTONDBLCLK
 RBUTTONDOWN
 RBUTTONUP
 rclsid
-rcmaehl
 RCONTROL
 RCtrl
 readme
@@ -1660,7 +1659,7 @@ rects
 recyclebin
 redirectedfrom
 Redist
-Redistributable
+redistributable
 reencode
 reencoded
 refactor
@@ -1698,7 +1697,7 @@ requerying
 rescap
 resgen
 resheader
-Resizable
+resizable
 resizers
 resmimetype
 RESOURCEID
@@ -1807,7 +1806,6 @@ SETWORKAREA
 sfgao
 SFGAOF
 SFP
-shandsj
 sharpkeys
 SHCNE
 SHCNF
@@ -2148,7 +2146,6 @@ unsubscribe
 unvirtualized
 Updatelayout
 UPGRADINGPRODUCTCODE
-upto
 Uptool
 upvote
 uri
