@@ -60,8 +60,8 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
             var results = new List<Result>();
 
-            // empty non-global query:
-            if (!AreResultsGlobal() && query.ActionKeyword == query.RawQuery)
+            // empty query
+            if (string.IsNullOrEmpty(query.Search))
             {
                 string arguments = "? ";
                 results.Add(new Result
@@ -84,8 +84,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 });
                 return results;
             }
-
-            if (!string.IsNullOrEmpty(query.Search))
+            else
             {
                 string searchTerm = query.Search;
 

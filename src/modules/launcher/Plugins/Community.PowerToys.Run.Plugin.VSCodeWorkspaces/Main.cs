@@ -136,10 +136,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                 });
             }
 
-            if (query.ActionKeyword == string.Empty || (query.ActionKeyword != string.Empty && query.Search != string.Empty))
-            {
-                results = results.Where(a => a.Title.ToLowerInvariant().Contains(query.Search.ToLowerInvariant())).ToList();
-            }
+            results = results.Where(a => a.Title.ToLowerInvariant().Contains(query.Search.ToLowerInvariant())).ToList();
 
             results.ForEach(x =>
                     {
