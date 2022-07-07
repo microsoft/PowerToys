@@ -8,9 +8,6 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    /// <summary>
-    /// Une page vide peut être utilisée seule ou constituer une page de destination au sein d'un frame.
-    /// </summary>
     public sealed partial class PowerAccentPage : Page
     {
         private PowerAccentViewModel ViewModel { get; set; }
