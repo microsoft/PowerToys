@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "ContextMenuHandler.h"
+#include <ImageResizerConstants.h>
 
 #include <Settings.h>
 #include <trace.h>
@@ -63,17 +64,15 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
 
 HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags)
 {
-    if (package::IsWin11OrGreater())
+    if (uFlags & CMF_DEFAULTONLY)
+        return S_OK;
+
+    if (!CSettingsInstance().GetEnabled())
         return E_FAIL;
 
-    if (uFlags & CMF_DEFAULTONLY)
-    {
-        return S_OK;
-    }
-    if (!CSettingsInstance().GetEnabled())
-    {
+    if (package::IsWin11OrGreater() && package::IsPackageRegistered(ImageResizerConstants::ModulePackageDisplayName))
         return E_FAIL;
-    }
+
     // NB: We just check the first item. We could iterate through more if the first one doesn't meet the criteria
     HDropIterator i(m_pdtobj);
     i.First();
