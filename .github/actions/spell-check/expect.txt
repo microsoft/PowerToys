@@ -1534,6 +1534,7 @@ popup
 POPUPWINDOW
 posix
 powercfg
+poweraccent
 powerlauncher
 powerpreview
 powerrename
