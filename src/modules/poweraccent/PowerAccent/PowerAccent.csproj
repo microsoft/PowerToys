@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<Nullable>disable</Nullable>
+		<StartupObject>PowerAccent.Program</StartupObject>
+		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerAccent</OutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<Platforms>x64</Platforms>
+		<AssemblyName>PowerToys.PowerAccent</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20071.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\..\deps\PowerAccent\PowerAccent.UI\PowerAccent.UI.csproj" />
+	  <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+	  <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+	</ItemGroup>
+
+</Project>

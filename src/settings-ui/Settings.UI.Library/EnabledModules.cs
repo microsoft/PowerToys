@@ -239,6 +239,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool powerAccent;
+
+        [JsonPropertyName("PowerAccent")]
+        public bool PowerAccent
+        {
+            get => powerAccent;
+            set
+            {
+                if (powerAccent != value)
+                {
+                    LogTelemetryEvent(value);
+                    powerAccent = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

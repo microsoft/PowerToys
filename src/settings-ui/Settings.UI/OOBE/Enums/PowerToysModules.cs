@@ -20,5 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         ShortcutGuide,
         VideoConference,
         WhatsNew,
+        PowerAccent,
     }
 }

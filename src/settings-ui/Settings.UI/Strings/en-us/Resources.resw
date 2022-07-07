@@ -2152,4 +2152,25 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
     <value>Enable round corners</value>
   </data>
+  <data name="LearnMore_PowerAccent.Text" xml:space="preserve">
+    <value>Learn more about PowerAccent</value>
+  </data>
+  <data name="Oobe_PowerAccent" xml:space="preserve">
+    <value>PowerAccent</value>
+  </data>
+  <data name="PowerAccent_EnablePowerAccent.Header" xml:space="preserve">
+    <value>Enable PowerAccent</value>
+  </data>
+  <data name="Shell_PowerAccent.Content" xml:space="preserve">
+    <value>PowerAccent</value>
+  </data>
+  <data name="PowerAccent.ModuleDescription" xml:space="preserve">
+    <value>PowerAccent description</value>
+  </data>
+  <data name="PowerAccent.ModuleTitle" xml:space="preserve">
+    <value>PowerAccent</value>
+  </data>
+  <data name="PowerAccent.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
 </root>

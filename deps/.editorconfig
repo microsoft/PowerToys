@@ -1,0 +1,30 @@
+[*.cs]
+
+# CA1304: Spécifier CultureInfo
+dotnet_diagnostic.CA1304.severity = none
+
+# CS8846: L'expression switch ne prend pas en charge toutes les valeurs possibles de son type d'entrée (elle n'est pas exhaustive).
+dotnet_diagnostic.CS8846.severity = none
+
+# CA2101: Spécifier le marshaling pour les arguments de chaîne P/Invoke
+dotnet_diagnostic.CA2101.severity = none
+
+# CA1507: Utiliser nameof pour exprimer les noms de symboles
+dotnet_diagnostic.CA1507.severity = none
+
+# CA1822: Marquer les membres comme étant static
+dotnet_diagnostic.CA1822.severity = none
+
+# CA1838: Éviter les paramètres 'StringBuilder' pour les P/Invoke
+dotnet_diagnostic.CA1838.severity = none
+
+# CA1805: Ne pas effectuer d'initialisation inutilement
+dotnet_diagnostic.CA1805.severity = none
+
+# CA1806: Ne pas ignorer les résultats des méthodes
+dotnet_diagnostic.CA1806.severity = none
+
+# CA1001: Les types qui ont des champs supprimables doivent être supprimables
+dotnet_diagnostic.CA1001.severity = none
+
+dotnet_analyzer_diagnostic.severity = none

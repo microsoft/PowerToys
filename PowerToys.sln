@@ -407,13 +407,23 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUI", "src\module
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameContextMenu", "src\modules\powerrename\PowerRenameContextMenu\PowerRenameContextMenu.vcxproj", "{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests.csproj", "{C5D46169-5334-48C3-8C28-644C72832E54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests.csproj", "{C5D46169-5334-48C3-8C28-644C72832E54}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.OneNote", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.OneNote\Microsoft.PowerToys.Run.Plugin.OneNote.csproj", "{5A1DB2F0-0715-4B3B-98E6-79BC41540045}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageResizerContextMenu", "src\modules\imageresizer\ImageResizerContextMenu\ImageResizerContextMenu.vcxproj", "{93B72A06-C8BD-484F-A6F7-C9F280B150BF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageResizerLib", "src\modules\imageresizer\ImageResizerLib\ImageResizerLib.vcxproj", "{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PowerAccent", "PowerAccent", "{0F14491C-6369-4C45-AAA8-135814E66E6B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerAccentModuleInterface", "src\modules\poweraccent\PowerAccentModuleInterface\PowerAccentModuleInterface.vcxproj", "{34A354C5-23C7-4343-916C-C52DAF4FC39D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerAccent", "src\modules\poweraccent\PowerAccent\PowerAccent.csproj", "{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerAccent.UI", "deps\PowerAccent\PowerAccent.UI\PowerAccent.UI.csproj", "{9A8AAE5D-D299-4036-962F-827847ABACB2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerAccent.Core", "deps\PowerAccent\PowerAccent.Core\PowerAccent.Core.csproj", "{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1632,6 +1642,54 @@ Global
 		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|x64.Build.0 = Release|x64
 		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|x86.ActiveCfg = Release|x64
 		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|x86.Build.0 = Release|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Debug|ARM64.ActiveCfg = Debug|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Debug|ARM64.Build.0 = Debug|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Debug|x64.ActiveCfg = Debug|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Debug|x64.Build.0 = Debug|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Debug|x86.ActiveCfg = Debug|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Debug|x86.Build.0 = Debug|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Release|ARM64.ActiveCfg = Release|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Release|ARM64.Build.0 = Release|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Release|x64.ActiveCfg = Release|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Release|x64.Build.0 = Release|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Release|x86.ActiveCfg = Release|x64
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D}.Release|x86.Build.0 = Release|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Debug|ARM64.ActiveCfg = Debug|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Debug|ARM64.Build.0 = Debug|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Debug|x64.ActiveCfg = Debug|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Debug|x64.Build.0 = Debug|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Debug|x86.ActiveCfg = Debug|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Debug|x86.Build.0 = Debug|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Release|ARM64.ActiveCfg = Release|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Release|ARM64.Build.0 = Release|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Release|x64.ActiveCfg = Release|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Release|x64.Build.0 = Release|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Release|x86.ActiveCfg = Release|x64
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C}.Release|x86.Build.0 = Release|x64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Debug|ARM64.Build.0 = Debug|ARM64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Debug|x64.ActiveCfg = Debug|x64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Debug|x64.Build.0 = Debug|x64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Debug|x86.ActiveCfg = Debug|x64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Debug|x86.Build.0 = Debug|x64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Release|ARM64.ActiveCfg = Release|ARM64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Release|ARM64.Build.0 = Release|ARM64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Release|x64.ActiveCfg = Release|x64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Release|x64.Build.0 = Release|x64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Release|x86.ActiveCfg = Release|x64
+		{9A8AAE5D-D299-4036-962F-827847ABACB2}.Release|x86.Build.0 = Release|x64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Debug|ARM64.Build.0 = Debug|ARM64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Debug|x64.ActiveCfg = Debug|x64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Debug|x64.Build.0 = Debug|x64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Debug|x86.ActiveCfg = Debug|x64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Debug|x86.Build.0 = Debug|x64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Release|ARM64.ActiveCfg = Release|ARM64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Release|ARM64.Build.0 = Release|ARM64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Release|x64.ActiveCfg = Release|x64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Release|x64.Build.0 = Release|x64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Release|x86.ActiveCfg = Release|x64
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1770,6 +1828,11 @@ Global
 		{5A1DB2F0-0715-4B3B-98E6-79BC41540045} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{93B72A06-C8BD-484F-A6F7-C9F280B150BF} = {6C7F47CC-2151-44A3-A546-41C70025132C}
 		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853} = {6C7F47CC-2151-44A3-A546-41C70025132C}
+		{0F14491C-6369-4C45-AAA8-135814E66E6B} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{34A354C5-23C7-4343-916C-C52DAF4FC39D} = {0F14491C-6369-4C45-AAA8-135814E66E6B}
+		{7B4CDB0D-28C9-4F95-88AA-73FCC06E354C} = {0F14491C-6369-4C45-AAA8-135814E66E6B}
+		{9A8AAE5D-D299-4036-962F-827847ABACB2} = {0F14491C-6369-4C45-AAA8-135814E66E6B}
+		{48796703-BC2A-4AB7-9DA2-4C2C1078C66D} = {0F14491C-6369-4C45-AAA8-135814E66E6B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
