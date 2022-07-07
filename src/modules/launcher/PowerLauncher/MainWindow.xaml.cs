@@ -135,6 +135,17 @@ namespace PowerLauncher
                 case WM.HOTKEY:
                     handled = _viewModel.ProcessHotKeyMessages(wparam, lparam);
                     break;
+                case WM.SYSCOMMAND:
+                    int command = wparam.ToInt32() & 0xfff0;
+                    if (command == Wox.Plugin.Common.Win32.Win32Constants.SC_MOVE)
+                    {
+                        if (!_settings.RememberLastLaunchLocation)
+                        {
+                            handled = true;
+                        }
+                    }
+
+                    break;
             }
 
             return IntPtr.Zero;

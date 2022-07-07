@@ -140,6 +140,11 @@ namespace Wox.Plugin.Common.Win32
         /// Closes the window
         /// </summary>
         public const int SC_CLOSE = 0xF060;
+
+        /// <summary>
+        /// Moves the window
+        /// </summary>
+        public const int SC_MOVE = 0xF010;
     }
 
     public enum HRESULT : uint
