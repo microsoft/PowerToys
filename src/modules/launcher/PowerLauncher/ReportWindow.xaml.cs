@@ -47,7 +47,7 @@ namespace PowerLauncher
             content.AppendLine(ErrorReporting.RuntimeInfo());
 
             // Using CurrentCulture since this is displayed to user in the report window
-            content.AppendLine($"Date: {DateTime.Now.ToString(CultureInfo.CurrentCulture)}");
+            content.AppendLine(CultureInfo.CurrentCulture, $"Date: {DateTime.Now.ToString(CultureInfo.CurrentCulture)}");
             content.AppendLine("Exception:");
             content.AppendLine(exception.ToString());
             var paragraph = new Paragraph();

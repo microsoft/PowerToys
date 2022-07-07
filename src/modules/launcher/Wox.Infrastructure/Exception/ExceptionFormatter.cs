@@ -69,16 +69,16 @@ namespace Wox.Infrastructure.Exception
             sb.AppendLine();
 
             sb.AppendLine("## Environment");
-            sb.AppendLine($"* Command Line: {Environment.CommandLine}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"* Command Line: {Environment.CommandLine}");
 
             // Using InvariantCulture since this is internal
-            sb.AppendLine($"* Timestamp: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
-            sb.AppendLine($"* Wox version: {Constant.Version}");
-            sb.AppendLine($"* OS Version: {Environment.OSVersion.VersionString}");
-            sb.AppendLine($"* IntPtr Length: {IntPtr.Size}");
-            sb.AppendLine($"* x64: {Environment.Is64BitOperatingSystem}");
-            sb.AppendLine($"* CLR Version: {Environment.Version}");
-            sb.AppendLine($"* Installed .NET Framework: ");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"* Timestamp: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"* Wox version: {Constant.Version}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"* OS Version: {Environment.OSVersion.VersionString}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"* IntPtr Length: {IntPtr.Size}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"* x64: {Environment.Is64BitOperatingSystem}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"* CLR Version: {Environment.Version}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"* Installed .NET Framework: ");
             foreach (var result in GetFrameworkVersionFromRegistry())
             {
                 sb.Append("   * ");
