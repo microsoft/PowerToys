@@ -41,14 +41,14 @@ jobs:
                     "packageUrl":"${{ steps.releaseVars.outputs.powerToysInstallerX64Url }}",
                     "languages":["zh-hans", "zh-hant", "en", "cs", "nl", "fr", "pt", "pt-br", "de", "hu", "it", "ja", "ko", "pl", "ru", "es", "tr"],
                     "architectures":["X64"],
-                    "installerParameters":"/passive /norestart",
+                    "installerParameters":"/quiet /norestart",
                     "isSilentInstall":true
                   },
                   {
                     "packageUrl":"${{ steps.releaseVars.outputs.powerToysInstallerArm64Url }}",
                     "languages":["zh-hans", "zh-hant", "en", "cs", "nl", "fr", "pt", "pt-br", "de", "hu", "it", "ja", "ko", "pl", "ru", "es", "tr"],
                     "architectures":["Arm64"],
-                    "installerParameters":"/passive /norestart",
+                    "installerParameters":"/quiet /norestart",
                     "isSilentInstall":true
                   }
               ]
