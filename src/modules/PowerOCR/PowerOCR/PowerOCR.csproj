@@ -1,12 +1,40 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Version.props" />
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-	  <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
-	  <Nullable>enable</Nullable>
+    <AssemblyTitle>PowerToys.PowerOCR</AssemblyTitle>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerOCR</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <ProjectGuid>{A50C70A6-2DA0-4027-B90E-B1A40755A8A5}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <ApplicationIcon>PowerOCRLogo.ico</ApplicationIcon>
+    <PackageIcon>PowerOCRLogo.png</PackageIcon>
+    <RootNamespace>PowerOCR</RootNamespace>
+    <AssemblyName>PowerToys.PowerOCR</AssemblyName>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <ProjectTypeGuids>{2150E333-8FDC-42A3-9474-1A3956D46DE8}</ProjectTypeGuids>
+    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <Resource Include="PowerOCRLogo.ico" />
+	  <Resource Include="PowerOCRLogo.png" />
+  </ItemGroup>
+	
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
   </ItemGroup>
