@@ -475,6 +475,31 @@ namespace PowerLauncher
             {
                 SearchBox.AutoCompleteTextBlock.Text = string.Empty;
             }
+
+            // If there will be a delay before starting the search, hide the last results since they are now invalid.
+            var showResultsWithDelay = _viewModel.GetSearchQueryResultsWithDelaySetting();
+            if (!_isTextSetProgrammatically && showResultsWithDelay)
+            {
+                DeselectAllResults();
+            }
+        }
+
+        private void DeselectAllResults()
+        {
+            // There must be a better way, but I don't know it.
+            _viewModel.Results.SelectedItem = null;
+            var resultsItems = _viewModel.Results.Results.ToList();
+
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                {
+                    _viewModel.Results.Clear();
+                    _viewModel.Results.Results.NotifyChanges();
+                    _viewModel.Results.Results.AddRange(resultsItems);
+                    _viewModel.Results.Results.NotifyChanges();
+                }));
+            });
         }
 
         private void PerformSearchQuery(TextBox textBox)
