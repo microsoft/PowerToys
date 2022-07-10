@@ -126,8 +126,6 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     }
     case WM_TIMER:
     {
-        LOG("AT LEAST REACHING HERE")
-
         if (toolbar->audioConfChangesNotifier.PullPendingNotifications())
         {
             instance->onMicrophoneConfigurationChanged();
@@ -155,20 +153,39 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 
         static bool previousShow = false;
         bool show = false;
-
-        if (toolbar->cameraInUse)
+        std::string toolbarHide;
+        if (toolbar->ToolbarHide == L"Never")
         {
-            LOG("SHOW LOGIC")
-            if (toolbar->ToolbarHide == L"Never")
-            {
-                show = true;
-            } else if(toolbar->ToolbarHide == L"When both camera and microphone are muted")
-            {
-                show = toolbar->microphoneMuted && toolbar->cameraMuted;
-            } else if(toolbar->ToolbarHide == L"When both camera and microphone are unmuted")
-            {
-                show = !toolbar->microphoneMuted && !toolbar->cameraMuted;
-            }
+            toolbarHide = "Never";
+        }
+        else if (toolbar->ToolbarHide == L"When both camera and microphone are muted")
+        {
+            toolbarHide = "When both camera and microphone are muted";
+        }
+        else if (toolbar->ToolbarHide == L"When both camera and microphone are unmuted")
+        {
+            toolbarHide = "When both camera and microphone are unmuted";
+        }
+        LOG("SHOW LOGIC");
+        std::stringstream ss;
+        ss << "ToolbarHide=" << toolbarHide << "; Microphone=" << (toolbar->microphoneMuted ? "Muted" : "Not Muted") << "; Camera=" << (toolbar-> cameraMuted ? "Muted" : "Not Muted");
+        LOG(ss.str());
+        if (toolbar->ToolbarHide == L"Never")
+        {
+            show = true;
+        }
+        else if (toolbar->ToolbarHide == L"When both camera and microphone are muted")
+        {
+            show = !(toolbar->microphoneMuted && toolbar->cameraMuted);
+        }
+        else if (toolbar->ToolbarHide == L"When both camera and microphone are unmuted")
+        {
+            show = toolbar->microphoneMuted || toolbar->cameraMuted;
+        }
+
+        /*if (toolbar->cameraInUse)
+        {
+            
         }
         else if (toolbar->previouscameraInUse)
         {
@@ -177,7 +194,7 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         else
         {
             show = toolbar->microphoneMuted;
-        }
+        }*/
         show = show || !showOverlayTimeout;
         if (show)
         {
