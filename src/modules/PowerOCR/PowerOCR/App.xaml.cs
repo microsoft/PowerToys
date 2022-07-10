@@ -8,5 +8,8 @@ namespace PowerOCR;
 /// </summary>
 public partial class App : Application
 {
-    // WindowUtilities.LaunchOCROverlayOnEveryScreen();
+    private void Application_Startup(object sender, StartupEventArgs e)
+    {
+        WindowUtilities.LaunchOCROverlayOnEveryScreen();
+    }
 }

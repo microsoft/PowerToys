@@ -32,7 +32,7 @@ public static class WindowUtilities
             if (allWindows.Count < 1)
                 screenHasWindow = false;
 
-            OCROverlay fullscreenGrab = new()
+            OCROverlay overlay = new()
             {
                 WindowStartupLocation = WindowStartupLocation.Manual,
                 Width = 200,
@@ -41,18 +41,18 @@ public static class WindowUtilities
             };
 
             if (screen.WorkingArea.Left >= 0)
-                fullscreenGrab.Left = screen.WorkingArea.Left;
+                overlay.Left = screen.WorkingArea.Left;
             else
-                fullscreenGrab.Left = screen.WorkingArea.Left + (screen.WorkingArea.Width / 2);
+                overlay.Left = screen.WorkingArea.Left + (screen.WorkingArea.Width / 2);
 
             if (screen.WorkingArea.Top >= 0)
-                fullscreenGrab.Top = screen.WorkingArea.Top;
+                overlay.Top = screen.WorkingArea.Top;
             else
-                fullscreenGrab.Top = screen.WorkingArea.Top + (screen.WorkingArea.Height / 2);
+                overlay.Top = screen.WorkingArea.Top + (screen.WorkingArea.Height / 2);
 
-            fullscreenGrab.Show();
-            fullscreenGrab.Activate();
-            allFullscreenGrab.Add(fullscreenGrab);
+            overlay.Show();
+            overlay.Activate();
+            allFullscreenGrab.Add(overlay);
         }
     }
 
