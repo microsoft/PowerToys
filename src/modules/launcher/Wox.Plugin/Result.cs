@@ -21,6 +21,8 @@ namespace Wox.Plugin
         private string _pluginDirectory;
         private string _icoPath;
 
+        public PluginMetadata Metadata { get; set; }
+
         public string Title
         {
             get
@@ -99,6 +101,10 @@ namespace Wox.Plugin
         public Func<ActionContext, bool> Action { get; set; }
 
         public int Score { get; set; }
+
+        public int SelectedCount { get; set; }
+
+        public DateTime LastSelected { get; set; } = DateTime.MinValue;
 
         public Result(IList<int> titleHighlightData = null, IList<int> subTitleHighlightData = null)
         {

@@ -205,6 +205,14 @@ namespace PowerLauncher.Plugin
                 metadata.QueryCount += 1;
                 metadata.AvgQueryTime = metadata.QueryCount == 1 ? milliseconds : (metadata.AvgQueryTime + milliseconds) / 2;
 
+                if (results != null)
+                {
+                    foreach (var result in results)
+                    {
+                        result.Metadata = pair.Metadata;
+                    }
+                }
+
                 return results;
             }
             catch (Exception e)

@@ -103,6 +103,8 @@ namespace Wox.Plugin
         /// </summary>
         public const string GlobalPluginWildcardSign = "*";
 
+        public int WeightBoost { get; set; }
+
         public string ActionKeyword { get; set; }
 
         /// <summary>

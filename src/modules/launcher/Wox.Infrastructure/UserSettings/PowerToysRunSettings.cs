@@ -82,6 +82,12 @@ namespace Wox.Infrastructure.UserSettings
 
         private int _searchInputDelay = 150;
 
+        private int _searchClickedItemWeight = 5;
+
+        private bool _searchQueryTuningEnabled;
+
+        private bool _searchWaitForSlowResults;
+
         public int SearchInputDelay
         {
             get
@@ -95,6 +101,57 @@ namespace Wox.Infrastructure.UserSettings
                 {
                     _searchInputDelay = value;
                     OnPropertyChanged(nameof(SearchInputDelay));
+                }
+            }
+        }
+
+        public bool SearchQueryTuningEnabled
+        {
+            get
+            {
+                return _searchQueryTuningEnabled;
+            }
+
+            set
+            {
+                if (_searchQueryTuningEnabled != value)
+                {
+                    _searchQueryTuningEnabled = value;
+                    OnPropertyChanged(nameof(SearchQueryTuningEnabled));
+                }
+            }
+        }
+
+        public bool SearchWaitForSlowResults
+        {
+            get
+            {
+                return _searchWaitForSlowResults;
+            }
+
+            set
+            {
+                if (_searchWaitForSlowResults != value)
+                {
+                    _searchWaitForSlowResults = value;
+                    OnPropertyChanged(nameof(_searchWaitForSlowResults));
+                }
+            }
+        }
+
+        public int SearchClickedItemWeight
+        {
+            get
+            {
+                return _searchClickedItemWeight;
+            }
+
+            set
+            {
+                if (_searchClickedItemWeight != value)
+                {
+                    _searchClickedItemWeight = value;
+                    OnPropertyChanged(nameof(SearchClickedItemWeight));
                 }
             }
         }

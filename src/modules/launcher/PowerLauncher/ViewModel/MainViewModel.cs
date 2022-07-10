@@ -463,6 +463,15 @@ namespace PowerLauncher.ViewModel
 
         public ICommand ClearQueryCommand { get; private set; }
 
+        public class QueryTuningOptions
+        {
+            public int SearchClickedItemWeight { get; set; }
+
+            public bool SearchQueryTuningEnabled { get; set; }
+
+            public bool SearchWaitForSlowResults { get; set; }
+        }
+
         public void Query()
         {
             if (SelectedIsFromQueryResults())
@@ -520,6 +529,9 @@ namespace PowerLauncher.ViewModel
 
         private void QueryResults()
         {
+            var queryTuning = GetQueryTuningOptions();
+            var doFinalSort = queryTuning.SearchQueryTuningEnabled && queryTuning.SearchWaitForSlowResults;
+
             if (!string.IsNullOrEmpty(QueryText))
             {
                 var queryTimer = new System.Diagnostics.Stopwatch();
@@ -536,7 +548,8 @@ namespace PowerLauncher.ViewModel
                 {
                     queryText = pluginQueryPairs.Values.First().RawQuery;
                     _currentQuery = queryText;
-                    Task.Run(
+
+                    var queryResultsTask = Task.Factory.StartNew(
                         () =>
                     {
                         Thread.Sleep(20);
@@ -577,12 +590,18 @@ namespace PowerLauncher.ViewModel
 
                                     currentCancellationToken.ThrowIfCancellationRequested();
                                     numResults = Results.Results.Count;
-                                    Results.Sort();
-                                    Results.SelectedItem = Results.Results.FirstOrDefault();
+                                    if (!doFinalSort)
+                                    {
+                                        Results.Sort(queryTuning);
+                                        Results.SelectedItem = Results.Results.FirstOrDefault();
+                                    }
                                 }
 
                                 currentCancellationToken.ThrowIfCancellationRequested();
-                                UpdateResultsListViewAfterQuery(queryText);
+                                if (!doFinalSort)
+                                {
+                                    UpdateResultsListViewAfterQuery(queryText);
+                                }
                             }
 
                             bool noInitialResults = numResults == 0;
@@ -616,11 +635,17 @@ namespace PowerLauncher.ViewModel
 
                                                     currentCancellationToken.ThrowIfCancellationRequested();
                                                     numResults = Results.Results.Count;
-                                                    Results.Sort();
+                                                    if (!doFinalSort)
+                                                    {
+                                                        Results.Sort(queryTuning);
+                                                    }
                                                 }
 
                                                 currentCancellationToken.ThrowIfCancellationRequested();
-                                                UpdateResultsListViewAfterQuery(queryText, noInitialResults, true);
+                                                if (!doFinalSort)
+                                                {
+                                                    UpdateResultsListViewAfterQuery(queryText, noInitialResults, true);
+                                                }
                                             }
                                         }
                                     }
@@ -644,6 +669,19 @@ namespace PowerLauncher.ViewModel
                         };
                         PowerToysTelemetry.Log.WriteEvent(queryEvent);
                     }, currentCancellationToken);
+
+                    if (doFinalSort)
+                    {
+                        Task.Factory.ContinueWhenAll(
+                            new Task[] { queryResultsTask },
+                            completedTasks =>
+                            {
+                                Results.Sort(queryTuning);
+                                Results.SelectedItem = Results.Results.FirstOrDefault();
+                                UpdateResultsListViewAfterQuery(queryText, false, false);
+                            },
+                            currentCancellationToken);
+                    }
                 }
             }
             else
@@ -944,7 +982,9 @@ namespace PowerLauncher.ViewModel
 
             foreach (var result in list)
             {
-                result.Score += _userSelectedRecord.GetSelectedCount(result) * 5;
+                var selectedData = _userSelectedRecord.GetSelectedData(result);
+                result.SelectedCount = selectedData.SelectedCount;
+                result.LastSelected = selectedData.LastSelected;
             }
 
             // Using CurrentCultureIgnoreCase since this is user facing
@@ -1116,6 +1156,31 @@ namespace PowerLauncher.ViewModel
         public int GetSearchInputDelaySetting()
         {
             return _settings.SearchInputDelay;
+        }
+
+        public QueryTuningOptions GetQueryTuningOptions()
+        {
+            return new MainViewModel.QueryTuningOptions
+            {
+                SearchClickedItemWeight = GetSearchClickedItemWeight(),
+                SearchQueryTuningEnabled = GetSearchQueryTuningEnabled(),
+                SearchWaitForSlowResults = GetSearchWaitForSlowResults(),
+            };
+        }
+
+        public int GetSearchClickedItemWeight()
+        {
+            return _settings.SearchClickedItemWeight;
+        }
+
+        public bool GetSearchQueryTuningEnabled()
+        {
+            return _settings.SearchQueryTuningEnabled;
+        }
+
+        public bool GetSearchWaitForSlowResults()
+        {
+            return _settings.SearchWaitForSlowResults;
         }
     }
 }

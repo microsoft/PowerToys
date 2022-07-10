@@ -159,7 +159,6 @@ namespace PowerLauncher
 
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += Launcher_KeyDown;
-
             SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting(), _viewModel.GetSearchInputDelaySetting());
             _viewModel.RegisterSettingsChangeListener(
                 (s, prop_e) =>
