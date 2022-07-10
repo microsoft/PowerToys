@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -130,13 +131,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             switch (Settings.Properties.ToolbarHide.Value)
             {
-                case "When both camera and microphone are unmuted":
+                case "Never":
                     _toolbarHideIndex = 0;
                     break;
-                case "When both camera and microphone are muted":
+                case "When both camera and microphone are unmuted":
                     _toolbarHideIndex = 1;
                     break;
-                case "Never":
+                case "When both camera and microphone are muted":
                     _toolbarHideIndex = 2;
                     break;
             }
@@ -399,16 +400,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _toolbarHideIndex)
                 {
+                    _toolbarHideIndex = value;
                     switch (_toolbarHideIndex)
                     {
                         case 0:
-                            Settings.Properties.ToolbarHide.Value = "When both camera and microphone are unmuted";
+                            Settings.Properties.ToolbarHide.Value = "Never";
                             break;
                         case 1:
-                            Settings.Properties.ToolbarHide.Value = "When both camera and microphone are muted";
+                            Settings.Properties.ToolbarHide.Value = "When both camera and microphone are unmuted";
                             break;
                         case 2:
-                            Settings.Properties.ToolbarHide.Value = "Never";
+                            Settings.Properties.ToolbarHide.Value = "When both camera and microphone are muted";
                             break;
                     }
 

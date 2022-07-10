@@ -43,8 +43,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 Key = "O",
                 Code = 79,
             });
-
-            this.ToolbarHide = new StringProperty("Never");
         }
 
         [JsonPropertyName("mute_camera_and_microphone_hotkey")]
@@ -75,7 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty Theme { get; set; }
 
         [JsonPropertyName("toolbar_hide")]
-        public StringProperty ToolbarHide { get; set; }
+        public StringProperty ToolbarHide { get; set; } = "Never";
 
         // converts the current to a json string.
         public string ToJsonString()

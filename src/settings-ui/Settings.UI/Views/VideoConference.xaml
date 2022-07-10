@@ -149,9 +149,9 @@
                                 <controls:Setting x:Uid="VideoConference_ToolbarHide" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarHideIndex}">
+                                            <ComboBoxItem x:Uid="VideoConference_ToolbarHideNever"/>
                                             <ComboBoxItem x:Uid="VideoConference_ToolbarHideUnmuted"/>
                                             <ComboBoxItem x:Uid="VideoConference_ToolbarHideMuted"/>
-                                            <ComboBoxItem x:Uid="VideoConference_ToolbarHideNever"/>
                                         </ComboBox>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
