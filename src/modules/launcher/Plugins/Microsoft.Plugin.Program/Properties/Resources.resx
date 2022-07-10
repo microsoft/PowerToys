@@ -168,7 +168,4 @@
   <data name="wox_plugin_program_run_as_user" xml:space="preserve">
     <value>Run as different user (Ctrl+Shift+U)</value>
   </data>
-  <data name="powertoys_run_plugin_program_org_name" xml:space="preserve">
-    <value>Original name</value>
-  </data>
 </root>

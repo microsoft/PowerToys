@@ -242,13 +242,11 @@ namespace Microsoft.Plugin.Program.Programs
                 },
             };
 
-            result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
+            result.TitleHighlightData = StringMatcher.FuzzySearch(query, result.Title).MatchData;
 
             // Using CurrentCulture since this is user facing
-            string toolTipLocalizedName = !string.IsNullOrEmpty(LocalizedName) ? LocalizedName : result.Title;
-            string toolTipNonLocalizedName = !string.IsNullOrEmpty(LocalizedName) && !(LocalizedName == Name) ? string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_org_name, Name) + "\n" : string.Empty;
-            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, toolTipLocalizedName);
-            var toolTipText = toolTipNonLocalizedName + string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, FullPath);
+            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
+            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, FullPath);
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
