@@ -61,8 +61,8 @@ public static class WindowUtilities
         WindowCollection allWindows = System.Windows.Application.Current.Windows;
 
         foreach (Window window in allWindows)
-            if (window is OCROverlay fsg)
-                fsg.Close();
+            if (window is OCROverlay overlay)
+                overlay.Close();
 
         System.Windows.Application.Current.Shutdown();
     }
