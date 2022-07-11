@@ -83,6 +83,7 @@ namespace JsonUtils
                     std::wstring monitor = device.GetNamedString(NonLocalizable::AppliedLayoutsIds::MonitorID).c_str();
                     std::wstring monitorInstance = device.GetNamedString(NonLocalizable::AppliedLayoutsIds::MonitorInstanceID, L"").c_str();
                     std::wstring monitorSerialNumber = device.GetNamedString(NonLocalizable::AppliedLayoutsIds::MonitorSerialNumberID, L"").c_str();
+                    int monitorNumber = static_cast<int>(device.GetNamedNumber(NonLocalizable::AppliedLayoutsIds::MonitorNumberID, 0));
                     std::wstring virtualDesktop = device.GetNamedString(NonLocalizable::AppliedLayoutsIds::VirtualDesktopID).c_str();
 
                     auto virtualDesktopGuid = FancyZonesUtils::GuidFromString(virtualDesktop);
@@ -101,6 +102,7 @@ namespace JsonUtils
                     {
                         deviceId.id = monitor;
                         deviceId.instanceId = monitorInstance;
+                        deviceId.number = monitorNumber;
                     }
                     
                     FancyZonesDataTypes::MonitorId monitorId{
@@ -172,6 +174,7 @@ namespace JsonUtils
             device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::MonitorID, json::value(value.workAreaId.monitorId.deviceId.id));
             device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::MonitorInstanceID, json::value(value.workAreaId.monitorId.deviceId.instanceId));
             device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::MonitorSerialNumberID, json::value(value.workAreaId.monitorId.serialNumber));
+            device.SetNamedValue(NonLocalizable::AppliedLayoutsIds::MonitorNumberID, json::value(value.workAreaId.monitorId.deviceId.number));
 
             auto virtualDesktopStr = FancyZonesUtils::GuidToString(value.workAreaId.virtualDesktopId);
             if (virtualDesktopStr)
@@ -294,17 +297,22 @@ void AppliedLayouts::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
 {
     bool dirtyFlag = false;
 
-    std::vector<std::pair<FancyZonesDataTypes::WorkAreaId, std::wstring>> replaceWithSerialNumber{};
+    std::vector<std::pair<FancyZonesDataTypes::WorkAreaId, FancyZonesDataTypes::WorkAreaId>> replaceWithSerialNumber{};
     for (auto iter = m_layouts.begin(); iter != m_layouts.end(); ++iter)
     {
         const auto& [id, layout] = *iter;
-        if (id.monitorId.serialNumber.empty() && !id.monitorId.deviceId.isDefault())
+        bool serialNumberNotSet = id.monitorId.serialNumber.empty() && !id.monitorId.deviceId.isDefault();
+        bool monitorNumberNotSet = id.monitorId.deviceId.number == 0;
+        if (serialNumberNotSet || monitorNumberNotSet)
         {
             for (const auto& monitorId : ids)
             {
                 if (id.monitorId.deviceId.id == monitorId.deviceId.id && id.monitorId.deviceId.instanceId == monitorId.deviceId.instanceId)
                 {
-                    replaceWithSerialNumber.push_back({ id, monitorId.serialNumber });
+                    FancyZonesDataTypes::WorkAreaId updatedId = id;
+                    updatedId.monitorId.serialNumber = monitorId.serialNumber;
+                    updatedId.monitorId.deviceId.number = monitorId.deviceId.number;
+                    replaceWithSerialNumber.push_back({ id, updatedId });
                     dirtyFlag = true;
                     break;
                 }
@@ -315,7 +323,7 @@ void AppliedLayouts::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
     for (const auto& id : replaceWithSerialNumber)
     {
         auto mapEntry = m_layouts.extract(id.first);
-        mapEntry.key().monitorId.serialNumber = id.second;
+        mapEntry.key().monitorId = id.second.monitorId;
         m_layouts.insert(std::move(mapEntry));
     }
 

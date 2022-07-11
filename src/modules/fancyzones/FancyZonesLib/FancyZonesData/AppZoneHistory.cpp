@@ -27,6 +27,7 @@ namespace JsonUtils
                     std::wstring monitor = device.GetNamedString(NonLocalizable::AppZoneHistoryIds::MonitorID).c_str();
                     std::wstring monitorInstance = device.GetNamedString(NonLocalizable::AppZoneHistoryIds::MonitorInstanceID, L"").c_str();
                     std::wstring monitorSerialNumber = device.GetNamedString(NonLocalizable::AppZoneHistoryIds::MonitorSerialNumberID, L"").c_str();
+                    int monitorNumber = static_cast<int>(device.GetNamedNumber(NonLocalizable::AppZoneHistoryIds::MonitorNumberID, 0));
                     std::wstring virtualDesktop = device.GetNamedString(NonLocalizable::AppZoneHistoryIds::VirtualDesktopID).c_str();
 
                     auto virtualDesktopGuid = FancyZonesUtils::GuidFromString(virtualDesktop);
@@ -45,6 +46,7 @@ namespace JsonUtils
                     {
                         deviceId.id = monitor;
                         deviceId.instanceId = monitorInstance;
+                        deviceId.number = monitorNumber;
                     }
 
                     FancyZonesDataTypes::MonitorId monitorId{
@@ -175,6 +177,7 @@ namespace JsonUtils
                 device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorID, json::value(data.workAreaId.monitorId.deviceId.id));
                 device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorInstanceID, json::value(data.workAreaId.monitorId.deviceId.instanceId));
                 device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorSerialNumberID, json::value(data.workAreaId.monitorId.serialNumber));
+                device.SetNamedValue(NonLocalizable::AppZoneHistoryIds::MonitorNumberID, json::value(data.workAreaId.monitorId.deviceId.number));
 
                 auto virtualDesktopStr = FancyZonesUtils::GuidToString(data.workAreaId.virtualDesktopId);
                 if (virtualDesktopStr)
@@ -308,13 +311,16 @@ void AppZoneHistory::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
         for (auto& dataIter = data.begin(); dataIter != data.end(); ++dataIter)
         {
             auto& dataMonitorId = dataIter->workAreaId.monitorId;
-            if (dataMonitorId.serialNumber.empty() && !dataMonitorId.deviceId.isDefault())
+            bool serialNumberNotSet = dataMonitorId.serialNumber.empty() && !dataMonitorId.deviceId.isDefault();
+            bool monitorNumberNotSet = dataMonitorId.deviceId.number == 0;
+            if (serialNumberNotSet || monitorNumberNotSet)
             {
                 for (const auto& monitorId : ids)
                 {
                     if (dataMonitorId.deviceId.id == monitorId.deviceId.id && dataMonitorId.deviceId.instanceId == monitorId.deviceId.instanceId)
                     {
                         dataMonitorId.serialNumber = monitorId.serialNumber;
+                        dataMonitorId.deviceId.number = monitorId.deviceId.number;
                         dirtyFlag = true;
                         break;
                     }
