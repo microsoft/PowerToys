@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "PowerRenameExt.h"
-#include "PowerRenameConstants.h"
 #include <trace.h>
 #include <Helpers.h>
 #include <common/themes/icon_helpers.h>
@@ -67,9 +66,6 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
 
     // Check if at least one of the selected items is actually renamable.
     if (!DataObjectContainsRenamableItem(m_spdo))
-        return E_FAIL;
-
-    if (package::IsWin11OrGreater() && package::IsPackageRegistered(PowerRenameConstants::ModulePackageDisplayName))
         return E_FAIL;
 
     // Check if we should only be on the extended context menu
