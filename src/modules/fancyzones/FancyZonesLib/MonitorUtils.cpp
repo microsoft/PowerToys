@@ -222,20 +222,20 @@ namespace MonitorUtils
         std::vector<FancyZonesDataTypes::MonitorId> GetDisplays()
         {
             auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-            std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
             std::vector<FancyZonesDataTypes::MonitorId> result{};
-
+            DWORD displayDeviceIdx{ 0 };
+            
             for (auto& monitorData : allMonitors)
             {
                 auto monitorInfo = monitorData.second;
 
                 DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
                 std::wstring deviceId;
-                auto enumRes = EnumDisplayDevicesW(monitorInfo.szDevice, displayDeviceIdxMap[monitorInfo.szDevice], &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME);
+                auto enumRes = EnumDisplayDevicesW(monitorInfo.szDevice, displayDeviceIdx, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME);
 
                 if (!enumRes)
                 {
-                    Logger::error(L"EnumDisplayDevicesW error: {}", get_last_error_or_default(GetLastError()));
+                    Logger::error(L"EnumDisplayDevicesW error: {}", monitorInfo.szDevice);
                     continue;
                 }
                 
