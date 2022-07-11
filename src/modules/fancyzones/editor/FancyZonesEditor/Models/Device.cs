@@ -17,6 +17,8 @@ namespace FancyZonesEditor.Utils
 
         public string MonitorSerialNumber { get; set; }
 
+        public int MonitorNumber { get; set; }
+
         public Size MonitorSize { get; set; }
 
         public string VirtualDesktopId { get; set; }
