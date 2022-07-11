@@ -319,7 +319,7 @@
 
                                                     <controls:Setting x:Uid="PowerLauncher_PluginWeightBoost" 
                                                                           Style="{StaticResource ExpanderContentSettingStyleTight}" 
-                                                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                                                          IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
                                                         <controls:Setting.ActionContent>
                                                             <TextBox Text="{x:Bind Path=WeightBoost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                  MinWidth="{StaticResource SettingActionControlMinWidth}" />
