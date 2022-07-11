@@ -207,6 +207,18 @@ namespace MonitorUtils
             return { .id = str.substr(0, dividerPos), .instanceId = str.substr(dividerPos + 1) };
         }
 
+        inline bool not_digit(wchar_t ch)
+        {
+            return '0' <= ch && ch <= '9';
+        }
+
+        std::wstring remove_non_digits(const std::wstring& input)
+        {
+            std::wstring result;
+            std::copy_if(input.begin(), input.end(), std::back_inserter(result), not_digit);
+            return result;
+        }
+
         std::vector<FancyZonesDataTypes::MonitorId> GetDisplays()
         {
             auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
@@ -226,9 +238,24 @@ namespace MonitorUtils
                     Logger::error(L"EnumDisplayDevicesW error: {}", get_last_error_or_default(GetLastError()));
                     continue;
                 }
+                
+                Logger::info(L"Display: {}, number: {}", displayDevice.DeviceID);
+                FancyZonesDataTypes::MonitorId id{ .monitor = monitorData.first, .deviceId = SplitDisplayDeviceId(displayDevice.DeviceID) };
 
-                Logger::info(L"Display: {}", displayDevice.DeviceID);
-                result.push_back({ .monitor = monitorData.first, .deviceId = SplitDisplayDeviceId(displayDevice.DeviceID) });
+                try
+                {
+                    std::wstring numberStr = displayDevice.DeviceName; // \\.\DISPLAY1\Monitor0
+                    numberStr = numberStr.substr(0, numberStr.find_last_of('\\')); // \\.\DISPLAY1
+                    numberStr = remove_non_digits(numberStr);
+                    id.deviceId.number = std::stoi(numberStr);
+                }
+                catch (...)
+                {
+                    Logger::error(L"Failed to get monitor number from {}", displayDevice.DeviceName);
+                }
+
+                result.push_back(std::move(id));
+                
             }
 
             return result;

@@ -8,6 +8,7 @@ namespace NonLocalizable
         const static wchar_t* MonitorNameId = L"monitor";
         const static wchar_t* MonitorInstanceId = L"monitor-instance-id";
         const static wchar_t* MonitorSerialNumberId = L"monitor-serial-number";
+        const static wchar_t* MonitorNumberId = L"monitor-number";
         const static wchar_t* VirtualDesktopId = L"virtual-desktop";
         const static wchar_t* TopCoordinate = L"top-coordinate";
         const static wchar_t* LeftCoordinate = L"left-coordinate";
