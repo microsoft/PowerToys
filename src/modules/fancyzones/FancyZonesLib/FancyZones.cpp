@@ -21,6 +21,7 @@
 #include <FancyZonesLib/FancyZonesWindowProcessing.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
+#include <FancyZonesLib/Monitors.h>
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/SettingsObserver.h>
@@ -684,6 +685,13 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
     Logger::info(L"Display changed, type: {}", changeType);
 
+    if (changeType == DisplayChangeType::Initialization ||
+        changeType == DisplayChangeType::DisplayChange ||
+        changeType == DisplayChangeType::WorkArea)
+    {
+        Monitors::instance().Identify();
+    }
+
     if (changeType == DisplayChangeType::VirtualDesktop ||
         changeType == DisplayChangeType::Initialization)
     {
@@ -694,7 +702,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
             RegisterVirtualDesktopUpdates();
 
             // id format of applied-layouts and app-zone-history was changed in 0.60
-            auto monitors = MonitorUtils::IdentifyMonitors();
+            auto monitors = Monitors::instance().Get();
             AppliedLayouts::instance().AdjustWorkAreaIds(monitors);
             AppZoneHistory::instance().AdjustWorkAreaIds(monitors);
         }
@@ -764,7 +772,7 @@ void FancyZones::UpdateWorkAreas() noexcept
     }
     else
     {
-        auto monitors = MonitorUtils::IdentifyMonitors();
+        auto monitors = Monitors::instance().Get();
         for (const auto& monitor : monitors)
         {
             FancyZonesDataTypes::WorkAreaId workAreaId;

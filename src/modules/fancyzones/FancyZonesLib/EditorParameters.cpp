@@ -2,7 +2,7 @@
 #include "EditorParameters.h"
 
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
-#include <FancyZonesLib/MonitorUtils.h>
+#include <FancyZonesLib/Monitors.h>
 #include <FancyZonesLib/on_thread_executor.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/VirtualDesktop.h>
@@ -133,7 +133,7 @@ bool EditorParameters::Save() noexcept
     }
     else
     {
-        auto monitors = MonitorUtils::IdentifyMonitors();
+        auto monitors = Monitors::instance().Get();
 
         HMONITOR targetMonitor{};
         if (FancyZonesSettings::settings().use_cursorpos_editor_startupscreen)

@@ -54,6 +54,7 @@
     <ClInclude Include="FancyZonesData\LayoutHotkeys.h" />
     <ClInclude Include="LayoutConfigurator.h" />
     <ClInclude Include="ModuleConstants.h" />
+    <ClInclude Include="Monitors.h" />
     <ClInclude Include="MonitorUtils.h" />
     <ClInclude Include="MonitorWorkAreaHandler.h" />
     <ClInclude Include="pch.h" />
@@ -101,6 +102,7 @@
       <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="LayoutConfigurator.cpp" />
+    <ClCompile Include="Monitors.cpp" />
     <ClCompile Include="MonitorUtils.cpp" />
     <ClCompile Include="MonitorWorkAreaHandler.cpp" />
     <ClCompile Include="OnThreadExecutor.cpp" />

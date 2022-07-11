@@ -135,6 +135,9 @@
     <ClInclude Include="EditorParameters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Monitors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -222,6 +225,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EditorParameters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Monitors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

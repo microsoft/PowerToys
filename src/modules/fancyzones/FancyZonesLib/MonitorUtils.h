@@ -17,6 +17,5 @@ namespace MonitorUtils
         FancyZonesDataTypes::DeviceId SplitWMIDeviceId(const std::wstring& str) noexcept;
     }
 
-    std::vector<FancyZonesDataTypes::MonitorId> IdentifyMonitors() noexcept;
     void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept;
 };

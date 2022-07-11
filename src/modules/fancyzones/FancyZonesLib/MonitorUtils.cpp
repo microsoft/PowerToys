@@ -331,25 +331,4 @@ namespace MonitorUtils
             }
         }
     }
-   
-    std::vector<FancyZonesDataTypes::MonitorId> IdentifyMonitors() noexcept
-    {
-        Logger::info(L"Identifying monitors");
-
-        auto displays = Display::GetDisplays();
-        auto monitors = WMI::GetHardwareMonitorIds();
-        
-        for (const auto& monitor : monitors)
-        {
-            for (auto& display : displays)
-            {
-                if (monitor.deviceId.id == display.deviceId.id)
-                {
-                    display.serialNumber = monitor.serialNumber;    
-                }
-            }
-        }
-        
-        return displays;
-    }
 }
