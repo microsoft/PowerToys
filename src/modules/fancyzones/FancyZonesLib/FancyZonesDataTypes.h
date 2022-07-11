@@ -195,7 +195,7 @@ namespace FancyZonesDataTypes
             return lhs.monitor == rhs.monitor;
         }
         
-        if (!lhs.serialNumber.empty() || !rhs.serialNumber.empty())
+        if (!lhs.serialNumber.empty() && !rhs.serialNumber.empty())
         {
             bool serialNumbersEqual = lhs.serialNumber == rhs.serialNumber;
             if (!serialNumbersEqual)
