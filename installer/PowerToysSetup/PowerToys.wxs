@@ -44,7 +44,7 @@
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
             <bal:WixStandardBootstrapperApplication 
               LicenseFile="$(var.RepoDir)\installer\License.rtf"
-              LogoFile="$(var.RepoDir)\installer\MSIX\Images\logo44.png"
+              LogoFile="$(var.RepoDir)\installer\PowerToysSetup\Images\logo44.png"
               SuppressOptionsUI="no"
               SuppressRepair="yes" />
         </BootstrapperApplicationRef>
