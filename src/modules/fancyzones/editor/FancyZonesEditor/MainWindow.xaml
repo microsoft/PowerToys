@@ -37,7 +37,7 @@
             <MenuItem Header="{x:Static props:Resources.Edit}"
                       Click="EditLayout_Click">
                 <MenuItem.Icon>
-                    <ui:FontIcon Glyph="&#xE104;" />
+                    <ui:FontIcon Glyph="&#xE70F;" />
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="{x:Static props:Resources.Edit_zones}"
@@ -69,7 +69,7 @@
                       Click="DeleteLayout_Click"
                       Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                 <MenuItem.Icon>
-                    <ui:FontIcon Glyph="&#xE107;" />
+                    <ui:FontIcon Glyph="&#xE74D;" />
                 </MenuItem.Icon>
             </MenuItem>
         </ContextMenu>
@@ -166,7 +166,7 @@
                         Style="{StaticResource AccentButtonStyle}"
                         ui:ControlHelper.CornerRadius="36">
                     <Button.Content>
-                        <TextBlock Text="&#xE104;" 
+                        <TextBlock Text="&#xE70F;" 
                                        FontFamily="Segoe MDL2 Assets"
                                         FontSize="14"
                                        AutomationProperties.Name="{x:Static props:Resources.Edit}" />
@@ -289,7 +289,7 @@
                     Grid.Row="3">
                 <StackPanel Orientation="Horizontal"
                             Margin="8">
-                    <TextBlock Text="&#xE109;"
+                    <TextBlock Text="&#xE710;"
                                AutomationProperties.Name="{x:Static props:Resources.Create_new_layout}"
                                FontFamily="Segoe MDL2 Assets"
                                Foreground="{DynamicResource AccentButtonForeground}" />
@@ -405,7 +405,7 @@
                             Style="{StaticResource IconOnlyButtonStyle}"
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                         <Button.Content>
-                            <TextBlock Text="&#xE107;" 
+                            <TextBlock Text="&#xE74D;" 
                                        FontFamily="Segoe MDL2 Assets"
                                        Foreground="#c50500"
                                        AutomationProperties.Name="{x:Static props:Resources.Delete}" />
@@ -484,7 +484,7 @@
                            Margin="24,12,0,24">
                         <local:LayoutPreview />
 
-                        <Button Content="&#xE104;"
+                        <Button Content="&#xE70F;"
                                 x:Name="editZoneLayoutButton"
                                 FontFamily="Segoe MDL2 Assets"
                                 FontSize="14"
@@ -649,7 +649,7 @@
                                 <ColumnDefinition Width="32" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="&#xE138;"
+                            <TextBlock Text="&#xF0E2;"
                                        FontSize="16"
                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
                                        Margin="0,4,0,0"

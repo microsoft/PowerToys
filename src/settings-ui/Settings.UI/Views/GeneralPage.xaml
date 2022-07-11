@@ -22,7 +22,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="General_Version" Margin="0,-32,0,0">
-                    <controls:Setting Header="{Binding PowerToysVersion}" Icon="&#xE117;">
+                    <controls:Setting Header="{Binding PowerToysVersion}" Icon="&#xE895;">
                         <controls:Setting.Description>
                             <StackPanel Orientation="Vertical">
                                
@@ -177,7 +177,7 @@
                 <controls:SettingsGroup x:Uid="Admin_Mode">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="Admin_Mode" Icon="&#xE1A7;" Description="{Binding Mode=OneWay, Path=RunningAsText}" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                            <controls:Setting x:Uid="Admin_Mode" Icon="&#xE7EF;" Description="{Binding Mode=OneWay, Path=RunningAsText}" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <Button x:Uid="GeneralPage_RestartAsAdmin_Button"
                                             Command = "{Binding RestartElevatedButtonEventHandler}"
