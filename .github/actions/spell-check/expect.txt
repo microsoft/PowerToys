@@ -77,7 +77,6 @@ apps
 appwindow
 appwiz
 appx
-appxmanifest
 APSTUDIO
 AQS
 Aqtobe
@@ -142,7 +141,6 @@ Bashkortostan
 Bayan
 bbwe
 bck
-Bcl
 Belarus
 betadele
 betsegaw
@@ -416,7 +414,6 @@ deinitialization
 DELA
 deletethis
 Delimarsky
-delims
 dend
 DENORMAL
 Deondre
@@ -608,7 +605,6 @@ Filterkeyboard
 Filterx
 finalizer
 findfast
-findstr
 Firefox
 FIXEDFILEINFO
 FLASHZONES
@@ -646,7 +642,6 @@ GBs
 GCLP
 gcnew
 gcode
-gcodepreviewhandler
 gdi
 gdiplus
 GDISCALED
@@ -796,7 +791,6 @@ IComparer
 ICompositor
 ICONERROR
 IContext
-ICONWARNING
 ICreate
 IData
 IDD
@@ -955,7 +949,6 @@ ISingle
 ISmart
 isocpp
 iss
-IStorage
 IStream
 istreambuf
 istringstream
@@ -983,7 +976,6 @@ IVirtual
 IWbem
 IWIC
 iwindow
-IWork
 IXml
 IYUV
 IZone
@@ -1154,7 +1146,6 @@ Magadan
 Mainwindow
 majortype
 MAJORVERSION
-makeappx
 makecab
 MAKEINTRESOURCE
 MAKEINTRESOURCEW
@@ -1186,7 +1177,6 @@ MCDT
 MCST
 MDICHILD
 MDL
-mdpreviewhandler
 mdtext
 mdtxt
 mdwn
@@ -1199,7 +1189,6 @@ memset
 MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
-messageboxes
 Metadatas
 metafile
 mfapi
@@ -1274,9 +1263,7 @@ MSIHANDLE
 msiquery
 MSIRESTARTMANAGERCONTROL
 msix
-msixbundle
 MSIXCA
-MSIXVERSION
 MSLLHOOKSTRUCT
 Mso
 msp
@@ -1294,7 +1281,7 @@ Mundrabilla
 mutex
 mutexes
 muxc
-mvvm
+MVVM
 myfile
 MYICON
 MYTZ
@@ -1384,7 +1371,6 @@ Noronha
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
-notafter
 notfound
 nothrow
 NOTIFICATIONSDLL
@@ -1451,7 +1437,6 @@ ostream
 ostringstream
 OSVERSIONINFOEX
 OSVERSIONINFOEXW
-OSVERSIONINFOW
 osvi
 OUTOFCONTEXT
 OUTOFMEMORY
@@ -1491,7 +1476,6 @@ PCIDLIST
 PCWSTR
 pdb
 pdbonly
-pdfpreviewhandler
 pdo
 pdto
 pdtobj
@@ -1588,7 +1572,6 @@ PROPBAG
 PROPERTYKEY
 propkey
 propvarutil
-PRTL
 prvpane
 psapi
 PSECURITY
@@ -1685,8 +1668,6 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
-REMOTEDISPLAY
-REMOTESESSION
 Removelnk
 renamable
 RENAMEONCOLLISION
@@ -1786,7 +1767,6 @@ Segoe
 Sekan
 SENDCHANGE
 sendvirtualinput
-serializationexception
 serializer
 serverside
 SETCONTEXT
@@ -1853,7 +1833,7 @@ siex
 SIGABRT
 sigdn
 SIGNINGSCENARIO
-signtool
+Signtool
 sinclairinat
 SINGLEKEY
 singlekeyremapcontrol
@@ -1978,7 +1958,6 @@ sut
 SVE
 SVGIn
 SVGIO
-svgpreviewhandler
 svgz
 SWC
 SWFO
@@ -1999,7 +1978,6 @@ SYSICONINDEX
 SYSKEY
 syskeydown
 SYSKEYUP
-SYSLIB
 syslog
 SYSMENU
 SYSTEMAPPS
@@ -2104,7 +2082,6 @@ uefi
 UHash
 UIA
 uid
-Uid
 uint
 uintptr
 UIPI
@@ -2332,7 +2309,6 @@ wpr
 wprintf
 wprp
 wql
-WQL
 wregex
 WResize
 writefile
