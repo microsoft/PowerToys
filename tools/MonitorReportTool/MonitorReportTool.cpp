@@ -40,27 +40,44 @@ void LogEnumDisplayMonitors()
     Logger::log(L" ---- EnumDisplayMonitors ---- ");
 
     auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-    std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
+    
+    for (auto& monitorData : allMonitors)
+    {
+        auto monitorInfo = monitorData.second;
+
+        DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
+        DWORD deviceIdx{0};
+        while (EnumDisplayDevicesW(monitorInfo.szDevice, deviceIdx, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
+        {
+            Logger::log(L"Device {}", deviceIdx);
+            Logger::log(L"DeviceId: {}", std::wstring(displayDevice.DeviceID));
+            Logger::log(L"DeviceKey: {}", std::wstring(displayDevice.DeviceKey));
+            Logger::log(L"DeviceName: {}", std::wstring(displayDevice.DeviceName));
+            Logger::log(L"DeviceString: {}", std::wstring(displayDevice.DeviceString));
+            Logger::log(L"");
+
+            deviceIdx++;
+        }
+    }
+
+    Logger::log(L" ---- EnumDisplayMonitors ---- ");
 
     for (auto& monitorData : allMonitors)
     {
         auto monitorInfo = monitorData.second;
 
         DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
-        std::wstring deviceId;
-        auto enumRes = EnumDisplayDevicesW(monitorInfo.szDevice, displayDeviceIdxMap[monitorInfo.szDevice], &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME);
-
-        if (enumRes == 0)
+        DWORD deviceIdx{ 0 };
+        while (EnumDisplayDevicesW(monitorInfo.szDevice, deviceIdx, &displayDevice, 0))
         {
-            Logger::log(get_last_error_or_default(GetLastError()));
-        }
-        else
-        {
+            Logger::log(L"Device {}", deviceIdx);
             Logger::log(L"DeviceId: {}", std::wstring(displayDevice.DeviceID));
             Logger::log(L"DeviceKey: {}", std::wstring(displayDevice.DeviceKey));
             Logger::log(L"DeviceName: {}", std::wstring(displayDevice.DeviceName));
             Logger::log(L"DeviceString: {}", std::wstring(displayDevice.DeviceString));
             Logger::log(L"");
+
+            deviceIdx++;
         }
     }
 
