@@ -686,8 +686,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     Logger::info(L"Display changed, type: {}", changeType);
 
     if (changeType == DisplayChangeType::Initialization ||
-        changeType == DisplayChangeType::DisplayChange ||
-        changeType == DisplayChangeType::WorkArea)
+        changeType == DisplayChangeType::DisplayChange)
     {
         Monitors::instance().Identify();
     }
