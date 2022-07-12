@@ -1,7 +1,7 @@
 # OneNote Plugin
 The OneNote plugin searches your locally synced OneNote notebooks based on the user query.
 
-![Image of OneNote plugin](/doc/images/launcher/plugins/OneNote.png)
+![Image of OneNote plugin](/doc/images/launcher/plugins/onenote.png)
 
 The code itself is very simple, basically just a call into OneNote interop via the https://github.com/scipbe/ScipBe-Common-Office library.
 
