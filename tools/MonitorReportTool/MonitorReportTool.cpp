@@ -37,7 +37,7 @@ namespace FancyZonesUtils
 
 void LogEnumDisplayMonitors()
 {
-    Logger::log(L" ---- EnumDisplayMonitors ---- ");
+    Logger::log(L" ---- EnumDisplayMonitors as in FancyZones ---- ");
 
     auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
     std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
@@ -61,6 +61,107 @@ void LogEnumDisplayMonitors()
             Logger::log(L"DeviceName: {}", std::wstring(displayDevice.DeviceName));
             Logger::log(L"DeviceString: {}", std::wstring(displayDevice.DeviceString));
             Logger::log(L"");
+        }
+    }
+
+    Logger::log(L"");
+}
+
+void LogEnumDisplayMonitorsProper()
+{
+
+    auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+    std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
+
+    Logger::log(L" ---- FancyZonesUtils::GetAllMonitorInfo ---- ");
+    for (auto& monitorData : allMonitors)
+    {
+        auto monitorInfo = monitorData.second;
+        Logger::log(L"szDevice: {}", std::wstring(monitorInfo.szDevice));
+        Logger::log(L"cbSize: {}", monitorInfo.cbSize);
+        Logger::log(L"dwFlags: {}", monitorInfo.dwFlags);
+        Logger::log(L"");
+    }
+
+    {
+        Logger::log(L" ---- Exhaustive EnumDisplayDevicesW with EDD_GET_DEVICE_INTERFACE_NAME ---- ");
+        DISPLAY_DEVICE displayDevice{ .cb = sizeof(DISPLAY_DEVICE) };
+        DWORD deviceIdx = 0;
+        while (EnumDisplayDevicesW(nullptr, deviceIdx, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME)) {
+            {
+                const bool active = displayDevice.StateFlags & DISPLAY_DEVICE_ACTIVE;
+                const bool mirroring = displayDevice.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER;
+
+                Logger::log(L"DeviceId: {}", std::wstring(displayDevice.DeviceID));
+                Logger::log(L"DeviceKey: {}", std::wstring(displayDevice.DeviceKey));
+                Logger::log(L"DeviceName: {}", std::wstring(displayDevice.DeviceName));
+                Logger::log(L"DeviceString: {}", std::wstring(displayDevice.DeviceString));
+                Logger::log(L"StateFlags: {}", displayDevice.StateFlags);
+                Logger::log(L"active: {}", active);
+                Logger::log(L"mirroring: {}", mirroring);
+                Logger::log(L"");
+            }
+            DISPLAY_DEVICE displayDeviceInternal{ .cb = sizeof(DISPLAY_DEVICE) };
+            DWORD deviceIdxInternal = 0;
+
+            while (EnumDisplayDevicesW(displayDevice.DeviceName, deviceIdxInternal, &displayDeviceInternal, EDD_GET_DEVICE_INTERFACE_NAME)) {
+                {
+                    const bool active = displayDeviceInternal.StateFlags & DISPLAY_DEVICE_ACTIVE;
+                    const bool mirroring = displayDeviceInternal.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER;
+                    Logger::log(L"Inside {} there's:", displayDevice.DeviceName);
+                    Logger::log(L"--> DeviceId: {}", std::wstring(displayDeviceInternal.DeviceID));
+                    Logger::log(L"--> DeviceKey: {}", std::wstring(displayDeviceInternal.DeviceKey));
+                    Logger::log(L"--> DeviceName: {}", std::wstring(displayDeviceInternal.DeviceName));
+                    Logger::log(L"--> DeviceString: {}", std::wstring(displayDeviceInternal.DeviceString));
+                    Logger::log(L"--> StateFlags: {}", displayDeviceInternal.StateFlags);
+                    Logger::log(L"--> active: {}", active);
+                    Logger::log(L"--> mirroring: {}", mirroring);
+                    Logger::log(L"");
+                }
+                deviceIdxInternal++;
+            }
+            deviceIdx++;
+        }
+    }
+
+    {
+        Logger::log(L" ---- Exhaustive EnumDisplayDevicesW without EDD_GET_DEVICE_INTERFACE_NAME ---- ");
+        DISPLAY_DEVICE displayDevice{ .cb = sizeof(DISPLAY_DEVICE) };
+        DWORD deviceIdx = 0;
+        while (EnumDisplayDevicesW(nullptr, deviceIdx, &displayDevice, 0)) {
+            {
+                const bool active = displayDevice.StateFlags & DISPLAY_DEVICE_ACTIVE;
+                const bool mirroring = displayDevice.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER;
+
+                Logger::log(L"DeviceId: {}", std::wstring(displayDevice.DeviceID));
+                Logger::log(L"DeviceKey: {}", std::wstring(displayDevice.DeviceKey));
+                Logger::log(L"DeviceName: {}", std::wstring(displayDevice.DeviceName));
+                Logger::log(L"DeviceString: {}", std::wstring(displayDevice.DeviceString));
+                Logger::log(L"StateFlags: {}", displayDevice.StateFlags);
+                Logger::log(L"active: {}", active);
+                Logger::log(L"mirroring: {}", mirroring);
+                Logger::log(L"");
+            }
+            DISPLAY_DEVICE displayDeviceInternal{ .cb = sizeof(DISPLAY_DEVICE) };
+            DWORD deviceIdxInternal = 0;
+
+            while (EnumDisplayDevicesW(displayDevice.DeviceName, deviceIdxInternal, &displayDeviceInternal, 0)) {
+                {
+                    const bool active = displayDeviceInternal.StateFlags & DISPLAY_DEVICE_ACTIVE;
+                    const bool mirroring = displayDeviceInternal.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER;
+                    Logger::log(L"Inside {} there's:", displayDevice.DeviceName);
+                    Logger::log(L"--> DeviceId: {}", std::wstring(displayDeviceInternal.DeviceID));
+                    Logger::log(L"--> DeviceKey: {}", std::wstring(displayDeviceInternal.DeviceKey));
+                    Logger::log(L"--> DeviceName: {}", std::wstring(displayDeviceInternal.DeviceName));
+                    Logger::log(L"--> DeviceString: {}", std::wstring(displayDeviceInternal.DeviceString));
+                    Logger::log(L"--> StateFlags: {}", displayDeviceInternal.StateFlags);
+                    Logger::log(L"--> active: {}", active);
+                    Logger::log(L"--> mirroring: {}", mirroring);
+                    Logger::log(L"");
+                }
+                deviceIdxInternal++;
+            }
+            deviceIdx++;
         }
     }
 
@@ -453,6 +554,7 @@ void LogInfo()
     Logger::log(L"");
 
     LogEnumDisplayMonitors();
+    LogEnumDisplayMonitorsProper();
     LogWMICIMV2();
     LogWMI();
     LogCCD();
