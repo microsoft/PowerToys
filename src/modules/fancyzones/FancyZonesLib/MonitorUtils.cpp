@@ -223,28 +223,38 @@ namespace MonitorUtils
         {
             auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
             std::vector<FancyZonesDataTypes::MonitorId> result{};
-            DWORD displayDeviceIdx{ 0 };
-            
+
             for (auto& monitorData : allMonitors)
             {
                 auto monitorInfo = monitorData.second;
+                std::wstring deviceName{};
+                std::wstring deviceId{};
 
                 DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
-                std::wstring deviceId;
-                auto enumRes = EnumDisplayDevicesW(monitorInfo.szDevice, displayDeviceIdx, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME);
-
-                if (!enumRes)
+                DWORD displayIdx{ 0 };
+                while (EnumDisplayDevicesW(monitorInfo.szDevice, displayIdx, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
                 {
-                    Logger::error(L"EnumDisplayDevicesW error: {}", monitorInfo.szDevice);
-                    continue;
+                    Logger::info(L"device name: {}", displayDevice.DeviceName);
+                    Logger::info(L"device id: {}", displayDevice.DeviceID);
+
+                    if (std::wstring(displayDevice.DeviceID) != L"")
+                    {
+                        deviceId = displayDevice.DeviceID;
+                    }
+
+                    if (std::wstring(displayDevice.DeviceName) != L"")
+                    {
+                        deviceName = displayDevice.DeviceName;
+                    }
+
+                    displayIdx++;
                 }
                 
-                Logger::info(L"Display: {}, number: {}", displayDevice.DeviceID);
-                FancyZonesDataTypes::MonitorId id{ .monitor = monitorData.first, .deviceId = SplitDisplayDeviceId(displayDevice.DeviceID) };
+                FancyZonesDataTypes::MonitorId id{ .monitor = monitorData.first, .deviceId = SplitDisplayDeviceId(deviceId) };
 
                 try
                 {
-                    std::wstring numberStr = displayDevice.DeviceName; // \\.\DISPLAY1\Monitor0
+                    std::wstring numberStr = deviceName; // \\.\DISPLAY1\Monitor0
                     numberStr = numberStr.substr(0, numberStr.find_last_of('\\')); // \\.\DISPLAY1
                     numberStr = remove_non_digits(numberStr);
                     id.deviceId.number = std::stoi(numberStr);
@@ -254,6 +264,7 @@ namespace MonitorUtils
                     Logger::error(L"Failed to get monitor number from {}", displayDevice.DeviceName);
                 }
 
+                Logger::info(L"Display: {}, number: {}", deviceId, id.deviceId.number);
                 result.push_back(std::move(id));
                 
             }
