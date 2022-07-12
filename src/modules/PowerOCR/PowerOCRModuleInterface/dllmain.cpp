@@ -1,9 +1,21 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <interface/win_hook_event_data.h>
-#include <common/settings_objects.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/interop/shared_constants.h>
 #include "trace.h"
+#include "resource.h"
+#include <common/logger/logger.h>
+#include <common/SettingsAPI/settings_helpers.h>
+
+#include <common/utils/elevation.h>
+#include <common/utils/process_path.h>
+#include <common/utils/resources.h>
+#include <common/utils/os-detect.h>
+#include <common/utils/winapi_error.h>
+
+#include <filesystem>
+#include <set>
+#include "dllmain.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -46,7 +58,7 @@ struct ModuleSettings
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
-class $safeprojectname$ : public PowertoyModuleIface
+class PowerOCR : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
@@ -57,7 +69,7 @@ private:
 
 public:
     // Constructor
-    $safeprojectname$()
+    PowerOCR()
     {
         init_settings();
     };
@@ -77,19 +89,19 @@ public:
     // Return array of the names of all events that this powertoy listens for, with
     // nullptr as the last element of the array. Nullptr can also be retured for empty
     // list.
-    virtual const wchar_t** get_events() override
-    {
-        static const wchar_t* events[] = { nullptr };
-        // Available events:
-        // - ll_keyboard
-        // - win_hook_event
-        //
-        // static const wchar_t* events[] = { ll_keyboard,
-        //                                   win_hook_event,
-        //                                   nullptr };
+    //virtual const wchar_t** get_events() override
+    //{
+    //    static const wchar_t* events[] = { nullptr };
+    //    // Available events:
+    //    // - ll_keyboard
+    //    // - win_hook_event
+    //    //
+    //    // static const wchar_t* events[] = { ll_keyboard,
+    //    //                                   win_hook_event,
+    //    //                                   nullptr };
 
-        return events;
-    }
+    //    return events;
+    //}
 
     // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
@@ -177,7 +189,7 @@ public:
         {
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             // Update a bool property.
             //if (auto v = values.get_bool_value(L"bool_toggle_1")) {
@@ -230,42 +242,42 @@ public:
     }
 
     // Handle incoming event, data is event-specific
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        if (wcscmp(name, ll_keyboard) == 0)
-        {
-            auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-            // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
-            // otherwise return 0.
-            return 0;
-        }
-        else if (wcscmp(name, win_hook_event) == 0)
-        {
-            auto& event = *(reinterpret_cast<WinHookEvent*>(data));
-            // Return value is ignored
-            return 0;
-        }
-        return 0;
-    }
+    //virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
+    //{
+    //    if (wcscmp(name, ll_keyboard) == 0)
+    //    {
+    //        auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
+    //        // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
+    //        // otherwise return 0.
+    //        return 0;
+    //    }
+    //    else if (wcscmp(name, win_hook_event) == 0)
+    //    {
+    //        auto& event = *(reinterpret_cast<WinHookEvent*>(data));
+    //        // Return value is ignored
+    //        return 0;
+    //    }
+    //    return 0;
+    //}
 
     // This methods are part of an experimental features not fully supported yet
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override
-    {
-    }
+    //virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override
+    //{
+    //}
 
-    virtual void signal_system_menu_action(const wchar_t* name) override
-    {
-    }
+    //virtual void signal_system_menu_action(const wchar_t* name) override
+    //{
+    //}
 };
 
 // Load the settings file.
-void $safeprojectname$::init_settings()
+void PowerOCR::init_settings()
 {
     try
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(PowerOCR::get_name());
 
         // Load a bool property.
         //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
@@ -334,5 +346,5 @@ void $safeprojectname$::init_settings()
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new $safeprojectname$();
+    return new PowerOCR();
 }
