@@ -239,6 +239,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool powerOcr = true;
+
+        [JsonPropertyName("PowerOcr")]
+        public bool PowerOcr
+        {
+            get => powerOcr;
+            set
+            {
+                if (powerOcr != value)
+                {
+                    LogTelemetryEvent(value);
+                    powerOcr = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

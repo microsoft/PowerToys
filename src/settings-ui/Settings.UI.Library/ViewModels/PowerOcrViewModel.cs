@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 _powerOcrSettings = new PowerOcrSettings();
             }
 
-            _isEnabled = GeneralSettingsConfig.Enabled.ColorPicker;
+            _isEnabled = GeneralSettingsConfig.Enabled.PowerOcr;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
