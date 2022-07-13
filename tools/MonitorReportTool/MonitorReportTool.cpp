@@ -74,7 +74,7 @@ void LogPrintDisplayDevice(const DISPLAY_DEVICE& displayDevice, bool internal)
     const bool modesPruned = displayDevice.StateFlags & DISPLAY_DEVICE_MODESPRUNED;
     const bool primaryDevice = displayDevice.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE;
     const bool removable = displayDevice.StateFlags & DISPLAY_DEVICE_REMOVABLE;
-    const bool vgaCompatible = displayDevice.StateFlags & DISPLAY_DEVICE_VGA_COMPATIBLE;
+    const bool VGA_Compatible = displayDevice.StateFlags & DISPLAY_DEVICE_VGA_COMPATIBLE;
 
     Logger::log(L"{}DeviceId: {}", internal?L"--> ":L"", std::wstring(displayDevice.DeviceID));
     Logger::log(L"{}DeviceKey: {}", internal?L"--> ":L"", std::wstring(displayDevice.DeviceKey));
@@ -86,7 +86,7 @@ void LogPrintDisplayDevice(const DISPLAY_DEVICE& displayDevice, bool internal)
     Logger::log(L"{}modesPruned: {}", internal?L"--> ":L"", modesPruned);
     Logger::log(L"{}primaryDevice: {}", internal?L"--> ":L"", primaryDevice);
     Logger::log(L"{}removable: {}", internal?L"--> ":L"", removable);
-    Logger::log(L"{}vgaCompatible: {}", internal?L"--> ":L"", vgaCompatible);
+    Logger::log(L"{}VGA_Compatible: {}", internal?L"--> ":L"", VGA_Compatible);
     Logger::log(L"");
 }
 
