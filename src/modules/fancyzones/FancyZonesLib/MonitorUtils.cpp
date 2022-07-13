@@ -222,7 +222,6 @@ namespace MonitorUtils
         std::vector<FancyZonesDataTypes::MonitorId> GetDisplays()
         {
             auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-            std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
             std::vector<FancyZonesDataTypes::MonitorId> result{};
 
             for (auto& monitorData : allMonitors)
@@ -237,7 +236,9 @@ namespace MonitorUtils
 
                 bool foundActiveMonitor = false;
 
-                while(EnumDisplayDevicesW(monitorInfo.szDevice, displayDeviceIdxMap[monitorInfo.szDevice], &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
+                DWORD displayDeviceIndex = 0;
+
+                while (EnumDisplayDevicesW(monitorInfo.szDevice, displayDeviceIndex, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
                 {
                     Logger::info(L"Get display device for display {} : {}", monitorInfo.szDevice, displayDevice.DeviceID);
                     if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE) &&
@@ -247,6 +248,7 @@ namespace MonitorUtils
                         foundActiveMonitor = true;
                         break;
                     }
+                    displayDeviceIndex++;
                 }
 
                 if (foundActiveMonitor)
