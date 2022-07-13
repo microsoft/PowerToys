@@ -38,7 +38,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="dllmain.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
