@@ -471,7 +471,7 @@ jobs:
     displayName: 'Publish Artifact: Symbols'
     inputs:
       PathtoPublish: $(System.ArtifactsDirectory)/Symbols-$(BuildPlatform)/
-      ArtifactName: Symbols-$(BuildPlatform)
+      ArtifactName: Symbols-${{ parameters.versionNumber }}-$(BuildPlatform)
 
   - task: DeleteFiles@1
     displayName: 'Remove symbols from ArtifactStagingDirectory'
