@@ -113,7 +113,6 @@ void LogEnumDisplayMonitorsProper()
 {
 
     auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-    std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
 
     Logger::log(L" ---- FancyZonesUtils::GetAllMonitorInfo ---- ");
     for (auto& monitorData : allMonitors)
