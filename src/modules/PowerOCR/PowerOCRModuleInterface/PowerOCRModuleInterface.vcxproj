@@ -38,14 +38,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\trace.h" />
     <ClInclude Include="dllmain.h" />
+    <ClInclude Include="trace.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\trace.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="trace.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>

@@ -37,9 +37,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"$projectname$";
+const static wchar_t* MODULE_NAME = L"PowerOCR";
 // Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"<no description>";
+const static wchar_t* MODULE_DESC = L"Select any text you see on screen.";
 
 // These are the properties shown in the Settings page.
 struct ModuleSettings
