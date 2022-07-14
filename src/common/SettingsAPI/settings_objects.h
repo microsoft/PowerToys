@@ -217,7 +217,8 @@ namespace PowerToysSettings
             }
             std::array<BYTE, 256> key_states{}; // Zero-initialize
             std::array<wchar_t, 256> output;
-            auto output_bytes = ToUnicodeEx(key_code, scan_code, key_states.data(), output.data(), (int)output.size() - 1, 0, layout);
+            const UINT wFlags = 1 << 2; // If bit 2 is set, keyboard state is not changed (Windows 10, version 1607 and newer)
+            auto output_bytes = ToUnicodeEx(key_code, scan_code, key_states.data(), output.data(), (int)output.size() - 1, wFlags, layout);
             if (output_bytes <= 0)
             {
                 // If ToUnicodeEx fails (e.g. for F1-F12 keys) use GetKeyNameTextW
