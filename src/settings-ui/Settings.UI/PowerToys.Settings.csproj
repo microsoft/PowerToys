@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <None Remove="OobeWindow.xaml" />
+    <None Remove="Views\PowerOcrPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json">
@@ -85,6 +86,9 @@
   <ItemGroup>
     <Page Update="OobeWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\PowerOcrPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
   </ItemGroup>
   <ItemGroup>

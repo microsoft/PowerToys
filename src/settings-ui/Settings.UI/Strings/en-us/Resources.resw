@@ -2128,4 +2128,19 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
     <value>Enable round corners</value>
   </data>
+  <data name="LearnMore_PowerOcr" xml:space="preserve">
+    <value>Learn more about Power OCR</value>
+  </data>
+  <data name="PowerOcr.ModuleDescription" xml:space="preserve">
+    <value>Power OCR is a convenient way to copy text from anywhere on screen</value>
+  </data>
+  <data name="PowerOcr.ModuleTitle" xml:space="preserve">
+    <value>Power OCR</value>
+  </data>
+  <data name="PowerOcr_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Power OCR</value>
+  </data>
+  <data name="Shell_PowerOcr.Content" xml:space="preserve">
+    <value>Power OCR</value>
+  </data>
 </root>

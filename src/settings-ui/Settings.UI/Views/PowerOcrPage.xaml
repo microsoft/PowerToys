@@ -1,0 +1,50 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerOcrPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:BoolToObjectConverter
+            x:Key="BoolToComboBoxIndexConverter"
+            FalseValue="0"
+            TrueValue="1" />
+        <converters:BoolToVisibilityConverter
+            x:Key="FalseToVisibleConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+        <converters:BoolToVisibilityConverter
+            x:Key="TrueToVisibleConverter"
+            FalseValue="Collapsed"
+            TrueValue="Visible" />
+    </Page.Resources>
+
+    <controls:SettingsPageControl
+        x:Uid="PowerOcr"
+        IsTabStop="False"
+        ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
+
+                <controls:Setting x:Uid="PowerOcr_EnableToggleControl_HeaderText">
+                    <controls:Setting.Icon>
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
+
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_PowerOcr" Link="https://aka.ms/PowerToysOverview_PowerOCR" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
+</Page>

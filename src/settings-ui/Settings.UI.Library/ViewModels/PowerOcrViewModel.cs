@@ -15,7 +15,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
-    internal class PowerOcrViewModel : Observable, IDisposable
+    public class PowerOcrViewModel : Observable, IDisposable
     {
         private bool disposedValue;
 
