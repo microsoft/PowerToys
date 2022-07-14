@@ -211,24 +211,24 @@ internal class ImageMethods
         string inputLang = InputLanguageManager.Current.CurrentInputLanguage.Name;
 
         Language? selectedLanguage = new(inputLang);
-        List<Language> possibleOCRLangs = OcrEngine.AvailableRecognizerLanguages.ToList();
+        List<Language> possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
 
-        if (possibleOCRLangs.Count < 1)
+        if (possibleOcrLanguages.Count < 1)
         {
             MessageBox.Show("No possible OCR languages are installed.", "Text Grab");
             return null;
         }
 
-        if (possibleOCRLangs.All(l => l.LanguageTag != selectedLanguage.LanguageTag))
+        if (possibleOcrLanguages.All(l => l.LanguageTag != selectedLanguage.LanguageTag))
         {
-            List<Language>? similarLanguages = possibleOCRLangs.Where(
+            List<Language>? similarLanguages = possibleOcrLanguages.Where(
                 la => la.AbbreviatedName == selectedLanguage.AbbreviatedName).ToList();
 
             if (similarLanguages != null)
             {
                 selectedLanguage = similarLanguages.Count > 0
                     ? similarLanguages.FirstOrDefault()
-                    : possibleOCRLangs.FirstOrDefault();
+                    : possibleOcrLanguages.FirstOrDefault();
             }
         }
 
