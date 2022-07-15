@@ -67,8 +67,7 @@ public partial class OCROverlay : Window
         switch (e.Key)
         {
             case Key.Escape:
-                // WindowUtilities.CloseAllFullscreenGrabs();
-                Close();
+                WindowUtilities.CloseAllOCROverlays();
                 break;
             default:
                 break;
@@ -198,6 +197,6 @@ public partial class OCROverlay : Window
 
     private void CancelMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        Close();
+        WindowUtilities.CloseAllOCROverlays();
     }
 }
