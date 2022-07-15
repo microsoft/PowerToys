@@ -97,19 +97,4 @@ static class Program
             Application.Current.Shutdown();
         });
     }
-
-    private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-    {
-
-        if (msg == RF_TESTMESSAGE)
-        {
-            MessageBox.Show("I receive a msg here so I can call the method");
-            handled = true;
-            Settings settings = new Settings();
-            settings.Show();
-        }
-        return IntPtr.Zero;
-    }
-
-    private const int RF_TESTMESSAGE = 0xA123;
 }
