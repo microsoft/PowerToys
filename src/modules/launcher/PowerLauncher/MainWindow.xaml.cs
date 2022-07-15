@@ -203,13 +203,29 @@ namespace PowerLauncher
 
             if (showResultsWithDelay)
             {
-                _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                if (_settings.PTRSearchQueryFastResultsWithDelay)
+                {
+                    // old mode, delay fast and deleyed execution
+                    _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
                     add => SearchBox.QueryTextBox.TextChanged += add,
                     remove => SearchBox.QueryTextBox.TextChanged -= remove)
                         .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
                         .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
                         .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender)))
                         .Subscribe();
+                }
+                else
+                {
+                    // new mode, fire non-delayed right away, and then later the delayed execution
+                    _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                    add => SearchBox.QueryTextBox.TextChanged += add,
+                    remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                        .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                        .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
+                        .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
+                        .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
+                        .Subscribe();
+                }
             }
             else
             {
@@ -476,12 +492,45 @@ namespace PowerLauncher
                 SearchBox.AutoCompleteTextBlock.Text = string.Empty;
             }
 
-            // If there will be a delay before starting the search, hide the last results since they are now invalid.
             var showResultsWithDelay = _viewModel.GetSearchQueryResultsWithDelaySetting();
-            if (!_isTextSetProgrammatically && showResultsWithDelay)
+
+            if (showResultsWithDelay)
             {
-                DeselectAllResults();
+                // Default means we don't do anything we did not do before... leave the results as is, they will be changed as needed when results are returned
+                var pTRunStartNewSearchAction = _settings.PTRunStartNewSearchAction ?? "Default";
+
+                if (pTRunStartNewSearchAction == "DeSelect")
+                {
+                    // leave the results, be deselect anththing to it will not be activated by <enter> key, can still be arrow-key or clicked though
+                    if (!_isTextSetProgrammatically && showResultsWithDelay)
+                    {
+                        DeselectAllResults();
+                    }
+                }
+                else if (pTRunStartNewSearchAction == "Clear")
+                {
+                    // remove all results to prepare for new results, this causes flashing usually and is not cool
+                    if (!_isTextSetProgrammatically && showResultsWithDelay)
+                    {
+                        ClearResults();
+                    }
+                }
             }
+        }
+
+        private void ClearResults()
+        {
+            _viewModel.Results.SelectedItem = null;
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                {
+                    _viewModel.Results.Clear();
+                    _viewModel.Results.Results.NotifyChanges();
+
+                    // _viewModel.HideResultsListView();
+                }));
+            });
         }
 
         private void DeselectAllResults()
@@ -504,6 +553,11 @@ namespace PowerLauncher
 
         private void PerformSearchQuery(TextBox textBox)
         {
+            PerformSearchQuery(textBox, null);
+        }
+
+        private void PerformSearchQuery(TextBox textBox, bool? delayedExecution)
+        {
             var text = textBox.Text;
 
             if (_isTextSetProgrammatically)
@@ -514,7 +568,7 @@ namespace PowerLauncher
             else
             {
                 _viewModel.QueryText = text;
-                _viewModel.Query();
+                _viewModel.Query(delayedExecution);
             }
         }
 

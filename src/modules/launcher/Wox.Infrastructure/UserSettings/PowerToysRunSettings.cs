@@ -168,6 +168,12 @@ namespace Wox.Infrastructure.UserSettings
 
         public string QueryBoxFontWeight { get; set; }
 
+        public bool PTRunNonDelayedSearchInParallel { get; set; } = true;
+
+        public string PTRunStartNewSearchAction { get; set; }
+
+        public bool PTRSearchQueryFastResultsWithDelay { get; set; }
+
         public string QueryBoxFontStretch { get; set; }
 
         public string ResultFont { get; set; } = FontFamily.GenericSansSerif.Name;
