@@ -77,7 +77,7 @@
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
-                    <controls:Setting x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch">
+                    <controls:Setting x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch" Icon="&#xe81c;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreFlagsOnLaunch}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>

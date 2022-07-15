@@ -278,7 +278,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     Windows::UI::Xaml::Controls::Button addShortcut;
     FontIcon plusSymbol;
     plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
-    plusSymbol.Glyph(L"\xE109");
+    plusSymbol.Glyph(L"\xE710");
     addShortcut.Content(plusSymbol);
     addShortcut.Margin({ 10, 10, 0, 25 });
     addShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
