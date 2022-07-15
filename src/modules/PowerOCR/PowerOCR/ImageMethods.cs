@@ -30,8 +30,8 @@ internal class ImageMethods
         int windowHeight = (int)(passedWindow.ActualHeight * dpi.DpiScaleY);
 
         System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
-        int thisCorrectedLeft = (int)(absPosPoint.X * dpi.DpiScaleX);
-        int thisCorrectedTop = (int)(absPosPoint.Y * dpi.DpiScaleY);
+        int thisCorrectedLeft = (int)(absPosPoint.X);
+        int thisCorrectedTop = (int)(absPosPoint.Y);
 
         if (isGrabFrame == true)
         {
