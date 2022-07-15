@@ -10,12 +10,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class PowerOcrPage : Page
     {
-        private AlwaysOnTopViewModel ViewModel { get; set; }
+        private PowerOcrViewModel ViewModel { get; set; }
 
         public PowerOcrPage()
         {
             var settingsUtils = new SettingsUtils();
-            ViewModel = new PowerOcrViewModel(settingsUtils, SettingsRepository<PowerOcrSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            ViewModel = new PowerOcrViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<PowerOcrSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
         }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Timers;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
@@ -24,7 +25,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
         private readonly object _delayedActionLock = new object();
 
         private readonly PowerOcrSettings _powerOcrSettings;
@@ -34,21 +34,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerOcrViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public PowerOcrViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerOcrSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
+            // To obtain the general settings configurations of PowerToys Settings.
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-            if (_settingsUtils.SettingsExists(PowerOcrSettings.ModuleName))
+            // To obtain the settings configurations of Fancy zones.
+            if (moduleSettingsRepository == null)
             {
-                _powerOcrSettings = _settingsUtils.GetSettingsOrDefault<PowerOcrSettings>(PowerOcrSettings.ModuleName);
-            }
-            else
-            {
-                _powerOcrSettings = new PowerOcrSettings();
+                throw new ArgumentNullException(nameof(moduleSettingsRepository));
             }
 
-            _isEnabled = GeneralSettingsConfig.Enabled.PowerOcr;
+            _powerOcrSettings = moduleSettingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -57,6 +59,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _delayedTimer.Interval = SaveSettingsDelayInMs;
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
+        }
+
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set
+            {
+                if (_isEnabled != value)
+                {
+                    _isEnabled = value;
+
+                    GeneralSettingsConfig.Enabled.Awake = value;
+                    OnPropertyChanged(nameof(IsEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+
+                    // NotifyPropertyChanged();
+                }
+            }
         }
 
         private void ScheduleSavingOfSettings()
