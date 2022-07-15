@@ -205,7 +205,7 @@ namespace PowerLauncher
             {
                 if (_settings.PTRSearchQueryFastResultsWithDelay)
                 {
-                    // old mode, delay fast and deleyed execution
+                    // old mode, delay fast and delayed execution
                     _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
                     add => SearchBox.QueryTextBox.TextChanged += add,
                     remove => SearchBox.QueryTextBox.TextChanged -= remove)
@@ -501,7 +501,7 @@ namespace PowerLauncher
 
                 if (pTRunStartNewSearchAction == "DeSelect")
                 {
-                    // leave the results, be deselect anththing to it will not be activated by <enter> key, can still be arrow-key or clicked though
+                    // leave the results, be deselect anything to it will not be activated by <enter> key, can still be arrow-key or clicked though
                     if (!_isTextSetProgrammatically && showResultsWithDelay)
                     {
                         DeselectAllResults();
