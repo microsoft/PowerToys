@@ -7,7 +7,6 @@
     <RootNamespace>Microsoft.ColorPicker.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-    <LangVersion>8.0</LangVersion>
     <OutputType>Library</OutputType>
     <Version>$(Version).0</Version>
   </PropertyGroup>
