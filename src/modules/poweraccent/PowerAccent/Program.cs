@@ -1,6 +1,5 @@
 ﻿using System;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,17 +13,22 @@ static class Program
 {
     private const string PROGRAM_NAME = "PowerAccent";
     private static App _application;
+    private static Mutex _mutex = new Mutex(true, "PowerToys.PowerAccent");
 
     [STAThread]
     static void Main(string[] args)
     {
         Arguments(args);
-        InitEvents();
 
-        _application = new App();
-        _application.InitializeComponent();
-        _application.Run();
-        (_application.MainWindow as Selector).HideTaskbarIcon();
+        if (_mutex.WaitOne(TimeSpan.Zero, true))
+        {
+            InitEvents();
+
+            _application = new App();
+            _application.InitializeComponent();
+            //(_application.MainWindow as Selector).HideTaskbarIcon();
+            _application.Run();
+        }
     }
 
     private static void InitEvents()
@@ -38,36 +42,36 @@ static class Program
                 Terminate();
             }
         }).Start();
+
+        // wait for 
     }
+
+    #region Arguments
 
     private static int Arguments(string[] args)
     {
         Option<int> pidOption = new(
             aliases: new[] { "--pid", "-p" },
             getDefaultValue: () => 0,
-            description: $"Bind the execution of {PROGRAM_NAME} to another process.")
-        {
-            Argument = new Argument<int>(() => 0)
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-            },
-        };
+            description: $"Bind the execution of {PROGRAM_NAME} to another process.");
 
-        pidOption.Required = false;
+        Option<bool> openSettingsOption = new(
+            aliases: new[] { "--settings", "-s" },
+            getDefaultValue: () => false,
+            description: $"Open Settings window.");
 
         RootCommand rootCommand = new RootCommand
         {
             pidOption,
+            openSettingsOption,
         };
 
         rootCommand.Description = PROGRAM_NAME;
-
-        rootCommand.Handler = CommandHandler.Create<int>(HandleCommandLineArguments);
-
+        rootCommand.SetHandler(HandleCommandLineArguments, pidOption, openSettingsOption);
         return rootCommand.InvokeAsync(args).Result;
     }
 
-    private static void HandleCommandLineArguments(int pid)
+    private static void HandleCommandLineArguments(int pid, bool isOpenSettings)
     {
         if (pid != 0)
         {
@@ -76,7 +80,15 @@ static class Program
                 RunnerHelper.WaitForPowerToysRunner(pid, Terminate);
             });
         }
+
+        if (isOpenSettings)
+        {
+            Settings settings = new Settings();
+            settings.Show();
+        }
     }
+
+    #endregion
 
     private static void Terminate()
     {
@@ -85,4 +97,19 @@ static class Program
             Application.Current.Shutdown();
         });
     }
+
+    private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+
+        if (msg == RF_TESTMESSAGE)
+        {
+            MessageBox.Show("I receive a msg here so I can call the method");
+            handled = true;
+            Settings settings = new Settings();
+            settings.Show();
+        }
+        return IntPtr.Zero;
+    }
+
+    private const int RF_TESTMESSAGE = 0xA123;
 }
