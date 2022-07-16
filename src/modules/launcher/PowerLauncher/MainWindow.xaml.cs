@@ -563,7 +563,13 @@ namespace PowerLauncher
             if (_isTextSetProgrammatically)
             {
                 textBox.SelectionStart = textBox.Text.Length;
-                _isTextSetProgrammatically = false;
+
+                // because IF this is delayedExecution = false (run fast queries) we know this will be called again with delayedExecution = true
+                // if we don't do this, the second (partner) call will not be called _isTextSetProgrammatically = true also, and we need it to.
+                if (delayedExecution.HasValue && delayedExecution.Value)
+                {
+                    _isTextSetProgrammatically = false;
+                }
             }
             else
             {
