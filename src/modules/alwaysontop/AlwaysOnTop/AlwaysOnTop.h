@@ -50,6 +50,7 @@ private:
     HANDLE m_hPinEvent;
     std::thread m_thread;
     const bool m_useCentralizedLLKH;
+    bool m_running = true;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
