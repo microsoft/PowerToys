@@ -175,6 +175,11 @@ namespace PowerLauncher.Plugin
                 return new List<Result>();
             }
 
+            if (string.IsNullOrEmpty(query.ActionKeyword) && string.IsNullOrWhiteSpace(query.Search))
+            {
+                return new List<Result>();
+            }
+
             try
             {
                 List<Result> results = null;

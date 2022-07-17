@@ -46,8 +46,7 @@ namespace Microsoft.Plugin.Uri
         {
             var results = new List<Result>();
 
-            if (IsActivationKeyword(query)
-                && BrowserInfo.IsDefaultBrowserSet)
+            if (string.IsNullOrWhiteSpace(query?.Search) && BrowserInfo.IsDefaultBrowserSet)
             {
                 results.Add(new Result
                 {
@@ -102,12 +101,6 @@ namespace Microsoft.Plugin.Uri
             }
 
             return results;
-        }
-
-        private static bool IsActivationKeyword(Query query)
-        {
-            return !string.IsNullOrEmpty(query?.ActionKeyword)
-                   && query?.ActionKeyword == query?.RawQuery;
         }
 
         public void Init(PluginInitContext context)

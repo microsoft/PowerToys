@@ -2,7 +2,6 @@
 
 #include "pch.h"
 #include "ContextMenuHandler.h"
-#include <ImageResizerConstants.h>
 
 #include <Settings.h>
 #include <trace.h>
@@ -68,9 +67,6 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         return S_OK;
 
     if (!CSettingsInstance().GetEnabled())
-        return E_FAIL;
-
-    if (package::IsWin11OrGreater() && package::IsPackageRegistered(ImageResizerConstants::ModulePackageDisplayName))
         return E_FAIL;
 
     // NB: We just check the first item. We could iterate through more if the first one doesn't meet the criteria

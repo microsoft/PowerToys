@@ -42,9 +42,9 @@
             </desktop5:ItemType>
           </desktop4:FileExplorerContextMenus>
         </desktop4:Extension>
-        <com:Extension Category="windows.comServer">
+        <com:Extension Category="windows.comServer" uap10:RuntimeBehavior="packagedClassicApp">
           <com:ComServer>
-            <com:SurrogateServer  DisplayName="Context menu verb handler">
+            <com:SurrogateServer DisplayName="Context menu verb handler">
               <com:Class Id="8F491918-259F-451A-950F-8C3EBF4864AF" Path="PowerToys.ImageResizerContextMenu.dll" ThreadingModel="STA"/>
             </com:SurrogateServer>
           </com:ComServer>

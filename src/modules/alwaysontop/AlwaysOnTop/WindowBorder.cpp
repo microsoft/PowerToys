@@ -133,8 +133,9 @@ bool WindowBorder::Init(HINSTANCE hinstance)
         return false;
     }
 
-    UpdateBorderProperties();
     m_frameDrawer->Show();
+    UpdateBorderPosition();
+    UpdateBorderProperties();
     m_timer_id = SetTimer(m_window, REFRESH_BORDER_TIMER_ID, REFRESH_BORDER_INTERVAL, nullptr);
 
     return true;

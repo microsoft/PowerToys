@@ -330,7 +330,7 @@
                 </Button.Content>
             </Button>
 
-            <Button x:Name="button_docs" Content="&#xE11B;" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="DocsButton" Background="Transparent" BorderBrush="Transparent" Grid.Row="1" Height="32" VerticalAlignment="Bottom" HorizontalAlignment="Left" Click="OpenDocs" />
+            <Button x:Name="button_docs" Content="&#xE897;" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="DocsButton" Background="Transparent" BorderBrush="Transparent" Grid.Row="1" Height="32" VerticalAlignment="Bottom" HorizontalAlignment="Left" Click="OpenDocs" />
 
 
             <!--<Button Content="&#xE728;"
@@ -362,7 +362,7 @@
             </muxc:SplitButton.KeyboardAccelerators>
             <muxc:SplitButton.Content>
                 <StackPanel Orientation="Horizontal">
-                    <FontIcon Glyph="&#xE13E;" FontSize="14" VerticalAlignment="Center" Margin="0,2,10,0" />
+                    <FontIcon Glyph="&#xE8AC;" FontSize="14" VerticalAlignment="Center" Margin="0,2,10,0" />
                     <TextBlock x:Uid="TxtBlock_ButtonApply" />
                 </StackPanel>
             </muxc:SplitButton.Content>
