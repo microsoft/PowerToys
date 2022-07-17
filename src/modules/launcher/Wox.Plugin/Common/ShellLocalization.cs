@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Wox.Plugin.Logger;
 
 namespace Wox.Plugin.Common
 {
@@ -13,6 +14,9 @@ namespace Wox.Plugin.Common
     /// </summary>
     public static class ShellLocalization
     {
+        internal const uint DONTRESOLVEDLLREFERENCES = 0x00000001;
+        internal const uint LOADLIBRARYASDATAFILE = 0x00000002;
+
         [DllImport("shell32.dll", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
         internal static extern int SHGetLocalizedName(string pszPath, StringBuilder pszResModule, ref int cch, out int pidsRes);
 
@@ -21,9 +25,6 @@ namespace Wox.Plugin.Common
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, EntryPoint = "LoadLibraryExW")]
         internal static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, uint dwFlags);
-
-        internal const uint DONTRESOLVEDLLREFERENCES = 0x00000001;
-        internal const uint LOADLIBRARYASDATAFILE = 0x00000002;
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
         internal static extern int FreeLibrary(IntPtr hModule);
@@ -43,8 +44,13 @@ namespace Wox.Plugin.Common
             int len, id;
             len = resourcePath.Capacity;
 
-            if (SHGetLocalizedName(path, resourcePath, ref len, out id) == 0)
+            Log.Info("path: " + path, typeof(ShellLocalization));
+
+            var r = SHGetLocalizedName(path, resourcePath, ref len, out id);
+            if (!string.IsNullOrEmpty(resourcePath.ToString()))
             {
+                Log.Info("resource: " + resourcePath.ToString(), typeof(ShellLocalization));
+
                 _ = ExpandEnvironmentStrings(resourcePath.ToString(), resourcePath, resourcePath.Capacity);
                 IntPtr hMod = LoadLibraryEx(resourcePath.ToString(), IntPtr.Zero, DONTRESOLVEDLLREFERENCES | LOADLIBRARYASDATAFILE);
                 if (hMod != IntPtr.Zero)
