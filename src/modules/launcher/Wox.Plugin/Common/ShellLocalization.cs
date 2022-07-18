@@ -4,7 +4,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using Wox.Plugin.Logger;
 
 namespace Wox.Plugin.Common
 {
@@ -44,22 +43,18 @@ namespace Wox.Plugin.Common
             int len, id;
             len = resourcePath.Capacity;
 
-            Log.Info("path: " + path, typeof(ShellLocalization));
-
-            var r = SHGetLocalizedName(path, resourcePath, ref len, out id);
-            if (!string.IsNullOrEmpty(resourcePath.ToString()))
+            // If there is no resource to localize a file name the method returns a non zero value.
+            if (SHGetLocalizedName(path, resourcePath, ref len, out id) == 0)
             {
-                Log.Info("resource: " + resourcePath.ToString(), typeof(ShellLocalization));
-
                 _ = ExpandEnvironmentStrings(resourcePath.ToString(), resourcePath, resourcePath.Capacity);
                 IntPtr hMod = LoadLibraryEx(resourcePath.ToString(), IntPtr.Zero, DONTRESOLVEDLLREFERENCES | LOADLIBRARYASDATAFILE);
                 if (hMod != IntPtr.Zero)
                 {
                     if (LoadString(hMod, id, localizedName, localizedName.Capacity) != 0)
                     {
-                        string lSTring = localizedName.ToString();
+                        string lString = localizedName.ToString();
                         _ = FreeLibrary(hMod);
-                        return lSTring;
+                        return lString;
                     }
 
                     _ = FreeLibrary(hMod);
