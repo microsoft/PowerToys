@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -62,6 +63,31 @@ namespace Wox.Plugin.Common
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// This method returns the localized path to a shell item (folder or file)
+        /// </summary>
+        /// <param name="path">The path to localize</param>
+        /// <returns>The localized path or the original path if localized version is not available</returns>
+        public static string GetLocalizedPath(string path)
+        {
+            path = Environment.ExpandEnvironmentVariables(path);
+            string ext = Path.GetExtension(path);
+            var pathParts = path.Split("\\");
+            string[] locPath = new string[pathParts.Length];
+
+            for (int i = 0; i < pathParts.Length; i++)
+            {
+                int iElements = i + 1;
+                string lName = GetLocalizedName(string.Join("\\", pathParts[..iElements]));
+                locPath[i] = string.IsNullOrEmpty(lName) ? pathParts[i] : lName;
+            }
+
+            string newPath = string.Join("\\", locPath);
+            newPath = !newPath.EndsWith(ext, StringComparison.InvariantCultureIgnoreCase) ? newPath + ext : newPath;
+
+            return newPath;
         }
     }
 }
