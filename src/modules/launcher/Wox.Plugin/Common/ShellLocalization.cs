@@ -10,7 +10,7 @@ namespace Wox.Plugin.Common
 {
     /// <summary>
     /// Class to get localized name of shell items like 'My computer'. The localization is based on the 'windows display language'.
-    /// Reused code from https://stackoverflow.com/questions/41423491/how-to-get-localized-name-of-known-folder
+    /// Reused code from https://stackoverflow.com/questions/41423491/how-to-get-localized-name-of-known-folder for the method <see cref="GetLocalizedName"/>
     /// </summary>
     public static class ShellLocalization
     {
@@ -81,7 +81,7 @@ namespace Wox.Plugin.Common
             {
                 int iElements = i + 1;
                 string lName = GetLocalizedName(string.Join("\\", pathParts[..iElements]));
-                locPath[i] = string.IsNullOrEmpty(lName) ? pathParts[i] : lName;
+                locPath[i] = !string.IsNullOrEmpty(lName) ? lName : pathParts[i];
             }
 
             string newPath = string.Join("\\", locPath);
