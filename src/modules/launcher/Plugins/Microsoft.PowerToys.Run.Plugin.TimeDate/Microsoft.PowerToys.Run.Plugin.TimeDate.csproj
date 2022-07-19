@@ -32,25 +32,6 @@
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">
-      <Link>GlobalSuppressions.cs</Link>
-    </Compile>
-    <AdditionalFiles Include="..\..\..\..\codeAnalysis\StyleCop.json">
-      <Link>StyleCop.json</Link>
-    </AdditionalFiles>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers">
-      <Version>1.1.118</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="plugin.json">

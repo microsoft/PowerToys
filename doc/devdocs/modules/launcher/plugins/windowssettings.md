@@ -129,10 +129,8 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 | `Images\WindowsSettings.light.png`    | Symbol for the results for the light theme                              |
 | `Properties\Resources.Designer.resx`  | File that contain all translatable keys                                 |
 | `Properties\Resources.resx`           | File that contain all translatable strings in the neutral language      |
-| `GlobalSuppressions.cs`               | Code suppressions (no real file, linked via *.csproj)                   |
 | `Main.cs`                             | Main class, the only place that implement the WOX interfaces            |
 | `plugin.json`                         | All meta-data for this plugin                                           |
-| `StyleCop.json`                       | Code style (no real file, linked via *.csproj)                          |
 
 1. We need this extra wrapper class to make it possible that the JSON file can have and use a JSON schema file.
 Because the JSON file must have a object as root type, instead of a array.
@@ -148,12 +146,6 @@ Because the JSON file must have a object as root type, instead of a array.
 | AssemblyName    | `Microsoft.PowerToys.Run.Plugin.WindowsSettings`                                                    |
 
 ### Project dependencies
-
-#### Packages
-
-| Package                                                                               | Version |
-| ------------------------------------------------------------------------------------- | ------- |
-| [`StyleCop.Analyzers`](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)          | 1.1.118 |
 
 #### Projects
 

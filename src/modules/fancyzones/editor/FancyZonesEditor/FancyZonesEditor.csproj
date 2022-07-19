@@ -39,30 +39,15 @@
   </PropertyGroup>
  
   <ItemGroup>
-    <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="app.manifest" />
   </ItemGroup>
-  <ItemGroup>
-    <AdditionalFiles Include="..\..\..\..\codeAnalysis\StyleCop.json">
-      <Link>StyleCop.json</Link>
-    </AdditionalFiles>
-  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
     <PackageReference Include="System.Text.Json" Version="6.0.2" />
   </ItemGroup>

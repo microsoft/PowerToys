@@ -40,25 +40,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">
-			<Link>GlobalSuppressions.cs</Link>
-		</Compile>
-		<AdditionalFiles Include="..\..\..\..\codeAnalysis\StyleCop.json">
-			<Link>StyleCop.json</Link>
-		</AdditionalFiles>
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.2" />
-		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 		<PackageReference Include="System.Runtime" Version="4.3.1" />
 	</ItemGroup>
 
