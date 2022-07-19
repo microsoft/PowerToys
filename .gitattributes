@@ -16,4 +16,4 @@
 
 *.gcode linguist-detectable=false
 
-.vs-config linguist-language=json
+.vsconfig linguist-language=json
