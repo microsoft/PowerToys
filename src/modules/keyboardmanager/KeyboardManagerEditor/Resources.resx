@@ -169,7 +169,7 @@
     <value>Target App:</value>
   </data>
   <data name="EditKeyboard_OrphanedDialogTitle" xml:space="preserve">
-    <value>Warning: The following keys are currently not assigned:</value>
+    <value>Warning: The follow keys do not have assignments:</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditKeyboard_PartialConfirmationDialogTitle" xml:space="preserve">
