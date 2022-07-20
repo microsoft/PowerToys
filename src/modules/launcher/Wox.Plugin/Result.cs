@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Abstractions;
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Media;
 
@@ -98,6 +99,7 @@ namespace Wox.Plugin
         /// <summary>
         /// Gets or sets return true to hide wox after select result
         /// </summary>
+        [JsonIgnore]
         public Func<ActionContext, bool> Action { get; set; }
 
         public int Score { get; set; }
