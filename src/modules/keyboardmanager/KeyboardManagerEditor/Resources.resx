@@ -192,7 +192,7 @@
   </data>
   <data name="Type_Button" xml:space="preserve">
     <value>Type</value>
-    <comment>As in type a key</comment>
+    <comment>As in type a key on a keyboard</comment>
   </data>
   <data name="TypeKey_Title" xml:space="preserve">
     <value>Press a key on selected keyboard:</value>
