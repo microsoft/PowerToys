@@ -70,25 +70,7 @@ namespace Microsoft.PowerToys.Run.Plugin.History.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy this number to the clipboard.
-        /// </summary>
-        public static string wox_plugin_history_copy_number_to_clipboard {
-            get {
-                return ResourceManager.GetString("wox_plugin_history_copy_number_to_clipboard", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Expression wrong or incomplete (Did you forget some parentheses?).
-        /// </summary>
-        public static string wox_plugin_history_expression_not_complete {
-            get {
-                return ResourceManager.GetString("wox_plugin_history_expression_not_complete", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Quick access to searched terms and selected results..
+        ///   Looks up a localized string similar to Quick access to previous selected results..
         /// </summary>
         public static string wox_plugin_history_plugin_description {
             get {
@@ -97,7 +79,7 @@ namespace Microsoft.PowerToys.Run.Plugin.History.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to History.
+        ///   Looks up a localized string similar to Run History.
         /// </summary>
         public static string wox_plugin_history_plugin_name {
             get {
