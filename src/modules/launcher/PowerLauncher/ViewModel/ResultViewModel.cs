@@ -151,11 +151,10 @@ namespace PowerLauncher.ViewModel
                     {
                         bool hideWindow =
                             r.Action != null &&
-                            r.Action(
-                                new ActionContext
-                                {
-                                    SpecialKeyState = KeyboardHelper.CheckModifiers(),
-                                });
+                            r.Action(new ActionContext
+                            {
+                                SpecialKeyState = KeyboardHelper.CheckModifiers(),
+                            });
 
                         if (hideWindow)
                         {
@@ -257,6 +256,8 @@ namespace PowerLauncher.ViewModel
         }
 
         public Result Result { get; }
+
+        public UserSelectedRecord UserSelectedRecord { get; }
 
         public override bool Equals(object obj)
         {

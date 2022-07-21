@@ -17,7 +17,7 @@ using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.History
 {
-    public class Main : IPlugin, IPluginI18n, IDisposable, ISettingProvider
+    public class Main : IPlugin, IContextMenu, IPluginI18n, IDisposable, ISettingProvider
     {
         private PluginInitContext Context { get; set; }
 
@@ -45,10 +45,10 @@ namespace Microsoft.PowerToys.Run.Plugin.History
             var results = new List<Result>();
             try
             {
-                if (query.GenericHistory != null)
+                if (query.SelectedItems != null)
                 {
                     // System.Diagnostics.Debugger.Launch();
-                    foreach (var historyItem in query.GenericHistory.SelectedItems)
+                    foreach (var historyItem in query.SelectedItems.Values)
                     {
                         var plugin = PluginManager.AllPlugins.FirstOrDefault(p => p.Metadata.ID == historyItem.PluginID);
 
@@ -59,19 +59,34 @@ namespace Microsoft.PowerToys.Run.Plugin.History
 
                         var result = BuildResult(historyItem);
 
-                        if (result.Action != null)
+                        if (result != null)
                         {
-                            if (plugin.Metadata.Name == "Calculator")
-                            {
-                                result.Title = $"{historyItem.Search} = {historyItem.Title}";
-                            }
-
-                            // System.Diagnostics.Debugger.Launch();
                             results.Add(result);
                         }
                         else
                         {
-                            // System.Diagnostics.Debugger.Launch();
+                            System.Diagnostics.Debug.WriteLine("Skipping " + historyItem.Title);
+                        }
+
+                        if ("3".Length == 234234)
+                        {
+                            if (result.Action != null)
+                            {
+                                /*
+                                if (plugin.Metadata.Name == "Calculator")
+                                {
+                                    result.Title = $"{historyItem.Search} = {historyItem.Title}";
+                                }
+                                */
+
+                                // System.Diagnostics.Debugger.Launch();
+                                results.Add(result);
+                            }
+                            else
+                            {
+                                // System.Diagnostics.Debugger.Launch();
+                                System.Diagnostics.Debug.WriteLine("Skipping " + historyItem.Title);
+                            }
                         }
                     }
 
@@ -88,7 +103,7 @@ namespace Microsoft.PowerToys.Run.Plugin.History
             return results;
         }
 
-        private bool IsRelevant(Query query, GenericSelectedItem genericSelectedItem)
+        private bool IsRelevant(Query query, UserSelectedRecord.UserSelectedRecordItem genericSelectedItem)
         {
             if (genericSelectedItem.Title != null && genericSelectedItem.Title.Contains(query.Search, StringComparison.InvariantCultureIgnoreCase))
             {
@@ -106,30 +121,32 @@ namespace Microsoft.PowerToys.Run.Plugin.History
             return false;
         }
 
-        private Result BuildResult(GenericSelectedItem historyItem)
+        private Result BuildResult(UserSelectedRecord.UserSelectedRecordItem historyItem)
         {
-            var result = new Result
-            {
-                Title = historyItem.Title,
-                IcoPath = historyItem.IconPath,
-                Score = historyItem.Score,
-                SubTitle = historyItem.SubTitle,
-            };
+            Result result = null;
 
             var plugin = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == historyItem.PluginID);
 
-            var tempResults = PluginManager.QueryForPlugin(plugin, new Query(historyItem.Title), true);
+            var tempResults = PluginManager.QueryForPlugin(plugin, new Query(historyItem.Search), false);
 
-            if (tempResults != null && tempResults.Any(r => r.IcoPath == result.IcoPath && r.SubTitle == result.SubTitle))
+            if (tempResults != null)
             {
-                result.Action = tempResults.First(r => r.IcoPath == result.IcoPath && r.SubTitle == result.SubTitle).Action;
+                result = tempResults.FirstOrDefault(r => r.Title == historyItem.Title && r.IcoPath == historyItem.IconPath && r.SubTitle == historyItem.SubTitle);
             }
 
-            tempResults = PluginManager.QueryForPlugin(plugin, new Query(historyItem.Title), false);
-
-            if (tempResults != null && tempResults.Any(r => r.IcoPath == result.IcoPath && r.SubTitle == result.SubTitle))
+            if (result == null)
             {
-                result.Action = tempResults.First(r => r.IcoPath == result.IcoPath && r.SubTitle == result.SubTitle).Action;
+                tempResults = PluginManager.QueryForPlugin(plugin, new Query(historyItem.Search), true);
+                if (tempResults != null)
+                {
+                    result = tempResults.FirstOrDefault(r => r.Title == historyItem.Title && r.IcoPath == historyItem.IconPath && r.SubTitle == historyItem.SubTitle);
+                }
+            }
+
+            if (result != null)
+            {
+                result.FromHistory = true;
+                result.HistoryPluginID = historyItem.PluginID;
             }
 
             return result;
@@ -173,6 +190,39 @@ namespace Microsoft.PowerToys.Run.Plugin.History
         public Control CreateSettingPanel()
         {
             throw new NotImplementedException();
+        }
+
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
+        {
+            var pluginPair = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == selectedResult.HistoryPluginID);
+            if (pluginPair != null)
+            {
+                var plugin = (IContextMenu)pluginPair.Plugin;
+                var menuItems = plugin.LoadContextMenus(selectedResult);
+
+                // can't do this yet...
+                /*
+                menuItems.Add(new ContextMenuResult
+                {
+                    // AcceleratorKey = Key.F4,
+                    // AcceleratorModifiers = ModifierKeys.Control,
+                    FontFamily = "Segoe MDL2 Assets",
+                    Glyph = "\xE8BB",                       // E8B8 => Symbol: ChromeClose
+                    Title = $"Remove {selectedResult.Title} from history",
+                    Action = _ =>
+                    {
+                        _.UserSelectedRecord.Remove(selectedResult);
+
+                        // System.Diagnostics.Debugger.Launch();
+                        return true;
+                    },
+                });
+                */
+
+                return menuItems;
+            }
+
+            return new List<ContextMenuResult>();
         }
 
         public void UpdateSettings(PowerLauncherPluginSettings settings)

@@ -4,11 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Wox.Plugin;
 
-namespace PowerLauncher.Storage
+namespace Wox.Plugin
 {
     public class UserSelectedRecord
     {
@@ -34,6 +34,20 @@ namespace PowerLauncher.Storage
         [JsonInclude]
         public Dictionary<string, UserSelectedRecordItem> Records { get; private set; } = new Dictionary<string, UserSelectedRecordItem>();
 
+        public void Remove(Result result)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            var key = result.ToString();
+            if (Records.ContainsKey(result.ToString()))
+            {
+                Records.Remove(result.ToString());
+            }
+        }
+
         public void Add(Result result)
         {
             if (result == null)
@@ -48,7 +62,7 @@ namespace PowerLauncher.Storage
                 Records[key].LastSelected = DateTime.UtcNow;
                 Records[key].IconPath = result.IcoPath;
                 Records[key].Title = result.Title;
-                Records[key].Search = result.OriginQuery.Search;
+                Records[key].Search = (result.OriginQuery.Search.Length > 0) ? result.OriginQuery.Search : Records[key].Search;
 
                 // Records[key].PluginID = result.PluginID;
             }
@@ -82,9 +96,10 @@ namespace PowerLauncher.Storage
             return new UserSelectedRecordItem { SelectedCount = 0, LastSelected = DateTime.MinValue };
         }
 
-        public GenericHistory GetGenericHistory()
+        public Dictionary<string, UserSelectedRecordItem> GetGenericHistory()
         {
-            var history = new GenericHistory();
+            /*
+            var history = new List<UserSelectedRecord.UserSelectedRecordItem>();
 
             foreach (var record in Records)
             {
@@ -93,9 +108,8 @@ namespace PowerLauncher.Storage
                     continue;
                 }
 
-                history.SelectedItems.Add(new GenericSelectedItem
+                history.Add(new UserSelectedRecordItem
                 {
-                    Name = record.Key,
                     SelectedCount = record.Value.SelectedCount,
                     LastSelected = record.Value.LastSelected,
                     IconPath = record.Value.IconPath,
@@ -108,6 +122,9 @@ namespace PowerLauncher.Storage
             }
 
             return history;
+            */
+
+            return Records;
         }
     }
 }

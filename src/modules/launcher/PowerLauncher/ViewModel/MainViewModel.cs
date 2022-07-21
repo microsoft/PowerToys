@@ -571,7 +571,7 @@ namespace PowerLauncher.ViewModel
                             {
                                 var plugin = pluginQueryItem.Key;
                                 var query = pluginQueryItem.Value;
-                                query.GenericHistory = _userSelectedRecord.GetGenericHistory();
+                                query.SelectedItems = _userSelectedRecord.GetGenericHistory();
                                 var results = PluginManager.QueryForPlugin(plugin, query);
                                 resultPluginPair.Add((results, plugin.Metadata));
                                 currentCancellationToken.ThrowIfCancellationRequested();

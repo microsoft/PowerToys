@@ -150,7 +150,7 @@ namespace Wox.Plugin
 
         public override string ToString() => RawQuery;
 
-        public GenericHistory GenericHistory { get; set; }
+        public Dictionary<string, UserSelectedRecord.UserSelectedRecordItem> SelectedItems { get; set; }
 
         [Obsolete("Use Search instead, this method will be removed in v1.3.0")]
         public string GetAllRemainingParameter() => Search;

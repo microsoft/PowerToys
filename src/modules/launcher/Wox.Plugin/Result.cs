@@ -43,6 +43,10 @@ namespace Wox.Plugin
             }
         }
 
+        public bool FromHistory { get; set; }
+
+        public string HistoryPluginID { get; set; }
+
         public string SubTitle { get; set; }
 
         public string Glyph { get; set; }
