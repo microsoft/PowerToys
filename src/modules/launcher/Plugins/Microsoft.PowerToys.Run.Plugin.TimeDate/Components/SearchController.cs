@@ -42,12 +42,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             bool isEmptySearchInput = string.IsNullOrEmpty(query.Search);
             string searchTerm = query.Search;
 
-            // Empty search without keyword => return no results
-            if (!isKeywordSearch && isEmptySearchInput)
-            {
-                return results;
-            }
-
             // Conjunction search without keyword => return no results
             // (This improves the results on global queries.)
             if (!isKeywordSearch && _conjunctionList.Any(x => x.Equals(searchTerm, StringComparison.CurrentCultureIgnoreCase)))

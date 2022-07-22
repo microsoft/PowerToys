@@ -27,7 +27,6 @@ public:
     IFACEMETHODIMP GetSelected(_Out_ bool* selected);
     IFACEMETHODIMP PutSelected(_In_ bool selected);
     IFACEMETHODIMP GetId(_Out_ int* id);
-    IFACEMETHODIMP GetIconIndex(_Out_ int* iconIndex);
     IFACEMETHODIMP GetDepth(_Out_ UINT* depth);
     IFACEMETHODIMP PutDepth(_In_ int depth);
     IFACEMETHODIMP Reset();

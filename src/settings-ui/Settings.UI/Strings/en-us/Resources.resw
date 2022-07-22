@@ -414,6 +414,17 @@
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
+  <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
+    <value>Delay search</value>
+    <comment>This is about adding a delay to wait for more input before executing a search</comment>
+  </data>
+  <data name="PowerLauncher_SearchQueryResultsWithDelay.Description" xml:space="preserve">
+    <value>Add a delay to wait for more input before executing a search</value>
+  </data>
+  <data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
+    <value>Search delay (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
@@ -1477,6 +1488,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_WhatsNew_LoadingError.Message" xml:space="preserve">
     <value>Please check your internet connection.</value>
   </data>
+  <data name="Oobe_WhatsNew_ProxyAuthenticationWarning.Title" xml:space="preserve">
+    <value>Couldn't load the release notes.</value>
+  </data>
+  <data name="Oobe_WhatsNew_ProxyAuthenticationWarning.Message" xml:space="preserve">
+    <value>Your proxy server requires authentication.</value>
+  </data>
   <data name="Oobe_WhatsNew_DetailedReleaseNotesLink.Text" xml:space="preserve">
     <value>See more detailed release notes on GitHub</value>
     <comment>Don't loc "GitHub", it's the name of a product</comment>
@@ -1979,7 +1996,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
     <value>Geometric Code</value>
     <comment>File type, do not translate</comment>
-    </data>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
   </data>
@@ -2107,5 +2124,32 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable round corners when window is snapped</value>
+  </data>
+  <data name="PowerLauncher_SearchQueryTuningEnabled.Description" xml:space="preserve">
+    <value>Fine tune results ordering</value>
+  </data>
+  <data name="PowerLauncher_SearchQueryTuningEnabled.Header" xml:space="preserve">
+    <value>Results order tuning</value>
+  </data>
+  <data name="PowerLauncher_SearchClickedItemWeight.Description" xml:space="preserve">
+    <value>Use a higher number to get selected results to rise faster. The default is 5, 0 to disable.</value>
+  </data>
+  <data name="PowerLauncher_SearchClickedItemWeight.Header" xml:space="preserve">
+    <value>Selected item weight</value>
+  </data>
+  <data name="PowerLauncher_WaitForSlowResults.Description" xml:space="preserve">
+    <value>Selecting this can help preselect the top, more relevent result, but at the risk of jumpiness</value>
+  </data>
+  <data name="PowerLauncher_WaitForSlowResults.Header" xml:space="preserve">
+    <value>Wait on slower plugin results before selecting top item in results</value>
+  </data>
+  <data name="PowerLauncher_PluginWeightBoost.Description" xml:space="preserve">
+    <value>Use a higher number to have this plugin's result show higher in the global results. Default is 0.</value>
+  </data>
+  <data name="PowerLauncher_PluginWeightBoost.Header" xml:space="preserve">
+    <value>Global sort order score modifier</value>
+  </data>
+  <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
+    <value>Enable round corners</value>
   </data>
 </root>

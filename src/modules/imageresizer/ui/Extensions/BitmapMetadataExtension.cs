@@ -75,9 +75,7 @@ namespace ImageResizer.Extensions
                     metadata.RemoveQuery(query);
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Debug.WriteLine($"Exception while trying to remove metadata entry at position: {query}");
                 Debug.WriteLine(ex);
@@ -95,9 +93,7 @@ namespace ImageResizer.Extensions
             {
                 metadata.SetQuery(query, value);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Debug.WriteLine($"Exception while trying to set metadata {value} at position: {query}");
                 Debug.WriteLine(ex);
@@ -123,9 +119,7 @@ namespace ImageResizer.Extensions
             {
                 GetMetadataRecursively(metadata, string.Empty);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Debug.WriteLine($"Exception while trying to iterate recursively over metadata. We were able to read {listOfAllMetadata.Count} metadata entries.");
                 Debug.WriteLine(ex);
@@ -145,9 +139,7 @@ namespace ImageResizer.Extensions
                     {
                         metadataQueryReader = GetQueryWithPreCheck(metadata, relativeQuery);
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         Debug.WriteLine($"Removing corrupt metadata property {absolutePath}. Skipping metadata entry | {ex.Message}");
                         Debug.WriteLine(ex);
@@ -223,9 +215,7 @@ namespace ImageResizer.Extensions
             {
                 GetMetadataRecursively(metadata, string.Empty);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Debug.WriteLine($"Exception while trying to iterate recursively over metadata. We were able to read {listOfAllMetadata.Count} metadata entries.");
                 Debug.WriteLine(ex);
@@ -251,9 +241,7 @@ namespace ImageResizer.Extensions
                         metadataQueryReader = metadata.GetQuerySafe(relativeQuery);
                         listOfAllMetadata.Add((absolutePath, metadataQueryReader));
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         listOfAllMetadata.Add((absolutePath, $"######## INVALID METADATA: {ex.Message}"));
                         Debug.WriteLine(ex);

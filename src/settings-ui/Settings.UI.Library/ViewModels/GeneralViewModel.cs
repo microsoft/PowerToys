@@ -278,9 +278,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     {
                         UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         Logger.LogError("Exception encountered when changing Settings theme", e);
                     }

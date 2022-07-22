@@ -6,12 +6,13 @@
     <?define BinDir="$(var.RepoDir)$(var.Platform)\$(var.Configuration)\" ?>
     <?define PowerToysPlatform="x64"?>
 
-    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/5681bdf9-0a48-45ac-b7bf-21b7b61657aa/bbdc43bc7bf0d15b97c1a98ae2e82ec0/windowsdesktop-runtime-6.0.5-win-x64.exe"?>
-    <?define Dotnet6PayloadSize="57791288"?>
-    <?define Dotnet6PayloadHash="B5B1819CCA753B070181F50411375B80412860A3"?>
+    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/dc0e0e83-0115-4518-8b6a-590ed594f38a/65b63e41f6a80decb37fa3c5af79a53d/windowsdesktop-runtime-6.0.7-win-x64.exe"?>
+    <?define Dotnet6PayloadSize="57708544"?>
+    <?define Dotnet6PayloadHash="16DDD34B1E1AEA0D89D3B0A8786026436CD17234"?>
 
-    <?define WinAppSDKPayloadSize="57090456"?>
-    <?define WinAppSDKPayloadHash="1269BB136655325EF6D66A018269BDAB3921E56B"?>
+    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/ed95ef9e-da02-4735-9064-bd1f7f69b6ed/CE6593A1520591E7DEA2B93FD03116E3FC3B3821A0525322B0A430FAA6B3C0B4/VC_redist.x64.exe"?>
+    <?define VCRedistPayloadSize="25234792"?>
+    <?define VCRedistPayloadHash="D4F9181E70E3F1AA6C8EDFFCC15B3C3D4BABE36B"?>
 
     <?define PlatformProgramFiles="[ProgramFiles64Folder]"?>
 <?else?>
@@ -19,14 +20,15 @@
     <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
     <?define PowerToysPlatform="ARM64"?>
 
-    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/aa74da73-02cb-49fd-93ad-ce93edccb8bc/4ac67827aff545ead4032a940c9094ff/windowsdesktop-runtime-6.0.5-win-arm64.exe"?>
-    <?define Dotnet6PayloadSize="51774400"?>
-    <?define Dotnet6PayloadHash="62C15858951B123AFD4D3E14F8BE4829A7CAFF18"?>
+    <?define Dotnet6DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/f33cf7ce-bf03-428c-8aa7-e32ef6d7ddc6/e61dc60fce686844c41ec2901ad5b01e/windowsdesktop-runtime-6.0.7-win-arm64.exe"?>
+    <?define Dotnet6PayloadSize="51539968"?>
+    <?define Dotnet6PayloadHash="F98232B9B572848B8425462F9458E92710BBF55F"?>
     
-    <?define WinAppSDKPayloadSize="57092528"?>
-    <?define WinAppSDKPayloadHash="377ACE2157BE077C63C650588A18CBEFD93B5B51"?>
+    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/ed95ef9e-da02-4735-9064-bd1f7f69b6ed/8E126191012691AE22A0D5A89FAC01B59BABC7B680E5D9B65828935FD366E375/VC_redist.arm64.exe"?>
+    <?define VCRedistPayloadSize="11500416"?>
+    <?define VCRedistPayloadHash="FEECAC80EF04125B058381487332872896F38477"?>
 
-    <!--TODO: define to ARM64 Program files once it's available-->
+<!--TODO: define to ARM64 Program files once it's available-->
     <?define PlatformProgramFiles="[ProgramFiles6432Folder]"?> 
 
 <?endif?>
@@ -42,12 +44,12 @@
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
             <bal:WixStandardBootstrapperApplication 
               LicenseFile="$(var.RepoDir)\installer\License.rtf"
-              LogoFile="$(var.RepoDir)\installer\MSIX\Images\logo44.png"
+              LogoFile="$(var.RepoDir)\installer\PowerToysSetup\Images\logo44.png"
               SuppressOptionsUI="no"
               SuppressRepair="yes" />
         </BootstrapperApplicationRef>
 
-        <util:FileSearch Variable="HasDotnet605" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\6.0.5\System.Xaml.dll" Result="exists" />
+        <util:FileSearch Variable="HasDotnet607" Path="$(var.PlatformProgramFiles)dotnet\shared\Microsoft.WindowsDesktop.App\6.0.7\System.Xaml.dll" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
@@ -65,14 +67,16 @@
 
       <Variable Name="DetectedWindowsBuildNumber" Type="version" Value="0"/>
       <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Format="raw" Variable="DetectedWindowsBuildNumber" />
-      <bal:Condition Message="This application is only supported on Windows 10 version 1903 (build 18362) or higher.">DetectedWindowsBuildNumber &gt;= 18362 OR WixBundleInstalled</bal:Condition>
+      <bal:Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher.">DetectedWindowsBuildNumber &gt;= 19041 OR WixBundleInstalled</bal:Condition>
+    
+      <util:RegistrySearch Variable="DetectedVCRedistVersion" Root="HKLM" Key="Software\Microsoft\VisualStudio\14.0\VC\Runtimes\$(var.PowerToysPlatform)" Value="Minor" Result="value" Format="raw" />
 
         <Chain>
             <ExePackage
-                Name="windowsdesktop-runtime-6.0.5-win-$(var.PowerToysPlatform).exe"
+                Name="windowsdesktop-runtime-6.0.7-win-$(var.PowerToysPlatform).exe"
                 Compressed="no"
                 Id="DotnetRuntime6"
-                DetectCondition="HasDotnet605"
+                DetectCondition="HasDotnet607"
                 DownloadUrl="$(var.Dotnet6DownloadUrl)"
                 InstallCommand="/install /quiet /norestart"
                 RepairCommand="/repair /passive /norestart"
@@ -81,10 +85,10 @@
                 UninstallCommand="/uninstall /quiet /norestart">
                 <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
-                    Description="Microsoft Windows Desktop Runtime - 6.0.5 ($(var.PowerToysPlatform))"
-                    ProductName="Microsoft Windows Desktop Runtime - 6.0.5 ($(var.PowerToysPlatform))"
+                    Description="Microsoft Windows Desktop Runtime - 6.0.7 ($(var.PowerToysPlatform))"
+                    ProductName="Microsoft Windows Desktop Runtime - 6.0.7 ($(var.PowerToysPlatform))"
                     Size="$(var.Dotnet6PayloadSize)"
-                    Version="6.0.5.31215"
+                    Version="6.0.7.31422"
                     Hash="$(var.Dotnet6PayloadHash)" />
             </ExePackage>
             <ExePackage
@@ -100,19 +104,21 @@
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
             <ExePackage
-                Name="WindowsAppRuntimeInstall.exe"
+                Name="VCRedist-14.32.31332.exe"
+                DetectCondition="DetectedVCRedistVersion >= 32"
                 Compressed="no"
-                Id="WinAppSDK101"
-                DownloadUrl="https://aka.ms/windowsappsdk/1.0/1.0.3/windowsappruntimeinstall-1.0.3-$(var.PowerToysPlatform).exe"
-                RepairCommand=""
+                Id="VCRedist"
+                DownloadUrl="$(var.VCRedistDownloadUrl)"
+                InstallCommand="/install /quiet /norestart"
+                RepairCommand="/repair /quiet /norestart"
                 Permanent="yes">
-                <ExitCode Value="-2147009274" Behavior="success"/>
+                <ExitCode Value="1638" Behavior="success"/>
                 <RemotePayload
-                    Description="Windows App SDK 1.0.3 Runtime Install"
-                    ProductName="Windows App SDK 1.0.3 Runtime Install"
-                    Size="$(var.WinAppSDKPayloadSize)"
-                    Version="1.0.3.0"
-                    Hash="$(var.WinAppSDKPayloadHash)" />
+                    Description="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31332"
+                    ProductName="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31332"
+                    Size="$(var.VCRedistPayloadSize)"
+                    Version="14.32.31332.0"
+                    Hash="$(var.VCRedistPayloadHash)" />
             </ExePackage>
             <MsiPackage
                 SourceFile="$(var.PowerToysPlatform)\Release\PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform).msi"

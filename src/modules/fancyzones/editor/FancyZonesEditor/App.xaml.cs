@@ -79,12 +79,14 @@ namespace FancyZonesEditor
 
             _themeManager = new ThemeManager(this);
 
-            if (!FancyZonesEditorIO.ParseParams().Result)
+            var parseResult = FancyZonesEditorIO.ParseParams();
+            if (!parseResult.Result)
             {
-                FancyZonesEditorIO.ParseCommandLineArguments();
+                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
             }
 
-            var parseResult = FancyZonesEditorIO.ParseAppliedLayouts();
+            parseResult = FancyZonesEditorIO.ParseAppliedLayouts();
             if (!parseResult.Result)
             {
                 Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);

@@ -94,7 +94,6 @@ namespace Wox.Infrastructure
         }
 
         // Function to run as admin for context menu items
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static void RunAsAdmin(string path)
         {
             var info = new ProcessStartInfo
@@ -116,7 +115,6 @@ namespace Wox.Infrastructure
         }
 
         // Function to run as other user for context menu items
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static void RunAsUser(string path)
         {
             var info = new ProcessStartInfo
@@ -150,7 +148,11 @@ namespace Wox.Infrastructure
 
         public static bool OpenCommandInShell(string path, string pattern, string arguments, string workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
         {
-            if (pattern.Contains("%1", StringComparison.Ordinal))
+            if (string.IsNullOrEmpty(pattern))
+            {
+                Log.Warn($"Trying to run OpenCommandInShell with an empty pattern. The default browser definition might have issues. Path: '${path ?? string.Empty}' ; Arguments: '${arguments ?? string.Empty}' ; Working Directory: '${workingDir ?? string.Empty}'", typeof(Helper));
+            }
+            else if (pattern.Contains("%1", StringComparison.Ordinal))
             {
                 arguments = pattern.Replace("%1", arguments);
             }

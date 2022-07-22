@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.Folder.Sources
             {
                 // if folder doesn't exist, we want to take the last part and use it afterwards to help the user
                 // find the right folder.
-                int index = search.LastIndexOf('\\');
+                int index = search.LastIndexOfAny(new char[] { '\\', '/' });
 
                 // No slashes found, so probably not a folder
                 if (index <= 0 || index >= search.Length - 1)

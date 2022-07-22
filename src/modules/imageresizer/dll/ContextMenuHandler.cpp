@@ -2,13 +2,15 @@
 
 #include "pch.h"
 #include "ContextMenuHandler.h"
-#include "Settings.h"
+
+#include <Settings.h>
+#include <trace.h>
+
 #include <common/themes/icon_helpers.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/HDropIterator.h>
-
-#include "trace.h"
+#include <common/utils/package.h>
 
 extern HINSTANCE g_hInst_imageResizer;
 
@@ -62,13 +64,11 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
 HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags)
 {
     if (uFlags & CMF_DEFAULTONLY)
-    {
         return S_OK;
-    }
+
     if (!CSettingsInstance().GetEnabled())
-    {
         return E_FAIL;
-    }
+
     // NB: We just check the first item. We could iterate through more if the first one doesn't meet the criteria
     HDropIterator i(m_pdtobj);
     i.First();

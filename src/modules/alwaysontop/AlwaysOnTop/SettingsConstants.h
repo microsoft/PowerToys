@@ -9,5 +9,6 @@ enum class SettingId
     FrameColor,
     BlockInGameMode,
     ExcludeApps,
-    FrameAccentColor
+    FrameAccentColor,
+    RoundCornersEnabled
 };

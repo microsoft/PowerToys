@@ -17,10 +17,13 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <shellscalingapi.h>
 
 #include "microsoft.ui.xaml.window.h"
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Microsoft.UI.Windowing.h>
+#include <common/Themes/theme_helpers.h>
+#include <common/Themes/theme_listener.h>
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;
@@ -35,44 +38,65 @@ HINSTANCE g_hostHInst;
 
 extern std::vector<std::wstring> g_files;
 
+// Theming
+ThemeListener theme_listener{};
+HWND CurrentWindow;
+
+void handleTheme() {
+    auto theme = theme_listener.AppTheme;
+    auto isDark = theme == AppTheme::Dark;
+    Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
+    ThemeHelpers::SetImmersiveDarkMode(CurrentWindow, isDark);
+}
+
 namespace winrt::PowerRenameUI::implementation
 {
     MainWindow::MainWindow() :
         m_instance{ nullptr }, m_allSelected{ true }, m_managerEvents{ this }
     {
-
         auto windowNative{ this->try_as<::IWindowNative>() };
         winrt::check_bool(windowNative);
         windowNative->get_WindowHandle(&m_window);
+        CurrentWindow = m_window;
+
+        // Attach theme handling
+        theme_listener.AddChangedHandler(handleTheme);
+        handleTheme();
+
         Microsoft::UI::WindowId windowId =
             Microsoft::UI::GetWindowIdFromWindow(m_window);
-
-        POINT cursorPosition{};
-        if (GetCursorPos(&cursorPosition))
-        {
-            HMONITOR hMonitor = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
-            MONITORINFOEX monitorInfo;
-            monitorInfo.cbSize = sizeof(MONITORINFOEX);
-            GetMonitorInfo(hMonitor, &monitorInfo);
-            RECT rect;
-            if (GetWindowRect(m_window, &rect))
-            {
-                int width = rect.right - rect.left;
-                int height = rect.bottom - rect.top;
-
-                MoveWindow(m_window,
-                             monitorInfo.rcWork.left + (monitorInfo.rcWork.right - monitorInfo.rcWork.left - width) / 2,
-                             monitorInfo.rcWork.top + (monitorInfo.rcWork.bottom - monitorInfo.rcWork.top - height) / 2,
-                             width,
-                             height,
-                             true);
-            }
-        }
-
 
         Microsoft::UI::Windowing::AppWindow appWindow =
             Microsoft::UI::Windowing::AppWindow::GetFromWindowId(windowId);
         appWindow.SetIcon(PowerRenameUIIco);
+
+        POINT cursorPosition{};
+        if (GetCursorPos(&cursorPosition))
+        {
+            ::Windows::Graphics::PointInt32 point{ cursorPosition.x, cursorPosition.y};
+            Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromPoint(point, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
+
+            HMONITOR hMonitor = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
+            MONITORINFOEX monitorInfo;
+            monitorInfo.cbSize = sizeof(MONITORINFOEX);
+            GetMonitorInfo(hMonitor, &monitorInfo);
+            UINT x_dpi;
+            GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE::MDT_EFFECTIVE_DPI, &x_dpi, &x_dpi);
+            UINT window_dpi = GetDpiForWindow(m_window);
+
+            int width = 1400;
+            int height = 800;
+
+            winrt::Windows::Graphics::RectInt32 rect;
+            // Scale window size
+            rect.Width = (int32_t)(width * (float)window_dpi / x_dpi);
+            rect.Height = (int32_t)(height * (float)window_dpi / x_dpi);
+            // Center to screen
+            rect.X = displayArea.WorkArea().X + displayArea.WorkArea().Width / 2 - width / 2;
+            rect.Y = displayArea.WorkArea().Y + displayArea.WorkArea().Height / 2 - height / 2;
+
+            appWindow.MoveAndResize(rect);
+        }
 
         Title(hstring{ L"PowerRename" });
         
@@ -271,11 +295,15 @@ namespace winrt::PowerRenameUI::implementation
     void MainWindow::RegExItemClick(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e)
     {
         auto s = e.ClickedItem().try_as<PatternSnippet>();
+        RegExFlyout().Hide();
+        textBox_search().Text(textBox_search().Text() + s->Code());
     }
 
     void MainWindow::DateTimeItemClick(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e)
     {
         auto s = e.ClickedItem().try_as<PatternSnippet>();
+        DateTimeFlyout().Hide();
+        textBox_replace().Text(textBox_replace().Text() + s->Code());
     }
 
     void MainWindow::button_rename_Click(winrt::Microsoft::UI::Xaml::Controls::SplitButton const&, winrt::Microsoft::UI::Xaml::Controls::SplitButtonClickEventArgs const&)
@@ -634,13 +662,13 @@ namespace winrt::PowerRenameUI::implementation
             }
         });
 
-        // CheckBox MatchAllOccurences
+        // CheckBox MatchAllOccurrences
         checkBox_matchAll().Checked([&](auto const&, auto const&) {
-            ValidateFlags(MatchAllOccurences);
-            UpdateFlag(MatchAllOccurences, UpdateFlagCommand::Set);
+            ValidateFlags(MatchAllOccurrences);
+            UpdateFlag(MatchAllOccurrences, UpdateFlagCommand::Set);
         });
         checkBox_matchAll().Unchecked([&](auto const&, auto const&) {
-            UpdateFlag(MatchAllOccurences, UpdateFlagCommand::Reset);
+            UpdateFlag(MatchAllOccurrences, UpdateFlagCommand::Reset);
         });
 
         // ToggleButton IncludeFiles
@@ -863,7 +891,7 @@ namespace winrt::PowerRenameUI::implementation
         {
             checkBox_case().IsChecked(true);
         }
-        if (flags & MatchAllOccurences)
+        if (flags & MatchAllOccurrences)
         {
             checkBox_matchAll().IsChecked(true);
         }

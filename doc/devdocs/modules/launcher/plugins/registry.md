@@ -69,16 +69,14 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 | `Images\reg.light.png`               | Symbol for the results for the light theme                               |
 | `Properties\Resources.Designer.resx` | File that contain all translatable keys                                  |
 | `Properties\Resources.resx`          | File that contain all translatable strings in the neutral language       |
-| `GlobalSuppressions.cs`              | Code suppressions (no real file, linked via *.csproj)                    |
 | `Main.cs`                            | Main class, the only place that implement the WOX interfaces             |
 | `plugin.json`                        | All meta-data for this plugin                                            |
-| `StyleCop.json`                      | Code style (no real file, linked via *.csproj)                           |
 
 ### Important project values (*.csproj)
 
 | Name            | Value                                                                          |
 | --------------- | ------------------------------------------------------------------------------ |
-| TargetFramework | `net6.0-windows` (.NET 5) or `net6.0-windows10.0.18362.0` (OS version specific)|
+| TargetFramework | `net6.0-windows` (.NET 5) or `net6.0-windows10.0.19041.0` (OS version specific)|
 | LangVersion     | `8.0` (mean C# 8.0)                                                            |
 | Platforms       | `x64`                                                                          |
 | Nullable        | `true`                                                                         |
@@ -87,13 +85,6 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 | AssemblyName    | `Microsoft.PowerToys.Run.Plugin.Registry`                                      |
 
 ### Project dependencies
-
-#### Packages
-
-| Package                                                                               | Version |
-| ------------------------------------------------------------------------------------- | ------- |
-| [`Microsoft.CodeAnalysis.FxCopAnalyzers`](https://github.com/dotnet/roslyn-analyzers) | 3.3.0   |
-| [`StyleCop.Analyzers`](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)          | 1.1.118 |
 
 #### Projects
 

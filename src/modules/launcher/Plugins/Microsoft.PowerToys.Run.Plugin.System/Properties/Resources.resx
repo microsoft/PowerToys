@@ -317,6 +317,7 @@
   </data>
   <data name="Microsoft_plugin_sys_Type" xml:space="preserve">
     <value>Type</value>
+    <comment>Means type like category. Here it means network interface type (ethernet, wifi, ...).</comment>
   </data>
   <data name="Microsoft_plugin_sys_uefi" xml:space="preserve">
     <value>UEFI Firmware Settings</value>

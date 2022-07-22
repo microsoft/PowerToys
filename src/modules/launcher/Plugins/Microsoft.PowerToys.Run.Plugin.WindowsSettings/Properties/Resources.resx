@@ -981,6 +981,10 @@
     <value>Navigation bar</value>
     <comment>Area Personalization</comment>
   </data>
+  <data name="NearbyShareSettings" xml:space="preserve">
+    <value>Nearby sharing settings</value>
+    <comment>Area System</comment>
+  </data>
   <data name="netcpl.cpl" xml:space="preserve">
     <value>netcpl.cpl</value>
     <comment>File name, Should not translated</comment>
@@ -1443,8 +1447,12 @@
     <value>Set up a kiosk</value>
     <comment>Area UserAccounts</comment>
   </data>
+  <data name="ShareAcrossDevices" xml:space="preserve">
+    <value>Share across devices</value>
+    <comment>Area System</comment>
+  </data>
   <data name="SharedExperiences" xml:space="preserve">
-    <value>Shared experiences</value>
+    <value>Shared experience settings</value>
     <comment>Area System</comment>
   </data>
   <data name="Shortcuts" xml:space="preserve">
@@ -1765,6 +1773,10 @@
   </data>
   <data name="WindowsSearch" xml:space="preserve">
     <value>Windows search</value>
+    <comment>Area Cortana</comment>
+  </data>
+  <data name="WindowsSearchSettings" xml:space="preserve">
+    <value>Windows search settings</value>
     <comment>Area Cortana</comment>
   </data>
   <data name="WindowsSecurity" xml:space="preserve">

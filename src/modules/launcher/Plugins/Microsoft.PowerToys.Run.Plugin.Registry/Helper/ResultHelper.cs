@@ -19,8 +19,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
     /// </summary>
     internal static class ResultHelper
     {
-        #pragma warning disable CA1031 // Do not catch general exception types
-
         /// <summary>
         /// Return a list with <see cref="Result"/>s, based on the given list
         /// </summary>
@@ -167,8 +165,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
             return resultList;
         }
-
-#pragma warning restore CA1031 // Do not catch general exception types
 
         /// <summary>
         /// Return a truncated name

@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -18,7 +19,6 @@ using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
 using Wox;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
@@ -102,7 +102,7 @@ namespace PowerLauncher
             {
                 var textToLog = new StringBuilder();
                 textToLog.AppendLine("Begin PowerToys Run startup ----------------------------------------------------");
-                textToLog.AppendLine($"Runtime info:{ErrorReporting.RuntimeInfo()}");
+                textToLog.AppendLine(CultureInfo.InvariantCulture, $"Runtime info:{ErrorReporting.RuntimeInfo()}");
 
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
@@ -128,9 +128,6 @@ namespace PowerLauncher
 
                 Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
-
-                // main windows needs initialized before theme change because of blur settings
-                HttpClient.Proxy = _settings.Proxy;
 
                 RegisterExitEvents();
 

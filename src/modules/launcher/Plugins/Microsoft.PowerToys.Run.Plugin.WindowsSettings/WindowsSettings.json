@@ -154,6 +154,7 @@
       "Name": "WindowsSearch",
       "Areas": [ "AreaCortana" ],
       "Type": "AppSettingsApp",
+      "AltNames": [ "WindowsSearchSettings" ],
       "Command": "ms-settings:cortana-windowssearch"
     },
     {
@@ -988,7 +989,21 @@
       "Name": "SharedExperiences",
       "Areas": [ "AreaSystem" ],
       "Type": "AppSettingsApp",
-      "AltNames": [ "Crossdevice" ],
+      "AltNames": [ "Crossdevice", "NearbyShareSettings", "ShareAcrossDevices" ],
+      "Command": "ms-settings:crossdevice"
+    },
+	{
+      "Name": "NearbyShareSettings",
+      "Areas": [ "AreaSystem" ],
+      "Type": "AppSettingsApp",
+      "AltNames": [ "Crossdevice", "ShareAcrossDevices", "SharedExperiences" ],
+      "Command": "ms-settings:crossdevice"
+    },
+	{
+      "Name": "ShareAcrossDevices",
+      "Areas": [ "AreaSystem" ],
+      "Type": "AppSettingsApp",
+      "AltNames": [ "Crossdevice", "NearbyShareSettings", "SharedExperiences" ],
       "Command": "ms-settings:crossdevice"
     },
     {

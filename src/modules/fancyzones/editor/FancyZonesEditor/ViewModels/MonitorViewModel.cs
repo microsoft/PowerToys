@@ -34,11 +34,11 @@ namespace FancyZonesEditor.ViewModels
             foreach (var monitor in App.Overlay.Monitors)
             {
                 Device device = monitor.Device;
-                var bounds = device.ScaledBounds;
-                maxDimension = System.Math.Max(System.Math.Max(maxDimension, bounds.Height), bounds.Width);
-                minDimension = System.Math.Min(System.Math.Min(minDimension, bounds.Height), bounds.Width);
+                var size = device.MonitorSize;
+                maxDimension = System.Math.Max(System.Math.Max(maxDimension, size.Height), size.Width);
+                minDimension = System.Math.Min(System.Math.Min(minDimension, size.Height), size.Width);
 
-                MonitorInfoForViewModel.Add(new MonitorInfoModel(i, (int)bounds.Height, (int)bounds.Width, device.Dpi, App.Overlay.CurrentDesktop == i - 1));
+                MonitorInfoForViewModel.Add(new MonitorInfoModel(i, (int)size.Height, (int)size.Width, device.Dpi, App.Overlay.CurrentDesktop == i - 1));
                 i++;
             }
 

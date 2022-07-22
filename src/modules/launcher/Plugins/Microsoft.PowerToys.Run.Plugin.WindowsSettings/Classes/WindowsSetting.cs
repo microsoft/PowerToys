@@ -69,14 +69,14 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         public bool ShowAsFirstResult { get; set; }
 
         /// <summary>
-        /// Gets or sets the the value with the generated area path as string.
+        /// Gets or sets the value with the generated area path as string.
         /// This Property IS NOT PART OF THE DATA IN "WindowsSettings.json".
         /// This property will be filled on runtime by "WindowsSettingsPathHelper".
         /// </summary>
         public string? JoinedAreaPath { get; set; }
 
         /// <summary>
-        /// Gets or sets the the value with the generated full settings path (App and areas) as string.
+        /// Gets or sets the value with the generated full settings path (App and areas) as string.
         /// This Property IS NOT PART OF THE DATA IN "WindowsSettings.json".
         /// This property will be filled on runtime by "WindowsSettingsPathHelper".
         /// </summary>

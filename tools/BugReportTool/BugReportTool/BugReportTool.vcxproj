@@ -48,6 +48,7 @@
     </ClCompile>
     <ClCompile Include="EventViewer.cpp" />
     <ClCompile Include="InstallationFolder.cpp" />
+    <ClCompile Include="Package.cpp" />
     <ClCompile Include="ProcessesList.cpp" />
     <ClCompile Include="ReportMonitorInfo.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -68,6 +69,7 @@
     <ClInclude Include="..\..\..\deps\cziplib\src\zip.h" />
     <ClInclude Include="EventViewer.h" />
     <ClInclude Include="InstallationFolder.h" />
+    <ClInclude Include="Package.h" />
     <ClInclude Include="ReportMonitorInfo.h" />
     <ClInclude Include="..\..\..\common\utils\json.h" />
     <ClInclude Include="RegistryUtils.h" />

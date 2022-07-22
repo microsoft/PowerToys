@@ -94,11 +94,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     break;
             }
 
-            foreach (var plugin in Plugins)
-            {
-                plugin.PropertyChanged += OnPluginInfoChange;
-            }
-
             SearchPluginsCommand = new RelayCommand(SearchPlugins);
         }
 
@@ -301,6 +296,91 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool SearchQueryResultsWithDelay
+        {
+            get
+            {
+                return settings.Properties.SearchQueryResultsWithDelay;
+            }
+
+            set
+            {
+                if (settings.Properties.SearchQueryResultsWithDelay != value)
+                {
+                    settings.Properties.SearchQueryResultsWithDelay = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public int SearchInputDelay
+        {
+            get
+            {
+                return settings.Properties.SearchInputDelay;
+            }
+
+            set
+            {
+                if (settings.Properties.SearchInputDelay != value)
+                {
+                    settings.Properties.SearchInputDelay = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool SearchQueryTuningEnabled
+        {
+            get
+            {
+                return settings.Properties.SearchQueryTuningEnabled;
+            }
+
+            set
+            {
+                if (settings.Properties.SearchQueryTuningEnabled != value)
+                {
+                    settings.Properties.SearchQueryTuningEnabled = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool SearchWaitForSlowResults
+        {
+            get
+            {
+                return settings.Properties.SearchWaitForSlowResults;
+            }
+
+            set
+            {
+                if (settings.Properties.SearchWaitForSlowResults != value)
+                {
+                    settings.Properties.SearchWaitForSlowResults = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public int SearchClickedItemWeight
+        {
+            get
+            {
+                return settings.Properties.SearchClickedItemWeight;
+            }
+
+            set
+            {
+                if (settings.Properties.SearchClickedItemWeight != value)
+                {
+                    settings.Properties.SearchClickedItemWeight = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         public HotkeySettings OpenFileLocation
         {
             get
@@ -412,6 +492,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (_plugins == null)
                 {
                     _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(settings.Plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)));
+                    foreach (var plugin in Plugins)
+                    {
+                        plugin.PropertyChanged += OnPluginInfoChange;
+                    }
                 }
 
                 return _plugins;
@@ -420,7 +504,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public bool ShowAllPluginsDisabledWarning
         {
-            get => EnablePowerLauncher && Plugins.Any() && Plugins.All(x => x.Disabled);
+            get => EnablePowerLauncher && settings.Plugins.Any() && settings.Plugins.All(x => x.Disabled);
         }
 
         public bool ShowPluginsLoadingMessage

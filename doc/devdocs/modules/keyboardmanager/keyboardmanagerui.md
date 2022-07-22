@@ -105,7 +105,7 @@ Once this second level of validation is done, we proceed with [updating the buff
 Unlike the Single Key handler, there is a different set of errors that can occur here which are related to making a selection that is considered as a valid shortcut. The `isHybridControl` argument is used to distinguish between the differing behaviors for the two types of columns (shortcut only or shortcut/key column). The errors that can occur for this handler are:
 - Shortcut must start with modifier (selecting A on the first drop for the left column is invalid)
 - Shortcut can't have a repeated modifier (Ctrl+Ctrl(left)+A is not a shortcut)
-- Shortcut can only have upto 2 modifiers (Ctrl+Shift+Alt is not supported as we have enforced a 3 key constraint (**not a backend limitation, there is [an issue](https://github.com/microsoft/PowerToys/issues/3936) requesting to remove this**))
+- Shortcut can only have up to 2 modifiers (Ctrl+Shift+Alt is not supported as we have enforced a 3 key constraint (**not a backend limitation, there is [an issue](https://github.com/microsoft/PowerToys/issues/3936) requesting to remove this**))
 - Shortcut must contain an action key (Ctrl+A and change A to None, only for left column)
 - Shortcut must have at least two keys (Ctrl+A and change Ctrl to None, only for left column)
 - Disable can't be a modifier or action key (Ctrl+Disable is invalid)

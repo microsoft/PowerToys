@@ -59,6 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
                     NotifyPropertyChanged(nameof(Enabled));
                     NotifyPropertyChanged(nameof(DisabledOpacity));
+                    NotifyPropertyChanged(nameof(IsGlobalAndEnabled));
                 }
             }
         }
@@ -66,6 +67,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public bool Enabled => !Disabled;
 
         public double DisabledOpacity => Disabled ? 0.5 : 1;
+
+        public bool IsGlobalAndEnabled
+        {
+            get
+            {
+                return IsGlobal && Enabled;
+            }
+        }
 
         public bool IsGlobal
         {
@@ -81,6 +90,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.IsGlobal = value;
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
+                    NotifyPropertyChanged(nameof(IsGlobalAndEnabled));
+                }
+            }
+        }
+
+        public int WeightBoost
+        {
+            get
+            {
+                return settings.WeightBoost;
+            }
+
+            set
+            {
+                if (settings.WeightBoost != value)
+                {
+                    settings.WeightBoost = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
+                    NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
                 }
             }
         }

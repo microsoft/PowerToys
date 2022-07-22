@@ -26,8 +26,6 @@ public:
         return settingsFileName;
     }
 
-    void SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor, const std::vector<std::pair<HMONITOR, MONITORINFOEX>>& allMonitors) const;
-
 private:
 #if defined(UNIT_TESTS)
     friend class FancyZonesUnitTests::LayoutHotkeysUnitTests;
@@ -51,7 +49,6 @@ private:
     std::wstring settingsFileName;
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;
-    std::wstring editorParametersFileName;
 };
 
 FancyZonesData& FancyZonesDataInstance();

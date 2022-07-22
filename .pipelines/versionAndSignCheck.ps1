@@ -7,7 +7,7 @@ Param(
 )
 
 $DirPath = $targetDir;  #this file is in pipeline, we need root.
-$items = Get-ChildItem -Path $DirPath -File -Include *.exe,*.dll,*.ttf -Recurse -Force -ErrorAction SilentlyContinue
+$items = Get-ChildItem -Path $DirPath -File -Include *.exe,*.dll,*.ttf,PTCustomActions -Recurse -Force -ErrorAction SilentlyContinue
 $totalFailure = 0;
 
 Write-Host $DirPath;
@@ -36,7 +36,8 @@ $items | ForEach-Object {
 			(-not $_.Name.EndsWith("Microsoft.Windows.System.Power.Projection.dll")) -and
 			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Bootstrap.Net.dll")) -and
 			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactions.dll")) -and
-			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactivity.dll"))
+			(-not $_.Name.EndsWith("Microsoft.Xaml.Interactivity.dll")) -and
+			(-not $_.Name.EndsWith("Microsoft.WindowsAppRuntime.Release.Net.dll"))
 		)
 		{
 			Write-Host "Version not set: " + $_.FullName

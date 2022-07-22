@@ -61,6 +61,101 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
+        private bool _searchQueryResultsWithDelay = true;
+
+        public bool SearchQueryResultsWithDelay
+        {
+            get
+            {
+                return _searchQueryResultsWithDelay;
+            }
+
+            set
+            {
+                if (_searchQueryResultsWithDelay != value)
+                {
+                    _searchQueryResultsWithDelay = value;
+                    OnPropertyChanged(nameof(SearchQueryResultsWithDelay));
+                }
+            }
+        }
+
+        private int _searchInputDelay = 150;
+
+        private int _searchClickedItemWeight = 5;
+
+        private bool _searchQueryTuningEnabled;
+
+        private bool _searchWaitForSlowResults;
+
+        public int SearchInputDelay
+        {
+            get
+            {
+                return _searchInputDelay;
+            }
+
+            set
+            {
+                if (_searchInputDelay != value)
+                {
+                    _searchInputDelay = value;
+                    OnPropertyChanged(nameof(SearchInputDelay));
+                }
+            }
+        }
+
+        public bool SearchQueryTuningEnabled
+        {
+            get
+            {
+                return _searchQueryTuningEnabled;
+            }
+
+            set
+            {
+                if (_searchQueryTuningEnabled != value)
+                {
+                    _searchQueryTuningEnabled = value;
+                    OnPropertyChanged(nameof(SearchQueryTuningEnabled));
+                }
+            }
+        }
+
+        public bool SearchWaitForSlowResults
+        {
+            get
+            {
+                return _searchWaitForSlowResults;
+            }
+
+            set
+            {
+                if (_searchWaitForSlowResults != value)
+                {
+                    _searchWaitForSlowResults = value;
+                    OnPropertyChanged(nameof(_searchWaitForSlowResults));
+                }
+            }
+        }
+
+        public int SearchClickedItemWeight
+        {
+            get
+            {
+                return _searchClickedItemWeight;
+            }
+
+            set
+            {
+                if (_searchClickedItemWeight != value)
+                {
+                    _searchClickedItemWeight = value;
+                    OnPropertyChanged(nameof(SearchClickedItemWeight));
+                }
+            }
+        }
+
         public string Language { get; set; } = "en";
 
         public Theme Theme { get; set; } = Theme.System;

@@ -78,7 +78,7 @@
                                     <Button 
                                         x:Uid="EditButton"
                                         Background="Transparent"
-                                        FontFamily="Segoe MDL2 Assets"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         Width="40"
                                         Height="36"
                                         Content="&#xE70F;">
@@ -138,7 +138,7 @@
                                     <Button x:Name="RemoveButton"
                                         x:Uid="RemoveButton"
                                         Background="Transparent"
-                                        FontFamily="Segoe MDL2 Assets"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         Width="40"
                                         Height="36"
                                         Content="&#xE74D;"

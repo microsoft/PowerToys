@@ -13,7 +13,7 @@
 class AlwaysOnTop : public SettingsObserver
 {
 public:
-    AlwaysOnTop();
+    AlwaysOnTop(bool useLLKH);
     ~AlwaysOnTop();
 
 protected:
@@ -47,12 +47,17 @@ private:
     HWND m_window{ nullptr };
     HINSTANCE m_hinstance;
     std::map<HWND, std::unique_ptr<WindowBorder>> m_topmostWindows{};
+    HANDLE m_hPinEvent;
+    std::thread m_thread;
+    const bool m_useCentralizedLLKH;
+    bool m_running = true;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
     
     bool InitMainWindow();
     void RegisterHotkey() const;
+    void RegisterLLKH();
     void SubscribeToEvents();
 
     void ProcessCommand(HWND window);

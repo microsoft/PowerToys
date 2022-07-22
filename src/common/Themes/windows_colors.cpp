@@ -1,4 +1,5 @@
 #include "windows_colors.h"
+#include "theme_helpers.h"
 
 DWORD WindowsColors::rgb_color(DWORD abgr_color)
 {
@@ -65,7 +66,7 @@ WindowsColors::Color WindowsColors::get_background_color()
 
 bool WindowsColors::is_dark_mode()
 {
-    return rgb_color(get_background_color()) == 0;
+    return ThemeHelpers::GetAppTheme() == AppTheme::Dark;
 }
 
 bool WindowsColors::update()

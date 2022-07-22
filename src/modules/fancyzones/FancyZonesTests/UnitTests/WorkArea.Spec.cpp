@@ -23,39 +23,16 @@ namespace FancyZonesUnitTests
 
     TEST_CLASS (WorkAreaCreationUnitTests)
     {
-        FancyZonesDataTypes::DeviceIdData m_parentUniqueId;
-        FancyZonesDataTypes::DeviceIdData m_uniqueId;
-
-        HINSTANCE m_hInst{};
-        HMONITOR m_monitor{};
-        MONITORINFOEX m_monitorInfo{};
-        GUID m_virtualDesktopGuid{};
-
-        void testWorkArea(winrt::com_ptr<IWorkArea> workArea)
-        {
-            const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
-
-            Assert::IsNotNull(workArea.get());
-            Assert::IsTrue(m_uniqueId == workArea->UniqueId());
-        }
+        FancyZonesDataTypes::WorkAreaId m_uniqueId;
+        FancyZonesDataTypes::WorkAreaId m_emptyUniqueId;
 
         TEST_METHOD_INITIALIZE(Init)
         {
-            m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-
-            m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
-            m_monitorInfo.cbSize = sizeof(m_monitorInfo);
-            Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
-
-            m_parentUniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
-            CLSIDFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}", &m_parentUniqueId.virtualDesktopId);
-                
-            m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
-            CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
-                                
-            auto guid = Helpers::StringToGuid(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
-            Assert::IsTrue(guid.has_value());
-            m_virtualDesktopGuid = *guid;
+            m_uniqueId.monitorId.deviceId.id = L"DELA026";
+            m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
+            m_uniqueId.monitorId.serialNumber = L"serial-number";
+            auto res = CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
+            Assert::IsTrue(SUCCEEDED(res));
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
@@ -67,125 +44,81 @@ namespace FancyZonesUnitTests
             std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
         }
 
-            TEST_METHOD (CreateWorkArea)
-            {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
-                testWorkArea(workArea);
+        TEST_METHOD (CreateWorkArea)
+        {
+            auto workArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, m_emptyUniqueId);
+            Assert::IsFalse(workArea == nullptr);
+            Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
-                auto* zoneSet{ workArea->ZoneSet() };
-                Assert::IsNotNull(zoneSet);
-                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
-            }
+            auto* zoneSet{ workArea->ZoneSet() };
+            Assert::IsNotNull(zoneSet);
+            Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
+            Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
+        }
 
-            TEST_METHOD (CreateWorkAreaNoHinst)
-            {
-                auto workArea = MakeWorkArea({}, m_monitor, m_uniqueId, {});
-                testWorkArea(workArea);
+        TEST_METHOD (CreateCombinedWorkArea)
+        {
+            auto workArea = MakeWorkArea({}, {}, m_uniqueId, m_emptyUniqueId);
+            Assert::IsFalse(workArea == nullptr);
+            Assert::IsTrue(m_uniqueId == workArea->UniqueId());
 
-                auto* zoneSet{ workArea->ZoneSet() };
-                Assert::IsNotNull(zoneSet);
-                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
-            }
-
-            TEST_METHOD (CreateWorkAreaNoHinstFlashZones)
-            {
-                auto workArea = MakeWorkArea({}, m_monitor, m_uniqueId, {});
-                testWorkArea(workArea);
-
-                auto* zoneSet{ workArea->ZoneSet() };
-                Assert::IsNotNull(zoneSet);
-                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
-            }
-
-            TEST_METHOD (CreateWorkAreaNoMonitor)
-            {
-                auto workArea = MakeWorkArea(m_hInst, {}, m_uniqueId, {});
-                testWorkArea(workArea);
-            }
-
-            TEST_METHOD (CreateWorkAreaNoDeviceId)
-            {
-                // Generate unique id without device id
-                FancyZonesDataTypes::DeviceIdData uniqueIdData;
-                uniqueIdData.virtualDesktopId = m_virtualDesktopGuid;
-
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, uniqueIdData, {});
-
-                const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
-                const FancyZonesDataTypes::DeviceIdData expectedUniqueId{ L"FallbackDevice", m_virtualDesktopGuid };
-
-                Assert::IsNotNull(workArea.get());
-                Assert::IsTrue(expectedUniqueId == workArea->UniqueId());
-
-                auto* zoneSet{ workArea->ZoneSet() };
-                Assert::IsNotNull(zoneSet);
-                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
-            }
-
-            TEST_METHOD (CreateWorkAreaNoDesktopId)
-            {
-                // Generate unique id without virtual desktop id
-                FancyZonesDataTypes::DeviceIdData uniqueId;
-                uniqueId.deviceName = FancyZonesUtils::TrimDeviceId(m_deviceId);
-
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, uniqueId, {});
-
-                const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
-                Assert::IsNotNull(workArea.get());
-
-                auto* zoneSet{ workArea->ZoneSet() };
-                Assert::IsNotNull(zoneSet);
-                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
-            }
+            auto* zoneSet{ workArea->ZoneSet() };
+            Assert::IsNotNull(zoneSet);
+            Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
+            Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
+        }
 
         TEST_METHOD (CreateWorkAreaClonedFromParent)
         {
             using namespace FancyZonesDataTypes;
 
-            const ZoneSetLayoutType type = ZoneSetLayoutType::PriorityGrid;
-            const int spacing = 10;
-            const int zoneCount = 5;
-            const auto customSetGuid = Helpers::CreateGuidString();
+            FancyZonesDataTypes::WorkAreaId parentUniqueId;
+            parentUniqueId.monitorId.deviceId.id = L"DELA026";
+            parentUniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
+            parentUniqueId.monitorId.serialNumber = L"serial-number";
+            parentUniqueId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value();
 
-            auto parentWorkArea = MakeWorkArea(m_hInst, m_monitor, m_parentUniqueId, {});
-                
-            // newWorkArea = false - workArea won't be cloned from parent
-            auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+            Layout layout{
+                .uuid = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC58}").value(),
+                .type = ZoneSetLayoutType::Rows,
+                .showSpacing = true,
+                .spacing = 10,
+                .zoneCount = 10,
+                .sensitivityRadius = 20,
+            };
+
+            auto parentWorkArea = MakeWorkArea({}, Mocks::Monitor(), parentUniqueId, m_emptyUniqueId);
+            AppliedLayouts::instance().ApplyLayout(parentUniqueId, layout);
+
+            auto actualWorkArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, parentUniqueId);
 
             Assert::IsNotNull(actualWorkArea->ZoneSet());
 
             Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().contains(m_uniqueId));
-            auto currentDeviceInfo = AppliedLayouts::instance().GetAppliedLayoutMap().at(m_uniqueId);
-            // default values
-            Assert::AreEqual(true, currentDeviceInfo.showSpacing);
-            Assert::AreEqual(3, currentDeviceInfo.zoneCount);
-            Assert::AreEqual(16, currentDeviceInfo.spacing);
-            Assert::AreEqual(static_cast<int>(ZoneSetLayoutType::PriorityGrid), static_cast<int>(currentDeviceInfo.type));
+            auto actualLayout = AppliedLayouts::instance().GetAppliedLayoutMap().at(m_uniqueId);
+
+            Assert::AreEqual(static_cast<int>(layout.type), static_cast<int>(actualLayout.type));
+            Assert::AreEqual(FancyZonesUtils::GuidToString(layout.uuid).value(), FancyZonesUtils::GuidToString(actualLayout.uuid).value());
+            Assert::AreEqual(layout.sensitivityRadius, actualLayout.sensitivityRadius);
+            Assert::AreEqual(layout.showSpacing, actualLayout.showSpacing);
+            Assert::AreEqual(layout.spacing, actualLayout.spacing);
+            Assert::AreEqual(layout.zoneCount, actualLayout.zoneCount);
         }
     };
 
     TEST_CLASS (WorkAreaUnitTests)
     {
-        FancyZonesDataTypes::DeviceIdData m_uniqueId;
+        FancyZonesDataTypes::WorkAreaId m_uniqueId;
+        FancyZonesDataTypes::WorkAreaId m_parentUniqueId; // default empty
 
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};
-        MONITORINFO m_monitorInfo{};
 
         TEST_METHOD_INITIALIZE(Init)
         {
-            m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-            
-            m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
-            m_monitorInfo.cbSize = sizeof(m_monitorInfo);
-            Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
-
-            m_uniqueId.deviceName = L"DELA026#5&10a58c63&0&UID16777488";
+            m_uniqueId.monitorId.deviceId.id = L"DELA026";
+            m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
+            m_uniqueId.monitorId.serialNumber = L"serial-number";
             CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
 
             AppZoneHistory::instance().LoadData();
@@ -198,10 +131,10 @@ namespace FancyZonesUnitTests
             std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
         }
 
-        public:
+    public:
             TEST_METHOD (MoveSizeEnter)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
 
                 const auto expected = S_OK;
                 const auto actual = workArea->MoveSizeEnter(Mocks::Window());
@@ -211,7 +144,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEnterTwice)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
 
                 const auto expected = S_OK;
 
@@ -223,7 +156,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdate)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
 
                 const auto expected = S_OK;
                 const auto actual = workArea->MoveSizeUpdate(POINT{ 0, 0 }, true, false);
@@ -233,7 +166,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdatePointNegativeCoordinates)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
 
                 const auto expected = S_OK;
                 const auto actual = workArea->MoveSizeUpdate(POINT{ -10, -10 }, true, false);
@@ -243,17 +176,17 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdatePointBigCoordinates)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
 
                 const auto expected = S_OK;
-                const auto actual = workArea->MoveSizeUpdate(POINT{ m_monitorInfo.rcMonitor.right + 1, m_monitorInfo.rcMonitor.bottom + 1 }, true, false);
+                const auto actual = workArea->MoveSizeUpdate(POINT{ LONG_MAX, LONG_MAX }, true, false);
 
                 Assert::AreEqual(expected, actual);
             }
 
             TEST_METHOD (MoveSizeEnd)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
 
                 const auto window = Mocks::Window();
                 workArea->MoveSizeEnter(window);
@@ -270,7 +203,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndWindowNotAdded)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
 
                 const auto window = Mocks::Window();
                 workArea->MoveSizeEnter(window);
@@ -286,7 +219,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndDifferentWindows)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
 
                 const auto window = Mocks::Window();
                 workArea->MoveSizeEnter(window);
@@ -299,7 +232,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndWindowNotSet)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
 
                 const auto expected = E_INVALIDARG;
                 const auto actual = workArea->MoveSizeEnd(Mocks::Window(), POINT{ 0, 0 });
@@ -309,7 +242,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndInvalidPoint)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
 
                 const auto window = Mocks::Window();
                 workArea->MoveSizeEnter(window);
@@ -326,7 +259,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByIndex)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 workArea->MoveWindowIntoZoneByIndex(Mocks::Window(), 0);
@@ -336,7 +269,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionAndIndex)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -351,7 +284,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionManyTimes)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -368,7 +301,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNullptrWindow)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 workArea->SaveWindowProcessToZoneIndex(nullptr);
@@ -379,7 +312,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAdded)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
@@ -393,7 +326,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAddedWithFilledAppZoneHistory)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -420,7 +353,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexWindowAdded)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
@@ -449,7 +382,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (WhenWindowIsNotResizablePlacingItIntoTheZoneShouldNotResizeIt)
             {
-                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {});
+                auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, m_parentUniqueId);
                 Assert::IsNotNull(workArea->ZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);

@@ -6,8 +6,6 @@
             "MatchedPath": [
                 "*.resources.dll",
 
-                "PowerToysSetupCustomActions.dll",
-                
                 "PowerToys.ActionRunner.exe",
                 "PowerToys.Update.exe",
                 "PowerToys.BackgroundActivatorDLL.dll",
@@ -70,6 +68,8 @@
                 "modules\\ImageResizer\\PowerToys.ImageResizer.exe",
                 "modules\\ImageResizer\\PowerToys.ImageResizer.dll",
                 "modules\\ImageResizer\\PowerToys.ImageResizerExt.dll",
+                "modules\\ImageResizer\\PowerToys.ImageResizerContextMenu.dll",
+                "modules\\ImageResizer\\ImageResizerContextMenuPackage.msix",
 
                 "modules\\KeyboardManager\\PowerToys.KeyboardManager.dll",
                 "modules\\KeyboardManager\\KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
@@ -85,6 +85,7 @@
                 "modules\\launcher\\Plugins\\Calculator\\Microsoft.PowerToys.Run.Plugin.Calculator.dll",
                 "modules\\launcher\\Plugins\\Folder\\Microsoft.Plugin.Folder.dll",
                 "modules\\launcher\\Plugins\\Indexer\\Microsoft.Plugin.Indexer.dll",
+                "modules\\launcher\\Plugins\\OneNote\\Microsoft.PowerToys.Run.Plugin.OneNote.dll",
                 "modules\\launcher\\Plugins\\Program\\Microsoft.Plugin.Program.dll",
                 "modules\\launcher\\Plugins\\Registry\\Microsoft.PowerToys.Run.Plugin.Registry.dll",
                 "modules\\launcher\\Plugins\\WindowsSettings\\Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll",
@@ -106,6 +107,8 @@
 
                 "modules\\PowerRename\\PowerToys.PowerRenameExt.dll",
                 "modules\\PowerRename\\PowerToys.PowerRename.exe",
+                "modules\\PowerRename\\PowerToys.PowerRenameContextMenu.dll",
+                "modules\\PowerRename\\PowerRenameContextMenuPackage.msix",
 
                 "modules\\ShortcutGuide\\ShortcutGuide\\PowerToys.ShortcutGuide.exe",
                 "modules\\ShortcutGuide\\ShortcutGuideModuleInterface\\PowerToys.ShortcutGuideModuleInterface.dll",
@@ -189,9 +192,12 @@
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Wpf.dll",
                 "modules\\FileExplorerPreview\\WebView2Loader.dll",
                 "modules\\launcher\\e_sqlite3.dll",
+                "modules\\launcher\\LazyCache.dll",
                 "modules\\launcher\\SQLitePCLRaw.batteries_v2.dll",
                 "modules\\launcher\\SQLitePCLRaw.core.dll",
                 "modules\\launcher\\SQLitePCLRaw.provider.e_sqlite3.dll",
+                "modules\\launcher\\ScipBe.Common.Office.OneNote.dll",
+                "modules\\launcher\\Interop.Microsoft.Office.Interop.OneNote.dll",
                 "Settings\\Microsoft.Graphics.Canvas.Interop.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",

@@ -189,7 +189,7 @@
                                         <RowDefinition Height="48" />
                                     </Grid.RowDefinitions>
                                     <TextBlock x:Uid="RegExCheatSheet_Title" FontWeight="SemiBold" />
-                                    <ListView ItemsSource="{x:Bind SearchRegExShortcuts}" Grid.Row="1" IsItemClickEnabled="True" Margin="-4,12,0,0" ItemClick="RegExItemClick">
+                                    <ListView ItemsSource="{x:Bind SearchRegExShortcuts}" SelectionMode="None" Grid.Row="1" IsItemClickEnabled="True" Margin="-4,12,0,0" ItemClick="RegExItemClick">
                                         <ListView.ItemTemplate>
                                             <DataTemplate x:DataType="local:PatternSnippet">
                                                 <Grid ColumnSpacing="8" Margin="-10,0,0,0">
@@ -248,7 +248,7 @@
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <TextBlock x:Uid="DateTimeCheatSheet_Title" FontWeight="SemiBold" />
-                                    <ListView ItemsSource="{x:Bind DateTimeShortcuts}" Grid.Row="1" IsItemClickEnabled="True" Margin="-4,12,0,0" ItemClick="DateTimeItemClick">
+                                    <ListView ItemsSource="{x:Bind DateTimeShortcuts}" SelectionMode="None" Grid.Row="1" IsItemClickEnabled="True" Margin="-4,12,0,0" ItemClick="DateTimeItemClick">
                                         <ListView.ItemTemplate>
                                             <DataTemplate x:DataType="local:PatternSnippet">
                                                 <Grid ColumnSpacing="8" Margin="-10,0,0,0">
@@ -330,7 +330,7 @@
                 </Button.Content>
             </Button>
 
-            <Button x:Name="button_docs" Content="&#xE11B;" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="DocsButton" Background="Transparent" BorderBrush="Transparent" Grid.Row="1" Height="32" VerticalAlignment="Bottom" HorizontalAlignment="Left" Click="OpenDocs" />
+            <Button x:Name="button_docs" Content="&#xE897;" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="DocsButton" Background="Transparent" BorderBrush="Transparent" Grid.Row="1" Height="32" VerticalAlignment="Bottom" HorizontalAlignment="Left" Click="OpenDocs" />
 
 
             <!--<Button Content="&#xE728;"
@@ -362,7 +362,7 @@
             </muxc:SplitButton.KeyboardAccelerators>
             <muxc:SplitButton.Content>
                 <StackPanel Orientation="Horizontal">
-                    <FontIcon Glyph="&#xE13E;" FontSize="14" VerticalAlignment="Center" Margin="0,2,10,0" />
+                    <FontIcon Glyph="&#xE8AC;" FontSize="14" VerticalAlignment="Center" Margin="0,2,10,0" />
                     <TextBlock x:Uid="TxtBlock_ButtonApply" />
                 </StackPanel>
             </muxc:SplitButton.Content>

@@ -1,10 +1,9 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
@@ -13,7 +12,6 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ManagedCommon;
-using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -29,7 +27,6 @@ namespace Wox.Infrastructure.Image
         private static readonly ImageCache ImageCache = new ImageCache();
         private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
 
-        private static BinaryStorage<Dictionary<string, int>> _storage;
         private static IImageHashGenerator _hashGenerator;
 
         public static string ErrorIconPath { get; set; }
@@ -49,9 +46,7 @@ namespace Wox.Infrastructure.Image
 
         public static void Initialize(Theme theme)
         {
-            _storage = new BinaryStorage<Dictionary<string, int>>("Image");
             _hashGenerator = new ImageHashGenerator();
-            ImageCache.SetUsageAsDictionary(_storage.TryLoad(new Dictionary<string, int>()));
 
             foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon, Constant.LightThemedDefaultIcon, Constant.LightThemedErrorIcon })
             {
@@ -78,7 +73,7 @@ namespace Wox.Infrastructure.Image
         public static void Save()
         {
             ImageCache.Cleanup();
-            _storage.Save(ImageCache.GetUsageAsDictionary());
+            ImageCache.Save();
         }
 
         // Todo : Update it with icons specific to each theme.
@@ -119,7 +114,6 @@ namespace Wox.Infrastructure.Image
             Cache,
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         private static ImageResult LoadInternal(string path, bool loadFullImage = false)
         {
             ImageSource image;

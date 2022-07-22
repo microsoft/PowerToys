@@ -1,9 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Mono.Collections.Generic;
 
@@ -58,7 +57,7 @@ namespace Wox.Plugin
             {
                 if (_search == null)
                 {
-                    _search = RawQuery.Substring(ActionKeyword.Length).Trim();
+                    _search = RawQuery.Substring(ActionKeyword?.Length ?? 0).Trim();
                 }
 
                 return _search;
@@ -102,6 +101,8 @@ namespace Wox.Plugin
         /// '*' is used for System Plugin
         /// </summary>
         public const string GlobalPluginWildcardSign = "*";
+
+        public int WeightBoost { get; set; }
 
         public string ActionKeyword { get; set; }
 

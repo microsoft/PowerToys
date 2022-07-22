@@ -28,7 +28,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Initializes a new instance of the <see cref="GeneralPage"/> class.
         /// General Settings page constructor.
         /// </summary>
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions from the IPC response handler should be caught and logged.")]
         public GeneralPage()
         {
             InitializeComponent();
@@ -79,6 +78,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     break;
             }
 
+            App.HandleThemeChange();
             return 0;
         }
 

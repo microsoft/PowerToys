@@ -44,7 +44,7 @@
                     Margin="0,8,0,0"
                     Style="{StaticResource AccentButtonStyle}"
                     FontFamily="Segoe MDL2 Assets"
-                    Content="&#xE109;"
+                    Content="&#xE710;"
                     FontSize="24"
                     TabIndex="0"
                     ToolTip="{x:Static props:Resources.Add_zone}"

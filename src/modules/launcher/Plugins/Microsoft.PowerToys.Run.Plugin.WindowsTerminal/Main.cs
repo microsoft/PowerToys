@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -69,13 +69,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
                 }
 
                 // Action keyword only or search query match
-                if ((!string.IsNullOrWhiteSpace(query.ActionKeyword) && string.IsNullOrWhiteSpace(search)) || StringMatcher.FuzzySearch(search, profile.Name).Success)
+                int score = StringMatcher.FuzzySearch(search, profile.Name).Score;
+                if (string.IsNullOrWhiteSpace(search) || score > 0)
                 {
                     result.Add(new Result
                     {
                         Title = profile.Name,
                         SubTitle = profile.Terminal.DisplayName,
                         Icon = () => GetLogo(profile.Terminal),
+                        Score = score,
                         Action = _ =>
                         {
                             Launch(profile.Terminal.AppUserModelId, profile.Name);
@@ -137,9 +139,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
             {
                 appManager.ActivateApplication(id, queryArguments, noFlags, out var unusedPid);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 var name = "Plugin: " + Resources.plugin_name;
                 var message = Resources.run_terminal_failed;
@@ -155,9 +155,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
                 string path = "shell:AppsFolder\\" + id;
                 Helper.OpenInShell(path, TerminalHelper.GetArguments(profile, _openNewTab), runAs: Helper.ShellRunAsType.Administrator);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 var name = "Plugin: " + Resources.plugin_name;
                 var message = Resources.run_terminal_failed;

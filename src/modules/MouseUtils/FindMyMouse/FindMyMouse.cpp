@@ -104,7 +104,7 @@ private:
         return p1.x == p2.x && p1.y == p2.y;
     }
 
-    static constexpr POINT ptNowhere = { -1, -1 };
+    static constexpr POINT ptNowhere = { LONG_MIN, LONG_MIN };
     static constexpr DWORD TIMER_ID_TRACK = 100;
     static constexpr DWORD IdlePeriod = 1000;
 

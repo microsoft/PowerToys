@@ -72,7 +72,25 @@ The installer can only be compiled in `Release` mode, step 1 and 2 must be done 
 ### Prerequisites for building the MSI installer
 
 1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
-2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
+2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/v3-14-0-6526/).
+3. Download [WiX binaries](https://wixtoolset.org/downloads/v3.14.0.6526/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
+
+### Locally building the installer prerequisite projects all at once from the command-line
+
+1. Open a `Developer Command Prompt for VS 2022`
+2. Ensure `nuget.exe` is in your `%path%`
+3. In the repo root, run these commands:
+  
+```
+nuget restore .\tools\BugReportTool\BugReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\BugReportTool\BugReportTool.sln
+
+nuget restore .\tools\WebcamReportTool\WebcamReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\WebcamReportTool\WebcamReportTool.sln
+
+nuget restore .\tools\StylesReportTool\StylesReportTool.sln
+msbuild -p:Platform=x64 -p:Configuration=Release .\tools\StylesReportTool\StylesReportTool.sln
+```
 
 ### Locally compiling the Bug reporting tool
 

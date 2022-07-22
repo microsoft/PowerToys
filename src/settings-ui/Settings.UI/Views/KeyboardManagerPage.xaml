@@ -70,7 +70,7 @@
                     <Button x:Uid="KeyboardManager_RemapKeyboardButton_Accessible" Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=RemapKeyboardCommand}">
                         <controls:Setting x:Uid="KeyboardManager_RemapKeyboardButton" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xE92E;">
                             <controls:Setting.ActionContent>
-                                <FontIcon Glyph="&#xE8A7;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
+                                <FontIcon Glyph="&#xE8A7;" FontSize="18" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                             </controls:Setting.ActionContent>
                         </controls:Setting>
                     </Button>
@@ -101,7 +101,7 @@
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                     </ItemsControl>
-                                    <TextBlock Text="to"
+                                    <TextBlock x:Uid="To"
                                                Style="{StaticResource SecondaryTextStyle}"
                                                VerticalAlignment="Center" 
                                                Margin="8,0,8,0"/>
@@ -128,7 +128,7 @@
                     <Button x:Uid="KeyboardManager_RemapShortcutsButton_Accessible" Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=EditShortcutCommand}">
                         <controls:Setting x:Uid="KeyboardManager_RemapShortcutsButton" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xE92E;">
                             <controls:Setting.ActionContent>
-                                <FontIcon Glyph="&#xE8A7;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
+                                <FontIcon Glyph="&#xE8A7;" FontSize="18" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                             </controls:Setting.ActionContent>
                         </controls:Setting>
                     </Button>

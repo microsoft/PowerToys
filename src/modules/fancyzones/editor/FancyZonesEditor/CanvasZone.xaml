@@ -159,7 +159,7 @@
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center">
                      <Run x:Name="WidthLabel" />
-                     <Run Text="&#xE106;"
+                     <Run Text="&#xE947;"
                           FontSize="10"
                           FontFamily="Segoe MDL2 Assets" />
                     <Run x:Name="HeightLabel" />

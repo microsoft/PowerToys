@@ -9,6 +9,7 @@
 #include <common/utils/process_path.h>
 
 #include <WinHookEventIDs.h>
+#include <interop/shared_constants.h>
 
 namespace NonLocalizable
 {
@@ -23,9 +24,10 @@ bool isExcluded(HWND window)
     return find_app_name_in_path(processPath, AlwaysOnTopSettings::settings().excludedApps);
 }
 
-AlwaysOnTop::AlwaysOnTop() :
+AlwaysOnTop::AlwaysOnTop(bool useLLKH) :
     SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps}),
-    m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase))
+    m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
+    m_useCentralizedLLKH(useLLKH)
 {
     s_instance = this;
     DPIAware::EnableDPIAwarenessForThisProcess();
@@ -38,6 +40,8 @@ AlwaysOnTop::AlwaysOnTop() :
         AlwaysOnTopSettings::instance().LoadSettings();
 
         RegisterHotkey();
+        RegisterLLKH();
+        
         SubscribeToEvents();
         StartTrackingTopmostWindows();
     }
@@ -50,6 +54,14 @@ AlwaysOnTop::AlwaysOnTop() :
 
 AlwaysOnTop::~AlwaysOnTop()
 {
+    if (m_hPinEvent)
+    {
+        CloseHandle(m_hPinEvent);
+    }
+
+    m_running = false;
+    m_thread.join();
+
     CleanUp();
 }
 
@@ -240,8 +252,55 @@ bool AlwaysOnTop::AssignBorder(HWND window)
 
 void AlwaysOnTop::RegisterHotkey() const
 {
+    if (m_useCentralizedLLKH)
+    {
+        return;
+    }
+
     UnregisterHotKey(m_window, static_cast<int>(HotkeyId::Pin));
     RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), AlwaysOnTopSettings::settings().hotkey.get_modifiers(), AlwaysOnTopSettings::settings().hotkey.get_code());
+}
+
+void AlwaysOnTop::RegisterLLKH()
+{
+    if (!m_useCentralizedLLKH)
+    {
+        return;
+    }
+	
+    m_hPinEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
+
+    if (!m_hPinEvent)
+    {
+        Logger::warn(L"Failed to create pinEvent. {}", get_last_error_or_default(GetLastError()));
+        return;
+    }
+
+    m_thread = std::thread([this]() {
+        MSG msg;
+        while (m_running)
+        {
+            DWORD dwEvt = MsgWaitForMultipleObjects(1, &m_hPinEvent, false, 0, QS_ALLINPUT);
+            switch (dwEvt)
+            {
+            case WAIT_OBJECT_0:
+                if (HWND fw{ GetForegroundWindow() })
+                {
+                    ProcessCommand(fw);
+                }
+                break;
+            case WAIT_OBJECT_0 + 1:
+                if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+                {
+                    TranslateMessage(&msg);
+                    DispatchMessageW(&msg);
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    });
 }
 
 void AlwaysOnTop::SubscribeToEvents()

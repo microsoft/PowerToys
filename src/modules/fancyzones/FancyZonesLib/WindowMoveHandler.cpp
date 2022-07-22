@@ -59,7 +59,7 @@ WindowMoveHandler::WindowMoveHandler(const std::function<void()>& keyUpdateCallb
 {
 }
 
-void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept
+void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
 {
     if (!FancyZonesWindowProcessing::IsProcessable(window))
     {
@@ -104,7 +104,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
         m_draggedWindowWorkArea->MoveSizeEnter(m_draggedWindow);
         if (FancyZonesSettings::settings().showZonesOnAllMonitors)
         {
-            for (auto [keyMonitor, workArea] : workAreaMap)
+            for (const auto& [keyMonitor, workArea] : workAreaMap)
             {
                 // Skip calling ShowZonesOverlay for iter->second (m_draggedWindowWorkArea) since it
                 // was already called in MoveSizeEnter
@@ -120,7 +120,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     {
         ResetWindowTransparency();
         m_draggedWindowWorkArea = nullptr;
-        for (auto [keyMonitor, workArea] : workAreaMap)
+        for (const auto& [keyMonitor, workArea] : workAreaMap)
         {
             if (workArea)
             {
@@ -132,8 +132,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     auto workArea = workAreaMap.find(monitor);
     if (workArea != workAreaMap.end())
     {
-        const auto workAreaPtr = workArea->second;
-        const auto zoneSet = workAreaPtr->ZoneSet();
+        const auto zoneSet = workArea->second->ZoneSet();
         if (zoneSet)
         {
             zoneSet->DismissWindow(window);
@@ -141,7 +140,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     }
 }
 
-void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept
+void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
 {
     if (!m_inDragging)
     {
@@ -208,7 +207,7 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
     }
 }
 
-void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept
+void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& workAreaMap) noexcept
 {
     if (window != m_draggedWindow)
     {
@@ -292,27 +291,47 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
     }
 }
 
-void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, winrt::com_ptr<IWorkArea> workArea, bool suppressMove) noexcept
+void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, std::shared_ptr<WorkArea> workArea) noexcept
 {
     if (window != m_draggedWindow)
     {
-        workArea->MoveWindowIntoZoneByIndexSet(window, indexSet, suppressMove);
+        workArea->MoveWindowIntoZoneByIndexSet(window, indexSet);
     }
 }
 
-bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IWorkArea> workArea) noexcept
+bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, std::shared_ptr<WorkArea> workArea) noexcept
 {
     return workArea && workArea->MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, cycle);
 }
 
-bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IWorkArea> workArea) noexcept
+bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, std::shared_ptr<WorkArea> workArea) noexcept
 {
     return workArea && workArea->MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle);
 }
 
-bool WindowMoveHandler::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode, winrt::com_ptr<IWorkArea> workArea) noexcept
+bool WindowMoveHandler::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode, std::shared_ptr<WorkArea> workArea) noexcept
 {
     return workArea && workArea->ExtendWindowByDirectionAndPosition(window, vkCode);
+}
+
+void WindowMoveHandler::UpdateWindowsPositions(const std::unordered_map<HMONITOR, std::shared_ptr<WorkArea>>& activeWorkAreas) noexcept
+{
+    for (const auto& window : VirtualDesktop::instance().GetWindowsFromCurrentDesktop())
+    {
+        auto zoneIndexSet = FancyZonesWindowProperties::RetrieveZoneIndexProperty(window);
+        if (zoneIndexSet.size() == 0)
+        {
+            continue;
+        }
+
+        for (const auto& [monitor, workArea] : activeWorkAreas)
+        {
+            if (MonitorFromWindow(window, MONITOR_DEFAULTTONULL) == monitor)
+            {
+                workArea->MoveWindowIntoZoneByIndexSet(window, zoneIndexSet);
+            }
+        }
+    }
 }
 
 void WindowMoveHandler::WarnIfElevationIsRequired(HWND window) noexcept
@@ -356,20 +375,22 @@ void WindowMoveHandler::SetWindowTransparency(HWND window) noexcept
     if (FancyZonesSettings::settings().makeDraggedWindowTransparent)
     {
         m_windowTransparencyProperties.draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
-
-        m_windowTransparencyProperties.draggedWindow = window;
+        
         SetWindowLong(window,
                       GWL_EXSTYLE,
                       m_windowTransparencyProperties.draggedWindowExstyle | WS_EX_LAYERED);
 
         if (!GetLayeredWindowAttributes(window, &m_windowTransparencyProperties.draggedWindowCrKey, &m_windowTransparencyProperties.draggedWindowInitialAlpha, &m_windowTransparencyProperties.draggedWindowDwFlags))
         {
-            Logger::error(L"SetWindowTransparency: GetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Window transparency: GetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            return;
         }
+
+        m_windowTransparencyProperties.draggedWindow = window;
 
         if (!SetLayeredWindowAttributes(window, 0, (255 * 50) / 100, LWA_ALPHA))
         {
-            Logger::error(L"SetWindowTransparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
         }
     }
 }
@@ -380,12 +401,12 @@ void WindowMoveHandler::ResetWindowTransparency() noexcept
     {
         if (!SetLayeredWindowAttributes(m_windowTransparencyProperties.draggedWindow, m_windowTransparencyProperties.draggedWindowCrKey, m_windowTransparencyProperties.draggedWindowInitialAlpha, m_windowTransparencyProperties.draggedWindowDwFlags))
         {
-            Logger::error(L"ResetWindowTransparency: SetLayeredWindowAttributes failed");
+            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed");
         }
         
         if (SetWindowLong(m_windowTransparencyProperties.draggedWindow, GWL_EXSTYLE, m_windowTransparencyProperties.draggedWindowExstyle) == 0)
         {
-            Logger::error(L"ResetWindowTransparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Window transparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));
         }
 
         m_windowTransparencyProperties.draggedWindow = nullptr;
