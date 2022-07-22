@@ -494,7 +494,8 @@ namespace PowerLauncher
 
             var showResultsWithDelay = _viewModel.GetSearchQueryResultsWithDelaySetting();
 
-            if (showResultsWithDelay)
+            // only if we are using throttled search and throttled 'fast' search, do we need to do anything different with the current results.
+            if (showResultsWithDelay && _settings.PTRSearchQueryFastResultsWithDelay)
             {
                 // Default means we don't do anything we did not do before... leave the results as is, they will be changed as needed when results are returned
                 var pTRunStartNewSearchAction = _settings.PTRunStartNewSearchAction ?? "Default";
@@ -502,7 +503,7 @@ namespace PowerLauncher
                 if (pTRunStartNewSearchAction == "DeSelect")
                 {
                     // leave the results, be deselect anything to it will not be activated by <enter> key, can still be arrow-key or clicked though
-                    if (!_isTextSetProgrammatically && showResultsWithDelay)
+                    if (!_isTextSetProgrammatically)
                     {
                         DeselectAllResults();
                     }
@@ -510,7 +511,7 @@ namespace PowerLauncher
                 else if (pTRunStartNewSearchAction == "Clear")
                 {
                     // remove all results to prepare for new results, this causes flashing usually and is not cool
-                    if (!_isTextSetProgrammatically && showResultsWithDelay)
+                    if (!_isTextSetProgrammatically)
                     {
                         ClearResults();
                     }
@@ -527,28 +528,16 @@ namespace PowerLauncher
                 {
                     _viewModel.Results.Clear();
                     _viewModel.Results.Results.NotifyChanges();
-
-                    // _viewModel.HideResultsListView();
                 }));
             });
         }
 
         private void DeselectAllResults()
         {
-            // There must be a better way, but I don't know it.
-            _viewModel.Results.SelectedItem = null;
-            var resultsItems = _viewModel.Results.Results.ToList();
-
-            System.Threading.Tasks.Task.Run(() =>
+            Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
             {
-                Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
-                {
-                    _viewModel.Results.Clear();
-                    _viewModel.Results.Results.NotifyChanges();
-                    _viewModel.Results.Results.AddRange(resultsItems);
-                    _viewModel.Results.Results.NotifyChanges();
-                }));
-            });
+                _viewModel.Results.SelectedIndex = -1;
+            }));
         }
 
         private void PerformSearchQuery(TextBox textBox)

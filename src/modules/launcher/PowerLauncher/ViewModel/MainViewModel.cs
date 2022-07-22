@@ -736,11 +736,6 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        public void HideResultsListView()
-        {
-            Results.Visibility = Visibility.Hidden;
-        }
-
         private void UpdateResultsListViewAfterQuery(string queryText, bool noInitialResults = false, bool isDelayedInvoke = false)
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
