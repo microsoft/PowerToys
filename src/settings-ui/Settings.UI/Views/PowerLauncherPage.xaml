@@ -321,8 +321,14 @@
                                                                           Style="{StaticResource ExpanderContentSettingStyleTight}" 
                                                                           IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
                                                         <controls:Setting.ActionContent>
-                                                            <TextBox Text="{x:Bind Path=WeightBoost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                 MinWidth="{StaticResource SettingActionControlMinWidth}" />
+                                                            <muxc:NumberBox Minimum="-1000"
+                                                                Maximum="1000"
+                                                                Value="{x:Bind Mode=TwoWay, Path=WeightBoost}"
+                                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                SpinButtonPlacementMode="Compact"
+                                                                HorizontalAlignment="Left"
+                                                                SmallChange="10"
+                                                                LargeChange="50"/>
                                                         </controls:Setting.ActionContent>
                                                     </controls:Setting>
                                                     
