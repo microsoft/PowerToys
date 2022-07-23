@@ -606,9 +606,6 @@
   <data name="PowerRename_Toggle_ContextMenu.Header" xml:space="preserve">
     <value>Show PowerRename in</value>
   </data>
-  <data name="PowerRename_Toggle_ContextMenu.Description" xml:space="preserve">
-    <value>Press shift + right-click on files to open the extended menu</value>
-  </data>
   <data name="PowerRename_Toggle_StandardContextMenu.Content" xml:space="preserve">
     <value>Default and extended context menu</value>
   </data>
