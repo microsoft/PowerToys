@@ -1,4 +1,6 @@
-﻿namespace PowerOCR;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -18,6 +20,8 @@ using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
 using BitmapDecoder = Windows.Graphics.Imaging.BitmapDecoder;
+
+namespace PowerOCR;
 
 internal class ImageMethods
 {

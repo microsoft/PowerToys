@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:PowerOCR"
     ShutdownMode="OnExplicitShutdown"
+    Exit="Application_Exit"
     Startup="Application_Startup">
     <Application.Resources />
 </Application>
