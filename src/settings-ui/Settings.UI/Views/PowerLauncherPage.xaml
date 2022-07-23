@@ -278,8 +278,15 @@
                                                         -->
 
                                                         <!-- Temporary badge replacement for InfoBadge control (htcfreek). (Because stackpanel has a bug to not free space on collapsing controls inside it, we use the event handlers to switch control properties.)-->
-                                                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{x:Bind ShowProblematicPluginSettingBadgeGlyph}" Foreground="{x:Bind ShowProblematicPluginSettingBadgeColor}" Visibility="{x:Bind ShowProblematicPluginSettingBadge}"/>
-
+                                                        <Grid>
+                                                            <!-- Error badge -->
+                                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource InfoBarIconBackgroundGlyph}" Foreground="{StaticResource InfoBarErrorSeverityIconBackground}" Visibility="{x:Bind ShowPluginSettingBadgeError}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource InfoBarErrorIconGlyph}" Foreground="{StaticResource InfoBarErrorSeverityIconForeground}" Visibility="{x:Bind ShowPluginSettingBadgeError}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            <!-- Warning badge -->
+                                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource InfoBarIconBackgroundGlyph}" Foreground="{StaticResource InfoBarWarningSeverityIconBackground}" Visibility="{x:Bind ShowPluginSettingBadgeWarning}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource InfoBarWarningIconGlyph}" Foreground="{StaticResource InfoBarWarningSeverityIconForeground}" Visibility="{x:Bind ShowPluginSettingBadgeWarning}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                        
                                                         <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
                                                                       IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"/>
                                                     </StackPanel>
