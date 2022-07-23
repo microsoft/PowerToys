@@ -57,9 +57,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
                     NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
+                    NotifyPropertyChanged(nameof(ShowMathematicKeywordWarning));
                     NotifyPropertyChanged(nameof(Enabled));
                     NotifyPropertyChanged(nameof(DisabledOpacity));
                     NotifyPropertyChanged(nameof(IsGlobalAndEnabled));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadge));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadgeGlyph));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadgeColor));
                 }
             }
         }
@@ -91,6 +95,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
                     NotifyPropertyChanged(nameof(IsGlobalAndEnabled));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadge));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadgeGlyph));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadgeColor));
                 }
             }
         }
@@ -110,6 +117,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
                     NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
+                    NotifyPropertyChanged(nameof(ShowMathematicKeywordWarning));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadge));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadgeGlyph));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadgeColor));
                 }
             }
         }
@@ -129,6 +140,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
                     NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
+                    NotifyPropertyChanged(nameof(ShowMathematicKeywordWarning));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadge));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadgeGlyph));
+                    NotifyPropertyChanged(nameof(ShowProblematicPluginSettingBadgeColor));
                 }
             }
         }
@@ -188,6 +203,36 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public bool ShowNotAllowedKeywordWarning
         {
             get => !Disabled && NotAllowedKeywords.Contains(ActionKeyword);
+        }
+
+        private static readonly List<string> MathematicKeywords = new List<string>()
+        {
+            // Using one of them breaks global queries for calculator plugin.
+            ".", ",", "+", "-", "(",
+        };
+
+        public bool ShowMathematicKeywordWarning
+        {
+            get => !Disabled && (MathematicKeywords.Contains(ActionKeyword) || MathematicKeywords.Any(x => ActionKeyword.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)));
+        }
+
+        public bool ShowProblematicPluginSettingBadge
+        {
+            get => !Disabled && (ShowNotAccessibleWarning || ShowNotAllowedKeywordWarning || ShowMathematicKeywordWarning);
+        }
+
+        public string ShowProblematicPluginSettingBadgeGlyph
+        {
+            // ShowNotAccessibleWarning is severity error. We test for error or not.
+            // \xEA39; = error, \xE783; = warning
+            get => ShowNotAccessibleWarning ? "\xEA39" : "\xE783";
+        }
+
+        public string ShowProblematicPluginSettingBadgeColor
+        {
+            // ShowNotAccessibleWarning is severity error. We test for error or not.
+            // #c42b1c = red, Orange = orange
+            get => ShowNotAccessibleWarning ? "#c42b1c" : "Orange";
         }
     }
 }

@@ -2152,4 +2152,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
     <value>Enable round corners</value>
   </data>
+  <data name="Run_MathematicActionKeywordWarning.Title" xml:space="preserve">
+    <value>This activation command could break Calculator plugin for some global queries.</value>
+  </data>
 </root>

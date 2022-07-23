@@ -266,13 +266,19 @@
                                                         Height="20" />
                                                 </controls:Setting.Icon>
                                                 <controls:Setting.ActionContent>
-                                                    <StackPanel Orientation="Horizontal" Spacing="16">
+                                                    <StackPanel Orientation="Horizontal" Spacing="16" >
 
                                                         <!-- todo(Stefan): InfoBadge not available
                                                         <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
                                                                         Visibility="{x:Bind ShowNotAccessibleWarning}"
                                                                         Style="{StaticResource CriticalIconInfoBadgeStyle}" />
+                                                        <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
+                                                                        Visibility="{x:Bind IsProblematicPluginSetting}" => Eventhandler removed as current code works different (htcfreek)
+                                                                        Style="{StaticResource WarningIconInfoBadgeStyle}" />
                                                         -->
+
+                                                        <!-- Temporary badge replacement for InfoBadge control (htcfreek). (Because stackpanel has a bug to not free space on collapsing controls inside it, we use the event handlers to switch control properties.)-->
+                                                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{x:Bind ShowProblematicPluginSettingBadgeGlyph}" Foreground="{x:Bind ShowProblematicPluginSettingBadgeColor}" Visibility="{x:Bind ShowProblematicPluginSettingBadge}"/>
 
                                                         <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
                                                                       IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"/>
@@ -298,6 +304,11 @@
                                                               x:Uid="Run_NotAllowedActionKeyword"
                                                               IsTabStop="{x:Bind ShowNotAllowedKeywordWarning}"
                                                               IsOpen="{x:Bind ShowNotAllowedKeywordWarning}"
+                                                              IsClosable="False" />
+                                                <muxc:InfoBar Severity="Warning"
+                                                              x:Uid="Run_MathematicActionKeywordWarning"
+                                                              IsTabStop="{x:Bind ShowMathematicKeywordWarning}"
+                                                              IsOpen="{x:Bind ShowMathematicKeywordWarning}"
                                                               IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                                 
