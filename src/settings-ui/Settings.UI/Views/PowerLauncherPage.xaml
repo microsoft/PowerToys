@@ -277,7 +277,7 @@
                                                                         Style="{StaticResource WarningIconInfoBadgeStyle}" />
                                                         -->
 
-                                                        <!-- Temporary badge replacement for InfoBadge control (htcfreek). (Including all FontIcons into the Grid helps fixing the problem that StackPanel control doesn't free the space wehen sub controls are collapsed. Normally you need one grid per icon group.)-->
+                                                        <!-- Temporary badge replacement for InfoBadge control (htcfreek). (Including all FontIcons into the Grid helps fixing the problem that StackPanel control doesn't free the space when sub controls are collapsed. Normally you need one grid per icon group.)-->
                                                         <Grid>
                                                             <!-- Error badge -->
                                                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource InfoBarIconBackgroundGlyph}" Foreground="{ThemeResource InfoBarErrorSeverityIconBackground}" Visibility="{x:Bind ShowPluginSettingBadgeError}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
