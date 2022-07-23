@@ -169,7 +169,7 @@ internal class ImageMethods
         transformedBmp.Source = bitmapimage;
         transformedBmp.Transform = new ScaleTransform(scale, scale);
         transformedBmp.EndInit();
-        return BitmapSourceToBitmap(transformedBmp.Source);
+        return BitmapSourceToBitmap(transformedBmp);
     }
 
     public static Bitmap BitmapSourceToBitmap(BitmapSource source)
