@@ -103,9 +103,9 @@ public partial class OCROverlay : Window
         if (!IsSelecting)
             return;
 
-        System.Windows.Point movingPoint = e.GetPosition(this);
+        Point movingPoint = e.GetPosition(this);
 
-        if (Keyboard.Modifiers == ModifierKeys.Shift)
+        if (System.Windows.Input.Keyboard.Modifiers == ModifierKeys.Shift)
         {
             if (!isShiftDown)
             {
