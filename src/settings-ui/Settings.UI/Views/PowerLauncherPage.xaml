@@ -270,14 +270,14 @@
 
                                                         <!-- todo(Stefan): InfoBadge not available
                                                         <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
-                                                                        Visibility="{x:Bind ShowNotAccessibleWarning}"
+                                                                        Visibility="{x:Bind ShowPluginSettingBadgeError}"
                                                                         Style="{StaticResource CriticalIconInfoBadgeStyle}" />
                                                         <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
-                                                                        Visibility="{x:Bind IsProblematicPluginSetting}" => Event handler removed as current code works different (htcfreek)
+                                                                        Visibility="{x:Bind ShowPluginSettingBadgeWarning}"
                                                                         Style="{StaticResource WarningIconInfoBadgeStyle}" />
                                                         -->
 
-                                                        <!-- Temporary badge replacement for InfoBadge control (htcfreek). (Because stackpanel has a bug to not free space on collapsing controls inside it, we use the event handlers to switch control properties.)-->
+                                                        <!-- Temporary badge replacement for InfoBadge control (htcfreek). (Including all FontIcons into the Grid helps fixing the problem that StackPanel control doesn't free the space wehen sub controls are collapsed. Normally you need one grid per icon group.)-->
                                                         <Grid>
                                                             <!-- Error badge -->
                                                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource InfoBarIconBackgroundGlyph}" Foreground="{ThemeResource InfoBarErrorSeverityIconBackground}" Visibility="{x:Bind ShowPluginSettingBadgeError}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
