@@ -11,7 +11,7 @@ namespace PowerOCR.Helpers;
 [Export(typeof(IThrottledActionInvoker))]
 public sealed class ThrottledActionInvoker : IThrottledActionInvoker
 {
-    private object _invokerLock = new();
+    private object _invokerLock = new object();
     private Action? _actionToRun;
 
     private DispatcherTimer _timer;

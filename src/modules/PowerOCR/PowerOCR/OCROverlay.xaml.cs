@@ -2,13 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using PowerOCR.Utilities;
 using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+
+using PowerOCR.Utilities;
 
 namespace PowerOCR;
 
@@ -22,16 +23,18 @@ public partial class OCROverlay : Window
     private Point shiftPoint;
 
     private bool IsSelecting { get; set; }
-    private Border selectBorder = new();
+
+    private Border selectBorder = new Border();
+
     private DpiScale? dpiScale;
 
     private Point GetMousePos() => PointToScreen(Mouse.GetPosition(this));
 
-    double selectLeft;
-    double selectTop;
+    private double selectLeft;
+    private double selectTop;
 
-    double xShiftDelta;
-    double yShiftDelta;
+    private double xShiftDelta;
+    private double yShiftDelta;
 
     public OCROverlay()
     {
@@ -81,10 +84,13 @@ public partial class OCROverlay : Window
     private void RegionClickCanvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.RightButton == MouseButtonState.Pressed)
+        {
             return;
+        }
 
         IsSelecting = true;
         RegionClickCanvas.CaptureMouse();
+
         // CursorClipper.ClipCursor(this);
         clickedPoint = e.GetPosition(this);
         selectBorder.Height = 1;
@@ -92,7 +98,13 @@ public partial class OCROverlay : Window
 
         dpiScale = VisualTreeHelper.GetDpi(this);
 
-        try { RegionClickCanvas.Children.Remove(selectBorder); } catch (Exception) { }
+        try
+        {
+            RegionClickCanvas.Children.Remove(selectBorder);
+        }
+        catch (Exception)
+        {
+        }
 
         selectBorder.BorderThickness = new Thickness(2);
         System.Windows.Media.Color borderColor = System.Windows.Media.Color.FromArgb(255, 40, 118, 126);
@@ -105,7 +117,9 @@ public partial class OCROverlay : Window
     private void RegionClickCanvas_MouseMove(object sender, MouseEventArgs e)
     {
         if (!IsSelecting)
+        {
             return;
+        }
 
         Point movingPoint = e.GetPosition(this);
 
@@ -119,8 +133,8 @@ public partial class OCROverlay : Window
             }
 
             isShiftDown = true;
-            xShiftDelta = (movingPoint.X - shiftPoint.X);
-            yShiftDelta = (movingPoint.Y - shiftPoint.Y);
+            xShiftDelta = movingPoint.X - shiftPoint.X;
+            yShiftDelta = movingPoint.Y - shiftPoint.Y;
 
             double leftValue = selectLeft + xShiftDelta;
             double topValue = selectTop + yShiftDelta;
@@ -153,9 +167,12 @@ public partial class OCROverlay : Window
     private async void RegionClickCanvas_MouseUp(object sender, MouseButtonEventArgs e)
     {
         if (IsSelecting == false)
+        {
             return;
+        }
 
         IsSelecting = false;
+
         // currentScreen = null;
         // CursorClipper.UnClipCursor();
         RegionClickCanvas.ReleaseMouseCapture();
@@ -170,12 +187,14 @@ public partial class OCROverlay : Window
         movingPoint.Y = Math.Round(movingPoint.Y);
 
         if (mPt == movingPoint)
+        {
             Debug.WriteLine("Probably on Screen 1");
+        }
 
         double xDimScaled = Canvas.GetLeft(selectBorder) * m.M11;
         double yDimScaled = Canvas.GetTop(selectBorder) * m.M22;
 
-        System.Drawing.Rectangle regionScaled = new(
+        System.Drawing.Rectangle regionScaled = new System.Drawing.Rectangle(
             (int)xDimScaled,
             (int)yDimScaled,
             (int)(selectBorder.Width * m.M11),
@@ -183,7 +202,13 @@ public partial class OCROverlay : Window
 
         string grabbedText;
 
-        try { RegionClickCanvas.Children.Remove(selectBorder); } catch { }
+        try
+        {
+            RegionClickCanvas.Children.Remove(selectBorder);
+        }
+        catch
+        {
+        }
 
         if (regionScaled.Width < 3 || regionScaled.Height < 3)
         {
@@ -191,10 +216,14 @@ public partial class OCROverlay : Window
             grabbedText = await ImageMethods.GetClickedWord(this, new Point(xDimScaled, yDimScaled));
         }
         else
+        {
             grabbedText = await ImageMethods.GetRegionsText(this, regionScaled);
+        }
 
         if (string.IsNullOrWhiteSpace(grabbedText) == false)
+        {
             Clipboard.SetText(grabbedText);
+        }
 
         WindowUtilities.CloseAllOCROverlays();
     }

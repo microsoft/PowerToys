@@ -17,9 +17,9 @@ namespace PowerOCR.Keyboard;
 public class KeyboardMonitor : IDisposable
 {
     private readonly IUserSettings _userSettings;
-    private List<string> _previouslyPressedKeys = new();
+    private List<string> _previouslyPressedKeys = new List<string>();
 
-    private List<string> _activationKeys = new();
+    private List<string> _activationKeys = new List<string>();
     private GlobalKeyboardHook? _keyboardHook;
     private bool disposedValue;
     private bool _activationShortcutPressed;
@@ -61,7 +61,10 @@ public class KeyboardMonitor : IDisposable
 
     private void Hook_KeyboardPressed(object? sender, GlobalKeyboardHookEventArgs? e)
     {
-        if (e is null) return;
+        if (e is null)
+        {
+            return;
+        }
 
         var currentlyPressedKeys = new List<string>();
         var virtualCode = e.KeyboardData.VirtualCode;

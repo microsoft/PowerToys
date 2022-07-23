@@ -23,8 +23,7 @@ namespace PowerOCR.Settings
         private const int SettingsReadOnChangeDelayInMs = 300;
 
         // private readonly IFileSystemWatcher _watcher;
-
-        private readonly object _loadingSettingsLock = new();
+        private readonly object _loadingSettingsLock = new object();
 
         [ImportingConstructor]
         public UserSettings()
@@ -114,7 +113,7 @@ namespace PowerOCR.Settings
             //     ColorFormatForClipboard = properties.CopiedColorRepresentation.ToString(),
             //     ShowColorName = properties.ShowColorName,
             // };
-            // 
+            //
             // PowerToysTelemetry.Log.WriteEvent(telemetrySettings);
         }
     }

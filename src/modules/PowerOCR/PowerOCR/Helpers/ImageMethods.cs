@@ -34,8 +34,8 @@ internal class ImageMethods
         int windowHeight = (int)(passedWindow.ActualHeight * dpi.DpiScaleY);
 
         System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
-        int thisCorrectedLeft = (int)(absPosPoint.X);
-        int thisCorrectedTop = (int)(absPosPoint.Y);
+        int thisCorrectedLeft = (int)absPosPoint.X;
+        int thisCorrectedTop = (int)absPosPoint.Y;
 
         if (isGrabFrame == true)
         {
@@ -45,7 +45,7 @@ internal class ImageMethods
             windowHeight -= (int)(70 * dpi.DpiScaleY);
         }
 
-        Bitmap bmp = new(windowWidth, windowHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        Bitmap bmp = new Bitmap(windowWidth, windowHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         Graphics g = Graphics.FromImage(bmp);
 
         g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
@@ -54,26 +54,26 @@ internal class ImageMethods
 
     internal static async Task<string> GetRegionsText(Window? passedWindow, Rectangle selectedRegion)
     {
-        Bitmap bmp = new(selectedRegion.Width, selectedRegion.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        Bitmap bmp = new Bitmap(selectedRegion.Width, selectedRegion.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         Graphics g = Graphics.FromImage(bmp);
 
-        System.Windows.Point absPosPoint = passedWindow == null ? (new()) : passedWindow.GetAbsolutePosition();
+        System.Windows.Point absPosPoint = passedWindow == null ? default(System.Windows.Point) : passedWindow.GetAbsolutePosition();
 
         int thisCorrectedLeft = (int)absPosPoint.X + selectedRegion.Left;
         int thisCorrectedTop = (int)absPosPoint.Y + selectedRegion.Top;
 
         g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+
         // bmp = PadImage(bmp);
+        string? resultText = await ExtractText(bmp);
 
-        string? ResultText = await ExtractText(bmp);
-
-        return ResultText != null ? ResultText.Trim() : "";
+        return resultText != null ? resultText.Trim() : string.Empty;
     }
 
     internal static async Task<string> GetClickedWord(Window passedWindow, System.Windows.Point clickedPoint)
     {
         DpiScale dpi = VisualTreeHelper.GetDpi(passedWindow);
-        Bitmap bmp = new((int)(passedWindow.ActualWidth * dpi.DpiScaleX), (int)(passedWindow.ActualHeight * dpi.DpiScaleY), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        Bitmap bmp = new Bitmap((int)(passedWindow.ActualWidth * dpi.DpiScaleX), (int)(passedWindow.ActualHeight * dpi.DpiScaleY), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         Graphics g = Graphics.FromImage(bmp);
 
         System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
@@ -82,26 +82,34 @@ internal class ImageMethods
 
         g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
 
-        System.Windows.Point adjustedPoint = new(clickedPoint.X, clickedPoint.Y);
+        System.Windows.Point adjustedPoint = new System.Windows.Point(clickedPoint.X, clickedPoint.Y);
 
-        string ResultText = await ExtractText(bmp, adjustedPoint);
-        return ResultText.Trim();
+        string resultText = await ExtractText(bmp, adjustedPoint);
+        return resultText.Trim();
     }
 
     public static async Task<string> ExtractText(Bitmap bmp, System.Windows.Point? singlePoint = null)
     {
         Language? selectedLanguage = GetOCRLanguage();
         if (selectedLanguage == null)
-            return "";
+        {
+            return string.Empty;
+        }
 
         bool isCJKLang = false;
 
         if (selectedLanguage.LanguageTag.StartsWith("zh", StringComparison.InvariantCultureIgnoreCase) == true)
+        {
             isCJKLang = true;
+        }
         else if (selectedLanguage.LanguageTag.StartsWith("ja", StringComparison.InvariantCultureIgnoreCase) == true)
+        {
             isCJKLang = true;
+        }
         else if (selectedLanguage.LanguageTag.StartsWith("ko", StringComparison.InvariantCultureIgnoreCase) == true)
+        {
             isCJKLang = true;
+        }
 
         XmlLanguage lang = XmlLanguage.GetLanguage(selectedLanguage.LanguageTag);
         CultureInfo culture = lang.GetEquivalentCulture();
@@ -110,12 +118,14 @@ internal class ImageMethods
 
         if (singlePoint != null
             || bmp.Width * 1.5 > OcrEngine.MaxImageDimension)
+        {
             scaleBMP = false;
+        }
 
         Bitmap scaledBitmap = scaleBMP ? ScaleBitmapUniform(bmp, 1.5) : ScaleBitmapUniform(bmp, 1.0);
-        StringBuilder text = new();
+        StringBuilder text = new StringBuilder();
 
-        await using (MemoryStream memory = new())
+        await using (MemoryStream memory = new MemoryStream())
         {
             scaledBitmap.Save(memory, ImageFormat.Bmp);
             memory.Position = 0;
@@ -126,16 +136,28 @@ internal class ImageMethods
             OcrResult ocrResult = await ocrEngine.RecognizeAsync(softwareBmp);
 
             if (singlePoint == null)
-                foreach (OcrLine line in ocrResult.Lines) text.AppendLine(line.Text);
+            {
+                foreach (OcrLine line in ocrResult.Lines)
+                {
+                    text.AppendLine(line.Text);
+                }
+            }
             else
             {
-                Windows.Foundation.Point fPoint = new(singlePoint.Value.X, singlePoint.Value.Y);
+                Windows.Foundation.Point fPoint = new Windows.Foundation.Point(singlePoint.Value.X, singlePoint.Value.Y);
                 foreach (OcrLine ocrLine in ocrResult.Lines)
+                {
                     foreach (OcrWord ocrWord in ocrLine.Words)
+                    {
                         if (ocrWord.BoundingRect.Contains(fPoint))
+                        {
                             _ = text.Append(ocrWord.Text);
+                        }
+                    }
+                }
             }
         }
+
         if (culture.TextInfo.IsRightToLeft)
         {
             string[] textListLines = text.ToString().Split(new char[] { '\n', '\r' });
@@ -145,11 +167,14 @@ internal class ImageMethods
             {
                 List<string> wordArray = textLine.Split().ToList();
                 wordArray.Reverse();
-                _ = isCJKLang == true ? text.Append(string.Join("", wordArray)) : text.Append(string.Join(' ', wordArray));
+                _ = isCJKLang == true ? text.Append(string.Join(string.Empty, wordArray)) : text.Append(string.Join(' ', wordArray));
 
                 if (textLine.Length > 0)
+                {
                     _ = text.Append('\n');
+                }
             }
+
             return text.ToString();
         }
         else
@@ -160,15 +185,15 @@ internal class ImageMethods
 
     public static Bitmap ScaleBitmapUniform(Bitmap passedBitmap, double scale)
     {
-        using MemoryStream memory = new();
+        using MemoryStream memory = new MemoryStream();
         passedBitmap.Save(memory, ImageFormat.Bmp);
         memory.Position = 0;
-        BitmapImage bitmapimage = new();
+        BitmapImage bitmapimage = new BitmapImage();
         bitmapimage.BeginInit();
         bitmapimage.StreamSource = memory;
         bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
         bitmapimage.EndInit();
-        TransformedBitmap transformedBmp = new();
+        TransformedBitmap transformedBmp = new TransformedBitmap();
         transformedBmp.BeginInit();
         transformedBmp.Source = bitmapimage;
         transformedBmp.Transform = new ScaleTransform(scale, scale);
@@ -178,7 +203,7 @@ internal class ImageMethods
 
     public static Bitmap BitmapSourceToBitmap(BitmapSource source)
     {
-        Bitmap bmp = new(
+        Bitmap bmp = new Bitmap(
           source.PixelWidth,
           source.PixelHeight,
           System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
@@ -197,10 +222,10 @@ internal class ImageMethods
 
     internal static BitmapImage BitmapToImageSource(Bitmap bitmap)
     {
-        using MemoryStream memory = new();
+        using MemoryStream memory = new MemoryStream();
         bitmap.Save(memory, ImageFormat.Bmp);
         memory.Position = 0;
-        BitmapImage bitmapimage = new();
+        BitmapImage bitmapimage = new BitmapImage();
         bitmapimage.BeginInit();
         bitmapimage.StreamSource = memory;
         bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
@@ -214,7 +239,7 @@ internal class ImageMethods
         // use currently selected Language
         string inputLang = InputLanguageManager.Current.CurrentInputLanguage.Name;
 
-        Language? selectedLanguage = new(inputLang);
+        Language? selectedLanguage = new Language(inputLang);
         List<Language> possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
 
         if (possibleOcrLanguages.Count < 1)

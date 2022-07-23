@@ -15,7 +15,7 @@ public static class WindowUtilities
         Screen[] allScreens = Screen.AllScreens;
         WindowCollection allWindows = System.Windows.Application.Current.Windows;
 
-        List<OCROverlay> allFullscreenGrab = new();
+        List<OCROverlay> allFullscreenGrab = new List<OCROverlay>();
 
         foreach (Screen screen in allScreens)
         {
@@ -34,25 +34,35 @@ public static class WindowUtilities
             }
 
             if (allWindows.Count < 1)
+            {
                 screenHasWindow = false;
+            }
 
-            OCROverlay overlay = new()
+            OCROverlay overlay = new OCROverlay()
             {
                 WindowStartupLocation = WindowStartupLocation.Manual,
                 Width = 200,
                 Height = 200,
-                WindowState = WindowState.Normal
+                WindowState = WindowState.Normal,
             };
 
             if (screen.WorkingArea.Left >= 0)
+            {
                 overlay.Left = screen.WorkingArea.Left;
+            }
             else
+            {
                 overlay.Left = screen.WorkingArea.Left + (screen.WorkingArea.Width / 2);
+            }
 
             if (screen.WorkingArea.Top >= 0)
+            {
                 overlay.Top = screen.WorkingArea.Top;
+            }
             else
+            {
                 overlay.Top = screen.WorkingArea.Top + (screen.WorkingArea.Height / 2);
+            }
 
             overlay.Show();
             overlay.Activate();
@@ -65,8 +75,12 @@ public static class WindowUtilities
         WindowCollection allWindows = System.Windows.Application.Current.Windows;
 
         foreach (Window window in allWindows)
+        {
             if (window is OCROverlay overlay)
+            {
                 overlay.Close();
+            }
+        }
 
         // TODO: Decide when to close the process
         // System.Windows.Application.Current.Shutdown();

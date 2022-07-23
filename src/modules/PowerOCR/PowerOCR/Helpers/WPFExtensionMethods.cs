@@ -9,29 +9,32 @@ using System.Windows.Interop;
 
 namespace PowerOCR;
 
-static class WPFExtensionMethods
+public static class WPFExtensionMethods
 {
     public static Point GetAbsolutePosition(this Window w)
     {
         if (w.WindowState != WindowState.Maximized)
+        {
             return new Point(w.Left, w.Top);
+        }
 
         Int32Rect r;
-        bool MultiMonitorSupported = OSInterop.GetSystemMetrics(OSInterop.SM_CMONITORS) != 0;
-        if (!MultiMonitorSupported)
+        bool multiMonitorSupported = OSInterop.GetSystemMetrics(OSInterop.SM_CMONITORS) != 0;
+        if (!multiMonitorSupported)
         {
-            OSInterop.RECT rc = new();
+            OSInterop.RECT rc = default(OSInterop.RECT);
             OSInterop.SystemParametersInfo(48, 0, ref rc, 0);
-            r = new Int32Rect(rc.left, rc.top, rc.width, rc.height);
+            r = new Int32Rect(rc.Left, rc.Top, rc.Width, rc.Height);
         }
         else
         {
-            WindowInteropHelper helper = new(w);
+            WindowInteropHelper helper = new WindowInteropHelper(w);
             IntPtr hmonitor = OSInterop.MonitorFromWindow(new HandleRef(null, helper.EnsureHandle()), 2);
-            OSInterop.MONITORINFOEX info = new();
+            OSInterop.MONITORINFOEX info = new OSInterop.MONITORINFOEX();
             OSInterop.GetMonitorInfo(new HandleRef(null, hmonitor), info);
-            r = new Int32Rect(info.rcMonitor.left, info.rcMonitor.top, info.rcMonitor.width, info.rcMonitor.height);
+            r = new Int32Rect(info.RcMonitor.Left, info.RcMonitor.Top, info.RcMonitor.Width, info.RcMonitor.Height);
         }
+
         return new Point(r.X, r.Y);
     }
 }

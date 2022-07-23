@@ -7,8 +7,9 @@ using System.Runtime.InteropServices;
 
 namespace PowerOCR;
 
-static class OSInterop
+public static class OSInterop
 {
+#pragma warning disable SA1310 // Field names should not contain underscore
     public const int WH_KEYBOARD_LL = 13;
     public const int VK_SHIFT = 0x10;
     public const int VK_CONTROL = 0x11;
@@ -20,9 +21,13 @@ static class OSInterop
     public const int WM_KEYDOWN = 0x0100;
     public const int WM_KEYUP = 0x0101;
 
+#pragma warning disable CA1401 // P/Invokes should not be visible
     [DllImport("user32.dll")]
     public static extern int GetSystemMetrics(int smIndex);
+
     public const int SM_CMONITORS = 80;
+
+#pragma warning restore SA1310 // Field names should not contain underscore
 
     [DllImport("user32.dll")]
     public static extern bool SystemParametersInfo(int nAction, int nParam, ref RECT rc, int nUpdate);
@@ -37,7 +42,7 @@ static class OSInterop
     public static extern bool ClipCursor(ref RECT lpRect);
 
     [DllImport("user32.dll")]
-    public static extern bool ClipCursor([In()] IntPtr lpRect);
+    public static extern bool ClipCursor([In] IntPtr lpRect);
 
     [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
     internal static extern bool FreeLibrary(IntPtr hModule);
@@ -64,6 +69,7 @@ static class OSInterop
     internal static extern short GetAsyncKeyState(int vKey);
 
     public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+#pragma warning restore CA1401 // P/Invokes should not be visible
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct LowLevelKeyboardInputEvent
@@ -96,22 +102,28 @@ static class OSInterop
 
     public struct RECT
     {
-        public int left;
-        public int top;
-        public int right;
-        public int bottom;
-        public int width => right - left;
-        public int height => bottom - top;
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+
+        public int Width => Right - Left;
+
+        public int Height => Bottom - Top;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Auto)]
     public class MONITORINFOEX
     {
-        public int cbSize = Marshal.SizeOf(typeof(MONITORINFOEX));
-        public RECT rcMonitor;
-        public RECT rcWork;
+        public int CbSize { get; set; } = Marshal.SizeOf(typeof(MONITORINFOEX));
+
+        public RECT RcMonitor { get; set; }
+
+        public RECT RcWork { get; set; }
+
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-        public char[] szDevice = new char[32];
-        public int dwFlags;
+        private char[] szDevice = new char[32];
+
+        public int DwFlags { get; set; }
     }
 }
