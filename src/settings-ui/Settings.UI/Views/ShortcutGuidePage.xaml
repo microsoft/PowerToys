@@ -68,6 +68,7 @@
                         IsTabStop="True"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior}"
                         IsClosable="False"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                     />
 
                 </controls:SettingsGroup>
