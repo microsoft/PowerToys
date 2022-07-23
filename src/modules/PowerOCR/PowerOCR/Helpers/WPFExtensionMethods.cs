@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 
+namespace PowerOCR;
+
 static class WPFExtensionMethods
 {
     public static Point GetAbsolutePosition(this Window w)

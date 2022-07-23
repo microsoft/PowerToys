@@ -64,6 +64,7 @@ public static class WindowUtilities
             if (window is OCROverlay overlay)
                 overlay.Close();
 
-        System.Windows.Application.Current.Shutdown();
+        // TODO: Decide when to close the process
+        // System.Windows.Application.Current.Shutdown();
     }
 }
