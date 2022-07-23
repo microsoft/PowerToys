@@ -56,6 +56,8 @@ namespace Wox.Plugin
 
         public string ActionKeyword { get; set; }
 
+        public int WeightBoost { get; set; }
+
         public bool IsGlobal { get; set; }
 
         public string IcoPathDark { get; set; }

@@ -9,4 +9,5 @@ namespace ImageResizerConstants
     // Name of the ImageResizer save folder.
     inline const std::wstring ModuleOldSaveFolderKey = L"ImageResizer";
     inline const std::wstring ModuleSaveFolderKey = L"Image Resizer";
+    inline const std::wstring ModulePackageDisplayName = L"ImageResizerContextMenu";
 }

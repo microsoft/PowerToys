@@ -19,6 +19,7 @@ namespace NonLocalizable
         const static wchar_t* MonitorID = L"monitor";
         const static wchar_t* MonitorInstanceID = L"monitor-instance";
         const static wchar_t* MonitorSerialNumberID = L"serial-number";
+        const static wchar_t* MonitorNumberID = L"monitor-number";
         const static wchar_t* VirtualDesktopID = L"virtual-desktop";
     }
 }

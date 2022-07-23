@@ -56,10 +56,11 @@ AlwaysOnTop::~AlwaysOnTop()
 {
     if (m_hPinEvent)
     {
-        SetEvent(m_hPinEvent);
-        m_thread.join();
         CloseHandle(m_hPinEvent);
     }
+
+    m_running = false;
+    m_thread.join();
 
     CleanUp();
 }
@@ -274,12 +275,12 @@ void AlwaysOnTop::RegisterLLKH()
         Logger::warn(L"Failed to create pinEvent. {}", get_last_error_or_default(GetLastError()));
         return;
     }
-	
+
     m_thread = std::thread([this]() {
         MSG msg;
-        while (1)
+        while (m_running)
         {
-            DWORD dwEvt = MsgWaitForMultipleObjects(1, &m_hPinEvent, false, INFINITE, QS_ALLINPUT);
+            DWORD dwEvt = MsgWaitForMultipleObjects(1, &m_hPinEvent, false, 0, QS_ALLINPUT);
             switch (dwEvt)
             {
             case WAIT_OBJECT_0:
@@ -296,7 +297,7 @@ void AlwaysOnTop::RegisterLLKH()
                 }
                 break;
             default:
-                return false;
+                break;
             }
         }
     });

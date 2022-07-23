@@ -19,6 +19,7 @@ using Microsoft.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.FileSystemHelper;
 using Wox.Plugin;
+using Wox.Plugin.Common;
 using Wox.Plugin.Logger;
 using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
 
@@ -45,6 +46,9 @@ namespace Microsoft.Plugin.Program.Programs
         public string LnkResolvedPath { get; set; }
 
         public string LnkResolvedExecutableName { get; set; }
+
+        // Localized name based on windows display language
+        public string LocalizedName { get; set; } = string.Empty;
 
         public string ParentDirectory { get; set; }
 
@@ -97,10 +101,11 @@ namespace Microsoft.Plugin.Program.Programs
         private int Score(string query)
         {
             var nameMatch = StringMatcher.FuzzySearch(query, Name);
+            var locNameMatch = StringMatcher.FuzzySearch(query, LocalizedName);
             var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
             var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
             var lnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableName);
-            var score = new[] { nameMatch.Score, descriptionMatch.Score / 2, executableNameMatch.Score, lnkResolvedExecutableNameMatch.Score }.Max();
+            var score = new[] { nameMatch.Score, locNameMatch.Score, descriptionMatch.Score / 2, executableNameMatch.Score, lnkResolvedExecutableNameMatch.Score }.Max();
             return score;
         }
 
@@ -221,7 +226,7 @@ namespace Microsoft.Plugin.Program.Programs
             var result = new Result
             {
                 // To set the title for the result to always be the name of the application
-                Title = Name,
+                Title = !string.IsNullOrEmpty(LocalizedName) ? LocalizedName : Name,
                 SubTitle = GetSubtitle(),
                 IcoPath = IcoPath,
                 Score = score,
@@ -237,7 +242,7 @@ namespace Microsoft.Plugin.Program.Programs
                 },
             };
 
-            result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
+            result.TitleHighlightData = StringMatcher.FuzzySearch(query, result.Title).MatchData;
 
             // Using CurrentCulture since this is user facing
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
@@ -369,6 +374,9 @@ namespace Microsoft.Plugin.Program.Programs
                     Name = Path.GetFileNameWithoutExtension(path),
                     ExecutableName = Path.GetFileName(path),
                     IcoPath = path,
+
+                    // Localized name based on windows display language
+                    LocalizedName = ShellLocalization.GetLocalizedName(path),
 
                     // Using InvariantCulture since this is user facing
                     FullPath = path.ToLowerInvariant(),

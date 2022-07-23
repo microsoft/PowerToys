@@ -81,6 +81,8 @@ namespace FancyZonesEditor.Utils
 
             public string MonitorSerialNumber { get; set; }
 
+            public int MonitorNumber { get; set; }
+
             public string VirtualDesktop { get; set; }
 
             public int Dpi { get; set; }
@@ -133,6 +135,8 @@ namespace FancyZonesEditor.Utils
                 public string Monitor { get; set; }
 
                 public string MonitorInstance { get; set; }
+
+                public int MonitorNumber { get; set; }
 
                 public string SerialNumber { get; set; }
 
@@ -319,6 +323,7 @@ namespace FancyZonesEditor.Utils
                         string targetMonitorId = string.Empty;
                         string targetMonitorSerialNumber = string.Empty;
                         string targetVirtualDesktop = string.Empty;
+                        int targetMonitorNumber = 0;
 
                         foreach (NativeMonitorData nativeData in editorParams.Monitors)
                         {
@@ -327,6 +332,7 @@ namespace FancyZonesEditor.Utils
                             {
                                 targetMonitorId = nativeData.Monitor;
                                 targetMonitorSerialNumber = nativeData.MonitorSerialNumber;
+                                targetMonitorNumber = nativeData.MonitorNumber;
                                 targetVirtualDesktop = nativeData.VirtualDesktop;
                             }
 
@@ -336,6 +342,7 @@ namespace FancyZonesEditor.Utils
                             monitor.Device.MonitorName = nativeData.Monitor;
                             monitor.Device.MonitorInstanceId = nativeData.MonitorInstanceId;
                             monitor.Device.MonitorSerialNumber = nativeData.MonitorSerialNumber;
+                            monitor.Device.MonitorNumber = nativeData.MonitorNumber;
                             monitor.Device.VirtualDesktopId = nativeData.VirtualDesktop;
                             monitor.Device.Dpi = nativeData.Dpi;
 
@@ -349,6 +356,7 @@ namespace FancyZonesEditor.Utils
                             var monitor = monitors[i];
                             if (monitor.Device.MonitorName == targetMonitorId &&
                                 monitor.Device.MonitorSerialNumber == targetMonitorSerialNumber &&
+                                monitor.Device.MonitorNumber == targetMonitorNumber &&
                                 monitor.Device.VirtualDesktopId == targetVirtualDesktop)
                             {
                                 App.Overlay.CurrentDesktop = i;
@@ -369,6 +377,9 @@ namespace FancyZonesEditor.Utils
 
                         var monitor = new Monitor(workArea, monitorSize);
                         monitor.Device.MonitorName = nativeData.Monitor;
+                        monitor.Device.MonitorInstanceId = nativeData.MonitorInstanceId;
+                        monitor.Device.MonitorSerialNumber = nativeData.MonitorSerialNumber;
+                        monitor.Device.MonitorNumber = nativeData.MonitorNumber;
                         monitor.Device.VirtualDesktopId = nativeData.VirtualDesktop;
 
                         App.Overlay.AddMonitor(monitor);
@@ -569,6 +580,7 @@ namespace FancyZonesEditor.Utils
                     {
                         Monitor = monitor.Device.MonitorName,
                         MonitorInstance = monitor.Device.MonitorInstanceId,
+                        MonitorNumber = monitor.Device.MonitorNumber,
                         SerialNumber = monitor.Device.MonitorSerialNumber,
                         VirtualDesktop = monitor.Device.VirtualDesktopId,
                     },
@@ -836,6 +848,7 @@ namespace FancyZonesEditor.Utils
                 {
                     if (monitor.Device.MonitorName == layout.Device.Monitor &&
                         monitor.Device.MonitorSerialNumber == layout.Device.SerialNumber &&
+                        monitor.Device.MonitorNumber == layout.Device.MonitorNumber &&
                         (monitor.Device.VirtualDesktopId == layout.Device.VirtualDesktop ||
                         layout.Device.VirtualDesktop == DefaultVirtualDesktopGuid))
                     {

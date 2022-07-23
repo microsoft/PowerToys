@@ -175,6 +175,11 @@ namespace PowerLauncher.Plugin
                 return new List<Result>();
             }
 
+            if (string.IsNullOrEmpty(query.ActionKeyword) && string.IsNullOrWhiteSpace(query.Search))
+            {
+                return new List<Result>();
+            }
+
             try
             {
                 List<Result> results = null;
@@ -204,6 +209,14 @@ namespace PowerLauncher.Plugin
 
                 metadata.QueryCount += 1;
                 metadata.AvgQueryTime = metadata.QueryCount == 1 ? milliseconds : (metadata.AvgQueryTime + milliseconds) / 2;
+
+                if (results != null)
+                {
+                    foreach (var result in results)
+                    {
+                        result.Metadata = pair.Metadata;
+                    }
+                }
 
                 return results;
             }

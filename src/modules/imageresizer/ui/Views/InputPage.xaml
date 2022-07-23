@@ -40,7 +40,7 @@
                                     VerticalAlignment="Top">
                             <TextBlock Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" FontSize="12" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                             <TextBlock Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" FontWeight="SemiBold" FontSize="12" Margin="3,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                            <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10" Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" Margin="4,4,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBlock Text="&#xE947;" FontFamily="Segoe MDL2 Assets" FontSize="10" Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" Margin="4,4,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                             <TextBlock Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" FontSize="12" Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" FontWeight="SemiBold" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                             <TextBlock Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" FontSize="12"
                                        Margin="4,0,0,0"
@@ -85,7 +85,7 @@
                 </ui:NumberBox.Value>
             </ui:NumberBox>
             <TextBlock VerticalAlignment="Center"
-                       Text="&#xE711;"
+                       Text="&#xe894;"
                        FontFamily="Segoe MDL2 Assets"
                        Width="25"
                        Foreground="{DynamicResource SecondaryForegroundBrush}"

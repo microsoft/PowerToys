@@ -22,6 +22,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public string ActionKeyword { get; set; }
 
+        public int WeightBoost { get; set; }
+
         public string IconPathDark { get; set; }
 
         public string IconPathLight { get; set; }

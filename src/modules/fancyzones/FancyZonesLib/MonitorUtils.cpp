@@ -207,10 +207,21 @@ namespace MonitorUtils
             return { .id = str.substr(0, dividerPos), .instanceId = str.substr(dividerPos + 1) };
         }
 
+        inline bool not_digit(wchar_t ch)
+        {
+            return '0' <= ch && ch <= '9';
+        }
+
+        std::wstring remove_non_digits(const std::wstring& input)
+        {
+            std::wstring result;
+            std::copy_if(input.begin(), input.end(), std::back_inserter(result), not_digit);
+            return result;
+        }
+
         std::vector<FancyZonesDataTypes::MonitorId> GetDisplays()
         {
             auto allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-            std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
             std::vector<FancyZonesDataTypes::MonitorId> result{};
 
             for (auto& monitorData : allMonitors)
@@ -218,17 +229,64 @@ namespace MonitorUtils
                 auto monitorInfo = monitorData.second;
 
                 DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
-                std::wstring deviceId;
-                auto enumRes = EnumDisplayDevicesW(monitorInfo.szDevice, displayDeviceIdxMap[monitorInfo.szDevice], &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME);
 
-                if (!enumRes)
+                FancyZonesDataTypes::MonitorId monitorId {
+                    .monitor = monitorData.first
+                };
+
+                bool foundActiveMonitor = false;
+
+                DWORD displayDeviceIndex = 0;
+
+                while (EnumDisplayDevicesW(monitorInfo.szDevice, displayDeviceIndex, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
                 {
-                    Logger::error(L"EnumDisplayDevicesW error: {}", get_last_error_or_default(GetLastError()));
-                    continue;
+                    Logger::info(L"Get display device for display {} : {}", monitorInfo.szDevice, displayDevice.DeviceID);
+                    if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE) &&
+                        WI_IsFlagClear(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
+                    {
+                        // Find display devices associated with the display.
+                        foundActiveMonitor = true;
+                        break;
+                    }
+                    displayDeviceIndex++;
                 }
 
-                Logger::info(L"Display: {}", displayDevice.DeviceID);
-                result.push_back({ .monitor = monitorData.first, .deviceId = SplitDisplayDeviceId(displayDevice.DeviceID) });
+                if (foundActiveMonitor)
+                {
+                    monitorId.deviceId = SplitDisplayDeviceId(displayDevice.DeviceID);
+                    try
+                    {
+                        std::wstring numberStr = displayDevice.DeviceName; // \\.\DISPLAY1\Monitor0
+                        numberStr = numberStr.substr(0, numberStr.find_last_of('\\')); // \\.\DISPLAY1
+                        numberStr = remove_non_digits(numberStr);
+                        monitorId.deviceId.number = std::stoi(numberStr);
+                    }
+                    catch (...)
+                    {
+                        Logger::error(L"Failed to get monitor number from {}", displayDevice.DeviceName);
+                        monitorId.deviceId.number = 0;
+                    }
+                }
+                else
+                {
+                    // Use the display name when no proper device was found.
+                    monitorId.deviceId.id = monitorInfo.szDevice;
+                    monitorId.deviceId.instanceId = L"";
+                    Logger::info(L"No active monitor found for {} : {}", monitorInfo.szDevice, get_last_error_or_default(GetLastError()));
+                    try
+                    {
+                        std::wstring numberStr = monitorInfo.szDevice; // \\.\DISPLAY1
+                        numberStr = remove_non_digits(numberStr);
+                        monitorId.deviceId.number = std::stoi(numberStr);
+                    }
+                    catch (...)
+                    {
+                        Logger::error(L"Failed to get display number from {}", monitorInfo.szDevice);
+                        monitorId.deviceId.number = 0;
+                    }
+                }
+
+                result.push_back(std::move(monitorId));
             }
 
             return result;

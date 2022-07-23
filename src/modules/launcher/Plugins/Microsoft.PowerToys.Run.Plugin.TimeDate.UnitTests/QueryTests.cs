@@ -5,7 +5,6 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Wox.Infrastructure;
@@ -37,7 +36,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("now", 3)]
         [DataRow("current", 3)]
         [DataRow("year", 0)]
-        [DataRow("", 0)]
         [DataRow("time::10:10:10", 0)]
         [DataRow("date::10/10/10", 0)]
         public void CountWithoutPluginKeyword(string typedString, int expectedResultCount)

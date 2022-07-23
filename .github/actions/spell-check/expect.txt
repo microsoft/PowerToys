@@ -5,6 +5,7 @@ abgr
 abi
 ABlocked
 ABOUTBOX
+ABradley
 Abug
 accctrl
 Acceleratorkeys
@@ -20,7 +21,6 @@ actioned
 activatable
 ACTIVATEAPP
 activationaction
-adamchilders
 ADDUNDORECORD
 ADifferent
 ADMINS
@@ -77,7 +77,6 @@ apps
 appwindow
 appwiz
 appx
-appxmanifest
 APSTUDIO
 AQS
 Aqtobe
@@ -142,7 +141,6 @@ Bashkortostan
 Bayan
 bbwe
 bck
-Bcl
 Belarus
 betadele
 betsegaw
@@ -152,7 +150,6 @@ bhid
 Bicubic
 bigbar
 bigobj
-binaryformatter
 binlog
 bitmapimage
 BITMAPINFO
@@ -417,10 +414,10 @@ deinitialization
 DELA
 deletethis
 Delimarsky
-delims
 dend
 DENORMAL
 Deondre
+dependabot
 depersist
 deprioritized
 deps
@@ -463,6 +460,7 @@ DNLEN
 Dns
 doctype
 DONOTROUND
+DONTRESOLVEDLLREFERENCES
 DONTVALIDATEPATH
 dotnet
 DPICHANGED
@@ -520,7 +518,6 @@ EFile
 ekus
 elif
 elseif
-eltociear
 Emoji
 emptyrecyclebin
 ENABLEDPOPUP
@@ -609,7 +606,6 @@ Filterkeyboard
 Filterx
 finalizer
 findfast
-findstr
 Firefox
 FIXEDFILEINFO
 FLASHZONES
@@ -647,7 +643,6 @@ GBs
 GCLP
 gcnew
 gcode
-gcodepreviewhandler
 gdi
 gdiplus
 GDISCALED
@@ -668,7 +663,6 @@ GNumber
 google
 GPTR
 GSM
-gsuberland
 gtm
 gui
 guiddef
@@ -682,7 +676,6 @@ hanselman
 hardcoded
 Hardlines
 HARDWAREINPUT
-harvastum
 hashcode
 Hashset
 Hashtable
@@ -743,6 +736,7 @@ homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush
 hostname
+hotfix
 hotkeycontrol
 hotkeys
 hotlight
@@ -798,7 +792,6 @@ IComparer
 ICompositor
 ICONERROR
 IContext
-ICONWARNING
 ICreate
 IData
 IDD
@@ -957,7 +950,6 @@ ISingle
 ISmart
 isocpp
 iss
-IStorage
 IStream
 istreambuf
 istringstream
@@ -985,7 +977,6 @@ IVirtual
 IWbem
 IWIC
 iwindow
-IWork
 IXml
 IYUV
 IZone
@@ -993,6 +984,7 @@ IZoom
 JArray
 jarro
 Jarryd
+jefflord
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
@@ -1090,6 +1082,7 @@ lmcons
 LMEM
 LMENU
 lnk
+LOADLIBRARYASDATAFILE
 LOADSTRING
 LOBYTE
 LOCALAPPDATA
@@ -1155,7 +1148,6 @@ Magadan
 Mainwindow
 majortype
 MAJORVERSION
-makeappx
 makecab
 MAKEINTRESOURCE
 MAKEINTRESOURCEW
@@ -1187,7 +1179,6 @@ MCDT
 MCST
 MDICHILD
 MDL
-mdpreviewhandler
 mdtext
 mdtxt
 mdwn
@@ -1200,7 +1191,6 @@ memset
 MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
-messageboxes
 Metadatas
 metafile
 mfapi
@@ -1240,6 +1230,7 @@ mmsystem
 mockapi
 MODECHANGE
 modernwpf
+MODESPRUNED
 Moldova
 Mongala
 MONITORINFO
@@ -1275,9 +1266,7 @@ MSIHANDLE
 msiquery
 MSIRESTARTMANAGERCONTROL
 msix
-msixbundle
 MSIXCA
-MSIXVERSION
 MSLLHOOKSTRUCT
 Mso
 msp
@@ -1295,7 +1284,7 @@ Mundrabilla
 mutex
 mutexes
 muxc
-mvvm
+MVVM
 myfile
 MYICON
 MYTZ
@@ -1304,6 +1293,7 @@ nameof
 namespace
 namespaceanddescendants
 Navassa
+naveensrinivasan
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1384,7 +1374,6 @@ Noronha
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
-notafter
 notfound
 nothrow
 NOTIFICATIONSDLL
@@ -1452,7 +1441,6 @@ ostream
 ostringstream
 OSVERSIONINFOEX
 OSVERSIONINFOEXW
-OSVERSIONINFOW
 osvi
 OUTOFCONTEXT
 OUTOFMEMORY
@@ -1493,7 +1481,6 @@ PCIDLIST
 PCWSTR
 pdb
 pdbonly
-pdfpreviewhandler
 pdo
 pdto
 pdtobj
@@ -1590,7 +1577,6 @@ PROPBAG
 PROPERTYKEY
 propkey
 propvarutil
-PRTL
 prvpane
 psapi
 PSECURITY
@@ -1647,7 +1633,6 @@ RBUTTONDBLCLK
 RBUTTONDOWN
 RBUTTONUP
 rclsid
-rcmaehl
 RCONTROL
 RCtrl
 readme
@@ -1662,7 +1647,7 @@ rects
 recyclebin
 redirectedfrom
 Redist
-Redistributable
+redistributable
 reencode
 reencoded
 refactor
@@ -1688,8 +1673,6 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
-REMOTEDISPLAY
-REMOTESESSION
 Removelnk
 renamable
 RENAMEONCOLLISION
@@ -1700,7 +1683,7 @@ requerying
 rescap
 resgen
 resheader
-Resizable
+resizable
 resizers
 resmimetype
 RESOURCEID
@@ -1789,7 +1772,6 @@ Segoe
 Sekan
 SENDCHANGE
 sendvirtualinput
-serializationexception
 serializer
 serverside
 SETCONTEXT
@@ -1809,7 +1791,6 @@ SETWORKAREA
 sfgao
 SFGAOF
 SFP
-shandsj
 sharpkeys
 SHCNE
 SHCNF
@@ -1857,7 +1838,7 @@ siex
 SIGABRT
 sigdn
 SIGNINGSCENARIO
-signtool
+Signtool
 sinclairinat
 SINGLEKEY
 singlekeyremapcontrol
@@ -1982,7 +1963,6 @@ sut
 SVE
 SVGIn
 SVGIO
-svgpreviewhandler
 svgz
 SWC
 SWFO
@@ -2003,7 +1983,6 @@ SYSICONINDEX
 SYSKEY
 syskeydown
 SYSKEYUP
-SYSLIB
 syslog
 SYSMENU
 SYSTEMAPPS
@@ -2108,7 +2087,6 @@ uefi
 UHash
 UIA
 uid
-Uid
 uint
 uintptr
 UIPI
@@ -2150,7 +2128,6 @@ unsubscribe
 unvirtualized
 Updatelayout
 UPGRADINGPRODUCTCODE
-upto
 Uptool
 upvote
 uri
@@ -2337,7 +2314,6 @@ wpr
 wprintf
 wprp
 wql
-WQL
 wregex
 WResize
 writefile

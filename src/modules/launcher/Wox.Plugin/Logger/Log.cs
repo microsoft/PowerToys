@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -53,7 +54,7 @@ namespace Wox.Plugin.Logger
             var formattedOutput = new StringBuilder();
 
             formattedOutput.AppendLine("-------------------------- Begin exception --------------------------");
-            formattedOutput.AppendLine($"Message: {message}");
+            formattedOutput.AppendLine(CultureInfo.InvariantCulture, $"Message: {message}");
 
             do
             {

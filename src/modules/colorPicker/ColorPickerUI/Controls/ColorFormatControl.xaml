@@ -57,7 +57,7 @@
                     Style="{StaticResource DefaultButtonStyle}"
                     FontFamily="Segoe MDL2 Assets">
                 <Button.Content>
-                    <TextBlock Text="&#xE16F;" AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}" />
+                    <TextBlock Text="&#xE8C8;" AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}" />
                 </Button.Content>
             </Button>
         </Grid>

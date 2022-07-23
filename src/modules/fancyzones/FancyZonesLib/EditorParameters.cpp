@@ -25,6 +25,7 @@ namespace JsonUtils
         std::wstring monitorName;
         std::wstring monitorInstanceId;
         std::wstring monitorSerialNumber;
+        int monitorNumber;
         std::wstring virtualDesktop;
         int dpi;
         int top;
@@ -42,6 +43,7 @@ namespace JsonUtils
             result.SetNamedValue(NonLocalizable::EditorParametersIds::MonitorNameId, json::value(monitor.monitorName));
             result.SetNamedValue(NonLocalizable::EditorParametersIds::MonitorInstanceId, json::value(monitor.monitorInstanceId));
             result.SetNamedValue(NonLocalizable::EditorParametersIds::MonitorSerialNumberId, json::value(monitor.monitorSerialNumber));
+            result.SetNamedValue(NonLocalizable::EditorParametersIds::MonitorNumberId, json::value(monitor.monitorNumber));
             result.SetNamedValue(NonLocalizable::EditorParametersIds::VirtualDesktopId, json::value(monitor.virtualDesktop));
             result.SetNamedValue(NonLocalizable::EditorParametersIds::Dpi, json::value(monitor.dpi));
             result.SetNamedValue(NonLocalizable::EditorParametersIds::TopCoordinate, json::value(monitor.top));
@@ -114,7 +116,9 @@ bool EditorParameters::Save() noexcept
         RECT combinedMonitorArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcMonitor>();
 
         JsonUtils::MonitorInfo monitorJson;
-        monitorJson.monitorName = ZonedWindowProperties::MultiMonitorDeviceID;
+        monitorJson.monitorName = ZonedWindowProperties::MultiMonitorName;
+        monitorJson.monitorInstanceId = ZonedWindowProperties::MultiMonitorInstance;
+        monitorJson.monitorNumber = 0;
         monitorJson.virtualDesktop = virtualDesktopIdStr.value();
         monitorJson.top = combinedWorkArea.top;
         monitorJson.left = combinedWorkArea.left;
@@ -171,6 +175,7 @@ bool EditorParameters::Save() noexcept
 
             monitorJson.monitorName = monitorData.deviceId.id;
             monitorJson.monitorInstanceId = monitorData.deviceId.instanceId;
+            monitorJson.monitorNumber = monitorData.deviceId.number;
             monitorJson.monitorSerialNumber = monitorData.serialNumber;
             monitorJson.virtualDesktop = virtualDesktopIdStr.value();
 

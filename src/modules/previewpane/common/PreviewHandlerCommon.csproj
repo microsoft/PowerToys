@@ -21,26 +21,12 @@
   <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
-    <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
     <Compile Update="examplehandler\CustomControlTest.cs" />
     <Compile Update="controls\FormHandlerControl.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
-      <Link>StyleCop.json</Link>
-    </AdditionalFiles>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1150.38" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
   </ItemGroup>
 </Project>

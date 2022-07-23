@@ -696,7 +696,7 @@
                                                     HorizontalAlignment="Center"
                                                     FontStyle="Normal"
                                                     FontSize="{ThemeResource AutoSuggestBoxIconFontSize}"
-                                                    Text="&#xE10A;"
+                                                    Text="&#xe894;"
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                     AutomationProperties.AccessibilityView="Raw" />
                                                     </Grid>

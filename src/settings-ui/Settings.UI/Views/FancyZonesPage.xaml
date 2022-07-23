@@ -39,7 +39,7 @@
                                 <PathIcon Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"/>
                             </controls:Setting.Icon>-->
                             <controls:Setting.ActionContent>
-                                <FontIcon Glyph="&#xE2B4;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
+                                <FontIcon Glyph="&#xE8A7;" FontSize="18" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                             </controls:Setting.ActionContent>
                         </controls:Setting>
                     </Button>
@@ -51,7 +51,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="FancyZones_UseCursorPosEditorStartupScreen" Icon="&#xE7F9;">
+                    <controls:Setting x:Uid="FancyZones_UseCursorPosEditorStartupScreen" Icon="&#xe7b5;">
                         <controls:Setting.ActionContent>
                             <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                 <ComboBoxItem x:Uid="FancyZones_LaunchPositionScreen" />
@@ -224,7 +224,7 @@
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_OverrideSnapHotkeys" Icon="&#xE145;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                            <controls:Setting x:Uid="FancyZones_OverrideSnapHotkeys" Icon="&#xE90C;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>
@@ -269,7 +269,7 @@
                 <controls:SettingsGroup x:Uid="FancyZones_Layouts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_QuickLayoutSwitch" Icon="&#xE737;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
+                            <controls:Setting x:Uid="FancyZones_QuickLayoutSwitch" Icon="&#xeda7;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>

@@ -256,6 +256,10 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     svgData = reader.ReadToEnd();
                     try
                     {
+                        // Fixes #17527 - Inkscape v1.1 swapped order of default and svg namespaces in svg file (default first, svg after).
+                        // That resulted in parser being unable to parse it correctly and instead of svg, text was previewed.
+                        // MS Edge and Firefox also couldn't preview svg files with mentioned order of namespaces definitions.
+                        svgData = SvgPreviewHandlerHelper.SwapNamespaces(svgData);
                         svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
                     }
                     catch (Exception)
