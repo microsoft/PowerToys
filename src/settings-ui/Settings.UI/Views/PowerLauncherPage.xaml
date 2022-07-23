@@ -273,7 +273,7 @@
                                                                         Visibility="{x:Bind ShowNotAccessibleWarning}"
                                                                         Style="{StaticResource CriticalIconInfoBadgeStyle}" />
                                                         <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
-                                                                        Visibility="{x:Bind IsProblematicPluginSetting}" => Eventhandler removed as current code works different (htcfreek)
+                                                                        Visibility="{x:Bind IsProblematicPluginSetting}" => Event handler removed as current code works different (htcfreek)
                                                                         Style="{StaticResource WarningIconInfoBadgeStyle}" />
                                                         -->
 
