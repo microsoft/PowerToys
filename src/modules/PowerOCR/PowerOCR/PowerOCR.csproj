@@ -38,7 +38,13 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 
 </Project>
