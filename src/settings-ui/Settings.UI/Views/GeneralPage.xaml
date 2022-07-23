@@ -172,12 +172,11 @@
 
 
 
-
-
                 <controls:SettingsGroup x:Uid="Admin_Mode">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="Admin_Mode" Icon="&#xE7EF;" Description="{Binding Mode=OneWay, Path=RunningAsText}" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                                <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp" x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
                                 <controls:Setting.ActionContent>
                                     <Button x:Uid="GeneralPage_RestartAsAdmin_Button"
                                             Command = "{Binding RestartElevatedButtonEventHandler}"
@@ -188,24 +187,15 @@
                         <controls:SettingExpander.Content>
                             <StackPanel Orientation="Vertical">
                                 <controls:Setting x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{Binding Mode=OneWay, Path=IsElevated}" Style="{StaticResource ExpanderContentSettingStyle}">
-                                    <controls:Setting.Description>
-                                        <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp"
-                                                         Visibility="{Binding Mode=OneWay, Path=IsElevated}"
-                                                         x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
-                                    </controls:Setting.Description>
                                     <controls:Setting.ActionContent>
                                         <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=RunElevated}" x:Uid="ToggleSwitch"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                                 <muxc:InfoBar x:Uid="General_RunAsAdminRequired" 
-                                          Severity="Warning"
-                                          IsTabStop="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource NegationConverter}}"
-                                          IsClosable="False"
-                                          IsOpen="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource NegationConverter}}">
-                                    <muxc:InfoBar.ActionButton>
-                                        <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp"
-                                                         x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
-                                    </muxc:InfoBar.ActionButton>
+                                              Severity="Warning"
+                                              IsTabStop="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource NegationConverter}}"
+                                              IsClosable="False"
+                                              IsOpen="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource NegationConverter}}">
                                 </muxc:InfoBar>
                             </StackPanel>
                         </controls:SettingExpander.Content>

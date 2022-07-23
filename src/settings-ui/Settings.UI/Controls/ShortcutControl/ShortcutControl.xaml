@@ -40,7 +40,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <FontIcon Glyph="&#xE104;"
+                    <FontIcon Glyph="&#xE70F;"
                               FontFamily="{ThemeResource SymbolThemeFontFamily}"
                               FontSize="14"/>
                 </StackPanel>

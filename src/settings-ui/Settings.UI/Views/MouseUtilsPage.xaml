@@ -61,7 +61,7 @@
                     </controls:SettingExpander>
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xEB3C;" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
@@ -158,7 +158,7 @@
 
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xEB3C;" />
                         </controls:SettingExpander.Header>
                       
 
@@ -244,7 +244,7 @@
                     </controls:Setting>
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xEB3C;" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>

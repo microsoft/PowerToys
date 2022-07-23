@@ -1127,7 +1127,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_Windows.Header" xml:space="preserve">
     <value>Windows</value>
-    <comment>refers to a set of windows, not the product name</comment>
+    <comment>Do translate: refers to a set of windows, not the product name</comment>
   </data>
   <data name="PowerRename_BehaviorHeader.Header" xml:space="preserve">
     <value>Behavior</value>

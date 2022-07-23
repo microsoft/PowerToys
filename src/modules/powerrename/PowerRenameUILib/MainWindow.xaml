@@ -59,7 +59,7 @@
                 </TextBlock>
             </StackPanel>
 
-            <Button Content="&#xE16E;" Background="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Height="32" x:Uid="FilterButton" Grid.Column="1" BorderThickness="0" HorizontalAlignment="Right" Margin="0,0,8,0">
+            <Button Content="&#xE71C;" Background="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Height="32" x:Uid="FilterButton" Grid.Column="1" BorderThickness="0" HorizontalAlignment="Right" Margin="0,0,8,0">
                 <Button.Flyout>
                     <MenuBarItemFlyout Placement="Bottom">
                         <controls:RadioMenuFlyoutItem x:Name="button_showAll" Click="ShowAll" x:Uid="ShowAll" IsChecked="True" GroupName="Filter" />
@@ -281,9 +281,9 @@
                         <x:String>Extension only</x:String>
                     </ComboBox>
                     <AppBarSeparator Margin="5,0,5,0" />
-                    <ToggleButton x:Name="toggleButton_includeFiles" Content="&#xE160;" MinHeight="0" Height="31" IsChecked="True" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ToggleButton_IncludeFiles" Style="{StaticResource CustomToggleButtonStyle}" />
+                    <ToggleButton x:Name="toggleButton_includeFiles" Content="&#xE7C3;" MinHeight="0" Height="31" IsChecked="True" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ToggleButton_IncludeFiles" Style="{StaticResource CustomToggleButtonStyle}" />
                     <ToggleButton x:Name="toggleButton_includeFolders" Content="&#xE8B7;" MinHeight="0" Height="31" IsChecked="True" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ToggleButton_IncludeFolders" Style="{StaticResource CustomToggleButtonStyle}" />
-                    <ToggleButton x:Name="toggleButton_includeSubfolders" Content="&#xE12F;" MinHeight="0" Height="31" IsChecked="True" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ToggleButton_IncludeSubFolders" Style="{StaticResource CustomToggleButtonStyle}" />
+                    <ToggleButton x:Name="toggleButton_includeSubfolders" Content="&#xED41;" MinHeight="0" Height="31" IsChecked="True" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ToggleButton_IncludeSubFolders" Style="{StaticResource CustomToggleButtonStyle}" />
                 </StackPanel>
 
 

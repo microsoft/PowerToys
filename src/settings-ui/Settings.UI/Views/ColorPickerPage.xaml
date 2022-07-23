@@ -78,7 +78,7 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Name="ColorFormatsSetting" x:Uid="ColorPicker_ColorFormats" Icon="&#xE8FD;"/>
+                    <controls:Setting x:Name="ColorFormatsSetting" x:Uid="ColorPicker_ColorFormats" Icon="&#xE762;"/>
 
                     <!-- Disabled reordering by dragging -->
                     <!-- CanReorderItems="True" AllowDrop="True" -->
@@ -127,11 +127,7 @@
                                         <Button.Flyout>
                                             <MenuFlyout>
                                                 <MenuFlyoutItem IsEnabled="{x:Bind CanMoveUp}" Icon="Up" x:Uid="MoveUp" Click="ReorderButtonUp_Click"/>
-                                                <MenuFlyoutItem IsEnabled="{x:Bind CanMoveDown}" x:Uid="MoveDown" Click="ReorderButtonDown_Click">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <FontIcon Glyph="&#xF0AE;" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
+                                                <MenuFlyoutItem IsEnabled="{x:Bind CanMoveDown}" Icon="Down" x:Uid="MoveDown" Click="ReorderButtonDown_Click"/>
                                             </MenuFlyout>
                                         </Button.Flyout>
                                         <ToolTipService.ToolTip>
