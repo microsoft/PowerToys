@@ -2153,6 +2153,6 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Enable round corners</value>
   </data>
   <data name="Run_MathematicActionKeywordWarning.Title" xml:space="preserve">
-    <value>This activation command could break Calculator plugin for some global queries.</value>
+    <value>This activation command breaks some global queries for the Calculator plugin.</value>
   </data>
 </root>
