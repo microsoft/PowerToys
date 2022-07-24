@@ -543,6 +543,7 @@ ERRORMESSAGE
 ERRORTITLE
 ESettings
 esize
+ESqlite
 esrp
 Eswatini
 etl
