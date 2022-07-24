@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _isEnabled = value;
 
-                    GeneralSettingsConfig.Enabled.Awake = value;
+                    GeneralSettingsConfig.Enabled.PowerOcr = value;
                     OnPropertyChanged(nameof(IsEnabled));
 
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
