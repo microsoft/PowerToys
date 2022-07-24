@@ -354,7 +354,7 @@
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="PowerLauncher_SearchResults.Header" xml:space="preserve">
-    <value>Search &amp; results</value>
+    <value>Search and results</value>
   </data>
   <data name="PowerLauncher_SearchResultPreference.Header" xml:space="preserve">
     <value>Search result preference</value>
@@ -721,7 +721,7 @@
     <value>In some edge cases Shortcut Guide might not function correctly when using this activation method</value>
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
-    <value>Appearance &amp; behavior</value>
+    <value>Appearance and behavior</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
@@ -1244,7 +1244,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Additional options</value>
   </data>
   <data name="Run_NotAccessibleWarning.Title" xml:space="preserve">
-    <value>Please define an activation command or allow this plugin for the global results to use it.</value>
+    <value>Please define an activation command or allow this plugin to be used in the global results.</value>
   </data>
   <data name="Run_AllPluginsDisabled.Title" xml:space="preserve">
     <value>PowerToys Run can't provide any results without plugins</value>
@@ -1253,7 +1253,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Enable at least one plugin to get started</value>
   </data>
   <data name="Run_NotAllowedActionKeyword.Title" xml:space="preserve">
-    <value>This activation command is already in use by another plugin.</value>
+    <value>This activation command is forbidden or reserved for the use in other plugins.</value>
   </data>
   <data name="Run_PluginUseDescription.Header" xml:space="preserve">
     <value>Plugins</value>
@@ -1262,7 +1262,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Include or remove plugins from the global results, change the direct activation phrase and configure additional options</value>
   </data>
   <data name="Run_PositionAppearance_GroupSettings.Header" xml:space="preserve">
-    <value>Position &amp; appearance</value>
+    <value>Position and appearance</value>
   </data>
   <data name="Run_PositionHeader.Header" xml:space="preserve">
     <value>Preferred monitor position</value>
@@ -1430,7 +1430,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>to open Shortcut Guide, press it again to close or press **Esc**.</value>
   </data>
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
-    <value>Tips &amp; tricks</value>
+    <value>Tips and tricks</value>
   </data>
   <data name="Oobe_VideoConference_ToggleMicVid.Text" xml:space="preserve">
     <value>to toggle both your microphone and video</value>
@@ -1574,7 +1574,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Downloading...</value>
   </data>
   <data name="General_TryAgainToDownloadAndInstall.Content" xml:space="preserve">
-    <value>Try again to download &amp; install</value>
+    <value>Try again to download and install</value>
   </data>
   <data name="General_CheckingForUpdates.Text" xml:space="preserve">
     <value>Checking for updates...</value>
@@ -2046,7 +2046,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>px = pixels</comment>
   </data>
   <data name="AlwaysOnTop_Behavior_GroupSettings.Header" xml:space="preserve">
-    <value>Appearance &amp; behavior</value>
+    <value>Appearance and behavior</value>
   </data>
   <data name="Shell_AlwaysOnTop.Content" xml:space="preserve">
     <value>Always On Top</value>
