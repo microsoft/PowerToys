@@ -58,55 +58,57 @@
 
   <?define launcherImagesComponentFiles=app.dark.png;app.light.png;app_error.dark.png;app_error.light.png;RunAsset.ico?>
 
-  <?define calcComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Calculator.deps.json;Microsoft.PowerToys.Run.Plugin.Calculator.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define calcComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Calculator.deps.json;Microsoft.PowerToys.Run.Plugin.Calculator.dll;Mages.Core.dll?>
 
-  <?define FolderComponentFiles=plugin.json;Microsoft.Plugin.Folder.deps.json;Microsoft.Plugin.Folder.dll;PowerToys.ManagedTelemetry.dll;Ijwhost.dll?>
+  <?define FolderComponentFiles=plugin.json;Microsoft.Plugin.Folder.deps.json;Microsoft.Plugin.Folder.dll;Ijwhost.dll?>
 
   <?define FolderImagesComponentFiles=copy.dark.png;copy.light.png;delete.dark.png;delete.light.png;file.dark.png;file.light.png;folder.dark.png;folder.light.png;user.dark.png;user.light.png;Warning.dark.png;Warning.light.png?>
 
-  <?define ProgramComponentFiles=plugin.json;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define ProgramComponentFiles=plugin.json;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll?>
 
   <?define ProgramImagesComponentFiles=app.dark.png;app.light.png;disable.light.png;disable.dark.png;folder.light.png;folder.dark.png;shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
 
-  <?define ShellComponentFiles=plugin.json;Microsoft.Plugin.Shell.deps.json;Microsoft.Plugin.Shell.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define ShellComponentFiles=plugin.json;Microsoft.Plugin.Shell.deps.json;Microsoft.Plugin.Shell.dll;Microsoft.Plugin.Folder.dll?>
 
   <?define ShellImagesComponentFiles=shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
 
-  <?define IndexerComponentFiles=Microsoft.Plugin.Indexer.deps.json;Microsoft.Plugin.Indexer.dll;plugin.json;PowerToys.ManagedTelemetry.dll;Ijwhost.dll?>
+  <?define IndexerComponentFiles=Microsoft.Plugin.Indexer.deps.json;Microsoft.Plugin.Indexer.dll;plugin.json;Ijwhost.dll;System.Data.OleDb.dll?>
 
   <?define IndexerImagesComponentFiles=indexer.dark.png;indexer.light.png;Warning.light.png;Warning.dark.png?>
 
-  <?define UnitConvCompFiles=plugin.json;Community.PowerToys.Run.Plugin.UnitConverter.deps.json;Community.PowerToys.Run.Plugin.UnitConverter.dll?>
+  <?define UnitConvCompFiles=plugin.json;Community.PowerToys.Run.Plugin.UnitConverter.deps.json;Community.PowerToys.Run.Plugin.UnitConverter.dll;UnitsNet.dll?>
 
   <?define WebSrchCompFiles=plugin.json;Community.PowerToys.Run.Plugin.WebSearch.deps.json;Community.PowerToys.Run.Plugin.WebSearch.dll?>
 
-  <?define UriComponentFiles=plugin.json;Microsoft.Plugin.Uri.deps.json;Microsoft.Plugin.Uri.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define UriComponentFiles=plugin.json;Microsoft.Plugin.Uri.deps.json;Microsoft.Plugin.Uri.dll?>
 
-  <?define VSCWrkCompFiles=plugin.json;Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll?>
+  <?define VSCWrkCompFiles=plugin.json;Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll?>
 
-  <?define WindowWlkrCompFiles=plugin.json;Microsoft.Plugin.WindowWalker.deps.json;Microsoft.Plugin.WindowWalker.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define WindowWlkrCompFiles=plugin.json;Microsoft.Plugin.WindowWalker.deps.json;Microsoft.Plugin.WindowWalker.dll?>
 
   <?define WindowWlkrImagesCompFiles=windowwalker.dark.png;windowwalker.light.png;info.dark.png;info.light.png?>
 
-  <?define OneNoteComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.OneNote.deps.json;Microsoft.PowerToys.Run.Plugin.OneNote.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define OneNoteComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.OneNote.deps.json;Microsoft.PowerToys.Run.Plugin.OneNote.dll;ScipBe.Common.Office.OneNote.dll;Interop.Microsoft.Office.Interop.OneNote.dll;LazyCache.dll?>
 
-  <?define RegistryComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define RegistryComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll?>
 
-  <?define ServiceComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Service.deps.json;Microsoft.PowerToys.Run.Plugin.Service.dll?>
+  <?define ServiceComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.Service.deps.json;Microsoft.PowerToys.Run.Plugin.Service.dll;System.ServiceProcess.ServiceController.dll?>
 
+  <?define ServiceNet60ComponentFiles=System.Diagnostics.EventLog.Messages.dll;System.ServiceProcess.ServiceController.dll?>
+  
   <?define SystemComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.System.deps.json;Microsoft.PowerToys.Run.Plugin.System.dll?>
 
   <?define SystemImagesComponentFiles=lock.dark.png;lock.light.png;logoff.dark.png;logoff.light.png;recyclebin.dark.png;recyclebin.light.png;restart.dark.png;restart.light.png;shutdown.dark.png;shutdown.light.png;sleep.dark.png;sleep.light.png;firmwareSettings.dark.png;firmwareSettings.light.png;networkAdapter.dark.png;networkAdapter.light.png?>
 
-  <?define TimeDateComponentFiles=Microsoft.PowerToys.Run.Plugin.TimeDate.deps.json;Microsoft.PowerToys.Run.Plugin.TimeDate.dll;plugin.json;PowerToys.ManagedTelemetry.dll?>
+  <?define TimeDateComponentFiles=Microsoft.PowerToys.Run.Plugin.TimeDate.deps.json;Microsoft.PowerToys.Run.Plugin.TimeDate.dll;plugin.json?>
 
   <?define TimeDateImagesComponentFiles=calendar.dark.png;calendar.light.png;time.dark.png;time.light.png;timeDate.dark.png;timeDate.light.png;Warning.dark.png;Warning.light.png?>
 
-  <?define TimeZoneComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json;Microsoft.PowerToys.Run.Plugin.TimeZone.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define TimeZoneComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.TimeZone.deps.json;Microsoft.PowerToys.Run.Plugin.TimeZone.dll?>
 
-  <?define WinSetCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define WinSetCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll?>
 
-  <?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
+  <?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll?>
 
   <?define PowerRenameFiles=PowerRenameUI.ico;Microsoft.WindowsAppRuntime.Bootstrap.dll;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll;CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;MRM.dll;PushNotificationsLongRunningTask.ProxyStub.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinUIEdit.dll;wuceffectsi.dll;PowerRenameContextMenuPackage.msix;PowerToys.PowerRenameContextMenu.dll?>
 
@@ -482,6 +484,13 @@
                 <Directory Id="IndexerPluginFolder" Name="Indexer">
                   <Directory Id="IndexerImagesFolder" Name="Images" />
                   <Directory Id="IndexerLanguagesFolder" Name="Languages" />
+                  <Directory Id="IndexerRuntimesFolder" Name ="runtimes">
+                    <Directory Id="IndexerWinFolder" Name="win">
+                      <Directory Id="IndexerLibFolder" Name ="lib">
+                        <Directory Id="IndexerNet60Folder" Name ="net6.0" />
+                      </Directory>
+                    </Directory>
+                  </Directory>
                 </Directory>
                 <Directory Id="UriPluginFolder" Name="Uri">
                   <Directory Id="UriImagesFolder" Name="Images" />
@@ -494,6 +503,14 @@
                 <Directory Id="VSCodeWorkspacesPluginFolder" Name="VSCodeWorkspace">
                   <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
                   <Directory Id="VSCodeWorkspaceLanguagesFolder" Name="Languages" />
+                  <Directory Id="VSCodeWorkspaceFolder" Name ="runtimes">
+                    <Directory Id="VSCodeWorkspaceWinX64Folder" Name="win-x64">
+                      <Directory Id="VSCodeWorkspaceWinX64NativeFolder" Name ="native" />
+                    </Directory>
+                    <Directory Id="VSCodeWorkspaceWinArm64Folder" Name="win-arm-64">
+                      <Directory Id="VSCodeWorkspaceWinArm64NativeFolder" Name ="native" />
+                    </Directory>
+                  </Directory>
                 </Directory>
                 <Directory Id="WindowWalkerPluginFolder" Name="WindowWalker">
                   <Directory Id="WindowWalkerImagesFolder" Name="Images" />
@@ -509,6 +526,13 @@
                 </Directory>
                 <Directory Id="ServicePluginFolder" Name="Service">
                   <Directory Id="ServiceImagesFolder" Name="Images" />
+                  <Directory Id="ServiceRuntimesFolder" Name ="runtimes">
+                    <Directory Id="ServiceWinFolder" Name="win">
+                      <Directory Id="ServiceLibFolder" Name ="lib">
+                        <Directory Id="ServiceNet60Folder" Name ="net6.0" />
+                      </Directory>
+                    </Directory>
+                  </Directory>
                 </Directory>
                 <Directory Id="WindowsTerminalPluginFolder" Name="WindowsTerminal">
                   <Directory Id="WindowsTerminalImagesFolder" Name="Images" />
@@ -1731,7 +1755,7 @@
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
       <Component Id="launcherInstallComponent" Guid="ab0d0567-1e41-4da4-9934-dcb74b7048a4" Directory="LauncherInstallFolder" >
         <File Source="$(var.BinDir)modules\Launcher\PowerToys.Launcher.dll" />
-        <?foreach File in e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.Management.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;System.Text.Json.dll;Ijwhost.dll;ScipBe.Common.Office.OneNote.dll;Interop.Microsoft.Office.Interop.OneNote.dll;LazyCache.dll;Microsoft.Extensions.Caching.Abstractions.dll;Microsoft.Extensions.Caching.Memory.dll?>
+        <?foreach File in Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.Management.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;System.Text.Json.dll;Ijwhost.dll?>
         <File Id="File_$(var.File)" Source="$(var.BinDir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinDir)Settings\PowerToys.Settings.UI.Lib.dll" />
@@ -1803,6 +1827,9 @@
         <File Id="IndexerImagesComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Indexer\Images\$(var.File)" />
       </Component>
       <?endforeach?>
+      <Component Id="IndexerNet60Component" Win64="yes" Directory="IndexerNet60Folder">
+        <File Id="IndexerSystemDataOleDb" Source="$(var.BinDir)modules\launcher\Plugins\Indexer\runtimes\win\lib\net6.0\System.Data.OleDb.dll" />
+      </Component>
 
       <!-- UnitConverter Plugin -->
       <?foreach File in $(var.UnitConvCompFiles)?>
@@ -1864,6 +1891,12 @@
       <Component Id="VSCodeWorkspacesImagesComponentMonitor" Directory="VSCodeWorkspaceImagesFolder" >
         <File Id="VSCodeWorkspaceRemote" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\Images\monitor.png" />
       </Component>
+      <Component Id="VSCodeWorkspaceWinX64NativeComponent" Win64="yes" Directory="VSCodeWorkspaceWinX64NativeFolder">
+        <File Id="VSCodeWorkspaceWinX64NativeESqlite" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\runtimes\win-x64\native\e_sqlite3.dll" />
+      </Component>
+      <Component Id="VSCodeWorkspaceWinArm64NativeComponent" Win64="yes" Directory="VSCodeWorkspaceWinArm64NativeFolder">
+        <File Id="VSCodeWorkspaceWinArm64NativeESqlite" Source="$(var.BinDir)modules\launcher\Plugins\VSCodeWorkspaces\runtimes\win-arm64\native\e_sqlite3.dll" />
+      </Component>
 
       <!-- WindowWalker Plugin -->
       <?foreach File in $(var.WindowWlkrCompFiles)?>
@@ -1915,6 +1948,11 @@
       <Component Id="ServiceImagesComponentDark" Directory="ServiceImagesFolder" >
         <File Id="ServiceDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\Service\Images\service.dark.png" />
       </Component>
+      <?foreach File in $(var.ServiceNet60ComponentFiles)?>
+      <Component Id="ServiceNet60Component_$(var.File)" Win64="yes" Directory="ServiceNet60Folder">
+        <File Id="ServiceNet60ComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\Service\runtimes\win\lib\net6.0\$(var.File)" />
+      </Component>
+      <?endforeach?>
 
       <!-- System Plugin -->
       <?foreach File in $(var.SystemComponentFiles)?>
