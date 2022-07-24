@@ -204,7 +204,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private static readonly List<string> MathematicKeywords = new List<string>()
         {
             // Using one of them breaks global queries for calculator plugin.
-            ".", ",", "+", "-", "(",
+            // ".", ",", "+", "-", "(", => We do not warn on dot as we use it currently for the program plugin and there are no issues regarding the dot opened by our users. (htcfreek, 2022-07-24)
+            ",", "+", "-", "(",
         };
 
         public bool ShowMathematicKeywordWarning
