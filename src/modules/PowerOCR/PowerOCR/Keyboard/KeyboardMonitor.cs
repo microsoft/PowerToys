@@ -28,6 +28,7 @@ public class KeyboardMonitor : IDisposable
     public KeyboardMonitor(IUserSettings userSettings)
     {
         _userSettings = userSettings;
+        _userSettings.ActivationShortcut.PropertyChanged -= ActivationShortcut_PropertyChanged;
         _userSettings.ActivationShortcut.PropertyChanged += ActivationShortcut_PropertyChanged;
         SetActivationKeys();
     }
@@ -174,6 +175,7 @@ public class KeyboardMonitor : IDisposable
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         Dispose(disposing: true);
+        _userSettings.ActivationShortcut.PropertyChanged -= ActivationShortcut_PropertyChanged;
         GC.SuppressFinalize(this);
     }
 }
