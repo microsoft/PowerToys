@@ -52,6 +52,7 @@ Andreanof
 anges
 angularsen
 ansicolor
+antialias
 ANull
 AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
