@@ -179,13 +179,25 @@ namespace Microsoft.PowerToys.Settings.UI
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow(isDark);
                 settingsWindow.Activate();
+
+#if !DEBUG
+                ShowMessageDialogAndExit("The application cannot be run as a standalone process. Please start the application through the runner.", "Forbidden");
+#else
                 ShowMessageDialog("The application cannot be run as a standalone process. Please start the application through the runner.", "Forbidden");
+#endif
             }
         }
 
+#if !DEBUG
+        private async void ShowMessageDialogAndExit(string content, string title = null)
+#else
         private async void ShowMessageDialog(string content, string title = null)
+#endif
         {
             await ShowDialogAsync(content, title);
+#if !DEBUG
+            this.Exit();
+#endif
         }
 
         public static Task<IUICommand> ShowDialogAsync(string content, string title = null)
