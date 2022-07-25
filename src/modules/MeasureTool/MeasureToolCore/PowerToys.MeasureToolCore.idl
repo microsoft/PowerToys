@@ -1,0 +1,21 @@
+namespace PowerToys
+{
+    namespace MeasureToolCore
+    {
+        struct Point
+        {
+            Int32 X;
+            Int32 Y;
+        };
+
+        [default_interface]
+        runtimeclass Core
+        {
+            Core();
+            void StartMeasureTool(Boolean horizontal, Boolean vertical);
+            void StartBoundsTool();
+
+            Point GetCursorPosition();
+        }
+    }
+}

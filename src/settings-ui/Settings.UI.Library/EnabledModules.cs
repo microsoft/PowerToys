@@ -241,7 +241,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool measureTool = true;
 
-        [JsonPropertyName("MeasureTool")]
+        [JsonPropertyName("Measure Tool")]
         public bool MeasureTool
         {
             get => measureTool;

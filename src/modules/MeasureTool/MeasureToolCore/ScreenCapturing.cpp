@@ -4,6 +4,42 @@
 #include "BGRATextureView.h"
 #include "EdgeDetection.h"
 
+class OwnedTextureView
+{
+    winrt::com_ptr<ID3D11Texture2D> texture;
+    winrt::com_ptr<ID3D11DeviceContext> context;
+
+public:
+    BGRATextureView view;
+    OwnedTextureView(winrt::com_ptr<ID3D11Texture2D> _texture, winrt::com_ptr<ID3D11DeviceContext> _context) :
+        texture{ std::move(_texture) }, context{ std::move(_context) }
+    {
+        D3D11_TEXTURE2D_DESC desc;
+        texture->GetDesc(&desc);
+
+        assert(desc.Format == static_cast<DXGI_FORMAT>(pixelFormat));
+
+        D3D11_MAPPED_SUBRESOURCE resource;
+        winrt::check_hresult(context->Map(texture.get(), D3D11CalcSubresource(0, 0, 0), D3D11_MAP_READ, 0, &resource));
+
+        const size_t texWidth = resource.RowPitch / 4;
+        const size_t texHeight = resource.DepthPitch / texWidth / 4;
+        view.pixels = static_cast<const uint32_t*>(resource.pData);
+
+        view.width = texWidth;
+        view.height = texHeight;
+    }
+
+    OwnedTextureView(OwnedTextureView&&) = default;
+    OwnedTextureView& operator=(OwnedTextureView&&) = default;
+
+    ~OwnedTextureView()
+    {
+        if (context && texture)
+            context->Unmap(texture.get(), D3D11CalcSubresource(0, 0, 0));
+    }
+};
+
 class D3DCaptureState final
 {
     winrt::com_ptr<ID3D11Device> d3dDevice;
@@ -16,7 +52,7 @@ class D3DCaptureState final
     winrt::Direct3D11CaptureFramePool framePool;
     winrt::GraphicsCaptureSession session;
 
-    std::function<void(const BGRATextureView)> frameCallback;
+    std::function<void(OwnedTextureView)> frameCallback;
 
     D3DCaptureState(winrt::com_ptr<ID3D11Device> d3dDevice,
                     winrt::IDirect3DDevice _device,
@@ -29,12 +65,17 @@ class D3DCaptureState final
 
     void OnFrameArrived(const winrt::Direct3D11CaptureFramePool& sender, const winrt::IInspectable&);
 
+    void StartSessionInPreferredMode();
+
+    std::mutex dtorMutex;
+
 public:
     static std::unique_ptr<D3DCaptureState> Create(const winrt::GraphicsCaptureItem& item, const winrt::DirectXPixelFormat pixelFormat);
 
     ~D3DCaptureState();
 
-    void StartCapture(std::function<void(const BGRATextureView)> _frameCallback);
+    void StartCapture(std::function<void(OwnedTextureView)> _frameCallback);
+    OwnedTextureView CaptureSingleFrame();
 
     void StopCapture();
 };
@@ -73,21 +114,6 @@ winrt::com_ptr<ID3D11Texture2D> D3DCaptureState::CopyFrameToCPU(const winrt::com
     return cpuTexture;
 }
 
-int run_message_loop(const bool until_idle = false)
-{
-    MSG msg{};
-    bool stop = false;
-
-    while (!stop && GetMessageW(&msg, nullptr, 0, 0))
-    {
-        TranslateMessage(&msg);
-        DispatchMessageW(&msg);
-        stop = until_idle && !PeekMessageW(&msg, nullptr, 0, 0, PM_NOREMOVE);
-        stop = stop || (msg.message == WM_TIMER);
-    }
-    return static_cast<int>(msg.wParam);
-}
-
 template<typename T>
 auto GetDXGIInterfaceFromObject(winrt::IInspectable const& object)
 {
@@ -99,8 +125,10 @@ auto GetDXGIInterfaceFromObject(winrt::IInspectable const& object)
 
 void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& sender, const winrt::IInspectable&)
 {
-    bool resized = false;
+    // Prevent calling a callback on a partially destroyed state
+    std::unique_lock callbackLock{ dtorMutex };
 
+    bool resized = false;
     winrt::com_ptr<ID3D11Texture2D> texture;
     {
         auto frame = sender.TryGetNextFrame();
@@ -122,24 +150,12 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
         texture = CopyFrameToCPU(gpuTexture);
     }
 
-    D3D11_TEXTURE2D_DESC desc;
-    texture->GetDesc(&desc);
-
-    assert(desc.Format == static_cast<DXGI_FORMAT>(pixelFormat));
-
-    D3D11_MAPPED_SUBRESOURCE resource;
-    UINT subresource = D3D11CalcSubresource(0, 0, 0);
-    winrt::check_hresult(context->Map(texture.get(), subresource, D3D11_MAP_READ, 0, &resource));
-
-    const size_t texWidth = resource.RowPitch / 4;
-    const size_t texHeight = resource.DepthPitch / texWidth / 4;
-    auto frameView = BGRATextureView{ .pixels = static_cast<const uint32_t*>(resource.pData), .width = texWidth, .height = texHeight };
-    frameCallback(frameView);
-
-    context->Unmap(texture.get(), subresource);
+    OwnedTextureView textureView{ texture, context };
 
     DXGI_PRESENT_PARAMETERS presentParameters = {};
     swapchain->Present1(1, 0, &presentParameters);
+
+    frameCallback(std::move(textureView));
 
     if (resized)
     {
@@ -221,14 +237,13 @@ std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(const winrt::GraphicsCa
 
 D3DCaptureState::~D3DCaptureState()
 {
-    session.Close();
+    std::unique_lock callbackLock{ dtorMutex };
+    StopCapture();
     framePool.Close();
 }
 
-void D3DCaptureState::StartCapture(std::function<void(const BGRATextureView)> _frameCallback)
+void D3DCaptureState::StartSessionInPreferredMode()
 {
-    frameCallback = std::move(_frameCallback);
-
     // Try disable border if possible (available on Windows ver >= 20348)
     if (auto session3 = session.try_as<winrt::IGraphicsCaptureSession3>())
     {
@@ -239,14 +254,70 @@ void D3DCaptureState::StartCapture(std::function<void(const BGRATextureView)> _f
     session.StartCapture();
 }
 
+void D3DCaptureState::StartCapture(std::function<void(OwnedTextureView)> _frameCallback)
+{
+    frameCallback = std::move(_frameCallback);
+    StartSessionInPreferredMode();
+}
+
+OwnedTextureView D3DCaptureState::CaptureSingleFrame()
+{
+    std::optional<OwnedTextureView> result;
+    wil::shared_event frameArrivedEvent(wil::EventOptions::ManualReset);
+
+    frameCallback = [frameArrivedEvent, &result, this](OwnedTextureView tex) {
+        if (result)
+            return;
+
+        StopCapture();
+        result.emplace(std::move(tex));
+        frameArrivedEvent.SetEvent();
+    };
+
+    StartSessionInPreferredMode();
+
+    frameArrivedEvent.wait();
+
+    assert(result.has_value());
+    return std::move(*result);
+}
+
 void D3DCaptureState::StopCapture()
 {
     session.Close();
 }
 
+void UpdateCaptureState(MeasureToolState& state, HWND targetWindow, const uint8_t pixelTolerance, const OwnedTextureView& textureView)
+{
+    MeasureToolState::State::CrossCoords cross;
+    POINT cursorPos{};
+    GetCursorPos(&cursorPos);
+    ScreenToClient(targetWindow, &cursorPos);
+
+    const bool cursorInLeftScreenHalf = cursorPos.x < textureView.view.width / 2;
+    const bool cursorInTopScreenHalf = cursorPos.y < textureView.view.height / 2;
+
+    const RECT bounds = DetectEdges(textureView.view, cursorPos, pixelTolerance);
+
+    cross.hLineStart.x = static_cast<float>(bounds.left);
+    cross.hLineEnd.x = static_cast<float>(bounds.right);
+    cross.hLineStart.y = cross.hLineEnd.y = static_cast<float>(cursorPos.y);
+
+    cross.vLineStart.x = cross.vLineEnd.x = static_cast<float>(cursorPos.x);
+    cross.vLineStart.y = static_cast<float>(bounds.top);
+    cross.vLineEnd.y = static_cast<float>(bounds.bottom);
+
+    state.Access([&](MeasureToolState::State& state) {
+        state.cross = cross;
+        state.cursorInLeftScreenHalf = cursorInLeftScreenHalf;
+        state.cursorInTopScreenHalf = cursorInTopScreenHalf;
+        state.cursorPos = cursorPos;
+    });
+}
+
 void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR targetMonitor)
 {
-    std::thread{ [&state, targetMonitor, targetWindow] {
+    SpawnLoggedThread([&state, targetMonitor, targetWindow] {
         winrt::check_pointer(targetMonitor);
 
         auto captureInterop = winrt::get_activation_factory<
@@ -262,50 +333,51 @@ void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR t
 
         auto captureState = D3DCaptureState::Create(item, winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized);
 
-        bool shouldExit = false;
+        bool stopCapturing = false;
 
-        captureState->StartCapture([&, targetWindow](const BGRATextureView texture) {
-            MeasureToolState::State::CrossCoords cross;
-            POINT cursorPos{};
-            GetCursorPos(&cursorPos);
-            ScreenToClient(targetWindow, &cursorPos);
-
-            const bool cursorInLeftScreenHalf = cursorPos.x < texture.width / 2;
-            const bool cursorInTopScreenHalf = cursorPos.y < texture.height / 2;
-
-            const RECT bounds = DetectEdges(texture, cursorPos);
-
-            cross.hLineStart.x = static_cast<float>(bounds.left);
-            cross.hLineEnd.x = static_cast<float>(bounds.right);
-            cross.hLineStart.y = cross.hLineEnd.y = static_cast<float>(cursorPos.y);
-
-            cross.vLineStart.x = cross.vLineEnd.x = static_cast<float>(cursorPos.x);
-            cross.vLineStart.y = static_cast<float>(bounds.top);
-            cross.vLineEnd.y = static_cast<float>(bounds.bottom);
-
-            state.Access([&](MeasureToolState::State& state) {
-                state.cross = cross;
-                state.cursorInLeftScreenHalf = cursorInLeftScreenHalf;
-                state.cursorInTopScreenHalf = cursorInTopScreenHalf;
-                state.cursorPos = cursorPos;
-
-                shouldExit = state.shouldExit;
-            });
-
-            if (shouldExit)
-            {
-                captureState->StopCapture();
-            }
+        uint8_t pixelTolerance = 1;
+        bool continuousCapture = false;
+        state.Access([&](MeasureToolState::State& state) {
+            pixelTolerance = state.pixelTolerance;
+            continuousCapture = state.continuousCapture;
         });
 
-        MSG msg{};
+        constexpr size_t TARGET_FRAMERATE = 120;
+        constexpr auto TARGET_FRAME_DURATION = std::chrono::milliseconds{ 1000 } / TARGET_FRAMERATE;
 
-        while (!shouldExit)
+        if (continuousCapture)
         {
-            GetMessageW(&msg, nullptr, 0, 0);
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
-        }
+            captureState->StartCapture([&, targetWindow, pixelTolerance](OwnedTextureView textureView) {
+                UpdateCaptureState(state, targetWindow, pixelTolerance, textureView);
+            });
 
-    } }.detach();
+            while (!stopCapturing)
+            {
+                std::this_thread::sleep_for(TARGET_FRAME_DURATION);
+                state.Access([&](MeasureToolState::State& state) {
+                    stopCapturing = state.stopCapturing;
+                });
+            }
+            captureState->StopCapture();
+        }
+        else
+        {
+            const auto textureView = captureState->CaptureSingleFrame();
+            while (!stopCapturing)
+            {
+                const auto now = std::chrono::high_resolution_clock::now();
+                UpdateCaptureState(state, targetWindow, pixelTolerance, textureView);
+
+                state.Access([&](MeasureToolState::State& state) {
+                    stopCapturing = state.stopCapturing;
+                });
+
+                const auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+                if (frameTime < TARGET_FRAME_DURATION)
+                {
+                    std::this_thread::sleep_for(TARGET_FRAME_DURATION - frameTime);
+                }
+            }
+        }
+    }, L"Screen Capture thread");
 }

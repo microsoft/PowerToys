@@ -29,7 +29,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return TRUE;
 }
 
-const static wchar_t* MODULE_NAME = L"MeasureTool";
+const static wchar_t* MODULE_NAME = L"Measure Tool";
 const static wchar_t* MODULE_DESC = L"Focus the mouse pointer";
 
 namespace
@@ -102,7 +102,7 @@ private:
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\MeasureTool\\PowerToys.MeasureTool.exe";
+        sei.lpFile = L"modules\\MeasureTool\\PowerToys.MeasureToolUI.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))
@@ -138,12 +138,16 @@ private:
 public:
     MeasureTool()
     {
-        LoggerHelpers::init_logger(L"Measure Tool", L"ModuleInterface", "MeasureTool");
+        LoggerHelpers::init_logger(L"Measure Tool", L"ModuleInterface", "Measure Tool");
         init_settings();
     }
 
     ~MeasureTool()
     {
+        if (m_enabled)
+        {
+            TerminateProcess(m_hProcess, 1);
+        }
         m_enabled = false;
     }
 
@@ -215,6 +219,11 @@ public:
     // Disable the powertoy
     virtual void disable()
     {
+        if (m_enabled)
+        {
+            TerminateProcess(m_hProcess, 1);
+        }
+
         m_enabled = false;
         Trace::EnableMeasureTool(false);
     }
@@ -229,13 +238,12 @@ public:
     {
         if (m_enabled)
         {
-            Logger::trace(L"ColorPicker hotkey pressed");
+            Logger::trace(L"MeasureTool hotkey pressed");
             if (!is_process_running())
             {
                 launch_process();
             }
 
-            //SetEvent(m_hInvokeEvent);
             return true;
         }
 

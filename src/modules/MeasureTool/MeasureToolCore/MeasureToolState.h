@@ -3,9 +3,16 @@
 #include <windef.h>
 #include <dcommon.h>
 
-#include <mutex>
-#include <functional>
 #include <array>
+#include <functional>
+#include <mutex>
+#include <vector>
+
+struct BoundsToolState
+{
+    std::optional<D2D_POINT_2F> currentRegionStart;
+    D2D1::ColorF lineColor = D2D1::ColorF::OrangeRed;
+};
 
 struct MeasureToolState
 {
@@ -17,6 +24,9 @@ struct MeasureToolState
     };
     struct State
     {
+        uint8_t pixelTolerance = 5;
+        bool continuousCapture = false;
+        D2D1::ColorF crossColor = D2D1::ColorF::OrangeRed;
         struct CrossCoords
         {
             D2D_POINT_2F hLineStart, hLineEnd;
@@ -27,7 +37,7 @@ struct MeasureToolState
         bool cursorInTopScreenHalf = false;
         Mode mode = Mode::Cross;
 
-        bool shouldExit = false;
+        bool stopCapturing = false;
     };
 
 private:

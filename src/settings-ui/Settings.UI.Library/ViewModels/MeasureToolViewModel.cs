@@ -128,7 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
-            SettingsUtils.SaveSettings(Settings.ToJsonString());
+            SettingsUtils.SaveSettings(Settings.ToJsonString(), MeasureToolSettings.ModuleName);
         }
 
         private Func<string, int> SendConfigMSG { get; }

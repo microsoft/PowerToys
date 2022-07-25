@@ -60,9 +60,18 @@ inline __m128i distance_epi8(const __m128i a, __m128i b)
 
 struct BGRATextureView
 {
-    const uint32_t* pixels;
-    size_t width;
-    size_t height;
+    const uint32_t* pixels = nullptr;
+    size_t width = {};
+    size_t height = {};
+
+    BGRATextureView() = default;
+
+    BGRATextureView(BGRATextureView&& rhs) noexcept
+    {
+        pixels = rhs.pixels;
+        width = rhs.width;
+        height = rhs.height;
+    }
 
     inline uint32_t GetPixel(const size_t x, const size_t y) const
     {
@@ -71,14 +80,14 @@ struct BGRATextureView
         return pixels[x + width * y];
     }
 
-    static inline bool PixelsClose(const uint32_t pixel1, const uint32_t pixel2, const int8_t tolerance)
+    static inline bool PixelsClose(const uint32_t pixel1, const uint32_t pixel2, const uint8_t tolerance)
     {
         const __m128i rgba1 = _mm_cvtsi32_si128(pixel1);
         const __m128i rgba2 = _mm_cvtsi32_si128(pixel2);
         const __m128i dists = distance_epi8(rgba1, rgba2);
-        const __m128i tolrs = _mm_set1_epi8(tolerance);
 
         // Method 1: Test whether each channel distance is not great than tolerance
+        //const __m128i tolrs = _mm_set1_epi8(tolerance);
         //return _mm_cvtsi128_si32(_mm_cmpgt_epi8(dists, tolrs)) == 0;
 
         // Method 2: Test whether sum of all channel differences is smaller than tolerance

@@ -8,14 +8,14 @@
 #include <optional>
 
 // Initializes and runs windows message loop
-inline int run_message_loop(const bool until_idle = false, const std::optional<uint32_t> timeout_seconds = {})
+inline int run_message_loop(const bool until_idle = false, const std::optional<uint32_t> timeout_ms = {})
 {
     MSG msg{};
     bool stop = false;
     UINT_PTR timerId = 0;
-    if (timeout_seconds.has_value())
+    if (timeout_ms.has_value())
     {
-        timerId = SetTimer(nullptr, 0, *timeout_seconds * 1000, nullptr);
+        timerId = SetTimer(nullptr, 0, *timeout_ms, nullptr);
     }
 
     while (!stop && GetMessageW(&msg, nullptr, 0, 0))
@@ -25,7 +25,7 @@ inline int run_message_loop(const bool until_idle = false, const std::optional<u
         stop = until_idle && !PeekMessageW(&msg, nullptr, 0, 0, PM_NOREMOVE);
         stop = stop || (msg.message == WM_TIMER && msg.wParam == timerId);
     }
-    if (timeout_seconds.has_value())
+    if (timeout_ms.has_value())
     {
         KillTimer(nullptr, timerId);
     }

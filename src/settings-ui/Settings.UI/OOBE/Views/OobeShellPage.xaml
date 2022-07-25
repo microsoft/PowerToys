@@ -141,14 +141,22 @@
                 </muxc:NavigationViewItem>
 
                 <muxc:NavigationViewItem x:Uid="Shell_VideoConference"
-                                              Tag="VideoConference">
+                                         Tag="VideoConference">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png"
                                     ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
-
+                <muxc:NavigationViewItem x:Uid="Shell_MeasureTool" 
+                                         Tag="MeasureTool">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon
+                                UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMeasureTool.png"
+                                ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
             </muxc:NavigationView.MenuItems>
+            
             <muxc:NavigationView.FooterMenuItems>
                 <muxc:NavigationViewItem x:Uid="Shell_WhatsNew"
                                               Tag="WhatsNew">

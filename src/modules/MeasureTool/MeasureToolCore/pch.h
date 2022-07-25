@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string_view>
+#include <chrono>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
@@ -49,6 +50,9 @@
 #include <wil/resource.h>
 #include <wil/com.h>
 
+#include <common/logger/logger.h>
+#include <common/utils/winapi_error.h>
+
 namespace winrt
 {
     using namespace Windows::Foundation;
@@ -60,4 +64,28 @@ namespace winrt
     using namespace Microsoft::UI::Xaml;
     using namespace Microsoft::UI::Xaml::Controls;
     using namespace Microsoft::UI::Xaml::Navigation;
+}
+
+template<typename Func>
+void SpawnLoggedThread(Func&& f, const wchar_t* description)
+{
+    std::thread{ [f = std::move(f), description = std::wstring{ description }] {
+        try
+        {
+            f();
+        }
+        catch (const std::exception& ex)
+        {
+            Logger::error(L"{}:", description);
+            Logger::error("{}", ex.what());
+        }
+        catch (winrt::hresult_error const& ex)
+        {
+            Logger::error(L"{}: {}", description, ex.message().c_str());
+        }
+        catch (...)
+        {
+            Logger::error(L"{} unknown error: {}", description, get_last_error_or_default(GetLastError()));
+        }
+    } }.detach();
 }

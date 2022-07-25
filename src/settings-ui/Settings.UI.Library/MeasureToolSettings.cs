@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class MeasureToolSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "MeasureTool";
+        public const string ModuleName = "Measure Tool";
 
         [JsonPropertyName("properties")]
         public MeasureToolProperties Properties { get; set; }
@@ -21,22 +21,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Properties = new MeasureToolProperties();
             Version = "1";
             Name = ModuleName;
-        }
-
-        public virtual void Save(ISettingsUtils settingsUtils)
-        {
-            // Save settings to file
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
-
-            if (settingsUtils == null)
-            {
-                throw new ArgumentNullException(nameof(settingsUtils));
-            }
-
-            settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }
 
         public string GetModuleName()

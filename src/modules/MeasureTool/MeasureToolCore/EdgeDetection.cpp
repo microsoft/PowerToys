@@ -2,12 +2,12 @@
 
 #include "EdgeDetection.h"
 
-const int8_t DEFAULT_TOLERANCE = 1;
+const uint8_t DEFAULT_TOLERANCE = 1;
 const long CURSOR_OFFSET_AMOUNT_X = 4;
 const long CURSOR_OFFSET_AMOUNT_Y = 4;
 
 template<bool IsX, bool Increment>
-inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, const int8_t tolerance)
+inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance)
 {
     long xOffset;
     long yOffset;
@@ -67,10 +67,10 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
     return Increment ? static_cast<long>(IsX ? texture.width : texture.height) : 0;
 }
 
-RECT DetectEdges(const BGRATextureView& texture, const POINT centerPoint)
+RECT DetectEdges(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance)
 {
-    return RECT{ .left = FindEdge<true, false>(texture, centerPoint, DEFAULT_TOLERANCE),
-                 .top = FindEdge<false, false>(texture, centerPoint, DEFAULT_TOLERANCE),
-                 .right = FindEdge<true, true>(texture, centerPoint, DEFAULT_TOLERANCE),
-                 .bottom = FindEdge<false, true>(texture, centerPoint, DEFAULT_TOLERANCE) };
+    return RECT{ .left = FindEdge<true, false>(texture, centerPoint, tolerance),
+                 .top = FindEdge<false, false>(texture, centerPoint, tolerance),
+                 .right = FindEdge<true, true>(texture, centerPoint, tolerance),
+                 .bottom = FindEdge<false, true>(texture, centerPoint, tolerance) };
 }

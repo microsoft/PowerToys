@@ -417,9 +417,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageResizerLib", "src\modu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MeasureTool", "MeasureTool", "{7AC943C9-52E8-44CF-9083-744D8049667B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MeasureTool", "src\modules\MeasureTool\MeasureTool\MeasureTool.vcxproj", "{54A93AF7-60C7-4F6C-99D2-FBB1F75F853A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.MeasureToolCore", "src\modules\MeasureTool\MeasureToolCore\PowerToys.MeasureToolCore.vcxproj", "{54A93AF7-60C7-4F6C-99D2-FBB1F75F853A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6955446D-23F7-4023-9BB3-8657F904AF99} = {6955446D-23F7-4023-9BB3-8657F904AF99}
+		{CABA8DFB-823B-4BF2-93AC-3F31984150D9} = {CABA8DFB-823B-4BF2-93AC-3F31984150D9}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MeasureToolModuleInterface", "src\modules\MeasureTool\MeasureToolModuleInterface\MeasureToolModuleInterface.vcxproj", "{92C39820-9F84-4529-BC7D-22AAE514D63B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeasureToolUI", "src\modules\MeasureTool\MeasureToolUI\MeasureToolUI.csproj", "{515554D1-D004-4F7F-A107-2211FC0F6B2C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1662,6 +1668,24 @@ Global
 		{92C39820-9F84-4529-BC7D-22AAE514D63B}.Release|x64.Build.0 = Release|x64
 		{92C39820-9F84-4529-BC7D-22AAE514D63B}.Release|x86.ActiveCfg = Release|x64
 		{92C39820-9F84-4529-BC7D-22AAE514D63B}.Release|x86.Build.0 = Release|x64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Debug|ARM64.ActiveCfg = Debug|arm64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Debug|ARM64.Build.0 = Debug|arm64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Debug|ARM64.Deploy.0 = Debug|arm64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Debug|x64.ActiveCfg = Debug|x64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Debug|x64.Build.0 = Debug|x64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Debug|x64.Deploy.0 = Debug|x64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Debug|x86.ActiveCfg = Debug|x86
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Debug|x86.Build.0 = Debug|x86
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Debug|x86.Deploy.0 = Debug|x86
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|ARM64.ActiveCfg = Release|arm64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|ARM64.Build.0 = Release|arm64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|ARM64.Deploy.0 = Release|arm64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|x64.ActiveCfg = Release|x64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|x64.Build.0 = Release|x64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|x64.Deploy.0 = Release|x64
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|x86.ActiveCfg = Release|x86
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|x86.Build.0 = Release|x86
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1803,6 +1827,7 @@ Global
 		{7AC943C9-52E8-44CF-9083-744D8049667B} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{54A93AF7-60C7-4F6C-99D2-FBB1F75F853A} = {7AC943C9-52E8-44CF-9083-744D8049667B}
 		{92C39820-9F84-4529-BC7D-22AAE514D63B} = {7AC943C9-52E8-44CF-9083-744D8049667B}
+		{515554D1-D004-4F7F-A107-2211FC0F6B2C} = {7AC943C9-52E8-44CF-9083-744D8049667B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
