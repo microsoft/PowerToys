@@ -47,8 +47,10 @@ namespace Microsoft.PowerToys.Run.Plugin.History
             {
                 if (query.SelectedItems != null)
                 {
+                    var scoreCounter = 1000;
+
                     // System.Diagnostics.Debugger.Launch();
-                    foreach (var historyItem in query.SelectedItems.Values)
+                    foreach (var historyItem in query.SelectedItems.Values.OrderByDescending(sel => sel.LastSelected))
                     {
                         if (historyItem.PluginID == null)
                         {
@@ -71,6 +73,12 @@ namespace Microsoft.PowerToys.Run.Plugin.History
                             {
                                 result.HistoryTitle = result.Title;
                                 result.Title = $"{historyItem.Search} = {historyItem.Title}";
+                            }
+
+                            if (query.RawQuery.StartsWith(query.ActionKeyword, StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                // this is just the history view, update the scores.
+                                result.Score = scoreCounter--;
                             }
 
                             results.Add(result);
