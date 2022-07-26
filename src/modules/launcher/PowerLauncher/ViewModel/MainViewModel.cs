@@ -82,6 +82,11 @@ namespace PowerLauncher.ViewModel
             RegisterResultsUpdatedEvent();
         }
 
+        public void RemoveUserSelectedRecord(Result result)
+        {
+            _userSelectedRecord.Remove(result);
+        }
+
         public void RegisterHotkey(IntPtr hwnd)
         {
             Log.Info("RegisterHotkey()", GetType());

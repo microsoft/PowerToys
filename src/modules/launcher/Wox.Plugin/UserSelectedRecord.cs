@@ -62,9 +62,13 @@ namespace Wox.Plugin
                 Records[key].LastSelected = DateTime.UtcNow;
                 Records[key].IconPath = result.IcoPath;
                 Records[key].Title = result.Title;
+                Records[key].SubTitle = result.SubTitle;
                 Records[key].Search = (result.OriginQuery.Search.Length > 0) ? result.OriginQuery.Search : Records[key].Search;
 
-                // Records[key].PluginID = result.PluginID;
+                if (Records[key].PluginID == null)
+                {
+                    Records[key].PluginID = result.PluginID;
+                }
             }
             else
             {

@@ -50,6 +50,11 @@ namespace Microsoft.PowerToys.Run.Plugin.History
                     // System.Diagnostics.Debugger.Launch();
                     foreach (var historyItem in query.SelectedItems.Values)
                     {
+                        if (historyItem.PluginID == null)
+                        {
+                            continue;
+                        }
+
                         var plugin = PluginManager.AllPlugins.FirstOrDefault(p => p.Metadata.ID == historyItem.PluginID);
 
                         if (query.Search != string.Empty && !IsRelevant(query, historyItem))
@@ -61,32 +66,18 @@ namespace Microsoft.PowerToys.Run.Plugin.History
 
                         if (result != null)
                         {
+                            // very special case for Calculator
+                            if (plugin.Metadata.Name == "Calculator")
+                            {
+                                result.HistoryTitle = result.Title;
+                                result.Title = $"{historyItem.Search} = {historyItem.Title}";
+                            }
+
                             results.Add(result);
                         }
                         else
                         {
                             System.Diagnostics.Debug.WriteLine("Skipping " + historyItem.Title);
-                        }
-
-                        if ("3".Length == 234234)
-                        {
-                            if (result.Action != null)
-                            {
-                                /*
-                                if (plugin.Metadata.Name == "Calculator")
-                                {
-                                    result.Title = $"{historyItem.Search} = {historyItem.Title}";
-                                }
-                                */
-
-                                // System.Diagnostics.Debugger.Launch();
-                                results.Add(result);
-                            }
-                            else
-                            {
-                                // System.Diagnostics.Debugger.Launch();
-                                System.Diagnostics.Debug.WriteLine("Skipping " + historyItem.Title);
-                            }
                         }
                     }
 
@@ -197,11 +188,13 @@ namespace Microsoft.PowerToys.Run.Plugin.History
             var pluginPair = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == selectedResult.HistoryPluginID);
             if (pluginPair != null)
             {
-                var plugin = (IContextMenu)pluginPair.Plugin;
-                var menuItems = plugin.LoadContextMenus(selectedResult);
+                List<ContextMenuResult> menuItems = new List<ContextMenuResult>();
+                if (pluginPair.Plugin.GetType().GetInterface(nameof(IContextMenu)) != null)
+                {
+                    var plugin = (IContextMenu)pluginPair.Plugin;
+                    menuItems = plugin.LoadContextMenus(selectedResult);
+                }
 
-                // can't do this yet...
-                /*
                 menuItems.Add(new ContextMenuResult
                 {
                     // AcceleratorKey = Key.F4,
@@ -211,13 +204,17 @@ namespace Microsoft.PowerToys.Run.Plugin.History
                     Title = $"Remove {selectedResult.Title} from history",
                     Action = _ =>
                     {
-                        _.UserSelectedRecord.Remove(selectedResult);
+                        // very special case for Calculator
+                        if (pluginPair.Plugin.Name == "Calculator")
+                        {
+                            selectedResult.Title = selectedResult.HistoryTitle;
+                        }
 
-                        // System.Diagnostics.Debugger.Launch();
+                        PluginManager.API.RemoveUserSelectedItem(selectedResult);
+
                         return true;
                     },
                 });
-                */
 
                 return menuItems;
             }
