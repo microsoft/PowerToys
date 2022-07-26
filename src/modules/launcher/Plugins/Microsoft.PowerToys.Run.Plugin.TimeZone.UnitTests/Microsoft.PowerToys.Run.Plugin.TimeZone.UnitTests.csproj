@@ -7,11 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+	  <PackageReference Include="Mono.Cecil" Version="0.11.4" />
 	  <PackageReference Include="Moq" Version="4.16.1" />
 	  <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
 	  <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
 	  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	  <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
   </ItemGroup>
 
   <ItemGroup>
