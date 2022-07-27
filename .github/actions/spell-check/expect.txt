@@ -393,7 +393,6 @@ dcomp
 dcompi
 DComposition
 ddf
-DDLM
 Deact
 debian
 debugbreak
@@ -978,6 +977,7 @@ IVirtual
 IWbem
 IWIC
 iwindow
+iwr
 IXml
 IYUV
 IZone
@@ -1292,7 +1292,6 @@ MYTZ
 NAMECHANGE
 nameof
 namespace
-namespaceanddescendants
 Navassa
 naveensrinivasan
 NCACTIVATE
@@ -1403,6 +1402,7 @@ NUMLOCK
 NUMPAD
 Nunavut
 Nusa
+nushell
 nwc
 NWSE
 Objbase
@@ -1726,7 +1726,6 @@ Rsp
 rst
 Rstrtmgr
 RTB
-RTCS
 RTLREADING
 RTSS
 runas
@@ -2078,6 +2077,7 @@ TYPESHORTCUT
 UAC
 UAL
 uap
+ubuntu
 udit
 Udk
 Udmurtia
@@ -2262,6 +2262,7 @@ winexe
 winforms
 winfx
 winget
+wingetcreate
 Winhook
 winkey
 WINL
@@ -2369,6 +2370,7 @@ YVYU
 Zabaykalsky
 ZEROINIT
 ZIndex
+zipfile
 zonable
 ZONECOLOR
 ZONEHIGHLIGHTCOLOR

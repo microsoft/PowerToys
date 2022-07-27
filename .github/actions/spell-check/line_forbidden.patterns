@@ -14,13 +14,20 @@
 \bMicroSoft\b
 
 # s.b. another
-\ban other\b
+\ban[- ]other\b
+
+# s.b. greater than
+\bgreater then\b
+
+# s.b. less than
+\bless then\b
 
 # s.b. otherwise
-\bother wise\b
+\bother[- ]wise\b
 
 # s.b. nonexistent
 \bnon existing\b
+\b[Nn]o[nt][- ]existent\b
 
 # s.b. preexisting
 [Pp]re-existing
