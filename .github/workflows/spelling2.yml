@@ -24,7 +24,7 @@ jobs:
     steps:
     - name: check-spelling
       id: spelling
-      uses: check-spelling/check-spelling@v0.0.20-alpha7
+      uses: check-spelling/check-spelling@v0.0.20
       with:
         config: .github/actions/spell-check
         suppress_push_for_open_pull_request: 1
@@ -46,7 +46,7 @@ jobs:
     if: (success() || failure()) && needs.spelling.outputs.followup
     steps:
     - name: comment
-      uses: check-spelling/check-spelling@v0.0.20-alpha7
+      uses: check-spelling/check-spelling@v0.0.20
       with:
         config: .github/actions/spell-check
         checkout: true
