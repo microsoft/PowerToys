@@ -185,7 +185,6 @@ namespace winrt::PowerRenameUI::implementation
         }
         try
         {
-            PopulateExplorerItems();
             UpdateCounts();
             SetHandlers();
             ReadSettings();
@@ -972,8 +971,28 @@ namespace winrt::PowerRenameUI::implementation
         m_uiUpdatesItem.RenamedCount(std::to_wstring(m_renamingCount));
     }
 
-    HRESULT MainWindow::OnItemAdded(_In_ IPowerRenameItem*)
+    HRESULT MainWindow::OnItemAdded(_In_ IPowerRenameItem* renameItem)
     {
+        int id = 0;
+        renameItem->GetId(&id);
+
+        PWSTR originalName = nullptr;
+        renameItem->GetOriginalName(&originalName);
+        PWSTR newName = nullptr;
+        renameItem->GetNewName(&newName);
+
+        bool selected;
+        renameItem->GetSelected(&selected);
+
+        UINT depth = 0;
+        renameItem->GetDepth(&depth);
+
+        bool isFolder = false;
+        winrt::check_hresult(renameItem->GetIsFolder(&isFolder));
+
+        AddExplorerItem(
+            id, originalName, newName == nullptr ? hstring{} : hstring{ newName }, isFolder ? 0 : 1, depth, selected);
+
         return S_OK;
     }
 
