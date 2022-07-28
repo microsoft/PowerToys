@@ -60,18 +60,20 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// HTML code passed to the file
         /// </summary>
 #nullable enable
-        private string? html;
+        private string? _html;
 #nullable disable
 
         /// <summary>
         /// Id for monaco language
         /// </summary>
-        private string vsCodeLangSet;
+        private string _vsCodeLangSet;
 
         /// <summary>
         /// The content of the previewing file in base64
         /// </summary>
-        private string base64FileCode;
+        private string _base64FileCode;
+
+        private Task _readHtmlFileTask;
 
         [STAThread]
         public override void DoPreview<T>(T dataSource)
@@ -137,13 +139,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                         _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
 
                                         // Wait until html is loaded
-                                        while (html == null)
-                                        {
-                                        }
+                                        _readHtmlFileTask.Wait();
 
                                         Logger.LogInfo("Navigates to string of HTML file");
 
-                                        _webView.NavigateToString(html);
+                                        _webView.NavigateToString(_html);
                                         _webView.NavigationCompleted += WebView2Init;
                                         _webView.Height = this.Height;
                                         _webView.Width = this.Width;
@@ -156,9 +156,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                         Logger.LogError("NullReferenceException catched. Skipping exception.", e);
                                     }
                                 }
-                                catch (WebView2RuntimeNotFoundException)
+                                catch (WebView2RuntimeNotFoundException e)
                                 {
-                                    Logger.LogWarning("WebView2 was not found");
+                                    Logger.LogWarning("WebView2 was not found:");
+                                    Logger.LogWarning(e.Message);
                                     Controls.Remove(_loading);
                                     Controls.Remove(_loadingBar);
 
@@ -197,6 +198,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                         text.Height = 10000;
                         Controls.Add(text);
                         Logger.LogError("Error catched. Showing error to user", e);
+                        Logger.LogError(e.Message);
                     });
                 }
 
@@ -340,7 +342,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             Task getFileExtensionTask = new Task(() =>
             {
                 Logger.LogInfo("Starting getting monaco language id out of filetype");
-                vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
+                _vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
             });
             getFileExtensionTask.Start();
 
@@ -351,37 +353,37 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     Logger.LogInfo("Starting reading requested file");
                     var fileContent = fileReader.ReadToEnd();
                     fileReader.Close();
-                    base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
+                    _base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
                     Logger.LogInfo("Reading requested file ended");
                 }
             });
 
             readPreviewedFileTask.Start();
 
-            Task readHtmlFileTask = new Task(() =>
+            _readHtmlFileTask = new Task(() =>
             {
                 // prepping index html to load in
                 using (StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                 {
                     Logger.LogInfo("Starting reading HTML source file");
-                    html = htmlFileReader.ReadToEnd();
+                    _html = htmlFileReader.ReadToEnd();
                     htmlFileReader.Close();
                     Logger.LogInfo("Reading HTML source file ended");
                 }
             });
 
-            readHtmlFileTask.Start();
+            _readHtmlFileTask.Start();
 
             // Wait until all tasks are completed
-            while (!getFileExtensionTask.IsCompleted || !readPreviewedFileTask.IsCompleted || !readHtmlFileTask.IsCompleted)
-            {
-            }
+            getFileExtensionTask.Wait();
+            readPreviewedFileTask.Wait();
+            _readHtmlFileTask.Wait();
 
-            html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_THEME]]", Settings.GetTheme(), StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_LANG]]", _vsCodeLangSet, StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_THEME]]", Settings.GetTheme(), StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_CODE]]", _base64FileCode, StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
         }
 
         private async void DownloadLink_Click(object sender, EventArgs e)
