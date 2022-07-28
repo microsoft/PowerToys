@@ -54,12 +54,14 @@ AlwaysOnTop::AlwaysOnTop(bool useLLKH) :
 
 AlwaysOnTop::~AlwaysOnTop()
 {
+    m_running = false;
+
     if (m_hPinEvent)
     {
+        // Needed to unblock MsgWaitForMultipleObjects one last time
+        SetEvent(m_hPinEvent);
         CloseHandle(m_hPinEvent);
     }
-
-    m_running = false;
     m_thread.join();
 
     CleanUp();
@@ -280,7 +282,11 @@ void AlwaysOnTop::RegisterLLKH()
         MSG msg;
         while (m_running)
         {
-            DWORD dwEvt = MsgWaitForMultipleObjects(1, &m_hPinEvent, false, 0, QS_ALLINPUT);
+            DWORD dwEvt = MsgWaitForMultipleObjects(1, &m_hPinEvent, false, INFINITE, QS_ALLINPUT);
+            if (!m_running)
+            {
+                break;
+            }
             switch (dwEvt)
             {
             case WAIT_OBJECT_0:
