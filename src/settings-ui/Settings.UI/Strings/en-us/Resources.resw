@@ -2138,7 +2138,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Selected item weight</value>
   </data>
   <data name="PowerLauncher_WaitForSlowResults.Description" xml:space="preserve">
-    <value>Selecting this can help preselect the top, more relevent result, but at the risk of jumpiness</value>
+    <value>Selecting this can help preselect the top, more relevant result, but at the risk of jumpiness</value>
   </data>
   <data name="PowerLauncher_WaitForSlowResults.Header" xml:space="preserve">
     <value>Wait on slower plugin results before selecting top item in results</value>
