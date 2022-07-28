@@ -97,7 +97,6 @@ namespace winrt::PowerRenameUI::implementation
         bool m_allSelected;
         PowerRenameUI::UIUpdates m_uiUpdatesItem;
         inline PowerRenameUI::ExplorerItem FindById(int32_t id);
-        void ToggleAll(bool checked);
 
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_searchMRUList;
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_replaceMRUList;

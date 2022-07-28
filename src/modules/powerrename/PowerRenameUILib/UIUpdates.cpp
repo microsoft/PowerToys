@@ -54,11 +54,6 @@ namespace winrt::PowerRenameUI::implementation
         m_propertyChanged.remove(token);
     }
 
-    void UIUpdates::ToggleAll()
-    {
-        m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"ToggleAll" });
-    }
-
     void UIUpdates::Rename()
     {
         m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Rename" });

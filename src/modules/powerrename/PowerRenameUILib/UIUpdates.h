@@ -15,7 +15,6 @@ namespace winrt::PowerRenameUI::implementation
         void Checked(bool value);
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
-        void ToggleAll();
         bool CloseUIWindow();
         void CloseUIWindow(bool closeUIWindow);
         bool ButtonRenameEnabled();

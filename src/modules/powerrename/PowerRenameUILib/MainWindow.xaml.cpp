@@ -240,11 +240,6 @@ namespace winrt::PowerRenameUI::implementation
         return m_explorerItemsMap.contains(id) ? m_explorerItemsMap[id] : NULL;
     }
 
-    void MainWindow::ToggleAll(bool checked)
-    {
-        std::for_each(m_explorerItems.begin(), m_explorerItems.end(), [checked](auto item) { item.Checked(checked); });
-    }
-
     void MainWindow::Checked_ids(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
         auto checkbox = sender.as<Microsoft::UI::Xaml::Controls::CheckBox>();
@@ -261,8 +256,7 @@ namespace winrt::PowerRenameUI::implementation
     {
         if (checkBox_selectAll().IsChecked().GetBoolean() != m_allSelected)
         {
-            ToggleAll(checkBox_selectAll().IsChecked().GetBoolean());
-            m_uiUpdatesItem.ToggleAll();
+            ToggleAll();
             m_allSelected = !m_allSelected;
         }
     }
@@ -565,10 +559,6 @@ namespace winrt::PowerRenameUI::implementation
             {
                 ToggleItem(m_uiUpdatesItem.ChangedExplorerItemId(), m_uiUpdatesItem.Checked());
             }
-            else if (property == L"ToggleAll")
-            {
-                ToggleAll();
-            }
             else if (property == L"Rename")
             {
                 Rename(m_uiUpdatesItem.CloseUIWindow());
@@ -738,6 +728,10 @@ namespace winrt::PowerRenameUI::implementation
             if (SUCCEEDED(m_prManager->GetItemByIndex(i, &spItem)))
             {
                 spItem->PutSelected(selected);
+                int id = 0;
+                spItem->GetId(&id);
+                auto item = FindById(id);
+                item.Checked(selected);
             }
         }
         UpdateCounts();

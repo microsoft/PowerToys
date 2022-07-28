@@ -6,7 +6,6 @@ namespace PowerRenameUI
         Boolean ShowAll;
         Int32 ChangedExplorerItemId;
         Boolean Checked;
-        void ToggleAll();
         Boolean CloseUIWindow();
         void CloseUIWindow(Boolean closeUIWindow);
         Boolean ButtonRenameEnabled;
