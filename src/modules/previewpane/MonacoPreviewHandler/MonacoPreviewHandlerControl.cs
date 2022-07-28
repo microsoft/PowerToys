@@ -210,6 +210,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 InvokeOnControlThread(() =>
                 {
                     Controls.Remove(_loading);
+                    _loadingBar.Dispose();
                     Controls.Remove(_loadingBar);
                     Label errorMessage = new Label();
                     errorMessage.Text = Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture);
