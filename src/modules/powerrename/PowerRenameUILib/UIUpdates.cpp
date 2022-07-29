@@ -5,22 +5,8 @@
 namespace winrt::PowerRenameUI::implementation
 {
     UIUpdates::UIUpdates() :
-        m_showAll{ true }, m_changedItemId{ -1 }, m_checked{ true }, m_closeUIWindow{ false }, m_buttonRenameEnabled{ false }
+        m_closeUIWindow{ false }, m_buttonRenameEnabled{ false }
     {
-    }
-
-    bool UIUpdates::ShowAll()
-    {
-        return m_showAll;
-    }
-
-    void UIUpdates::ShowAll(bool value)
-    {
-        if (m_showAll != value)
-        {
-            m_showAll = value;
-            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"ShowAll" });
-        }
     }
 
     winrt::event_token UIUpdates::PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)

@@ -3,7 +3,6 @@ namespace PowerRenameUI
     runtimeclass UIUpdates : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
     {
         UIUpdates();
-        Boolean ShowAll;
         Boolean CloseUIWindow();
         void CloseUIWindow(Boolean closeUIWindow);
         Boolean ButtonRenameEnabled;

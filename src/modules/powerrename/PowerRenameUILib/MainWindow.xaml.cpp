@@ -262,11 +262,16 @@ namespace winrt::PowerRenameUI::implementation
     {
         button_showAll().IsChecked(true);
         button_showRenamed().IsChecked(false);
-        if (!m_uiUpdatesItem.ShowAll())
+
+        DWORD filter = 0;
+        m_prManager->GetFilter(&filter);
+        if (filter != PowerRenameFilters::None)
         {
             m_explorerItems.Clear();
             m_explorerItemsMap.clear();
-            m_uiUpdatesItem.ShowAll(true);
+            m_prManager->SwitchFilter(0);
+            PopulateExplorerItems();
+            UpdateCounts();
         }
     }
 
@@ -274,11 +279,16 @@ namespace winrt::PowerRenameUI::implementation
     {
         button_showRenamed().IsChecked(true);
         button_showAll().IsChecked(false);
-        if (m_uiUpdatesItem.ShowAll())
+
+        DWORD filter = 0;
+        m_prManager->GetFilter(&filter);
+        if (filter != PowerRenameFilters::ShouldRename)
         {
             m_explorerItems.Clear();
             m_explorerItemsMap.clear();
-            m_uiUpdatesItem.ShowAll(false);
+            m_prManager->SwitchFilter(0);
+            PopulateExplorerItems();
+            UpdateCounts();
         }
     }
 
@@ -548,11 +558,7 @@ namespace winrt::PowerRenameUI::implementation
 
         m_uiUpdatesItem.PropertyChanged([&](auto const&, auto const& e) {
             std::wstring property{ e.PropertyName() };
-            if (property == L"ShowAll")
-            {
-                SwitchView();
-            }
-            else if (property == L"Rename")
+            if (property == L"Rename")
             {
                 Rename(m_uiUpdatesItem.CloseUIWindow());
             }

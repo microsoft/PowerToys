@@ -7,8 +7,6 @@ namespace winrt::PowerRenameUI::implementation
     {
         UIUpdates();
 
-        bool ShowAll();
-        void ShowAll(bool value);
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
         bool CloseUIWindow();
@@ -22,9 +20,6 @@ namespace winrt::PowerRenameUI::implementation
         void RenamedCount(hstring value);
 
     private:
-        bool m_showAll;
-        int32_t m_changedItemId;
-        bool m_checked;
         bool m_closeUIWindow;
         bool m_buttonRenameEnabled;
         hstring m_originalCount;
