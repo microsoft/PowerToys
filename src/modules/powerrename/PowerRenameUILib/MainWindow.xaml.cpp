@@ -194,7 +194,7 @@ namespace winrt::PowerRenameUI::implementation
             Logger::error("Exception thrown during explorer items population: {}", std::string{ e.what() });
         }
 
-        m_uiUpdatesItem.ButtonRenameEnabled(false);
+        button_rename().IsEnabled(false);
         InitAutoComplete();
         SearchReplaceChanged();
     }
@@ -206,7 +206,7 @@ namespace winrt::PowerRenameUI::implementation
             auto item = sender.as<ExplorerItem>();
             std::wstring property{ e.PropertyName() };
 
-            if (property == L"Checked")
+            if (item && property == L"Checked")
             {
                 ToggleItem(item->Id(), item->Checked());
             }
@@ -308,14 +308,12 @@ namespace winrt::PowerRenameUI::implementation
 
     void MainWindow::button_rename_Click(winrt::Microsoft::UI::Xaml::Controls::SplitButton const&, winrt::Microsoft::UI::Xaml::Controls::SplitButtonClickEventArgs const&)
     {
-        m_uiUpdatesItem.CloseUIWindow(false);
-        m_uiUpdatesItem.Rename();
+        Rename(false);
     }
 
     void MainWindow::MenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
-        m_uiUpdatesItem.CloseUIWindow(true);
-        m_uiUpdatesItem.Rename();
+        Rename(true);
     }
 
     void MainWindow::OpenDocs(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
@@ -555,14 +553,6 @@ namespace winrt::PowerRenameUI::implementation
     void MainWindow::SetHandlers()
     {
         _TRACER_;
-
-        m_uiUpdatesItem.PropertyChanged([&](auto const&, auto const& e) {
-            std::wstring property{ e.PropertyName() };
-            if (property == L"Rename")
-            {
-                Rename(m_uiUpdatesItem.CloseUIWindow());
-            }
-        });
 
         // AutoSuggestBox Search
         textBox_search().TextChanged([&](auto const&, auto const&) {
@@ -957,7 +947,7 @@ namespace winrt::PowerRenameUI::implementation
             m_renamingCount = renamingCount;
 
             // Update Rename button state
-            m_uiUpdatesItem.ButtonRenameEnabled(renamingCount > 0);
+            button_rename().IsEnabled(renamingCount > 0);
         }
 
         m_uiUpdatesItem.OriginalCount(std::to_wstring(m_explorerItems.Size()));
