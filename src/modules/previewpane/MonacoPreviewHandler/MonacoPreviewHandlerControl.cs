@@ -78,7 +78,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
-            Logger.LogInfo("Starting previewing file");
+            Logger.LogTrace();
 
             base.DoPreview(dataSource);
 
@@ -305,7 +305,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
         private void SetBackground()
         {
-            Logger.LogInfo("Setting background of window");
+            Logger.LogTrace();
             InvokeOnControlThread(() =>
             {
                 this.BackColor = Settings.BackgroundColor;
@@ -314,7 +314,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
         private void InitializeLoadingScreen()
         {
-            Logger.LogInfo("Initializing loading screen");
+            Logger.LogTrace();
             InvokeOnControlThread(() =>
             {
                 _loadingBar = new ProgressBar();
@@ -390,7 +390,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private async void DownloadLink_Click(object sender, EventArgs e)
         {
             await Launcher.LaunchUriAsync(new Uri("https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"));
-            Logger.LogInfo("User clicked on downloading WebView2 link.");
+            Logger.LogTrace();
         }
     }
 }

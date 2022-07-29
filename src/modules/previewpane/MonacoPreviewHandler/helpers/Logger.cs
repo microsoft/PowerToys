@@ -67,6 +67,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco.Helpers
             Trace.Unindent();
         }
 
+        public static void LogTrace()
+        {
+            Log(string.Empty, "Trace");
+        }
+
         private static string GetCallerInfo()
         {
             StackTrace stackTrace = new StackTrace();
