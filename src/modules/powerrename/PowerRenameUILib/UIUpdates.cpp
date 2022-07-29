@@ -23,27 +23,6 @@ namespace winrt::PowerRenameUI::implementation
         }
     }
 
-    int32_t UIUpdates::ChangedExplorerItemId()
-    {
-        return m_changedItemId;
-    }
-
-    void UIUpdates::ChangedExplorerItemId(int32_t value)
-    {
-        m_changedItemId = value;
-        m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"ChangedItemId" });
-    }
-
-    bool UIUpdates::Checked()
-    {
-        return m_checked;
-    }
-
-    void UIUpdates::Checked(bool value)
-    {
-        m_checked = value;
-    }
-
     winrt::event_token UIUpdates::PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
     {
         return m_propertyChanged.add(handler);

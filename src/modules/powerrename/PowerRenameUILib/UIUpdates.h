@@ -9,10 +9,6 @@ namespace winrt::PowerRenameUI::implementation
 
         bool ShowAll();
         void ShowAll(bool value);
-        int32_t ChangedExplorerItemId();
-        void ChangedExplorerItemId(int32_t value);
-        bool Checked();
-        void Checked(bool value);
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
         bool CloseUIWindow();

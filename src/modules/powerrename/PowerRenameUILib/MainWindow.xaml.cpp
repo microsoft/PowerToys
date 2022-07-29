@@ -202,6 +202,15 @@ namespace winrt::PowerRenameUI::implementation
     void MainWindow::AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked)
     {
         auto newItem = winrt::make<PowerRenameUI::implementation::ExplorerItem>(id, original, renamed, type, depth, checked);
+        newItem.PropertyChanged([this](Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& e) {
+            auto item = sender.as<ExplorerItem>();
+            std::wstring property{ e.PropertyName() };
+
+            if (property == L"Checked")
+            {
+                ToggleItem(item->Id(), item->Checked());
+            }
+        });
         m_explorerItems.Append(newItem);
         m_explorerItemsMap[id] = newItem;
     }
@@ -238,18 +247,6 @@ namespace winrt::PowerRenameUI::implementation
     PowerRenameUI::ExplorerItem MainWindow::FindById(int32_t id)
     {
         return m_explorerItemsMap.contains(id) ? m_explorerItemsMap[id] : NULL;
-    }
-
-    void MainWindow::Checked_ids(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
-    {
-        auto checkbox = sender.as<Microsoft::UI::Xaml::Controls::CheckBox>();
-        auto id = std::stoi(std::wstring{ checkbox.Name() });
-        auto item = FindById(id);
-        if (item != NULL && checkbox.IsChecked().GetBoolean() != item.Checked())
-        {
-            m_uiUpdatesItem.Checked(checkbox.IsChecked().GetBoolean());
-            m_uiUpdatesItem.ChangedExplorerItemId(id);
-        }
     }
 
     void MainWindow::SelectAll(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
@@ -554,10 +551,6 @@ namespace winrt::PowerRenameUI::implementation
             if (property == L"ShowAll")
             {
                 SwitchView();
-            }
-            else if (property == L"ChangedItemId")
-            {
-                ToggleItem(m_uiUpdatesItem.ChangedExplorerItemId(), m_uiUpdatesItem.Checked());
             }
             else if (property == L"Rename")
             {
