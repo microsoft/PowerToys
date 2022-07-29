@@ -407,7 +407,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUI", "src\module
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameContextMenu", "src\modules\powerrename\PowerRenameContextMenu\PowerRenameContextMenu.vcxproj", "{1DBBB112-4BB1-444B-8EBB-E66555C76BA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests.csproj", "{C5D46169-5334-48C3-8C28-644C72832E54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests.csproj", "{C5D46169-5334-48C3-8C28-644C72832E54}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.OneNote", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.OneNote\Microsoft.PowerToys.Run.Plugin.OneNote.csproj", "{5A1DB2F0-0715-4B3B-98E6-79BC41540045}"
 EndProject
