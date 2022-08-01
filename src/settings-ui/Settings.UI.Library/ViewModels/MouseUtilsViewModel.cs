@@ -69,11 +69,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             MouseHighlighterSettingsConfig = mouseHighlighterSettingsRepository.SettingsConfig;
-            string leftClickColor = MouseHighlighterSettingsConfig.Properties.LeftButtonClickColor.Value;
-            _highlighterLeftButtonClickColor = !string.IsNullOrEmpty(leftClickColor) ? leftClickColor : "#FFFF00";
+            string leftClickColor = MouseHighlighterSettingsConfig.Properties.PrimaryButtonClickColor.Value;
+            _highlighterPrimaryButtonClickColor = !string.IsNullOrEmpty(leftClickColor) ? leftClickColor : "#FFFF00";
 
-            string rightClickColor = MouseHighlighterSettingsConfig.Properties.RightButtonClickColor.Value;
-            _highlighterRightButtonClickColor = !string.IsNullOrEmpty(rightClickColor) ? rightClickColor : "#0000FF";
+            string rightClickColor = MouseHighlighterSettingsConfig.Properties.SecondaryButtonClickColor.Value;
+            _highlighterSecondaryButtonClickColor = !string.IsNullOrEmpty(rightClickColor) ? rightClickColor : "#0000FF";
 
             _highlighterOpacity = MouseHighlighterSettingsConfig.Properties.HighlightOpacity.Value;
             _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
@@ -351,11 +351,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public string MouseHighlighterLeftButtonClickColor
+        public string MouseHighlighterPrimaryButtonClickColor
         {
             get
             {
-                return _highlighterLeftButtonClickColor;
+                return _highlighterPrimaryButtonClickColor;
             }
 
             set
@@ -364,20 +364,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
                 // This extra handling is added here to deal with FxCop warnings.
                 value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
-                if (!value.Equals(_highlighterLeftButtonClickColor, StringComparison.OrdinalIgnoreCase))
+                if (!value.Equals(_highlighterPrimaryButtonClickColor, StringComparison.OrdinalIgnoreCase))
                 {
-                    _highlighterLeftButtonClickColor = value;
-                    MouseHighlighterSettingsConfig.Properties.LeftButtonClickColor.Value = value;
+                    _highlighterPrimaryButtonClickColor = value;
+                    MouseHighlighterSettingsConfig.Properties.PrimaryButtonClickColor.Value = value;
                     NotifyMouseHighlighterPropertyChanged();
                 }
             }
         }
 
-        public string MouseHighlighterRightButtonClickColor
+        public string MouseHighlighterSecondaryButtonClickColor
         {
             get
             {
-                return _highlighterRightButtonClickColor;
+                return _highlighterSecondaryButtonClickColor;
             }
 
             set
@@ -386,10 +386,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
                 // This extra handling is added here to deal with FxCop warnings.
                 value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
-                if (!value.Equals(_highlighterRightButtonClickColor, StringComparison.OrdinalIgnoreCase))
+                if (!value.Equals(_highlighterSecondaryButtonClickColor, StringComparison.OrdinalIgnoreCase))
                 {
-                    _highlighterRightButtonClickColor = value;
-                    MouseHighlighterSettingsConfig.Properties.RightButtonClickColor.Value = value;
+                    _highlighterSecondaryButtonClickColor = value;
+                    MouseHighlighterSettingsConfig.Properties.SecondaryButtonClickColor.Value = value;
                     NotifyMouseHighlighterPropertyChanged();
                 }
             }
@@ -655,8 +655,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private int _findMyMouseShakingMinimumDistance;
 
         private bool _isMouseHighlighterEnabled;
-        private string _highlighterLeftButtonClickColor;
-        private string _highlighterRightButtonClickColor;
+        private string _highlighterPrimaryButtonClickColor;
+        private string _highlighterSecondaryButtonClickColor;
         private int _highlighterOpacity;
         private int _highlighterRadius;
         private int _highlightFadeDelayMs;

@@ -233,7 +233,7 @@
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
     <value>File Explorer add-ons</value>
-    <comment>Product name: Navigation view item name for File Explorer.  Please use File Explorer as in the context of File Explorer in Windows</comment>
+    <comment>Product name: Navigation view item name for File Explorer. Please translate File Explorer as in the context of File Explorer in Windows</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
     <value>FancyZones</value>
@@ -719,6 +719,7 @@
   </data>
   <data name="ShortcutGuide_PressWinKeyWarning.Title" xml:space="preserve">
     <value>In some edge cases Shortcut Guide might not function correctly when using this activation method</value>
+    <comment>Do translate "edge": it's not a name</comment>
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance and behavior</value>
@@ -1121,6 +1122,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_WindowBehavior_GroupSettings.Description" xml:space="preserve">
     <value>Manage how windows behave when using FancyZones</value>
+    <comment>Do translate "windows": refers to a set of windows, not the product name</comment>
   </data>
   <data name="FancyZones_Windows.Header" xml:space="preserve">
     <value>Windows</value>
@@ -1351,10 +1353,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
   </data>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
-    <value>Shortcut Guide presents the user with a listing of available shortcuts for the current state of the desktop.</value>
+    <value>Shortcut Guide presents you a listing of available shortcuts for the current state of the desktop.</value>
   </data>
   <data name="Oobe_VideoConference.Description" xml:space="preserve">
-    <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
+    <value>Video Conference Mute allows you to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
   </data>
   <data name="Oobe_MouseUtils.Description" xml:space="preserve">
     <value>A collection of utilities to enhance your mouse.</value>
@@ -1631,6 +1633,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake_Mode.Description" xml:space="preserve">
     <value>Manage the state of your device when Awake is active</value>
+    <comment>do not translate "Awake"</comment>
   </data>
   <data name="ExcludedApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
@@ -1713,7 +1716,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
-    <value>Use a keyboard shortcut highlight left and right mouse clicks.</value>
+    <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
@@ -1897,11 +1900,11 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Customize the shortcut to turn on or off this mode</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_LeftButtonClickColor.Header" xml:space="preserve">
-    <value>Left button highlight color</value>
+  <data name="MouseUtils_MouseHighlighter_PrimaryButtonClickColor.Header" xml:space="preserve">
+    <value>Primary button highlight color</value>
   </data>
-  <data name="MouseUtils_MouseHighlighter_RightButtonClickColor.Header" xml:space="preserve">
-    <value>Right button highlight color</value>
+  <data name="MouseUtils_MouseHighlighter_SecondaryButtonClickColor.Header" xml:space="preserve">
+    <value>Secondary button highlight color</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_HighlightOpacity.Header" xml:space="preserve">
     <value>Opacity (%)</value>
@@ -2039,7 +2042,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Color</value>
   </data>
   <data name="AlwaysOnTop_FrameEnabled.Header" xml:space="preserve">
-    <value>Show a border around the pinned window</value>
+    <value>Show a border around pinned windows</value>
   </data>
   <data name="AlwaysOnTop_FrameThickness.Header" xml:space="preserve">
     <value>Thickness (px)</value>
