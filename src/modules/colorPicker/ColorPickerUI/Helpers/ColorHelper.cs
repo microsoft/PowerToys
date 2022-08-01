@@ -59,10 +59,8 @@ namespace ColorPicker.Helpers
         /// <returns>The hue [0°..360°], saturation [0..1] and brightness [0..1] of the converted color</returns>
         internal static (double hue, double saturation, double brightness) ConvertToHSBColor(Color color)
         {
-            var min = Math.Min(Math.Min(color.R, color.G), color.B) / 255d;
-            var max = Math.Max(Math.Max(color.R, color.G), color.B) / 255d;
-
-            return (color.GetHue(), max == 0d ? 0d : (max - min) / max, max);
+            // HSB and HSV represents the same color space
+            return ConvertToHSVColor(color);
         }
 
         /// <summary>
