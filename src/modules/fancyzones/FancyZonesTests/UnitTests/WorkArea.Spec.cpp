@@ -14,6 +14,8 @@
 
 #include <common/utils/process_path.h>
 
+#include <CppUnitTestLogger.h>
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests
@@ -31,6 +33,12 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_INITIALIZE(Init)
         {
+#if defined(UNIT_TESTS)
+            Logger::WriteMessage("UNIT_TESTS defined");
+#else
+            Logger::WriteMessage("UNIT_TESTS not defined");
+#endif
+
             m_uniqueId.monitorId.deviceId.id = L"DELA026";
             m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
             m_uniqueId.monitorId.serialNumber = L"serial-number";
