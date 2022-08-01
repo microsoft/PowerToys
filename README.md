@@ -81,7 +81,7 @@ This is a lighter release, with a shorter development cycle and focused on stabi
 - Quality of life improvements for Always on Top, FancyZones and PowerToys Run.
 
 ### Known issues
-- After installing PowerToys, [the new Windows 11 context menu entries for PowerRename and Image Resizer might not appear before a system restart](https://github.com/microsoft/PowerToys/issues/19124). On some Windows 11 dev channel insider builds, the new context menu entries are not registering correctly and the classic context menu entries will be shown instead.
+- After installing PowerToys, [the new Windows 11 context menu entries for PowerRename and Image Resizer might not appear before a system restart](https://github.com/microsoft/PowerToys/issues/19124).
 - There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
 
 ### General
