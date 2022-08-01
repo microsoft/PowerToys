@@ -26,7 +26,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Requirements
 
-- Windows 11 or Windows 10 v2004 (19041) or newer.
+- Windows 11 or Windows 10 version 2004 (codename 20H1 / build number 19041) or newer.
 - Our installer will install the following items:
    - [.NET 6.0.7 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.7) or a newer 6.0.x runtime.
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
@@ -36,8 +36,8 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
  [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture.  For most people, it is `x64`.
  
- - **For x64 processors (most common):** click on `PowerToysSetup-0.61.0-x64.exe`
- - **For ARM64 processors:** `PowerToysSetup-0.61.0-arm64.exe`
+ - **For x64 processors (most common):** click on [PowerToysSetup-0.61.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.61.0/PowerToysSetup-0.61.0-x64.exe)
+ - **For ARM64 processors:** [PowerToysSetup-0.61.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.61.0/PowerToysSetup-0.61.0-arm64.exe)
 
 This is our preferred method.
 
@@ -89,7 +89,7 @@ This is a lighter release, with a shorter development cycle and focused on stabi
 - The new Windows 11 context menu entries are now correctly added to Windows 11 dev channel insider builds. (This was a hotfix for 0.60)
 - The old context menu entries are shown alongside the new Windows 11 context menu entries to be compatible with software that overrides the Windows 11 context menu behavior. (This was a hotfix for 0.60)
 - Consolidated C# language version across the solution. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Removed deprecated Segoe icon glyph codes and replaced them with the correct ones.  Thanks [@niels9001](https://github.com/niels9001)!
+- Removed deprecated Segoe icon glyph codes and replaced them with the correct ones.  Thanks [@niels9001](https://github.com/niels9001) and [@Jay-o-Way](https://github.com/Jay-o-Way)!
 - Fixed an issue that caused a random accent key to be pressed on certain keyboard layouts when enabling some modules.
 
 ### Always on Top
@@ -129,13 +129,13 @@ This is a lighter release, with a shorter development cycle and focused on stabi
 
 - Fixed a typo in the WindowWalker plugin UI. Thanks [@rohanrdy](https://github.com/rohanrdy)!
 - Improved performance by saving the search history files only on exit. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- PowerToys Run no longer shows results for some plugins when querying for empty spaces in a global query. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Added support for showing localized names for some win32 programs in the programs plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 - The program plugin will now consider settings changed directly in ProgramPluginSettings.json. Thanks [@bezgumption](https://github.com/bezgumption)!
 
 ### Settings
 
 - PowerToys Run settings page properly greys out the score adjustment setting when a plugin is not global. Thanks [@jefflord](https://github.com/jefflord)!
-- PowerToys Run no longer shows results for some plugins when querying for empty spaces in a global query. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - PowerToys Run plugins score adjustment field accepts only numeric characters. Thanks [@jefflord](https://github.com/jefflord)!
 - Will not run if started directly from its executable, as it was before the WinUI 3 upgrade.
 - Fixed a typo in a PowerToys Run settings page description. Thanks [@eltociear](https://github.com/eltociear)!
