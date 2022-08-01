@@ -107,7 +107,7 @@ This is a lighter release, with a shorter development cycle and focused on stabi
 
 ### Image Resizer
 
-- Screen now announce the size name instead of the class name.
+- Screen reader now announces the size name instead of the class name.
 
 ### File explorer add-ons
 
