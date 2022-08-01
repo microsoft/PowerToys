@@ -114,6 +114,7 @@ atlstr
 Attribs
 attrs
 Atyrau
+augustkarlstedt
 aumid
 Aut
 Authenticode
@@ -145,6 +146,7 @@ bck
 Belarus
 betadele
 betsegaw
+bezgumption
 BGR
 bgra
 bhid
@@ -517,6 +519,7 @@ editshortcutswindow
 EFile
 ekus
 elif
+eltociear
 elseif
 Emoji
 emptyrecyclebin
@@ -1436,6 +1439,7 @@ OPTIMIZEFORINVOKE
 ORAW
 ORPHANEDDIALOGTITLE
 oss
+osfanbuff
 ostr
 ostream
 ostringstream
@@ -1646,7 +1650,7 @@ rects
 recyclebin
 redirectedfrom
 Redist
-redistributable
+Redistributable
 reencode
 reencoded
 refactor
@@ -1682,7 +1686,7 @@ requerying
 rescap
 resgen
 resheader
-resizable
+Resizable
 resizers
 resmimetype
 RESOURCEID
@@ -1713,6 +1717,7 @@ RNumber
 roadmap
 robmensching
 Roboto
+rohanrdy
 roslyn
 Rothera
 roundf
