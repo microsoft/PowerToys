@@ -9,11 +9,23 @@ class ZonesOverlay;
 class WorkArea
 {
 public:
-    WorkArea(HINSTANCE hinstance);
+    WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId);
     ~WorkArea();
 
 public:
-    bool Init(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId);
+    inline bool Init(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
+    {
+#ifndef UNIT_TESTS
+        if (!InitWindow(hinstance))
+        {
+            return false;
+        }
+#endif
+
+        InitLayout(parentUniqueId);
+        return true;
+    }
+
     inline bool InitWorkAreaRect(HMONITOR monitor)
     {
         m_monitor = monitor;
@@ -72,7 +84,8 @@ protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
 private:
-    void InitializeZoneSets(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept;
+    bool InitWindow(HINSTANCE hinstance) noexcept;
+    void InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept;
     void CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -81,7 +94,7 @@ private:
 
     HMONITOR m_monitor{};
     FancyZonesUtils::Rect m_workAreaRect{};
-    FancyZonesDataTypes::WorkAreaId m_uniqueId;
+    const FancyZonesDataTypes::WorkAreaId m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
     winrt::com_ptr<IZoneSet> m_zoneSet;
@@ -94,14 +107,14 @@ private:
 
 inline std::shared_ptr<WorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept
 {
-    auto self = std::make_shared<WorkArea>(hinstance);
+    auto self = std::make_shared<WorkArea>(hinstance, uniqueId);
     if (!self->InitWorkAreaRect(monitor))
     {
         self->LogInitializationError();
         return nullptr;
     }
     
-    if (!self->Init(hinstance, uniqueId, parentUniqueId))
+    if (!self->Init(hinstance, parentUniqueId))
     {
         return nullptr;
     }
