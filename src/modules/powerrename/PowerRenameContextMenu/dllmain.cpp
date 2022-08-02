@@ -93,6 +93,12 @@ public:
     {
         *cmdState = ECS_ENABLED;
 
+        // We've observed that it's possible that a null gets passed instead of an empty array. Just don't show the context menu in this case.
+        if (nullptr == selection) {
+            *cmdState = ECS_HIDDEN;
+            return S_OK;
+        }
+
         if (!CSettingsInstance().GetEnabled())
         {
             *cmdState = ECS_HIDDEN;
