@@ -34,7 +34,7 @@ namespace ColorPicker.Behaviors
 
         private void ItemPreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.PrimaryButton == MouseButtonState.Pressed)
+            if (e.LeftButton == MouseButtonState.Pressed)
             {
                 Task.Run(
                     new Action(() =>
@@ -42,7 +42,7 @@ namespace ColorPicker.Behaviors
                       Dispatcher.BeginInvoke(
                           new Action(() =>
                       {
-                          if (e.PrimaryButton == MouseButtonState.Pressed)
+                          if (e.LeftButton == MouseButtonState.Pressed)
                           {
                               var data = new DataObject();
                               data.SetData("Source", (sender as FrameworkElement).DataContext);
