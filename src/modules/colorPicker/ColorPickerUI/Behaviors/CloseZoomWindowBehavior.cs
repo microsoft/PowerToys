@@ -21,11 +21,11 @@ namespace ColorPicker.Behaviors
         private void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
         {
             AssociatedObject.PreviewKeyDown += AssociatedObject_PreviewKeyDown;
-            AssociatedObject.MouseLeftButtonDown += AssociatedObject_MouseLeftButtonDown;
+            AssociatedObject.MousePrimaryButtonDown += AssociatedObject_MousePrimaryButtonDown;
             _zoomWindowHelper = Bootstrapper.Container.GetExportedValue<ZoomWindowHelper>();
         }
 
-        private void AssociatedObject_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void AssociatedObject_MousePrimaryButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             _zoomWindowHelper.CloseZoomWindow();
         }

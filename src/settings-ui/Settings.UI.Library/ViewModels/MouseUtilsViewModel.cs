@@ -69,11 +69,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             MouseHighlighterSettingsConfig = mouseHighlighterSettingsRepository.SettingsConfig;
-            string leftClickColor = MouseHighlighterSettingsConfig.Properties.PrimaryButtonClickColor.Value;
-            _highlighterPrimaryButtonClickColor = !string.IsNullOrEmpty(leftClickColor) ? leftClickColor : "#FFFF00";
+            string primaryClickColor = MouseHighlighterSettingsConfig.Properties.PrimaryButtonClickColor.Value;
+            _highlighterPrimaryButtonClickColor = !string.IsNullOrEmpty(primaryClickColor) ? primaryClickColor : "#FFFF00";
 
-            string rightClickColor = MouseHighlighterSettingsConfig.Properties.SecondaryButtonClickColor.Value;
-            _highlighterSecondaryButtonClickColor = !string.IsNullOrEmpty(rightClickColor) ? rightClickColor : "#0000FF";
+            string secondaryClickColor = MouseHighlighterSettingsConfig.Properties.SecondaryButtonClickColor.Value;
+            _highlighterSecondaryButtonClickColor = !string.IsNullOrEmpty(secondaryClickColor) ? secondaryClickColor : "#0000FF";
 
             _highlighterOpacity = MouseHighlighterSettingsConfig.Properties.HighlightOpacity.Value;
             _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;

@@ -17,10 +17,10 @@ namespace ColorPicker.Behaviors
 
         private void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
         {
-            AssociatedObject.MouseLeftButtonDown += AssociatedObject_MouseLeftButtonDown;
+            AssociatedObject.MousePrimaryButtonDown += AssociatedObject_MousePrimaryButtonDown;
         }
 
-        private void AssociatedObject_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void AssociatedObject_MousePrimaryButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var parentWindow = Window.GetWindow(AssociatedObject);
             if (parentWindow != null)
