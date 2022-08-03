@@ -2104,6 +2104,7 @@ uefi
 UHash
 UIA
 uid
+UIEx
 uint
 uintptr
 UIPI
