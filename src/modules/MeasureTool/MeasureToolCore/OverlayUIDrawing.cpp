@@ -345,8 +345,8 @@ void DrawBoundsToolOverlayUILoop(BoundsToolState& toolState, HWND overlayWindow)
 
 void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindow)
 {
-    bool drawHCrossLine = true;
-    bool drawVCrossLine = true;
+    bool drawHorizontalCrossLine = true;
+    bool drawVerticalCrossLine = true;
     MeasureToolState::Mode toolMode;
 
     D2D1::ColorF crossColor = D2D1::ColorF::OrangeRed;
@@ -357,16 +357,16 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
         switch (s.mode)
         {
         case MeasureToolState::Mode::Cross:
-            drawHCrossLine = true;
-            drawVCrossLine = true;
+            drawHorizontalCrossLine = true;
+            drawVerticalCrossLine = true;
             break;
         case MeasureToolState::Mode::Vertical:
-            drawHCrossLine = false;
-            drawVCrossLine = true;
+            drawHorizontalCrossLine = false;
+            drawVerticalCrossLine = true;
             break;
         case MeasureToolState::Mode::Horizontal:
-            drawHCrossLine = true;
-            drawVCrossLine = false;
+            drawHorizontalCrossLine = true;
+            drawVerticalCrossLine = false;
             break;
         }
     });
@@ -386,12 +386,12 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
 
         const float CROSS_THICKNESS = 1.f * d2dState.dpiScale;
 
-        if (drawHCrossLine)
+        if (drawHorizontalCrossLine)
         {
             d2dState.rt->DrawLine(mts.cross.hLineStart, mts.cross.hLineEnd, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
         }
 
-        if (drawVCrossLine)
+        if (drawVerticalCrossLine)
         {
             d2dState.rt->DrawLine(mts.cross.vLineStart, mts.cross.vLineEnd, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
         }

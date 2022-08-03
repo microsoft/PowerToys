@@ -8,7 +8,7 @@ void BGRATextureView::SaveAsBitmap(const char* filename) const
     wil::unique_hbitmap bitmap{ CreateBitmap(static_cast<int>(width), static_cast<int>(height), 1, 32, pixels) };
     const HBITMAP hBitmap = bitmap.get();
     DWORD dwPaletteSize = 0, dwBmBitsSize = 0, dwDIBSize = 0, dwWritten = 0;
-    LPBITMAPINFOHEADER lpbi;
+    LPBITMAPINFOHEADER lpBitmapInfo;
     HANDLE hDib, hPal, hOldPal2 = NULL;
     HDC hDC = CreateDC(TEXT("DISPLAY"), NULL, NULL, NULL);
     const int iBits = GetDeviceCaps(hDC, BITSPIXEL) * GetDeviceCaps(hDC, PLANES);
@@ -33,8 +33,8 @@ void BGRATextureView::SaveAsBitmap(const char* filename) const
     bi.biClrUsed = 256;
     dwBmBitsSize = ((Bitmap0.bmWidth * wBitCount + 31) & ~31) / 8 * Bitmap0.bmHeight;
     hDib = GlobalAlloc(GHND, dwBmBitsSize + dwPaletteSize + sizeof(BITMAPINFOHEADER));
-    lpbi = (LPBITMAPINFOHEADER)GlobalLock(hDib);
-    *lpbi = bi;
+    lpBitmapInfo = (LPBITMAPINFOHEADER)GlobalLock(hDib);
+    *lpBitmapInfo = bi;
 
     hPal = GetStockObject(DEFAULT_PALETTE);
     if (hPal)
@@ -44,7 +44,7 @@ void BGRATextureView::SaveAsBitmap(const char* filename) const
         RealizePalette(hDC);
     }
 
-    GetDIBits(hDC, hBitmap, 0, (UINT)Bitmap0.bmHeight, (LPSTR)lpbi + sizeof(BITMAPINFOHEADER) + dwPaletteSize, (BITMAPINFO*)lpbi, DIB_RGB_COLORS);
+    GetDIBits(hDC, hBitmap, 0, (UINT)Bitmap0.bmHeight, (LPSTR)lpBitmapInfo + sizeof(BITMAPINFOHEADER) + dwPaletteSize, (BITMAPINFO*)lpBitmapInfo, DIB_RGB_COLORS);
 
     if (hOldPal2)
     {
@@ -58,15 +58,15 @@ void BGRATextureView::SaveAsBitmap(const char* filename) const
     if (!fh)
         return;
 
-    BITMAPFILEHEADER bmfHdr = {};
-    bmfHdr.bfType = 0x4D42; // "BM"
+    BITMAPFILEHEADER bitmapFileHeader = {};
+    bitmapFileHeader.bfType = 0x4D42; // "BM"
     dwDIBSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dwPaletteSize + dwBmBitsSize;
-    bmfHdr.bfSize = dwDIBSize;
-    bmfHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER) + dwPaletteSize;
+    bitmapFileHeader.bfSize = dwDIBSize;
+    bitmapFileHeader.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER) + dwPaletteSize;
 
-    WriteFile(fh.get(), (LPSTR)&bmfHdr, sizeof(BITMAPFILEHEADER), &dwWritten, NULL);
+    WriteFile(fh.get(), (LPSTR)&bitmapFileHeader, sizeof(BITMAPFILEHEADER), &dwWritten, NULL);
 
-    WriteFile(fh.get(), (LPSTR)lpbi, dwDIBSize, &dwWritten, NULL);
+    WriteFile(fh.get(), (LPSTR)lpBitmapInfo, dwDIBSize, &dwWritten, NULL);
     GlobalUnlock(hDib);
     GlobalFree(hDib);
 }

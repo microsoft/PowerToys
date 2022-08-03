@@ -1,4 +1,4 @@
-﻿<winex:WindowEx
+﻿<winuiex:WindowEx
     x:Class="MeasureToolUI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:MeasureToolUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:winex="using:WinUIEx"
+    xmlns:winuiex="using:WinUIEx"
     IsAlwaysOnTop="True"
     IsMaximizable="False"
     IsMinimizable="False"
@@ -15,16 +15,16 @@
     IsShownInSwitchers="False"
     IsTitleBarVisible="False"
     mc:Ignorable="d">
-    <winex:WindowEx.Backdrop>
-        <!--<winex:AcrylicSystemBackdrop />-->
-        <winex:AcrylicSystemBackdrop
+    <winuiex:WindowEx.Backdrop>
+        <!--<winuiex:AcrylicSystemBackdrop />-->
+        <winuiex:AcrylicSystemBackdrop
             DarkFallbackColor="#333"
             DarkTintColor="Black"
             DarkTintOpacity="0.8"
             LightFallbackColor="#eee"
             LightTintColor="White"
             LightTintOpacity="0.6" />
-    </winex:WindowEx.Backdrop>
+    </winuiex:WindowEx.Backdrop>
     <Grid>
         <Grid.Resources>
             <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
@@ -284,4 +284,4 @@
                     Click="ClosePanelTool_Click"/>
         </StackPanel>
     </Grid>
-</winex:WindowEx>
+</winuiex:WindowEx>

@@ -45,7 +45,7 @@ class D3DCaptureState final
 {
     winrt::com_ptr<ID3D11Device> d3dDevice;
     winrt::IDirect3DDevice device;
-    winrt::com_ptr<IDXGISwapChain1> swapchain;
+    winrt::com_ptr<IDXGISwapChain1> swapChain;
     winrt::com_ptr<ID3D11DeviceContext> context;
     winrt::SizeInt32 frameSize;
 
@@ -57,7 +57,7 @@ class D3DCaptureState final
 
     D3DCaptureState(winrt::com_ptr<ID3D11Device> d3dDevice,
                     winrt::IDirect3DDevice _device,
-                    winrt::com_ptr<IDXGISwapChain1> _swapchain,
+                    winrt::com_ptr<IDXGISwapChain1> _swapChain,
                     winrt::com_ptr<ID3D11DeviceContext> _context,
                     const winrt::GraphicsCaptureItem& item,
                     winrt::DirectXPixelFormat _pixelFormat);
@@ -68,7 +68,7 @@ class D3DCaptureState final
 
     void StartSessionInPreferredMode();
 
-    std::mutex dtorMutex;
+    std::mutex destructorMutex;
 
 public:
     static std::unique_ptr<D3DCaptureState> Create(const winrt::GraphicsCaptureItem& item, const winrt::DirectXPixelFormat pixelFormat);
@@ -83,13 +83,13 @@ public:
 
 D3DCaptureState::D3DCaptureState(winrt::com_ptr<ID3D11Device> _d3dDevice,
                                  winrt::IDirect3DDevice _device,
-                                 winrt::com_ptr<IDXGISwapChain1> _swapchain,
+                                 winrt::com_ptr<IDXGISwapChain1> _swapChain,
                                  winrt::com_ptr<ID3D11DeviceContext> _context,
                                  const winrt::GraphicsCaptureItem& item,
                                  winrt::DirectXPixelFormat _pixelFormat) :
     d3dDevice{ std::move(_d3dDevice) },
     device{ std::move(_device) },
-    swapchain{ std::move(_swapchain) },
+    swapChain{ std::move(_swapChain) },
     context{ std::move(_context) },
     frameSize{ item.Size() },
     pixelFormat{ std::move(_pixelFormat) },
@@ -127,7 +127,7 @@ auto GetDXGIInterfaceFromObject(winrt::IInspectable const& object)
 void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& sender, const winrt::IInspectable&)
 {
     // Prevent calling a callback on a partially destroyed state
-    std::unique_lock callbackLock{ dtorMutex };
+    std::unique_lock callbackLock{ destructorMutex };
 
     bool resized = false;
     winrt::com_ptr<ID3D11Texture2D> texture;
@@ -137,7 +137,7 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
 
         if (auto newFrameSize = frame.ContentSize(); newFrameSize != frameSize)
         {
-            winrt::check_hresult(swapchain->ResizeBuffers(2,
+            winrt::check_hresult(swapChain->ResizeBuffers(2,
                                                           static_cast<uint32_t>(newFrameSize.Height),
                                                           static_cast<uint32_t>(newFrameSize.Width),
                                                           static_cast<DXGI_FORMAT>(pixelFormat),
@@ -146,7 +146,7 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
             resized = true;
         }
 
-        winrt::check_hresult(swapchain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), texture.put_void()));
+        winrt::check_hresult(swapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), texture.put_void()));
         auto gpuTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
         texture = CopyFrameToCPU(gpuTexture);
     }
@@ -154,7 +154,7 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
     OwnedTextureView textureView{ texture, context };
 
     DXGI_PRESENT_PARAMETERS presentParameters = {};
-    swapchain->Present1(1, 0, &presentParameters);
+    swapChain->Present1(1, 0, &presentParameters);
 
     frameCallback(std::move(textureView));
 
@@ -218,8 +218,8 @@ std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(const winrt::GraphicsCa
     winrt::com_ptr<IDXGIFactory2> factory;
     winrt::check_hresult(adapter->GetParent(winrt::guid_of<IDXGIFactory2>(), factory.put_void()));
 
-    winrt::com_ptr<IDXGISwapChain1> swapchain;
-    winrt::check_hresult(factory->CreateSwapChainForComposition(d3dDevice.get(), &desc, nullptr, swapchain.put()));
+    winrt::com_ptr<IDXGISwapChain1> swapChain;
+    winrt::check_hresult(factory->CreateSwapChainForComposition(d3dDevice.get(), &desc, nullptr, swapChain.put()));
 
     winrt::com_ptr<ID3D11DeviceContext> context;
     d3dDevice->GetImmediateContext(context.put());
@@ -228,7 +228,7 @@ std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(const winrt::GraphicsCa
     // We must create the object in a heap, since we need to pin it in memory to receive callbacks
     auto statePtr = new D3DCaptureState{ d3dDevice,
                                          d3dDeviceInspectable.as<winrt::IDirect3DDevice>(),
-                                         std::move(swapchain),
+                                         std::move(swapChain),
                                          std::move(context),
                                          item,
                                          pixelFormat };
@@ -238,7 +238,7 @@ std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(const winrt::GraphicsCa
 
 D3DCaptureState::~D3DCaptureState()
 {
-    std::unique_lock callbackLock{ dtorMutex };
+    std::unique_lock callbackLock{ destructorMutex };
     StopCapture();
     framePool.Close();
 }
@@ -343,8 +343,8 @@ void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR t
             continuousCapture = state.continuousCapture;
         });
 
-        constexpr size_t TARGET_FRAMERATE = 120;
-        constexpr auto TARGET_FRAME_DURATION = std::chrono::milliseconds{ 1000 } / TARGET_FRAMERATE;
+        constexpr size_t TARGET_FRAME_RATE = 120;
+        constexpr auto TARGET_FRAME_DURATION = std::chrono::milliseconds{ 1000 } / TARGET_FRAME_RATE;
 
         if (continuousCapture)
         {

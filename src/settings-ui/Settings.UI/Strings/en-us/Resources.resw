@@ -1481,7 +1481,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>to toggle your video</value>
   </data>
   <data name="Oobe_MeasureTool_Activation.Text" xml:space="preserve">
-    <value>to bring up meaure tools panel</value>
+    <value>to bring up measure tools panel.</value>
   </data>
   <data name="Oobe_MeasureTool_HowToLaunch.Text" xml:space="preserve">
     <value>Bounds tool lets you measure something by dragging mouse cursor. Measure tool allows tracing similar pixels along horizontal and vertical axes.</value>

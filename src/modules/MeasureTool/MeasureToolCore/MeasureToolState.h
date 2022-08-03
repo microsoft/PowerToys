@@ -1,7 +1,7 @@
 #pragma once
 
 #include <windef.h>
-#include <dcommon.h>
+#include <dCommon.h>
 
 #include <array>
 #include <functional>

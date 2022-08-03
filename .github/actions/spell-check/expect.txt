@@ -153,9 +153,11 @@ bigbar
 bigobj
 binlog
 bitmapimage
+BITMAPFILEHEADER
 BITMAPINFO
 BITMAPINFOHEADER
 bitmask
+BITSPIXEL
 bla
 Blockquotes
 blog
@@ -261,6 +263,7 @@ CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
 cmp
+cmpgt
 cmyk
 cnt
 Cocklebiddy
@@ -362,6 +365,7 @@ customaction
 CUSTOMACTIONTEST
 cvd
 CVirtual
+cvtsi
 cwchar
 cwd
 cxfksword
@@ -388,11 +392,14 @@ Dbg
 Dbghelp
 DBLCLKS
 DBLEPSILON
+DCapture
 DCOM
 dcomp
 dcompi
 DComposition
+DDevice
 ddf
+DDxgi
 Deact
 debian
 debugbreak
@@ -518,6 +525,7 @@ EFile
 ekus
 elif
 elseif
+emmintrin
 Emoji
 emptyrecyclebin
 ENABLEDPOPUP
@@ -534,6 +542,7 @@ enum
 EOAC
 EOL
 epicgames
+epu
 Eqn
 ERASEBKGND
 EREOF
@@ -656,12 +665,15 @@ GETMINMAXINFO
 GETSTATE
 GETTEXT
 GETTEXTLENGTH
+GHND
 github
 githubusercontent
 globals
+GMEM
 GNumber
 google
 GPTR
+gpu
 GSM
 gtm
 gui
@@ -742,6 +754,7 @@ hotkeys
 hotlight
 hotspot
 Hovd
+HPALETTE
 HPAINTBUFFER
 HRAWINPUT
 hread
@@ -798,6 +811,7 @@ IDD
 IDelayed
 IDesktop
 IDictionary
+IDirect
 IDirectory
 IDispatch
 IDispatcher
@@ -833,6 +847,7 @@ IFolder
 IFormat
 ifstream
 IGraph
+IGraphics
 iid
 IImage
 Iindex
@@ -1105,6 +1120,7 @@ lookbehind
 lowlevel
 LOWORD
 lparam
+LPBITMAPINFOHEADER
 LPBYTE
 LPCITEMIDLIST
 LPCMINVOKECOMMANDINFO
@@ -1786,6 +1802,7 @@ SETTINGCHANGE
 settingsheader
 settingshotkeycontrol
 SETWORKAREA
+setzero
 sfgao
 SFGAOF
 SFP
@@ -1953,6 +1970,7 @@ subkey
 SUBLANG
 submenu
 subquery
+subresource
 substr
 Sul
 Superbar
@@ -2103,6 +2121,7 @@ undef
 UNDNAME
 unescape
 Unicast
+UNICODETEXT
 Unindent
 Uninitialize
 uninstall
@@ -2151,15 +2170,18 @@ Uvs
 uwp
 uxtheme
 UYVY
+vabdq
 validmodulename
 vcamp
 vcdl
 VCINSTALLDIR
 vcm
+Vcpkg
 VCRT
 vcvars
 VDesktop
 vdi
+vdupq
 vec
 VERBSONLY
 VERBW
@@ -2169,6 +2191,7 @@ VERSIONINFO
 Versioning
 vformat
 VFT
+vgetq
 vid
 VIDCAP
 videoconference
@@ -2184,15 +2207,20 @@ visualbrush
 visualstudio
 VKey
 VKTAB
+vorrq
 VOS
+vpaddlq
 Vpn
+vqsubq
 VREDRAW
+vreinterpretq
 VSC
 VSCBD
 vscdb
 vscode
 vsconfig
 VSCROLL
+vsetq
 vsonline
 vstemplate
 VSTHRD
@@ -2352,6 +2380,7 @@ XLoc
 XNamespace
 XOffset
 xpath
+XPixel
 XResource
 xsi
 XStr

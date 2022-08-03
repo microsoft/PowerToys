@@ -84,14 +84,14 @@ struct BGRATextureView
     {
         const __m128i rgba1 = _mm_cvtsi32_si128(pixel1);
         const __m128i rgba2 = _mm_cvtsi32_si128(pixel2);
-        const __m128i dists = distance_epi8(rgba1, rgba2);
+        const __m128i distances = distance_epi8(rgba1, rgba2);
 
         // Method 1: Test whether each channel distance is not great than tolerance
-        //const __m128i tolrs = _mm_set1_epi8(tolerance);
-        //return _mm_cvtsi128_si32(_mm_cmpgt_epi8(dists, tolrs)) == 0;
+        //const __m128i tolerances = _mm_set1_epi8(tolerance);
+        //return _mm_cvtsi128_si32(_mm_cmpgt_epi8(distances, tolerances)) == 0;
 
         // Method 2: Test whether sum of all channel differences is smaller than tolerance
-        return _mm_cvtsi128_si32(_mm_sad_epu8(dists, _mm_setzero_si128())) <= tolerance;
+        return _mm_cvtsi128_si32(_mm_sad_epu8(distances, _mm_setzero_si128())) <= tolerance;
     }
 
 #if !defined(NDEBUG)

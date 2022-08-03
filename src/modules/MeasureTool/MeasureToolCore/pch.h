@@ -10,7 +10,7 @@
 #include <d2d1_3.h>
 #include <dwrite.h>
 #include <dwmapi.h>
-#include <windows.graphics.directx.direct3d11.interop.h>
+#include <windows.graphics.directX.direct3d11.interop.h>
 #include <windows.graphics.capture.interop.h>
 #include <windows.graphics.capture.h>
 
