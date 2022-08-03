@@ -2304,6 +2304,7 @@ winsdkver
 winspool
 WINTHRESHOLD
 winui
+winuiex
 winxamlmanager
 wistd
 withinrafael
