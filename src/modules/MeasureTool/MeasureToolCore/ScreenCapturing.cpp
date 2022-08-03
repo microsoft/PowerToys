@@ -17,7 +17,8 @@ public:
         D3D11_TEXTURE2D_DESC desc;
         texture->GetDesc(&desc);
 
-        assert(desc.Format == static_cast<DXGI_FORMAT>(pixelFormat));
+        // TODO: It's unclear why this assert is here, since pixelFormat doesn't exist on this context.
+        // assert(desc.Format == static_cast<DXGI_FORMAT>(pixelFormat));
 
         D3D11_MAPPED_SUBRESOURCE resource;
         winrt::check_hresult(context->Map(texture.get(), D3D11CalcSubresource(0, 0, 0), D3D11_MAP_READ, 0, &resource));
