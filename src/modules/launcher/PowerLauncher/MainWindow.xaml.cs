@@ -183,7 +183,7 @@ namespace PowerLauncher
 
             ListBox.DataContext = _viewModel;
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
-            ListBox.SuggestionsList.PreviewMousePrimaryButtonUp += SuggestionsList_PreviewMousePrimaryButtonUp;
+            ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
             _viewModel.LoadedAtLeastOnce = true;
@@ -217,7 +217,7 @@ namespace PowerLauncher
             }
         }
 
-        private void SuggestionsList_PreviewMousePrimaryButtonUp(object sender, MouseButtonEventArgs e)
+        private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             var result = ((FrameworkElement)e.OriginalSource).DataContext;
             if (result != null)
