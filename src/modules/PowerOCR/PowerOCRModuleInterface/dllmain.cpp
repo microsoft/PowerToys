@@ -100,7 +100,7 @@ public:
     PowerOCR()
     {
         // init_settings();
-        app_name = GET_RESOURCE_STRING(IDS_AWAKE_NAME);
+        app_name = L"PowerOCR";
         app_key = L"PowerOCR";
         std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
         logFilePath.append(LogSettings::awakeLogPath);
