@@ -1524,6 +1524,7 @@ POPUPWINDOW
 posix
 powercfg
 powerlauncher
+POWEROCR
 powerpreview
 powerrename
 POWERRENAMECONTEXTMENU
