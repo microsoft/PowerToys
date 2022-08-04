@@ -100,6 +100,12 @@ public:
     PowerOCR()
     {
         // init_settings();
+        app_name = GET_RESOURCE_STRING(IDS_AWAKE_NAME);
+        app_key = L"PowerOCR";
+        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
+        logFilePath.append(LogSettings::awakeLogPath);
+        Logger::init(LogSettings::launcherLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        Logger::info("Launcher object is constructing");
     };
 
     virtual void destroy() override
@@ -161,25 +167,25 @@ public:
             ResetEvent(send_telemetry_event);
             ResetEvent(m_hInvokeEvent);
 
-            // auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::AWAKE_EXIT_EVENT);
-            // if (!exitEvent)
-            // {
-            //     Logger::warn(L"Failed to create exit event for PowerToys PowerOCR. {}", get_last_error_or_default(GetLastError()));
-            // }
-            // else
+            auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::POWEROCR_EXIT_EVENT);
+            if (!exitEvent)
             {
-                // Logger::trace(L"Signaled exit event for PowerToys PowerOCR.");
-                // if (!SetEvent(exitEvent))
-                // {
-                //     Logger::warn(L"Failed to signal exit event for PowerToys PowerOCR. {}", get_last_error_or_default(GetLastError()));
-                // 
-                //     // For some reason, we couldn't process the signal correctly, so we still
-                //     // need to terminate the PowerOCR process.
-                //     TerminateProcess(p_info.hProcess, 1);
-                // }
-                // 
-                // ResetEvent(exitEvent);
-                // CloseHandle(exitEvent);
+                Logger::warn(L"Failed to create exit event for PowerToys PowerOCR. {}", get_last_error_or_default(GetLastError()));
+            }
+            else
+            {
+                Logger::trace(L"Signaled exit event for PowerToys PowerOCR.");
+                if (!SetEvent(exitEvent))
+                {
+                    Logger::warn(L"Failed to signal exit event for PowerToys PowerOCR. {}", get_last_error_or_default(GetLastError()));
+                 
+                    // For some reason, we couldn't process the signal correctly, so we still
+                    // need to terminate the PowerOCR process.
+                    TerminateProcess(p_info.hProcess, 1);
+                }
+                 
+                ResetEvent(exitEvent);
+                CloseHandle(exitEvent);
                 CloseHandle(p_info.hProcess);
             }
         }
