@@ -174,6 +174,8 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool PTRSearchQueryFastResultsWithDelay { get; set; }
 
+        public bool PTRSearchQueryFastResultsWithPartialDelay { get; set; }
+
         public string QueryBoxFontStretch { get; set; }
 
         public string ResultFont { get; set; } = FontFamily.GenericSansSerif.Name;

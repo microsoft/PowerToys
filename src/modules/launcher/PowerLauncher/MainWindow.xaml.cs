@@ -207,8 +207,8 @@ namespace PowerLauncher
                 {
                     // old mode, delay fast and delayed execution
                     _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
-                    add => SearchBox.QueryTextBox.TextChanged += add,
-                    remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                        add => SearchBox.QueryTextBox.TextChanged += add,
+                        remove => SearchBox.QueryTextBox.TextChanged -= remove)
                         .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
                         .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
                         .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender)))
@@ -216,15 +216,31 @@ namespace PowerLauncher
                 }
                 else
                 {
-                    // new mode, fire non-delayed right away, and then later the delayed execution
-                    _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
-                    add => SearchBox.QueryTextBox.TextChanged += add,
-                    remove => SearchBox.QueryTextBox.TextChanged -= remove)
-                        .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
-                        .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
-                        .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
-                        .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
-                        .Subscribe();
+                    if (_settings.PTRSearchQueryFastResultsWithPartialDelay)
+                    {
+                        // new mode, fire non-delayed right away, and then later the delayed execution
+                        _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                            add => SearchBox.QueryTextBox.TextChanged += add,
+                            remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                            .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
+                            .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
+                            .Subscribe();
+                    }
+                    else
+                    {
+                        // new mode, fire non-delayed after short delay, and then later the delayed execution
+                        _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                            add => SearchBox.QueryTextBox.TextChanged += add,
+                            remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                            .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                            .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs * 0.20))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
+                            .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
+                            .Subscribe();
+                    }
                 }
             }
             else
