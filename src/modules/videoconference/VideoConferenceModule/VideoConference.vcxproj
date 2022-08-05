@@ -98,6 +98,7 @@ xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
   <ItemGroup>
     <ClInclude Include="AudioDeviceNotificationClient.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Toolbar.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />
@@ -172,5 +173,8 @@ xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="VideoConferenceModule.rc" />
   </ItemGroup>
 </Project>
