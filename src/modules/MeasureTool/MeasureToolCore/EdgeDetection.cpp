@@ -30,6 +30,8 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
     const uint32_t startPixel = texture.GetPixel(x, y);
     while (true)
     {
+        long oldX = x;
+        long oldY = y;
         if constexpr (IsX)
         {
             if constexpr (Increment)
@@ -60,7 +62,7 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
         const uint32_t nextPixel = texture.GetPixel(x, y);
         if (!texture.PixelsClose(startPixel, nextPixel, tolerance))
         {
-            return IsX ? x : y;
+            return IsX ? oldX : oldY; // Return previous value, since we've hit a different pixel color.
         }
     }
 
