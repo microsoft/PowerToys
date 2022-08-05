@@ -7,7 +7,7 @@
 
 #define FILE_DESCRIPTION "PowerToys BugReport Tool"
 #define INTERNAL_NAME "PowerToys.BugReportTool"
-#define ORIGINAL_FILENAME "PowerToys.BugReportTool.dll"
+#define ORIGINAL_FILENAME "PowerToys.BugReportTool.exe"
 
 // Non-localizable
 //////////////////////////////
