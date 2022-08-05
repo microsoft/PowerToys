@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by FancyZones.rc
+// Used by FancyZonesModuleInterface.rc
 
 //////////////////////////////
 // Non-localizable
