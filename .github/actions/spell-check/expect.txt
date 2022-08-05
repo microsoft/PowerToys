@@ -272,6 +272,7 @@ CODENAME
 codeofconduct
 codereview
 Codespaces
+codicon
 COINIT
 colorconv
 colorformat
