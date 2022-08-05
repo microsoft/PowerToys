@@ -121,9 +121,7 @@
                                               Height="28"
                                           Grid.Column="1"
                                           XYFocusKeyboardNavigation="Enabled"
-                                          Checked="Checked_ids"
                                           IsTabStop="True"
-                                          Unchecked="Checked_ids"
                                           Content=""
                                           Name="{x:Bind IdStr}"
                                           AutomationProperties.Name="{x:Bind Original}"
@@ -355,7 +353,7 @@
 
 
 
-        <muxc:SplitButton Grid.Row="2" Style="{StaticResource SplitAccentButtonStyle}" Grid.Column="0" Margin="0,0,12,1" x:Name="button_rename" x:Uid="ButtonApply" Click="button_rename_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsEnabled="{x:Bind UIUpdatesItem.ButtonRenameEnabled, Mode=OneWay}">
+        <muxc:SplitButton Grid.Row="2" Style="{StaticResource SplitAccentButtonStyle}" Grid.Column="0" Margin="0,0,12,1" x:Name="button_rename" x:Uid="ButtonApply" Click="button_rename_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom">
             <muxc:SplitButton.KeyboardAccelerators>
                 <KeyboardAccelerator Key="Enter" />
                 <KeyboardAccelerator Key="Enter" Modifiers="Control" />
