@@ -79,7 +79,7 @@ namespace Microsoft.PowerToys.Run.Plugin.History.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Run History.
+        ///   Looks up a localized string similar to History.
         /// </summary>
         public static string wox_plugin_history_plugin_name {
             get {

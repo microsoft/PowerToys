@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="wox_plugin_history_plugin_name" xml:space="preserve">
-    <value>Run History</value>
+    <value>History</value>
   </data>
   <data name="wox_plugin_history_plugin_description" xml:space="preserve">
     <value>Quick access to previous selected results.</value>
