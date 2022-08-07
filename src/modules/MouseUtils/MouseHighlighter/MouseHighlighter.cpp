@@ -62,8 +62,8 @@ private:
 
     winrt::CompositionSpriteShape m_leftPointer{ nullptr };
     winrt::CompositionSpriteShape m_rightPointer{ nullptr };
-    bool m_primaryButtonPressed = false;
-    bool m_secondaryButtonPressed = false;
+    bool m_leftButtonPressed = false;
+    bool m_rightButtonPressed = false;
 
     bool m_visible = false;
 
@@ -73,8 +73,8 @@ private:
     int m_fadeDelay_ms = MOUSE_HIGHLIGHTER_DEFAULT_DELAY_MS;
     int m_fadeDuration_ms = MOUSE_HIGHLIGHTER_DEFAULT_DURATION_MS;
 
-    winrt::Windows::UI::Color m_primaryClickColor = MOUSE_HIGHLIGHTER_DEFAULT_LEFT_BUTTON_COLOR;
-    winrt::Windows::UI::Color m_secondaryClickColor = MOUSE_HIGHLIGHTER_DEFAULT_RIGHT_BUTTON_COLOR;
+    winrt::Windows::UI::Color m_leftClickColor = MOUSE_HIGHLIGHTER_DEFAULT_LEFT_BUTTON_COLOR;
+    winrt::Windows::UI::Color m_rightClickColor = MOUSE_HIGHLIGHTER_DEFAULT_RIGHT_BUTTON_COLOR;
 };
 
 Highlighter* Highlighter::instance = nullptr;
@@ -135,13 +135,13 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     circleShape.Offset({ (float)pt.x, (float)pt.y });
     if (button == MouseButton::Left)
     {
-        circleShape.FillBrush(m_compositor.CreateColorBrush(m_primaryClickColor));
+        circleShape.FillBrush(m_compositor.CreateColorBrush(m_leftClickColor));
         m_leftPointer = circleShape;
     }
     else
     {
         //right
-        circleShape.FillBrush(m_compositor.CreateColorBrush(m_secondaryClickColor));
+        circleShape.FillBrush(m_compositor.CreateColorBrush(m_rightClickColor));
         m_rightPointer = circleShape;
     }
     m_shape.Shapes().Append(circleShape);
@@ -216,34 +216,34 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
         {
         case WM_LBUTTONDOWN:
             instance->AddDrawingPoint(MouseButton::Left);
-            instance->m_primaryButtonPressed = true;
+            instance->m_leftButtonPressed = true;
             break;
         case WM_RBUTTONDOWN:
             instance->AddDrawingPoint(MouseButton::Right);
-            instance->m_secondaryButtonPressed = true;
+            instance->m_rightButtonPressed = true;
             break;
         case WM_MOUSEMOVE:
-            if (instance->m_primaryButtonPressed)
+            if (instance->m_leftButtonPressed)
             {
                 instance->UpdateDrawingPointPosition(MouseButton::Left);
             }
-            if (instance->m_secondaryButtonPressed)
+            if (instance->m_rightButtonPressed)
             {
                 instance->UpdateDrawingPointPosition(MouseButton::Right);
             }
             break;
         case WM_LBUTTONUP:
-            if (instance->m_primaryButtonPressed)
+            if (instance->m_leftButtonPressed)
             {
                 instance->StartDrawingPointFading(MouseButton::Left);
-                instance->m_primaryButtonPressed = false;
+                instance->m_leftButtonPressed = false;
             }
             break;
         case WM_RBUTTONUP:
-            if (instance->m_secondaryButtonPressed)
+            if (instance->m_rightButtonPressed)
             {
                 instance->StartDrawingPointFading(MouseButton::Right);
-                instance->m_secondaryButtonPressed = false;
+                instance->m_rightButtonPressed = false;
             }
             break;
         default:
@@ -271,8 +271,8 @@ void Highlighter::StopDrawing()
 {
     Logger::info("Stopping draw mode.");
     m_visible = false;
-    m_primaryButtonPressed = false;
-    m_secondaryButtonPressed = false;
+    m_leftButtonPressed = false;
+    m_rightButtonPressed = false;
     m_leftPointer = nullptr;
     m_rightPointer = nullptr;
     ShowWindow(m_hwnd, SW_HIDE);
@@ -290,8 +290,8 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings) {
     m_radius = (float)settings.radius;
     m_fadeDelay_ms = settings.fadeDelayMs;
     m_fadeDuration_ms = settings.fadeDurationMs;
-    m_primaryClickColor = settings.primaryButtonColor;
-    m_secondaryClickColor = settings.secondaryButtonColor;
+    m_leftClickColor = settings.leftButtonColor;
+    m_rightClickColor = settings.rightButtonColor;
 }
 
 void Highlighter::DestroyHighlighter()

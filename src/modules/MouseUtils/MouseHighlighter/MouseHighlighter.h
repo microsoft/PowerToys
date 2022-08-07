@@ -10,8 +10,8 @@ constexpr int MOUSE_HIGHLIGHTER_DEFAULT_DURATION_MS = 250;
 
 struct MouseHighlighterSettings
 {
-    winrt::Windows::UI::Color primaryButtonColor = MOUSE_HIGHLIGHTER_DEFAULT_LEFT_BUTTON_COLOR;
-    winrt::Windows::UI::Color secondaryButtonColor = MOUSE_HIGHLIGHTER_DEFAULT_RIGHT_BUTTON_COLOR;
+    winrt::Windows::UI::Color leftButtonColor = MOUSE_HIGHLIGHTER_DEFAULT_LEFT_BUTTON_COLOR;
+    winrt::Windows::UI::Color rightButtonColor = MOUSE_HIGHLIGHTER_DEFAULT_RIGHT_BUTTON_COLOR;
     int radius = MOUSE_HIGHLIGHTER_DEFAULT_RADIUS;
     int fadeDelayMs = MOUSE_HIGHLIGHTER_DEFAULT_DELAY_MS;
     int fadeDurationMs = MOUSE_HIGHLIGHTER_DEFAULT_DURATION_MS;

@@ -12,10 +12,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public HotkeySettings ActivationShortcut { get; set; }
 
         [JsonPropertyName("left_button_click_color")]
-        public StringProperty PrimaryButtonClickColor { get; set; }
+        public StringProperty LeftButtonClickColor { get; set; }
 
         [JsonPropertyName("right_button_click_color")]
-        public StringProperty SecondaryButtonClickColor { get; set; }
+        public StringProperty RightButtonClickColor { get; set; }
 
         [JsonPropertyName("highlight_opacity")]
         public IntProperty HighlightOpacity { get; set; }
@@ -32,8 +32,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public MouseHighlighterProperties()
         {
             ActivationShortcut = new HotkeySettings(true, false, false, true, 0x48);
-            PrimaryButtonClickColor = new StringProperty("#FFFF00");
-            SecondaryButtonClickColor = new StringProperty("#0000FF");
+            LeftButtonClickColor = new StringProperty("#FFFF00");
+            RightButtonClickColor = new StringProperty("#0000FF");
             HighlightOpacity = new IntProperty(160);
             HighlightRadius = new IntProperty(20);
             HighlightFadeDelayMs = new IntProperty(500);

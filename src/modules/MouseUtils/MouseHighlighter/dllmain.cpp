@@ -227,7 +227,7 @@ public:
                 }
                 else
                 {
-                    highlightSettings.primaryButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
+                    highlightSettings.leftButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
                 }
             }
             catch (...)
@@ -246,7 +246,7 @@ public:
                 }
                 else
                 {
-                    highlightSettings.secondaryButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
+                    highlightSettings.rightButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
                 }
             }
             catch (...)
