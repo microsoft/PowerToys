@@ -28,18 +28,16 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 - Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
 - Our installer will install the following items:
-   - [.NET 6.0.7 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.7) or a newer 6.0.x runtime.
+   - [.NET 6.0.7 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.7).
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
    - [Microsoft Visual C++ Redistributable](https://docs.microsoft.com/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022) installer. This will install one of the latest versions available.
 
 ### Via GitHub with EXE [Recommended]
 
- [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture.  For most people, it is `x64`.
+This is our preferred method. Please use the appropriate the PowerToys installer that matches your machine's architecture. For most people, it is `x64`.
  
  - **For x64 processors (most common):** [PowerToysSetup-0.61.1-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.61.1/PowerToysSetup-0.61.1-x64.exe)
  - **For ARM64 processors:** [PowerToysSetup-0.61.1-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.61.1/PowerToysSetup-0.61.1-arm64.exe)
-
-This is our preferred method.
 
 ### Via Microsoft Store
 
@@ -89,7 +87,7 @@ This is a lighter release, with a shorter development cycle and focused on stabi
 - The new Windows 11 context menu entries are now correctly added to Windows 11 dev channel insider builds. (This was a hotfix for 0.60)
 - The old context menu entries are shown alongside the new Windows 11 context menu entries to be compatible with software that overrides the Windows 11 context menu behavior. (This was a hotfix for 0.60)
 - Consolidated C# language version across the solution. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Removed deprecated Segoe icon glyph codes and replaced them with the correct ones.  Thanks [@niels9001](https://github.com/niels9001) and [@Jay-o-Way](https://github.com/Jay-o-Way)!
+- Removed deprecated Segoe icon glyph codes and replaced them with the correct ones. Thanks [@niels9001](https://github.com/niels9001) and [@Jay-o-Way](https://github.com/Jay-o-Way)!
 - Fixed an issue that caused a random accent key to be pressed on certain keyboard layouts when enabling some modules.
 
 ### Always on Top
