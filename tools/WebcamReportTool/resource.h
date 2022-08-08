@@ -5,7 +5,7 @@
 //////////////////////////////
 // Non-localizable
 
-#define FILE_DESCRIPTION "PowerToys Webcam Tool"
+#define FILE_DESCRIPTION "PowerToys Webcam Report Tool"
 #define INTERNAL_NAME "PowerToys.WebcamReportTool"
 #define ORIGINAL_FILENAME "PowerToys.WebcamReportTool.exe"
 
