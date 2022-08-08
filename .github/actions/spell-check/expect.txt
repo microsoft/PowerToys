@@ -5,7 +5,6 @@ abgr
 abi
 ABlocked
 ABOUTBOX
-ABradley
 Abug
 accctrl
 Acceleratorkeys
@@ -134,7 +133,6 @@ awakeness
 awakeversion
 AWAYMODE
 AYUV
-azchohfi
 backend
 backtracer
 BADD
@@ -370,6 +368,7 @@ cxfksword
 CXSMICON
 CXVIRTUALSCREEN
 cxxopts
+Cxxx
 cyberrex
 Cyrl
 CYSMICON
@@ -419,7 +418,6 @@ Delimarsky
 dend
 DENORMAL
 Deondre
-dependabot
 depersist
 deprioritized
 deps
@@ -519,8 +517,8 @@ editshortcutswindow
 EFile
 ekus
 elif
-eltociear
 elseif
+eltociear
 Emoji
 emptyrecyclebin
 ENABLEDPOPUP
@@ -1091,6 +1089,7 @@ LOADSTRING
 LOBYTE
 LOCALAPPDATA
 LOCALDISPLAY
+localhost
 LOCALPACKAGE
 localport
 localtime
@@ -1296,7 +1295,6 @@ NAMECHANGE
 nameof
 namespace
 Navassa
-naveensrinivasan
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1438,8 +1436,8 @@ openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
 ORPHANEDDIALOGTITLE
-oss
 osfanbuff
+oss
 ostr
 ostream
 ostringstream
