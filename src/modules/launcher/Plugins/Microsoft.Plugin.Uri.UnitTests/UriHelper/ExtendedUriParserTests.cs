@@ -56,11 +56,11 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("http://test.test.test.test:952", true, "http://test.test.test.test:952/", true, null)]
         [DataRow("https://test.test.test.test:952", true, "https://test.test.test.test:952/", true, null)]
 
-        // ToDo: Block[::] results in parser.Address is unspecified per RFCxxx and the results make no sense.
+        // ToDo: Block[::] results in parser. Address is unspecified per RFCxxx and the results make no sense.
         [DataRow("[::]", true, "https://[::]/", true, null)]
         [DataRow("http://[::]", true, "http://[::]/", true, null)]
 
-        // Localhost, 127.0.0.1, ::1 tests
+        // localhost, 127.0.0.1, ::1 tests
         [DataRow("localhost", true, "https://localhost/", true, null)]
         [DataRow("localhost:80", true, "http://localhost/", true, null)]
         [DataRow("localhost:443", true, "https://localhost/", true, null)]
