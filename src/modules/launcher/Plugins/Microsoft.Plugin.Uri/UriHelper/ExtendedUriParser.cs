@@ -12,12 +12,13 @@ namespace Microsoft.Plugin.Uri.UriHelper
     public class ExtendedUriParser : IUriParser
     {
         // When updating this method, also update the local method IsUri() in Community.PowerToys.Run.Plugin.WebSearch.Main.Query
-        public bool TryParse(string input, out System.Uri result, out bool isWebUri)
+        public bool TryParse(string input, out System.Uri result, out bool isWebUri, out System.Uri secondResult)
         {
             if (string.IsNullOrEmpty(input))
             {
                 result = default;
                 isWebUri = false;
+                secondResult = null;
                 return false;
             }
 
@@ -33,6 +34,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
             {
                 result = new System.Uri(input);
                 isWebUri = false;
+                secondResult = null;
                 return true;
             }
 
@@ -46,13 +48,14 @@ namespace Microsoft.Plugin.Uri.UriHelper
             {
                 result = default;
                 isWebUri = false;
+                secondResult = null;
                 return false;
             }
 
             try
             {
-                Regex isDomainPortOnly = new ("^(\\w+\\.+)+\\w+:\\d+");
-                Regex isIPv6PortOnly = new ("^\\[([\\w:]+:+)+[\\w]+\\]:\\d+");
+                string isDomainPortRegex = @"^[\w\.]+:\d+";
+                string isIPv6PortRegex = @"^\[([\w:]+:+)+[\w]+\]:\d+";
                 var urlBuilder = new UriBuilder(input);
                 var hadDefaultPort = urlBuilder.Uri.IsDefaultPort;
                 urlBuilder.Port = hadDefaultPort ? -1 : urlBuilder.Port;
@@ -61,10 +64,12 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttp;
                     isWebUri = true;
+                    secondResult = null;
                 }
-                else if (isDomainPortOnly.IsMatch(input) ||
-                         isIPv6PortOnly.IsMatch(input))
+                else if (Regex.IsMatch(input, isDomainPortRegex) ||
+                         Regex.IsMatch(input, isIPv6PortRegex))
                 {
+                    var secondUrlBuilder = urlBuilder;
                     urlBuilder = new UriBuilder("https://" + input);
 
                     if (urlBuilder.Port == 80)
@@ -72,7 +77,10 @@ namespace Microsoft.Plugin.Uri.UriHelper
                         urlBuilder.Scheme = System.Uri.UriSchemeHttp;
                     }
 
+                    // Our filter above
+                    string singleLabelRegex = @"[\.:]+|^http$|^https$";
                     isWebUri = true;
+                    secondResult = Regex.IsMatch(urlBuilder.Host, singleLabelRegex) ? null : secondUrlBuilder.Uri;
                 }
                 else if (input.Contains(':', StringComparison.OrdinalIgnoreCase) &&
                         !input.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
@@ -80,10 +88,12 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 {
                     // Do nothing, leave unchanged
                     isWebUri = false;
+                    secondResult = null;
                 }
                 else
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttps;
+                    secondResult = null;
                     isWebUri = true;
                 }
 
@@ -94,6 +104,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
             {
                 result = default;
                 isWebUri = false;
+                secondResult = null;
                 return false;
             }
         }

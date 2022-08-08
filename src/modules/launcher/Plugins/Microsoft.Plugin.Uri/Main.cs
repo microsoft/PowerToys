@@ -70,7 +70,7 @@ namespace Microsoft.Plugin.Uri
             }
 
             if (!string.IsNullOrEmpty(query?.Search)
-                && _uriParser.TryParse(query.Search, out var uriResult, out var isWebUri)
+                && _uriParser.TryParse(query.Search, out var uriResult, out var isWebUri, out var secondResult)
                 && _uriResolver.IsValidHost(uriResult))
             {
                 var uriResultString = uriResult.ToString();
@@ -98,6 +98,29 @@ namespace Microsoft.Plugin.Uri
                         return true;
                     },
                 });
+
+                if (secondResult is not null)
+                {
+                    var secondResultString = secondResult.ToString();
+                    results.Add(new Result
+                    {
+                        Title = secondResultString,
+                        SubTitle = Properties.Resources.Microsoft_plugin_uri_open,
+                        IcoPath = DefaultIconPath,
+                        Action = action =>
+                        {
+                            if (!Helper.OpenInShell(secondResultString))
+                            {
+                                var title = $"Plugin: {Properties.Resources.Microsoft_plugin_uri_plugin_name}";
+                                var message = $"{Properties.Resources.Microsoft_plugin_uri_open_failed}: {secondResultString}";
+                                Context.API.ShowMsg(title, message);
+                                return false;
+                            }
+
+                            return true;
+                        },
+                    });
+                }
             }
 
             return results;
