@@ -69,10 +69,8 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 | `Images\reg.light.png`               | Symbol for the results for the light theme                               |
 | `Properties\Resources.Designer.resx` | File that contain all translatable keys                                  |
 | `Properties\Resources.resx`          | File that contain all translatable strings in the neutral language       |
-| `GlobalSuppressions.cs`              | Code suppressions (no real file, linked via *.csproj)                    |
 | `Main.cs`                            | Main class, the only place that implement the WOX interfaces             |
 | `plugin.json`                        | All meta-data for this plugin                                            |
-| `StyleCop.json`                      | Code style (no real file, linked via *.csproj)                           |
 
 ### Important project values (*.csproj)
 
@@ -87,13 +85,6 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 | AssemblyName    | `Microsoft.PowerToys.Run.Plugin.Registry`                                      |
 
 ### Project dependencies
-
-#### Packages
-
-| Package                                                                               | Version |
-| ------------------------------------------------------------------------------------- | ------- |
-| [`Microsoft.CodeAnalysis.FxCopAnalyzers`](https://github.com/dotnet/roslyn-analyzers) | 3.3.0   |
-| [`StyleCop.Analyzers`](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)          | 1.1.118 |
 
 #### Projects
 

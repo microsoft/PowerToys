@@ -22,6 +22,13 @@ namespace FancyZonesEditor.Models
         {
             Window = new LayoutOverlayWindow();
             Settings = new LayoutSettings();
+
+            // provide a good default for vertical monitors
+            if (monitorSize.Height > monitorSize.Width)
+            {
+                Settings.Type = LayoutType.Rows;
+            }
+
             Device = new Device(workArea, monitorSize);
 
             if (App.DebugMode)

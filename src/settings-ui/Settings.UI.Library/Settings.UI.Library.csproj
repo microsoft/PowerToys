@@ -17,28 +17,9 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
- 
   <ItemGroup>
-    <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json" Link="StyleCop.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </AdditionalFiles>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
     <PackageReference Include="System.Text.Json" Version="6.0.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

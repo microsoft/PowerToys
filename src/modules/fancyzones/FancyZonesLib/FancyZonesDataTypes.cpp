@@ -131,7 +131,7 @@ namespace FancyZonesDataTypes
     
     std::wstring DeviceId::toString() const noexcept
     {
-        return id + L"_" + instanceId;
+        return id + L"_" + instanceId + L"_" + std::to_wstring(number);
     }
 
     bool DeviceId::isDefault() const noexcept

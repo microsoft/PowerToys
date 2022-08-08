@@ -169,7 +169,8 @@
     <value>Target App:</value>
   </data>
   <data name="EditKeyboard_OrphanedDialogTitle" xml:space="preserve">
-    <value>The following keys have been reassigned and you won't be able to use them for their original assignment:</value>
+    <value>Warning: The follow keys do not have assignments:</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="EditKeyboard_PartialConfirmationDialogTitle" xml:space="preserve">
     <value>Some of the keys could not be remapped. Do you want to continue anyway?</value>
@@ -191,7 +192,7 @@
   </data>
   <data name="Type_Button" xml:space="preserve">
     <value>Type</value>
-    <comment>As in type a key</comment>
+    <comment>As in type a key on a keyboard</comment>
   </data>
   <data name="TypeKey_Title" xml:space="preserve">
     <value>Press a key on selected keyboard:</value>
@@ -300,6 +301,7 @@
   </data>
   <data name="AutomationProperties_Row" xml:space="preserve">
     <value>Row </value>
+    <comment>Row as in horizontal rows in a table, and columns</comment>
   </data>
   <data name="ERRORMESSAGE_DISABLEASACTIONKEY" xml:space="preserve">
     <value>Disable can not be an action or a modifier key</value>

@@ -96,7 +96,7 @@
                 <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="PowerLauncher_SearchQueryResultsWithDelay" Icon="&#xF182;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
+                            <controls:Setting x:Uid="PowerLauncher_SearchQueryResultsWithDelay" Icon="&#xec48;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithDelay}"/>
                                 </controls:Setting.ActionContent>
@@ -135,7 +135,7 @@
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="PowerLauncher_SearchQueryTuningEnabled" Icon="&#xE14C;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
+                            <controls:Setting x:Uid="PowerLauncher_SearchQueryTuningEnabled" Icon="&#xE8FD;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryTuningEnabled}"/>
                                 </controls:Setting.ActionContent>
@@ -198,7 +198,7 @@
                       />-->
 
                 <controls:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <controls:Setting x:Uid="Run_PositionHeader" Icon="&#xE18C;">
+                    <controls:Setting x:Uid="Run_PositionHeader" Icon="&#xe78b;">
                         <controls:Setting.ActionContent>
                             <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MonitorPositionIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                 <ComboBoxItem x:Uid="Run_Radio_Position_Cursor"/>
@@ -319,10 +319,16 @@
 
                                                     <controls:Setting x:Uid="PowerLauncher_PluginWeightBoost" 
                                                                           Style="{StaticResource ExpanderContentSettingStyleTight}" 
-                                                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                                                          IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
                                                         <controls:Setting.ActionContent>
-                                                            <TextBox Text="{x:Bind Path=WeightBoost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                 MinWidth="{StaticResource SettingActionControlMinWidth}" />
+                                                            <muxc:NumberBox Minimum="-1000"
+                                                                Maximum="1000"
+                                                                Value="{x:Bind Mode=TwoWay, Path=WeightBoost}"
+                                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                SpinButtonPlacementMode="Compact"
+                                                                HorizontalAlignment="Left"
+                                                                SmallChange="10"
+                                                                LargeChange="50"/>
                                                         </controls:Setting.ActionContent>
                                                     </controls:Setting>
                                                     

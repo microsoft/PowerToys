@@ -1,4 +1,5 @@
 # See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-patterns
+
 https?://(?:(?:www\.|)youtube\.com|youtu.be)/[-a-zA-Z0-9?&=]*
 # GitHub SHAs
 \bapi.github\.com/repos/[^/]+/[^/]+/[^/]+/[0-9a-f]+\b
@@ -104,7 +105,12 @@ http://tes/
 # tar arguments
 \b(?:\\n|)tar(?:\s+-[a-zA-Z]+|\s[a-z]+)+
 
+# fabricbot.json
+"id": "\S+"
+"commentPattern": ".*"
+
 # acceptable duplicates
+# ls directory listings
 # /bin/ls -l output
 [-bcdlpsw](?:[-r][-w][-sx]){3}\s+\d+\s+(\S+)\s+\g{-1}\s+\d+\s+
 # C types

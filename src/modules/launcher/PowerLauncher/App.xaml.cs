@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -101,7 +102,7 @@ namespace PowerLauncher
             {
                 var textToLog = new StringBuilder();
                 textToLog.AppendLine("Begin PowerToys Run startup ----------------------------------------------------");
-                textToLog.AppendLine($"Runtime info:{ErrorReporting.RuntimeInfo()}");
+                textToLog.AppendLine(CultureInfo.InvariantCulture, $"Runtime info:{ErrorReporting.RuntimeInfo()}");
 
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();

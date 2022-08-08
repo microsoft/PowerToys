@@ -88,7 +88,6 @@ namespace winrt::PowerRenameUI::implementation
         void AppendSearchMRU(hstring const& value);
         void AppendReplaceMRU(hstring const& value);
 
-        void Checked_ids(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void SelectAll(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ShowAll(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ShowRenamed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
@@ -97,7 +96,6 @@ namespace winrt::PowerRenameUI::implementation
         bool m_allSelected;
         PowerRenameUI::UIUpdates m_uiUpdatesItem;
         inline PowerRenameUI::ExplorerItem FindById(int32_t id);
-        void ToggleAll(bool checked);
 
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_searchMRUList;
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_replaceMRUList;

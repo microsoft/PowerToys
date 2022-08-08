@@ -193,8 +193,7 @@ public:
             std::wstring path = get_module_folderpath(g_hInst);
             std::wstring packageUri = path + L"\\PowerRenameContextMenuPackage.msix";
 
-            std::wstring packageDisplayName{ L"PowerRenameContextMenu" };
-            if (!package::IsPackageRegistered(packageDisplayName))
+            if (!package::IsPackageRegistered(PowerRenameConstants::ModulePackageDisplayName))
             {
                 package::RegisterSparsePackage(path, packageUri);
             }

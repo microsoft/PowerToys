@@ -125,7 +125,8 @@
     <comment>Used to indicate the location where something is</comment>
   </data>
   <data name="PluginDescription" xml:space="preserve">
-    <value>Opens workspaces, remote machines (SSH or Codespaces) and containers, previously opened in VS Code.</value>
+    <value>Opens workspaces, remote machines (SSH or Codespaces) and containers, previously opened in VS Code. The VS Code instance needs to be in PATH.</value>
+    <comment>VS Code is the name of a product. PATH is the name of an environment variable. Don't translate it.</comment>
   </data>
   <data name="SSHRemoteMachine" xml:space="preserve">
     <value>SSH remote machine</value>

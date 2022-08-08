@@ -58,7 +58,10 @@ namespace ColorPicker.Helpers
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The hue [0°..360°], saturation [0..1] and brightness [0..1] of the converted color</returns>
         internal static (double hue, double saturation, double brightness) ConvertToHSBColor(Color color)
-            => (color.GetHue(), color.GetSaturation(), color.GetBrightness());
+        {
+            // HSB and HSV represents the same color space
+            return ConvertToHSVColor(color);
+        }
 
         /// <summary>
         /// Convert a given <see cref="Color"/> to a HSI color (hue, saturation, intensity)
