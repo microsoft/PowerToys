@@ -18,6 +18,8 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("localhost", true, "https://localhost/", true)]
         [DataRow("http://localhost", true, "http://localhost/", true)]
         [DataRow("127.0.0.1", true, "https://127.0.0.1/", true)]
+        [DataRow("127.0.0.1:80", true, "http://127.0.0.1/", true)]
+        [DataRow("127.0.0.1:443", true, "https://127.0.0.1/", true)]
         [DataRow("http://127.0.0.1", true, "http://127.0.0.1/", true)]
         [DataRow("http://127.0.0.1/test", true, "http://127.0.0.1/test", true)]
         [DataRow("http://127.0.0.1:123/test", true, "http://127.0.0.1:123/test", true)]
@@ -68,6 +70,9 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
 
         // Case where `domain:port`, as specified in issue #14260
         // Assumption: Only domain with dot is accepted
+        [DataRow("example.com:80", true, "http://example.com/", true)]
+        [DataRow("example.com:80/test", true, "http://example.com/test", true)]
+        [DataRow("example.com:80/126", true, "http://example.com/126", true)]
         [DataRow("example.com:443", true, "https://example.com/", true)]
         [DataRow("example.com:443/test", true, "https://example.com/test", true)]
         [DataRow("example.com:443/126", true, "https://example.com/126", true)]
