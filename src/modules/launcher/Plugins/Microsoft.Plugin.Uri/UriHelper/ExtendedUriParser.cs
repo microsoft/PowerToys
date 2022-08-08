@@ -78,7 +78,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
                     }
 
                     // Our filter above
-                    string singleLabelRegex = @"[\.:]+|^http$|^https$";
+                    string singleLabelRegex = @"[\.:]+|^http$|^https$|^localhost$";
                     isWebUri = true;
                     secondResult = Regex.IsMatch(urlBuilder.Host, singleLabelRegex) ? null : secondUrlBuilder.Uri;
                 }
