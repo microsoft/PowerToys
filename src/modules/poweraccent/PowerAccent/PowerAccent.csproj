@@ -19,9 +19,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\..\deps\PowerAccent\PowerAccent.UI\PowerAccent.UI.csproj" />
 	  <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
 	  <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+	  <ProjectReference Include="..\PowerAccent.UI\PowerAccent.UI.csproj" />
 	</ItemGroup>
 
 </Project>

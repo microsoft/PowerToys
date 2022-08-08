@@ -12,38 +12,37 @@ namespace PowerAccent;
 static class Program
 {
     private const string PROGRAM_NAME = "PowerAccent";
+    private const string PROGRAM_APP_NAME = "PowerToys.PowerAccent";
     private static App _application;
-    private static Mutex _mutex = new Mutex(true, "PowerToys.PowerAccent");
+    private static CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
     [STAThread]
     static void Main(string[] args)
     {
-        Arguments(args);
+        _ = new Mutex(true, PROGRAM_APP_NAME, out bool instantiated);
 
-        if (_mutex.WaitOne(TimeSpan.Zero, true))
+        if (instantiated)
         {
+            Arguments(args);
+
             InitEvents();
 
             _application = new App();
             _application.InitializeComponent();
-            //(_application.MainWindow as Selector).HideTaskbarIcon();
             _application.Run();
         }
     }
 
     private static void InitEvents()
     {
-        // Detect exit event from PowerToys
-        new Thread(() =>
+        Task.Run(() =>
         {
             EventWaitHandle eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerAccentExitEvent());
             if (eventHandle.WaitOne())
             {
                 Terminate();
             }
-        }).Start();
-
-        // wait for 
+        }, _tokenSource.Token);
     }
 
     #region Arguments
@@ -78,7 +77,7 @@ static class Program
             Task.Run(() =>
             {
                 RunnerHelper.WaitForPowerToysRunner(pid, Terminate);
-            });
+            }, _tokenSource.Token);
         }
 
         if (isOpenSettings)
@@ -94,6 +93,7 @@ static class Program
     {
         Application.Current.Dispatcher.BeginInvoke(() =>
         {
+            _tokenSource.Cancel();
             Application.Current.Shutdown();
         });
     }
