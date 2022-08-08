@@ -51,7 +51,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
 
             try
             {
-                Regex isDomainPortOnly = new ("^[\\w\\.]+:\\d+");
+                Regex isDomainPortOnly = new ("^(\\w+\\.+)+\\w+:\\d+");
                 Regex isIPv6PortOnly = new ("^\\[([\\w:]+:+)+[\\w]+\\]:\\d+");
                 var urlBuilder = new UriBuilder(input);
                 var hadDefaultPort = urlBuilder.Uri.IsDefaultPort;
@@ -66,6 +66,12 @@ namespace Microsoft.Plugin.Uri.UriHelper
                          isIPv6PortOnly.IsMatch(input))
                 {
                     urlBuilder = new UriBuilder("https://" + input);
+
+                    if (urlBuilder.Port == 80)
+                    {
+                        urlBuilder.Scheme = System.Uri.UriSchemeHttp;
+                    }
+
                     isWebUri = true;
                 }
                 else if (input.Contains(':', StringComparison.OrdinalIgnoreCase) &&
