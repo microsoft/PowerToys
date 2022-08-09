@@ -309,15 +309,10 @@
                                                               IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                               IsOpen="{x:Bind ShowNotAccessibleWarning}"
                                                               IsClosable="False" />
-                                                <muxc:InfoBar Severity="Error"
-                                                              x:Uid="Run_NotAllowedActionKeyword"
-                                                              IsTabStop="{x:Bind ShowNotAllowedKeywordWarning}"
-                                                              IsOpen="{x:Bind ShowNotAllowedKeywordWarning}"
-                                                              IsClosable="False" />
                                                 <muxc:InfoBar Severity="Warning"
-                                                              x:Uid="Run_MathematicActionKeywordWarning"
-                                                              IsTabStop="{x:Bind ShowMathematicKeywordWarning}"
-                                                              IsOpen="{x:Bind ShowMathematicKeywordWarning}"
+                                                              x:Uid="Run_ConflictingActionKeywordWarning"
+                                                              IsTabStop="{x:Bind ShowConflictingKeywordWarning}"
+                                                              IsOpen="{x:Bind ShowConflictingKeywordWarning}"
                                                               IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                                 

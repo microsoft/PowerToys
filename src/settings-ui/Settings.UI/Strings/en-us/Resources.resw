@@ -1255,9 +1255,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Run_AllPluginsDisabled.Message" xml:space="preserve">
     <value>Enable at least one plugin to get started</value>
   </data>
-  <data name="Run_NotAllowedActionKeyword.Title" xml:space="preserve">
-    <value>This activation command is already in use by another plugin.</value>
-  </data>
   <data name="Run_PluginUseDescription.Header" xml:space="preserve">
     <value>Plugins</value>
   </data>
@@ -2152,7 +2149,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
     <value>Enable round corners</value>
   </data>
-  <data name="Run_MathematicActionKeywordWarning.Title" xml:space="preserve">
-    <value>This activation command breaks some global queries for the Calculator plugin.</value>
+  <data name="Run_ConflictingActionKeywordWarning" xml:space="preserve">
+    <value>Activation command may conflict with global queries of this or other plugins.</value>
   </data>
 </root>

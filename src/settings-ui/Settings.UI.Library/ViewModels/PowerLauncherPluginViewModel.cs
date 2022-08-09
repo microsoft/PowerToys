@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
@@ -56,8 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.Disabled = value;
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
-                    NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
-                    NotifyPropertyChanged(nameof(ShowMathematicKeywordWarning));
+                    NotifyPropertyChanged(nameof(ShowConflictingKeywordWarning));
                     NotifyPropertyChanged(nameof(Enabled));
                     NotifyPropertyChanged(nameof(DisabledOpacity));
                     NotifyPropertyChanged(nameof(IsGlobalAndEnabled));
@@ -113,11 +113,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     settings.WeightBoost = value;
                     NotifyPropertyChanged();
-                    NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
-                    NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
-                    NotifyPropertyChanged(nameof(ShowMathematicKeywordWarning));
-                    NotifyPropertyChanged(nameof(ShowPluginSettingBadgeError));
-                    NotifyPropertyChanged(nameof(ShowPluginSettingBadgeWarning));
                 }
             }
         }
@@ -136,8 +131,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.ActionKeyword = value;
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
-                    NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
-                    NotifyPropertyChanged(nameof(ShowMathematicKeywordWarning));
+                    NotifyPropertyChanged(nameof(ShowConflictingKeywordWarning));
                     NotifyPropertyChanged(nameof(ShowPluginSettingBadgeError));
                     NotifyPropertyChanged(nameof(ShowPluginSettingBadgeWarning));
                 }
@@ -191,26 +185,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get => !Disabled && !IsGlobal && string.IsNullOrWhiteSpace(ActionKeyword);
         }
 
-        private static readonly List<string> NotAllowedKeywords = new List<string>()
+        private static readonly List<string> ConflictingSimpleKeywords = new List<string>()
         {
-            "~", @"\", @"\\",
+            // "~", @"\", @"\\", ".", ",", "+", "-", "(", => We do not warn on dot as we use it currently for the program plugin and there are no issues regarding the dot opened by our users. (htcfreek, 2022-07-24)
+            "~", @"\", @"\\", ",", "+", "-", "(",
         };
 
-        public bool ShowNotAllowedKeywordWarning
+        private static readonly List<Regex> ConflictingKomplexKeywordRules = new List<Regex>()
         {
-            get => !Disabled && NotAllowedKeywords.Contains(ActionKeyword);
-        }
-
-        private static readonly List<string> MathematicKeywords = new List<string>()
-        {
-            // Using one of them breaks global queries for calculator plugin.
-            // ".", ",", "+", "-", "(", => We do not warn on dot as we use it currently for the program plugin and there are no issues regarding the dot opened by our users. (htcfreek, 2022-07-24)
-            ",", "+", "-", "(",
+            new Regex(@"[a-zA-Z]*\(?\d*[\.\,]?\d*\)?"),
         };
 
-        public bool ShowMathematicKeywordWarning
+        public bool ShowConflictingKeywordWarning
         {
-            get => !Disabled && (MathematicKeywords.Contains(ActionKeyword) || MathematicKeywords.Any(x => ActionKeyword.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)));
+            get => !Disabled && (ConflictingSimpleKeywords.Contains(ActionKeyword) || ConflictingKomplexKeywordRules.Any(x => x.IsMatch(ActionKeyword)));
         }
 
         public bool ShowPluginSettingBadgeError
@@ -220,7 +208,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public bool ShowPluginSettingBadgeWarning
         {
-            get => !Disabled && (ShowNotAllowedKeywordWarning || ShowMathematicKeywordWarning);
+            get => !Disabled && ShowConflictingKeywordWarning;
         }
     }
 }
