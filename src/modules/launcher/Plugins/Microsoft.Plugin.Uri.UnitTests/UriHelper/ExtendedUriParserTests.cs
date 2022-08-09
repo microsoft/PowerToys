@@ -56,7 +56,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("http://test.test.test.test:952", true, "http://test.test.test.test:952/", true, null)]
         [DataRow("https://test.test.test.test:952", true, "https://test.test.test.test:952/", true, null)]
 
-        // ToDo: Block[::] results in parser. Address is unspecified per RFCxxx and the results make no sense.
+        // ToDo: Block [::] address results in parser. This Address is unspecified per RFC 4291 and the results make no sense.
         [DataRow("[::]", true, "https://[::]/", true, null)]
         [DataRow("http://[::]", true, "http://[::]/", true, null)]
 
