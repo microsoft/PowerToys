@@ -415,23 +415,23 @@
     <value>Clear the previous query on launch</value>
   </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
-    <value>Search Throttle</value>
+    <value>Input Smoothing</value>
     <comment>This is about adding a delay to wait for more input before executing a search</comment>
   </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Description" xml:space="preserve">
-    <value>A throttle to reduce results display jumpiness and load on the system</value>
+    <value>Wait for more input before searching. This reduces interface jumpiness and system load.</value>
   </data>
   <data name="PowerLauncher_FastSearchInputDelayMs.Header" xml:space="preserve">
-    <value>Fast plugins</value>    
+    <value>Immediate plugins</value>    
   </data>
 	<data name="PowerLauncher_FastSearchInputDelayMs.Description" xml:space="preserve">
-    <value>Throttle the faster plugins by this amount. 30ms to 50ms is recommended.</value>    
+    <value>Affects the plugins that make the UI wait for their results by this amount. Recommended: 30-50 ms.</value>    
   </data>
 	<data name="PowerLauncher_SlowSearchInputDelayMs.Header" xml:space="preserve">
-    <value>Slow plugins</value>    
+    <value>Background execution plugins</value>    
   </data>
 	<data name="PowerLauncher_SlowSearchInputDelayMs.Description" xml:space="preserve">
-    <value>Throttle the slower plugins by this amount. 100ms to 150ms is recommended.</value>    
+    <value>Affects the plugins that execute in the background by this amount. Recommended: 100-150 ms.</value>    
   </data>
 	<data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
     <value>Fast plugin throttle (ms)</value>
