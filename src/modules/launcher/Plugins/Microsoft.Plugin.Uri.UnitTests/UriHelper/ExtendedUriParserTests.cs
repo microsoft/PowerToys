@@ -11,6 +11,8 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
     public class ExtendedUriParserTests
     {
         [DataTestMethod]
+
+        // Standard web uri
         [DataRow("google.com", true, "https://google.com/", null)]
         [DataRow("http://google.com", true, "http://google.com/", null)]
         [DataRow("https://google.com", true, "https://google.com/", null)]
@@ -18,6 +20,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("bing.com/search?q=gmx", true, "https://bing.com/search?q=gmx", null)]
         [DataRow("http://bing.com/search?q=gmx", true, "http://bing.com/search?q=gmx", null)]
 
+        // Edge cases
         [DataRow("127", false, null, null)]
         [DataRow(null, false, null, null)]
         [DataRow("h", true, "https://h/", null)]
@@ -48,11 +51,6 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("http://[2001:0DB8::1]:80", true, "http://[2001:db8::1]/", null)]
         [DataRow("http://[2001:0DB8::1]:443", true, "http://[2001:db8::1]:443/", null)]
         [DataRow("https://[2001:0DB8::1]:80", true, "https://[2001:db8::1]:80/", null)]
-        [DataRow("mailto:example@mail.com", true, null, "mailto:example@mail.com")]
-        [DataRow("ftp://example.com", true, null, "ftp://example.com/")]
-        [DataRow("ftp://example.com/test", true, null, "ftp://example.com/test")]
-        [DataRow("ftp://example.com:123/test", true, null, "ftp://example.com:123/test")]
-        [DataRow("ftp://example.com/126", true, null, "ftp://example.com/126")]
         [DataRow("http://test.test.test.test:952", true, "http://test.test.test.test:952/", null)]
         [DataRow("https://test.test.test.test:952", true, "https://test.test.test.test:952/", null)]
 
@@ -111,7 +109,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("https://[::1]:1234/test", true, "https://[::1]:1234/test", null)]
 
         // Case where `domain:port`, as specified in issue #14260
-        // Assumption: Only domain with dot is accepted
+        // Assumption: Only domain with dot is accepted as sole webUri
         [DataRow("example.com:80", true, "http://example.com/", null)]
         [DataRow("example.com:80/test", true, "http://example.com/test", null)]
         [DataRow("example.com:80/126", true, "http://example.com/126", null)]
@@ -134,6 +132,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         // All following cases should be parsed as application URI
         [DataRow("mailto:", true, null, "mailto:")]
         [DataRow("mailto:/", false, null, null)]
+        [DataRow("mailto:example@mail.com", true, null, "mailto:example@mail.com")]
         [DataRow("ms-settings:", true, null, "ms-settings:")]
         [DataRow("ms-settings:/", false, null, null)]
         [DataRow("ms-settings://", false, null, null)]
@@ -141,17 +140,29 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("ms-settings://privacy/", true, null, "ms-settings://privacy/")]
         [DataRow("ms-settings:privacy", true, null, "ms-settings:privacy")]
         [DataRow("ms-settings:powersleep", true, null, "ms-settings:powersleep")]
-        [DataRow("microsoft-edge:http://google.com", true, null, "microsoft-edge:http://google.com")]
-        [DataRow("microsoft-edge:https://google.com", true, null, "microsoft-edge:https://google.com")]
         [DataRow("microsoft-edge:google.com", true, null, "microsoft-edge:google.com")]
         [DataRow("microsoft-edge:google.com/", true, null, "microsoft-edge:google.com/")]
-        [DataRow("microsoft-edge:https://google.com/", true, null, "microsoft-edge:https://google.com/")]
+        [DataRow("microsoft-edge:google.com:80/", true, null, "microsoft-edge:google.com:80/")]
+        [DataRow("microsoft-edge:google.com:443/", true, null, "microsoft-edge:google.com:443/")]
+        [DataRow("microsoft-edge:google.com:1234/", true, null, "microsoft-edge:google.com:1234/")]
+        [DataRow("microsoft-edge:http://google.com", true, null, "microsoft-edge:http://google.com")]
+        [DataRow("microsoft-edge:http://google.com:80", true, null, "microsoft-edge:http://google.com:80")]
+        [DataRow("microsoft-edge:http://google.com:443", true, null, "microsoft-edge:http://google.com:443")]
+        [DataRow("microsoft-edge:http://google.com:1234", true, null, "microsoft-edge:http://google.com:1234")]
+        [DataRow("microsoft-edge:https://google.com", true, null, "microsoft-edge:https://google.com")]
+        [DataRow("microsoft-edge:https://google.com:80", true, null, "microsoft-edge:https://google.com:80")]
+        [DataRow("microsoft-edge:https://google.com:443", true, null, "microsoft-edge:https://google.com:443")]
+        [DataRow("microsoft-edge:https://google.com:1234", true, null, "microsoft-edge:https://google.com:1234")]
         [DataRow("ftp://user:password@localhost:8080", true, null, "ftp://user:password@localhost:8080/")]
         [DataRow("ftp://user:password@localhost:8080/", true, null, "ftp://user:password@localhost:8080/")]
         [DataRow("ftp://user:password@google.com", true, null, "ftp://user:password@google.com/")]
         [DataRow("ftp://user:password@google.com:2121", true, null, "ftp://user:password@google.com:2121/")]
         [DataRow("ftp://user:password@1.1.1.1", true, null, "ftp://user:password@1.1.1.1/")]
         [DataRow("ftp://user:password@1.1.1.1:2121", true, null, "ftp://user:password@1.1.1.1:2121/")]
+        [DataRow("ftp://example.com", true, null, "ftp://example.com/")]
+        [DataRow("ftp://example.com/test", true, null, "ftp://example.com/test")]
+        [DataRow("ftp://example.com:123/test", true, null, "ftp://example.com:123/test")]
+        [DataRow("ftp://example.com/126", true, null, "ftp://example.com/126")]
         [DataRow("^:", false, null, null)]
 
         public void TryParseCanParseHostName(string query, bool expectedSuccess, string expectedWebUri, string expectedSystemUri)
