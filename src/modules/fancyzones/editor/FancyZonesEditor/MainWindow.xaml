@@ -593,20 +593,33 @@
                                        VerticalAlignment="Center"
                                        FontSize="16"
                                        ToolTip="{x:Static props:Resources.Distance_adjacent_zones}"
-                                        AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
+                                       AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
                                        Text="&#xE78A;" />
 
-                            <ui:NumberBox Text="{Binding SensitivityRadius}"
+                            <ui:NumberBox x:Name="SensitivityInput"
+                                          Text="{Binding SensitivityRadius}"
                                           Width="216"
                                           Minimum="0"
                                           Maximum="1000"
                                           KeyDown="EditDialogNumberBox_KeyDown"
                                           Margin="12,0,0,0"
                                           Loaded="NumberBox_Loaded"
+                                          LostFocus="SensitivityInput_LostFocus"
+                                          GotFocus="SensitivityInput_GotFocus"
                                           AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
                                           AutomationProperties.LabeledBy="{Binding ElementName=distanceTitle}"
+                                          AutomationProperties.HelpText="{Binding ElementName=SensitivityInputWarningLabelText, Path=Text}"
                                           SpinButtonPlacementMode="Compact"
-                                          HorizontalAlignment="Left" />
+                                          HorizontalAlignment="Left" >
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Name="SensitivityInputWarningLabelText" TextWrapping="Wrap">
+                                        <Run Text="{x:Static props:Resources.SensitivityInputWarningLabel}"/>
+                                        <LineBreak/>
+                                        <Run Text="{Binding SensitivityRadius, Mode=OneTime}" FontWeight="SemiBold"/>
+                                    </TextBlock>
+                                </ToolTipService.ToolTip>
+                            </ui:NumberBox>
+                            
                             <TextBlock Text="{x:Static props:Resources.Pixels}"
                                        Margin="6,-4,0,0"
                                        FontSize="12"

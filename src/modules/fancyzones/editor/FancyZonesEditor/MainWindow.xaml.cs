@@ -14,6 +14,7 @@ using Common.UI;
 using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
+using ModernWpf.Automation.Peers;
 using ModernWpf.Controls;
 
 namespace FancyZonesEditor
@@ -561,6 +562,50 @@ namespace FancyZonesEditor
         {
             EditLayoutDialogTitle.TextTrimming = TextTrimming.CharacterEllipsis;
             EditLayoutDialogTitle.TextWrapping = TextWrapping.NoWrap;
+        }
+
+        private void SensitivityInput_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            {
+                NumberBoxAutomationPeer peer =
+                    FrameworkElementAutomationPeer.FromElement(SensitivityInput) as NumberBoxAutomationPeer;
+                string numberBoxChangeActivityId = "numberBoxChangedOnLosingFocus";
+
+                if (peer != null)
+                {
+                    peer.RaiseNotificationEvent(
+                        AutomationNotificationKind.ActionCompleted,
+                        AutomationNotificationProcessing.ImportantMostRecent,
+                        Properties.Resources.SensitivityInputWarning,
+                        numberBoxChangeActivityId);
+                }
+            }
+        }
+
+        private void SensitivityInput_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            {
+                NumberBoxAutomationPeer peer =
+                    FrameworkElementAutomationPeer.FromElement(SensitivityInput) as NumberBoxAutomationPeer;
+                string numberBoxGotFocusActivityId = "numberBoxGotFocus";
+
+                var range = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Properties.Resources.RangedInputWarning,
+                            SensitivityInput.Minimum.ToString(CultureInfo.InvariantCulture),
+                            SensitivityInput.Maximum.ToString(CultureInfo.InvariantCulture));
+
+                if (peer != null && range != null)
+                {
+                    peer.RaiseNotificationEvent(
+                        AutomationNotificationKind.ActionCompleted,
+                        AutomationNotificationProcessing.ImportantMostRecent,
+                        range,
+                        numberBoxGotFocusActivityId);
+                }
+            }
         }
     }
 }
