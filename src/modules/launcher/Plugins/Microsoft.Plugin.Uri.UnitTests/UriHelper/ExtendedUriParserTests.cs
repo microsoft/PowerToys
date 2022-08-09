@@ -129,7 +129,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("tel:411", true, "https://tel:411/", "tel:411")]
         [DataRow("tel:70421567", true, null, "tel:70421567")]
         [DataRow("tel:863-1234", true, null, "tel:863-1234")]
-        [DataRow("tel:tel:+1-201-555-0123", true, null, "tel:tel:+1-201-555-0123")]
+        [DataRow("tel:+1-201-555-0123", true, null, "tel:+1-201-555-0123")]
 
         // All following cases should be parsed as application URI
         [DataRow("mailto:", true, null, "mailto:")]
