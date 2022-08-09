@@ -12,12 +12,12 @@ namespace Microsoft.Plugin.Uri.UriHelper
     public class ExtendedUriParser : IUriParser
     {
         // When updating this method, also update the local method IsUri() in Community.PowerToys.Run.Plugin.WebSearch.Main.Query
-        public bool TryParse(string input, out System.Uri result, out bool isWebUri, out System.Uri secondResult)
+        public bool TryParse(string input, out System.Uri firstResult, out bool isFirstResultWebUri, out System.Uri secondResult)
         {
             if (string.IsNullOrEmpty(input))
             {
-                result = default;
-                isWebUri = false;
+                firstResult = default;
+                isFirstResultWebUri = false;
                 secondResult = null;
                 return false;
             }
@@ -32,8 +32,8 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 && !input.All(char.IsDigit)
                 && Regex.IsMatch(input, schemeRegex))
             {
-                result = new System.Uri(input);
-                isWebUri = false;
+                firstResult = new System.Uri(input);
+                isFirstResultWebUri = false;
                 secondResult = null;
                 return true;
             }
@@ -46,8 +46,8 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 || input.EndsWith("://", StringComparison.CurrentCulture)
                 || input.All(char.IsDigit))
             {
-                result = default;
-                isWebUri = false;
+                firstResult = default;
+                isFirstResultWebUri = false;
                 secondResult = null;
                 return false;
             }
@@ -63,7 +63,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 if (input.StartsWith("HTTP://", StringComparison.OrdinalIgnoreCase))
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttp;
-                    isWebUri = true;
+                    isFirstResultWebUri = true;
                     secondResult = null;
                 }
                 else if (Regex.IsMatch(input, isDomainPortRegex) ||
@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
 
                     // Our filter above
                     string singleLabelRegex = @"[\.:]+|^http$|^https$|^localhost$";
-                    isWebUri = true;
+                    isFirstResultWebUri = true;
                     secondResult = Regex.IsMatch(urlBuilder.Host, singleLabelRegex) ? null : secondUrlBuilder.Uri;
                 }
                 else if (input.Contains(':', StringComparison.OrdinalIgnoreCase) &&
@@ -87,23 +87,23 @@ namespace Microsoft.Plugin.Uri.UriHelper
                         !input.Contains('[', StringComparison.OrdinalIgnoreCase))
                 {
                     // Do nothing, leave unchanged
-                    isWebUri = false;
+                    isFirstResultWebUri = false;
                     secondResult = null;
                 }
                 else
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttps;
                     secondResult = null;
-                    isWebUri = true;
+                    isFirstResultWebUri = true;
                 }
 
-                result = urlBuilder.Uri;
+                firstResult = urlBuilder.Uri;
                 return true;
             }
             catch (UriFormatException)
             {
-                result = default;
-                isWebUri = false;
+                firstResult = default;
+                isFirstResultWebUri = false;
                 secondResult = null;
                 return false;
             }
