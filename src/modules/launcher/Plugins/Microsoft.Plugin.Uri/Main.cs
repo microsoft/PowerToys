@@ -79,8 +79,8 @@ namespace Microsoft.Plugin.Uri
                     results.Add(new Result
                     {
                         Title = resultString,
-                        SubTitle = Properties.Resources.Microsoft_plugin_uri_open,
-                        IcoPath = DefaultIconPath,
+                        SubTitle = Properties.Resources.Microsoft_plugin_uri_website,
+                        IcoPath = BrowserInfo.IconPath,
                         Action = action =>
                         {
                             if (!Helper.OpenInShell(resultString))
