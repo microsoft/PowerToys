@@ -163,6 +163,34 @@ namespace FancyZonesEditor.Models
 
         private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
 
+        public int SensitivityRadiusMinimum
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
+        public int SensitivityRadiusMaximum
+        {
+            get
+            {
+                return 1000;
+            }
+        }
+
+        public string SensitivityRadiusRange
+        {
+            get
+            {
+                return string.Format(
+                            CultureInfo.CurrentCulture,
+                            Properties.Resources.Ranged_Input_Tooltip,
+                            SensitivityRadiusMinimum.ToString(CultureInfo.InvariantCulture),
+                            SensitivityRadiusMaximum.ToString(CultureInfo.InvariantCulture));
+            }
+        }
+
         public List<string> QuickKeysAvailable
         {
             get

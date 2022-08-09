@@ -408,7 +408,10 @@
   <data name="Error_Parsing_Custom_Layouts_Message" xml:space="preserve">
     <value>An error occurred while parsing custom layouts.</value>
   </data>
-  <data name="SensitivityInputWarningLabel" xml:space="preserve">
-    <value>Highlight distance is not in the allowed range</value>
+  <data name="Ranged_Input_Tooltip" xml:space="preserve">
+    <value>Range is from {0} to {1}</value>
+  </data>
+  <data name="Sensitivity_Input_Warning" xml:space="preserve">
+    <value>Value has been changed to fit the range</value>
   </data>
 </root>

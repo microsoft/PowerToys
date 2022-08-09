@@ -577,7 +577,7 @@ namespace FancyZonesEditor
                     peer.RaiseNotificationEvent(
                         AutomationNotificationKind.ActionCompleted,
                         AutomationNotificationProcessing.ImportantMostRecent,
-                        Properties.Resources.SensitivityInputWarning,
+                        Properties.Resources.Sensitivity_Input_Warning,
                         numberBoxChangeActivityId);
                 }
             }
@@ -593,7 +593,7 @@ namespace FancyZonesEditor
 
                 var range = string.Format(
                             CultureInfo.CurrentCulture,
-                            Properties.Resources.RangedInputWarning,
+                            Properties.Resources.Ranged_Input_Tooltip,
                             SensitivityInput.Minimum.ToString(CultureInfo.InvariantCulture),
                             SensitivityInput.Maximum.ToString(CultureInfo.InvariantCulture));
 

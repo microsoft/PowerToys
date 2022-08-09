@@ -718,6 +718,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Range is from {0} to {1}.
+        /// </summary>
+        public static string Ranged_Input_Tooltip {
+            get {
+                return ResourceManager.GetString("Ranged_Input_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reset layout.
         /// </summary>
         public static string Reset_Layout {
@@ -745,11 +754,11 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Highlight distance is not in the allowed range.
+        ///   Looks up a localized string similar to Value has been changed to fit the range.
         /// </summary>
-        public static string SensitivityInputWarningLabel {
+        public static string Sensitivity_Input_Warning {
             get {
-                return ResourceManager.GetString("SensitivityInputWarningLabel", resourceCulture);
+                return ResourceManager.GetString("Sensitivity_Input_Warning", resourceCulture);
             }
         }
         
