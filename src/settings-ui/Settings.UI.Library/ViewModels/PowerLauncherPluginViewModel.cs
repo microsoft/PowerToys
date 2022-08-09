@@ -187,13 +187,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private static readonly List<string> ConflictingSimpleKeywords = new List<string>()
         {
-            // "~", @"\", @"\\", ".", ",", "+", "-", "(", => We do not warn on dot as we use it currently for the program plugin and there are no issues regarding the dot opened by our users. (htcfreek, 2022-07-24)
-            "~", @"\", @"\\", ",", "+", "-", "(",
+            "~", @"\", @"\\", "%", // Folder path
+            ".", ",", "+", "-", "(", // Calculator
         };
 
         private static readonly List<Regex> ConflictingComplexKeywordRules = new List<Regex>()
         {
-            new Regex(@"[a-zA-Z]*\(?\d*[\.\,]?\d*\)?"),
+            // new Regex(@"[a-zA-Z]*\(?\d*[\.\,]?\d*\)?"),
         };
 
         public bool ShowConflictingKeywordWarning
