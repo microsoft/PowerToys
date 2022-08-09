@@ -14,10 +14,11 @@ namespace Microsoft.Plugin.Uri.UriHelper
         // When updating this method, also update the local method IsUri() in Community.PowerToys.Run.Plugin.WebSearch.Main.Query
         public bool TryParse(string input, out System.Uri webUri, out System.Uri systemUri)
         {
+            webUri = default;
+            systemUri = default;
+
             if (string.IsNullOrEmpty(input))
             {
-                webUri = default;
-                systemUri = null;
                 return false;
             }
 
@@ -31,7 +32,6 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 && !input.All(char.IsDigit)
                 && Regex.IsMatch(input, schemeRegex))
             {
-                webUri = null;
                 systemUri = new System.Uri(input);
                 return true;
             }
@@ -44,8 +44,6 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 || input.EndsWith("://", StringComparison.CurrentCulture)
                 || input.All(char.IsDigit))
             {
-                webUri = default;
-                systemUri = null;
                 return false;
             }
 
@@ -60,7 +58,6 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 if (input.StartsWith("HTTP://", StringComparison.OrdinalIgnoreCase))
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttp;
-                    systemUri = null;
                 }
                 else if (Regex.IsMatch(input, isDomainPortRegex) ||
                          Regex.IsMatch(input, isIPv6PortRegex))
@@ -78,7 +75,9 @@ namespace Microsoft.Plugin.Uri.UriHelper
                     }
                     catch (UriFormatException)
                     {
-                        webUri = null;
+                        // This handles the situation in tel:xxxx and others
+                        // When xxxx > 65535, it will throw UriFormatException
+                        // The catch ensures it will at least still try to return a systemUri
                     }
 
                     string singleLabelRegex = @"[\.:]+|^http$|^https$|^localhost$";
@@ -94,25 +93,18 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 else
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttps;
-                    systemUri = null;
                 }
 
-                if (urlBuilder.Scheme.Equals(System.Uri.UriSchemeHttp, StringComparison.Ordinal) ||
-                    urlBuilder.Scheme.Equals(System.Uri.UriSchemeHttps, StringComparison.Ordinal))
+                if (urlBuilder.Scheme.Equals(System.Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                    urlBuilder.Scheme.Equals(System.Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
                 {
                     webUri = urlBuilder.Uri;
-                }
-                else
-                {
-                    webUri = null;
                 }
 
                 return true;
             }
             catch (UriFormatException)
             {
-                webUri = default;
-                systemUri = null;
                 return false;
             }
         }
