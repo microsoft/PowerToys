@@ -12,13 +12,12 @@ namespace Microsoft.Plugin.Uri.UriHelper
     public class ExtendedUriParser : IUriParser
     {
         // When updating this method, also update the local method IsUri() in Community.PowerToys.Run.Plugin.WebSearch.Main.Query
-        public bool TryParse(string input, out System.Uri firstResult, out bool isFirstResultWebUri, out System.Uri secondResult)
+        public bool TryParse(string input, out System.Uri webUri, out System.Uri systemUri)
         {
             if (string.IsNullOrEmpty(input))
             {
-                firstResult = default;
-                isFirstResultWebUri = false;
-                secondResult = null;
+                webUri = default;
+                systemUri = null;
                 return false;
             }
 
@@ -32,9 +31,8 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 && !input.All(char.IsDigit)
                 && Regex.IsMatch(input, schemeRegex))
             {
-                firstResult = new System.Uri(input);
-                isFirstResultWebUri = false;
-                secondResult = null;
+                webUri = null;
+                systemUri = new System.Uri(input);
                 return true;
             }
 
@@ -46,9 +44,8 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 || input.EndsWith("://", StringComparison.CurrentCulture)
                 || input.All(char.IsDigit))
             {
-                firstResult = default;
-                isFirstResultWebUri = false;
-                secondResult = null;
+                webUri = default;
+                systemUri = null;
                 return false;
             }
 
@@ -63,8 +60,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 if (input.StartsWith("HTTP://", StringComparison.OrdinalIgnoreCase))
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttp;
-                    isFirstResultWebUri = true;
-                    secondResult = null;
+                    systemUri = null;
                 }
                 else if (Regex.IsMatch(input, isDomainPortRegex) ||
                          Regex.IsMatch(input, isIPv6PortRegex))
@@ -77,34 +73,38 @@ namespace Microsoft.Plugin.Uri.UriHelper
                         urlBuilder.Scheme = System.Uri.UriSchemeHttp;
                     }
 
-                    // Our filter above
                     string singleLabelRegex = @"[\.:]+|^http$|^https$|^localhost$";
-                    isFirstResultWebUri = true;
-                    secondResult = Regex.IsMatch(urlBuilder.Host, singleLabelRegex) ? null : secondUrlBuilder.Uri;
+                    systemUri = Regex.IsMatch(urlBuilder.Host, singleLabelRegex) ? null : secondUrlBuilder.Uri;
                 }
                 else if (input.Contains(':', StringComparison.OrdinalIgnoreCase) &&
                         !input.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
                         !input.Contains('[', StringComparison.OrdinalIgnoreCase))
                 {
                     // Do nothing, leave unchanged
-                    isFirstResultWebUri = false;
-                    secondResult = null;
+                    systemUri = urlBuilder.Uri;
                 }
                 else
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttps;
-                    secondResult = null;
-                    isFirstResultWebUri = true;
+                    systemUri = null;
                 }
 
-                firstResult = urlBuilder.Uri;
+                if (urlBuilder.Scheme.Equals(System.Uri.UriSchemeHttp, StringComparison.Ordinal) ||
+                    urlBuilder.Scheme.Equals(System.Uri.UriSchemeHttps, StringComparison.Ordinal))
+                {
+                    webUri = urlBuilder.Uri;
+                }
+                else
+                {
+                    webUri = null;
+                }
+
                 return true;
             }
             catch (UriFormatException)
             {
-                firstResult = default;
-                isFirstResultWebUri = false;
-                secondResult = null;
+                webUri = default;
+                systemUri = null;
                 return false;
             }
         }
