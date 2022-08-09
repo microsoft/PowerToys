@@ -269,12 +269,14 @@
                                                     <StackPanel Orientation="Horizontal" Spacing="16" >
 
                                                         <!-- todo(Stefan): InfoBadge not available
-                                                        <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
-                                                                        Visibility="{x:Bind ShowPluginSettingBadgeError}"
-                                                                        Style="{StaticResource CriticalIconInfoBadgeStyle}" />
-                                                        <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
-                                                                        Visibility="{x:Bind ShowPluginSettingBadgeWarning}"
-                                                                        Style="{StaticResource WarningIconInfoBadgeStyle}" />
+                                                        <Grid>
+                                                            <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
+                                                                            Visibility="{x:Bind ShowPluginSettingBadgeError}"
+                                                                            Style="{StaticResource CriticalIconInfoBadgeStyle}" />
+                                                            <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
+                                                                            Visibility="{x:Bind ShowPluginSettingBadgeWarning}"
+                                                                            Style="{StaticResource WarningIconInfoBadgeStyle}" />
+                                                        </Grid>
                                                         -->
 
                                                         <!-- Temporary badge replacement for InfoBadge control (htcfreek). (Including all FontIcons into the Grid helps fixing the problem that StackPanel control doesn't free the space when sub controls are collapsed. Normally you need one grid per icon group.)-->
