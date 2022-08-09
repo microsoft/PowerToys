@@ -127,6 +127,9 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
 
         // Following cases can be both interpreted as schema:path and domain:port
         [DataRow("tel:411", true, "https://tel:411/", true, "tel:411")]
+        [DataRow("tel:70421567", true, "tel:70421567", false, null)]
+        [DataRow("tel:863-1234", true, "tel:863-1234", false, null)]
+        [DataRow("tel:tel:+1-201-555-0123", true, "tel:tel:+1-201-555-0123", false, null)]
 
         // All following cases should be parsed as application URI
         [DataRow("mailto:", true, "mailto:", false, null)]
