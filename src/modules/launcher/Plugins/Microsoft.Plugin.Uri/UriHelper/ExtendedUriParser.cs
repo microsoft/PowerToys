@@ -66,11 +66,19 @@ namespace Microsoft.Plugin.Uri.UriHelper
                          Regex.IsMatch(input, isIPv6PortRegex))
                 {
                     var secondUrlBuilder = urlBuilder;
-                    urlBuilder = new UriBuilder("https://" + input);
 
-                    if (urlBuilder.Port == 80)
+                    try
                     {
-                        urlBuilder.Scheme = System.Uri.UriSchemeHttp;
+                        urlBuilder = new UriBuilder("https://" + input);
+
+                        if (urlBuilder.Port == 80)
+                        {
+                            urlBuilder.Scheme = System.Uri.UriSchemeHttp;
+                        }
+                    }
+                    catch (UriFormatException)
+                    {
+                        webUri = null;
                     }
 
                     string singleLabelRegex = @"[\.:]+|^http$|^https$|^localhost$";
