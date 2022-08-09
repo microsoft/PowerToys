@@ -101,7 +101,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             if (
                 e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowNotAccessibleWarning)
-                || e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowNotAllowedKeywordWarning)
+                || e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowConflictingKeywordWarning)
+                || e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowPluginSettingBadgeError)
+                || e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowPluginSettingBadgeWarning)
                 )
             {
                 // Don't trigger a settings update if the changed property is for visual notification.

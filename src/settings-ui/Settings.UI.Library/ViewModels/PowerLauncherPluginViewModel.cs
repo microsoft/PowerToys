@@ -191,14 +191,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             "~", @"\", @"\\", ",", "+", "-", "(",
         };
 
-        private static readonly List<Regex> ConflictingKomplexKeywordRules = new List<Regex>()
+        private static readonly List<Regex> ConflictingComplexKeywordRules = new List<Regex>()
         {
             new Regex(@"[a-zA-Z]*\(?\d*[\.\,]?\d*\)?"),
         };
 
         public bool ShowConflictingKeywordWarning
         {
-            get => !Disabled && (ConflictingSimpleKeywords.Contains(ActionKeyword) || ConflictingKomplexKeywordRules.Any(x => x.IsMatch(ActionKeyword)));
+            get => !Disabled && (ConflictingSimpleKeywords.Contains(ActionKeyword) || ConflictingComplexKeywordRules.Any(x => x.IsMatch(ActionKeyword)));
         }
 
         public bool ShowPluginSettingBadgeError
