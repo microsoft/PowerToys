@@ -159,15 +159,16 @@ namespace PowerLauncher
 
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += Launcher_KeyDown;
-            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting(), _viewModel.GetSearchInputDelaySetting());
+
+            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting());
             _viewModel.RegisterSettingsChangeListener(
                 (s, prop_e) =>
                 {
-                    if (prop_e.PropertyName == nameof(PowerToysRunSettings.SearchQueryResultsWithDelay) || prop_e.PropertyName == nameof(PowerToysRunSettings.SearchInputDelay))
+                    if (prop_e.PropertyName == nameof(PowerToysRunSettings.SearchQueryResultsWithDelay) || prop_e.PropertyName == nameof(PowerToysRunSettings.SearchInputDelay) || prop_e.PropertyName == nameof(PowerToysRunSettings.SearchInputDelayFast))
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting(), _viewModel.GetSearchInputDelaySetting());
+                            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting());
                         });
                     }
                 });
@@ -191,7 +192,7 @@ namespace PowerLauncher
             BringProcessToForeground();
         }
 
-        private void SetupSearchTextBoxReactiveness(bool showResultsWithDelay, int searchInputDelayMs)
+        private void SetupSearchTextBoxReactiveness(bool showResultsWithDelay)
         {
             if (_reactiveSubscription != null)
             {
@@ -203,6 +204,17 @@ namespace PowerLauncher
 
             if (showResultsWithDelay)
             {
+                _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                    add => SearchBox.QueryTextBox.TextChanged += add,
+                    remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                    .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                    .Throttle(TimeSpan.FromMilliseconds(_settings.SearchInputDelayFast))
+                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
+                    .Throttle(TimeSpan.FromMilliseconds(_settings.SearchInputDelay))
+                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
+                    .Subscribe();
+
+                /*
                 if (_settings.PTRSearchQueryFastResultsWithDelay)
                 {
                     // old mode, delay fast and delayed execution
@@ -235,13 +247,14 @@ namespace PowerLauncher
                             add => SearchBox.QueryTextBox.TextChanged += add,
                             remove => SearchBox.QueryTextBox.TextChanged -= remove)
                             .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
-                            .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs * 0.20))
+                            .Throttle(TimeSpan.FromMilliseconds(_settings.SearchInputDelayFast))
                             .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
                             .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
                             .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
                             .Subscribe();
                     }
                 }
+                */
             }
             else
             {

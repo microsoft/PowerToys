@@ -415,16 +415,28 @@
     <value>Clear the previous query on launch</value>
   </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
-    <value>Delay search</value>
+    <value>Search Throttle</value>
     <comment>This is about adding a delay to wait for more input before executing a search</comment>
   </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Description" xml:space="preserve">
-    <value>Add a delay to wait for more input before executing a search</value>
+    <value>A throttle to reduce results display jumpiness and load on the system</value>
   </data>
-  <data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
-    <value>Search delay (ms)</value>
+  <data name="PowerLauncher_FastSearchInputDelayMs.Header" xml:space="preserve">
+    <value>Fast plugins</value>    
+  </data>
+	<data name="PowerLauncher_FastSearchInputDelayMs.Description" xml:space="preserve">
+    <value>Throttle the faster plugins by this amount. 30ms to 50ms is recommended.</value>    
+  </data>
+	<data name="PowerLauncher_SlowSearchInputDelayMs.Header" xml:space="preserve">
+    <value>Slow plugins</value>    
+  </data>
+	<data name="PowerLauncher_SlowSearchInputDelayMs.Description" xml:space="preserve">
+    <value>Throttle the slower plugins by this amount. 100ms to 150ms is recommended.</value>    
+  </data>
+	<data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
+    <value>Fast plugin throttle (ms)</value>
     <comment>ms = milliseconds</comment>
-  </data>
+  </data>	
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>

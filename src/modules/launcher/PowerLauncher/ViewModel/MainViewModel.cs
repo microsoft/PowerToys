@@ -1189,6 +1189,11 @@ namespace PowerLauncher.ViewModel
             return _settings.SearchQueryResultsWithDelay;
         }
 
+        public int GetSearchInputDelayFastSetting()
+        {
+            return _settings.SearchInputDelayFast;
+        }
+
         public int GetSearchInputDelaySetting()
         {
             return _settings.SearchInputDelay;
