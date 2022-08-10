@@ -754,15 +754,6 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Value has been changed to fit the range.
-        /// </summary>
-        public static string Sensitivity_Input_Warning {
-            get {
-                return ResourceManager.GetString("Sensitivity_Input_Warning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Template settings.
         /// </summary>
         public static string Settings {

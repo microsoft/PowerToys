@@ -411,7 +411,4 @@
   <data name="Ranged_Input_Tooltip" xml:space="preserve">
     <value>Range is from {0} to {1}</value>
   </data>
-  <data name="Sensitivity_Input_Warning" xml:space="preserve">
-    <value>Value has been changed to fit the range</value>
-  </data>
 </root>

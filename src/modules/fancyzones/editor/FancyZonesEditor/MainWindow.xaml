@@ -596,24 +596,20 @@
                                        AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
                                        Text="&#xE78A;" />
 
-                            <ui:NumberBox x:Name="SensitivityInput"
-                                          Text="{Binding SensitivityRadius}"
-                                          Width="216"
-                                          Minimum="{Binding SensitivityRadiusMinimum}"
-                                          Maximum="{Binding SensitivityRadiusMaximum}"
-                                          KeyDown="EditDialogNumberBox_KeyDown"
-                                          Margin="12,0,0,0"
-                                          Loaded="NumberBox_Loaded"
-                                          LostFocus="SensitivityInput_LostFocus"
-                                          GotFocus="SensitivityInput_GotFocus"
-                                          AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
-                                          AutomationProperties.LabeledBy="{Binding ElementName=distanceTitle}"
-                                          AutomationProperties.HelpText="{Binding SensitivityRadiusRange}"
-                                          ToolTip="{Binding SensitivityRadiusRange}"
-                                          SpinButtonPlacementMode="Compact"
-                                          HorizontalAlignment="Left" >
-                            </ui:NumberBox>
-                            
+                            <Slider x:Name="SensitivityInput"
+                                    Value="{Binding SensitivityRadius}"
+                                    Minimum="{Binding SensitivityRadiusMinimum}"
+                                    Maximum="{Binding SensitivityRadiusMaximum}"
+                                    AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
+                                    AutomationProperties.LabeledBy="{Binding ElementName=distanceTitle}"
+                                    AutomationProperties.HelpText="{Binding SensitivityRadius}"
+                                    ToolTip="{Binding SensitivityRadius}"      
+                                    MinWidth="216"
+                                    Margin="12,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    SmallChange="1" 
+                                    LargeChange="10"/>
+
                             <TextBlock Text="{x:Static props:Resources.Pixels}"
                                        Margin="6,-4,0,0"
                                        FontSize="12"

@@ -564,32 +564,13 @@ namespace FancyZonesEditor
             EditLayoutDialogTitle.TextWrapping = TextWrapping.NoWrap;
         }
 
-        private void SensitivityInput_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
-            {
-                NumberBoxAutomationPeer peer =
-                    FrameworkElementAutomationPeer.FromElement(SensitivityInput) as NumberBoxAutomationPeer;
-                string numberBoxChangeActivityId = "numberBoxChangedOnLosingFocus";
-
-                if (peer != null)
-                {
-                    peer.RaiseNotificationEvent(
-                        AutomationNotificationKind.ActionCompleted,
-                        AutomationNotificationProcessing.ImportantMostRecent,
-                        Properties.Resources.Sensitivity_Input_Warning,
-                        numberBoxChangeActivityId);
-                }
-            }
-        }
-
         private void SensitivityInput_GotFocus(object sender, RoutedEventArgs e)
         {
             if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
             {
-                NumberBoxAutomationPeer peer =
-                    FrameworkElementAutomationPeer.FromElement(SensitivityInput) as NumberBoxAutomationPeer;
-                string numberBoxGotFocusActivityId = "numberBoxGotFocus";
+                SliderAutomationPeer peer =
+                    FrameworkElementAutomationPeer.FromElement(SensitivityInput) as SliderAutomationPeer;
+                string sliderGotFocusActivityId = "sliderGotFocus";
 
                 var range = string.Format(
                             CultureInfo.CurrentCulture,
@@ -603,7 +584,7 @@ namespace FancyZonesEditor
                         AutomationNotificationKind.ActionCompleted,
                         AutomationNotificationProcessing.ImportantMostRecent,
                         range,
-                        numberBoxGotFocusActivityId);
+                        sliderGotFocusActivityId);
                 }
             }
         }
