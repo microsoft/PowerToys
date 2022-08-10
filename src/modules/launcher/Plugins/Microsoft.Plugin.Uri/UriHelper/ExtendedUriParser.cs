@@ -52,8 +52,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 string isDomainPortRegex = @"^[\w\.]+:\d+";
                 string isIPv6PortRegex = @"^\[([\w:]+:+)+[\w]+\]:\d+";
                 var urlBuilder = new UriBuilder(input);
-                var hadDefaultPort = urlBuilder.Uri.IsDefaultPort;
-                urlBuilder.Port = hadDefaultPort ? -1 : urlBuilder.Port;
+                urlBuilder.Port = urlBuilder.Uri.IsDefaultPort ? -1 : urlBuilder.Port;
 
                 if (input.StartsWith("HTTP://", StringComparison.OrdinalIgnoreCase))
                 {
