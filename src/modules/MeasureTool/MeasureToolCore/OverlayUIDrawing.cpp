@@ -6,6 +6,7 @@
 #include <common/Display/monitors.h>
 #include <common/utils/window.h>
 #include <common/logger/logger.h>
+#include <common/Themes/windows_colors.h>
 
 namespace NonLocalizable
 {
@@ -17,6 +18,9 @@ namespace NonLocalizable
 
 static wchar_t measureStringBuf[32] = {};
 std::atomic_bool stopUILoop = false;
+D2D1::ColorF foreground = D2D1::ColorF::Black;
+D2D1::ColorF background = D2D1::ColorF(0.96f, 0.96f, 0.96f, 1.0f);
+D2D1::ColorF border = D2D1::ColorF(0.44f, 0.44f, 0.44f, 0.4f);
 
 void SetClipBoardToText(const std::wstring_view text)
 {
@@ -43,7 +47,9 @@ void SetClipBoardToText(const std::wstring_view text)
     CloseClipboard();
 }
 
-LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
+
+
+    LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
     const auto closeWindow = [&] {
         stopUILoop = true;
@@ -226,8 +232,8 @@ struct D2DState
         dpiScale = dpi / static_cast<float>(DPIAware::DEFAULT_DPI);
 
         constexpr float FONT_SIZE = 14.f;
-
-        winrt::check_hresult(writeFactory->CreateTextFormat(L"Segoe UI", nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, FONT_SIZE * dpiScale, L"en-US", &textFormat));
+        // TO DO: I'm not sure if this 'Segoe UI Variable Text' somehow magically falls back to Segoe UI on Windows 10 (like it does in WinUI.. @JAIME, can you check ?
+        winrt::check_hresult(writeFactory->CreateTextFormat(L"Segoe UI Variable Text", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, FONT_SIZE * dpiScale, L"en-US", &textFormat));
         winrt::check_hresult(textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
         winrt::check_hresult(textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
 
@@ -243,7 +249,8 @@ enum Brush : size_t
 {
     line,
     measureNumbers,
-    measureBackground
+    measureBackground,
+    measureBorder
 };
 
 void DetermineScreenQuadrant(HWND window, long x, long y, bool& inLeftHalf, bool& inTopHalf)
@@ -274,11 +281,11 @@ void DrawTextBox(const D2DState& d2dState,
 
     const float dpiScale = d2dState.dpiScale;
 
-    constexpr float TEXT_BOX_CORNER_RADIUS = 8.f;
+    constexpr float TEXT_BOX_CORNER_RADIUS = 4.f;
     const float TEXT_BOX_WIDTH = 80.f * dpiScale;
-    const float TEXT_BOX_HEIGHT = 10.f * dpiScale;
+    const float TEXT_BOX_HEIGHT = 32.f * dpiScale;
 
-    const float TEXT_BOX_PADDING = 16.f * dpiScale;
+    const float TEXT_BOX_PADDING = 1.f * dpiScale;
     const float TEXT_BOX_OFFSET_AMOUNT_X = TEXT_BOX_WIDTH * dpiScale;
     const float TEXT_BOX_OFFSET_AMOUNT_Y = TEXT_BOX_WIDTH * dpiScale;
     const float TEXT_BOX_OFFSET_X = cursorInLeftScreenHalf ? TEXT_BOX_OFFSET_AMOUNT_X : -TEXT_BOX_OFFSET_AMOUNT_X;
@@ -296,14 +303,27 @@ void DrawTextBox(const D2DState& d2dState,
     textBoxRect.rect.left = textRect.left - TEXT_BOX_PADDING;
     textBoxRect.rect.right = textRect.right + TEXT_BOX_PADDING;
 
-    d2dState.rt->DrawRoundedRectangle(textBoxRect, d2dState.solidBrushes[Brush::measureNumbers].get());
+    d2dState.rt->DrawRoundedRectangle(textBoxRect, d2dState.solidBrushes[Brush::measureBorder].get());
     d2dState.rt->FillRoundedRectangle(textBoxRect, d2dState.solidBrushes[Brush::measureBackground].get());
     d2dState.rt->DrawTextW(text, textLen, d2dState.textFormat.get(), textRect, d2dState.solidBrushes[Brush::measureNumbers].get(), D2D1_DRAW_TEXT_OPTIONS_NO_SNAP);
 }
 
+void SetOverlayUIColors()
+{
+    if (WindowsColors::is_dark_mode())
+    {
+        foreground = D2D1::ColorF::White;
+        background = D2D1::ColorF(0.17f, 0.17f, 0.17f, 1.0f);
+        border = D2D1::ColorF(0.44f, 0.44f, 0.44f, 0.4f);
+    }
+}
+
 void DrawBoundsToolOverlayUILoop(BoundsToolState& toolState, HWND overlayWindow)
 {
-    D2DState d2dState{ overlayWindow, { toolState.lineColor, D2D1::ColorF(D2D1::ColorF::Black), D2D1::ColorF(D2D1::ColorF::WhiteSmoke) } };
+    SetOverlayUIColors();
+
+    D2DState d2dState{ overlayWindow, { toolState.lineColor, foreground, background, border } };
+   
 
     while (!stopUILoop)
     {
@@ -324,7 +344,7 @@ void DrawBoundsToolOverlayUILoop(BoundsToolState& toolState, HWND overlayWindow)
             d2dState.rt->DrawRectangle(rect, d2dState.solidBrushes[Brush::line].get());
 
             const uint32_t textLen = swprintf_s(measureStringBuf,
-                                                L"%.0fx%.0f",
+                                                L"%.0f x %.0f",
                                                 std::abs(rect.right - rect.left),
                                                 std::abs(rect.top - rect.bottom));
             DrawTextBox(d2dState,
@@ -371,7 +391,8 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
         }
     });
 
-    D2DState d2dState{ overlayWindow, { crossColor, D2D1::ColorF(D2D1::ColorF::Black), D2D1::ColorF(D2D1::ColorF::WhiteSmoke) } };
+    SetOverlayUIColors();
+    D2DState d2dState{ overlayWindow, { crossColor, foreground, background, border } };
 
     while (!stopUILoop)
     {
@@ -404,7 +425,7 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
         {
         case MeasureToolState::Mode::Cross:
             measureStringBufLen = swprintf_s(measureStringBuf,
-                                             L"%.0fx%.0f",
+                                             L"%.0f x %.0f",
                                              hMeasure,
                                              vMeasure);
             break;
@@ -474,3 +495,4 @@ HWND LaunchOverlayUI(BoundsToolState& boundsToolState, HMONITOR monitor)
 
     return window;
 }
+
