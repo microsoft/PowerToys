@@ -378,7 +378,7 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
     while (!stopUILoop)
     {
         d2dState.rt->BeginDraw();
-
+        d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED); // Anti-aliasing is creating artifacts.
         d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
 
         MeasureToolState::State mts;
@@ -464,7 +464,7 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
 
         d2dState.rt->EndDraw();
 
-        d2dState.rt->Flush();
+        // d2dState.rt->Flush(); EndDraw should flush already
         InvalidateRect(overlayWindow, nullptr, true);
         run_message_loop(true);
     }
