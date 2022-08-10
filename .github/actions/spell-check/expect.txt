@@ -1015,6 +1015,7 @@ jxr
 jyuwono
 KBDLLHOOKSTRUCT
 kbm
+KCode
 KEYBDINPUT
 keybindings
 keyboardeventhandlers

@@ -13,24 +13,4 @@
 		<PackageReference Include="Vanara.PInvoke.User32" Version="3.3.15" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
-			<Link>StyleCop.json</Link>
-		</AdditionalFiles>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs">
-			<Link>GlobalSuppressions.cs</Link>
-		</Compile>
-	</ItemGroup>
-
 </Project>
