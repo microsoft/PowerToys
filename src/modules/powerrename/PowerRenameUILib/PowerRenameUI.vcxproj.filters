@@ -11,7 +11,6 @@
     <Midl Include="MainWindow.idl" />
     <Midl Include="PatternSnippet.idl" />
     <Midl Include="ExplorerItem.idl" />
-    <Midl Include="UIUpdates.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
