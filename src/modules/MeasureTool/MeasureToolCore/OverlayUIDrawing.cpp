@@ -399,7 +399,8 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
     while (!stopUILoop)
     {
         d2dState.rt->BeginDraw();
-        d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED); // Anti-aliasing is creating artifacts.
+        auto previousAliasingMode = d2dState.rt->GetAntialiasMode();
+        d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED); // Anti-aliasing is creating artifacts. Aliasing is for drawing straight lines.
         d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
 
         MeasureToolState::State mts;
@@ -451,6 +452,9 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
                 d2dState.rt->DrawLine(end_feet_right_half_start, end_feet_right_half_end, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
             }
         }
+
+        // After drawing the lines, restore anti aliasing to draw the measurement tooltip.
+        d2dState.rt->SetAntialiasMode(previousAliasingMode);
 
         const float hMeasure = mts.cross.hLineEnd.x - mts.cross.hLineStart.x;
         const float vMeasure = mts.cross.vLineEnd.y - mts.cross.vLineStart.y;
