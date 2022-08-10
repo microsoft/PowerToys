@@ -165,7 +165,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("ftp://example.com/126", true, null, "ftp://example.com/126")]
         [DataRow("^:", false, null, null)]
 
-        public void TryParseCanParseHostName(string query, bool expectedSuccess, string expectedWebUri, string expectedSystemUri)
+        public void ParserReturnsExpectedResults(string query, bool expectedSuccess, string expectedWebUri, string expectedSystemUri)
         {
             // Arrange
             var parser = new ExtendedUriParser();
