@@ -1,4 +1,8 @@
-﻿using System.Diagnostics;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Diagnostics;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
 
@@ -16,6 +20,7 @@ public class PowerAccent : IDisposable
     private Stopwatch _stopWatch;
 
     public event Action<bool, char[]> OnChangeDisplay;
+
     public event Action<int, char> OnSelectCharacter;
 
     public PowerAccent()
@@ -34,12 +39,16 @@ public class PowerAccent : IDisposable
 
         TriggerKey? triggerPressed = null;
         if (letterPressed.HasValue)
+        {
             if (Enum.IsDefined(typeof(TriggerKey), (int)args.Key))
             {
                 triggerPressed = (TriggerKey)args.Key;
                 if (triggerPressed == TriggerKey.Space && !_settingService.IsSpaceBarActive)
+                {
                     triggerPressed = null;
+                }
             }
+        }
 
         if (!_visible && letterPressed.HasValue && triggerPressed.HasValue)
         {
@@ -48,21 +57,34 @@ public class PowerAccent : IDisposable
             OnChangeDisplay?.Invoke(true, _characters);
         }
 
-        if(_visible && triggerPressed.HasValue)
+        if (_visible && triggerPressed.HasValue)
         {
             if (_selectedIndex == -1)
             {
                 if (triggerPressed.Value == TriggerKey.Left)
-                    _selectedIndex = _characters.Length / 2 - 1;
+                {
+                    _selectedIndex = (_characters.Length / 2) - 1;
+                }
 
                 if (triggerPressed.Value == TriggerKey.Right)
+                {
                     _selectedIndex = _characters.Length / 2;
+                }
 
                 if (triggerPressed.Value == TriggerKey.Space)
+                {
                     _selectedIndex = 0;
+                }
 
-                if (_selectedIndex < 0) _selectedIndex = 0;
-                if (_selectedIndex > _characters.Length - 1) _selectedIndex = _characters.Length - 1;
+                if (_selectedIndex < 0)
+                {
+                    _selectedIndex = 0;
+                }
+
+                if (_selectedIndex > _characters.Length - 1)
+                {
+                    _selectedIndex = _characters.Length - 1;
+                }
 
                 OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
                 return false;
@@ -71,15 +93,24 @@ public class PowerAccent : IDisposable
             if (triggerPressed.Value == TriggerKey.Space)
             {
                 if (_selectedIndex < _characters.Length - 1)
+                {
                     ++_selectedIndex;
+                }
                 else
+                {
                     _selectedIndex = 0;
+                }
             }
 
             if (triggerPressed.Value == TriggerKey.Left && _selectedIndex > 0)
+            {
                 --_selectedIndex;
+            }
+
             if (triggerPressed.Value == TriggerKey.Right && _selectedIndex < _characters.Length - 1)
+            {
                 ++_selectedIndex;
+            }
 
             OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
             return false;
@@ -99,7 +130,8 @@ public class PowerAccent : IDisposable
                 if (_stopWatch.ElapsedMilliseconds < _settingService.InputTime)
                 {
                     Debug.WriteLine("Insert before inputTime - " + _stopWatch.ElapsedMilliseconds);
-                    //WindowsFunctions.Insert('e');
+
+                    // WindowsFunctions.Insert('e');
                     WindowsFunctions.Insert(' ');
                     OnChangeDisplay?.Invoke(false, null);
                     _selectedIndex = -1;
@@ -110,7 +142,10 @@ public class PowerAccent : IDisposable
                 Debug.WriteLine("Insert after inputTime - " + _stopWatch.ElapsedMilliseconds);
                 OnChangeDisplay?.Invoke(false, null);
                 if (_selectedIndex != -1)
+                {
                     WindowsFunctions.Insert(_characters[_selectedIndex], true);
+                }
+
                 _selectedIndex = -1;
                 _visible = false;
             }
@@ -166,6 +201,7 @@ public class PowerAccent : IDisposable
         {
             result[i] = char.ToUpper(array[i], System.Globalization.CultureInfo.InvariantCulture);
         }
+
         return result;
     }
 }

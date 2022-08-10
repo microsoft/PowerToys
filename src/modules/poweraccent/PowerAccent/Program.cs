@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+#pragma warning disable SA1310 // FieldNamesMustNotContainUnderscore
+
+using System;
 using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +14,7 @@ using PowerAccent.UI;
 
 namespace PowerAccent;
 
-static class Program
+internal static class Program
 {
     private const string PROGRAM_NAME = "PowerAccent";
     private const string PROGRAM_APP_NAME = "PowerToys.PowerAccent";
@@ -17,7 +22,7 @@ static class Program
     private static CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
     [STAThread]
-    static void Main(string[] args)
+    public static void Main(string[] args)
     {
         _ = new Mutex(true, PROGRAM_APP_NAME, out bool instantiated);
 
@@ -35,26 +40,25 @@ static class Program
 
     private static void InitEvents()
     {
-        Task.Run(() =>
-        {
-            EventWaitHandle eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerAccentExitEvent());
-            if (eventHandle.WaitOne())
+        Task.Run(
+            () =>
             {
-                Terminate();
-            }
-        }, _tokenSource.Token);
+                EventWaitHandle eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerAccentExitEvent());
+                if (eventHandle.WaitOne())
+                {
+                    Terminate();
+                }
+            }, _tokenSource.Token);
     }
-
-    #region Arguments
 
     private static int Arguments(string[] args)
     {
-        Option<int> pidOption = new(
+        Option<int> pidOption = new (
             aliases: new[] { "--pid", "-p" },
             getDefaultValue: () => 0,
             description: $"Bind the execution of {PROGRAM_NAME} to another process.");
 
-        Option<bool> openSettingsOption = new(
+        Option<bool> openSettingsOption = new (
             aliases: new[] { "--settings", "-s" },
             getDefaultValue: () => false,
             description: $"Open Settings window.");
@@ -74,10 +78,11 @@ static class Program
     {
         if (pid != 0)
         {
-            Task.Run(() =>
-            {
-                RunnerHelper.WaitForPowerToysRunner(pid, Terminate);
-            }, _tokenSource.Token);
+            Task.Run(
+                () =>
+                {
+                    RunnerHelper.WaitForPowerToysRunner(pid, Terminate);
+                }, _tokenSource.Token);
         }
 
         if (isOpenSettings)
@@ -86,8 +91,6 @@ static class Program
             settings.Show();
         }
     }
-
-    #endregion
 
     private static void Terminate()
     {

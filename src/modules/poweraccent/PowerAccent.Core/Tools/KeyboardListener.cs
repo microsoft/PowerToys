@@ -1,4 +1,9 @@
-﻿using System.Diagnostics;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+#pragma warning disable SA1310 // FieldNamesMustNotContainUnderscore
+
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -7,6 +12,7 @@ namespace PowerAccent.Core.Tools;
 internal class KeyboardListener : IDisposable
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="KeyboardListener"/> class.
     /// Creates global keyboard listener.
     /// </summary>
     public KeyboardListener()
@@ -56,39 +62,39 @@ internal class KeyboardListener : IDisposable
     /// <summary>
     /// Asynchronous callback hook.
     /// </summary>
-    /// <param name="character">Character</param>
     /// <param name="keyEvent">Keyboard event</param>
     /// <param name="vkCode">VKCode</param>
+    /// <param name="character">Character</param>
     private delegate bool KeyboardCallbackAsync(InterceptKeys.KeyEvent keyEvent, int vkCode, string character);
 
     /// <summary>
     /// Actual callback hook.
-    /// 
     /// <remarks>Calls asynchronously the asyncCallback.</remarks>
     /// </summary>
-    /// <param name="nCode"></param>
-    /// <param name="wParam"></param>
-    /// <param name="lParam"></param>
-    /// <returns></returns>
+    /// <param name="nCode">VKCode</param>
+    /// <param name="wParam">wParam</param>
+    /// <param name="lParam">lParam</param>
     [MethodImpl(MethodImplOptions.NoInlining)]
     private IntPtr LowLevelKeyboardProc(int nCode, UIntPtr wParam, IntPtr lParam)
     {
         if (nCode >= 0)
+        {
             if (wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_KEYDOWN ||
                 wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_KEYUP ||
                 wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_SYSKEYDOWN ||
                 wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_SYSKEYUP)
             {
-                //Captures the character(s) pressed only on WM_KEYDOWN
-                var chars = InterceptKeys.VKCodeToString((uint)Marshal.ReadInt32(lParam),
-                    wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_KEYDOWN ||
-                     wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_SYSKEYDOWN);
+                // Captures the character(s) pressed only on WM_KEYDOWN
+                var chars = InterceptKeys.VKCodeToString(
+                    (uint)Marshal.ReadInt32(lParam),
+                    wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_KEYDOWN || wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_SYSKEYDOWN);
 
                 if (!hookedKeyboardCallbackAsync.Invoke((InterceptKeys.KeyEvent)wParam.ToUInt32(), Marshal.ReadInt32(lParam), chars))
                 {
                     return (IntPtr)1;
                 }
             }
+        }
 
         return InterceptKeys.CallNextHookEx(_hookId, nCode, wParam, lParam);
     }
@@ -99,35 +105,49 @@ internal class KeyboardListener : IDisposable
     /// <param name="keyEvent">Keyboard event</param>
     /// <param name="vkCode">VKCode</param>
     /// <param name="character">Character as string.</param>
-    bool KeyboardListener_KeyboardCallbackAsync(InterceptKeys.KeyEvent keyEvent, int vkCode, string character)
+    private bool KeyboardListener_KeyboardCallbackAsync(InterceptKeys.KeyEvent keyEvent, int vkCode, string character)
     {
         switch (keyEvent)
         {
             // KeyDown events
             case InterceptKeys.KeyEvent.WM_KEYDOWN:
                 if (KeyDown != null)
-                    return KeyDown.Invoke(this, new RawKeyEventArgs(vkCode, false, character));
+                {
+                    return KeyDown.Invoke(this, new RawKeyEventArgs(vkCode, character));
+                }
+
                 break;
             case InterceptKeys.KeyEvent.WM_SYSKEYDOWN:
                 if (KeyDown != null)
-                    return KeyDown.Invoke(this, new RawKeyEventArgs(vkCode, true, character));
+                {
+                    return KeyDown.Invoke(this, new RawKeyEventArgs(vkCode, character));
+                }
+
                 break;
 
             // KeyUp events
             case InterceptKeys.KeyEvent.WM_KEYUP:
                 if (KeyUp != null)
-                    return KeyUp.Invoke(this, new RawKeyEventArgs(vkCode, false, character));
+                {
+                    return KeyUp.Invoke(this, new RawKeyEventArgs(vkCode, character));
+                }
+
                 break;
             case InterceptKeys.KeyEvent.WM_SYSKEYUP:
                 if (KeyUp != null)
-                    return KeyUp.Invoke(this, new RawKeyEventArgs(vkCode, true, character));
+                {
+                    return KeyUp.Invoke(this, new RawKeyEventArgs(vkCode, character));
+                }
+
                 break;
 
             default:
                 break;
         }
+
         return true;
     }
+
     public void Dispose()
     {
         InterceptKeys.UnhookWindowsHookEx(_hookId);
@@ -139,19 +159,11 @@ internal class KeyboardListener : IDisposable
     public class RawKeyEventArgs : EventArgs
     {
         /// <summary>
-        /// VKCode of the key.
-        /// </summary>
-        public int VKCode;
-
-        /// <summary>
         /// WPF Key of the key.
         /// </summary>
+#pragma warning disable SA1401 // Fields should be private
         public uint Key;
-
-        /// <summary>
-        /// Is the hitted key system key.
-        /// </summary>
-        public bool IsSysKey;
+#pragma warning restore SA1401 // Fields should be private
 
         /// <summary>
         /// Convert to string.
@@ -159,28 +171,25 @@ internal class KeyboardListener : IDisposable
         /// <returns>Returns string representation of this key, if not possible empty string is returned.</returns>
         public override string ToString()
         {
-            return Character;
+            return character;
         }
 
         /// <summary>
         /// Unicode character of key pressed.
         /// </summary>
-        public string Character;
+        private string character;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="RawKeyEventArgs"/> class.
         /// Create raw keyevent arguments.
         /// </summary>
-        /// <param name="VKCode"></param>
-        /// <param name="isSysKey"></param>
-        /// <param name="Character">Character</param>
-        public RawKeyEventArgs(int VKCode, bool isSysKey, string Character)
+        /// <param name="vKCode">VKCode</param>
+        /// <param name="character">Character</param>
+        public RawKeyEventArgs(int vKCode, string character)
         {
-            this.VKCode = VKCode;
-            IsSysKey = isSysKey;
-            this.Character = Character;
-            Key = (uint)VKCode; //User32.MapVirtualKey((uint)VKCode, User32.MAPVK.MAPVK_VK_TO_VSC_EX);
+            this.character = character;
+            Key = (uint)vKCode; // User32.MapVirtualKey((uint)VKCode, User32.MAPVK.MAPVK_VK_TO_VSC_EX);
         }
-
     }
 }
 
@@ -190,7 +199,8 @@ internal class KeyboardListener : IDisposable
 internal static class InterceptKeys
 {
     public delegate IntPtr LowLevelKeyboardProc(int nCode, UIntPtr wParam, IntPtr lParam);
-    public static int WH_KEYBOARD_LL = 13;
+
+    private const int WH_KEYBOARD_LL = 13;
 
     /// <summary>
     /// Key event
@@ -215,7 +225,7 @@ internal static class InterceptKeys
         /// <summary>
         /// System key down
         /// </summary>
-        WM_SYSKEYDOWN = 260
+        WM_SYSKEYDOWN = 260,
     }
 
     public static IntPtr SetHook(LowLevelKeyboardProc proc)
@@ -240,11 +250,9 @@ internal static class InterceptKeys
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     public static extern IntPtr GetModuleHandle(string lpModuleName);
 
-    #region Convert VKCode to string
-    // Note: Sometimes single VKCode represents multiple chars, thus string. 
-    // E.g. typing "^1" (notice that when pressing 1 the both characters appear, 
+    // Note: Sometimes single VKCode represents multiple chars, thus string.
+    // E.g. typing "^1" (notice that when pressing 1 the both characters appear,
     // because of this behavior, "^" is called dead key)
-
     [DllImport("user32.dll")]
 #pragma warning disable CA1838 // Éviter les paramètres 'StringBuilder' pour les P/Invoke
     private static extern int ToUnicodeEx(uint wVirtKey, uint wScanCode, byte[] lpKeyState, [Out, MarshalAs(UnmanagedType.LPWStr)] System.Text.StringBuilder pwszBuff, int cchBuff, uint wFlags, IntPtr dwhkl);
@@ -280,10 +288,10 @@ internal static class InterceptKeys
     /// Convert VKCode to Unicode.
     /// <remarks>isKeyDown is required for because of keyboard state inconsistencies!</remarks>
     /// </summary>
-    /// <param name="VKCode">VKCode</param>
+    /// <param name="vKCode">VKCode</param>
     /// <param name="isKeyDown">Is the key down event?</param>
     /// <returns>String representing single unicode character.</returns>
-    public static string VKCodeToString(uint VKCode, bool isKeyDown)
+    public static string VKCodeToString(uint vKCode, bool isKeyDown)
     {
         // ToUnicodeEx needs StringBuilder, it populates that during execution.
         System.Text.StringBuilder sbString = new System.Text.StringBuilder(5);
@@ -317,22 +325,26 @@ internal static class InterceptKeys
 
         // On failure we return empty string.
         if (!bKeyStateStatus)
-            return "";
+        {
+            return string.Empty;
+        }
 
         // Gets the layout of keyboard
-        IntPtr HKL = GetKeyboardLayout(currentWindowThreadID);
+        IntPtr hKL = GetKeyboardLayout(currentWindowThreadID);
 
         // Maps the virtual keycode
-        uint lScanCode = MapVirtualKeyEx(VKCode, 0, HKL);
+        uint lScanCode = MapVirtualKeyEx(vKCode, 0, hKL);
 
         // Keyboard state goes inconsistent if this is not in place. In other words, we need to call above commands in UP events also.
         if (!isKeyDown)
-            return "";
+        {
+            return string.Empty;
+        }
 
         // Converts the VKCode to unicode
-        int relevantKeyCountInBuffer = ToUnicodeEx(VKCode, lScanCode, bKeyState, sbString, sbString.Capacity, 0, HKL);
+        int relevantKeyCountInBuffer = ToUnicodeEx(vKCode, lScanCode, bKeyState, sbString, sbString.Capacity, 0, hKL);
 
-        string ret = "";
+        string ret = string.Empty;
 
         switch (relevantKeyCountInBuffer)
         {
@@ -341,7 +353,7 @@ internal static class InterceptKeys
                 isDead = true;
 
                 // We must clear the buffer because ToUnicodeEx messed it up, see below.
-                ClearKeyboardBuffer(VKCode, lScanCode, HKL);
+                ClearKeyboardBuffer(vKCode, lScanCode, hKL);
                 break;
 
             case 0:
@@ -349,7 +361,7 @@ internal static class InterceptKeys
 
             // Single character in buffer
             case 1:
-                ret = sbString.Length == 0 ? "" : sbString[0].ToString();
+                ret = sbString.Length == 0 ? string.Empty : sbString[0].ToString();
                 break;
 
             // Two or more (only two of them is relevant)
@@ -360,14 +372,14 @@ internal static class InterceptKeys
         }
 
         // We inject the last dead key back, since ToUnicodeEx removed it.
-        // More about this peculiar behavior see e.g: 
+        // More about this peculiar behavior see e.g:
         //   http://www.experts-exchange.com/Programming/System/Windows__Programming/Q_23453780.html
         //   http://blogs.msdn.com/michkap/archive/2005/01/19/355870.aspx
         //   http://blogs.msdn.com/michkap/archive/2007/10/27/5717859.aspx
         if (lastVKCode != 0 && lastIsDead)
         {
             System.Text.StringBuilder sbTemp = new System.Text.StringBuilder(5);
-            _ = ToUnicodeEx(lastVKCode, lastScanCode, lastKeyState, sbTemp, sbTemp.Capacity, 0, HKL);
+            _ = ToUnicodeEx(lastVKCode, lastScanCode, lastKeyState, sbTemp, sbTemp.Capacity, 0, hKL);
             lastVKCode = 0;
 
             return ret;
@@ -375,7 +387,7 @@ internal static class InterceptKeys
 
         // Save these
         lastScanCode = lScanCode;
-        lastVKCode = VKCode;
+        lastVKCode = vKCode;
         lastIsDead = isDead;
         lastKeyState = (byte[])bKeyState.Clone();
 
@@ -391,7 +403,7 @@ internal static class InterceptKeys
         {
             byte[] lpKeyStateNull = new byte[255];
             rc = ToUnicodeEx(vk, sc, lpKeyStateNull, sb, sb.Capacity, 0, hkl);
-        } while (rc < 0);
+        }
+        while (rc < 0);
     }
-    #endregion
 }

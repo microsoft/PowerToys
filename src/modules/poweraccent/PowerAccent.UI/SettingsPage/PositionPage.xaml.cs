@@ -1,6 +1,10 @@
-﻿using PowerAccent.Core.Services;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Windows;
 using System.Windows.Controls;
+using PowerAccent.Core.Services;
 
 namespace PowerAccent.UI.SettingsPage
 {
@@ -22,41 +26,49 @@ namespace PowerAccent.UI.SettingsPage
             _settingService.Position = Position.Top;
             RefreshPosition();
         }
+
         private void Position_Down_Checked(object sender, RoutedEventArgs e)
         {
             _settingService.Position = Position.Bottom;
             RefreshPosition();
         }
+
         private void Position_Left_Checked(object sender, RoutedEventArgs e)
         {
             _settingService.Position = Position.Left;
             RefreshPosition();
         }
+
         private void Position_Right_Checked(object sender, RoutedEventArgs e)
         {
             _settingService.Position = Position.Right;
             RefreshPosition();
         }
+
         private void Position_UpLeft_Checked(object sender, RoutedEventArgs e)
         {
             _settingService.Position = Position.TopLeft;
             RefreshPosition();
         }
+
         private void Position_UpRight_Checked(object sender, RoutedEventArgs e)
         {
             _settingService.Position = Position.TopRight;
             RefreshPosition();
         }
+
         private void Position_DownLeft_Checked(object sender, RoutedEventArgs e)
         {
             _settingService.Position = Position.BottomLeft;
             RefreshPosition();
         }
+
         private void Position_DownRight_Checked(object sender, RoutedEventArgs e)
         {
             _settingService.Position = Position.BottomRight;
             RefreshPosition();
         }
+
         private void Position_Center_Checked(object sender, RoutedEventArgs e)
         {
             _settingService.Position = Position.Center;

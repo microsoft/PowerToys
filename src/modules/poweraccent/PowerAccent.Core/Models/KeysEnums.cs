@@ -1,4 +1,8 @@
-﻿using Vanara.PInvoke;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Vanara.PInvoke;
 
 namespace PowerAccent.Core;
 
@@ -10,12 +14,12 @@ public enum LetterKey
     I = User32.VK.VK_I,
     O = User32.VK.VK_O,
     U = User32.VK.VK_U,
-    Y = User32.VK.VK_Y
+    Y = User32.VK.VK_Y,
 }
 
 public enum TriggerKey
 {
     Left = User32.VK.VK_LEFT,
     Right = User32.VK.VK_RIGHT,
-    Space = User32.VK.VK_SPACE
+    Space = User32.VK.VK_SPACE,
 }

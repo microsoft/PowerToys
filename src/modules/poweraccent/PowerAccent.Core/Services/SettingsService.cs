@@ -1,4 +1,8 @@
-﻿using System.Configuration;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Configuration;
 
 namespace PowerAccent.Core.Services;
 
@@ -8,35 +12,65 @@ public class SettingsService : ApplicationSettingsBase
     [DefaultSettingValue("Top")]
     public Position Position
     {
-        get { return (Position)this[nameof(Position)]; }
-        set { this[nameof(Position)] = value; Save(); }
+        get
+        {
+            return (Position)this[nameof(Position)];
+        }
+
+        set
+        {
+            this[nameof(Position)] = value;
+            Save();
+        }
     }
 
     [UserScopedSetting]
     [DefaultSettingValue("False")]
     public bool UseCaretPosition
     {
-        get { return (bool)this[nameof(UseCaretPosition)]; }
-        set { this[nameof(UseCaretPosition)] = value; Save(); }
+        get
+        {
+            return (bool)this[nameof(UseCaretPosition)];
+        }
+
+        set
+        {
+            this[nameof(UseCaretPosition)] = value;
+            Save();
+        }
     }
 
     [UserScopedSetting]
     [DefaultSettingValue("True")]
     public bool IsSpaceBarActive
     {
-        get { return (bool)this[nameof(IsSpaceBarActive)]; }
-        set { this[nameof(IsSpaceBarActive)] = value; Save(); }
+        get
+        {
+            return (bool)this[nameof(IsSpaceBarActive)];
+        }
+
+        set
+        {
+            this[nameof(IsSpaceBarActive)] = value;
+            Save();
+        }
     }
 
     [UserScopedSetting]
     [DefaultSettingValue("200")]
     public int InputTime
     {
-        get { return (int)this[nameof(InputTime)]; }
-        set { this[nameof(InputTime)] = value; Save(); }
-    }
+        get
+        {
+            return (int)this[nameof(InputTime)];
+        }
 
-    #region LetterKey
+        set
+        {
+            this[nameof(InputTime)] = value;
+            Save();
+        }
+    }
 
     [UserScopedSetting]
     public char[] LetterKeyA
@@ -97,7 +131,9 @@ public class SettingsService : ApplicationSettingsBase
     {
         string key = $"LetterKey{letter}";
         if (this[key] != null)
+        {
             return (char[])this[key];
+        }
 
         return GetDefaultLetterKey(letter);
     }
@@ -124,8 +160,6 @@ public class SettingsService : ApplicationSettingsBase
 
         throw new ArgumentException("Letter {0} is missing", letter.ToString());
     }
-
-    #endregion
 }
 
 public enum Position
@@ -138,5 +172,5 @@ public enum Position
     TopRight,
     BottomLeft,
     BottomRight,
-    Center
+    Center,
 }

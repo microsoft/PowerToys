@@ -1,4 +1,8 @@
-﻿namespace PowerAccent.Core;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+namespace PowerAccent.Core;
 
 public struct Point
 {
@@ -27,6 +31,7 @@ public struct Point
     }
 
     public double X { get; init; }
+
     public double Y { get; init; }
 
     public static implicit operator Point(System.Drawing.Point point) => new Point(point.X, point.Y);
@@ -37,6 +42,7 @@ public struct Point
         {
             throw new DivideByZeroException();
         }
+
         return new Point(point.X / divider, point.Y / divider);
     }
 
@@ -46,6 +52,7 @@ public struct Point
         {
             throw new DivideByZeroException();
         }
+
         return new Point(point.X / divider.X, point.Y / divider.Y);
     }
 }

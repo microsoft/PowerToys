@@ -1,4 +1,8 @@
-﻿namespace PowerAccent.Core;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+namespace PowerAccent.Core;
 
 public struct Size
 {
@@ -21,6 +25,7 @@ public struct Size
     }
 
     public double Width { get; init; }
+
     public double Height { get; init; }
 
     public static implicit operator Size(System.Drawing.Size size) => new Size(size.Width, size.Height);
@@ -31,6 +36,7 @@ public struct Size
         {
             throw new DivideByZeroException();
         }
+
         return new Size(size.Width / divider, size.Height / divider);
     }
 
@@ -40,6 +46,7 @@ public struct Size
         {
             throw new DivideByZeroException();
         }
+
         return new Size(size.Width / divider.Width, size.Height / divider.Height);
     }
 }

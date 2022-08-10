@@ -1,5 +1,7 @@
-﻿using PowerAccent.Core;
-using PowerAccent.Core.Services;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,6 +10,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using PowerAccent.Core;
+using PowerAccent.Core.Services;
 
 namespace PowerAccent.UI.SettingsPage;
 
@@ -33,6 +37,7 @@ public partial class SortPage : Page, INotifyPropertyChanged
     private ObservableCollection<char> _characters;
 
     public event PropertyChangedEventHandler PropertyChanged;
+
     private void NotifyPropertyChanged(string property)
     {
         if (PropertyChanged != null)
@@ -46,9 +51,13 @@ public partial class SortPage : Page, INotifyPropertyChanged
         get
         {
             if (_characters == null)
+            {
                 _characters = new ObservableCollection<char>();
+            }
+
             return _characters;
         }
+
         set
         {
             _characters = value;
@@ -78,10 +87,8 @@ public partial class SortPage : Page, INotifyPropertyChanged
     }
 }
 
-class VisibilityNullConverter : IValueConverter
+internal class VisibilityNullConverter : IValueConverter
 {
-    #region IValueConverter Members
-
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return value == null ? Visibility.Collapsed : Visibility.Visible;
@@ -91,14 +98,10 @@ class VisibilityNullConverter : IValueConverter
     {
         throw new NotImplementedException();
     }
-
-    #endregion
 }
 
-class BooleanNullConverter : IValueConverter
+internal class BooleanNullConverter : IValueConverter
 {
-    #region IValueConverter Members
-
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return value != null;
@@ -108,6 +111,4 @@ class BooleanNullConverter : IValueConverter
     {
         return value == null;
     }
-
-    #endregion
 }

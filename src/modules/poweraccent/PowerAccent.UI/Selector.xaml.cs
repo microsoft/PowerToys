@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Windows;
 using Point = PowerAccent.Core.Point;
 using Size = PowerAccent.Core.Size;
@@ -52,7 +56,6 @@ public partial class Selector : Window, IDisposable
 
     private void CenterWindow()
     {
-        //Method1
         UpdateLayout();
         Size window = new Size(((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualWidth, ((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualHeight);
         Point position = _powerAccent.GetDisplayCoordinates(window);

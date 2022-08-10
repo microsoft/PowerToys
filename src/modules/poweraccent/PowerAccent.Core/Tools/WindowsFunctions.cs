@@ -1,4 +1,8 @@
-﻿using System.Runtime.InteropServices;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Runtime.InteropServices;
 using Vanara.PInvoke;
 
 namespace PowerAccent.Core.Tools;
@@ -14,8 +18,8 @@ internal static class WindowsFunctions
                 // Split in 2 different SendInput (Powershell doesn't take back issue)
                 var inputsBack = new User32.INPUT[]
                 {
-                    new User32.INPUT {type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT {wVk = (ushort) User32.VK.VK_BACK}},
-                    new User32.INPUT {type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT {wVk = (ushort) User32.VK.VK_BACK, dwFlags = User32.KEYEVENTF.KEYEVENTF_KEYUP}}
+                    new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = (ushort)User32.VK.VK_BACK } },
+                    new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = (ushort)User32.VK.VK_BACK, dwFlags = User32.KEYEVENTF.KEYEVENTF_KEYUP } },
                 };
 
                 // DO NOT REMOVE Trace.WriteLine (Powershell doesn't take back issue)
@@ -26,7 +30,7 @@ internal static class WindowsFunctions
             // Letter
             var inputsInsert = new User32.INPUT[1]
             {
-                new User32.INPUT {type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT {wVk = 0, dwFlags = User32.KEYEVENTF.KEYEVENTF_UNICODE, wScan = c}}
+                new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = 0, dwFlags = User32.KEYEVENTF.KEYEVENTF_UNICODE, wScan = c } },
             };
             var temp2 = User32.SendInput((uint)inputsInsert.Length, inputsInsert, sizeof(User32.INPUT));
             System.Diagnostics.Trace.WriteLine(temp2);
@@ -35,7 +39,7 @@ internal static class WindowsFunctions
 
     public static Point GetCaretPosition()
     {
-        User32.GUITHREADINFO guiInfo = new User32.GUITHREADINFO();
+        User32.GUITHREADINFO guiInfo = new ();
         guiInfo.cbSize = (uint)Marshal.SizeOf(guiInfo);
         User32.GetGUIThreadInfo(0, ref guiInfo);
         System.Drawing.Point caretPosition = new System.Drawing.Point(guiInfo.rcCaret.left, guiInfo.rcCaret.top);
@@ -53,12 +57,12 @@ internal static class WindowsFunctions
 
     public static (Point Location, Size Size, double Dpi) GetActiveDisplay()
     {
-        User32.GUITHREADINFO guiInfo = new User32.GUITHREADINFO();
+        User32.GUITHREADINFO guiInfo = new ();
         guiInfo.cbSize = (uint)Marshal.SizeOf(guiInfo);
         User32.GetGUIThreadInfo(0, ref guiInfo);
         var res = User32.MonitorFromWindow(guiInfo.hwndActive, User32.MonitorFlags.MONITOR_DEFAULTTONEAREST);
 
-        User32.MONITORINFO monitorInfo = new User32.MONITORINFO();
+        User32.MONITORINFO monitorInfo = new ();
         monitorInfo.cbSize = (uint)Marshal.SizeOf(monitorInfo);
         User32.GetMonitorInfo(res, ref monitorInfo);
 
