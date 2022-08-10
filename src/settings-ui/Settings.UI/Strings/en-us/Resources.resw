@@ -122,27 +122,27 @@
     <comment>Navigation view item name for Video Conference</comment>
   </data>
   <data name="Shell_MeasureTool.Content" xml:space="preserve">
-    <value>Measure Tool</value>
-    <comment>Navigation view item name for Measure Tool</comment>
+    <value>Screen Ruler</value>
+    <comment>Product name: Navigation view item name for Screen Ruler</comment>
   </data>
   <data name="MeasureTool.ModuleDescription" xml:space="preserve">
-    <value>Measure Tool is a quick and easy way to measure something on your screen.</value>
-    <comment>"Measure Tool" is the name of the utility</comment>
+    <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
+    <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="MeasureTool.ModuleTitle" xml:space="preserve">
-    <value>Measure Tool</value>
-    <comment>"Measure Tool" is the name of the utility</comment>
+    <value>Screen Ruler</value>
+    <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
-    <data name="MeasureTool_Settings.Header" xml:space="preserve">
+  <data name="MeasureTool_Settings.Header" xml:space="preserve">
     <value>Behavior</value>
-    <comment>"Measure Tool" is the name of the utility</comment>
+    <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="MeasureTool_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
   <data name="MeasureTool_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to bring up tool's window</value>
-    <comment>"Measure Tool" is the name of the utility</comment>
+    <value>Customize the shortcut to bring up the command bar</value>
+    <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="MeasureTool_PixelTolerance.Header" xml:space="preserve">
     <value>Pixel tolerance for edge detection</value>
@@ -154,8 +154,8 @@
     <value>Capture screen continuously during measuring</value>
   </data>
   <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
-    <value>Enable Measure Tool</value>
-    <comment>"Measure Tool" is the name of the utility</comment>
+    <value>Enable Screen Ruler</value>
+    <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="VideoConference_Enable.Header" xml:space="preserve">
     <value>Enable Video Conference Mute</value>
@@ -1389,6 +1389,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
   </data>
+	<data name="Oobe_MeasureTool.Description" xml:space="preserve">
+    <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
+  </data>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
     <value>Shortcut Guide presents the user with a listing of available shortcuts for the current state of the desktop.</value>
   </data>
@@ -1481,10 +1484,14 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>to toggle your video</value>
   </data>
   <data name="Oobe_MeasureTool_Activation.Text" xml:space="preserve">
-    <value>to bring up measure tools panel.</value>
+    <value>to bring up the Screen Ruler command bar.</value>
   </data>
   <data name="Oobe_MeasureTool_HowToLaunch.Text" xml:space="preserve">
-    <value>Bounds tool lets you measure something by dragging mouse cursor. Measure tool allows tracing similar pixels along horizontal and vertical axes.</value>
+    <value>The Bounds mode lets you select a specific area to measure while the various Spacing modes allows tracing similar pixels along horizontal and vertical axes.</value>
+  </data>
+	<data name="Oobe_MeasureTool.Title" xml:space="preserve">
+    <value>Screen Ruler</value>
+    <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_ColorPicker.Title" xml:space="preserve">
     <value>Color Picker</value>
@@ -1728,6 +1735,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="LearnMore_Run.Text" xml:space="preserve">
     <value>Learn more about PowerToys Run</value>
     <comment>PowerToys Run is a product name, do not loc</comment>
+  </data>
+	<data name="LearnMore_MeasureTool.Text" xml:space="preserve">
+    <value>Learn more about Screen Ruler</value>
+    <comment>Screen Ruler is a product name, do not loc</comment>
   </data>
   <data name="LearnMore_ShortcutGuide.Text" xml:space="preserve">
     <value>Learn more about Shortcut Guide</value>

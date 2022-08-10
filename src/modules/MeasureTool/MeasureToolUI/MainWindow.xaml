@@ -16,19 +16,22 @@
     IsTitleBarVisible="False"
     mc:Ignorable="d">
     <winuiex:WindowEx.Backdrop>
-        <!--<winuiex:AcrylicSystemBackdrop />-->
         <winuiex:AcrylicSystemBackdrop
-            DarkFallbackColor="#333"
-            DarkTintColor="Black"
-            DarkTintOpacity="0.8"
-            LightFallbackColor="#eee"
-            LightTintColor="White"
-            LightTintOpacity="0.6" />
+            DarkFallbackColor="#1c1c1c"
+            DarkLuminosityOpacity="0.96"
+            DarkTintColor="#202020"
+            DarkTintOpacity="0.5"
+            LightFallbackColor="#EEEEEE"
+            LightLuminosityOpacity="0.85"
+            LightTintColor="#FCFCFC"
+            LightTintOpacity="0" />
     </winuiex:WindowEx.Backdrop>
     <Grid>
         <Grid.Resources>
             <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
             <SolidColorBrush x:Key="ButtonBackground" Color="Transparent" />
+            <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="ControlSolidFillColorDefaultBrush" />
+
             <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
                 <Setter Property="MinHeight" Value="30" />
                 <Setter Property="MinWidth" Value="30" />
@@ -90,7 +93,7 @@
                                         <VisualState x:Name="PointerOver">
                                             <Storyboard>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundPointerOver}" />
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ControlSolidFillColorDefaultBrush}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushPointerOver}" />
@@ -255,33 +258,38 @@
             Orientation="Horizontal"
             Spacing="8">
             <RadioButton
+                AutomationProperties.Name="Bounds"
+                Click="BoundsTool_Click"
                 Content="&#xEF20;"
                 GroupName="ModeGroup"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
-                Click="BoundsTool_Click"
                 ToolTipService.ToolTip="Bounds" />
             <RadioButton
+                AutomationProperties.Name="Spacing"
+                Click="MeasureTool_Click"
                 Content="&#xE799;"
                 GroupName="ModeGroup"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
-                Click="MeasureTool_Click"
                 ToolTipService.ToolTip="Spacing" />
             <RadioButton
+                AutomationProperties.Name="Horizontal spacing"
+                Click="HorizontalMeasureTool_Click"
                 Content="&#xE76F;"
                 GroupName="ModeGroup"
-                Style="{StaticResource ToggleButtonRadioButtonStyle}" 
-                Click="HorizontalMeasureTool_Click"
+                Style="{StaticResource ToggleButtonRadioButtonStyle}"
                 ToolTipService.ToolTip="Horizontal spacing" />
             <RadioButton
+                AutomationProperties.Name="Vertical spacing"
+                Click="VerticalMeasureTool_Click"
                 Content="&#xE784;"
                 GroupName="ModeGroup"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
-                Click="VerticalMeasureTool_Click"
                 ToolTipService.ToolTip="Vertical spacing" />
             <AppBarSeparator Height="36" />
-            <Button Content="&#xE8BB;"
-                    ToolTipService.ToolTip="Close"
-                    Click="ClosePanelTool_Click"/>
+            <Button
+                Click="ClosePanelTool_Click"
+                Content="&#xE8BB;"
+                ToolTipService.ToolTip="Close" />
         </StackPanel>
     </Grid>
 </winuiex:WindowEx>

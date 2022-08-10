@@ -9,13 +9,13 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     AutomationProperties.LandmarkType="Main">
     <controls:SettingsPageControl x:Uid="MeasureTool"
-                                  ModuleImageSource="ms-appx:///Assets/Modules/MeasureTool.png">
+                                  ModuleImageSource="ms-appx:///Assets/Modules/ScreenRuler.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
                 <controls:Setting x:Uid="MeasureTool_EnableMeasureTool">
                     <controls:Setting.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMeasureTool.png" ShowAsMonochrome="False" />
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsScreenRuler.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch" HorizontalAlignment="Right"/>

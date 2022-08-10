@@ -58,7 +58,7 @@ namespace MeasureToolUI
             var cursorPositionInt32 = new PointInt32(cursorPosition.X, cursorPosition.Y);
             DisplayArea displayArea = DisplayArea.GetFromPoint(cursorPositionInt32, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest);
 
-            appWindow.Move(new PointInt32(displayArea.WorkArea.X + (displayArea.WorkArea.Width / 2) - (rect.Width / 2), displayArea.WorkArea.Y));
+            appWindow.Move(new PointInt32(displayArea.WorkArea.X + (displayArea.WorkArea.Width / 2) - (rect.Width / 2), displayArea.WorkArea.Y + 12));
         }
 
         private void BoundsTool_Click(object sender, RoutedEventArgs e)

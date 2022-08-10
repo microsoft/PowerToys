@@ -225,9 +225,9 @@ struct D2DState
         DPIAware::GetScreenDPIForWindow(overlayWindow, dpi);
         dpiScale = dpi / static_cast<float>(DPIAware::DEFAULT_DPI);
 
-        constexpr float FONT_SIZE = 15.f;
+        constexpr float FONT_SIZE = 14.f;
 
-        winrt::check_hresult(writeFactory->CreateTextFormat(L"Consolas", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, FONT_SIZE * dpiScale, L"en-US", &textFormat));
+        winrt::check_hresult(writeFactory->CreateTextFormat(L"Segoe UI", nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, FONT_SIZE * dpiScale, L"en-US", &textFormat));
         winrt::check_hresult(textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
         winrt::check_hresult(textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
 
@@ -274,7 +274,7 @@ void DrawTextBox(const D2DState& d2dState,
 
     const float dpiScale = d2dState.dpiScale;
 
-    constexpr float TEXT_BOX_CORNER_RADIUS = 4.f;
+    constexpr float TEXT_BOX_CORNER_RADIUS = 8.f;
     const float TEXT_BOX_WIDTH = 80.f * dpiScale;
     const float TEXT_BOX_HEIGHT = 10.f * dpiScale;
 
