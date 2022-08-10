@@ -24,7 +24,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
 
             // Handling URL with only scheme, typically mailto or application uri.
             // Do nothing, return the result without urlBuilder
-            // And check if scheme match REC3986 (issue #15035)
+            // And check if scheme match RFC3986 (issue #15035)
             const string schemeRegex = @"^([a-z][a-z0-9+\-.]*):";
             if (input.EndsWith(":", StringComparison.OrdinalIgnoreCase)
                 && !input.StartsWith("http", StringComparison.OrdinalIgnoreCase)
