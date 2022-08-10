@@ -736,6 +736,7 @@ hmonitor
 HOLDENTER
 HOLDESC
 homepage
+HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush
