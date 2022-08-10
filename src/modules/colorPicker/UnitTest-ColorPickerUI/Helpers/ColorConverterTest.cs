@@ -114,6 +114,55 @@ namespace Microsoft.ColorPicker.UnitTests
             Assert.AreEqual(result.value * 100d, value, 0.2d);
         }
 
+        // test values taken from https://de.wikipedia.org/wiki/HSV-Farbraum
+        [TestMethod]
+        [DataRow(000, 000, 000, 000, 000, 000)] // Black
+        [DataRow(000, 000, 100, 100, 100, 100)] // White
+        [DataRow(000, 100, 100, 100, 000, 000)] // Red
+        [DataRow(015, 100, 100, 100, 025, 000)] // Vermilion/Cinnabar
+        [DataRow(020, 075, 036, 036, 018, 009)] // Brown
+        [DataRow(030, 100, 100, 100, 050, 000)] // Orange
+        [DataRow(045, 100, 100, 100, 075, 000)] // Saffron
+        [DataRow(060, 100, 100, 100, 100, 000)] // Yellow
+        [DataRow(075, 100, 100, 075, 100, 000)] // Light green-yellow
+        [DataRow(090, 100, 100, 050, 100, 000)] // Green-yellow
+        [DataRow(105, 100, 100, 025, 100, 000)] // Lime
+        [DataRow(120, 100, 050, 000, 050, 000)] // Dark green
+        [DataRow(120, 100, 100, 000, 100, 000)] // Green
+        [DataRow(135, 100, 100, 000, 100, 025)] // Light blue-green
+        [DataRow(150, 100, 100, 000, 100, 050)] // Blue-green
+        [DataRow(165, 100, 100, 000, 100, 075)] // Green-cyan
+        [DataRow(180, 100, 100, 000, 100, 100)] // Cyan
+        [DataRow(195, 100, 100, 000, 075, 100)] // Blue-cyan
+        [DataRow(210, 100, 100, 000, 050, 100)] // Green-blue
+        [DataRow(225, 100, 100, 000, 025, 100)] // Light green-blue
+        [DataRow(240, 100, 100, 000, 000, 100)] // Blue
+        [DataRow(255, 100, 100, 025, 000, 100)] // Indigo
+        [DataRow(270, 100, 100, 050, 000, 100)] // Purple
+        [DataRow(285, 100, 100, 075, 000, 100)] // Blue-magenta
+        [DataRow(300, 100, 100, 100, 000, 100)] // Magenta
+        [DataRow(315, 100, 100, 100, 000, 075)] // Red-magenta
+        [DataRow(330, 100, 100, 100, 000, 050)] // Blue-red
+        [DataRow(345, 100, 100, 100, 000, 025)] // Light blue-red
+        public void ColorRGBtoHSBTest(double hue, double saturation, double value, int red, int green, int blue)
+        {
+            red = Convert.ToInt32(Math.Round(255d / 100d * red));         // [0%..100%] to [0..255]
+            green = Convert.ToInt32(Math.Round(255d / 100d * green));       // [0%..100%] to [0..255]
+            blue = Convert.ToInt32(Math.Round(255d / 100d * blue));        // [0%..100%] to [0..255]
+
+            var color = Color.FromArgb(255, red, green, blue);
+            var result = ColorHelper.ConvertToHSBColor(color);
+
+            // hue [0°..360°]
+            Assert.AreEqual(result.hue, hue, 0.2d);
+
+            // saturation[0..1]
+            Assert.AreEqual(result.saturation * 100d, saturation, 0.2d);
+
+            // value[0..1]
+            Assert.AreEqual(result.brightness * 100d, value, 0.2d);
+        }
+
         [TestMethod]
         [DataRow(000, 000, 000, 100, 000, 000, 000)] // Black
         [DataRow(000, 000, 000, 000, 255, 255, 255)] // White

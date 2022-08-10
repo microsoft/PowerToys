@@ -84,8 +84,6 @@ SHELLEXECUTEINFOW LaunchPowerToysUpdate(const wchar_t* cmdline)
     return sei;
 }
 
-using namespace updating;
-
 bool IsMeteredConnection()
 {
     using namespace winrt::Windows::Networking::Connectivity;
