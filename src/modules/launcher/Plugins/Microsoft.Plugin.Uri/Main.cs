@@ -50,7 +50,7 @@ namespace Microsoft.Plugin.Uri
             {
                 results.Add(new Result
                 {
-                    Title = Properties.Resources.Microsoft_plugin_uri_website,
+                    Title = Properties.Resources.Microsoft_plugin_uri_default_browser,
                     SubTitle = BrowserInfo.Path,
                     IcoPath = DefaultIconPath,
                     Action = action =>
