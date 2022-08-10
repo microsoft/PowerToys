@@ -2,6 +2,10 @@
 // Microsoft Visual C++ generated include file.
 // Used by StylesReportTool.rc
 
+#define FILE_DESCRIPTION "PowerToys StylesReport Tool"
+#define INTERNAL_NAME "PowerToys.StylesReportTool"
+#define ORIGINAL_FILENAME "PowerToys.StylesReportTool.exe"
+
 #define IDR_MAINFRAME			128
 #define IDD_ABOUTBOX			103
 #define IDI_WINDOWSTYLESICON			107

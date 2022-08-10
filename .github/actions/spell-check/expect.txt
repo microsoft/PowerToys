@@ -272,6 +272,7 @@ CODENAME
 codeofconduct
 codereview
 Codespaces
+codicon
 COINIT
 colorconv
 colorformat
@@ -735,6 +736,7 @@ hmonitor
 HOLDENTER
 HOLDESC
 homepage
+HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush

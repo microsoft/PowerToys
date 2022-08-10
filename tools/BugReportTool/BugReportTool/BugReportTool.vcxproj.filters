@@ -35,5 +35,9 @@
     <ClInclude Include="XmlDocumentEx.h" />
     <ClInclude Include="InstallationFolder.h" />
     <ClInclude Include="Package.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="BugReportTool.rc" />
   </ItemGroup>
 </Project>
