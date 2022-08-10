@@ -232,7 +232,6 @@ struct D2DState
         dpiScale = dpi / static_cast<float>(DPIAware::DEFAULT_DPI);
 
         constexpr float FONT_SIZE = 14.f;
-        // TO DO: I'm not sure if this 'Segoe UI Variable Text' somehow magically falls back to Segoe UI on Windows 10 (like it does in WinUI.. @JAIME, can you check ?
         winrt::check_hresult(writeFactory->CreateTextFormat(L"Segoe UI Variable Text", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, FONT_SIZE * dpiScale, L"en-US", &textFormat));
         winrt::check_hresult(textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
         winrt::check_hresult(textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
