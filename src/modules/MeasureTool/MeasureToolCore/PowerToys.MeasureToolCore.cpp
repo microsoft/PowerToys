@@ -50,6 +50,8 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             state.crossColor.r = _settings.lineColor[0] / 255.f;
             state.crossColor.g = _settings.lineColor[1] / 255.f;
             state.crossColor.b = _settings.lineColor[2] / 255.f;
+
+            state.pixelTolerance = _settings.pixelTolerance;
         });
 
         _overlayUIWindowHandle = LaunchOverlayUI(_measureToolState, _targetMonitor);
