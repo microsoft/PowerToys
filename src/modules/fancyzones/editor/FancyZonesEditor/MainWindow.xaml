@@ -326,7 +326,12 @@
                                  ItemsSource="{Binding MonitorInfoForViewModel}" />
                 </Grid>
             </ScrollViewer>
-            <!--<Button Click="SettingsBtn_Click"
+            <!--
+                // Commented because of issue https://github.com/microsoft/PowerToys/issues/19828 
+                // Settings would launch under the overlay for FZ Editor
+                //Lots of permutations to validate, Win10/11. Settings not launched, already launched, ...
+
+            <Button Click="SettingsBtn_Click"
                     x:Name="settingsBtn"
                     Margin="8"
                     Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
@@ -340,7 +345,8 @@
                                FontFamily="Segoe MDL2 Assets"
                                AutomationProperties.Name="{x:Static props:Resources.OpenSettings}" />
                 </Button.Content>
-            </Button>-->
+            </Button>
+            -->
         </Grid>
 
         <ui:ContentDialog x:Name="EditLayoutDialog"
