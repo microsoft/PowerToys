@@ -607,7 +607,6 @@
 
     <DirectoryRef Id="ApplicationProgramsFolder">
       <Component Id="PowerToysStartMenuShortcut" >
-        <Condition>NOT PREVIOUSVERSIONSINSTALLED</Condition>
         <Shortcut Id="ApplicationStartMenuShortcut"
         Name="PowerToys (Preview)"
         Description="PowerToys - Windows system utilities to maximize productivity"

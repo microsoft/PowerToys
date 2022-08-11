@@ -1,6 +1,6 @@
 #include <windows.h>
 #include "resource.h"
-#include "../../../common/version/version.h"
+#include "../../../src/common/version/version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 #include "winres.h"

@@ -114,6 +114,7 @@ atlstr
 Attribs
 attrs
 Atyrau
+augustkarlstedt
 aumid
 Aut
 Authenticode
@@ -145,6 +146,7 @@ bck
 Belarus
 betadele
 betsegaw
+bezgumption
 BGR
 bgra
 bhid
@@ -273,6 +275,7 @@ CODENAME
 codeofconduct
 codereview
 Codespaces
+codicon
 COINIT
 colorconv
 colorformat
@@ -524,6 +527,7 @@ editshortcutswindow
 EFile
 ekus
 elif
+eltociear
 elseif
 emmintrin
 Emoji
@@ -744,6 +748,7 @@ hmonitor
 HOLDENTER
 HOLDESC
 homepage
+HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush
@@ -1452,6 +1457,7 @@ OPTIMIZEFORINVOKE
 ORAW
 ORPHANEDDIALOGTITLE
 oss
+osfanbuff
 ostr
 ostream
 ostringstream
@@ -1662,7 +1668,7 @@ rects
 recyclebin
 redirectedfrom
 Redist
-redistributable
+Redistributable
 reencode
 reencoded
 refactor
@@ -1698,7 +1704,7 @@ requerying
 rescap
 resgen
 resheader
-resizable
+Resizable
 resizers
 resmimetype
 RESOURCEID
@@ -1729,6 +1735,7 @@ RNumber
 roadmap
 robmensching
 Roboto
+rohanrdy
 roslyn
 Rothera
 roundf
