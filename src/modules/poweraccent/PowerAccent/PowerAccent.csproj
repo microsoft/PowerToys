@@ -10,7 +10,6 @@
 		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerAccent</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-		<Platforms>x64</Platforms>
 		<AssemblyName>PowerToys.PowerAccent</AssemblyName>
 	</PropertyGroup>
 
