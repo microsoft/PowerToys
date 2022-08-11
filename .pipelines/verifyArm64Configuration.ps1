@@ -8,7 +8,7 @@ Write-Output "Verifying Arm64 configuration for $solution"
 
 $errorTable = @{}
 
-$MSBuildLoc = vswhere.exe -prerelease -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\Microsoft.Build.dll
+$MSBuildLoc = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -prerelease -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\Microsoft.Build.dll
 if ($null -eq $MSBuildLoc) {
     throw "Unable to locate Microsoft.Build.dll"
 }
