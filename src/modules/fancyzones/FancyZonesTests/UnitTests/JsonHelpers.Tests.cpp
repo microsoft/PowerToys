@@ -713,7 +713,6 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJsonMissingKeys)
         {
-            ZoneSetData data{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Columns };
             const auto json = json::JsonObject::Parse(L"{\"uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"type\": \"columns\"}");
             
             auto iter = json.First();
