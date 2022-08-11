@@ -415,16 +415,28 @@
     <value>Clear the previous query on launch</value>
   </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
-    <value>Delay search</value>
+    <value>Input Smoothing</value>
     <comment>This is about adding a delay to wait for more input before executing a search</comment>
   </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Description" xml:space="preserve">
-    <value>Add a delay to wait for more input before executing a search</value>
+    <value>Wait for more input before searching. This reduces interface jumpiness and system load.</value>
   </data>
-  <data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
-    <value>Search delay (ms)</value>
+  <data name="PowerLauncher_FastSearchInputDelayMs.Header" xml:space="preserve">
+    <value>Immediate plugins</value>    
+  </data>
+	<data name="PowerLauncher_FastSearchInputDelayMs.Description" xml:space="preserve">
+    <value>Affects the plugins that make the UI wait for their results by this amount. Recommended: 30-50 ms.</value>    
+  </data>
+	<data name="PowerLauncher_SlowSearchInputDelayMs.Header" xml:space="preserve">
+    <value>Background execution plugins</value>    
+  </data>
+	<data name="PowerLauncher_SlowSearchInputDelayMs.Description" xml:space="preserve">
+    <value>Affects the plugins that execute in the background by this amount. Recommended: 100-150 ms.</value>    
+  </data>
+	<data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
+    <value>Fast plugin throttle (ms)</value>
     <comment>ms = milliseconds</comment>
-  </data>
+  </data>	
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
@@ -2138,7 +2150,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Selected item weight</value>
   </data>
   <data name="PowerLauncher_WaitForSlowResults.Description" xml:space="preserve">
-    <value>Selecting this can help preselect the top, more relevent result, but at the risk of jumpiness</value>
+    <value>Selecting this can help preselect the top, more relevant result, but at the risk of jumpiness</value>
   </data>
   <data name="PowerLauncher_WaitForSlowResults.Header" xml:space="preserve">
     <value>Wait on slower plugin results before selecting top item in results</value>

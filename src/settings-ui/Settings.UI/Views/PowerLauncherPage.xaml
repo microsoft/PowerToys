@@ -103,9 +103,23 @@
                             </controls:Setting>
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
-                            <controls:Setting x:Uid="PowerLauncher_SearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}" Style="{StaticResource ExpanderContentSettingStyle}">
-                                <controls:Setting.ActionContent>
-                                    <muxc:NumberBox Minimum="0"
+                            <StackPanel>
+                                <controls:Setting x:Uid="PowerLauncher_FastSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox Minimum="0"
+                                        Maximum="500"
+                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelayFast}"
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        SpinButtonPlacementMode="Compact"
+                                        HorizontalAlignment="Left"
+                                        SmallChange="10"
+                                        LargeChange="50"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                
+                                <controls:Setting x:Uid="PowerLauncher_SlowSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox Minimum="0"
                                         Maximum="1000"
                                         Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}"
                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -113,8 +127,11 @@
                                         HorizontalAlignment="Left"
                                         SmallChange="10"
                                         LargeChange="50"/>
-                                </controls:Setting.ActionContent>
-                            </controls:Setting>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                            </StackPanel>
+                            
+                            
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
                     <controls:SettingExpander IsExpanded="True">
@@ -321,8 +338,14 @@
                                                                           Style="{StaticResource ExpanderContentSettingStyleTight}" 
                                                                           IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
                                                         <controls:Setting.ActionContent>
-                                                            <TextBox Text="{x:Bind Path=WeightBoost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                 MinWidth="{StaticResource SettingActionControlMinWidth}" />
+                                                            <muxc:NumberBox Minimum="-1000"
+                                                                Maximum="1000"
+                                                                Value="{x:Bind Mode=TwoWay, Path=WeightBoost}"
+                                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                SpinButtonPlacementMode="Compact"
+                                                                HorizontalAlignment="Left"
+                                                                SmallChange="10"
+                                                                LargeChange="50"/>
                                                         </controls:Setting.ActionContent>
                                                     </controls:Setting>
                                                     

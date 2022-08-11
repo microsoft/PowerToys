@@ -84,6 +84,8 @@ namespace Microsoft.Plugin.Folder.Sources
                 throw new ArgumentNullException(nameof(search));
             }
 
+            search = Environment.ExpandEnvironmentVariables(search);
+
             var validRoots = new char[] { '\\', '/' };
 
             if (validRoots.Contains(search[0]) && (search.Length == 1 || !validRoots.Contains(search[1])))
@@ -98,7 +100,7 @@ namespace Microsoft.Plugin.Folder.Sources
                 search = search.Length > 1 ? Path.Combine(home, search.Substring(2)) : home;
             }
 
-            return Environment.ExpandEnvironmentVariables(search);
+            return search;
         }
     }
 }

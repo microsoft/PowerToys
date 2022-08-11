@@ -5,7 +5,6 @@ abgr
 abi
 ABlocked
 ABOUTBOX
-ABradley
 Abug
 accctrl
 Acceleratorkeys
@@ -52,6 +51,7 @@ Andreanof
 anges
 angularsen
 ansicolor
+antialias
 ANull
 AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
@@ -113,6 +113,7 @@ atlstr
 Attribs
 attrs
 Atyrau
+augustkarlstedt
 aumid
 Aut
 Authenticode
@@ -132,7 +133,6 @@ awakeness
 awakeversion
 AWAYMODE
 AYUV
-azchohfi
 backend
 backtracer
 BADD
@@ -144,6 +144,7 @@ bck
 Belarus
 betadele
 betsegaw
+bezgumption
 BGR
 bgra
 bhid
@@ -269,6 +270,7 @@ CODENAME
 codeofconduct
 codereview
 Codespaces
+codicon
 COINIT
 colorconv
 colorformat
@@ -367,6 +369,7 @@ cxfksword
 CXSMICON
 CXVIRTUALSCREEN
 cxxopts
+Cxxx
 cyberrex
 Cyrl
 CYSMICON
@@ -392,7 +395,6 @@ dcomp
 dcompi
 DComposition
 ddf
-DDLM
 Deact
 debian
 debugbreak
@@ -417,7 +419,6 @@ Delimarsky
 dend
 DENORMAL
 Deondre
-dependabot
 depersist
 deprioritized
 deps
@@ -518,6 +519,7 @@ EFile
 ekus
 elif
 elseif
+eltociear
 Emoji
 emptyrecyclebin
 ENABLEDPOPUP
@@ -732,6 +734,7 @@ hmonitor
 HOLDENTER
 HOLDESC
 homepage
+HOMEPATH
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
 Hostbackdropbrush
@@ -977,6 +980,7 @@ IVirtual
 IWbem
 IWIC
 iwindow
+iwr
 IXml
 IYUV
 IZone
@@ -1087,6 +1091,7 @@ LOADSTRING
 LOBYTE
 LOCALAPPDATA
 LOCALDISPLAY
+localhost
 LOCALPACKAGE
 localport
 localtime
@@ -1291,9 +1296,7 @@ MYTZ
 NAMECHANGE
 nameof
 namespace
-namespaceanddescendants
 Navassa
-naveensrinivasan
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1402,6 +1405,7 @@ NUMLOCK
 NUMPAD
 Nunavut
 Nusa
+nushell
 nwc
 NWSE
 Objbase
@@ -1434,6 +1438,7 @@ openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
 ORPHANEDDIALOGTITLE
+osfanbuff
 oss
 ostr
 ostream
@@ -1645,7 +1650,7 @@ rects
 recyclebin
 redirectedfrom
 Redist
-redistributable
+Redistributable
 reencode
 reencoded
 refactor
@@ -1681,7 +1686,7 @@ requerying
 rescap
 resgen
 resheader
-resizable
+Resizable
 resizers
 resmimetype
 RESOURCEID
@@ -1712,6 +1717,7 @@ RNumber
 roadmap
 robmensching
 Roboto
+rohanrdy
 roslyn
 Rothera
 roundf
@@ -1725,7 +1731,6 @@ Rsp
 rst
 Rstrtmgr
 RTB
-RTCS
 RTLREADING
 RTSS
 runas
@@ -2077,6 +2082,7 @@ TYPESHORTCUT
 UAC
 UAL
 uap
+ubuntu
 udit
 Udk
 Udmurtia
@@ -2261,6 +2267,7 @@ winexe
 winforms
 winfx
 winget
+wingetcreate
 Winhook
 winkey
 WINL
@@ -2368,6 +2375,7 @@ YVYU
 Zabaykalsky
 ZEROINIT
 ZIndex
+zipfile
 zonable
 ZONECOLOR
 ZONEHIGHLIGHTCOLOR

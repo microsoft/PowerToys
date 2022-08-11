@@ -6,6 +6,6 @@ namespace Microsoft.Plugin.Uri.Interfaces
 {
     public interface IUriParser
     {
-        bool TryParse(string input, out System.Uri result, out bool isWebUri);
+        bool TryParse(string input, out System.Uri webUri, out System.Uri systemUri);
     }
 }
