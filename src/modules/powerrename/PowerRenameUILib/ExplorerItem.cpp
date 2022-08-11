@@ -1,8 +1,14 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "ExplorerItem.h"
+#if __has_include("ExplorerItem.g.cpp")
 #include "ExplorerItem.g.cpp"
+#endif
 
-namespace {
+using namespace winrt;
+using namespace Microsoft::UI::Xaml;
+
+namespace
+{
     const wchar_t fileImagePath[] = L"ms-appx:///Assets/file.png";
     const wchar_t folderImagePath[] = L"ms-appx:///Assets/folder.png";
 }
@@ -61,7 +67,8 @@ namespace winrt::PowerRenameUI::implementation
         }
     }
 
-    double ExplorerItem::Indentation() {
+    double ExplorerItem::Indentation()
+    {
         return static_cast<double>(m_depth) * 12;
     }
 

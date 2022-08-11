@@ -88,7 +88,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ExplorerItem.h">
-      <DependentUpon>ExplorerItem.idl</DependentUpon>
+      <DependentUpon>ExplorerItem.xaml</DependentUpon>
+      <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="PatternSnippet.h">
       <DependentUpon>PatternSnippet.idl</DependentUpon>
@@ -103,11 +104,15 @@
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
+    <Page Include="ExplorerItem.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainWindow.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExplorerItem.cpp">
-      <DependentUpon>ExplorerItem.idl</DependentUpon>
+      <DependentUpon>ExplorerItem.xaml</DependentUpon>
+      <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="PatternSnippet.cpp">
       <DependentUpon>PatternSnippet.idl</DependentUpon>
@@ -128,7 +133,10 @@
       <SubType>Code</SubType>
       <DependentUpon>App.xaml</DependentUpon>
     </Midl>
-    <Midl Include="ExplorerItem.idl" />
+    <Midl Include="ExplorerItem.idl">
+      <DependentUpon>ExplorerItem.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
     <Midl Include="MainWindow.idl">
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>

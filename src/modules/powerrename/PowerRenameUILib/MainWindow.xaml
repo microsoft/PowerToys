@@ -96,58 +96,6 @@
                         </Setter>
                     </Style>
                 </ListView.ItemContainerStyle>
-                <ListView.ItemTemplate>
-                    <DataTemplate x:Name="ExplorerItemTemplate" x:DataType="local:ExplorerItem">
-                        <Grid Height="28" Padding="0,0,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <Border HorizontalAlignment="Stretch" Grid.ColumnSpan="2" BorderThickness="0,0,0,1" Margin="0,0,0,-1" BorderBrush="{ThemeResource SystemAccentColor}" VerticalAlignment="Stretch" Background="{ThemeResource AccentTextFillColorPrimaryBrush}" Opacity="0.1" Visibility="{x:Bind Highlight, Mode=OneWay}" />
-
-                            <Grid Grid.Column="0" HorizontalAlignment="Left" Margin="10,4,0,4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition MinWidth="{x:Bind Indentation}"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-
-
-                                <CheckBox TabIndex="0"
-                                          MinWidth="0"
-                                              Width="28"
-                                              Height="28"
-                                          Grid.Column="1"
-                                          XYFocusKeyboardNavigation="Enabled"
-                                          IsTabStop="True"
-                                          Content=""
-                                          Name="{x:Bind IdStr}"
-                                          AutomationProperties.Name="{x:Bind Original}"
-                                          AutomationProperties.HelpText="{x:Bind Renamed}"
-                                          IsChecked="{x:Bind Checked, Mode=TwoWay}" />
-                                <Image Width="16"
-                                            Grid.Column="2"
-                                           Margin="4,0,0,0"
-                                           Source="{x:Bind ImagePath}"
-                                           HorizontalAlignment="Left" />
-                                <TextBlock Margin="6,0,0,0"
-                                           Grid.Column="3"
-                                           Text="{x:Bind Original, Mode=OneWay}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                           VerticalAlignment="Center"
-                                           FontSize="12" />
-                            </Grid>
-                            <TextBlock Text="{x:Bind Renamed, Mode=OneWay}"
-                                       Grid.Column="1"
-                                       FontWeight="Bold"
-                                       Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                       VerticalAlignment="Center"
-                                       FontSize="12" />
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
             </ListView>
         </Grid>
 
