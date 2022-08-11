@@ -4,7 +4,7 @@ Param(
     [string]$solution
 )
 
-Write-Output $PSScriptRoot
+Write-Output "Verifying Arm64 configuration for $solution"
 
 $errorTable = @{}
 
@@ -24,10 +24,19 @@ $solutionFile = [Microsoft.Build.Construction.SolutionFile]::Parse($solution);
 $arm64SlnConfigs = $solutionFile.SolutionConfigurations | Where-Object {
     $_.PlatformName -eq "ARM64"
 };
+
+# Should have two configurations. Debug and Release.
+if($arm64SlnConfigs.Length -lt 2) {
+    Write-Host -ForegroundColor Red "Missing Solution-level Arm64 platforms"
+    exit 1;
+}
+
+# List projects only.
 $projects = $solutionFile.ProjectsInOrder | Where-Object {
     $_.ProjectType -eq "KnownToBeMSBuildFormat"
 };
 
+# Enumerate through the projects and add any project with a mismatched platform and project configuration
 foreach ($project in $projects) {
     foreach ($slnConfig in $arm64SlnConfigs.FullName) {
         if ($project.ProjectConfigurations.$slnConfig.FullName -ne $slnConfig) {
@@ -39,15 +48,16 @@ foreach ($project in $projects) {
 }
 
 if ($errorTable.Count -gt 0) {
-    Write-Output "The following projects have an invalid Arm64 configuration mapping:`n"
+    Write-Host -ForegroundColor Red "Verification failed for the following projects:`n"
     $errorTable.Keys | ForEach-Object {
-        Write-Output $_`:;
+        Write-Host -ForegroundColor Red $_`:;
         $errorTable[$_] | ForEach-Object {
-            Write-Output "$($_.ExpectedConfiguration)=$($_.Configuration)";
+            Write-Host -ForegroundColor Red "$($_.ExpectedConfiguration)=$($_.Configuration)";
         };
-        Write-Output `r
+        Write-Host -ForegroundColor Red `r
     }
     exit 1;
 }
 
+Write-Output "Verification Complete"
 exit 0;
