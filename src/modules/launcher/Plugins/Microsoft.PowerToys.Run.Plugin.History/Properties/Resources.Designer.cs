@@ -61,15 +61,6 @@ namespace Microsoft.PowerToys.Run.Plugin.History.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy failed, please try later.
-        /// </summary>
-        public static string wox_plugin_history_copy_failed {
-            get {
-                return ResourceManager.GetString("wox_plugin_history_copy_failed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Quick access to previous selected results..
         /// </summary>
         public static string wox_plugin_history_plugin_description {

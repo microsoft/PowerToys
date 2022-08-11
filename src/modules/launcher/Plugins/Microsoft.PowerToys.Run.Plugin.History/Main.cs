@@ -4,41 +4,25 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.History.Properties;
-using Microsoft.PowerToys.Settings.UI.Library;
 using PowerLauncher.Plugin;
-using PowerLauncher.Telemetry.Events;
 using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.History
 {
-    public class Main : IPlugin, IContextMenu, IPluginI18n, IDisposable, ISettingProvider
+    public class Main : IPlugin, IContextMenu, IPluginI18n, IDisposable
     {
         private PluginInitContext Context { get; set; }
 
         private string IconPath { get; set; }
-
-        private bool _inputUseEnglishFormat;
-        private bool _outputUseEnglishFormat;
 
         public string Name => Resources.wox_plugin_history_plugin_name;
 
         public string Description => Resources.wox_plugin_history_plugin_description;
 
         private bool _disposed;
-
-        public IEnumerable<PluginAdditionalOption> AdditionalOptions
-        {
-            get
-            {
-                return new List<PluginAdditionalOption>();
-            }
-        }
 
         public List<Result> Query(Query query)
         {
@@ -130,7 +114,13 @@ namespace Microsoft.PowerToys.Run.Plugin.History
 
             if (tempResults != null)
             {
-                result = tempResults.FirstOrDefault(r => r.Title == historyItem.Title && r.IcoPath == historyItem.IconPath && r.SubTitle == historyItem.SubTitle);
+                result = tempResults.FirstOrDefault(r => r.Title == historyItem.Title && r.SubTitle == historyItem.SubTitle);
+
+                if (result == null)
+                {
+                    // do less exact match, some plugins (like shell), have a dynamic SubTitle
+                    result = tempResults.FirstOrDefault(r => r.Title == historyItem.Title);
+                }
             }
 
             if (result == null)
@@ -138,7 +128,13 @@ namespace Microsoft.PowerToys.Run.Plugin.History
                 tempResults = PluginManager.QueryForPlugin(plugin, new Query(historyItem.Search), true);
                 if (tempResults != null)
                 {
-                    result = tempResults.FirstOrDefault(r => r.Title == historyItem.Title && r.IcoPath == historyItem.IconPath && r.SubTitle == historyItem.SubTitle);
+                    result = tempResults.FirstOrDefault(r => r.Title == historyItem.Title && r.SubTitle == historyItem.SubTitle);
+
+                    if (result == null)
+                    {
+                        // do less exact match, some plugins (like shell), have a dynamic SubTitle
+                        result = tempResults.FirstOrDefault(r => r.Title == historyItem.Title);
+                    }
                 }
             }
 
@@ -186,11 +182,6 @@ namespace Microsoft.PowerToys.Run.Plugin.History
             return Resources.wox_plugin_history_plugin_description;
         }
 
-        public Control CreateSettingPanel()
-        {
-            throw new NotImplementedException();
-        }
-
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             var pluginPair = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == selectedResult.HistoryPluginID);
@@ -205,11 +196,10 @@ namespace Microsoft.PowerToys.Run.Plugin.History
 
                 menuItems.Add(new ContextMenuResult
                 {
-                    // AcceleratorKey = Key.F4,
-                    // AcceleratorModifiers = ModifierKeys.Control,
+                    // https://docs.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
                     FontFamily = "Segoe MDL2 Assets",
-                    Glyph = "\xE8BB",                       // E8B8 => Symbol: ChromeClose
-                    Title = $"Remove {selectedResult.Title} from history",
+                    Glyph = "\xF739",   // ECC9 => Symbol: RemoveFrom, or F739 => SetHistoryStatus2
+                    Title = $"Remove this from history",
                     Action = _ =>
                     {
                         // very special case for Calculator
@@ -228,24 +218,6 @@ namespace Microsoft.PowerToys.Run.Plugin.History
             }
 
             return new List<ContextMenuResult>();
-        }
-
-        public void UpdateSettings(PowerLauncherPluginSettings settings)
-        {
-            var inputUseEnglishFormat = false;
-            var outputUseEnglishFormat = false;
-
-            if (settings != null && settings.AdditionalOptions != null)
-            {
-                var optionInputEn = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "InputUseEnglishFormat");
-                inputUseEnglishFormat = optionInputEn?.Value ?? inputUseEnglishFormat;
-
-                var optionOutputEn = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "OutputUseEnglishFormat");
-                outputUseEnglishFormat = optionOutputEn?.Value ?? outputUseEnglishFormat;
-            }
-
-            _inputUseEnglishFormat = inputUseEnglishFormat;
-            _outputUseEnglishFormat = outputUseEnglishFormat;
         }
 
         public void Dispose()
