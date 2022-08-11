@@ -2202,6 +2202,7 @@ vsonline
 vstemplate
 VSTHRD
 VSTT
+vswhere
 vtable
 Vtbl
 wbem
