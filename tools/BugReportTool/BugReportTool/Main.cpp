@@ -299,7 +299,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     settingsRootPath += L"\\";
 
     auto localLowPath = PTSettingsHelper::get_local_low_folder_location();
-    localLowPath += L"\\";
+    localLowPath += L"\\logs\\";
 
     const auto tempDir = temp_directory_path();
     auto reportDir = temp_directory_path() / "PowerToys\\";
