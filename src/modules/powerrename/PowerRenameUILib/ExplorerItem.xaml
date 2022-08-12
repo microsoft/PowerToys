@@ -2,69 +2,124 @@
     x:Class="PowerRenameUI.ExplorerItem"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:PowerRenameUI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:PowerRenameUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
     <Grid Height="28" Padding="0,0,0,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="4" />
+            <!--  Some spacing in between  -->
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <!--  Error tooltip  -->
         </Grid.ColumnDefinitions>
+
+        <Border
+            Name="HighlightBorder"
+            Grid.ColumnSpan="4"
+            Margin="0,0,0,-1"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Background="Transparent" />
+
+        <Grid
+            Grid.Column="0"
+            Margin="10,4,0,4"
+            HorizontalAlignment="Left">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="{x:Bind Indentation}" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+
+            <CheckBox
+                Name="{x:Bind IdStr}"
+                Grid.Column="1"
+                Width="28"
+                Height="28"
+                MinWidth="0"
+                AutomationProperties.HelpText="{x:Bind Renamed}"
+                AutomationProperties.Name="{x:Bind Original}"
+                Content=""
+                IsChecked="{x:Bind Checked, Mode=TwoWay}"
+                IsTabStop="True"
+                TabIndex="0"
+                XYFocusKeyboardNavigation="Enabled" />
+            <Image
+                Grid.Column="2"
+                Width="16"
+                Margin="4,0,0,0"
+                HorizontalAlignment="Left"
+                Source="{x:Bind ImagePath}" />
+            <TextBlock
+                Grid.Column="3"
+                Margin="6,0,4,0"
+                VerticalAlignment="Center"
+                FontSize="12"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="{x:Bind Original, Mode=OneWay}"
+                TextTrimming="CharacterEllipsis" />
+        </Grid>
+        <TextBlock
+            Grid.Column="2"
+            Margin="0,0,4,0"
+            VerticalAlignment="Center"
+            FontSize="12"
+            FontWeight="SemiBold"
+            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+            Text="{x:Bind Renamed, Mode=OneWay}"
+            TextTrimming="CharacterEllipsis" />
+
+        <Border
+            x:Name="ErrorIcon"
+            Grid.Column="3"
+            Width="12"
+            Height="12"
+            CornerRadius="12"
+            Margin="4,0,8,0"
+            Background="{ThemeResource SystemFillColorCriticalBrush}"
+            Visibility="Collapsed">
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                Foreground="White"
+                FontSize="8"
+                Text="&#xE10A;" />
+            <ToolTipService.ToolTip>
+                <TextBlock
+                    x:Name="ErrorMessageTxt"
+                    Text="Error message goes here"
+                    TextWrapping="Wrap" />
+            </ToolTipService.ToolTip>
+        </Border>
+
+
+
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="CommonStates">
-                <VisualState x:Name="Normal"/>
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="Highlight">
+                    <VisualState.Setters>
+                        <Setter Target="HighlightBorder.Opacity" Value="0.1" />
+                        <Setter Target="HighlightBorder.BorderBrush" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                        <Setter Target="HighlightBorder.Background" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
                 <VisualState x:Name="Error">
                     <VisualState.Setters>
-                        <Setter Target="highlight_border.Opacity" Value="1"/>
-                        <Setter Target="highlight_border.BorderBrush" Value="{ThemeResource SystemFillColorCritical}"/>
-                        <Setter Target="highlight_border.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}"/>
+                        <Setter Target="HighlightBorder.Opacity" Value="1" />
+                        <Setter Target="HighlightBorder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                        <Setter Target="HighlightBorder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                        <Setter Target="ErrorIcon.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
-
-        <Border Name="highlight_border" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" BorderThickness="0,0,0,1" Margin="0,0,0,-1" BorderBrush="{ThemeResource SystemAccentColor}" VerticalAlignment="Stretch" Background="{ThemeResource AccentTextFillColorPrimaryBrush}" Opacity="0.1" Visibility="{x:Bind Highlight, Mode=OneWay}" />
-
-        <Grid Grid.Column="0" HorizontalAlignment="Left" Margin="10,4,0,4">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition MinWidth="{x:Bind Indentation}"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-
-            <CheckBox TabIndex="0"
-                                          MinWidth="0"
-                                              Width="28"
-                                              Height="28"
-                                          Grid.Column="1"
-                                          XYFocusKeyboardNavigation="Enabled"
-                                          IsTabStop="True"
-                                          Content=""
-                                          Name="{x:Bind IdStr}"
-                                          AutomationProperties.Name="{x:Bind Original}"
-                                          AutomationProperties.HelpText="{x:Bind Renamed}"
-                                          IsChecked="{x:Bind Checked, Mode=TwoWay}" />
-            <Image Width="16"
-                                            Grid.Column="2"
-                                           Margin="4,0,0,0"
-                                           Source="{x:Bind ImagePath}"
-                                           HorizontalAlignment="Left" />
-            <TextBlock Margin="6,0,0,0"
-                                           Grid.Column="3"
-                                           Text="{x:Bind Original, Mode=OneWay}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                           VerticalAlignment="Center"
-                                           FontSize="12" />
-        </Grid>
-        <TextBlock Text="{x:Bind Renamed, Mode=OneWay}"
-                                       Grid.Column="1"
-                                       FontWeight="Bold"
-                                       Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                       VerticalAlignment="Center"
-                                       FontSize="12" />
     </Grid>
 </UserControl>
