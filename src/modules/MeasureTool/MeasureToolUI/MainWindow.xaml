@@ -267,24 +267,27 @@
             <RadioButton
                 AutomationProperties.Name="Spacing"
                 Click="MeasureTool_Click"
-                Content="&#xE799;"
+                Content="&#xE948;"
+                FontSize="18"
                 GroupName="ModeGroup"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
                 ToolTipService.ToolTip="Spacing" />
             <RadioButton
                 AutomationProperties.Name="Horizontal spacing"
                 Click="HorizontalMeasureTool_Click"
-                Content="&#xE76F;"
                 GroupName="ModeGroup"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
-                ToolTipService.ToolTip="Horizontal spacing" />
+                ToolTipService.ToolTip="Horizontal spacing">
+                <FontIcon Glyph="&#xE949;" />
+            </RadioButton>
             <RadioButton
                 AutomationProperties.Name="Vertical spacing"
                 Click="VerticalMeasureTool_Click"
-                Content="&#xE784;"
                 GroupName="ModeGroup"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
-                ToolTipService.ToolTip="Vertical spacing" />
+                ToolTipService.ToolTip="Vertical spacing">
+                <FontIcon Glyph="&#xE949;" />
+            </RadioButton>
             <AppBarSeparator Height="36" />
             <Button
                 Click="ClosePanelTool_Click"
