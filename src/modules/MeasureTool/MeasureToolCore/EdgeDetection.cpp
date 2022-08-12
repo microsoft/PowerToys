@@ -4,7 +4,7 @@
 
 const uint8_t DEFAULT_TOLERANCE = 1;
 
-/* Offset to not try not to use the cursor immediate pixels in measuring, but it seems only neccessary for continuous mode. */
+/* Offset to not try not to use the cursor immediate pixels in measuring, but it seems only necessary for continuous mode. */
 const long CURSOR_OFFSET_AMOUNT_X = 4;
 const long CURSOR_OFFSET_AMOUNT_Y = 4;
 
