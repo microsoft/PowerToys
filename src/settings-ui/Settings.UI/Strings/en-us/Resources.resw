@@ -153,6 +153,9 @@
   <data name="MeasureTool_ContinuousCapture.Header" xml:space="preserve">
     <value>Capture screen continuously during measuring</value>
   </data>
+  <data name="MeasureTool_ContinuousCapture.Description" xml:space="preserve">
+    <value>For measuring animated graphics. Measurement is less precise.</value>
+  </data>
   <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
     <value>Enable Screen Ruler</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
