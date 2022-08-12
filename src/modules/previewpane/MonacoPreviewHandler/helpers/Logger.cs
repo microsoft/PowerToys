@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco.Helpers
     public static class Logger
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
-        private static readonly string ApplicationLogPath = System.Environment.GetEnvironmentVariable("USERPROFILE") + "\\AppData\\LocalLow\\Microsoft\\PowerToys\\FileExplorer\\Logs\\Monaco";
+        private static readonly string ApplicationLogPath = System.Environment.GetEnvironmentVariable("USERPROFILE") + "\\AppData\\LocalLow\\Microsoft\\PowerToys\\FileExplorer_localLow\\Logs\\Monaco";
 
         static Logger()
         {
