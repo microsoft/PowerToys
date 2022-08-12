@@ -6,11 +6,37 @@
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
+using namespace Microsoft::Windows::ApplicationModel::Resources;
 
 namespace
 {
     const wchar_t fileImagePath[] = L"ms-appx:///Assets/file.png";
     const wchar_t folderImagePath[] = L"ms-appx:///Assets/folder.png";
+
+    std::wstring PowerRenameItemRenameStatusToString(PowerRenameItemRenameStatus status)
+    {
+        switch (status)
+        {
+        case PowerRenameItemRenameStatus::Init:
+        {
+            return L"Normal";
+        }
+        case PowerRenameItemRenameStatus::ShouldRename:
+        {
+            return L"Highlight";
+        }
+        case PowerRenameItemRenameStatus::ItemNameInvalidChar:
+        {
+            return L"Error";
+        }
+        case PowerRenameItemRenameStatus::ItemNameTooLong:
+        {
+            return L"Error";
+        }
+        default:
+            return L"Normal";
+        }
+    }
 }
 
 namespace winrt::PowerRenameUI::implementation
@@ -19,7 +45,6 @@ namespace winrt::PowerRenameUI::implementation
         m_id{ id }, m_idStr{ std::to_wstring(id) }, m_original{ original }, m_renamed{ renamed }, m_type{ type }, m_depth{ depth }, m_checked{ checked }
     {
         m_imagePath = (m_type == static_cast<UINT>(ExplorerItemType::Folder)) ? folderImagePath : fileImagePath;
-        m_highlight = m_checked && !m_renamed.empty() ? Microsoft::UI::Xaml::Visibility::Visible : Microsoft::UI::Xaml::Visibility::Collapsed;
     }
 
     int32_t ExplorerItem::Id()
@@ -57,14 +82,6 @@ namespace winrt::PowerRenameUI::implementation
         {
             m_renamed = value;
             m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Renamed" });
-
-            auto visibility = m_checked && !m_renamed.empty() ? Microsoft::UI::Xaml::Visibility::Visible : Microsoft::UI::Xaml::Visibility::Collapsed;
-            if (m_highlight != visibility)
-            {
-                m_highlight = visibility;
-                m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Highlight" });
-                VisualStateManager::GoToState(*this, L"Error", false);
-            }
         }
     }
 
@@ -104,19 +121,35 @@ namespace winrt::PowerRenameUI::implementation
             m_checked = value;
             m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Checked" });
 
-            auto visibility = m_checked && !m_renamed.empty() ? Microsoft::UI::Xaml::Visibility::Visible : Microsoft::UI::Xaml::Visibility::Collapsed;
-            if (m_highlight != visibility)
+            if (m_checked && !m_renamed.empty())
             {
-                m_highlight = visibility;
-                m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Highlight" });
-                VisualStateManager::GoToState(*this, L"Highlight", false);
+                VisualStateManager::GoToState(*this, PowerRenameItemRenameStatusToString(m_state), false);
+            }
+            else
+            {
+                VisualStateManager::GoToState(*this, L"Normal", false);
             }
         }
     }
 
-    Microsoft::UI::Xaml::Visibility ExplorerItem::Highlight()
+    int32_t ExplorerItem::State()
     {
-        return m_highlight;
+        throw hresult_not_implemented();
+    }
+
+    void ExplorerItem::State(int32_t value)
+    {
+        m_state = static_cast<PowerRenameItemRenameStatus>(value);
+        ErrorMessageTxt().Text(StateToErrorMessage());
+
+        if (m_renamed == L"")
+        {
+            VisualStateManager::GoToState(*this, L"Normal", false);
+        }
+        else
+        {
+            VisualStateManager::GoToState(*this, PowerRenameItemRenameStatusToString(m_state), false);
+        }
     }
 
     winrt::event_token ExplorerItem::PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
@@ -128,4 +161,26 @@ namespace winrt::PowerRenameUI::implementation
     {
         m_propertyChanged.remove(token);
     }
+
+    std::wstring ExplorerItem::StateToErrorMessage()
+    {
+        auto factory = winrt::get_activation_factory<ResourceManager, IResourceManagerFactory>();
+        ResourceManager manager = factory.CreateInstance(L"resources.pri");
+
+        switch (m_state)
+        {
+        case PowerRenameItemRenameStatus::ItemNameInvalidChar:
+        {
+            return std::wstring{ manager.MainResourceMap().GetValue(L"Resources/ErrorMessage_InvalidChar").ValueAsString() };
+        }
+        case PowerRenameItemRenameStatus::ItemNameTooLong:
+        {
+            return std::wstring{ manager.MainResourceMap().GetValue(L"Resources/ErrorMessage_FileNameTooLong").ValueAsString() };
+        }
+        default:
+            return {};
+        }
+
+    }
+
 }

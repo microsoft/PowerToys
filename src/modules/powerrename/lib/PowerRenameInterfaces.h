@@ -28,6 +28,14 @@ enum PowerRenameFilters
     ShouldRename = 4,
 };
 
+enum class PowerRenameItemRenameStatus {
+    Init = 0,
+    ShouldRename,
+    ItemNameTooLong,
+    ItemNameInvalidChar,
+    ItemNameAlreadyExists,
+};
+
 interface __declspec(uuid("3ECBA62B-E0F0-4472-AA2E-DEE7A1AA46B9")) IPowerRenameRegExEvents : public IUnknown
 {
 public:
@@ -71,6 +79,8 @@ public:
     IFACEMETHOD(GetId)(_Out_ int *id) = 0;
     IFACEMETHOD(GetDepth)(_Out_ UINT* depth) = 0;
     IFACEMETHOD(PutDepth)(_In_ int depth) = 0;
+    IFACEMETHOD(GetStatus)(_Out_ PowerRenameItemRenameStatus* status) = 0;
+    IFACEMETHOD(PutStatus)(_In_ PowerRenameItemRenameStatus status) = 0;
     IFACEMETHOD(ShouldRenameItem)(_In_ DWORD flags, _Out_ bool* shouldRename) = 0;
     IFACEMETHOD(IsItemVisible)(_In_ DWORD filter, _In_ DWORD flags, _Out_ bool* isItemVisible) = 0;
     IFACEMETHOD(Reset)() = 0;

@@ -12,6 +12,6 @@ namespace PowerRenameUI
         String ImagePath { get; };
         Int32 Type;
         Boolean Checked;
-        Microsoft.UI.Xaml.Visibility Highlight { get; };
+        Int32 State;
     }
 }

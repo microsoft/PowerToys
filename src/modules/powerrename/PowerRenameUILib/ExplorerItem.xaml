@@ -99,8 +99,6 @@
             </ToolTipService.ToolTip>
         </Border>
 
-
-
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="CommonStates">
                 <VisualState x:Name="Normal" />

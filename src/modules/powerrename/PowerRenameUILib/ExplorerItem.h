@@ -5,6 +5,7 @@
 #include "winrt/Microsoft.UI.Xaml.Interop.h"
 #include "winrt/Microsoft.UI.Xaml.Controls.Primitives.h"
 #include "ExplorerItem.g.h"
+#include "PowerRenameInterfaces.h"
 
 namespace winrt::PowerRenameUI::implementation
 {
@@ -31,11 +32,14 @@ namespace winrt::PowerRenameUI::implementation
         void Type(int32_t value);
         bool Checked();
         void Checked(bool value);
-        winrt::Microsoft::UI::Xaml::Visibility Highlight();
+        int32_t State();
+        void State(int32_t value);
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
 
     private:
+        std::wstring StateToErrorMessage();
+
         int32_t m_id;
         hstring m_idStr;
         winrt::hstring m_original;
@@ -44,7 +48,7 @@ namespace winrt::PowerRenameUI::implementation
         hstring m_imagePath;
         int32_t m_type;
         bool m_checked;
-        Microsoft::UI::Xaml::Visibility m_highlight;
+        PowerRenameItemRenameStatus m_state;
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
 
     };

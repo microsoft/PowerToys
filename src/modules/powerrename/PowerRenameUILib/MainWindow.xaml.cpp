@@ -243,22 +243,22 @@ namespace winrt::PowerRenameUI::implementation
         m_explorerItemsMap[id] = newItem;
     }
 
-    void MainWindow::UpdateExplorerItem(int32_t id, hstring const& newName)
+    void MainWindow::UpdateExplorerItem(int32_t id, std::optional<hstring> newOriginalName, std::optional<hstring> newName, PowerRenameItemRenameStatus itemStatus)
     {
         auto itemToUpdate = FindById(id);
         if (itemToUpdate != NULL)
         {
-            itemToUpdate.Renamed(newName);
-        }
-    }
+            if (newOriginalName.has_value())
+            {
+                itemToUpdate.Original(*newOriginalName);
+            }
 
-    void MainWindow::UpdateRenamedExplorerItem(int32_t id, hstring const& newOriginalName)
-    {
-        auto itemToUpdate = FindById(id);
-        if (itemToUpdate != NULL)
-        {
-            itemToUpdate.Original(newOriginalName);
-            itemToUpdate.Renamed(L"");
+            if (newName.has_value())
+            {
+                itemToUpdate.Renamed(*newName);
+            }
+
+            itemToUpdate.State(static_cast<int32_t>(itemStatus));
         }
     }
 
@@ -1007,8 +1007,13 @@ namespace winrt::PowerRenameUI::implementation
             hr = renameItem->GetNewName(&newName);
             if (SUCCEEDED(hr))
             {
-                hstring newNameStr = newName == nullptr ? hstring{} : newName;
-                UpdateExplorerItem(id, newNameStr);
+                PowerRenameItemRenameStatus status;
+                hr = renameItem->GetStatus(&status);
+                if (SUCCEEDED(hr))
+                {
+                    hstring newNameStr = newName == nullptr ? hstring{} : newName;
+                    UpdateExplorerItem(id, std::nullopt, newNameStr, status);
+                }
             }
         }
 
@@ -1026,7 +1031,7 @@ namespace winrt::PowerRenameUI::implementation
             if (SUCCEEDED(hr))
             {
                 hstring newNameStr = newName == nullptr ? hstring{} : newName;
-                UpdateRenamedExplorerItem(id, newNameStr);
+                UpdateExplorerItem(id, newNameStr, L"", PowerRenameItemRenameStatus::Init);
             }
         }
 
