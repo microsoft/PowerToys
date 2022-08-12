@@ -52,6 +52,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private ProgressBar _loadingBar;
 
         /// <summary>
+        /// Grey background
+        /// </summary>
+        private Label _loadingBackground;
+
+        /// <summary>
         /// Name of the virtual host
         /// </summary>
         public const string VirtualHostName = "PowerToysLocalMonaco";
@@ -135,10 +140,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                     try
                                     {
                                         await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
-                                        _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
 
                                         // Wait until html is loaded
                                         initializeIndexFileAndSelectedFileTask.Wait();
+
+                                        _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
 
                                         Logger.LogInfo("Navigates to string of HTML file");
 
@@ -147,6 +153,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                         _webView.Height = this.Height;
                                         _webView.Width = this.Width;
                                         Controls.Add(_webView);
+                                        _webView.SendToBack();
                                         _loadingBar.Value = 100;
                                         this.Update();
                                     }
@@ -161,6 +168,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                     Logger.LogWarning(e.Message);
                                     Controls.Remove(_loading);
                                     Controls.Remove(_loadingBar);
+                                    Controls.Remove(_loadingBackground);
 
                                     // WebView2 not installed message
                                     Label errorMessage = new Label();
@@ -188,6 +196,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     {
                         Controls.Remove(_loading);
                         Controls.Remove(_loadingBar);
+                        Controls.Remove(_loadingBackground);
                         Label text = new Label();
                         text.Text = Resources.Exception_Occurred;
                         text.Text += e.Message;
@@ -210,6 +219,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     Controls.Remove(_loading);
                     _loadingBar.Dispose();
                     Controls.Remove(_loadingBar);
+                    Controls.Remove(_loadingBackground);
                     Label errorMessage = new Label();
                     errorMessage.Text = Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture);
                     errorMessage.Width = 500;
@@ -271,6 +281,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 Logger.LogInfo("Remove loading elements");
                 Controls.Remove(_loading);
                 Controls.Remove(_loadingBar);
+                Controls.Remove(_loadingBackground);
 #if DEBUG
                 _webView.CoreWebView2.OpenDevToolsWindow();
                 Logger.LogInfo("Opened Dev Tools window, because solution was built in debug mode");
@@ -315,22 +326,32 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             Logger.LogTrace();
             InvokeOnControlThread(() =>
             {
+                _loadingBackground = new Label();
+                _loadingBackground.BackColor = Settings.BackgroundColor;
+                _loadingBackground.Width = this.Width;
+                _loadingBackground.Height = this.Height;
+                Controls.Add(_loadingBackground);
+                _loadingBackground.BringToFront();
+
                 _loadingBar = new ProgressBar();
-                _loadingBar.Width = this.Width;
-                _loadingBar.Location = new Point(0, 40);
+                _loadingBar.Width = this.Width - 4;
+                _loadingBar.Location = new Point(2, this.Height / 2);
                 _loadingBar.Maximum = 100;
                 _loadingBar.Value = 10;
                 Controls.Add(_loadingBar);
-                this.Update();
 
                 _loading = new Label();
                 _loading.Text = Resources.Loading_Screen_Message;
-                _loading.Width = this.Width;
-                _loading.Height = this.Height;
+                _loading.Width = this.Width - 2;
+                _loading.Location = new Point(2, _loadingBar.Location.Y - _loading.Height - 4);
+                _loading.Height = this.Height / 2;
                 _loading.Font = new Font("MS Sans Serif", 16, FontStyle.Bold);
                 _loading.ForeColor = Settings.TextColor;
-                _loading.BackColor = Settings.BackgroundColor;
                 Controls.Add(_loading);
+
+                _loading.BringToFront();
+                _loadingBar.BringToFront();
+
                 this.Update();
             });
             Logger.LogInfo("Loading screen initialized");
