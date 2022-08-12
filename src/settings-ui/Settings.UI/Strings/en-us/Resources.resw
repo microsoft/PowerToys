@@ -156,6 +156,12 @@
   <data name="MeasureTool_ContinuousCapture.Description" xml:space="preserve">
     <value>For measuring animated graphics. Measurement is less precise.</value>
   </data>
+  <data name="MeasureTool_DrawFeetOnCross.Header" xml:space="preserve">
+    <value>Draw feet on cross</value>
+  </data>
+  <data name="MeasureTool_DrawFeetOnCross.Description" xml:space="preserve">
+    <value>Adds feet to the end of cross lines. Always off for continuous capture.</value>
+  </data>
   <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
     <value>Enable Screen Ruler</value>
     <comment>"Screen Ruler" is the name of the utility</comment>

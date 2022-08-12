@@ -26,6 +26,7 @@ struct MeasureToolState
     {
         uint8_t pixelTolerance = 5;
         bool continuousCapture = false;
+        bool drawFeetOnCross = true;
         D2D1::ColorF crossColor = D2D1::ColorF::OrangeRed;
         struct CrossCoords
         {

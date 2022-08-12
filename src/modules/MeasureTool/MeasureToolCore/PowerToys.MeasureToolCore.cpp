@@ -46,6 +46,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
                 state.mode = MeasureToolState::Mode::Vertical;
 
             state.continuousCapture = _settings.continuousCapture;
+            state.drawFeetOnCross = _settings.drawFeetOnCross;
 
             state.crossColor.r = _settings.lineColor[0] / 255.f;
             state.crossColor.g = _settings.lineColor[1] / 255.f;

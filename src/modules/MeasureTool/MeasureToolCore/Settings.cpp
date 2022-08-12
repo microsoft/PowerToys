@@ -11,6 +11,7 @@ namespace
     const wchar_t JSON_KEY_VALUE[] = L"value";
 
     const wchar_t JSON_KEY_CONTINUOUS_CAPTURE[] = L"ContinuousCapture";
+    const wchar_t JSON_KEY_DRAW_FEET_ON_CROSS[] = L"DrawFeetOnCross";
     const wchar_t JSON_KEY_PIXEL_TOLERANCE[] = L"PixelTolerance";
     const wchar_t JSON_KEY_MEASURE_CROSS_COLOR[] = L"MeasureCrossColor";
 }
@@ -26,6 +27,14 @@ Settings Settings::LoadFromFile()
         try
         {
             result.continuousCapture = props.GetNamedObject(JSON_KEY_CONTINUOUS_CAPTURE).GetNamedBoolean(JSON_KEY_VALUE);
+        }
+        catch (...)
+        {
+        }
+
+        try
+        {
+            result.drawFeetOnCross = props.GetNamedObject(JSON_KEY_DRAW_FEET_ON_CROSS).GetNamedBoolean(JSON_KEY_VALUE);
         }
         catch (...)
         {

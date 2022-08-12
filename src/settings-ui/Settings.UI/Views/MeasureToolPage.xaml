@@ -46,6 +46,12 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
+                    <controls:Setting x:Uid="MeasureTool_DrawFeetOnCross">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.DrawFeetOnCross, Mode=TwoWay}" x:Uid="MeasureTool_DrawFeetOnCross_ToggleSwitch" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
                     <controls:Setting x:Uid="MeasureTool_ContinuousCapture" Icon="&#xE7FB;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch" />

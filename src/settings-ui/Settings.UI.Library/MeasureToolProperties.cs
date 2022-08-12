@@ -16,6 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ActivationShortcut = new HotkeySettings(true, false, false, true, 0x4D);
             PixelTolerance = new IntProperty(5);
             ContinuousCapture = false;
+            DrawFeetOnCross = true;
             MeasureCrossColor = new StringProperty("#FF4500");
         }
 
@@ -23,6 +24,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ContinuousCapture { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool DrawFeetOnCross { get; set; }
 
         public IntProperty PixelTolerance { get; set; }
 

@@ -73,6 +73,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool DrawFeetOnCross
+        {
+            get
+            {
+                return Settings.Properties.DrawFeetOnCross;
+            }
+
+            set
+            {
+                if (Settings.Properties.DrawFeetOnCross != value)
+                {
+                    Settings.Properties.DrawFeetOnCross = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public string CrossColor
         {
             get

@@ -367,6 +367,7 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
     bool drawHorizontalCrossLine = true;
     bool drawVerticalCrossLine = true;
     bool continuousCapture = false;
+    bool drawFeetOnCross = true;
     MeasureToolState::Mode toolMode;
 
     D2D1::ColorF crossColor = D2D1::ColorF::OrangeRed;
@@ -375,6 +376,7 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
         crossColor = s.crossColor;
         toolMode = s.mode;
         continuousCapture = s.continuousCapture;
+        drawFeetOnCross = s.drawFeetOnCross;
         switch (s.mode)
         {
         case MeasureToolState::Mode::Cross:
@@ -424,7 +426,7 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
         if (drawHorizontalCrossLine)
         {
             d2dState.rt->DrawLine(mts.cross.hLineStart, mts.cross.hLineEnd, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
-            if (!continuousCapture)
+            if (drawFeetOnCross && !continuousCapture)
             {
                 //draw line feet
                 D2D_POINT_2F start_feet_top_half_start = { mts.cross.hLineStart.x + CROSS_THICKNESS / 2, mts.cross.hLineStart.y - CROSS_THICKNESS / 2 };
@@ -445,9 +447,9 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
         if (drawVerticalCrossLine)
         {
             d2dState.rt->DrawLine(mts.cross.vLineStart, mts.cross.vLineEnd, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
-            //draw line feet
-            if (!continuousCapture)
+            if (drawFeetOnCross && !continuousCapture)
             {
+                //draw line feet
                 D2D_POINT_2F start_feet_left_half_start = { mts.cross.vLineStart.x - CROSS_THICKNESS / 2, mts.cross.vLineStart.y + CROSS_THICKNESS / 2 };
                 D2D_POINT_2F start_feet_left_half_end = { mts.cross.vLineStart.x - FEET_LENGTH, mts.cross.vLineStart.y + CROSS_THICKNESS / 2 };
                 d2dState.rt->DrawLine(start_feet_left_half_start, start_feet_left_half_end, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
