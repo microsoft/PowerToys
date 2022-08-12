@@ -196,7 +196,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                         text.Width = 500;
                         text.Height = 10000;
                         Controls.Add(text);
-                        Logger.LogError("Error catched. Showing error to user", e);
                         Logger.LogError(e.Message);
                     });
                 }
