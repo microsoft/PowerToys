@@ -63,6 +63,7 @@ namespace winrt::PowerRenameUI::implementation
             {
                 m_highlight = visibility;
                 m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ L"Highlight" });
+                VisualStateManager::GoToState(*this, L"Error", false);
             }
         }
     }

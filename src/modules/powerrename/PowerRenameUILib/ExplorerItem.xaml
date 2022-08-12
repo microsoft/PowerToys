@@ -12,8 +12,20 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal"/>
+                <VisualState x:Name="Error">
+                    <VisualState.Setters>
+                        <Setter Target="highlight_border.Opacity" Value="1"/>
+                        <Setter Target="highlight_border.BorderBrush" Value="{ThemeResource SystemFillColorCritical}"/>
+                        <Setter Target="highlight_border.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
 
-        <Border HorizontalAlignment="Stretch" Grid.ColumnSpan="2" BorderThickness="0,0,0,1" Margin="0,0,0,-1" BorderBrush="{ThemeResource SystemAccentColor}" VerticalAlignment="Stretch" Background="{ThemeResource AccentTextFillColorPrimaryBrush}" Opacity="0.1" Visibility="{x:Bind Highlight, Mode=OneWay}" />
+        <Border Name="highlight_border" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" BorderThickness="0,0,0,1" Margin="0,0,0,-1" BorderBrush="{ThemeResource SystemAccentColor}" VerticalAlignment="Stretch" Background="{ThemeResource AccentTextFillColorPrimaryBrush}" Opacity="0.1" Visibility="{x:Bind Highlight, Mode=OneWay}" />
 
         <Grid Grid.Column="0" HorizontalAlignment="Left" Margin="10,4,0,4">
             <Grid.ColumnDefinitions>
