@@ -410,6 +410,17 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
         const float CROSS_THICKNESS = 1.f;
         const float FEET_LENGTH = 5.f;
 
+        // Adjust cross to better match cursor coordinates in the texture.
+        // For example, the [0;0] pixel in the texture actually has the coordinates [0.5;0.5].
+        mts.cross.hLineStart.x += .5f;
+        mts.cross.hLineStart.y += .5f;
+        mts.cross.hLineEnd.x += .5f;
+        mts.cross.hLineEnd.y += .5f;
+        mts.cross.vLineStart.x += .5f;
+        mts.cross.vLineStart.y += .5f;
+        mts.cross.vLineEnd.x += .5f;
+        mts.cross.vLineEnd.y += .5f;
+
         if (drawHorizontalCrossLine)
         {
             d2dState.rt->DrawLine(mts.cross.hLineStart, mts.cross.hLineEnd, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);

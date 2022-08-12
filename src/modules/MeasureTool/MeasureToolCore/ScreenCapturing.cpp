@@ -288,7 +288,7 @@ void D3DCaptureState::StopCapture()
     session.Close();
 }
 
-void UpdateCaptureState(MeasureToolState& state, HWND targetWindow, const uint8_t pixelTolerance, const OwnedTextureView& textureView)
+void UpdateCaptureState(MeasureToolState& state, HWND targetWindow, const uint8_t pixelTolerance, const OwnedTextureView& textureView, const bool continuousCapture)
 {
     MeasureToolState::State::CrossCoords cross;
     POINT cursorPos{};
@@ -298,7 +298,7 @@ void UpdateCaptureState(MeasureToolState& state, HWND targetWindow, const uint8_
     const bool cursorInLeftScreenHalf = cursorPos.x < textureView.view.width / 2;
     const bool cursorInTopScreenHalf = cursorPos.y < textureView.view.height / 2;
 
-    const RECT bounds = DetectEdges(textureView.view, cursorPos, pixelTolerance);
+    const RECT bounds = DetectEdges(textureView.view, cursorPos, pixelTolerance, continuousCapture);
 
     cross.hLineStart.x = static_cast<float>(bounds.left);
     cross.hLineEnd.x = static_cast<float>(bounds.right);
@@ -349,7 +349,7 @@ void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR t
         if (continuousCapture)
         {
             captureState->StartCapture([&, targetWindow, pixelTolerance](OwnedTextureView textureView) {
-                UpdateCaptureState(state, targetWindow, pixelTolerance, textureView);
+                UpdateCaptureState(state, targetWindow, pixelTolerance, textureView, continuousCapture);
             });
 
             while (!stopCapturing)
@@ -367,7 +367,7 @@ void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR t
             while (!stopCapturing)
             {
                 const auto now = std::chrono::high_resolution_clock::now();
-                UpdateCaptureState(state, targetWindow, pixelTolerance, textureView);
+                UpdateCaptureState(state, targetWindow, pixelTolerance, textureView, continuousCapture);
 
                 state.Access([&](MeasureToolState::State& state) {
                     stopCapturing = state.stopCapturing;
