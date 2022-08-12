@@ -73,8 +73,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// </summary>
         private string _base64FileCode;
 
-        private Task _readHtmlFileTask;
-
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
@@ -102,7 +100,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
             if (fileSize < _settings.MaxFileSize)
             {
-                new Task(() => { InitializeIndexFileAndSelectedFile(filePath); }).Start();
+                Task initializeIndexFileAndSelectedFileTask = new Task(() => { InitializeIndexFileAndSelectedFile(filePath); });
+                initializeIndexFileAndSelectedFileTask.Start();
 
                 try
                 {
@@ -139,7 +138,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                         _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
 
                                         // Wait until html is loaded
-                                        _readHtmlFileTask.Wait();
+                                        initializeIndexFileAndSelectedFileTask.Wait();
 
                                         Logger.LogInfo("Navigates to string of HTML file");
 
@@ -340,45 +339,26 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
         private void InitializeIndexFileAndSelectedFile(string filePath)
         {
-            Task getFileExtensionTask = new Task(() =>
+            Logger.LogInfo("Starting getting monaco language id out of filetype");
+            _vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
+
+            using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
-                Logger.LogInfo("Starting getting monaco language id out of filetype");
-                _vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
-            });
-            getFileExtensionTask.Start();
+                Logger.LogInfo("Starting reading requested file");
+                var fileContent = fileReader.ReadToEnd();
+                fileReader.Close();
+                _base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
+                Logger.LogInfo("Reading requested file ended");
+            }
 
-            Task readPreviewedFileTask = new Task(() =>
+            // prepping index html to load in
+            using (StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
-                using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-                {
-                    Logger.LogInfo("Starting reading requested file");
-                    var fileContent = fileReader.ReadToEnd();
-                    fileReader.Close();
-                    _base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
-                    Logger.LogInfo("Reading requested file ended");
-                }
-            });
-
-            readPreviewedFileTask.Start();
-
-            _readHtmlFileTask = new Task(() =>
-            {
-                // prepping index html to load in
-                using (StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-                {
-                    Logger.LogInfo("Starting reading HTML source file");
-                    _html = htmlFileReader.ReadToEnd();
-                    htmlFileReader.Close();
-                    Logger.LogInfo("Reading HTML source file ended");
-                }
-            });
-
-            _readHtmlFileTask.Start();
-
-            // Wait until all tasks are completed
-            getFileExtensionTask.Wait();
-            readPreviewedFileTask.Wait();
-            _readHtmlFileTask.Wait();
+                Logger.LogInfo("Starting reading HTML source file");
+                _html = htmlFileReader.ReadToEnd();
+                htmlFileReader.Close();
+                Logger.LogInfo("Reading HTML source file ended");
+        }
 
             _html = _html.Replace("[[PT_LANG]]", _vsCodeLangSet, StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
