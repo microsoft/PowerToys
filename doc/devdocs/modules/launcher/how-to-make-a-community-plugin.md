@@ -53,6 +53,6 @@
 - [ ] Then you can add other package by `Nuget`
 - [ ] you  should add <EnableDynamicLoading>true</EnableDynamicLoading> to the project properties so that they copy all of their dependencies to the output of `dotnet build`, or you can use `dotnet publish` will also copy all of its dependencies to the publish output. otherwise you will lose the dependencies dll.
 
-- [ ] Copy all output to `<PowerToys>\modules\launcher\Plugins` **except the sdk dll you Reference above** , cause it loaded by PowerToys already.
+- [ ] Copy all output to `<PowerToys>\modules\launcher\Plugins` **except the sdk dlls you Reference above** , as PowerToys already loaded sdk dlls.
 
 - [ ] Restart the PowerToys.
