@@ -51,6 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             _powerOcrSettings = moduleSettingsRepository.SettingsConfig;
+            _isEnabled = GeneralSettingsConfig.Enabled.PowerOcr;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -75,8 +76,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
+                }
+            }
+        }
 
-                    NotifyPropertyChanged();
+        public HotkeySettings ActivationShortcut
+        {
+            get => _powerOcrSettings.Properties.ActivationShortcut;
+            set
+            {
+                if (_powerOcrSettings.Properties.ActivationShortcut != value)
+                {
+                    _powerOcrSettings.Properties.ActivationShortcut = value;
+                    OnPropertyChanged(nameof(ActivationShortcut));
+                    NotifySettingsChanged();
                 }
             }
         }

@@ -40,6 +40,7 @@ namespace CommonSharedConstants
 
     // Path to the event used by PowerOCR
     const wchar_t POWEROCR_EXIT_EVENT[] = L"Local\\PowerOcrExitEvent-e74e426f-b5b6-46cc-9d90-5d7d6de93253";
+    const wchar_t SHOW_POWEROCR_SHARED_EVENT[] = L"Local\\PowerOCREvent-dc864e06-e1af-4ecc-9078-f98bee745e3a";
 
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;

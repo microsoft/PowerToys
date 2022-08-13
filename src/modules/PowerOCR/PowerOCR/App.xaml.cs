@@ -3,11 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using ManagedCommon;
 using PowerOCR.Keyboard;
 using PowerOCR.Settings;
+using PowerOCR.Utilities;
 
 namespace PowerOCR;
 
@@ -18,7 +22,6 @@ public partial class App : Application, IDisposable
 {
     private KeyboardMonitor? keyboardMonitor;
     private Mutex? _instanceMutex;
-    private static string[] _args = Array.Empty<string>();
     private int _powerToysRunnerPid;
 
     public void Dispose()
@@ -40,12 +43,18 @@ public partial class App : Application, IDisposable
 
         if (e.Args?.Length > 0)
         {
-            _ = int.TryParse(_args[0], out _powerToysRunnerPid);
-
-            RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
+            try
             {
-                Environment.Exit(0);
-            });
+                _ = int.TryParse(e.Args[2], out _powerToysRunnerPid);
+                RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
+                {
+                    Environment.Exit(0);
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
         else
         {
