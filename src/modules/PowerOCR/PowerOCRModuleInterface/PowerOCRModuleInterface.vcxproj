@@ -9,7 +9,8 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{6AB6A2D6-F859-4A82-9184-0BD29C9F07D1}</ProjectGuid>
     <RootNamespace>PowerOCR</RootNamespace>
-    <ProjectName>PowerOCR</ProjectName>
+    <ProjectName>PowerOCRModuleInterface</ProjectName>
+    <TargetName>PowerToys.PowerOCRModuleInterface</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -26,8 +27,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\$(ProjectName)\</OutDir>
-    <TargetName>PowerToys.PowerOCR</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerOCR\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
