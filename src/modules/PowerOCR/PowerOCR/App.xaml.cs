@@ -45,7 +45,7 @@ public partial class App : Application, IDisposable
         {
             try
             {
-                _ = int.TryParse(e.Args[2], out _powerToysRunnerPid);
+                _ = int.TryParse(e.Args[0], out _powerToysRunnerPid);
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
                     Environment.Exit(0);
