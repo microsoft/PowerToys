@@ -110,7 +110,13 @@ namespace Microsoft.PowerToys.Run.Plugin.History
 
             var plugin = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == historyItem.PluginID);
 
-            var tempResults = PluginManager.QueryForPlugin(plugin, new Query(historyItem.Search), false);
+            var searchTerm = historyItem.Search;
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = historyItem.Title;
+            }
+
+            var tempResults = PluginManager.QueryForPlugin(plugin, new Query(searchTerm), false);
 
             if (tempResults != null)
             {
@@ -125,7 +131,7 @@ namespace Microsoft.PowerToys.Run.Plugin.History
 
             if (result == null)
             {
-                tempResults = PluginManager.QueryForPlugin(plugin, new Query(historyItem.Search), true);
+                tempResults = PluginManager.QueryForPlugin(plugin, new Query(searchTerm), true);
                 if (tempResults != null)
                 {
                     result = tempResults.FirstOrDefault(r => r.Title == historyItem.Title && r.SubTitle == historyItem.SubTitle);
