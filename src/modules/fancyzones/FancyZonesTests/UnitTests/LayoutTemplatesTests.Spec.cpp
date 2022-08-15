@@ -2,6 +2,9 @@
 #include <filesystem>
 
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 
 #include "util.h"
@@ -13,7 +16,8 @@ namespace FancyZonesUnitTests
     TEST_CLASS (LayoutTemplatesUnitTests)
     {
         FancyZonesData& m_fzData = FancyZonesDataInstance();
-        std::wstring m_testFolder = L"FancyZonesUnitTests";
+        std::wstring m_testFolder = L"FancyZones_LayoutTemplatesUnitTests";
+        std::wstring m_testFolderPath = PTSettingsHelper::get_module_save_folder_location(m_testFolder);
 
         TEST_METHOD_INITIALIZE(Init)
         {
@@ -22,11 +26,15 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD_CLEANUP(CleanUp)
         {
-            std::filesystem::remove_all(LayoutTemplates::LayoutTemplatesFileName());
-            std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_testFolder));
+            // Move...FromZonesSettings creates all of these files, clean up
+            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
+            std::filesystem::remove(CustomLayouts::CustomLayoutsFileName());
+            std::filesystem::remove(LayoutHotkeys::LayoutHotkeysFileName());
+            std::filesystem::remove(LayoutTemplates::LayoutTemplatesFileName());
+            std::filesystem::remove_all(m_testFolderPath);
         }
 
-        TEST_METHOD (MoveLayoutHotkeysFromZonesSettings)
+        TEST_METHOD (MoveLayoutTemplatesFromZonesSettings)
         {
             // prepare
             json::JsonObject root{};
@@ -67,7 +75,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(res.first, res.second.c_str());
         }
 
-        TEST_METHOD (MoveLayoutHotkeysFromZonesSettingsNoTemplates)
+        TEST_METHOD (MoveLayoutTemplatesFromZonesSettingsNoTemplates)
         {
             // prepare
             json::JsonObject root{};
@@ -83,7 +91,7 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(result.has_value());
         }
 
-        TEST_METHOD (MoveLayoutHotkeysFromZonesSettingsNoFile)
+        TEST_METHOD (MoveLayoutTemplatesFromZonesSettingsNoFile)
         {
             // test
             m_fzData.ReplaceZoneSettingsFileFromOlderVersions();
