@@ -672,7 +672,7 @@ GUITHREADINFO
 GValue
 gwl
 GWLP
-haccel
+HACCEL
 hangeul
 hanselman
 hardcoded
