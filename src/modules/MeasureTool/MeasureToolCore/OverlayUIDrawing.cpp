@@ -47,9 +47,7 @@ void SetClipBoardToText(const std::wstring_view text)
     CloseClipboard();
 }
 
-
-
-    LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
+LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
     const auto closeWindow = [&] {
         stopUILoop = true;
@@ -322,7 +320,6 @@ void DrawBoundsToolOverlayUILoop(BoundsToolState& toolState, HWND overlayWindow)
     SetOverlayUIColors();
 
     D2DState d2dState{ overlayWindow, { toolState.lineColor, foreground, background, border } };
-   
 
     while (!stopUILoop)
     {
@@ -511,39 +508,46 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
     });
 }
 
-HWND LaunchOverlayUI(MeasureToolState& measureToolState, HMONITOR monitor)
+HWND LaunchOverlayUI(MeasureToolState& measureToolState,
+                     HMONITOR monitor,
+                     std::function<void()> onCompleted)
 {
     stopUILoop = false;
 
     wil::shared_event windowCreatedEvent(wil::EventOptions::ManualReset);
 
     HWND window = {};
-    SpawnLoggedThread([&measureToolState, monitor, &window, windowCreatedEvent] {
+    SpawnLoggedThread([=, &measureToolState, &window] {
         window = CreateOverlayUIWindow(monitor, NonLocalizable::MeasureToolOverlayWindowName);
         windowCreatedEvent.SetEvent();
         DrawMeasureToolOverlayUILoop(measureToolState, window);
-    }, L"Launch measure tool OverlayUI");
+        onCompleted();
+    },
+                      L"Launch measure tool OverlayUI");
 
     windowCreatedEvent.wait();
 
     return window;
 }
 
-HWND LaunchOverlayUI(BoundsToolState& boundsToolState, HMONITOR monitor)
+HWND LaunchOverlayUI(BoundsToolState& boundsToolState,
+                     HMONITOR monitor,
+                     std::function<void()> onCompleted)
 {
     stopUILoop = false;
 
     wil::shared_event windowCreatedEvent(wil::EventOptions::ManualReset);
 
     HWND window = {};
-    SpawnLoggedThread([&boundsToolState, monitor, &window, windowCreatedEvent] {
+    SpawnLoggedThread([=, &boundsToolState, &window] {
         window = CreateOverlayUIWindow(monitor, NonLocalizable::BoundsToolOverlayWindowName, &boundsToolState);
         windowCreatedEvent.SetEvent();
         DrawBoundsToolOverlayUILoop(boundsToolState, window);
-    }, L"Launch bounds tool OverlayUI");
+        onCompleted();
+    },
+                      L"Launch bounds tool OverlayUI");
 
     windowCreatedEvent.wait();
 
     return window;
 }
-

@@ -61,23 +61,38 @@ namespace MeasureToolUI
             appWindow.Move(new PointInt32(displayArea.WorkArea.X + (displayArea.WorkArea.Width / 2) - (rect.Width / 2), displayArea.WorkArea.Y + 12));
         }
 
+        private void UpdateCompletionEvent(object sender)
+        {
+            coreLogic.SetToolCompletionEvent(new PowerToys.MeasureToolCore.ToolSessionCompleted(() =>
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    ((RadioButton)sender).IsChecked = false;
+                });
+            }));
+        }
+
         private void BoundsTool_Click(object sender, RoutedEventArgs e)
         {
+            UpdateCompletionEvent(sender);
             coreLogic.StartBoundsTool();
         }
 
         private void MeasureTool_Click(object sender, RoutedEventArgs e)
         {
+            UpdateCompletionEvent(sender);
             coreLogic.StartMeasureTool(true, true);
         }
 
         private void HorizontalMeasureTool_Click(object sender, RoutedEventArgs e)
         {
+            UpdateCompletionEvent(sender);
             coreLogic.StartMeasureTool(true, false);
         }
 
         private void VerticalMeasureTool_Click(object sender, RoutedEventArgs e)
         {
+            UpdateCompletionEvent(sender);
             coreLogic.StartMeasureTool(false, true);
         }
 

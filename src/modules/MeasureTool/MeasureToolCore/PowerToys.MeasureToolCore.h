@@ -11,6 +11,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         Core();
         void StartBoundsTool();
         void StartMeasureTool(const bool horizontal, const bool vertical);
+        void SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger);
 
         void ResetState();
         winrt::PowerToys::MeasureToolCore::Point GetCursorPosition();
@@ -21,6 +22,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         float _targetMonitorScaleRatio = 1.f;
         MeasureToolState _measureToolState;
         BoundsToolState _boundsToolState;
+        std::function<void()> _sessionCompletedCallback;
         Settings _settings;
     };
 }

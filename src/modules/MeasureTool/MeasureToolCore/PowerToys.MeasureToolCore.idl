@@ -8,10 +8,13 @@ namespace PowerToys
             Int32 Y;
         };
 
+        delegate void ToolSessionCompleted();
+
         [default_interface]
         runtimeclass Core
         {
             Core();
+            void SetToolCompletionEvent(event ToolSessionCompleted completionTrigger);
             void StartMeasureTool(Boolean horizontal, Boolean vertical);
             void StartBoundsTool();
 

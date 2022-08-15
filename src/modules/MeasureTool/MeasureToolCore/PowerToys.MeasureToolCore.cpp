@@ -55,8 +55,17 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             state.pixelTolerance = _settings.pixelTolerance;
         });
 
-        _overlayUIWindowHandle = LaunchOverlayUI(_measureToolState, _targetMonitor);
+        _overlayUIWindowHandle = LaunchOverlayUI(_measureToolState,
+                                                 _targetMonitor,
+                                                 _sessionCompletedCallback);
         StartCapturingThread(_measureToolState, _overlayUIWindowHandle, _targetMonitor);
+    }
+
+    void MeasureToolCore::implementation::Core::SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger)
+    {
+        _sessionCompletedCallback = [cb = std::move(sessionCompletedTrigger)] {
+            cb();
+        };
     }
 
     void Core::StartBoundsTool()
@@ -67,7 +76,9 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _boundsToolState.lineColor.g = _settings.lineColor[1] / 255.f;
         _boundsToolState.lineColor.b = _settings.lineColor[2] / 255.f;
 
-        _overlayUIWindowHandle = LaunchOverlayUI(_boundsToolState, _targetMonitor);
+        _overlayUIWindowHandle = LaunchOverlayUI(_boundsToolState,
+                                                 _targetMonitor,
+                                                 _sessionCompletedCallback);
     }
 
     winrt::PowerToys::MeasureToolCore::Point MeasureToolCore::implementation::Core::GetCursorPosition()
