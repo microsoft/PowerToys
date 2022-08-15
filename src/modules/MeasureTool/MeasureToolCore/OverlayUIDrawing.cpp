@@ -64,10 +64,10 @@ void SetClipBoardToText(const std::wstring_view text)
             closeWindow();
         }
         break;
-    case WM_LBUTTONUP:
+    case WM_RBUTTONUP:
         closeWindow();
         break;
-    case WM_RBUTTONUP:
+    case WM_LBUTTONUP:
         SetClipBoardToText(measureStringBuf);
         break;
     case WM_ERASEBKGND:
