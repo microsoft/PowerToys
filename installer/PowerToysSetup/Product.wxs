@@ -1111,7 +1111,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
     <DirectoryRef Id="$(var.ParentDirectory)">
       <!-- Resource file directories -->
       <?foreach Language in $(var.LocLanguageList)?>
@@ -1295,7 +1295,7 @@
           Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder"
           Guid="$(var.CompGUIDPrefix)08">
         <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
-      </Component>
+      </Component>		
       <Component
           Id="Launcher_Folder_$(var.IdSafeLanguage)_Component"
           Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder"
@@ -1397,6 +1397,12 @@
           Directory="Resource$(var.IdSafeLanguage)OneNotePluginFolder">
         <File Id="Launcher_OneNote_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\OneNote\$(var.Language)\Microsoft.PowerToys.Run.Plugin.OneNote.resources.dll" />
       </Component>
+      <Component
+          Id="Launcher_History_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)HistoryPluginFolder"
+          Guid="$(var.CompGUIDPrefix)1A">
+        <File Id="Launcher_History_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\History\$(var.Language)\Microsoft.PowerToys.Run.Plugin.History.resources.dll" />
+      </Component>	  
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>
