@@ -588,5 +588,28 @@ namespace FancyZonesEditor
                 }
             }
         }
+
+        private void SensitivityInput_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            {
+                SliderAutomationPeer peer =
+                    FrameworkElementAutomationPeer.FromElement(SensitivityInput) as SliderAutomationPeer;
+                string activityId = "sliderValueChanged";
+
+                var value = string.Format(
+                            CultureInfo.CurrentCulture,
+                            SensitivityInput.Value.ToString(CultureInfo.InvariantCulture));
+
+                if (peer != null && value != null)
+                {
+                    peer.RaiseNotificationEvent(
+                        AutomationNotificationKind.ActionCompleted,
+                        AutomationNotificationProcessing.ImportantMostRecent,
+                        value,
+                        activityId);
+                }
+            }
+        }
     }
 }
