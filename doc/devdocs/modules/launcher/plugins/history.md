@@ -15,11 +15,11 @@ Because the results from the History Plugin are actually created from calls to t
 ## Special notes
 While the results returned from the plugin are from the PluginManager, they are sometimes modified before returning. One example is the Calculator plugin.
 Since the Calculator plugin operates on the current query input by the user, the results from Calculator plugin don't include that in the title. However, as a history item,
-the query is very implortant. In this case, and maybe others in the future, we modify the tile to also include the search.
+the query is very important. In this case, and maybe others in the future, we modify the tile to also include the search.
 
 ### Modified title example:
 
-This is what the Calulator plugin norally might show:
+This is what the Calculator plugin normally might show:
 ![image](https://user-images.githubusercontent.com/4396667/184661303-4f8cf0da-2956-46b9-bdc1-ed879cd0b7cc.png)
 
 But this is how it will look returned from the History plugin
@@ -47,7 +47,7 @@ When the plugin is used with the activation command, the scores are configured s
 If the history results are shown in the global results, the scores are not modified from that the original plugin set.
 
 ## Old Data
-Items selected before this plugin was created will not show in the hisitory becasue they don't contain enough data.
+Items selected before this plugin was created will not show in the history because they don't contain enough data.
 
 ## Important for developers
 
@@ -94,7 +94,7 @@ The plugin uses only these interfaces (all inside the `Main.cs`):
 * `PowerToys.PowerLauncher`
 
 
-#### Build Dependancy
+#### Build Dependency
 Access to PluginManager was needed to make this plugin work. Because of this a reference to PowerToys.PowerLauncher was needed.
 Since History Plugin needs a reference to PowerToys.PowerLauncher, PowerToys.PowerLauncher cannot depend on History Plugin (else a circular reference would exist).
 This means that if you build PowerToys.PowerLauncher only it will not build History Plugin. You will need to manually build History Plugin at least once and again manually if you change it.
