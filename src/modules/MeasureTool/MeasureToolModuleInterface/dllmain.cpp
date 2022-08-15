@@ -135,7 +135,7 @@ private:
         }
     }
 
-    void TerminateUIProcess()
+    void terminate_process()
     {
         TerminateProcess(m_hProcess, 1);
     }
@@ -151,7 +151,7 @@ public:
     {
         if (m_enabled)
         {
-            TerminateUIProcess();
+            terminate_process();
         }
         m_enabled = false;
     }
@@ -226,7 +226,7 @@ public:
     {
         if (m_enabled)
         {
-            TerminateUIProcess();
+            terminate_process();
         }
 
         m_enabled = false;
@@ -246,7 +246,7 @@ public:
             Logger::trace(L"MeasureTool hotkey pressed");
             if (is_process_running())
             {
-                TerminateUIProcess();
+                terminate_process();
             }
             else
             {
