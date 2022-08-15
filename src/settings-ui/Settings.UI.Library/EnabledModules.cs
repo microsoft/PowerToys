@@ -239,18 +239,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool powerOcr = true;
+        private bool powerOCR = true;
 
-        [JsonPropertyName("PowerOcr")]
-        public bool PowerOcr
+        [JsonPropertyName("PowerOCR")]
+        public bool PowerOCR
         {
-            get => powerOcr;
+            get => powerOCR;
             set
             {
-                if (powerOcr != value)
+                if (powerOCR != value)
                 {
                     LogTelemetryEvent(value);
-                    powerOcr = value;
+                    powerOCR = value;
                 }
             }
         }

@@ -9,29 +9,11 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <Page.Resources>
-        <converters:BoolToObjectConverter
-            x:Key="BoolToComboBoxIndexConverter"
-            FalseValue="0"
-            TrueValue="1" />
-        <converters:BoolToVisibilityConverter
-            x:Key="FalseToVisibleConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
-        <converters:BoolToVisibilityConverter
-            x:Key="TrueToVisibleConverter"
-            FalseValue="Collapsed"
-            TrueValue="Visible" />
-    </Page.Resources>
-
-    <controls:SettingsPageControl
-        x:Uid="PowerOcr"
-        IsTabStop="False"
-        ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
+    <controls:SettingsPageControl x:Uid="PowerOCR" ModuleImageSource="ms-appx:///Assets/Modules/AlwaysOnTop.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <controls:Setting x:Uid="PowerOcr_EnableToggleControl_HeaderText">
+                <controls:Setting x:Uid="PowerOCR_EnableToggleControl_HeaderText">
                     <controls:Setting.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png" />
                     </controls:Setting.Icon>
