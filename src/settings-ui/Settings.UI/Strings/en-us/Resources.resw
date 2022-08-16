@@ -684,6 +684,9 @@
     <value>.stl</value>
     <comment>File extension, should not be altered</comment>
   </data>
+  <data name="FileExplorerPreview_Color_Thumbnail_STL.Header" xml:space="preserve">
+    <value>Color</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
     <comment>File type, do not translate</comment>
