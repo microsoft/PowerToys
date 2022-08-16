@@ -12,17 +12,16 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         void StartBoundsTool();
         void StartMeasureTool(const bool horizontal, const bool vertical);
         void SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger);
-
+        void SetToolbarBoundingBox(const uint32_t fromX, const uint32_t fromY, const uint32_t toX, const uint32_t toY);
         void ResetState();
-        winrt::PowerToys::MeasureToolCore::Point GetCursorPosition();
+        Point GetCursorPosition();
+        float GetDPIScaleForWindow(uint64_t windowHandle);
 
         HWND _overlayUIWindowHandle = {};
         HWND _nativeWindowHandle = {};
-        HMONITOR _targetMonitor = nullptr;
-        float _targetMonitorScaleRatio = 1.f;
         MeasureToolState _measureToolState;
         BoundsToolState _boundsToolState;
-        std::function<void()> _sessionCompletedCallback;
+        CommonState _commonState;
         Settings _settings;
     };
 }

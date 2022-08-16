@@ -14,6 +14,13 @@ struct BoundsToolState
     D2D1::ColorF lineColor = D2D1::ColorF::OrangeRed;
 };
 
+struct CommonState
+{
+    std::function<void()> sessionCompletedCallback;
+    HMONITOR monitor = {};
+    RECT toolbarBoundingBox = {};
+};
+
 struct MeasureToolState
 {
     enum class Mode

@@ -42,8 +42,7 @@
                 <Setter Property="FontSize" Value="10" />
                 <Setter Property="Padding" Value="0" />
             </Style>
-
-            <Style x:Key="ToggleButtonRadioButtonStyle" TargetType="RadioButton">
+            <Style x:Key="ToggleButtonRadioButtonStyle" TargetType="ToggleButton">
                 <Setter Property="MinHeight" Value="30" />
                 <Setter Property="MinWidth" Value="30" />
                 <Setter Property="Width" Value="30" />
@@ -66,7 +65,7 @@
                 <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
                 <Setter Property="Template">
                     <Setter.Value>
-                        <ControlTemplate TargetType="RadioButton">
+                        <ControlTemplate TargetType="ToggleButton">
                             <ContentPresenter
                                 x:Name="ContentPresenter"
                                 Padding="{TemplateBinding Padding}"
@@ -257,34 +256,30 @@
             HorizontalAlignment="Center"
             Orientation="Horizontal"
             Spacing="8">
-            <RadioButton
+            <ToggleButton
                 AutomationProperties.Name="Bounds"
                 Click="BoundsTool_Click"
                 Content="&#xEF20;"
-                GroupName="ModeGroup"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
                 ToolTipService.ToolTip="Bounds" />
-            <RadioButton
+            <ToggleButton
                 AutomationProperties.Name="Spacing"
                 Click="MeasureTool_Click"
-                GroupName="ModeGroup"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
                 ToolTipService.ToolTip="Spacing">
                 <FontIcon Margin="1,0,0,0" Glyph="&#xE948;" />
-            </RadioButton>
+            </ToggleButton>
 
-            <RadioButton
+            <ToggleButton
                 AutomationProperties.Name="Horizontal spacing"
                 Click="HorizontalMeasureTool_Click"
-                GroupName="ModeGroup"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
                 ToolTipService.ToolTip="Horizontal spacing">
                 <FontIcon Margin="1,0,0,0" Glyph="&#xE949;" />
-            </RadioButton>
-            <RadioButton
+            </ToggleButton>
+            <ToggleButton
                 AutomationProperties.Name="Vertical spacing"
                 Click="VerticalMeasureTool_Click"
-                GroupName="ModeGroup"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
                 ToolTipService.ToolTip="Vertical spacing">
                 <FontIcon Glyph="&#xE949;" RenderTransformOrigin="0.5,0.5">
@@ -292,7 +287,7 @@
                         <RotateTransform Angle="90" />
                     </FontIcon.RenderTransform>
                 </FontIcon>
-            </RadioButton>
+            </ToggleButton>
             <AppBarSeparator Height="36" />
             <Button
                 Click="ClosePanelTool_Click"

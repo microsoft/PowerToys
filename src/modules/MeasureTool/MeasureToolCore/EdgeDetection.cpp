@@ -11,26 +11,23 @@ const long CURSOR_OFFSET_AMOUNT_Y = 4;
 template<bool continuousCapture, bool IsX, bool Increment>
 inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance)
 {
-    long xOffset;
-    long yOffset;
+    long xOffset = 0;
+    long yOffset = 0;
+
+    // For continuous capture, we'll be a bit off center from the cursor but at least the cross we draw won't interfere with the measurement.
     if constexpr (continuousCapture)
     {
         if constexpr (IsX)
         {
             xOffset = Increment ? CURSOR_OFFSET_AMOUNT_X : -CURSOR_OFFSET_AMOUNT_X;
-            yOffset = 1; // For continuous capture, we'll be a bit off center from the cursor but at least the cross we draw won't interfere with the measurement.
+            yOffset = 1; 
 
         }
         else
         {
+            xOffset = 1;
             yOffset = Increment ? CURSOR_OFFSET_AMOUNT_Y : -CURSOR_OFFSET_AMOUNT_Y;
-            xOffset = 1; // For continuous capture,we'll be a bit off center from the cursor but at least the cross we draw won't interfere with the measurement.
         }
-    }
-    else
-    {
-        yOffset = 0;
-        xOffset = 0;
     }
 
     const size_t maxDim = IsX ? texture.width : texture.height;

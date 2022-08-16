@@ -3,101 +3,142 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Windows.Graphics;
 using WinUIEx;
 
 namespace MeasureToolUI
 {
+    using static NativeMethods;
+
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
-        [DllImport("user32.dll")]
-        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+        private const int WindowWidth = 216;
+        private const int WindowHeight = 50;
 
-#pragma warning disable SA1312 // Importing native function
-#pragma warning disable SA1310
-        private static readonly IntPtr HWND_TOPMOST = new System.IntPtr(-1);
-        private const uint SWP_NOSIZE = 0x0001;
-        private const uint SWP_NOMOVE = 0x0002;
-        private const uint SWP_SHOWWINDOW = 0x0040;
-#pragma warning restore SA1310
-#pragma warning restore SA1312
+        private PowerToys.MeasureToolCore.Core _coreLogic = new PowerToys.MeasureToolCore.Core();
 
-        private PowerToys.MeasureToolCore.Core coreLogic = new PowerToys.MeasureToolCore.Core();
+        private AppWindow _appWindow;
+        private PointInt32 _initialPosition;
+
+        protected override void OnPositionChanged(PointInt32 position)
+        {
+            _appWindow.Move(_initialPosition);
+            this.SetWindowSize(WindowWidth, WindowHeight);
+        }
 
         public MainWindow()
         {
             InitializeComponent();
 
-            RectInt32 rect;
-            rect.Width = 216;
-            rect.Height = 50;
-
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            var presenter = appWindow.Presenter as OverlappedPresenter;
+            _appWindow = AppWindow.GetFromWindowId(windowId);
+            var presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsAlwaysOnTop = true;
             this.SetIsAlwaysOnTop(true);
             this.SetIsShownInSwitchers(false);
             this.SetIsResizable(false);
-            this.SetWindowSize(rect.Width, rect.Height);
             this.SetIsMinimizable(false);
             this.SetIsMaximizable(false);
             IsTitleBarVisible = false;
 
-            var cursorPosition = coreLogic.GetCursorPosition();
-            var cursorPositionInt32 = new PointInt32(cursorPosition.X, cursorPosition.Y);
-            DisplayArea displayArea = DisplayArea.GetFromPoint(cursorPositionInt32, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest);
+            var cursorPosition = _coreLogic.GetCursorPosition();
+            DisplayArea displayArea = DisplayArea.GetFromPoint(
+                new PointInt32(
+                    cursorPosition.X,
+                    cursorPosition.Y), DisplayAreaFallback.Nearest);
+            float dpiScale = _coreLogic.GetDPIScaleForWindow((int)hwnd);
 
-            appWindow.Move(new PointInt32(displayArea.WorkArea.X + (displayArea.WorkArea.Width / 2) - (rect.Width / 2), displayArea.WorkArea.Y + 12));
+            _initialPosition = new PointInt32(displayArea.WorkArea.X + (displayArea.WorkArea.Width / 2) - (int)(dpiScale * WindowWidth / 2), displayArea.WorkArea.Y + (int)(dpiScale * 12));
+
+            _coreLogic.SetToolbarBoundingBox(
+                _initialPosition.X,
+                _initialPosition.Y,
+                _initialPosition.X + (int)(dpiScale * WindowWidth),
+                _initialPosition.Y + (int)(dpiScale * WindowHeight));
+
+            OnPositionChanged(_initialPosition);
         }
 
-        private void UpdateCompletionEvent(object sender)
+        private void UpdateToolUsageCompletionEvent(object sender)
         {
-            coreLogic.SetToolCompletionEvent(new PowerToys.MeasureToolCore.ToolSessionCompleted(() =>
+            _coreLogic.SetToolCompletionEvent(new PowerToys.MeasureToolCore.ToolSessionCompleted(() =>
             {
                 DispatcherQueue.TryEnqueue(() =>
                 {
-                    ((RadioButton)sender).IsChecked = false;
+                    ((ToggleButton)sender).IsChecked = false;
                 });
             }));
         }
 
+        private void UncheckOtherButtons(ToggleButton button)
+        {
+            var panel = button.Parent as Panel;
+            foreach (var elem in panel.Children)
+            {
+                if (elem is ToggleButton otherButton)
+                {
+                    if (!button.Equals(otherButton))
+                    {
+                        otherButton.IsChecked = false;
+                    }
+                }
+            }
+        }
+
+        private void HandleToolClick(object toolButton, Action startToolAction)
+        {
+            ToggleButton button = toolButton as ToggleButton;
+            if (button == null)
+            {
+                return;
+            }
+
+            if (button.IsChecked.GetValueOrDefault())
+            {
+                UncheckOtherButtons(button);
+                _coreLogic.ResetState();
+                startToolAction();
+                UpdateToolUsageCompletionEvent(toolButton);
+            }
+            else
+            {
+                _coreLogic.ResetState();
+            }
+        }
+
         private void BoundsTool_Click(object sender, RoutedEventArgs e)
         {
-            UpdateCompletionEvent(sender);
-            coreLogic.StartBoundsTool();
+            HandleToolClick(sender, () => _coreLogic.StartBoundsTool());
         }
 
         private void MeasureTool_Click(object sender, RoutedEventArgs e)
         {
-            UpdateCompletionEvent(sender);
-            coreLogic.StartMeasureTool(true, true);
+            HandleToolClick(sender, () => _coreLogic.StartMeasureTool(true, true));
         }
 
         private void HorizontalMeasureTool_Click(object sender, RoutedEventArgs e)
         {
-            UpdateCompletionEvent(sender);
-            coreLogic.StartMeasureTool(true, false);
+            HandleToolClick(sender, () => _coreLogic.StartMeasureTool(true, false));
         }
 
         private void VerticalMeasureTool_Click(object sender, RoutedEventArgs e)
         {
-            UpdateCompletionEvent(sender);
-            coreLogic.StartMeasureTool(false, true);
+            HandleToolClick(sender, () => _coreLogic.StartMeasureTool(false, true));
         }
 
         private void ClosePanelTool_Click(object sender, RoutedEventArgs e)
         {
+            _coreLogic.ResetState();
             this.Close();
         }
     }

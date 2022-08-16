@@ -17,7 +17,6 @@ namespace NonLocalizable
 //#define DEBUG_OVERLAY
 
 static wchar_t measureStringBuf[32] = {};
-std::atomic_bool stopUILoop = false;
 D2D1::ColorF foreground = D2D1::ColorF::Black;
 D2D1::ColorF background = D2D1::ColorF(0.96f, 0.96f, 0.96f, 1.0f);
 D2D1::ColorF border = D2D1::ColorF(0.44f, 0.44f, 0.44f, 0.4f);
@@ -50,12 +49,15 @@ void SetClipBoardToText(const std::wstring_view text)
 LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
     const auto closeWindow = [&] {
-        stopUILoop = true;
         PostMessageW(window, WM_CLOSE, {}, {});
     };
 
     switch (message)
     {
+    case WM_DESTROY:
+    case WM_CLOSE:
+        DestroyWindow(window);
+        break;
     case WM_KEYUP:
         if (wparam == VK_ESCAPE)
         {
@@ -75,12 +77,10 @@ LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
         for (; ShowCursor(false) > 0;)
             ;
 #endif
-        [[fallthrough]];
-    default:
-        return DefWindowProcW(window, message, wparam, lparam);
+        break;
     }
 
-    return 0;
+    return DefWindowProcW(window, message, wparam, lparam);
 }
 
 LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
@@ -88,12 +88,15 @@ LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     static BoundsToolState* toolState = nullptr;
 
     const auto closeWindow = [&] {
-        stopUILoop = true;
         PostMessageW(window, WM_CLOSE, {}, {});
     };
 
     switch (message)
     {
+    case WM_DESTROY:
+    case WM_CLOSE:
+        DestroyWindow(window);
+        break;
     case WM_CREATE:
         toolState = reinterpret_cast<BoundsToolState*>(reinterpret_cast<CREATESTRUCT*>(lparam)->lpCreateParams);
         break;
@@ -129,11 +132,9 @@ LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         break;
     case WM_ERASEBKGND:
         return 1;
-    default:
-        return DefWindowProcW(window, message, wparam, lparam);
     }
 
-    return 0;
+    return DefWindowProcW(window, message, wparam, lparam);
 }
 
 void CreateOverlayWindowClasses()
@@ -150,7 +151,7 @@ void CreateOverlayWindowClasses()
     RegisterClassExW(&wcex);
 }
 
-HWND CreateOverlayUIWindow(HMONITOR monitor, const wchar_t* windowClass, void* extraParam = nullptr)
+HWND CreateOverlayUIWindow(CommonState& commonState, const wchar_t* windowClass, void* extraParam = nullptr)
 {
     static std::once_flag windowClassesCreatedFlag;
     std::call_once(windowClassesCreatedFlag, CreateOverlayWindowClasses);
@@ -159,7 +160,7 @@ HWND CreateOverlayUIWindow(HMONITOR monitor, const wchar_t* windowClass, void* e
     int width = {}, height = {};
 
     MONITORINFO monitorInfo = { .cbSize = sizeof(monitorInfo) };
-    if (GetMonitorInfoW(monitor, &monitorInfo))
+    if (GetMonitorInfoW(commonState.monitor, &monitorInfo))
     {
         left = monitorInfo.rcWork.left;
         top = monitorInfo.rcWork.top;
@@ -192,6 +193,19 @@ HWND CreateOverlayUIWindow(HMONITOR monitor, const wchar_t* windowClass, void* e
     {
         DWM_BLURBEHIND bh = { DWM_BB_ENABLE | DWM_BB_BLURREGION, TRUE, hrgn.get(), FALSE };
         DwmEnableBlurBehindWindow(window, &bh);
+    }
+
+    RECT windowRect = {};
+    if (GetWindowRect(window, &windowRect))
+    {
+        // will be freed during SetWindowRgn call
+        const HRGN windowRegion{ CreateRectRgn(windowRect.left, windowRect.top, windowRect.right, windowRect.bottom) };
+        wil::unique_hrgn toolbarRegion{ CreateRectRgn(commonState.toolbarBoundingBox.left,
+                                                      commonState.toolbarBoundingBox.top,
+                                                      commonState.toolbarBoundingBox.right,
+                                                      commonState.toolbarBoundingBox.bottom) };
+        CombineRgn(windowRegion, windowRegion, toolbarRegion.get(), RGN_DIFF);
+        SetWindowRgn(window, windowRegion, true);
     }
 
     return window;
@@ -321,7 +335,7 @@ void DrawBoundsToolOverlayUILoop(BoundsToolState& toolState, HWND overlayWindow)
 
     D2DState d2dState{ overlayWindow, { toolState.lineColor, foreground, background, border } };
 
-    while (!stopUILoop)
+    while (IsWindow(overlayWindow))
     {
         d2dState.rt->BeginDraw();
 
@@ -353,13 +367,12 @@ void DrawBoundsToolOverlayUILoop(BoundsToolState& toolState, HWND overlayWindow)
 
         d2dState.rt->EndDraw();
 
-        d2dState.rt->Flush();
         InvalidateRect(overlayWindow, nullptr, true);
         run_message_loop(true);
     }
 }
 
-void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindow)
+void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, CommonState& commonState, HWND overlayWindow)
 {
     bool drawHorizontalCrossLine = true;
     bool drawVerticalCrossLine = true;
@@ -394,111 +407,115 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
     SetOverlayUIColors();
     D2DState d2dState{ overlayWindow, { crossColor, foreground, background, border } };
 
-    while (!stopUILoop)
+    while (IsWindow(overlayWindow))
     {
-        d2dState.rt->BeginDraw();
-        auto previousAliasingMode = d2dState.rt->GetAntialiasMode();
-        d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED); // Anti-aliasing is creating artifacts. Aliasing is for drawing straight lines.
-        d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
-
         MeasureToolState::State mts;
         toolState.Access([&mts](MeasureToolState::State& state) {
             mts = state;
         });
 
-        const float CROSS_THICKNESS = 1.f;
-        const float FEET_LENGTH = 5.f;
+        const bool cursorOverToolbar = PtInRect(&commonState.toolbarBoundingBox, mts.cursorPos);
 
-        // Adjust cross to better match cursor coordinates in the texture.
-        // For example, the [0;0] pixel in the texture actually has the coordinates [0.5;0.5].
-        mts.cross.hLineStart.x += .5f;
-        mts.cross.hLineStart.y += .5f;
-        mts.cross.hLineEnd.x += .5f;
-        mts.cross.hLineEnd.y += .5f;
-        mts.cross.vLineStart.x += .5f;
-        mts.cross.vLineStart.y += .5f;
-        mts.cross.vLineEnd.x += .5f;
-        mts.cross.vLineEnd.y += .5f;
+        d2dState.rt->BeginDraw();
+        auto previousAliasingMode = d2dState.rt->GetAntialiasMode();
+        d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED); // Anti-aliasing is creating artifacts. Aliasing is for drawing straight lines.
+        d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
 
-        if (drawHorizontalCrossLine)
+        if (!cursorOverToolbar)
         {
-            d2dState.rt->DrawLine(mts.cross.hLineStart, mts.cross.hLineEnd, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
-            if (drawFeetOnCross && !continuousCapture)
+            const float LINE_THICKNESS = 1.f;
+            const float FEET_LENGTH = 5.f;
+
+            // TODO: investigate why it's required
+            // Adjust cross to better match cursor coordinates in the texture.
+            const float lineOffset = 1.f;
+            mts.cross.hLineStart.x += lineOffset;
+            mts.cross.hLineStart.y += lineOffset;
+            mts.cross.hLineEnd.x += lineOffset;
+            mts.cross.hLineEnd.y += lineOffset;
+            mts.cross.vLineStart.x += lineOffset;
+            mts.cross.vLineStart.y += lineOffset;
+            mts.cross.vLineEnd.x += lineOffset;
+            mts.cross.vLineEnd.y += lineOffset;
+
+            if (drawHorizontalCrossLine)
             {
-                //draw line feet
-                D2D_POINT_2F start_feet_top_half_start = { mts.cross.hLineStart.x + CROSS_THICKNESS / 2, mts.cross.hLineStart.y - CROSS_THICKNESS / 2 };
-                D2D_POINT_2F start_feet_top_half_end = { mts.cross.hLineStart.x + CROSS_THICKNESS / 2, mts.cross.hLineStart.y - FEET_LENGTH };
-                d2dState.rt->DrawLine(start_feet_top_half_start, start_feet_top_half_end, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
-                D2D_POINT_2F start_feet_bottom_half_start = { mts.cross.hLineStart.x + CROSS_THICKNESS / 2, mts.cross.hLineStart.y + CROSS_THICKNESS / 2 };
-                D2D_POINT_2F start_feet_bottom_half_end = { mts.cross.hLineStart.x + CROSS_THICKNESS / 2, mts.cross.hLineStart.y + FEET_LENGTH };
-                d2dState.rt->DrawLine(start_feet_bottom_half_start, start_feet_bottom_half_end, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
-                D2D_POINT_2F end_feet_start_top_half_start = { mts.cross.hLineEnd.x - CROSS_THICKNESS / 2, mts.cross.hLineEnd.y - CROSS_THICKNESS / 2 };
-                D2D_POINT_2F end_feet_end_top_half_end = { mts.cross.hLineEnd.x - CROSS_THICKNESS / 2, mts.cross.hLineEnd.y - FEET_LENGTH };
-                d2dState.rt->DrawLine(end_feet_start_top_half_start, end_feet_end_top_half_end, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
-                D2D_POINT_2F end_feet_start_bottom_half_start = { mts.cross.hLineEnd.x - CROSS_THICKNESS / 2, mts.cross.hLineEnd.y + CROSS_THICKNESS / 2 };
-                D2D_POINT_2F end_feet_end_bottom_half_end = { mts.cross.hLineEnd.x - CROSS_THICKNESS / 2, mts.cross.hLineEnd.y + FEET_LENGTH };
-                d2dState.rt->DrawLine(end_feet_start_bottom_half_start, end_feet_end_bottom_half_end, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
+                d2dState.rt->DrawLine(mts.cross.hLineStart, mts.cross.hLineEnd, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                if (drawFeetOnCross && !continuousCapture)
+                {
+                    //draw line feet
+                    D2D_POINT_2F start_feet_top_half_start = { mts.cross.hLineStart.x + LINE_THICKNESS / 2, mts.cross.hLineStart.y - LINE_THICKNESS / 2 };
+                    D2D_POINT_2F start_feet_top_half_end = { mts.cross.hLineStart.x + LINE_THICKNESS / 2, mts.cross.hLineStart.y - FEET_LENGTH };
+                    d2dState.rt->DrawLine(start_feet_top_half_start, start_feet_top_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                    D2D_POINT_2F start_feet_bottom_half_start = { mts.cross.hLineStart.x + LINE_THICKNESS / 2, mts.cross.hLineStart.y + LINE_THICKNESS / 2 };
+                    D2D_POINT_2F start_feet_bottom_half_end = { mts.cross.hLineStart.x + LINE_THICKNESS / 2, mts.cross.hLineStart.y + FEET_LENGTH };
+                    d2dState.rt->DrawLine(start_feet_bottom_half_start, start_feet_bottom_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                    D2D_POINT_2F end_feet_start_top_half_start = { mts.cross.hLineEnd.x - LINE_THICKNESS / 2, mts.cross.hLineEnd.y - LINE_THICKNESS / 2 };
+                    D2D_POINT_2F end_feet_end_top_half_end = { mts.cross.hLineEnd.x - LINE_THICKNESS / 2, mts.cross.hLineEnd.y - FEET_LENGTH };
+                    d2dState.rt->DrawLine(end_feet_start_top_half_start, end_feet_end_top_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                    D2D_POINT_2F end_feet_start_bottom_half_start = { mts.cross.hLineEnd.x - LINE_THICKNESS / 2, mts.cross.hLineEnd.y + LINE_THICKNESS / 2 };
+                    D2D_POINT_2F end_feet_end_bottom_half_end = { mts.cross.hLineEnd.x - LINE_THICKNESS / 2, mts.cross.hLineEnd.y + FEET_LENGTH };
+                    d2dState.rt->DrawLine(end_feet_start_bottom_half_start, end_feet_end_bottom_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                }
             }
-        }
 
-        if (drawVerticalCrossLine)
-        {
-            d2dState.rt->DrawLine(mts.cross.vLineStart, mts.cross.vLineEnd, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
-            if (drawFeetOnCross && !continuousCapture)
+            if (drawVerticalCrossLine)
             {
-                //draw line feet
-                D2D_POINT_2F start_feet_left_half_start = { mts.cross.vLineStart.x - CROSS_THICKNESS / 2, mts.cross.vLineStart.y + CROSS_THICKNESS / 2 };
-                D2D_POINT_2F start_feet_left_half_end = { mts.cross.vLineStart.x - FEET_LENGTH, mts.cross.vLineStart.y + CROSS_THICKNESS / 2 };
-                d2dState.rt->DrawLine(start_feet_left_half_start, start_feet_left_half_end, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
-                D2D_POINT_2F start_feet_right_half_start = { mts.cross.vLineStart.x + CROSS_THICKNESS / 2, mts.cross.vLineStart.y + CROSS_THICKNESS / 2 };
-                D2D_POINT_2F start_feet_right_half_end = { mts.cross.vLineStart.x + FEET_LENGTH, mts.cross.vLineStart.y + CROSS_THICKNESS / 2 };
-                d2dState.rt->DrawLine(start_feet_right_half_start, start_feet_right_half_end, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
-                D2D_POINT_2F end_feet_left_half_start = { mts.cross.vLineEnd.x - CROSS_THICKNESS / 2, mts.cross.vLineEnd.y - CROSS_THICKNESS / 2 };
-                D2D_POINT_2F end_feet_left_half_end = { mts.cross.vLineEnd.x - FEET_LENGTH, mts.cross.vLineEnd.y - CROSS_THICKNESS / 2 };
-                d2dState.rt->DrawLine(end_feet_left_half_start, end_feet_left_half_end, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
-                D2D_POINT_2F end_feet_right_half_start = { mts.cross.vLineEnd.x + CROSS_THICKNESS / 2, mts.cross.vLineEnd.y - CROSS_THICKNESS / 2 };
-                D2D_POINT_2F end_feet_right_half_end = { mts.cross.vLineEnd.x + FEET_LENGTH, mts.cross.vLineEnd.y - CROSS_THICKNESS / 2 };
-                d2dState.rt->DrawLine(end_feet_right_half_start, end_feet_right_half_end, d2dState.solidBrushes[Brush::line].get(), CROSS_THICKNESS);
+                d2dState.rt->DrawLine(mts.cross.vLineStart, mts.cross.vLineEnd, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                if (drawFeetOnCross && !continuousCapture)
+                {
+                    // TODO: simplify
+                    //draw line feet
+                    D2D_POINT_2F start_feet_left_half_start = { mts.cross.vLineStart.x - LINE_THICKNESS / 2, mts.cross.vLineStart.y + LINE_THICKNESS / 2 };
+                    D2D_POINT_2F start_feet_left_half_end = { mts.cross.vLineStart.x - FEET_LENGTH, mts.cross.vLineStart.y + LINE_THICKNESS / 2 };
+                    d2dState.rt->DrawLine(start_feet_left_half_start, start_feet_left_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                    D2D_POINT_2F start_feet_right_half_start = { mts.cross.vLineStart.x + LINE_THICKNESS / 2, mts.cross.vLineStart.y + LINE_THICKNESS / 2 };
+                    D2D_POINT_2F start_feet_right_half_end = { mts.cross.vLineStart.x + FEET_LENGTH, mts.cross.vLineStart.y + LINE_THICKNESS / 2 };
+                    d2dState.rt->DrawLine(start_feet_right_half_start, start_feet_right_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                    D2D_POINT_2F end_feet_left_half_start = { mts.cross.vLineEnd.x - LINE_THICKNESS / 2, mts.cross.vLineEnd.y - LINE_THICKNESS / 2 };
+                    D2D_POINT_2F end_feet_left_half_end = { mts.cross.vLineEnd.x - FEET_LENGTH, mts.cross.vLineEnd.y - LINE_THICKNESS / 2 };
+                    d2dState.rt->DrawLine(end_feet_left_half_start, end_feet_left_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                    D2D_POINT_2F end_feet_right_half_start = { mts.cross.vLineEnd.x + LINE_THICKNESS / 2, mts.cross.vLineEnd.y - LINE_THICKNESS / 2 };
+                    D2D_POINT_2F end_feet_right_half_end = { mts.cross.vLineEnd.x + FEET_LENGTH, mts.cross.vLineEnd.y - LINE_THICKNESS / 2 };
+                    d2dState.rt->DrawLine(end_feet_right_half_start, end_feet_right_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                }
             }
+
+            // After drawing the lines, restore anti aliasing to draw the measurement tooltip.
+            d2dState.rt->SetAntialiasMode(previousAliasingMode);
+
+            const float hMeasure = mts.cross.hLineEnd.x - mts.cross.hLineStart.x;
+            const float vMeasure = mts.cross.vLineEnd.y - mts.cross.vLineStart.y;
+            uint32_t measureStringBufLen = 0;
+
+            switch (toolMode)
+            {
+            case MeasureToolState::Mode::Cross:
+                measureStringBufLen = swprintf_s(measureStringBuf,
+                                                 L"%.0f x %.0f",
+                                                 hMeasure,
+                                                 vMeasure);
+                break;
+            case MeasureToolState::Mode::Vertical:
+                measureStringBufLen = swprintf_s(measureStringBuf,
+                                                 L"%.0f",
+                                                 vMeasure);
+                break;
+            case MeasureToolState::Mode::Horizontal:
+                measureStringBufLen = swprintf_s(measureStringBuf,
+                                                 L"%.0f",
+                                                 hMeasure);
+                break;
+            }
+
+            DrawTextBox(d2dState,
+                        measureStringBuf,
+                        measureStringBufLen,
+                        static_cast<float>(mts.cursorPos.x),
+                        static_cast<float>(mts.cursorPos.y),
+                        overlayWindow);
         }
-
-        // After drawing the lines, restore anti aliasing to draw the measurement tooltip.
-        d2dState.rt->SetAntialiasMode(previousAliasingMode);
-
-        const float hMeasure = mts.cross.hLineEnd.x - mts.cross.hLineStart.x;
-        const float vMeasure = mts.cross.vLineEnd.y - mts.cross.vLineStart.y;
-        uint32_t measureStringBufLen = 0;
-
-        switch (toolMode)
-        {
-        case MeasureToolState::Mode::Cross:
-            measureStringBufLen = swprintf_s(measureStringBuf,
-                                             L"%.0f x %.0f",
-                                             hMeasure,
-                                             vMeasure);
-            break;
-        case MeasureToolState::Mode::Vertical:
-            measureStringBufLen = swprintf_s(measureStringBuf,
-                                             L"%.0f",
-                                             vMeasure);
-            break;
-        case MeasureToolState::Mode::Horizontal:
-            measureStringBufLen = swprintf_s(measureStringBuf,
-                                             L"%.0f",
-                                             hMeasure);
-            break;
-        }
-
-        DrawTextBox(d2dState,
-                    measureStringBuf,
-                    measureStringBufLen,
-                    static_cast<float>(mts.cursorPos.x),
-                    static_cast<float>(mts.cursorPos.y),
-                    overlayWindow);
-
         d2dState.rt->EndDraw();
-
-        // d2dState.rt->Flush(); EndDraw should flush already
         InvalidateRect(overlayWindow, nullptr, true);
         run_message_loop(true);
     }
@@ -509,19 +526,16 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, HWND overlayWindo
 }
 
 HWND LaunchOverlayUI(MeasureToolState& measureToolState,
-                     HMONITOR monitor,
-                     std::function<void()> onCompleted)
+                     CommonState& commonState)
 {
-    stopUILoop = false;
-
     wil::shared_event windowCreatedEvent(wil::EventOptions::ManualReset);
 
     HWND window = {};
-    SpawnLoggedThread([=, &measureToolState, &window] {
-        window = CreateOverlayUIWindow(monitor, NonLocalizable::MeasureToolOverlayWindowName);
+    SpawnLoggedThread([=, &measureToolState, &window, &commonState] {
+        window = CreateOverlayUIWindow(commonState, NonLocalizable::MeasureToolOverlayWindowName);
         windowCreatedEvent.SetEvent();
-        DrawMeasureToolOverlayUILoop(measureToolState, window);
-        onCompleted();
+        DrawMeasureToolOverlayUILoop(measureToolState, commonState, window);
+        commonState.sessionCompletedCallback();
     },
                       L"Launch measure tool OverlayUI");
 
@@ -531,19 +545,16 @@ HWND LaunchOverlayUI(MeasureToolState& measureToolState,
 }
 
 HWND LaunchOverlayUI(BoundsToolState& boundsToolState,
-                     HMONITOR monitor,
-                     std::function<void()> onCompleted)
+                     CommonState& commonState)
 {
-    stopUILoop = false;
-
     wil::shared_event windowCreatedEvent(wil::EventOptions::ManualReset);
 
     HWND window = {};
-    SpawnLoggedThread([=, &boundsToolState, &window] {
-        window = CreateOverlayUIWindow(monitor, NonLocalizable::BoundsToolOverlayWindowName, &boundsToolState);
+    SpawnLoggedThread([=, &boundsToolState, &window, &commonState] {
+        window = CreateOverlayUIWindow(commonState, NonLocalizable::BoundsToolOverlayWindowName, &boundsToolState);
         windowCreatedEvent.SetEvent();
         DrawBoundsToolOverlayUILoop(boundsToolState, window);
-        onCompleted();
+        commonState.sessionCompletedCallback();
     },
                       L"Launch bounds tool OverlayUI");
 
