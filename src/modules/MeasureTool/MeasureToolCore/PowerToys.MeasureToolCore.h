@@ -14,7 +14,6 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         void SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger);
         void SetToolbarBoundingBox(const uint32_t fromX, const uint32_t fromY, const uint32_t toX, const uint32_t toY);
         void ResetState();
-        Point GetCursorPosition();
         float GetDPIScaleForWindow(uint64_t windowHandle);
 
         HWND _overlayUIWindowHandle = {};

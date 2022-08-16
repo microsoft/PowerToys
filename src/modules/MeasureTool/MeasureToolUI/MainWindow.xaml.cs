@@ -51,11 +51,7 @@ namespace MeasureToolUI
             this.SetIsMaximizable(false);
             IsTitleBarVisible = false;
 
-            var cursorPosition = _coreLogic.GetCursorPosition();
-            DisplayArea displayArea = DisplayArea.GetFromPoint(
-                new PointInt32(
-                    cursorPosition.X,
-                    cursorPosition.Y), DisplayAreaFallback.Nearest);
+            DisplayArea displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
             float dpiScale = _coreLogic.GetDPIScaleForWindow((int)hwnd);
 
             _initialPosition = new PointInt32(displayArea.WorkArea.X + (displayArea.WorkArea.Width / 2) - (int)(dpiScale * WindowWidth / 2), displayArea.WorkArea.Y + (int)(dpiScale * 12));

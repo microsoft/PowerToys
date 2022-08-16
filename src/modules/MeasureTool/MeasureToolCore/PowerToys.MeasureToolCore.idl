@@ -21,7 +21,6 @@ namespace PowerToys
 
             void SetToolbarBoundingBox(Int32 fromX, Int32 fromY, Int32 toX, Int32 toY);
 
-            Point GetCursorPosition();
             Single GetDPIScaleForWindow(Int64 windowHandle);
         }
     }

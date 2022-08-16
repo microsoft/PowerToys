@@ -87,19 +87,6 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _overlayUIWindowHandle = LaunchOverlayUI(_boundsToolState, _commonState);
     }
 
-    winrt::PowerToys::MeasureToolCore::Point MeasureToolCore::implementation::Core::GetCursorPosition()
-    {
-        winrt::PowerToys::MeasureToolCore::Point result;
-        POINT cursorPos = {};
-
-        GetCursorPos(&cursorPos);
-
-        result.X = cursorPos.x;
-        result.Y = cursorPos.y;
-
-        return result;
-    }
-
     float MeasureToolCore::implementation::Core::GetDPIScaleForWindow(uint64_t windowHandle)
     {
         UINT dpi = DPIAware::DEFAULT_DPI;

@@ -204,8 +204,9 @@ HWND CreateOverlayUIWindow(CommonState& commonState, const wchar_t* windowClass,
                                                       commonState.toolbarBoundingBox.top,
                                                       commonState.toolbarBoundingBox.right,
                                                       commonState.toolbarBoundingBox.bottom) };
-        CombineRgn(windowRegion, windowRegion, toolbarRegion.get(), RGN_DIFF);
-        SetWindowRgn(window, windowRegion, true);
+        const auto res = CombineRgn(windowRegion, windowRegion, toolbarRegion.get(), RGN_DIFF);
+        if (res != ERROR)
+            SetWindowRgn(window, windowRegion, true);
     }
 
     return window;
