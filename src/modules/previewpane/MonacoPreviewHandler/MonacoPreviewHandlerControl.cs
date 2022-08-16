@@ -334,8 +334,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 _loadingBackground.BringToFront();
 
                 _loadingBar = new ProgressBar();
-                _loadingBar.Width = this.Width - 4;
-                _loadingBar.Location = new Point(2, this.Height / 2);
+                _loadingBar.Width = this.Width - 10;
+                _loadingBar.Location = new Point(5, this.Height / 2);
                 _loadingBar.Maximum = 100;
                 _loadingBar.Value = 10;
                 Controls.Add(_loadingBar);
@@ -343,9 +343,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 _loading = new Label();
                 _loading.Text = Resources.Loading_Screen_Message;
                 _loading.Width = this.Width;
-                _loading.Location = new Point(0, _loadingBar.Location.Y - _loadingBar.Height);
+                _loading.Height = 45;
+                _loading.Location = new Point(0, _loadingBar.Location.Y - _loading.Height);
                 _loading.TextAlign = ContentAlignment.TopCenter;
-                _loading.Height = this.Height / 2;
                 _loading.Font = new Font("MS Sans Serif", 16, FontStyle.Bold);
                 _loading.ForeColor = Settings.TextColor;
                 Controls.Add(_loading);
