@@ -257,8 +257,6 @@ namespace PowerLauncher.ViewModel
 
         public Result Result { get; }
 
-        public UserSelectedRecord UserSelectedRecord { get; }
-
         public override bool Equals(object obj)
         {
             var r = obj as ResultViewModel;

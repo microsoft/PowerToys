@@ -1295,7 +1295,7 @@
           Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder"
           Guid="$(var.CompGUIDPrefix)08">
         <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
-      </Component>		
+      </Component>
       <Component
           Id="Launcher_Folder_$(var.IdSafeLanguage)_Component"
           Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder"
@@ -1840,7 +1840,7 @@
       </Component>
       <Component Id="WebSearchImagesComponentDark" Directory="WebSearchImagesFolder" >
         <File Id="WebSearchDark" Source="$(var.BinDir)modules\launcher\Plugins\WebSearch\Images\WebSearch.dark.png" />
-      </Component>		
+      </Component>
 
       <!-- History Plugin -->
       <?foreach File in $(var.HistoryPluginComponentFiles)?>
