@@ -1,9 +1,0 @@
-namespace PowerRenameUI
-{
-    runtimeclass UIUpdates : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
-    {
-        UIUpdates();
-        String OriginalCount;
-        String RenamedCount;
-    }
-}

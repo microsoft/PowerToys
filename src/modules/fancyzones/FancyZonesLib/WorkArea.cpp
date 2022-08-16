@@ -104,7 +104,8 @@ namespace
     WindowPool windowPool;
 }
 
-WorkArea::WorkArea(HINSTANCE hinstance)
+WorkArea::WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId) :
+    m_uniqueId(uniqueId)
 {
     WNDCLASSEXW wcex{};
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -118,24 +119,6 @@ WorkArea::WorkArea(HINSTANCE hinstance)
 WorkArea::~WorkArea()
 {
     windowPool.FreeZonesOverlayWindow(m_window);
-}
-
-bool WorkArea::Init(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& uniqueId, const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
-{
-    m_uniqueId = uniqueId;
-    InitializeZoneSets(parentUniqueId);
-
-    m_window = windowPool.NewZonesOverlayWindow(m_workAreaRect, hinstance, this);
-
-    if (!m_window)
-    {
-        Logger::error(L"No work area window");
-        return false;
-    }
-
-    m_zonesOverlay = std::make_unique<ZonesOverlay>(m_window);
-
-    return true;
 }
 
 HRESULT WorkArea::MoveSizeEnter(HWND window) noexcept
@@ -378,7 +361,20 @@ void WorkArea::FlashZones() noexcept
 
 #pragma region private
 
-void WorkArea::InitializeZoneSets(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept
+bool WorkArea::InitWindow(HINSTANCE hinstance) noexcept
+{
+    m_window = windowPool.NewZonesOverlayWindow(m_workAreaRect, hinstance, this);
+    if (!m_window)
+    {
+        Logger::error(L"No work area window");
+        return false;
+    }
+
+    m_zonesOverlay = std::make_unique<ZonesOverlay>(m_window);
+    return true;
+}
+
+void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId) noexcept
 {
     Logger::info(L"Initialize layout on {}", m_uniqueId.toString());
     
