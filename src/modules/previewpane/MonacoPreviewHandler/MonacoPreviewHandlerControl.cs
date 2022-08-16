@@ -342,8 +342,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
                 _loading = new Label();
                 _loading.Text = Resources.Loading_Screen_Message;
-                _loading.Width = this.Width - 2;
-                _loading.Location = new Point(2, _loadingBar.Location.Y - _loading.Height - 4);
+                _loading.Width = this.Width;
+                _loading.Location = new Point(0, _loadingBar.Location.Y - _loadingBar.Height);
+                _loading.TextAlign = ContentAlignment.TopCenter;
                 _loading.Height = this.Height / 2;
                 _loading.Font = new Font("MS Sans Serif", 16, FontStyle.Bold);
                 _loading.ForeColor = Settings.TextColor;
