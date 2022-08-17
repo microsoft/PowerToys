@@ -439,7 +439,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         // Singletons initialization order needs to be preserved, first events and
         // then modules to guarantee the reverse destruction order.
         modules();
-        cleanup_updates();
+
+        std::thread{ [] {
+            cleanup_updates();
+        } }.detach();
 
         auto general_settings = load_general_settings();
 
