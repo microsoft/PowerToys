@@ -52,6 +52,11 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         private const string VirtualHostName = "PowerToysLocalSvgThumbnail";
 
         /// <summary>
+        /// URI of the local file saved with the contents
+        /// </summary>
+        private Uri _localFileURI;
+
+        /// <summary>
         /// Gets the path of the current assembly.
         /// </summary>
         /// <remarks>
@@ -126,9 +131,10 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 thumbnailDone = true;
             };
 
+            var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
             ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                webView2EnvironmentAwaiter = CoreWebView2Environment
-                   .CreateAsync(userDataFolder: _webView2UserDataFolder)
+                   .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
                    .ConfigureAwait(true).GetAwaiter();
             webView2EnvironmentAwaiter.OnCompleted(async () =>
             {
@@ -136,9 +142,26 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 {
                     _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                     await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
-                    await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
-                    _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                    _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
                     _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+                    _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                    _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+                    _browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
+                    _browser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
+                    _browser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
+                    _browser.CoreWebView2.Settings.IsScriptEnabled = false;
+                    _browser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+
+                    // Don't load any resources.
+                    _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+                    _browser.CoreWebView2.WebResourceRequested += (object sender, CoreWebView2WebResourceRequestedEventArgs e) =>
+                    {
+                        // Show local file we've saved with the svg contents. Block all else.
+                        if (new Uri(e.Request.Uri) != _localFileURI)
+                        {
+                            e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 404, "Not found", null);
+                        }
+                    };
 
                     // WebView2.NavigateToString() limitation
                     // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
@@ -147,7 +170,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     {
                         string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
                         File.WriteAllText(filename, wrappedContent);
-                        _browser.Source = new Uri(filename);
+                        _localFileURI = new Uri(filename);
+                        _browser.Source = _localFileURI;
                     }
                     else
                     {
