@@ -66,6 +66,12 @@ namespace Wox.Infrastructure
                 stringToCompare = stringToCompare.ToUpper(CultureInfo.CurrentCulture);
             }
 
+            query = query.Replace(" ", string.Empty);
+            if (string.IsNullOrEmpty(query))
+            {
+                return new MatchResult(false, UserSettingSearchPrecision);
+            }
+
             int bestMatchScore = -1;
             var bestIndexList = new List<int>();
             for (int startIndex = 0; startIndex <= stringToCompare.Length - query.Length; startIndex++)
