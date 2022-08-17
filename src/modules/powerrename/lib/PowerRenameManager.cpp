@@ -1136,7 +1136,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                             spItem->PutStatus(PowerRenameItemRenameStatus::ItemNameInvalidChar);
                         }
                         // Max file path is 260.
-                        // Ref https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
+                        // Ref https://docs.microsoft.com/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
                         else if (lstrlen(path) + (lstrlen(newNameToUse) - lstrlen(originalName)) > 260)
                         {
                             spItem->PutStatus(PowerRenameItemRenameStatus::ItemNameTooLong);
