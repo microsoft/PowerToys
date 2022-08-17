@@ -175,6 +175,8 @@
                 </Button>
             </Grid>
         </DataTemplate>
+
+        <Style TargetType="{x:Type fancyZonesControls:CustomSlider}" BasedOn="{StaticResource {x:Type Slider}}"></Style>
     </Window.Resources>
 
     <Grid>
