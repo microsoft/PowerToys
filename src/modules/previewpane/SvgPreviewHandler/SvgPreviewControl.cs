@@ -173,7 +173,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             // Show local file we've saved with the svg contents. Block all else.
             if (new Uri(e.Request.Uri) != _localFileURI)
             {
-                e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 404, "Not found", null);
+                e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
             }
         }
 
