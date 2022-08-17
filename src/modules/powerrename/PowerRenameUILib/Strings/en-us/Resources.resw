@@ -334,7 +334,7 @@
     <value>File name is too long</value>
   </data>
   <data name="ErrorMessage_InvalidChar" xml:space="preserve">
-    <value>File name contains invalid character(s): &gt;, &lt;, |, ", :, ?, *, \ or /</value>
+    <value>File name contains invalid character(s):&#xD;&#xA; &gt; &lt; | " : ? * \ /</value>
   </data>
 
 
