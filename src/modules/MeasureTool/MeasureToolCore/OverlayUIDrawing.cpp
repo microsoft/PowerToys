@@ -17,9 +17,6 @@ namespace NonLocalizable
 //#define DEBUG_OVERLAY
 
 static wchar_t measureStringBuf[32] = {};
-D2D1::ColorF foreground = D2D1::ColorF::Black;
-D2D1::ColorF background = D2D1::ColorF(0.96f, 0.96f, 0.96f, 1.0f);
-D2D1::ColorF border = D2D1::ColorF(0.44f, 0.44f, 0.44f, 0.4f);
 
 void SetClipBoardToText(const std::wstring_view text)
 {
@@ -320,21 +317,28 @@ void DrawTextBox(const D2DState& d2dState,
     d2dState.rt->DrawTextW(text, textLen, d2dState.textFormat.get(), textRect, d2dState.solidBrushes[Brush::measureNumbers].get(), D2D1_DRAW_TEXT_OPTIONS_NO_SNAP);
 }
 
-void SetOverlayUIColors()
+std::vector<D2D1::ColorF> GetOverlayUIColors()
 {
+    D2D1::ColorF foreground = D2D1::ColorF::Black;
+    D2D1::ColorF background = D2D1::ColorF(0.96f, 0.96f, 0.96f, 1.0f);
+    D2D1::ColorF border = D2D1::ColorF(0.44f, 0.44f, 0.44f, 0.4f);
+
     if (WindowsColors::is_dark_mode())
     {
         foreground = D2D1::ColorF::White;
         background = D2D1::ColorF(0.17f, 0.17f, 0.17f, 1.0f);
         border = D2D1::ColorF(0.44f, 0.44f, 0.44f, 0.4f);
     }
+
+    return { foreground, background, border };
 }
 
 void DrawBoundsToolOverlayUILoop(BoundsToolState& toolState, HWND overlayWindow)
 {
-    SetOverlayUIColors();
+    auto brushColors = GetOverlayUIColors();
+    brushColors.insert(begin(brushColors), toolState.lineColor);
 
-    D2DState d2dState{ overlayWindow, { toolState.lineColor, foreground, background, border } };
+    D2DState d2dState{ overlayWindow, std::move(brushColors) };
 
     while (IsWindow(overlayWindow))
     {
@@ -405,8 +409,9 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, CommonState& comm
         }
     });
 
-    SetOverlayUIColors();
-    D2DState d2dState{ overlayWindow, { crossColor, foreground, background, border } };
+    auto brushColors = GetOverlayUIColors();
+    brushColors.insert(begin(brushColors), crossColor);
+    D2DState d2dState{ overlayWindow, std::move(brushColors) };
 
     while (IsWindow(overlayWindow))
     {
@@ -429,7 +434,7 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, CommonState& comm
 
             // TODO: investigate why it's required
             // Adjust cross to better match cursor coordinates in the texture.
-            const float lineOffset = 1.f;
+            const float lineOffset = .5f;
             mts.cross.hLineStart.x += lineOffset;
             mts.cross.hLineStart.y += lineOffset;
             mts.cross.hLineEnd.x += lineOffset;
