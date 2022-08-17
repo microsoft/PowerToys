@@ -59,6 +59,8 @@ bool FrameDrawer::CreateRenderTargets(const RECT& clientRect)
     {
         return false;
     }
+
+    m_renderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
     m_renderTargetSizeHash = rectHash;
 
     return true;

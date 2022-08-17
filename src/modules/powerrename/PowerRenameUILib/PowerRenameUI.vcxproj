@@ -100,9 +100,6 @@
     <ClInclude Include="MainWindow.xaml.h">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="UIUpdates.h">
-      <DependentUpon>UIUpdates.idl</DependentUpon>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
@@ -125,9 +122,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="UIUpdates.cpp">
-      <DependentUpon>UIUpdates.idl</DependentUpon>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">
@@ -140,7 +134,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Midl>
     <Midl Include="PatternSnippet.idl" />
-    <Midl Include="UIUpdates.idl" />
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
        Tools extension to be activated for this project even if the Windows App SDK Nuget
@@ -174,6 +167,9 @@
     <ProjectReference Include="..\lib\PowerRenameLib.vcxproj">
       <Project>{51920f1f-c28c-4adf-8660-4238766796c2}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PowerRenameUI.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

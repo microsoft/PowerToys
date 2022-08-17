@@ -2,7 +2,6 @@
 - [ ] The plugin is a project under `modules\launcher\Plugins`
 - [ ] Microsoft plugin project name pattern: `Microsoft.PowerToys.Run.Plugin.{PluginName}`
 - [ ] Community plugin project name pattern: `Community.PowerToys.Run.Plugin.{PluginName}`
-- [ ] [`GlobalSuppressions.cs`](/src/codeAnalysis/GlobalSuppressions.cs) and [`StyleCop.json`](/src/codeAnalysis/StyleCop.json) have to be included in the plugin project so it follows PowerToys code guidelines
 - [ ] The project file should import `Version.props` and specify `<Version>$(Version).0</Version>`
 - [ ] Make sure `*.csproj` specify only x64 platform target
 - [ ] The plugin has to contain a `plugin.json` file of the following format in its root folder

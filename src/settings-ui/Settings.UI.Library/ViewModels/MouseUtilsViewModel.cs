@@ -360,10 +360,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
-                // The fallback value is based on ToRGBHex's behavior, which returns
-                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
-                // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                value = SettingsUtilities.ToRGBHex(value);
                 if (!value.Equals(_highlighterLeftButtonClickColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _highlighterLeftButtonClickColor = value;
@@ -382,10 +379,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
-                // The fallback value is based on ToRGBHex's behavior, which returns
-                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
-                // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                value = SettingsUtilities.ToRGBHex(value);
                 if (!value.Equals(_highlighterRightButtonClickColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _highlighterRightButtonClickColor = value;
@@ -523,10 +517,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
-                // The fallback value is based on ToRGBHex's behavior, which returns
-                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
-                // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                value = SettingsUtilities.ToRGBHex(value);
                 if (!value.Equals(_mousePointerCrosshairsColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _mousePointerCrosshairsColor = value;
@@ -599,10 +590,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
-                // The fallback value is based on ToRGBHex's behavior, which returns
-                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
-                // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                value = SettingsUtilities.ToRGBHex(value);
                 if (!value.Equals(_mousePointerCrosshairsBorderColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _mousePointerCrosshairsBorderColor = value;

@@ -80,24 +80,24 @@ namespace winrt::PowerRenameUI::implementation
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::ExplorerItem> ExplorerItems() { return m_explorerItems; }
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> SearchRegExShortcuts() { return m_searchRegExShortcuts; }
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> DateTimeShortcuts() { return m_dateTimeShortcuts; }
-        PowerRenameUI::UIUpdates UIUpdatesItem() { return m_uiUpdatesItem; }
+        hstring OriginalCount();
+        void OriginalCount(hstring value);
+        hstring RenamedCount();
+        void RenamedCount(hstring value);
+        winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
+        void PropertyChanged(winrt::event_token const& token) noexcept;
 
         void AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked);
         void UpdateExplorerItem(int32_t id, hstring const& newName);
         void UpdateRenamedExplorerItem(int32_t id, hstring const& newOriginalName);
-        void AppendSearchMRU(hstring const& value);
-        void AppendReplaceMRU(hstring const& value);
 
-        void Checked_ids(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void SelectAll(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ShowAll(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ShowRenamed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
     private:
         bool m_allSelected;
-        PowerRenameUI::UIUpdates m_uiUpdatesItem;
         inline PowerRenameUI::ExplorerItem FindById(int32_t id);
-        void ToggleAll(bool checked);
 
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_searchMRUList;
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_replaceMRUList;
@@ -110,11 +110,11 @@ namespace winrt::PowerRenameUI::implementation
         HRESULT OnItemAdded(_In_ IPowerRenameItem* renameItem);
         HRESULT OnUpdate(_In_ IPowerRenameItem* renameItem);
         HRESULT OnRename(_In_ IPowerRenameItem* renameItem);
-        HRESULT OnError(_In_ IPowerRenameItem* renameItem);
-        HRESULT OnRegExStarted(_In_ DWORD threadId);
-        HRESULT OnRegExCanceled(_In_ DWORD threadId);
+        HRESULT OnError(_In_ IPowerRenameItem*) { return S_OK; }
+        HRESULT OnRegExStarted(_In_ DWORD) { return S_OK; }
+        HRESULT OnRegExCanceled(_In_ DWORD) { return S_OK; }
         HRESULT OnRegExCompleted(_In_ DWORD threadId);
-        HRESULT OnRenameStarted();
+        HRESULT OnRenameStarted() { return S_OK; }
         HRESULT OnRenameCompleted(bool closeUIWindowAfterRenaming);
 
         enum class UpdateFlagCommand
@@ -142,14 +142,10 @@ namespace winrt::PowerRenameUI::implementation
         void SetCheckboxesFromFlags(DWORD flags);
         void UpdateCounts();
 
-        wil::unique_haccel m_accelerators;
-        const HINSTANCE m_instance;
-        HWND m_xamlIsland{};
         HWND m_window{};
 
         bool m_disableCountUpdate = false;
         CComPtr<IPowerRenameManager> m_prManager;
-        CComPtr<::IUnknown> m_dataSource;
         CComPtr<IPowerRenameEnum> m_prEnum;
         PowerRenameManagerEvents m_managerEvents;
         DWORD m_cookie = 0;
@@ -157,6 +153,7 @@ namespace winrt::PowerRenameUI::implementation
         CComPtr<IPowerRenameMRU> m_replaceMRU;
         UINT m_selectedCount = 0;
         UINT m_renamingCount = 0;
+        winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
 
         bool m_flagValidationInProgress = false;
     public:

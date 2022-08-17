@@ -82,11 +82,30 @@ namespace Wox.Infrastructure.UserSettings
 
         private int _searchInputDelay = 150;
 
+        private int _searchInputDelayFast = 30;
+
         private int _searchClickedItemWeight = 5;
 
         private bool _searchQueryTuningEnabled;
 
         private bool _searchWaitForSlowResults;
+
+        public int SearchInputDelayFast
+        {
+            get
+            {
+                return _searchInputDelayFast;
+            }
+
+            set
+            {
+                if (_searchInputDelayFast != value)
+                {
+                    _searchInputDelayFast = value;
+                    OnPropertyChanged(nameof(SearchInputDelayFast));
+                }
+            }
+        }
 
         public int SearchInputDelay
         {
@@ -168,6 +187,13 @@ namespace Wox.Infrastructure.UserSettings
 
         public string QueryBoxFontWeight { get; set; }
 
+        public bool PTRunNonDelayedSearchInParallel { get; set; } = true;
+
+        public string PTRunStartNewSearchAction { get; set; }
+
+        public bool PTRSearchQueryFastResultsWithDelay { get; set; }
+
+        // public bool PTRSearchQueryFastResultsWithPartialDelay { get; set; }
         public string QueryBoxFontStretch { get; set; }
 
         public string ResultFont { get; set; } = FontFamily.GenericSansSerif.Name;

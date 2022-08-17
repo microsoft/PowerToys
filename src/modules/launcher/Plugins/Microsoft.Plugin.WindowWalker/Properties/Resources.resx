@@ -162,7 +162,7 @@
     <value>Process id</value>
   </data>
   <data name="wox_plugin_windowwalker_ExplorerInfoSubTitle" xml:space="preserve">
-    <value>Folder windows doesn't run in separate processes. (Klick to open Explorer properties.)</value>
+    <value>Folder windows do not run in separate processes. (Click to open Explorer properties.)</value>
     <comment>Explorer is here the program File Explorer</comment>
   </data>
   <data name="wox_plugin_windowwalker_ExplorerInfoTitle" xml:space="preserve">

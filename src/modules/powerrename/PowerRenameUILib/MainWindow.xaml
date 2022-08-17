@@ -46,7 +46,7 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Column="2" Margin="6,-2,0,0" >
                     <TextBlock x:Uid="TxtBlock_Original" FontWeight="Medium" />
                     <TextBlock FontWeight="Medium" Margin="4,0,0,0" >
-                        <Run Text="(" /><Run Text="{x:Bind UIUpdatesItem.OriginalCount, Mode=OneWay}" /><Run Text=")" />
+                        <Run Text="(" /><Run Text="{x:Bind OriginalCount, Mode=OneWay}" /><Run Text=")" />
                     </TextBlock>
                 </StackPanel>
             </StackPanel>
@@ -55,7 +55,7 @@
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Column="2" Margin="4,-2,0,0" >
                 <TextBlock x:Uid="TxtBlock_Renamed" FontWeight="Medium" />
                 <TextBlock FontWeight="Medium" Margin="4,0,0,0" >
-                        <Run Text="(" /><Run Text="{x:Bind UIUpdatesItem.RenamedCount, Mode=OneWay}" /><Run Text=")" />
+                        <Run Text="(" /><Run Text="{x:Bind RenamedCount, Mode=OneWay}" /><Run Text=")" />
                 </TextBlock>
             </StackPanel>
 
@@ -121,9 +121,7 @@
                                               Height="28"
                                           Grid.Column="1"
                                           XYFocusKeyboardNavigation="Enabled"
-                                          Checked="Checked_ids"
                                           IsTabStop="True"
-                                          Unchecked="Checked_ids"
                                           Content=""
                                           Name="{x:Bind IdStr}"
                                           AutomationProperties.Name="{x:Bind Original}"
@@ -355,7 +353,7 @@
 
 
 
-        <muxc:SplitButton Grid.Row="2" Style="{StaticResource SplitAccentButtonStyle}" Grid.Column="0" Margin="0,0,12,1" x:Name="button_rename" x:Uid="ButtonApply" Click="button_rename_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsEnabled="{x:Bind UIUpdatesItem.ButtonRenameEnabled, Mode=OneWay}">
+        <muxc:SplitButton Grid.Row="2" Style="{StaticResource SplitAccentButtonStyle}" Grid.Column="0" Margin="0,0,12,1" x:Name="button_rename" x:Uid="ButtonApply" Click="button_rename_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom">
             <muxc:SplitButton.KeyboardAccelerators>
                 <KeyboardAccelerator Key="Enter" />
                 <KeyboardAccelerator Key="Enter" Modifiers="Control" />
