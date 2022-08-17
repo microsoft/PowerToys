@@ -11,7 +11,8 @@
         xmlns:props="clr-namespace:FancyZonesEditor.Properties"
         xmlns:local1="clr-namespace:FancyZonesEditor.ViewModels"
         xmlns:controls="clr-namespace:ModernWpf.Controls;assembly=ModernWpf"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib" 
+        xmlns:fancyZonesControls="clr-namespace:FancyZonesEditor.Controls"
         mc:Ignorable="d"
         Title="{x:Static props:Resources.Fancy_Zones_Editor_App_Title}"
         ui:WindowHelper.UseModernWindowStyle="True"
@@ -595,7 +596,7 @@
                                        ToolTip="{x:Static props:Resources.Distance_adjacent_zones}"
                                        Text="&#xE78A;" />
 
-                            <Slider x:Name="SensitivityInput"
+                            <fancyZonesControls:CustomSlider x:Name="SensitivityInput"
                                     Value="{Binding SensitivityRadius}"
                                     Minimum="{Binding SensitivityRadiusMinimum}"
                                     Maximum="{Binding SensitivityRadiusMaximum}"
@@ -604,7 +605,6 @@
                                     AutomationProperties.HelpText="{Binding SensitivityRadius}"
                                     ToolTip="{Binding SensitivityRadius}"
                                     ValueChanged="SensitivityInput_ValueChanged"
-                                    GotFocus="SensitivityInput_GotFocus"
                                     MinWidth="216"
                                     Margin="12,0,0,0"
                                     HorizontalAlignment="Left"

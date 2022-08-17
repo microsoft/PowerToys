@@ -179,18 +179,6 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        public string SensitivityRadiusRange
-        {
-            get
-            {
-                return string.Format(
-                            CultureInfo.CurrentCulture,
-                            Properties.Resources.Ranged_Input_Tooltip,
-                            SensitivityRadiusMinimum.ToString(CultureInfo.InvariantCulture),
-                            SensitivityRadiusMaximum.ToString(CultureInfo.InvariantCulture));
-            }
-        }
-
         public List<string> QuickKeysAvailable
         {
             get

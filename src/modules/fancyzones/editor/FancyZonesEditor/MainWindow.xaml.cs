@@ -564,31 +564,6 @@ namespace FancyZonesEditor
             EditLayoutDialogTitle.TextWrapping = TextWrapping.NoWrap;
         }
 
-        private void SensitivityInput_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
-            {
-                SliderAutomationPeer peer =
-                    FrameworkElementAutomationPeer.FromElement(SensitivityInput) as SliderAutomationPeer;
-                string sliderGotFocusActivityId = "sliderGotFocus";
-
-                var range = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Properties.Resources.Ranged_Input_Tooltip,
-                            SensitivityInput.Minimum.ToString(CultureInfo.InvariantCulture),
-                            SensitivityInput.Maximum.ToString(CultureInfo.InvariantCulture));
-
-                if (peer != null && range != null)
-                {
-                    peer.RaiseNotificationEvent(
-                        AutomationNotificationKind.ActionCompleted,
-                        AutomationNotificationProcessing.ImportantMostRecent,
-                        range,
-                        sliderGotFocusActivityId);
-                }
-            }
-        }
-
         private void SensitivityInput_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
@@ -597,9 +572,7 @@ namespace FancyZonesEditor
                     FrameworkElementAutomationPeer.FromElement(SensitivityInput) as SliderAutomationPeer;
                 string activityId = "sliderValueChanged";
 
-                var value = string.Format(
-                            CultureInfo.CurrentCulture,
-                            SensitivityInput.Value.ToString(CultureInfo.InvariantCulture));
+                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Slider_Value, SensitivityInput.Value);
 
                 if (peer != null && value != null)
                 {

@@ -299,6 +299,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Highlight distance slider.
+        /// </summary>
+        public static string Distance_adjacent_zones_slider_announce {
+            get {
+                return ResourceManager.GetString("Distance_adjacent_zones_slider_announce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicate.
         /// </summary>
         public static string Duplicate {
@@ -768,6 +777,15 @@ namespace FancyZonesEditor.Properties {
         public static string Show_Space_Zones {
             get {
                 return ResourceManager.GetString("Show_Space_Zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} pixels.
+        /// </summary>
+        public static string Slider_Value {
+            get {
+                return ResourceManager.GetString("Slider_Value", resourceCulture);
             }
         }
         

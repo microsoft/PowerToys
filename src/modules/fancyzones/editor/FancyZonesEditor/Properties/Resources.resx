@@ -408,7 +408,10 @@
   <data name="Error_Parsing_Custom_Layouts_Message" xml:space="preserve">
     <value>An error occurred while parsing custom layouts.</value>
   </data>
-  <data name="Ranged_Input_Tooltip" xml:space="preserve">
-    <value>Range is from {0} to {1}</value>
+  <data name="Distance_adjacent_zones_slider_announce" xml:space="preserve">
+    <value>Highlight distance slider</value>
+  </data>
+  <data name="Slider_Value" xml:space="preserve">
+    <value>{0} pixels</value>
   </data>
 </root>
