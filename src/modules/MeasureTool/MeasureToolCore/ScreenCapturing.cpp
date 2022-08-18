@@ -287,7 +287,11 @@ void D3DCaptureState::StopCapture()
 
 //#define DEBUG_EDGES
 
-void UpdateCaptureState(MeasureToolState& state, HWND targetWindow, const uint8_t pixelTolerance, const OwnedTextureView& textureView, const bool continuousCapture)
+void UpdateCaptureState(Serialized<MeasureToolState>& state,
+                        HWND targetWindow,
+                        const uint8_t pixelTolerance,
+                        const OwnedTextureView& textureView,
+                        const bool continuousCapture)
 {
     POINT cursorPos{};
     GetCursorPos(&cursorPos);
@@ -316,7 +320,7 @@ void UpdateCaptureState(MeasureToolState& state, HWND targetWindow, const uint8_
     OutputDebugStringA(buffer);
 #endif
 
-    state.Access([&](MeasureToolState::State& state) {
+    state.Access([&](MeasureToolState& state) {
         state.measuredEdges = bounds;
         state.cursorInLeftScreenHalf = cursorInLeftScreenHalf;
         state.cursorInTopScreenHalf = cursorInTopScreenHalf;
@@ -324,7 +328,7 @@ void UpdateCaptureState(MeasureToolState& state, HWND targetWindow, const uint8_
     });
 }
 
-void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR targetMonitor)
+void StartCapturingThread(Serialized<MeasureToolState>& state, HWND targetWindow, HMONITOR targetMonitor)
 {
     SpawnLoggedThread(L"Screen Capture thread", [&state, targetMonitor, targetWindow] {
         winrt::check_pointer(targetMonitor);
@@ -346,7 +350,7 @@ void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR t
 
         uint8_t pixelTolerance = 1;
         bool continuousCapture = false;
-        state.Access([&](MeasureToolState::State& state) {
+        state.Access([&](MeasureToolState& state) {
             pixelTolerance = state.pixelTolerance;
             continuousCapture = state.continuousCapture;
         });

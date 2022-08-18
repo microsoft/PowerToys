@@ -6,7 +6,7 @@
 
 #include "PowerToys.MeasureToolCore.h"
 #include "Core.g.cpp"
-#include "OverlayUIDrawing.h"
+#include "OverlayUI.h"
 #include "ScreenCapturing.h"
 
 namespace winrt::PowerToys::MeasureToolCore::implementation
@@ -21,7 +21,6 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _overlayUIState = {};
         _boundsToolState = {};
         _measureToolState.Reset();
-        POINT currentCursorPos{};
 
         _settings = Settings::LoadFromFile();
 
@@ -29,6 +28,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _commonState.lineColor.g = _settings.lineColor[1] / 255.f;
         _commonState.lineColor.b = _settings.lineColor[2] / 255.f;
 
+        POINT currentCursorPos{};
         if (GetCursorPos(&currentCursorPos))
         {
             _commonState.monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
@@ -46,7 +46,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     {
         ResetState();
 
-        _measureToolState.Access([horizontal, vertical, this](MeasureToolState::State& state) {
+        _measureToolState.Access([horizontal, vertical, this](MeasureToolState& state) {
             if (horizontal)
                 state.mode = vertical ? MeasureToolState::Mode::Cross : MeasureToolState::Mode::Horizontal;
             else

@@ -2,4 +2,6 @@
 
 #include "ToolState.h"
 
-void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR targetMonitor);
+#include <common/utils/serialized.h>
+
+void StartCapturingThread(Serialized<MeasureToolState>& state, HWND targetWindow, HMONITOR targetMonitor);

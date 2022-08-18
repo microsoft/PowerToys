@@ -30,32 +30,12 @@ struct MeasureToolState
         Vertical,
         Cross
     };
-    struct State
-    {
-        uint8_t pixelTolerance = 5;
-        bool continuousCapture = false;
-        bool drawFeetOnCross = true;
-        RECT measuredEdges = {};
-        POINT cursorPos = {};
-        bool cursorInLeftScreenHalf = false;
-        bool cursorInTopScreenHalf = false;
-        Mode mode = Mode::Cross;
-    };
-
-private:
-    std::mutex m;
-    State s;
-
-public:
-    void Access(std::function<void(State&)> fn)
-    {
-        std::scoped_lock lock{ m };
-        fn(s);
-    }
-
-    void Reset()
-    {
-        std::scoped_lock lock{ m };
-        s = {};
-    }
+    uint8_t pixelTolerance = 5;
+    bool continuousCapture = false;
+    bool drawFeetOnCross = true;
+    RECT measuredEdges = {};
+    POINT cursorPos = {};
+    bool cursorInLeftScreenHalf = false;
+    bool cursorInTopScreenHalf = false;
+    Mode mode = Mode::Cross;
 };

@@ -2,7 +2,7 @@
 
 #include "BoundsToolOverlayUI.h"
 #include "MeasureToolOverlayUI.h"
-#include "OverlayUIDrawing.h"
+#include "OverlayUI.h"
 
 #include <common/Display/dpi_aware.h>
 #include <common/Display/monitors.h>
@@ -254,7 +254,7 @@ OverlayUIState::OverlayUIState(BoundsToolState& toolState,
 {
 }
 
-OverlayUIState::OverlayUIState(MeasureToolState& toolState,
+OverlayUIState::OverlayUIState(Serialized<MeasureToolState>& toolState,
                                CommonState& commonState,
                                HWND window) :
     _window{ window },
@@ -301,7 +301,7 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
     return uiState;
 }
 
-std::unique_ptr<OverlayUIState> OverlayUIState::Create(MeasureToolState& toolState,
+std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolState>& toolState,
                                                        CommonState& commonState)
 {
     return OverlayUIState::CreateInternal(toolState, commonState, NonLocalizable::MeasureToolOverlayWindowName);

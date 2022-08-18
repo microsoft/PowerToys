@@ -31,10 +31,10 @@ namespace
     }
 }
 
-void DrawMeasureToolTick(MeasureToolState& toolState, HWND overlayWindow, D2DState& d2dState)
+void DrawMeasureToolTick(Serialized<MeasureToolState>& toolState, HWND overlayWindow, D2DState& d2dState)
 {
-    MeasureToolState::State mts;
-    toolState.Access([&mts](MeasureToolState::State& state) {
+    MeasureToolState mts;
+    toolState.Access([&mts](MeasureToolState& state) {
         mts = state;
     });
     bool drawHorizontalCrossLine = true;

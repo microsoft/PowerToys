@@ -2,8 +2,10 @@
 
 #include "Core.g.h"
 #include "ToolState.h"
-#include "OverlayUIDrawing.h"
+#include "OverlayUI.h"
 #include "Settings.h"
+
+#include <common/utils/serialized.h>
 
 namespace winrt::PowerToys::MeasureToolCore::implementation
 {
@@ -18,7 +20,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         float GetDPIScaleForWindow(uint64_t windowHandle);
 
         std::unique_ptr<OverlayUIState> _overlayUIState = nullptr;
-        MeasureToolState _measureToolState;
+        Serialized<MeasureToolState> _measureToolState;
         BoundsToolState _boundsToolState;
         CommonState _commonState;
         Settings _settings;

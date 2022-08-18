@@ -3,13 +3,15 @@
 #include "D2DState.h"
 #include "ToolState.h"
 
+#include <common/utils/serialized.h>
+
 class OverlayUIState final
 {
     OverlayUIState(BoundsToolState& toolState,
                    CommonState& commonState,
                    HWND window);
 
-    OverlayUIState(MeasureToolState& toolState,
+    OverlayUIState(Serialized<MeasureToolState>& toolState,
                    CommonState& commonState,
                    HWND window);
 
@@ -23,18 +25,16 @@ class OverlayUIState final
                                                           const wchar_t* toolWindowClassName);
 
 public:
+    ~OverlayUIState();
+
+    static std::unique_ptr<OverlayUIState> Create(BoundsToolState& toolState,
+                                                  CommonState& commonState);
+    static std::unique_ptr<OverlayUIState> Create(Serialized<MeasureToolState>& toolState,
+                                                  CommonState& commonState);
     inline HWND overlayWindowHandle() const
     {
         return _window;
     }
-
-    static std::unique_ptr<OverlayUIState> Create(BoundsToolState& toolState,
-                                                  CommonState& commonState);
-
-    static std::unique_ptr<OverlayUIState> Create(MeasureToolState& toolState,
-                                                  CommonState& commonState);
-
+    
     void RunUILoop();
-
-    ~OverlayUIState();
 };

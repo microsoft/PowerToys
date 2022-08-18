@@ -21,7 +21,7 @@
 #include <sstream>
 #include <string_view>
 #include <chrono>
-#include <cstdio>
+#include <stdio.h>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
