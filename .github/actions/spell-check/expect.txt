@@ -154,8 +154,8 @@ Bicubic
 bigbar
 bigobj
 binlog
-bitmapimage
 BITMAPFILEHEADER
+bitmapimage
 BITMAPINFO
 BITMAPINFOHEADER
 bitmask
@@ -309,6 +309,7 @@ CONFLICTINGMODIFIERSHORTCUT
 CONOUT
 Consolas
 constexpr
+consts
 contentdialog
 contentfiles
 CONTEXTHELP
@@ -759,8 +760,8 @@ hotkeys
 hotlight
 hotspot
 Hovd
-HPALETTE
 HPAINTBUFFER
+HPALETTE
 HRAWINPUT
 hread
 HREDRAW
