@@ -44,7 +44,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.6.4" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.2" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.4" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22000.194" />
     <PackageReference Include="WinUIEx" Version="1.6.0" />
     <Manifest Include="$(ApplicationManifest)" />

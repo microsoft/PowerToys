@@ -29,7 +29,7 @@ struct CommonState
 struct BoundsToolState
 {
     std::optional<D2D_POINT_2F> currentRegionStart;
-    CommonState* commonState = nullptr; // backreference for WndProc
+    CommonState* commonState = nullptr; // required for WndProc
 };
 
 struct MeasureToolState

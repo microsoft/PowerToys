@@ -47,7 +47,7 @@ D2DState::D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesCol
                                                         DWRITE_FONT_WEIGHT_NORMAL,
                                                         DWRITE_FONT_STYLE_NORMAL,
                                                         DWRITE_FONT_STRETCH_NORMAL,
-                                                        konst::FONT_SIZE * dpiScale,
+                                                        consts::FONT_SIZE * dpiScale,
                                                         L"en-US",
                                                         &textFormat));
     winrt::check_hresult(textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
@@ -87,7 +87,7 @@ void D2DState::DrawTextBox(const wchar_t* text, uint32_t textLen, const float co
                           .bottom = cornerY + TEXT_BOX_HEIGHT / 2.f + TEXT_BOX_OFFSET_Y };
 
     D2D1_ROUNDED_RECT textBoxRect;
-    textBoxRect.radiusX = textBoxRect.radiusY = konst::TEXT_BOX_CORNER_RADIUS * dpiScale;
+    textBoxRect.radiusX = textBoxRect.radiusY = consts::TEXT_BOX_CORNER_RADIUS * dpiScale;
     textBoxRect.rect.bottom = textRect.bottom - TEXT_BOX_PADDING;
     textBoxRect.rect.top = textRect.top + TEXT_BOX_PADDING;
     textBoxRect.rect.left = textRect.left - TEXT_BOX_PADDING;

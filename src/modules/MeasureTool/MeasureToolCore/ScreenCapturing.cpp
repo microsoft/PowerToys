@@ -350,8 +350,6 @@ void StartCapturingThread(const CommonState& commonState,
 
         auto captureState = D3DCaptureState::Create(item, winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized);
 
-        bool stopCapturing = false;
-
         uint8_t pixelTolerance = 1;
         bool continuousCapture = false;
         state.Access([&](MeasureToolState& state) {
@@ -367,7 +365,7 @@ void StartCapturingThread(const CommonState& commonState,
 
             while (IsWindow(targetWindow))
             {
-                std::this_thread::sleep_for(konst::TARGET_FRAME_DURATION);
+                std::this_thread::sleep_for(consts::TARGET_FRAME_DURATION);
             }
             captureState->StopCapture();
         }
@@ -380,9 +378,9 @@ void StartCapturingThread(const CommonState& commonState,
                 UpdateCaptureState(commonState, state, targetWindow, pixelTolerance, textureView, continuousCapture);
 
                 const auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-                if (frameTime < konst::TARGET_FRAME_DURATION)
+                if (frameTime < consts::TARGET_FRAME_DURATION)
                 {
-                    std::this_thread::sleep_for(konst::TARGET_FRAME_DURATION - frameTime);
+                    std::this_thread::sleep_for(consts::TARGET_FRAME_DURATION - frameTime);
                 }
             }
         }

@@ -12,16 +12,16 @@ namespace
         // TODO: investigate why we need 1.f offset.
         if (horizontal)
         {
-            start.x -= konst::FEET_HALF_LENGTH + 1.f;
-            end.x += konst::FEET_HALF_LENGTH;
+            start.x -= consts::FEET_HALF_LENGTH + 1.f;
+            end.x += consts::FEET_HALF_LENGTH;
 
             start.y += 1.f;
             end.y += 1.f;
         }
         else
         {
-            start.y -= konst::FEET_HALF_LENGTH + 1.f;
-            end.y += konst::FEET_HALF_LENGTH;
+            start.y -= consts::FEET_HALF_LENGTH + 1.f;
+            end.y += consts::FEET_HALF_LENGTH;
 
             start.x += 1.f;
             end.x += 1.f;

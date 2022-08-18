@@ -20,7 +20,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             POINT cursorPos = {};
             GetCursorPos(&cursorPos);
             InterlockedExchange64(reinterpret_cast<LONG64*>(&_commonState.cursorPos), std::bit_cast<LONG64>(cursorPos));
-            std::this_thread::sleep_for(konst::TARGET_FRAME_DURATION);
+            std::this_thread::sleep_for(consts::TARGET_FRAME_DURATION);
         }
     }
 
