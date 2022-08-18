@@ -326,7 +326,7 @@ void UpdateCaptureState(MeasureToolState& state, HWND targetWindow, const uint8_
 
 void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR targetMonitor)
 {
-    SpawnLoggedThread([&state, targetMonitor, targetWindow] {
+    SpawnLoggedThread(L"Screen Capture thread", [&state, targetMonitor, targetWindow] {
         winrt::check_pointer(targetMonitor);
 
         auto captureInterop = winrt::get_activation_factory<
@@ -360,26 +360,19 @@ void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR t
                 UpdateCaptureState(state, targetWindow, pixelTolerance, textureView, continuousCapture);
             });
 
-            while (!stopCapturing)
+            while (IsWindow(targetWindow))
             {
                 std::this_thread::sleep_for(TARGET_FRAME_DURATION);
-                state.Access([&](MeasureToolState::State& state) {
-                    stopCapturing = state.stopCapturing;
-                });
             }
             captureState->StopCapture();
         }
         else
         {
             const auto textureView = captureState->CaptureSingleFrame();
-            while (!stopCapturing)
+            while (IsWindow(targetWindow))
             {
                 const auto now = std::chrono::high_resolution_clock::now();
                 UpdateCaptureState(state, targetWindow, pixelTolerance, textureView, continuousCapture);
-
-                state.Access([&](MeasureToolState::State& state) {
-                    stopCapturing = state.stopCapturing;
-                });
 
                 const auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
                 if (frameTime < TARGET_FRAME_DURATION)
@@ -388,6 +381,5 @@ void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR t
                 }
             }
         }
-    },
-                      L"Screen Capture thread");
+    });
 }

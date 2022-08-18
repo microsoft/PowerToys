@@ -18,23 +18,28 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 
     void Core::ResetState()
     {
+        _overlayUIState = {};
         _boundsToolState = {};
         _measureToolState.Reset();
         POINT currentCursorPos{};
+
+        _settings = Settings::LoadFromFile();
+
+        _commonState.lineColor.r = _settings.lineColor[0] / 255.f;
+        _commonState.lineColor.g = _settings.lineColor[1] / 255.f;
+        _commonState.lineColor.b = _settings.lineColor[2] / 255.f;
 
         if (GetCursorPos(&currentCursorPos))
         {
             _commonState.monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
         }
+    }
 
-        PostMessageW(_overlayUIWindowHandle, WM_CLOSE, {}, {});
+    void Core::StartBoundsTool()
+    {
+        ResetState();
 
-        _settings = Settings::LoadFromFile();
-
-        while (IsWindow(_overlayUIWindowHandle))
-        {
-            Sleep(20);
-        }
+        _overlayUIState = OverlayUIState::Create(_boundsToolState, _commonState);
     }
 
     void Core::StartMeasureTool(const bool horizontal, const bool vertical)
@@ -49,16 +54,14 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 
             state.continuousCapture = _settings.continuousCapture;
             state.drawFeetOnCross = _settings.drawFeetOnCross;
-
-            state.crossColor.r = _settings.lineColor[0] / 255.f;
-            state.crossColor.g = _settings.lineColor[1] / 255.f;
-            state.crossColor.b = _settings.lineColor[2] / 255.f;
-
             state.pixelTolerance = _settings.pixelTolerance;
         });
 
-        _overlayUIWindowHandle = LaunchOverlayUI(_measureToolState, _commonState);
-        StartCapturingThread(_measureToolState, _overlayUIWindowHandle, _commonState.monitor);
+        _overlayUIState = OverlayUIState::Create(_measureToolState, _commonState);
+        if (_overlayUIState)
+        {
+            StartCapturingThread(_measureToolState, _overlayUIState->overlayWindowHandle(), _commonState.monitor);
+        }
     }
 
     void MeasureToolCore::implementation::Core::SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger)
@@ -74,17 +77,6 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _commonState.toolbarBoundingBox.right = toX;
         _commonState.toolbarBoundingBox.top = fromY;
         _commonState.toolbarBoundingBox.bottom = toY;
-    }
-
-    void Core::StartBoundsTool()
-    {
-        ResetState();
-
-        _boundsToolState.lineColor.r = _settings.lineColor[0] / 255.f;
-        _boundsToolState.lineColor.g = _settings.lineColor[1] / 255.f;
-        _boundsToolState.lineColor.b = _settings.lineColor[2] / 255.f;
-
-        _overlayUIWindowHandle = LaunchOverlayUI(_boundsToolState, _commonState);
     }
 
     float MeasureToolCore::implementation::Core::GetDPIScaleForWindow(uint64_t windowHandle)

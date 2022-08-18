@@ -11,6 +11,9 @@
     <ClCompile Include="BGRATextureView.cpp" />
     <ClCompile Include="EdgeDetection.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="D2DState.cpp" />
+    <ClCompile Include="BoundsToolOverlayUI.cpp" />
+    <ClCompile Include="MeasureToolOverlayUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -18,8 +21,11 @@
     <ClInclude Include="OverlayUIDrawing.h" />
     <ClInclude Include="BGRATextureView.h" />
     <ClInclude Include="EdgeDetection.h" />
-    <ClInclude Include="MeasureToolState.h" />
+    <ClInclude Include="ToolState.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="BoundsToolOverlayUI.h" />
+    <ClInclude Include="D2DState.h" />
+    <ClInclude Include="MeasureToolOverlayUI.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

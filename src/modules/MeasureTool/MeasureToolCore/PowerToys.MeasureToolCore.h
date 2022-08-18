@@ -1,7 +1,8 @@
 ﻿#pragma once
 
 #include "Core.g.h"
-#include "MeasureToolState.h"
+#include "ToolState.h"
+#include "OverlayUIDrawing.h"
 #include "Settings.h"
 
 namespace winrt::PowerToys::MeasureToolCore::implementation
@@ -16,8 +17,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         void ResetState();
         float GetDPIScaleForWindow(uint64_t windowHandle);
 
-        HWND _overlayUIWindowHandle = {};
-        HWND _nativeWindowHandle = {};
+        std::unique_ptr<OverlayUIState> _overlayUIState = nullptr;
         MeasureToolState _measureToolState;
         BoundsToolState _boundsToolState;
         CommonState _commonState;

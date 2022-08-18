@@ -66,20 +66,26 @@
     <None Include="MeasureToolCore.def" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoundsToolOverlayUI.h" />
+    <ClInclude Include="D2DState.h" />
+    <ClInclude Include="MeasureToolOverlayUI.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="PowerToys.MeasureToolCore.h">
       <DependentUpon>PowerToys.MeasureToolCore.idl</DependentUpon>
     </ClInclude>
     <ClInclude Include="BGRATextureView.h" />
     <ClInclude Include="EdgeDetection.h" />
-    <ClInclude Include="MeasureToolState.h" />
+    <ClInclude Include="ToolState.h" />
     <ClInclude Include="OverlayUIDrawing.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ScreenCapturing.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BGRATextureView.cpp" />
+    <ClCompile Include="BoundsToolOverlayUI.cpp" />
+    <ClCompile Include="D2DState.cpp" />
     <ClCompile Include="EdgeDetection.cpp" />
+    <ClCompile Include="MeasureToolOverlayUI.cpp" />
     <ClCompile Include="OverlayUIDrawing.cpp" />
     <ClCompile Include="PowerToys.MeasureToolCore.cpp">
       <DependentUpon>PowerToys.MeasureToolCore.idl</DependentUpon>

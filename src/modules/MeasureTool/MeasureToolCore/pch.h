@@ -21,6 +21,7 @@
 #include <sstream>
 #include <string_view>
 #include <chrono>
+#include <cstdio>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
@@ -67,7 +68,7 @@ namespace winrt
 }
 
 template<typename Func>
-void SpawnLoggedThread(Func&& f, const wchar_t* description)
+void SpawnLoggedThread(const wchar_t* description, Func&& f)
 {
     std::thread{ [f = std::move(f), description = std::wstring{ description }] {
         try

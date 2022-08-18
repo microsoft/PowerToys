@@ -148,7 +148,7 @@
     <value>Pixel tolerance for edge detection</value>
   </data>
   <data name="MeasureTool_MeasureCrossColor.Header" xml:space="preserve">
-    <value>Cross color</value>
+    <value>Line color</value>
   </data>
   <data name="MeasureTool_ContinuousCapture.Header" xml:space="preserve">
     <value>Capture screen continuously during measuring</value>

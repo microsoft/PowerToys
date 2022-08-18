@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include "BoundsToolOverlayUI.h"
+#include "MeasureToolOverlayUI.h"
 #include "OverlayUIDrawing.h"
 
 #include <common/Display/dpi_aware.h>
@@ -16,8 +18,6 @@ namespace NonLocalizable
 
 //#define DEBUG_OVERLAY
 
-static wchar_t measureStringBuf[32] = {};
-
 void SetClipBoardToText(const std::wstring_view text)
 {
     if (!OpenClipboard(nullptr))
@@ -32,7 +32,7 @@ void SetClipBoardToText(const std::wstring_view text)
         return;
     }
 
-    if (wchar_t* bufPtr = static_cast<wchar_t*>(GlobalLock(handle.get())); bufPtr != nullptr)
+    if (auto* bufPtr = static_cast<wchar_t*>(GlobalLock(handle.get())); bufPtr != nullptr)
     {
         text.copy(bufPtr, text.length());
         GlobalUnlock(handle.get());
@@ -65,7 +65,8 @@ LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
         closeWindow();
         break;
     case WM_LBUTTONUP:
-        SetClipBoardToText(measureStringBuf);
+        // TODO: fix
+        //SetClipBoardToText(measureStringBuf);
         break;
     case WM_ERASEBKGND:
         return 1;
@@ -121,7 +122,9 @@ LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
             ScreenToClient(window, &cursorPos);
             D2D_POINT_2F newRegionEnd = { .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
             toolState->currentRegionStart = std::nullopt;
-            SetClipBoardToText(measureStringBuf);
+
+            // TODO: fix
+            //SetClipBoardToText(measureStringBuf);
         }
         break;
     case WM_RBUTTONUP:
@@ -148,7 +151,7 @@ void CreateOverlayWindowClasses()
     RegisterClassExW(&wcex);
 }
 
-HWND CreateOverlayUIWindow(CommonState& commonState, const wchar_t* windowClass, void* extraParam = nullptr)
+HWND CreateOverlayUIWindow(CommonState& commonState, const wchar_t* windowClass, void* extraParam)
 {
     static std::once_flag windowClassesCreatedFlag;
     std::call_once(windowClassesCreatedFlag, CreateOverlayWindowClasses);
@@ -209,115 +212,7 @@ HWND CreateOverlayUIWindow(CommonState& commonState, const wchar_t* windowClass,
     return window;
 }
 
-struct D2DState
-{
-    wil::com_ptr<ID2D1Factory> d2dFactory;
-    wil::com_ptr<IDWriteFactory> writeFactory;
-    wil::com_ptr<ID2D1HwndRenderTarget> rt;
-    wil::com_ptr<IDWriteTextFormat> textFormat;
-    std::vector<wil::com_ptr<ID2D1SolidColorBrush>> solidBrushes;
-    float dpiScale = 1.f;
-    D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesColors)
-    {
-        RECT clientRect = {};
-
-        winrt::check_bool(GetClientRect(overlayWindow, &clientRect));
-        winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &d2dFactory));
-
-        winrt::check_hresult(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), writeFactory.put_unknown()));
-
-        auto renderTargetProperties = D2D1::RenderTargetProperties(
-            D2D1_RENDER_TARGET_TYPE_DEFAULT,
-            D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
-            96.f,
-            96.f);
-
-        auto renderTargetSize = D2D1::SizeU(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
-        auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(overlayWindow, renderTargetSize);
-
-        winrt::check_hresult(d2dFactory->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, &rt));
-
-        unsigned dpi = DPIAware::DEFAULT_DPI;
-        DPIAware::GetScreenDPIForWindow(overlayWindow, dpi);
-        dpiScale = dpi / static_cast<float>(DPIAware::DEFAULT_DPI);
-
-        constexpr float FONT_SIZE = 14.f;
-        winrt::check_hresult(writeFactory->CreateTextFormat(L"Segoe UI Variable Text", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, FONT_SIZE * dpiScale, L"en-US", &textFormat));
-        winrt::check_hresult(textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
-        winrt::check_hresult(textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
-
-        solidBrushes.resize(solidBrushesColors.size());
-        for (size_t i = 0; i < solidBrushes.size(); ++i)
-        {
-            winrt::check_hresult(rt->CreateSolidColorBrush(solidBrushesColors[i], &solidBrushes[i]));
-        }
-    }
-};
-
-enum Brush : size_t
-{
-    line,
-    measureNumbers,
-    measureBackground,
-    measureBorder
-};
-
-void DetermineScreenQuadrant(HWND window, long x, long y, bool& inLeftHalf, bool& inTopHalf)
-{
-    RECT windowRect{};
-    GetWindowRect(window, &windowRect);
-    const long w = windowRect.right - windowRect.left;
-    const long h = windowRect.bottom - windowRect.top;
-    inLeftHalf = x < w / 2;
-    inTopHalf = y < h / 2;
-}
-
-void DrawTextBox(const D2DState& d2dState,
-                 const wchar_t* text,
-                 uint32_t textLen,
-                 const float cornerX,
-                 const float cornerY,
-                 HWND window)
-{
-    bool cursorInLeftScreenHalf = false;
-    bool cursorInTopScreenHalf = false;
-
-    DetermineScreenQuadrant(window,
-                            static_cast<long>(cornerX),
-                            static_cast<long>(cornerY),
-                            cursorInLeftScreenHalf,
-                            cursorInTopScreenHalf);
-
-    const float dpiScale = d2dState.dpiScale;
-
-    constexpr float TEXT_BOX_CORNER_RADIUS = 4.f;
-    const float TEXT_BOX_WIDTH = 80.f * dpiScale;
-    const float TEXT_BOX_HEIGHT = 32.f * dpiScale;
-
-    const float TEXT_BOX_PADDING = 1.f * dpiScale;
-    const float TEXT_BOX_OFFSET_AMOUNT_X = TEXT_BOX_WIDTH * dpiScale;
-    const float TEXT_BOX_OFFSET_AMOUNT_Y = TEXT_BOX_WIDTH * dpiScale;
-    const float TEXT_BOX_OFFSET_X = cursorInLeftScreenHalf ? TEXT_BOX_OFFSET_AMOUNT_X : -TEXT_BOX_OFFSET_AMOUNT_X;
-    const float TEXT_BOX_OFFSET_Y = cursorInTopScreenHalf ? TEXT_BOX_OFFSET_AMOUNT_Y : -TEXT_BOX_OFFSET_AMOUNT_Y;
-
-    D2D1_RECT_F textRect{ .left = cornerX - TEXT_BOX_WIDTH / 2.f + TEXT_BOX_OFFSET_X,
-                          .top = cornerY - TEXT_BOX_HEIGHT / 2.f + TEXT_BOX_OFFSET_Y,
-                          .right = cornerX + TEXT_BOX_WIDTH / 2.f + TEXT_BOX_OFFSET_X,
-                          .bottom = cornerY + TEXT_BOX_HEIGHT / 2.f + TEXT_BOX_OFFSET_Y };
-
-    D2D1_ROUNDED_RECT textBoxRect;
-    textBoxRect.radiusX = textBoxRect.radiusY = TEXT_BOX_CORNER_RADIUS * dpiScale;
-    textBoxRect.rect.bottom = textRect.bottom - TEXT_BOX_PADDING;
-    textBoxRect.rect.top = textRect.top + TEXT_BOX_PADDING;
-    textBoxRect.rect.left = textRect.left - TEXT_BOX_PADDING;
-    textBoxRect.rect.right = textRect.right + TEXT_BOX_PADDING;
-
-    d2dState.rt->DrawRoundedRectangle(textBoxRect, d2dState.solidBrushes[Brush::measureBorder].get());
-    d2dState.rt->FillRoundedRectangle(textBoxRect, d2dState.solidBrushes[Brush::measureBackground].get());
-    d2dState.rt->DrawTextW(text, textLen, d2dState.textFormat.get(), textRect, d2dState.solidBrushes[Brush::measureNumbers].get(), D2D1_DRAW_TEXT_OPTIONS_NO_SNAP);
-}
-
-std::vector<D2D1::ColorF> GetOverlayUIColors()
+std::vector<D2D1::ColorF> AppendCommonOverlayUIColors(const D2D1::ColorF lineColor)
 {
     D2D1::ColorF foreground = D2D1::ColorF::Black;
     D2D1::ColorF background = D2D1::ColorF(0.96f, 0.96f, 0.96f, 1.0f);
@@ -330,242 +225,90 @@ std::vector<D2D1::ColorF> GetOverlayUIColors()
         border = D2D1::ColorF(0.44f, 0.44f, 0.44f, 0.4f);
     }
 
-    return { foreground, background, border };
+    return { lineColor, foreground, background, border };
 }
 
-void DrawBoundsToolOverlayUILoop(BoundsToolState& toolState, HWND overlayWindow)
+void OverlayUIState::RunUILoop()
 {
-    auto brushColors = GetOverlayUIColors();
-    brushColors.insert(begin(brushColors), toolState.lineColor);
-
-    D2DState d2dState{ overlayWindow, std::move(brushColors) };
-
-    while (IsWindow(overlayWindow))
+    while (IsWindow(_window))
     {
-        d2dState.rt->BeginDraw();
-
-        d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
-
-        if (toolState.currentRegionStart.has_value())
-        {
-            POINT cursorPos = {};
-            GetCursorPos(&cursorPos);
-            ScreenToClient(overlayWindow, &cursorPos);
-
-            D2D1_RECT_F rect{ .left = toolState.currentRegionStart->x,
-                              .top = toolState.currentRegionStart->y,
-                              .right = static_cast<float>(cursorPos.x),
-                              .bottom = static_cast<float>(cursorPos.y) };
-            d2dState.rt->DrawRectangle(rect, d2dState.solidBrushes[Brush::line].get());
-
-            const uint32_t textLen = swprintf_s(measureStringBuf,
-                                                L"%.0f x %.0f",
-                                                std::abs(rect.right - rect.left),
-                                                std::abs(rect.top - rect.bottom));
-            DrawTextBox(d2dState,
-                        measureStringBuf,
-                        textLen,
-                        toolState.currentRegionStart->x,
-                        toolState.currentRegionStart->y,
-                        overlayWindow);
-        }
-
-        d2dState.rt->EndDraw();
-
-        InvalidateRect(overlayWindow, nullptr, true);
+        _d2dState.rt->BeginDraw();
+        _d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
+        //const bool cursorOverToolbar = PtInRect(&commonState.toolbarBoundingBox, mts.cursorPos);
+        //if (!cursorOverToolbar)
+        _tickFunc();
+        _d2dState.rt->EndDraw();
+        InvalidateRect(_window, nullptr, true);
         run_message_loop(true);
     }
 }
 
-inline std::pair<D2D_POINT_2F, D2D_POINT_2F> ComputeCrossFeetLine(D2D_POINT_2F center, const bool horizontal)
+OverlayUIState::OverlayUIState(BoundsToolState& toolState,
+                               CommonState& commonState,
+                               HWND window) :
+    _window{ window },
+    _d2dState{ window, AppendCommonOverlayUIColors(commonState.lineColor) },
+    _tickFunc{ [this, &toolState] {
+        DrawBoundsToolTick(toolState, _window, _d2dState);
+    } }
 {
-    constexpr float FEET_HALF_LENGTH = 2.f;
-
-    D2D_POINT_2F start = center, end = center;
-    // Computing in this way to achieve pixel-perfect axial symmetry.
-    if (horizontal)
-    {
-        start.x -= FEET_HALF_LENGTH + 1.f;
-        end.x += FEET_HALF_LENGTH;
-    }
-    else
-    {
-        start.y -= FEET_HALF_LENGTH + 1.f;
-        end.y += FEET_HALF_LENGTH;
-    }
-
-    return { start, end };
 }
 
-void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, CommonState& commonState, HWND overlayWindow)
+OverlayUIState::OverlayUIState(MeasureToolState& toolState,
+                               CommonState& commonState,
+                               HWND window) :
+    _window{ window },
+    _d2dState{ window, AppendCommonOverlayUIColors(commonState.lineColor) }
 {
-    bool drawHorizontalCrossLine = true;
-    bool drawVerticalCrossLine = true;
-    bool continuousCapture = false;
-    bool drawFeetOnCross = true;
-    MeasureToolState::Mode toolMode;
-
-    D2D1::ColorF crossColor = D2D1::ColorF::OrangeRed;
-
-    toolState.Access([&](MeasureToolState::State& s) {
-        crossColor = s.crossColor;
-        toolMode = s.mode;
-        continuousCapture = s.continuousCapture;
-        drawFeetOnCross = s.drawFeetOnCross;
-        switch (s.mode)
-        {
-        case MeasureToolState::Mode::Cross:
-            drawHorizontalCrossLine = true;
-            drawVerticalCrossLine = true;
-            break;
-        case MeasureToolState::Mode::Vertical:
-            drawHorizontalCrossLine = false;
-            drawVerticalCrossLine = true;
-            break;
-        case MeasureToolState::Mode::Horizontal:
-            drawHorizontalCrossLine = true;
-            drawVerticalCrossLine = false;
-            break;
+    _tickFunc = {
+        [=, &toolState] {
+            DrawMeasureToolTick(toolState,
+                                _window,
+                                _d2dState);
         }
+    };
+}
+
+OverlayUIState::~OverlayUIState()
+{
+    PostMessageW(_window, WM_CLOSE, {}, {});
+
+    while (IsWindow(_window))
+    {
+        Sleep(20);
+    }
+}
+
+template<typename ToolT>
+inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& toolState,
+                                                                      CommonState& commonState,
+                                                                      const wchar_t* toolWindowClassName)
+{
+    wil::shared_event uiCreatedEvent(wil::EventOptions::ManualReset);
+    std::unique_ptr<OverlayUIState> uiState;
+    SpawnLoggedThread(L"OverlayUI thread", [&] {
+        const HWND window = CreateOverlayUIWindow(commonState, toolWindowClassName, &toolState);
+        uiState = std::unique_ptr<OverlayUIState>{ new OverlayUIState{ toolState, commonState, window } };
+
+        uiCreatedEvent.SetEvent();
+
+        uiState->RunUILoop();
+        commonState.sessionCompletedCallback();
     });
 
-    // We draw cross' feets on top of it, thus we need to avoid blending
-    assert(crossColor.a == 1.f);
+    uiCreatedEvent.wait();
 
-    auto brushColors = GetOverlayUIColors();
-    brushColors.insert(begin(brushColors), crossColor);
-    D2DState d2dState{ overlayWindow, std::move(brushColors) };
-
-    while (IsWindow(overlayWindow))
-    {
-        MeasureToolState::State mts;
-        toolState.Access([&mts](MeasureToolState::State& state) {
-            mts = state;
-        });
-
-        const bool cursorOverToolbar = PtInRect(&commonState.toolbarBoundingBox, mts.cursorPos);
-
-        d2dState.rt->BeginDraw();
-        const auto previousAliasingMode = d2dState.rt->GetAntialiasMode();
-        // Anti-aliasing is creating artifacts. Aliasing is for drawing straight lines.
-        d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
-        d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
-
-        // Add 1px to each dim, since the range is inclusive.
-        const float hMeasure = static_cast<float>(mts.measuredEdges.right - mts.measuredEdges.left + 1);
-        const float vMeasure = static_cast<float>(mts.measuredEdges.bottom - mts.measuredEdges.top + 1);
-
-        // Prevent drawing until we get the first capture
-        const bool hasMeasure = (mts.measuredEdges.right != mts.measuredEdges.left) && (mts.measuredEdges.bottom != mts.measuredEdges.top);
-
-        if (hasMeasure && !cursorOverToolbar)
-        {
-            if (drawHorizontalCrossLine)
-            {
-                const D2D_POINT_2F hLineStart{ .x = static_cast<float>(mts.measuredEdges.left), .y = static_cast<float>(mts.cursorPos.y) };
-                const D2D_POINT_2F hLineEnd{ .x = hLineStart.x + hMeasure, .y = hLineStart.y };
-                d2dState.rt->DrawLine(hLineStart, hLineEnd, d2dState.solidBrushes[Brush::line].get());
-
-                if (drawFeetOnCross && !continuousCapture)
-                {
-                    auto [left_start, left_end] = ComputeCrossFeetLine(hLineStart, false);
-                    auto [right_start, right_end] = ComputeCrossFeetLine(hLineEnd, false);
-                    d2dState.rt->DrawLine(left_start, left_end, d2dState.solidBrushes[Brush::line].get());
-                    d2dState.rt->DrawLine(right_start, right_end, d2dState.solidBrushes[Brush::line].get());
-                }
-            }
-
-            if (drawVerticalCrossLine)
-            {
-                const D2D_POINT_2F vLineStart{ .x = static_cast<float>(mts.cursorPos.x), .y = static_cast<float>(mts.measuredEdges.top) };
-                const D2D_POINT_2F vLineEnd{ .x = vLineStart.x, .y = vLineStart.y + vMeasure };
-                d2dState.rt->DrawLine(vLineStart, vLineEnd, d2dState.solidBrushes[Brush::line].get());
-
-                if (drawFeetOnCross && !continuousCapture)
-                {
-                    auto [top_start, top_end] = ComputeCrossFeetLine(vLineStart, true);
-                    auto [bottom_start, bottom_end] = ComputeCrossFeetLine(vLineEnd, true);
-                    d2dState.rt->DrawLine(top_start, top_end, d2dState.solidBrushes[Brush::line].get());
-                    d2dState.rt->DrawLine(bottom_start, bottom_end, d2dState.solidBrushes[Brush::line].get());
-                }
-            }
-
-            // After drawing the lines, restore anti aliasing to draw the measurement tooltip.
-            d2dState.rt->SetAntialiasMode(previousAliasingMode);
-
-            uint32_t measureStringBufLen = 0;
-
-            switch (toolMode)
-            {
-            case MeasureToolState::Mode::Cross:
-                measureStringBufLen = swprintf_s(measureStringBuf,
-                                                 L"%.0f x %.0f",
-                                                 hMeasure,
-                                                 vMeasure);
-                break;
-            case MeasureToolState::Mode::Vertical:
-                measureStringBufLen = swprintf_s(measureStringBuf,
-                                                 L"%.0f",
-                                                 vMeasure);
-                break;
-            case MeasureToolState::Mode::Horizontal:
-                measureStringBufLen = swprintf_s(measureStringBuf,
-                                                 L"%.0f",
-                                                 hMeasure);
-                break;
-            }
-
-            DrawTextBox(d2dState,
-                        measureStringBuf,
-                        measureStringBufLen,
-                        static_cast<float>(mts.cursorPos.x),
-                        static_cast<float>(mts.cursorPos.y),
-                        overlayWindow);
-        }
-        d2dState.rt->EndDraw();
-        InvalidateRect(overlayWindow, nullptr, true);
-        run_message_loop(true);
-    }
-
-    toolState.Access([](MeasureToolState::State& state) {
-        state.stopCapturing = true;
-    });
+    return uiState;
 }
 
-HWND LaunchOverlayUI(MeasureToolState& measureToolState,
-                     CommonState& commonState)
+std::unique_ptr<OverlayUIState> OverlayUIState::Create(MeasureToolState& toolState,
+                                                       CommonState& commonState)
 {
-    wil::shared_event windowCreatedEvent(wil::EventOptions::ManualReset);
-
-    HWND window = {};
-    SpawnLoggedThread([=, &measureToolState, &window, &commonState] {
-        window = CreateOverlayUIWindow(commonState, NonLocalizable::MeasureToolOverlayWindowName);
-        windowCreatedEvent.SetEvent();
-        DrawMeasureToolOverlayUILoop(measureToolState, commonState, window);
-        commonState.sessionCompletedCallback();
-    },
-                      L"Launch measure tool OverlayUI");
-
-    windowCreatedEvent.wait();
-
-    return window;
+    return OverlayUIState::CreateInternal(toolState, commonState, NonLocalizable::MeasureToolOverlayWindowName);
 }
 
-HWND LaunchOverlayUI(BoundsToolState& boundsToolState,
-                     CommonState& commonState)
+std::unique_ptr<OverlayUIState> OverlayUIState::Create(BoundsToolState& toolState,
+                                                       CommonState& commonState)
 {
-    wil::shared_event windowCreatedEvent(wil::EventOptions::ManualReset);
-
-    HWND window = {};
-    SpawnLoggedThread([=, &boundsToolState, &window, &commonState] {
-        window = CreateOverlayUIWindow(commonState, NonLocalizable::BoundsToolOverlayWindowName, &boundsToolState);
-        windowCreatedEvent.SetEvent();
-        DrawBoundsToolOverlayUILoop(boundsToolState, window);
-        commonState.sessionCompletedCallback();
-    },
-                      L"Launch bounds tool OverlayUI");
-
-    windowCreatedEvent.wait();
-
-    return window;
+    return OverlayUIState::CreateInternal(toolState, commonState, NonLocalizable::BoundsToolOverlayWindowName);
 }
