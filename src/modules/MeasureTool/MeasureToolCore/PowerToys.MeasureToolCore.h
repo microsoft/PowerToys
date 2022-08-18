@@ -12,13 +12,17 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     struct Core : CoreT<Core>
     {
         Core();
+        ~Core();
         void StartBoundsTool();
         void StartMeasureTool(const bool horizontal, const bool vertical);
         void SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger);
         void SetToolbarBoundingBox(const uint32_t fromX, const uint32_t fromY, const uint32_t toX, const uint32_t toY);
         void ResetState();
         float GetDPIScaleForWindow(uint64_t windowHandle);
+        void MouseCaptureThread();
 
+        std::thread _mouseCaptureThread;
+        wil::shared_event _stopMouseCaptureThreadSignal;
         std::unique_ptr<OverlayUIState> _overlayUIState = nullptr;
         Serialized<MeasureToolState> _measureToolState;
         BoundsToolState _boundsToolState;

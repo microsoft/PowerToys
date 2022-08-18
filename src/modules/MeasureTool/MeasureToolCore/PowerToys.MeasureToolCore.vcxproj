@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BoundsToolOverlayUI.h" />
+    <ClInclude Include="constants.h" />
     <ClInclude Include="D2DState.h" />
     <ClInclude Include="MeasureToolOverlayUI.h" />
     <ClInclude Include="Settings.h" />

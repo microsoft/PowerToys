@@ -1,8 +1,11 @@
 #include "pch.h"
 
+#include "constants.h"
 #include "ScreenCapturing.h"
 #include "BGRATextureView.h"
 #include "EdgeDetection.h"
+
+//#define DEBUG_EDGES
 
 class OwnedTextureView
 {
@@ -287,16 +290,15 @@ void D3DCaptureState::StopCapture()
 
 //#define DEBUG_EDGES
 
-void UpdateCaptureState(Serialized<MeasureToolState>& state,
+void UpdateCaptureState(const CommonState& commonState,
+                        Serialized<MeasureToolState>& state,
                         HWND targetWindow,
                         const uint8_t pixelTolerance,
                         const OwnedTextureView& textureView,
                         const bool continuousCapture)
 {
-    POINT cursorPos{};
-    GetCursorPos(&cursorPos);
+    auto cursorPos = commonState.cursorPos;
     ScreenToClient(targetWindow, &cursorPos);
-
     const bool cursorInLeftScreenHalf = cursorPos.x < textureView.view.width / 2;
     const bool cursorInTopScreenHalf = cursorPos.y < textureView.view.height / 2;
 
@@ -324,13 +326,15 @@ void UpdateCaptureState(Serialized<MeasureToolState>& state,
         state.measuredEdges = bounds;
         state.cursorInLeftScreenHalf = cursorInLeftScreenHalf;
         state.cursorInTopScreenHalf = cursorInTopScreenHalf;
-        state.cursorPos = cursorPos;
     });
 }
 
-void StartCapturingThread(Serialized<MeasureToolState>& state, HWND targetWindow, HMONITOR targetMonitor)
+void StartCapturingThread(const CommonState& commonState,
+                          Serialized<MeasureToolState>& state,
+                          HWND targetWindow,
+                          HMONITOR targetMonitor)
 {
-    SpawnLoggedThread(L"Screen Capture thread", [&state, targetMonitor, targetWindow] {
+    SpawnLoggedThread(L"Screen Capture thread", [&state, &commonState, targetMonitor, targetWindow] {
         winrt::check_pointer(targetMonitor);
 
         auto captureInterop = winrt::get_activation_factory<
@@ -355,18 +359,15 @@ void StartCapturingThread(Serialized<MeasureToolState>& state, HWND targetWindow
             continuousCapture = state.continuousCapture;
         });
 
-        constexpr size_t TARGET_FRAME_RATE = 120;
-        constexpr auto TARGET_FRAME_DURATION = std::chrono::milliseconds{ 1000 } / TARGET_FRAME_RATE;
-
         if (continuousCapture)
         {
             captureState->StartCapture([&, targetWindow, pixelTolerance](OwnedTextureView textureView) {
-                UpdateCaptureState(state, targetWindow, pixelTolerance, textureView, continuousCapture);
+                UpdateCaptureState(commonState, state, targetWindow, pixelTolerance, textureView, continuousCapture);
             });
 
             while (IsWindow(targetWindow))
             {
-                std::this_thread::sleep_for(TARGET_FRAME_DURATION);
+                std::this_thread::sleep_for(konst::TARGET_FRAME_DURATION);
             }
             captureState->StopCapture();
         }
@@ -376,12 +377,12 @@ void StartCapturingThread(Serialized<MeasureToolState>& state, HWND targetWindow
             while (IsWindow(targetWindow))
             {
                 const auto now = std::chrono::high_resolution_clock::now();
-                UpdateCaptureState(state, targetWindow, pixelTolerance, textureView, continuousCapture);
+                UpdateCaptureState(commonState, state, targetWindow, pixelTolerance, textureView, continuousCapture);
 
                 const auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-                if (frameTime < TARGET_FRAME_DURATION)
+                if (frameTime < konst::TARGET_FRAME_DURATION)
                 {
-                    std::this_thread::sleep_for(TARGET_FRAME_DURATION - frameTime);
+                    std::this_thread::sleep_for(konst::TARGET_FRAME_DURATION - frameTime);
                 }
             }
         }

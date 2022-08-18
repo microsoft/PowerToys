@@ -73,7 +73,7 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
         }
     }
 
-    return Increment ? static_cast<long>(IsX ? texture.width : texture.height) : 0;
+    return Increment ? static_cast<long>(IsX ? texture.width : texture.height) - 1 : 0;
 }
 
 template<bool continuousCapture>

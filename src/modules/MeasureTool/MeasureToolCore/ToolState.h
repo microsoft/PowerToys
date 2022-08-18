@@ -1,25 +1,35 @@
 #pragma once
 
-#include <windef.h>
-#include <d2d1helper.h>
-#include <dCommon.h>
-
 #include <array>
 #include <functional>
 #include <mutex>
 #include <vector>
 
-struct BoundsToolState
+#include <windef.h>
+#include <d2d1helper.h>
+#include <dCommon.h>
+
+#include <common/utils/serialized.h>
+
+struct OverlayBoxText
 {
-    std::optional<D2D_POINT_2F> currentRegionStart;
+    std::array<wchar_t, 32> buffer = {};
 };
 
 struct CommonState
 {
     std::function<void()> sessionCompletedCallback;
     D2D1::ColorF lineColor = D2D1::ColorF::OrangeRed;
-    HMONITOR monitor = {};
     RECT toolbarBoundingBox = {};
+
+    mutable Serialized<OverlayBoxText> overlayBoxText;
+    POINT cursorPos = {}; // updated atomically
+};
+
+struct BoundsToolState
+{
+    std::optional<D2D_POINT_2F> currentRegionStart;
+    CommonState* commonState = nullptr; // backreference for WndProc
 };
 
 struct MeasureToolState
@@ -34,7 +44,6 @@ struct MeasureToolState
     bool continuousCapture = false;
     bool drawFeetOnCross = true;
     RECT measuredEdges = {};
-    POINT cursorPos = {};
     bool cursorInLeftScreenHalf = false;
     bool cursorInTopScreenHalf = false;
     Mode mode = Mode::Cross;

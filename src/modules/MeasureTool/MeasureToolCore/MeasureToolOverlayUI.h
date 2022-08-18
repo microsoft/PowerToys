@@ -4,4 +4,7 @@
 
 #include <common/utils/serialized.h>
 
-void DrawMeasureToolTick(Serialized<MeasureToolState>& toolState, HWND overlayWindow, D2DState& d2dState);
+void DrawMeasureToolTick(const CommonState& commonState,
+                         Serialized<MeasureToolState>& toolState,
+                         HWND overlayWindow,
+                         D2DState& d2dState);

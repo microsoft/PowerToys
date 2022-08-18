@@ -28,5 +28,5 @@ struct D2DState
                      uint32_t textLen,
                      const float cornerX,
                      const float cornerY,
-                     HWND window);
+                     HWND window) const;
 };

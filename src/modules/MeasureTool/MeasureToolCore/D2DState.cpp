@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "constants.h"
 #include "D2DState.h"
 
 #include <common/Display/dpi_aware.h>
@@ -41,8 +42,14 @@ D2DState::D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesCol
     DPIAware::GetScreenDPIForWindow(overlayWindow, dpi);
     dpiScale = dpi / static_cast<float>(DPIAware::DEFAULT_DPI);
 
-    constexpr float FONT_SIZE = 14.f;
-    winrt::check_hresult(writeFactory->CreateTextFormat(L"Segoe UI Variable Text", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, FONT_SIZE * dpiScale, L"en-US", &textFormat));
+    winrt::check_hresult(writeFactory->CreateTextFormat(L"Segoe UI Variable Text",
+                                                        nullptr,
+                                                        DWRITE_FONT_WEIGHT_NORMAL,
+                                                        DWRITE_FONT_STYLE_NORMAL,
+                                                        DWRITE_FONT_STRETCH_NORMAL,
+                                                        konst::FONT_SIZE * dpiScale,
+                                                        L"en-US",
+                                                        &textFormat));
     winrt::check_hresult(textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
     winrt::check_hresult(textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
 
@@ -53,7 +60,7 @@ D2DState::D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesCol
     }
 }
 
-void D2DState::DrawTextBox(const wchar_t* text, uint32_t textLen, const float cornerX, const float cornerY, HWND window)
+void D2DState::DrawTextBox(const wchar_t* text, uint32_t textLen, const float cornerX, const float cornerY, HWND window) const
 {
     bool cursorInLeftScreenHalf = false;
     bool cursorInTopScreenHalf = false;
@@ -64,7 +71,6 @@ void D2DState::DrawTextBox(const wchar_t* text, uint32_t textLen, const float co
                             cursorInLeftScreenHalf,
                             cursorInTopScreenHalf);
 
-    constexpr float TEXT_BOX_CORNER_RADIUS = 4.f;
     // TODO: determine text bounding box instead of hard-coding it
     const float TEXT_BOX_WIDTH = 80.f * dpiScale;
     const float TEXT_BOX_HEIGHT = 32.f * dpiScale;
@@ -81,7 +87,7 @@ void D2DState::DrawTextBox(const wchar_t* text, uint32_t textLen, const float co
                           .bottom = cornerY + TEXT_BOX_HEIGHT / 2.f + TEXT_BOX_OFFSET_Y };
 
     D2D1_ROUNDED_RECT textBoxRect;
-    textBoxRect.radiusX = textBoxRect.radiusY = TEXT_BOX_CORNER_RADIUS * dpiScale;
+    textBoxRect.radiusX = textBoxRect.radiusY = konst::TEXT_BOX_CORNER_RADIUS * dpiScale;
     textBoxRect.rect.bottom = textRect.bottom - TEXT_BOX_PADDING;
     textBoxRect.rect.top = textRect.top + TEXT_BOX_PADDING;
     textBoxRect.rect.left = textRect.left - TEXT_BOX_PADDING;

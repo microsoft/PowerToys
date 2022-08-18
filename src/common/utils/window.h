@@ -55,3 +55,24 @@ inline bool is_system_window(HWND hwnd, const char* class_name)
     }
     return false;
 }
+
+template<typename T>
+inline T GetWindowCreateParam(LPARAM lparam)
+{
+    static_assert(sizeof(T) <= sizeof(void*));
+    T data{ (T)(reinterpret_cast<CREATESTRUCT*>(lparam)->lpCreateParams) };
+    return data;
+}
+
+template<typename T>
+inline void StoreWindowParam(HWND window, T data)
+{
+    static_assert(sizeof(T) <= sizeof(void*));
+    SetWindowLongPtrW(window, GWLP_USERDATA, (LONG_PTR)(data));
+}
+
+template<typename T>
+inline T GetWindowParam(HWND window)
+{
+    return (T)GetWindowLongPtrW(window, GWLP_USERDATA);
+}

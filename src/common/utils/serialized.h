@@ -1,23 +1,30 @@
 #pragma once
 
 #include <functional>
-#include <mutex>
+#include <shared_mutex>
 
-template<typename StateT> class Serialized
+template<typename StateT>
+class Serialized
 {
-    std::mutex m;
+    mutable std::shared_mutex m;
     StateT s;
 
 public:
+    void Read(std::function<void(const StateT&)> fn) const
+    {
+        std::shared_lock lock{ m };
+        fn(s);
+    }
+
     void Access(std::function<void(StateT&)> fn)
     {
-        std::scoped_lock lock{ m };
+        std::unique_lock lock{ m };
         fn(s);
     }
 
     void Reset()
     {
-        std::scoped_lock lock{ m };
+        std::unique_lock lock{ m };
         s = {};
     }
 };

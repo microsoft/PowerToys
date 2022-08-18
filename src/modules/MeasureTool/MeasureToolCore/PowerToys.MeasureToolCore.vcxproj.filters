@@ -26,6 +26,7 @@
     <ClInclude Include="BoundsToolOverlayUI.h" />
     <ClInclude Include="D2DState.h" />
     <ClInclude Include="MeasureToolOverlayUI.h" />
+    <ClInclude Include="constants.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

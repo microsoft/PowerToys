@@ -1,27 +1,27 @@
 #include "pch.h"
+
+#include "constants.h"
 #include "MeasureToolOverlayUI.h"
 
 namespace
 {
     inline std::pair<D2D_POINT_2F, D2D_POINT_2F> ComputeCrossFeetLine(D2D_POINT_2F center, const bool horizontal)
     {
-        constexpr float FEET_HALF_LENGTH = 2.f;
-
         D2D_POINT_2F start = center, end = center;
         // Computing in this way to achieve pixel-perfect axial symmetry.
         // TODO: investigate why we need 1.f offset.
         if (horizontal)
         {
-            start.x -= FEET_HALF_LENGTH + 1.f;
-            end.x += FEET_HALF_LENGTH;
+            start.x -= konst::FEET_HALF_LENGTH + 1.f;
+            end.x += konst::FEET_HALF_LENGTH;
 
             start.y += 1.f;
             end.y += 1.f;
         }
         else
         {
-            start.y -= FEET_HALF_LENGTH + 1.f;
-            end.y += FEET_HALF_LENGTH;
+            start.y -= konst::FEET_HALF_LENGTH + 1.f;
+            end.y += konst::FEET_HALF_LENGTH;
 
             start.x += 1.f;
             end.x += 1.f;
@@ -31,10 +31,13 @@ namespace
     }
 }
 
-void DrawMeasureToolTick(Serialized<MeasureToolState>& toolState, HWND overlayWindow, D2DState& d2dState)
+void DrawMeasureToolTick(const CommonState& commonState,
+                         Serialized<MeasureToolState>& toolState,
+                         HWND overlayWindow,
+                         D2DState& d2dState)
 {
     MeasureToolState mts;
-    toolState.Access([&mts](MeasureToolState& state) {
+    toolState.Read([&mts](const MeasureToolState& state) {
         mts = state;
     });
     bool drawHorizontalCrossLine = true;
@@ -73,9 +76,12 @@ void DrawMeasureToolTick(Serialized<MeasureToolState>& toolState, HWND overlayWi
     // Anti-aliasing is creating artifacts. Aliasing is for drawing straight lines.
     d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
 
+    POINT cursorPos = commonState.cursorPos;
+    ScreenToClient(overlayWindow, &cursorPos);
+
     if (drawHorizontalCrossLine)
     {
-        const D2D_POINT_2F hLineStart{ .x = static_cast<float>(mts.measuredEdges.left), .y = static_cast<float>(mts.cursorPos.y) };
+        const D2D_POINT_2F hLineStart{ .x = static_cast<float>(mts.measuredEdges.left), .y = static_cast<float>(cursorPos.y) };
         D2D_POINT_2F hLineEnd{ .x = hLineStart.x + hMeasure, .y = hLineStart.y };
         d2dState.rt->DrawLine(hLineStart, hLineEnd, d2dState.solidBrushes[Brush::line].get());
 
@@ -94,7 +100,7 @@ void DrawMeasureToolTick(Serialized<MeasureToolState>& toolState, HWND overlayWi
 
     if (drawVerticalCrossLine)
     {
-        const D2D_POINT_2F vLineStart{ .x = static_cast<float>(mts.cursorPos.x), .y = static_cast<float>(mts.measuredEdges.top) };
+        const D2D_POINT_2F vLineStart{ .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(mts.measuredEdges.top) };
         D2D_POINT_2F vLineEnd{ .x = vLineStart.x, .y = vLineStart.y + vMeasure };
         d2dState.rt->DrawLine(vLineStart, vLineEnd, d2dState.solidBrushes[Brush::line].get());
 
@@ -113,32 +119,37 @@ void DrawMeasureToolTick(Serialized<MeasureToolState>& toolState, HWND overlayWi
 
     uint32_t measureStringBufLen = 0;
 
-    // TODO: fix
-    wchar_t measureStringBuf[32] = {};
-
+    OverlayBoxText text;
     switch (mts.mode)
     {
     case MeasureToolState::Mode::Cross:
-        measureStringBufLen = swprintf_s(measureStringBuf,
+        measureStringBufLen = swprintf_s(text.buffer.data(),
+                                         text.buffer.size(),
                                          L"%.0f x %.0f",
                                          hMeasure,
                                          vMeasure);
         break;
     case MeasureToolState::Mode::Vertical:
-        measureStringBufLen = swprintf_s(measureStringBuf,
+        measureStringBufLen = swprintf_s(text.buffer.data(),
+                                         text.buffer.size(),
                                          L"%.0f",
                                          vMeasure);
         break;
     case MeasureToolState::Mode::Horizontal:
-        measureStringBufLen = swprintf_s(measureStringBuf,
+        measureStringBufLen = swprintf_s(text.buffer.data(),
+                                         text.buffer.size(),
                                          L"%.0f",
                                          hMeasure);
         break;
     }
 
-    d2dState.DrawTextBox(measureStringBuf,
+    commonState.overlayBoxText.Access([&](OverlayBoxText& v) {
+        v = text;
+    });
+
+    d2dState.DrawTextBox(text.buffer.data(),
                          measureStringBufLen,
-                         static_cast<float>(mts.cursorPos.x),
-                         static_cast<float>(mts.cursorPos.y),
+                         static_cast<float>(cursorPos.x),
+                         static_cast<float>(cursorPos.y),
                          overlayWindow);
 }

@@ -4,6 +4,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/logger/logger.h>
 
+#include "constants.h"
 #include "PowerToys.MeasureToolCore.h"
 #include "Core.g.cpp"
 #include "OverlayUI.h"
@@ -11,15 +12,35 @@
 
 namespace winrt::PowerToys::MeasureToolCore::implementation
 {
-    Core::Core()
+    void Core::MouseCaptureThread()
+    {
+        while (!_stopMouseCaptureThreadSignal.is_signaled())
+        {
+            static_assert(sizeof(_commonState.cursorPos) == sizeof(LONG64));
+            POINT cursorPos = {};
+            GetCursorPos(&cursorPos);
+            InterlockedExchange64(reinterpret_cast<LONG64*>(&_commonState.cursorPos), std::bit_cast<LONG64>(cursorPos));
+            std::this_thread::sleep_for(konst::TARGET_FRAME_DURATION);
+        }
+    }
+
+    Core::Core() :
+        _mouseCaptureThread{ [this] { MouseCaptureThread(); } },
+        _stopMouseCaptureThreadSignal{ wil::EventOptions::ManualReset }
     {
         LoggerHelpers::init_logger(L"Measure Tool", L"Core", "Measure Tool");
+    }
+
+    Core::~Core()
+    {
+        _stopMouseCaptureThreadSignal.SetEvent();
+        _mouseCaptureThread.join();
     }
 
     void Core::ResetState()
     {
         _overlayUIState = {};
-        _boundsToolState = {};
+        _boundsToolState = { .commonState = &_commonState };
         _measureToolState.Reset();
 
         _settings = Settings::LoadFromFile();
@@ -27,19 +48,14 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _commonState.lineColor.r = _settings.lineColor[0] / 255.f;
         _commonState.lineColor.g = _settings.lineColor[1] / 255.f;
         _commonState.lineColor.b = _settings.lineColor[2] / 255.f;
-
-        POINT currentCursorPos{};
-        if (GetCursorPos(&currentCursorPos))
-        {
-            _commonState.monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
-        }
     }
 
     void Core::StartBoundsTool()
     {
         ResetState();
 
-        _overlayUIState = OverlayUIState::Create(_boundsToolState, _commonState);
+        const auto primaryMonitor = MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY);
+        _overlayUIState = OverlayUIState::Create(_boundsToolState, _commonState, primaryMonitor);
     }
 
     void Core::StartMeasureTool(const bool horizontal, const bool vertical)
@@ -57,10 +73,11 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             state.pixelTolerance = _settings.pixelTolerance;
         });
 
-        _overlayUIState = OverlayUIState::Create(_measureToolState, _commonState);
+        const auto primaryMonitor = MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY);
+        _overlayUIState = OverlayUIState::Create(_measureToolState, _commonState, primaryMonitor);
         if (_overlayUIState)
         {
-            StartCapturingThread(_measureToolState, _overlayUIState->overlayWindowHandle(), _commonState.monitor);
+            StartCapturingThread(_commonState, _measureToolState, _overlayUIState->overlayWindowHandle(), primaryMonitor);
         }
     }
 
@@ -71,7 +88,10 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         };
     }
 
-    void MeasureToolCore::implementation::Core::SetToolbarBoundingBox(const uint32_t fromX, const uint32_t fromY, const uint32_t toX, const uint32_t toY)
+    void MeasureToolCore::implementation::Core::SetToolbarBoundingBox(const uint32_t fromX,
+                                                                      const uint32_t fromY,
+                                                                      const uint32_t toX,
+                                                                      const uint32_t toY)
     {
         _commonState.toolbarBoundingBox.left = fromX;
         _commonState.toolbarBoundingBox.right = toX;

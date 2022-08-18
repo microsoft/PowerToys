@@ -4,4 +4,7 @@
 
 #include <common/utils/serialized.h>
 
-void StartCapturingThread(Serialized<MeasureToolState>& state, HWND targetWindow, HMONITOR targetMonitor);
+void StartCapturingThread(const CommonState& commonState,
+                          Serialized<MeasureToolState>& state,
+                          HWND targetWindow,
+                          HMONITOR targetMonitor);
