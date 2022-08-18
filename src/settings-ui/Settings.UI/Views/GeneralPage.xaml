@@ -175,8 +175,10 @@
                 <controls:SettingsGroup x:Uid="Admin_Mode">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="Admin_Mode" Icon="&#xE7EF;" Description="{Binding Mode=OneWay, Path=RunningAsText}" Style="{StaticResource ExpanderHeaderSettingStyle}">
-                                <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp" x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
+                            <controls:Setting x:Uid="Admin_Mode_Running_As" Icon="&#xE7EF;" Header="{Binding Mode=OneWay, Path=RunningAsText}" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                                <controls:Setting.Description>
+                                    <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp" x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
+                                </controls:Setting.Description>
                                 <controls:Setting.ActionContent>
                                     <Button x:Uid="GeneralPage_RestartAsAdmin_Button"
                                             Command = "{Binding RestartElevatedButtonEventHandler}"
