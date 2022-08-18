@@ -128,7 +128,7 @@
     <value>Video Conference Mute is a quick and easy way to do a global "mute" of both your microphone and webcam. Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
   </data>
   <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Mute camera and microphone</value>
+    <value>Mute camera &amp; microphone</value>
   </data>
   <data name="VideoConference_MicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
     <value>Mute microphone</value>
@@ -354,7 +354,7 @@
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="PowerLauncher_SearchResults.Header" xml:space="preserve">
-    <value>Search and results</value>
+    <value>Search &amp; results</value>
   </data>
   <data name="PowerLauncher_SearchResultPreference.Header" xml:space="preserve">
     <value>Search result preference</value>
@@ -587,7 +587,7 @@
     <value>PowerToys will launch automatically</value>
   </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
-    <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
+    <value>A Windows Shell extension for more advanced bulk renaming using search &amp; replace or regular expressions.</value>
   </data>
   <data name="PowerRename_ShellIntegration.Header" xml:space="preserve">
     <value>Shell integration</value>
@@ -687,7 +687,7 @@
     <value>Open-source notice</value>
   </data>
   <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
-    <value>Enable auto-complete for the search and replace fields</value>
+    <value>Enable auto-complete for the search &amp; replace fields</value>
   </data>
   <data name="FancyZones_BorderColor.Header" xml:space="preserve">
     <value>Border color</value>
@@ -721,7 +721,7 @@
     <value>In some edge cases Shortcut Guide might not function correctly when using this activation method</value>
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
-    <value>Appearance and behavior</value>
+    <value>Appearance &amp; behavior</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
@@ -1262,7 +1262,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Include or remove plugins from the global results, change the direct activation phrase and configure additional options</value>
   </data>
   <data name="Run_PositionAppearance_GroupSettings.Header" xml:space="preserve">
-    <value>Position and appearance</value>
+    <value>Position &amp; appearance</value>
   </data>
   <data name="Run_PositionHeader.Header" xml:space="preserve">
     <value>Preferred monitor position</value>
@@ -1430,7 +1430,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>to open Shortcut Guide, press it again to close or press **Esc**.</value>
   </data>
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
-    <value>Tips and tricks</value>
+    <value>Tips &amp; tricks</value>
   </data>
   <data name="Oobe_VideoConference_ToggleMicVid.Text" xml:space="preserve">
     <value>to toggle both your microphone and video</value>
@@ -1586,7 +1586,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>PowerToys is up to date</value>
   </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
-    <value>Download and install</value>
+    <value>Download &amp; install</value>
   </data>
   <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
     <value>Fills</value>
@@ -2046,7 +2046,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>px = pixels</comment>
   </data>
   <data name="AlwaysOnTop_Behavior_GroupSettings.Header" xml:space="preserve">
-    <value>Appearance and behavior</value>
+    <value>Appearance &amp; behavior</value>
   </data>
   <data name="Shell_AlwaysOnTop.Content" xml:space="preserve">
     <value>Always On Top</value>
