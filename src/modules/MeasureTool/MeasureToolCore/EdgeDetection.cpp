@@ -14,14 +14,13 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
     long xOffset = 0;
     long yOffset = 0;
 
-    // For continuous capture, we'll be a bit off center from the cursor but at least the cross we draw won't interfere with the measurement.
+    // For continuous capture, we'll be a bit off center from the cursor so the cross we draw won't interfere with the measurement.
     if constexpr (continuousCapture)
     {
         if constexpr (IsX)
         {
             xOffset = Increment ? CURSOR_OFFSET_AMOUNT_X : -CURSOR_OFFSET_AMOUNT_X;
-            yOffset = 1; 
-
+            yOffset = 1;
         }
         else
         {
@@ -70,33 +69,23 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
         const uint32_t nextPixel = texture.GetPixel(x, y);
         if (!texture.PixelsClose(startPixel, nextPixel, tolerance))
         {
-            long result = (IsX ? oldX : oldY); // Return previous value, since we've hit a different pixel color.
-            if constexpr (Increment)
-            {
-                // Take into account the pixel that we start measuring at.
-                result++;
-            }
-            return result;
+            return IsX ? oldX : oldY;
         }
     }
 
     return Increment ? static_cast<long>(IsX ? texture.width : texture.height) : 0;
 }
 
+template<bool continuousCapture>
+inline RECT DetectEdgesInternal(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance)
+{
+    return RECT{ .left = FindEdge<continuousCapture, true, false>(texture, centerPoint, tolerance),
+                 .top = FindEdge<continuousCapture, false, false>(texture, centerPoint, tolerance),
+                 .right = FindEdge<continuousCapture, true, true>(texture, centerPoint, tolerance),
+                 .bottom = FindEdge<continuousCapture, false, true>(texture, centerPoint, tolerance) };
+}
+
 RECT DetectEdges(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance, const bool continuousCapture)
 {
-    if (continuousCapture)
-    {
-        return RECT{ .left = FindEdge<true, true, false>(texture, centerPoint, tolerance),
-                     .top = FindEdge<true, false, false>(texture, centerPoint, tolerance),
-                     .right = FindEdge<true, true, true>(texture, centerPoint, tolerance),
-                     .bottom = FindEdge<true, false, true>(texture, centerPoint, tolerance) };
-    }
-    else
-    {
-        return RECT{ .left = FindEdge<false, true, false>(texture, centerPoint, tolerance),
-                     .top = FindEdge<false, false, false>(texture, centerPoint, tolerance),
-                     .right = FindEdge<false, true, true>(texture, centerPoint, tolerance),
-                     .bottom = FindEdge<false, false, true>(texture, centerPoint, tolerance) };
-    }
+    return (continuousCapture ? &DetectEdgesInternal<true> : &DetectEdgesInternal<false>)(texture, centerPoint, tolerance);
 }

@@ -285,9 +285,10 @@ void D3DCaptureState::StopCapture()
     session.Close();
 }
 
+//#define DEBUG_EDGES
+
 void UpdateCaptureState(MeasureToolState& state, HWND targetWindow, const uint8_t pixelTolerance, const OwnedTextureView& textureView, const bool continuousCapture)
 {
-    MeasureToolState::State::CrossCoords cross;
     POINT cursorPos{};
     GetCursorPos(&cursorPos);
     ScreenToClient(targetWindow, &cursorPos);
@@ -295,18 +296,28 @@ void UpdateCaptureState(MeasureToolState& state, HWND targetWindow, const uint8_
     const bool cursorInLeftScreenHalf = cursorPos.x < textureView.view.width / 2;
     const bool cursorInTopScreenHalf = cursorPos.y < textureView.view.height / 2;
 
+    // Every one of 4 edges is a coordinate of the last similar pixel in a row
+    // Example: given a 5x5 green square on a blue background with its top-left pixel
+    //          at 20x100, bounds should be [20,100]-[24,104]. We don't include [25,105] or
+    //          [19,99], since those pixels are blue. Thus, square dims are equal to
+    //          [24-20+1,104-100+1]=[5,5].
     const RECT bounds = DetectEdges(textureView.view, cursorPos, pixelTolerance, continuousCapture);
 
-    cross.hLineStart.x = static_cast<float>(bounds.left);
-    cross.hLineEnd.x = static_cast<float>(bounds.right);
-    cross.hLineStart.y = cross.hLineEnd.y = static_cast<float>(cursorPos.y);
-
-    cross.vLineStart.x = cross.vLineEnd.x = static_cast<float>(cursorPos.x);
-    cross.vLineStart.y = static_cast<float>(bounds.top);
-    cross.vLineEnd.y = static_cast<float>(bounds.bottom);
+#if defined(DEBUG_EDGES)
+    char buffer[256];
+    sprintf_s(buffer,
+              "Cursor: [%ld,%ld] Bounds: [%ld,%ld]-[%ld,%ld]\n",
+              cursorPos.x,
+              cursorPos.y,
+              bounds.left,
+              bounds.top,
+              bounds.right,
+              bounds.bottom);
+    OutputDebugStringA(buffer);
+#endif
 
     state.Access([&](MeasureToolState::State& state) {
-        state.cross = cross;
+        state.measuredEdges = bounds;
         state.cursorInLeftScreenHalf = cursorInLeftScreenHalf;
         state.cursorInTopScreenHalf = cursorInTopScreenHalf;
         state.cursorPos = cursorPos;
@@ -377,5 +388,6 @@ void StartCapturingThread(MeasureToolState& state, HWND targetWindow, HMONITOR t
                 }
             }
         }
-    }, L"Screen Capture thread");
+    },
+                      L"Screen Capture thread");
 }

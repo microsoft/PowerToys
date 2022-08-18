@@ -35,11 +35,7 @@ struct MeasureToolState
         bool continuousCapture = false;
         bool drawFeetOnCross = true;
         D2D1::ColorF crossColor = D2D1::ColorF::OrangeRed;
-        struct CrossCoords
-        {
-            D2D_POINT_2F hLineStart, hLineEnd;
-            D2D_POINT_2F vLineStart, vLineEnd;
-        } cross = {};
+        RECT measuredEdges = {};
         POINT cursorPos = {};
         bool cursorInLeftScreenHalf = false;
         bool cursorInTopScreenHalf = false;

@@ -377,6 +377,26 @@ void DrawBoundsToolOverlayUILoop(BoundsToolState& toolState, HWND overlayWindow)
     }
 }
 
+inline std::pair<D2D_POINT_2F, D2D_POINT_2F> ComputeCrossFeetLine(D2D_POINT_2F center, const bool horizontal)
+{
+    constexpr float FEET_HALF_LENGTH = 2.f;
+
+    D2D_POINT_2F start = center, end = center;
+    // Computing in this way to achieve pixel-perfect axial symmetry.
+    if (horizontal)
+    {
+        start.x -= FEET_HALF_LENGTH + 1.f;
+        end.x += FEET_HALF_LENGTH;
+    }
+    else
+    {
+        start.y -= FEET_HALF_LENGTH + 1.f;
+        end.y += FEET_HALF_LENGTH;
+    }
+
+    return { start, end };
+}
+
 void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, CommonState& commonState, HWND overlayWindow)
 {
     bool drawHorizontalCrossLine = true;
@@ -409,6 +429,9 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, CommonState& comm
         }
     });
 
+    // We draw cross' feets on top of it, thus we need to avoid blending
+    assert(crossColor.a == 1.f);
+
     auto brushColors = GetOverlayUIColors();
     brushColors.insert(begin(brushColors), crossColor);
     D2DState d2dState{ overlayWindow, std::move(brushColors) };
@@ -423,75 +446,53 @@ void DrawMeasureToolOverlayUILoop(MeasureToolState& toolState, CommonState& comm
         const bool cursorOverToolbar = PtInRect(&commonState.toolbarBoundingBox, mts.cursorPos);
 
         d2dState.rt->BeginDraw();
-        auto previousAliasingMode = d2dState.rt->GetAntialiasMode();
-        d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED); // Anti-aliasing is creating artifacts. Aliasing is for drawing straight lines.
+        const auto previousAliasingMode = d2dState.rt->GetAntialiasMode();
+        // Anti-aliasing is creating artifacts. Aliasing is for drawing straight lines.
+        d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
         d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
 
-        if (!cursorOverToolbar)
+        // Add 1px to each dim, since the range is inclusive.
+        const float hMeasure = static_cast<float>(mts.measuredEdges.right - mts.measuredEdges.left + 1);
+        const float vMeasure = static_cast<float>(mts.measuredEdges.bottom - mts.measuredEdges.top + 1);
+
+        // Prevent drawing until we get the first capture
+        const bool hasMeasure = (mts.measuredEdges.right != mts.measuredEdges.left) && (mts.measuredEdges.bottom != mts.measuredEdges.top);
+
+        if (hasMeasure && !cursorOverToolbar)
         {
-            const float LINE_THICKNESS = 1.f;
-            const float FEET_LENGTH = 5.f;
-
-            // TODO: investigate why it's required
-            // Adjust cross to better match cursor coordinates in the texture.
-            const float lineOffset = .5f;
-            mts.cross.hLineStart.x += lineOffset;
-            mts.cross.hLineStart.y += lineOffset;
-            mts.cross.hLineEnd.x += lineOffset;
-            mts.cross.hLineEnd.y += lineOffset;
-            mts.cross.vLineStart.x += lineOffset;
-            mts.cross.vLineStart.y += lineOffset;
-            mts.cross.vLineEnd.x += lineOffset;
-            mts.cross.vLineEnd.y += lineOffset;
-
             if (drawHorizontalCrossLine)
             {
-                d2dState.rt->DrawLine(mts.cross.hLineStart, mts.cross.hLineEnd, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                const D2D_POINT_2F hLineStart{ .x = static_cast<float>(mts.measuredEdges.left), .y = static_cast<float>(mts.cursorPos.y) };
+                const D2D_POINT_2F hLineEnd{ .x = hLineStart.x + hMeasure, .y = hLineStart.y };
+                d2dState.rt->DrawLine(hLineStart, hLineEnd, d2dState.solidBrushes[Brush::line].get());
+
                 if (drawFeetOnCross && !continuousCapture)
                 {
-                    //draw line feet
-                    D2D_POINT_2F start_feet_top_half_start = { mts.cross.hLineStart.x + LINE_THICKNESS / 2, mts.cross.hLineStart.y - LINE_THICKNESS / 2 };
-                    D2D_POINT_2F start_feet_top_half_end = { mts.cross.hLineStart.x + LINE_THICKNESS / 2, mts.cross.hLineStart.y - FEET_LENGTH };
-                    d2dState.rt->DrawLine(start_feet_top_half_start, start_feet_top_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
-                    D2D_POINT_2F start_feet_bottom_half_start = { mts.cross.hLineStart.x + LINE_THICKNESS / 2, mts.cross.hLineStart.y + LINE_THICKNESS / 2 };
-                    D2D_POINT_2F start_feet_bottom_half_end = { mts.cross.hLineStart.x + LINE_THICKNESS / 2, mts.cross.hLineStart.y + FEET_LENGTH };
-                    d2dState.rt->DrawLine(start_feet_bottom_half_start, start_feet_bottom_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
-                    D2D_POINT_2F end_feet_start_top_half_start = { mts.cross.hLineEnd.x - LINE_THICKNESS / 2, mts.cross.hLineEnd.y - LINE_THICKNESS / 2 };
-                    D2D_POINT_2F end_feet_end_top_half_end = { mts.cross.hLineEnd.x - LINE_THICKNESS / 2, mts.cross.hLineEnd.y - FEET_LENGTH };
-                    d2dState.rt->DrawLine(end_feet_start_top_half_start, end_feet_end_top_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
-                    D2D_POINT_2F end_feet_start_bottom_half_start = { mts.cross.hLineEnd.x - LINE_THICKNESS / 2, mts.cross.hLineEnd.y + LINE_THICKNESS / 2 };
-                    D2D_POINT_2F end_feet_end_bottom_half_end = { mts.cross.hLineEnd.x - LINE_THICKNESS / 2, mts.cross.hLineEnd.y + FEET_LENGTH };
-                    d2dState.rt->DrawLine(end_feet_start_bottom_half_start, end_feet_end_bottom_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                    auto [left_start, left_end] = ComputeCrossFeetLine(hLineStart, false);
+                    auto [right_start, right_end] = ComputeCrossFeetLine(hLineEnd, false);
+                    d2dState.rt->DrawLine(left_start, left_end, d2dState.solidBrushes[Brush::line].get());
+                    d2dState.rt->DrawLine(right_start, right_end, d2dState.solidBrushes[Brush::line].get());
                 }
             }
 
             if (drawVerticalCrossLine)
             {
-                d2dState.rt->DrawLine(mts.cross.vLineStart, mts.cross.vLineEnd, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                const D2D_POINT_2F vLineStart{ .x = static_cast<float>(mts.cursorPos.x), .y = static_cast<float>(mts.measuredEdges.top) };
+                const D2D_POINT_2F vLineEnd{ .x = vLineStart.x, .y = vLineStart.y + vMeasure };
+                d2dState.rt->DrawLine(vLineStart, vLineEnd, d2dState.solidBrushes[Brush::line].get());
+
                 if (drawFeetOnCross && !continuousCapture)
                 {
-                    // TODO: simplify
-                    //draw line feet
-                    D2D_POINT_2F start_feet_left_half_start = { mts.cross.vLineStart.x - LINE_THICKNESS / 2, mts.cross.vLineStart.y + LINE_THICKNESS / 2 };
-                    D2D_POINT_2F start_feet_left_half_end = { mts.cross.vLineStart.x - FEET_LENGTH, mts.cross.vLineStart.y + LINE_THICKNESS / 2 };
-                    d2dState.rt->DrawLine(start_feet_left_half_start, start_feet_left_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
-                    D2D_POINT_2F start_feet_right_half_start = { mts.cross.vLineStart.x + LINE_THICKNESS / 2, mts.cross.vLineStart.y + LINE_THICKNESS / 2 };
-                    D2D_POINT_2F start_feet_right_half_end = { mts.cross.vLineStart.x + FEET_LENGTH, mts.cross.vLineStart.y + LINE_THICKNESS / 2 };
-                    d2dState.rt->DrawLine(start_feet_right_half_start, start_feet_right_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
-                    D2D_POINT_2F end_feet_left_half_start = { mts.cross.vLineEnd.x - LINE_THICKNESS / 2, mts.cross.vLineEnd.y - LINE_THICKNESS / 2 };
-                    D2D_POINT_2F end_feet_left_half_end = { mts.cross.vLineEnd.x - FEET_LENGTH, mts.cross.vLineEnd.y - LINE_THICKNESS / 2 };
-                    d2dState.rt->DrawLine(end_feet_left_half_start, end_feet_left_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
-                    D2D_POINT_2F end_feet_right_half_start = { mts.cross.vLineEnd.x + LINE_THICKNESS / 2, mts.cross.vLineEnd.y - LINE_THICKNESS / 2 };
-                    D2D_POINT_2F end_feet_right_half_end = { mts.cross.vLineEnd.x + FEET_LENGTH, mts.cross.vLineEnd.y - LINE_THICKNESS / 2 };
-                    d2dState.rt->DrawLine(end_feet_right_half_start, end_feet_right_half_end, d2dState.solidBrushes[Brush::line].get(), LINE_THICKNESS);
+                    auto [top_start, top_end] = ComputeCrossFeetLine(vLineStart, true);
+                    auto [bottom_start, bottom_end] = ComputeCrossFeetLine(vLineEnd, true);
+                    d2dState.rt->DrawLine(top_start, top_end, d2dState.solidBrushes[Brush::line].get());
+                    d2dState.rt->DrawLine(bottom_start, bottom_end, d2dState.solidBrushes[Brush::line].get());
                 }
             }
 
             // After drawing the lines, restore anti aliasing to draw the measurement tooltip.
             d2dState.rt->SetAntialiasMode(previousAliasingMode);
 
-            const float hMeasure = mts.cross.hLineEnd.x - mts.cross.hLineStart.x;
-            const float vMeasure = mts.cross.vLineEnd.y - mts.cross.vLineStart.y;
             uint32_t measureStringBufLen = 0;
 
             switch (toolMode)
