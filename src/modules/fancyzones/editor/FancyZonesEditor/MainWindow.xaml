@@ -599,21 +599,29 @@
                                        Text="&#xE78A;" />
 
                             <fancyZonesControls:CustomSlider x:Name="SensitivityInput"
-                                    Value="{Binding SensitivityRadius}"
-                                    Minimum="{Binding SensitivityRadiusMinimum}"
-                                    Maximum="{Binding SensitivityRadiusMaximum}"
-                                    IsMoveToPointEnabled="True"
-                                    AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
-                                    AutomationProperties.HelpText="{Binding SensitivityRadius}"
-                                    ToolTip="{Binding SensitivityRadius}"
-                                    ValueChanged="SensitivityInput_ValueChanged"
-                                    MinWidth="216"
-                                    Margin="12,0,0,0"
-                                    HorizontalAlignment="Left"
-                                    SmallChange="1" 
-                                    LargeChange="10"/>
+                                Value="{Binding SensitivityRadius}"
+                                Minimum="{Binding SensitivityRadiusMinimum}"
+                                Maximum="{Binding SensitivityRadiusMaximum}"
+                                IsMoveToPointEnabled="True"
+                                AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
+                                AutomationProperties.HelpText="{Binding SensitivityRadius}"
+                                ToolTip="{Binding SensitivityRadius}"
+                                ValueChanged="SensitivityInput_ValueChanged"
+                                MinWidth="216"
+                                Margin="12,0,0,0"
+                                HorizontalAlignment="Left"
+                                SmallChange="1" 
+                                LargeChange="10"
+                                DockPanel.Dock="Top"/>
 
-                            <TextBlock Text="{x:Static props:Resources.Pixels}"
+                                <TextBlock
+                                    Text="{Binding SensitivityRadius}"
+                                    Margin="6,8,0,0"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                    TextWrapping="Wrap" />
+
+                                <TextBlock Text="{x:Static props:Resources.Pixels}"
                                        Margin="6,-4,0,0"
                                        FontSize="12"
                                        Foreground="{DynamicResource SecondaryForegroundBrush}"
