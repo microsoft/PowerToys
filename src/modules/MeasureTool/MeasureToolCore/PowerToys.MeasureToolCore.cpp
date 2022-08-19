@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 
 #include <common/display/dpi_aware.h>
+#include <common/display/monitors.h>
 #include <common/utils/logger_helper.h>
 #include <common/logger/logger.h>
 
@@ -39,12 +40,15 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 
     void Core::ResetState()
     {
-        _overlayUIState = {};
+        _overlayUIStates.clear();
         _boundsToolState = { .commonState = &_commonState };
         _measureToolState.Reset();
-        if (_screenCaptureThread.joinable())
+        for (auto& thread : _screenCaptureThreads)
         {
-            _screenCaptureThread.join();
+            if (thread.joinable())
+            {
+                thread.join();
+            }
         }
 
         _settings = Settings::LoadFromFile();
@@ -58,8 +62,13 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     {
         ResetState();
 
-        const auto primaryMonitor = MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY);
-        _overlayUIState = OverlayUIState::Create(_boundsToolState, _commonState, primaryMonitor);
+        for (const auto monitor : MonitorInfo::GetMonitors(true))
+        {
+            auto overlayUI = OverlayUIState::Create(_boundsToolState, _commonState, monitor);
+            if (!overlayUI)
+                continue;
+            _overlayUIStates.push_back(std::move(overlayUI));
+        }
     }
 
     void Core::StartMeasureTool(const bool horizontal, const bool vertical)
@@ -77,11 +86,16 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             state.pixelTolerance = _settings.pixelTolerance;
         });
 
-        const auto primaryMonitor = MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY);
-        _overlayUIState = OverlayUIState::Create(_measureToolState, _commonState, primaryMonitor);
-        if (_overlayUIState)
+        for (const auto monitorInfo : MonitorInfo::GetMonitors(true))
         {
-            _screenCaptureThread = StartCapturingThread(_commonState, _measureToolState, _overlayUIState->overlayWindowHandle(), primaryMonitor);
+            const auto monitor = monitorInfo.GetHandle();
+            auto overlayUI = OverlayUIState::Create(_measureToolState, _commonState, monitor);
+            if (!overlayUI)
+                continue;
+            _screenCaptureThreads.push_back(StartCapturingThread(_commonState,
+                                                                 _measureToolState,
+                                                                 overlayUI->overlayWindowHandle(),
+                                                                 monitor));
         }
     }
 

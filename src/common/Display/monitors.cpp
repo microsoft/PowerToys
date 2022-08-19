@@ -2,72 +2,55 @@
 
 #include <algorithm>
 
-namespace
+ScreenSize MonitorInfo::GetScreenSize(const bool includeNonWorkingArea) const
 {
-    // TODO: use compare
-    bool operator<(const RECT& lhs, const RECT& rhs)
-    {
-        auto lhs_tuple = std::make_tuple(lhs.left, lhs.right, lhs.top, lhs.bottom);
-        auto rhs_tuple = std::make_tuple(rhs.left, rhs.right, rhs.top, rhs.bottom);
-        return lhs_tuple < rhs_tuple;
-    }
+    return includeNonWorkingArea ? ScreenSize{ info.rcMonitor } : ScreenSize{ info.rcWork };
 }
 
-bool operator==(const ScreenSize& lhs, const ScreenSize& rhs)
+bool MonitorInfo::IsPrimary() const
 {
-    auto lhs_tuple = std::make_tuple(lhs.rect.left, lhs.rect.right, lhs.rect.top, lhs.rect.bottom);
-    auto rhs_tuple = std::make_tuple(rhs.rect.left, rhs.rect.right, rhs.rect.top, rhs.rect.bottom);
-    return lhs_tuple == rhs_tuple;
+    return static_cast<bool>(info.dwFlags & MONITORINFOF_PRIMARY);
+}
+
+MonitorInfo::MonitorInfo(HMONITOR h) :
+    handle{ h }
+{
+    info.cbSize = sizeof(MONITORINFOEX);
+    GetMonitorInfoW(handle, &info);
 }
 
 static BOOL CALLBACK GetDisplaysEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
 {
-    MONITORINFOEX monitorInfo;
-    monitorInfo.cbSize = sizeof(MONITORINFOEX);
-    if (GetMonitorInfo(monitor, &monitorInfo))
-    {
-        reinterpret_cast<std::vector<MonitorInfo>*>(data)->emplace_back(monitor, monitorInfo.rcWork);
-    }
-    return true;
-};
-
-static BOOL CALLBACK GetDisplaysEnumCbWithNonWorkingArea(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
-{
-    MONITORINFOEX monitorInfo;
-    monitorInfo.cbSize = sizeof(MONITORINFOEX);
-    if (GetMonitorInfo(monitor, &monitorInfo))
-    {
-        reinterpret_cast<std::vector<MonitorInfo>*>(data)->emplace_back(monitor, monitorInfo.rcMonitor);
-    }
+    auto* monitors = reinterpret_cast<std::vector<MonitorInfo>*>(data);
+    monitors->emplace_back(monitor);
     return true;
 };
 
 std::vector<MonitorInfo> MonitorInfo::GetMonitors(bool includeNonWorkingArea)
 {
     std::vector<MonitorInfo> monitors;
-    EnumDisplayMonitors(NULL, NULL, includeNonWorkingArea ? GetDisplaysEnumCbWithNonWorkingArea : GetDisplaysEnumCb, reinterpret_cast<LPARAM>(&monitors));
-    std::sort(begin(monitors), end(monitors), [](const MonitorInfo& lhs, const MonitorInfo& rhs) {
-        return lhs.rect < rhs.rect;
+    EnumDisplayMonitors(nullptr, nullptr, GetDisplaysEnumCb, reinterpret_cast<LPARAM>(&monitors));
+    std::sort(begin(monitors), end(monitors), [=](const MonitorInfo& lhs, const MonitorInfo& rhs) {
+        const auto lhsInfo = MonitorInfo(lhs.handle);
+        const auto rhsInfo = MonitorInfo(rhs.handle);
+        const auto lhsSize = lhsInfo.GetScreenSize(includeNonWorkingArea);
+        const auto rhsSize = rhsInfo.GetScreenSize(includeNonWorkingArea);
+
+        return lhsSize < rhsSize;
     });
     return monitors;
 }
 
-static BOOL CALLBACK GetPrimaryDisplayEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
-{
-    MONITORINFOEX monitorInfo;
-    monitorInfo.cbSize = sizeof(MONITORINFOEX);
-
-    if (GetMonitorInfo(monitor, &monitorInfo) && (monitorInfo.dwFlags & MONITORINFOF_PRIMARY))
-    {
-        reinterpret_cast<MonitorInfo*>(data)->handle = monitor;
-        reinterpret_cast<MonitorInfo*>(data)->rect = monitorInfo.rcWork;
-    }
-    return true;
-};
-
 MonitorInfo MonitorInfo::GetPrimaryMonitor()
 {
-    MonitorInfo primary({}, {});
-    EnumDisplayMonitors(NULL, NULL, GetPrimaryDisplayEnumCb, reinterpret_cast<LPARAM>(&primary));
-    return primary;
+    auto monitors = MonitorInfo::GetMonitors(false);
+    if (monitors.size() > 1)
+    {
+        for (auto monitor : monitors)
+        {
+            if (monitor.IsPrimary())
+                return monitor;
+        }
+    }
+    return monitors[0];
 }

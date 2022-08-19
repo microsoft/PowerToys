@@ -58,7 +58,6 @@ LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
 #endif
         break;
     }
-    case WM_DESTROY:
     case WM_CLOSE:
         DestroyWindow(window);
         break;
@@ -90,7 +89,6 @@ LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
 {
     switch (message)
     {
-    case WM_DESTROY:
     case WM_CLOSE:
         DestroyWindow(window);
         break;
@@ -155,33 +153,22 @@ void CreateOverlayWindowClasses()
 }
 
 HWND CreateOverlayUIWindow(const CommonState& commonState,
-                           HMONITOR monitor,
+                           const MonitorInfo& monitor,
                            const wchar_t* windowClass,
                            void* extraParam)
 {
     static std::once_flag windowClassesCreatedFlag;
     std::call_once(windowClassesCreatedFlag, CreateOverlayWindowClasses);
 
-    int left = {}, top = {};
-    int width = {}, height = {};
-
-    MONITORINFO monitorInfo = { .cbSize = sizeof(monitorInfo) };
-    if (GetMonitorInfoW(monitor, &monitorInfo))
-    {
-        left = monitorInfo.rcWork.left;
-        top = monitorInfo.rcWork.top;
-        width = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
-        height = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
-    }
-
+    const auto screenArea = monitor.GetScreenSize(false);
     HWND window{ CreateWindowExW(WS_EX_TOOLWINDOW,
                                  windowClass,
                                  L"PowerToys.MeasureToolOverlay",
                                  WS_POPUP,
-                                 left,
-                                 top,
-                                 width,
-                                 height,
+                                 screenArea.left(),
+                                 screenArea.top(),
+                                 screenArea.width(),
+                                 screenArea.height(),
                                  nullptr,
                                  nullptr,
                                  GetModuleHandleW(nullptr),
@@ -189,7 +176,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     winrt::check_bool(window);
     ShowWindow(window, SW_SHOWNORMAL);
 #if !defined(DEBUG_OVERLAY)
-    SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    SetWindowPos(window, HWND_TOPMOST, {}, {}, {}, {}, SWP_NOMOVE | SWP_NOSIZE);
 #else
     (void)window;
 #endif
@@ -203,7 +190,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
 
     RECT windowRect = {};
     // Exclude toolbar from the window's region to be able to use toolbar during tool usage.
-    if (GetWindowRect(window, &windowRect))
+    if (monitor.IsPrimary() && GetWindowRect(window, &windowRect))
     {
         // will be freed during SetWindowRgn call
         const HRGN windowRegion{ CreateRectRgn(windowRect.left, windowRect.top, windowRect.right, windowRect.bottom) };
@@ -266,10 +253,17 @@ OverlayUIState::OverlayUIState(StateT& toolState,
 {
 }
 
-OverlayUIState::~OverlayUIState()
+OverlayUIState::~OverlayUIState() noexcept
 {
     PostMessageW(_window, WM_CLOSE, {}, {});
-    _uiThread.join();
+    // must be extra cautious to not trigger termination due to noexcept
+    try
+    {
+        _uiThread.join();
+    }
+    catch (...)
+    {
+    }
 }
 
 // Returning unique_ptr, since we need to pin ui state in memory
@@ -279,7 +273,7 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
                                                                       const CommonState& commonState,
                                                                       const wchar_t* toolWindowClassName,
                                                                       void* windowParam,
-                                                                      HMONITOR monitor)
+                                                                      const MonitorInfo& monitor)
 {
     wil::shared_event uiCreatedEvent(wil::EventOptions::ManualReset);
     std::unique_ptr<OverlayUIState> uiState;
@@ -300,7 +294,7 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
 
 std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolState>& toolState,
                                                        const CommonState& commonState,
-                                                       HMONITOR monitor)
+                                                       const MonitorInfo& monitor)
 {
     return OverlayUIState::CreateInternal(toolState,
                                           DrawMeasureToolTick,
@@ -312,7 +306,7 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolSta
 
 std::unique_ptr<OverlayUIState> OverlayUIState::Create(BoundsToolState& toolState,
                                                        const CommonState& commonState,
-                                                       HMONITOR monitor)
+                                                       const MonitorInfo& monitor)
 {
     return OverlayUIState::CreateInternal(toolState,
                                           DrawBoundsToolTick,

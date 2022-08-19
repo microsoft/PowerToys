@@ -1368,6 +1368,7 @@ NOASYNC
 NOCLOSEPROCESS
 NOCOPYBITS
 nodeca
+nodiscard
 nodoc
 noexcept
 NOINHERITLAYOUT
@@ -1739,6 +1740,7 @@ Roboto
 rohanrdy
 roslyn
 Rothera
+Roolr
 roundf
 ROUNDSMALL
 royvou

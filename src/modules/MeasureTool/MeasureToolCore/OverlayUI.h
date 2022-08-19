@@ -3,6 +3,7 @@
 #include "D2DState.h"
 #include "ToolState.h"
 
+#include <common/display/monitors.h>
 #include <common/utils/serialized.h>
 
 class OverlayUIState final
@@ -25,17 +26,18 @@ class OverlayUIState final
                                                           const CommonState& commonState,
                                                           const wchar_t* toolWindowClassName,
                                                           void* windowParam,
-                                                          HMONITOR monitor);
+                                                          const MonitorInfo& monitor);
 
 public:
-    ~OverlayUIState();
+    OverlayUIState(OverlayUIState&&) noexcept = default;
+    ~OverlayUIState() noexcept;
 
     static std::unique_ptr<OverlayUIState> Create(BoundsToolState& toolState,
                                                   const CommonState& commonState,
-                                                  HMONITOR monitor);
+                                                  const MonitorInfo& monitor);
     static std::unique_ptr<OverlayUIState> Create(Serialized<MeasureToolState>& toolState,
                                                   const CommonState& commonState,
-                                                  HMONITOR monitor);
+                                                  const MonitorInfo& monitor);
     inline HWND overlayWindowHandle() const
     {
         return _window;
