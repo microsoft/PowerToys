@@ -188,7 +188,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                                 _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
                                 _browser.CoreWebView2.WebResourceRequested += (object sender, CoreWebView2WebResourceRequestedEventArgs e) =>
                                 {
-                                    // Show local file we've saved with the svg contents. Block all else.
+                                    // Show local file we've saved with the markdown contents. Block all else.
                                     if (new Uri(e.Request.Uri) != _localFileURI)
                                     {
                                         e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
