@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-
+using PowerOCR.Helpers;
 using PowerOCR.Utilities;
 
 namespace PowerOCR;
@@ -29,6 +29,12 @@ public partial class OCROverlay : Window
     private DpiScale? dpiScale;
 
     private Point GetMousePos() => PointToScreen(Mouse.GetPosition(this));
+
+    private System.Windows.Forms.Screen? CurrentScreen
+    {
+        get;
+        set;
+    }
 
     private double selectLeft;
     private double selectTop;
@@ -91,7 +97,7 @@ public partial class OCROverlay : Window
         IsSelecting = true;
         RegionClickCanvas.CaptureMouse();
 
-        // CursorClipper.ClipCursor(this);
+        CursorClipper.ClipCursor(this);
         clickedPoint = e.GetPosition(this);
         selectBorder.Height = 1;
         selectBorder.Width = 1;
@@ -107,11 +113,21 @@ public partial class OCROverlay : Window
         }
 
         selectBorder.BorderThickness = new Thickness(2);
-        System.Windows.Media.Color borderColor = System.Windows.Media.Color.FromArgb(255, 40, 118, 126);
+        Color borderColor = Color.FromArgb(255, 40, 118, 126);
         selectBorder.BorderBrush = new SolidColorBrush(borderColor);
         _ = RegionClickCanvas.Children.Add(selectBorder);
         Canvas.SetLeft(selectBorder, clickedPoint.X);
         Canvas.SetTop(selectBorder, clickedPoint.Y);
+
+        var screens = System.Windows.Forms.Screen.AllScreens;
+        System.Drawing.Point formsPoint = new System.Drawing.Point((int)clickedPoint.X, (int)clickedPoint.Y);
+        foreach (var scr in screens)
+        {
+            if (scr.Bounds.Contains(formsPoint))
+            {
+                CurrentScreen = scr;
+            }
+        }
     }
 
     private void RegionClickCanvas_MouseMove(object sender, MouseEventArgs e)
@@ -138,6 +154,18 @@ public partial class OCROverlay : Window
 
             double leftValue = selectLeft + xShiftDelta;
             double topValue = selectTop + yShiftDelta;
+
+            if (CurrentScreen is not null && dpiScale is not null)
+            {
+                double currentScreenLeft = CurrentScreen.Bounds.Left; // Should always be 0
+                double currentScreenRight = CurrentScreen.Bounds.Right / dpiScale.Value.DpiScaleX;
+                double currentScreenTop = CurrentScreen.Bounds.Top; // Should always be 0
+                double currentScreenBottom = CurrentScreen.Bounds.Bottom / dpiScale.Value.DpiScaleY;
+
+                // this is giving issues on different monitors
+                // leftValue = Math.Clamp(leftValue, currentScreenLeft, currentScreenRight - selectBorder.Width);
+                // topValue = Math.Clamp(topValue, currentScreenTop, currentScreenBottom - selectBorder.Height);
+            }
 
             clippingGeometry.Rect = new Rect(
                 new Point(leftValue, topValue),
@@ -173,8 +201,8 @@ public partial class OCROverlay : Window
 
         IsSelecting = false;
 
-        // currentScreen = null;
-        // CursorClipper.UnClipCursor();
+        CurrentScreen = null;
+        CursorClipper.UnClipCursor();
         RegionClickCanvas.ReleaseMouseCapture();
         Matrix m = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice;
 
