@@ -1976,6 +1976,7 @@ swprintf
 SWRESTORE
 swscanf
 SYMED
+symlink
 SYMOPT
 SYNCMFT
 SYNCPAINT
