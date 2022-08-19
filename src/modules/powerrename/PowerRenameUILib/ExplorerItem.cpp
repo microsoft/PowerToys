@@ -134,7 +134,7 @@ namespace winrt::PowerRenameUI::implementation
 
     int32_t ExplorerItem::State()
     {
-        throw hresult_not_implemented();
+        return static_cast<int32_t>(m_state);
     }
 
     void ExplorerItem::State(int32_t value)
