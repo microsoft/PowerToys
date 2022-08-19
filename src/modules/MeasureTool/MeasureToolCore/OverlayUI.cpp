@@ -319,7 +319,7 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolSta
                                           DrawMeasureToolTick,
                                           commonState,
                                           NonLocalizable::MeasureToolOverlayWindowName,
-                                          // ok to remove constness, since member access is serialized
+                                          // ok to cast away const, since member access is serialized
                                           (void*)(&commonState),
                                           monitor);
 }
