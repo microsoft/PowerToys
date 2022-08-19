@@ -22,13 +22,11 @@ namespace PowerOCR.Settings
         private const int MaxNumberOfRetry = 5;
         private const int SettingsReadOnChangeDelayInMs = 300;
 
-        // private readonly IFileSystemWatcher _watcher;
-
-        // private readonly IFileSystemWatcher _watcher;
+        private readonly IFileSystemWatcher _watcher;
         private readonly object _loadingSettingsLock = new object();
 
         [ImportingConstructor]
-        public UserSettings()
+        public UserSettings(Helpers.IThrottledActionInvoker throttledActionInvoker)
         {
             _settingsUtils = new SettingsUtils();
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
@@ -36,7 +34,7 @@ namespace PowerOCR.Settings
             LoadSettingsFromJson();
 
             // delay loading settings on change by some time to avoid file in use exception
-            // _watcher = Helper.GetFileWatcher(PowerOcrModuleName, "settings.json", () => throttledActionInvoker.ScheduleAction(LoadSettingsFromJson, SettingsReadOnChangeDelayInMs));
+            _watcher = Helper.GetFileWatcher(PowerOcrModuleName, "settings.json", () => throttledActionInvoker.ScheduleAction(LoadSettingsFromJson, SettingsReadOnChangeDelayInMs));
         }
 
         public SettingItem<string> ActivationShortcut { get; private set; }

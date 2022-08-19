@@ -61,7 +61,7 @@ public partial class App : Application, IDisposable
             _powerToysRunnerPid = -1;
         }
 
-        var userSettings = new UserSettings();
+        var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
         keyboardMonitor = new KeyboardMonitor(userSettings);
         keyboardMonitor?.Start();
     }
