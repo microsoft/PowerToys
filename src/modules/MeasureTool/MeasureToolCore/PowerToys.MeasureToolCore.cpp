@@ -36,6 +36,8 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     {
         _stopMouseCaptureThreadSignal.SetEvent();
         _mouseCaptureThread.join();
+        
+        ResetState();
     }
 
     void Core::ResetState()
@@ -50,6 +52,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
                 thread.join();
             }
         }
+        _screenCaptureThreads.clear();
 
         _settings = Settings::LoadFromFile();
 
@@ -62,9 +65,9 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     {
         ResetState();
 
-        for (const auto monitor : MonitorInfo::GetMonitors(true))
+        for (const auto& monitorInfo : MonitorInfo::GetMonitors(true))
         {
-            auto overlayUI = OverlayUIState::Create(_boundsToolState, _commonState, monitor);
+            auto overlayUI = OverlayUIState::Create(_boundsToolState, _commonState, monitorInfo);
             if (!overlayUI)
                 continue;
             _overlayUIStates.push_back(std::move(overlayUI));
@@ -86,16 +89,17 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             state.pixelTolerance = _settings.pixelTolerance;
         });
 
-        for (const auto monitorInfo : MonitorInfo::GetMonitors(true))
+        for (const auto& monitorInfo : MonitorInfo::GetMonitors(true))
         {
             const auto monitor = monitorInfo.GetHandle();
-            auto overlayUI = OverlayUIState::Create(_measureToolState, _commonState, monitor);
+            auto overlayUI = OverlayUIState::Create(_measureToolState, _commonState, monitorInfo);
             if (!overlayUI)
                 continue;
             _screenCaptureThreads.push_back(StartCapturingThread(_commonState,
                                                                  _measureToolState,
                                                                  overlayUI->overlayWindowHandle(),
                                                                  monitor));
+            _overlayUIStates.push_back(std::move(overlayUI));
         }
     }
 

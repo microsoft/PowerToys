@@ -114,12 +114,17 @@ LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         toolState->currentRegionStart = newRegionStart;
         break;
     }
+    // We signal this when active monitor has changed -> must reset the state
+    case WM_USER:
+    {
+        auto toolState = GetWindowParam<BoundsToolState*>(window);
+        toolState->currentRegionStart = std::nullopt;
+        break;
+    }
     case WM_LBUTTONUP:
         if (auto toolState = GetWindowParam<BoundsToolState*>(window); toolState->currentRegionStart.has_value())
         {
-            POINT cursorPos = {};
-            GetCursorPos(&cursorPos);
-            ScreenToClient(window, &cursorPos);
+            const auto cursorPos = toolState->commonState->cursorPos;
             D2D_POINT_2F newRegionEnd = { .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
             toolState->currentRegionStart = std::nullopt;
 
@@ -228,14 +233,28 @@ void OverlayUIState::RunUILoop()
     {
         _d2dState.rt->BeginDraw();
         _d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
-        const bool cursorOverToolbar = PtInRect(&_commonState.toolbarBoundingBox, _commonState.cursorPos);
-        if (!cursorOverToolbar)
+        const auto cursor = _commonState.cursorPos;
+        const bool cursorOverToolbar = PtInRect(&_commonState.toolbarBoundingBox, cursor);
+        const bool cursorOnScreen = _monitorArea.inside(cursor);
+        if (!cursorOverToolbar && cursorOnScreen)
         {
             _tickFunc();
         }
+
         _d2dState.rt->EndDraw();
-        InvalidateRect(_window, nullptr, true);
-        run_message_loop(true);
+        if (!cursorOverToolbar)
+        {
+            InvalidateRect(_window, nullptr, true);
+        }
+
+        if (cursorOnScreen != _cursorOnScreen)
+        {
+            _cursorOnScreen = cursorOnScreen;
+            PostMessageW(_window, WM_USER, {}, {});
+            ShowWindow(_window, cursorOnScreen ? SW_SHOW : SW_HIDE);
+        }
+
+        run_message_loop(true, 1);
     }
 }
 
@@ -256,7 +275,7 @@ OverlayUIState::OverlayUIState(StateT& toolState,
 OverlayUIState::~OverlayUIState() noexcept
 {
     PostMessageW(_window, WM_CLOSE, {}, {});
-    // must be extra cautious to not trigger termination due to noexcept
+    // Extra cautious to not trigger termination due to noexcept
     try
     {
         _uiThread.join();
@@ -280,7 +299,7 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
     auto threadHandle = SpawnLoggedThread(L"OverlayUI thread", [&] {
         const HWND window = CreateOverlayUIWindow(commonState, monitor, toolWindowClassName, windowParam);
         uiState = std::unique_ptr<OverlayUIState>{ new OverlayUIState{ toolState, tickFunc, commonState, window } };
-
+        uiState->_monitorArea = monitor.GetScreenSize(true);
         uiCreatedEvent.SetEvent();
 
         uiState->RunUILoop();
@@ -300,6 +319,7 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolSta
                                           DrawMeasureToolTick,
                                           commonState,
                                           NonLocalizable::MeasureToolOverlayWindowName,
+                                          // ok to remove constness, since member access is serialized
                                           (void*)(&commonState),
                                           monitor);
 }

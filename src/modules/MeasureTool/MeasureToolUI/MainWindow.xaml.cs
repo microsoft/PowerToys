@@ -103,8 +103,8 @@ namespace MeasureToolUI
             {
                 UncheckOtherButtons(button);
                 _coreLogic.ResetState();
-                startToolAction();
                 UpdateToolUsageCompletionEvent(toolButton);
+                startToolAction();
             }
             else
             {

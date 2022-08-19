@@ -18,7 +18,7 @@ inline int run_message_loop(const bool until_idle = false, const std::optional<u
         timerId = SetTimer(nullptr, 0, *timeout_ms, nullptr);
     }
 
-    while (!stop && GetMessageW(&msg, nullptr, 0, 0))
+    while (!stop && PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
     {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);

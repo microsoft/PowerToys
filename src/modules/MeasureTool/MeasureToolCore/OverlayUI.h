@@ -14,11 +14,13 @@ class OverlayUIState final
                    const CommonState& commonState,
                    HWND window);
 
+    ScreenSize _monitorArea;
     HWND _window = {};
     const CommonState& _commonState;
     D2DState _d2dState;
     std::function<void()> _tickFunc;
     std::thread _uiThread;
+    bool _cursorOnScreen = true;
 
     template<typename ToolT, typename TickFuncT>
     static std::unique_ptr<OverlayUIState> CreateInternal(ToolT& toolState,

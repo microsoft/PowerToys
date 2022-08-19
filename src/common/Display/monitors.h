@@ -7,7 +7,7 @@
 
 struct ScreenSize
 {
-    explicit ScreenSize(RECT rect) :
+    explicit ScreenSize(RECT rect = {}) :
         rect(rect) {}
     RECT rect;
     int left() const { return rect.left; }
@@ -25,6 +25,7 @@ struct ScreenSize
     POINT bottom_left() const { return { rect.left, rect.bottom }; };
     POINT bottom_middle() const { return { rect.left + width() / 2, rect.bottom }; };
     POINT bottom_right() const { return { rect.right, rect.bottom }; };
+    inline bool inside(const POINT& point) const { return PtInRect(&rect, point); }
 
     inline friend auto operator<=>(const ScreenSize& lhs, const ScreenSize& rhs)
     {
@@ -40,7 +41,7 @@ class MonitorInfo
     MONITORINFOEX info = {};
 
 public:
-    MonitorInfo(HMONITOR h);
+    explicit MonitorInfo(HMONITOR h);
     inline HMONITOR GetHandle() const
     {
         return handle;
