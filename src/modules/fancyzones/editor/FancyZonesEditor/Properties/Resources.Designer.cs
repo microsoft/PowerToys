@@ -299,7 +299,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Highlight distance slider.
+        ///   Looks up a localized string similar to Highlight distance slider. Possible range is from {0} to {1}. Value is {2}..
         /// </summary>
         public static string Distance_adjacent_zones_slider_announce {
             get {

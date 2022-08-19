@@ -4,7 +4,7 @@
 
 namespace FancyZonesEditor.Controls
 {
-    using System.Windows;
+    using System.Globalization;
     using System.Windows.Automation.Peers;
     using System.Windows.Controls;
 
@@ -17,7 +17,20 @@ namespace FancyZonesEditor.Controls
 
         protected override string GetNameCore()
         {
-            return Properties.Resources.Distance_adjacent_zones_slider_announce;
+            var element = this.Owner as Slider;
+            if (element == null)
+            {
+                return string.Empty;
+            }
+
+            string announce = string.Format(
+                CultureInfo.CurrentCulture,
+                Properties.Resources.Distance_adjacent_zones_slider_announce,
+                element.Minimum,
+                element.Maximum,
+                element.Value);
+
+            return announce;
         }
 
         protected override AutomationControlType GetAutomationControlTypeCore()
