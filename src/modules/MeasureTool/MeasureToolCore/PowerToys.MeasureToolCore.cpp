@@ -36,7 +36,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     {
         _stopMouseCaptureThreadSignal.SetEvent();
         _mouseCaptureThread.join();
-        
+
         ResetState();
     }
 
@@ -98,7 +98,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             _screenCaptureThreads.push_back(StartCapturingThread(_commonState,
                                                                  _measureToolState,
                                                                  overlayUI->overlayWindowHandle(),
-                                                                 monitor));
+                                                                 monitorInfo));
             _overlayUIStates.push_back(std::move(overlayUI));
         }
     }
@@ -115,10 +115,10 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
                                                                       const uint32_t toX,
                                                                       const uint32_t toY)
     {
-        _commonState.toolbarBoundingBox.left = fromX;
-        _commonState.toolbarBoundingBox.right = toX;
-        _commonState.toolbarBoundingBox.top = fromY;
-        _commonState.toolbarBoundingBox.bottom = toY;
+        _commonState.toolbarBoundingBox = Box{ RECT{ .left = static_cast<long>(fromX),
+                                                     .top = static_cast<long>(fromY),
+                                                     .right = static_cast<long>(toX),
+                                                     .bottom = static_cast<long>(toY) } };
     }
 
     float MeasureToolCore::implementation::Core::GetDPIScaleForWindow(uint64_t windowHandle)

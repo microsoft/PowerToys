@@ -7,4 +7,4 @@
 std::thread StartCapturingThread(const CommonState& commonState,
                                  Serialized<MeasureToolState>& state,
                                  HWND targetWindow,
-                                 HMONITOR targetMonitor);
+                                 MonitorInfo targetMonitor);

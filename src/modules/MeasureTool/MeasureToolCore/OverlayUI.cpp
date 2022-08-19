@@ -153,7 +153,6 @@ void CreateOverlayWindowClasses()
     wcex.lpfnWndProc = boundsToolWndProc;
     wcex.lpszClassName = NonLocalizable::BoundsToolOverlayWindowName;
     wcex.hCursor = LoadCursorW(nullptr, IDC_CROSS);
-
     RegisterClassExW(&wcex);
 }
 
@@ -199,10 +198,10 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     {
         // will be freed during SetWindowRgn call
         const HRGN windowRegion{ CreateRectRgn(windowRect.left, windowRect.top, windowRect.right, windowRect.bottom) };
-        wil::unique_hrgn toolbarRegion{ CreateRectRgn(commonState.toolbarBoundingBox.left,
-                                                      commonState.toolbarBoundingBox.top,
-                                                      commonState.toolbarBoundingBox.right,
-                                                      commonState.toolbarBoundingBox.bottom) };
+        wil::unique_hrgn toolbarRegion{ CreateRectRgn(commonState.toolbarBoundingBox.left(),
+                                                      commonState.toolbarBoundingBox.top(),
+                                                      commonState.toolbarBoundingBox.right(),
+                                                      commonState.toolbarBoundingBox.bottom()) };
         const auto res = CombineRgn(windowRegion, windowRegion, toolbarRegion.get(), RGN_DIFF);
         if (res != ERROR)
             SetWindowRgn(window, windowRegion, true);
@@ -234,7 +233,7 @@ void OverlayUIState::RunUILoop()
         _d2dState.rt->BeginDraw();
         _d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
         const auto cursor = _commonState.cursorPos;
-        const bool cursorOverToolbar = PtInRect(&_commonState.toolbarBoundingBox, cursor);
+        const bool cursorOverToolbar = _commonState.toolbarBoundingBox.inside(cursor);
         const bool cursorOnScreen = _monitorArea.inside(cursor);
         if (!cursorOverToolbar && cursorOnScreen)
         {

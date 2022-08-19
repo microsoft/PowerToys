@@ -5,11 +5,16 @@
 #include <optional>
 #include <vector>
 
-struct ScreenSize
+// TODO: merge with FZ::Rect
+struct Box
 {
-    explicit ScreenSize(RECT rect = {}) :
-        rect(rect) {}
     RECT rect;
+
+    explicit Box(RECT rect = {}) :
+        rect(rect) {}
+    Box(const Box&) = default;
+    Box& operator=(const Box&) = default;
+
     int left() const { return rect.left; }
     int right() const { return rect.right; }
     int top() const { return rect.top; }
@@ -27,7 +32,7 @@ struct ScreenSize
     POINT bottom_right() const { return { rect.right, rect.bottom }; };
     inline bool inside(const POINT& point) const { return PtInRect(&rect, point); }
 
-    inline friend auto operator<=>(const ScreenSize& lhs, const ScreenSize& rhs)
+    inline friend auto operator<=>(const Box& lhs, const Box& rhs)
     {
         auto lhs_tuple = std::make_tuple(lhs.rect.left, lhs.rect.right, lhs.rect.top, lhs.rect.bottom);
         auto rhs_tuple = std::make_tuple(rhs.rect.left, rhs.rect.right, rhs.rect.top, rhs.rect.bottom);
@@ -46,7 +51,7 @@ public:
     {
         return handle;
     }
-    ScreenSize GetScreenSize(const bool includeNonWorkingArea) const;
+    Box GetScreenSize(const bool includeNonWorkingArea) const;
     bool IsPrimary() const;
 
     // Returns monitor rects ordered from left to right

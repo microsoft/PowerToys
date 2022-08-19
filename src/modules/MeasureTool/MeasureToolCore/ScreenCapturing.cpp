@@ -56,7 +56,7 @@ class D3DCaptureState final
     winrt::GraphicsCaptureSession session;
 
     std::function<void(OwnedTextureView)> frameCallback;
-    ScreenSize monitorArea;
+    Box monitorArea;
     bool captureOutsideOfMonitor = false;
 
     D3DCaptureState(winrt::com_ptr<ID3D11Device> d3dDevice,
@@ -65,7 +65,7 @@ class D3DCaptureState final
                     winrt::com_ptr<ID3D11DeviceContext> _context,
                     const winrt::GraphicsCaptureItem& item,
                     winrt::DirectXPixelFormat _pixelFormat,
-                    ScreenSize monitorArea,
+                    Box monitorArea,
                     const bool captureOutsideOfMonitor);
 
     winrt::com_ptr<ID3D11Texture2D> CopyFrameToCPU(const winrt::com_ptr<ID3D11Texture2D>& texture);
@@ -79,7 +79,7 @@ class D3DCaptureState final
 public:
     static std::unique_ptr<D3DCaptureState> Create(const winrt::GraphicsCaptureItem& item,
                                                    const winrt::DirectXPixelFormat pixelFormat,
-                                                   ScreenSize monitorSize,
+                                                   Box monitorSize,
                                                    const bool captureOutsideOfMonitor);
 
     ~D3DCaptureState();
@@ -96,7 +96,7 @@ D3DCaptureState::D3DCaptureState(winrt::com_ptr<ID3D11Device> _d3dDevice,
                                  winrt::com_ptr<ID3D11DeviceContext> _context,
                                  const winrt::GraphicsCaptureItem& item,
                                  winrt::DirectXPixelFormat _pixelFormat,
-                                 ScreenSize _monitorArea,
+                                 Box _monitorArea,
                                  const bool _captureOutsideOfMonitor) :
     d3dDevice{ std::move(_d3dDevice) },
     device{ std::move(_device) },
@@ -184,7 +184,7 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
 
 std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(const winrt::GraphicsCaptureItem& item,
                                                          const winrt::DirectXPixelFormat pixelFormat,
-                                                         ScreenSize monitorArea,
+                                                         Box monitorArea,
                                                          const bool captureOutsideOfMonitor)
 {
     winrt::com_ptr<ID3D11Device> d3dDevice;
@@ -352,11 +352,9 @@ void UpdateCaptureState(const CommonState& commonState,
 std::thread StartCapturingThread(const CommonState& commonState,
                                  Serialized<MeasureToolState>& state,
                                  HWND targetWindow,
-                                 HMONITOR targetMonitor)
+                                 MonitorInfo targetMonitor)
 {
     return SpawnLoggedThread(L"Screen Capture thread", [&state, &commonState, targetMonitor, targetWindow] {
-        winrt::check_pointer(targetMonitor);
-
         auto captureInterop = winrt::get_activation_factory<
             winrt::GraphicsCaptureItem,
             IGraphicsCaptureItemInterop>();
@@ -364,7 +362,7 @@ std::thread StartCapturingThread(const CommonState& commonState,
         winrt::GraphicsCaptureItem item = nullptr;
 
         winrt::check_hresult(captureInterop->CreateForMonitor(
-            targetMonitor,
+            targetMonitor.GetHandle(),
             winrt::guid_of<winrt::GraphicsCaptureItem>(),
             winrt::put_abi(item)));
 
@@ -375,7 +373,7 @@ std::thread StartCapturingThread(const CommonState& commonState,
             continuousCapture = state.continuousCapture;
         });
 
-        const auto monitorArea = MonitorInfo{ targetMonitor }.GetScreenSize(true);
+        const auto monitorArea = targetMonitor.GetScreenSize(true);
         auto captureState = D3DCaptureState::Create(item,
                                                     winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized,
                                                     monitorArea,

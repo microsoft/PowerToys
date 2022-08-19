@@ -2,9 +2,9 @@
 
 #include <algorithm>
 
-ScreenSize MonitorInfo::GetScreenSize(const bool includeNonWorkingArea) const
+Box MonitorInfo::GetScreenSize(const bool includeNonWorkingArea) const
 {
-    return includeNonWorkingArea ? ScreenSize{ info.rcMonitor } : ScreenSize{ info.rcWork };
+    return includeNonWorkingArea ? Box{ info.rcMonitor } : Box{ info.rcWork };
 }
 
 bool MonitorInfo::IsPrimary() const
@@ -31,10 +31,8 @@ std::vector<MonitorInfo> MonitorInfo::GetMonitors(bool includeNonWorkingArea)
     std::vector<MonitorInfo> monitors;
     EnumDisplayMonitors(nullptr, nullptr, GetDisplaysEnumCb, reinterpret_cast<LPARAM>(&monitors));
     std::sort(begin(monitors), end(monitors), [=](const MonitorInfo& lhs, const MonitorInfo& rhs) {
-        const auto lhsInfo = MonitorInfo(lhs.handle);
-        const auto rhsInfo = MonitorInfo(rhs.handle);
-        const auto lhsSize = lhsInfo.GetScreenSize(includeNonWorkingArea);
-        const auto rhsSize = rhsInfo.GetScreenSize(includeNonWorkingArea);
+        const auto lhsSize = lhs.GetScreenSize(includeNonWorkingArea);
+        const auto rhsSize = rhs.GetScreenSize(includeNonWorkingArea);
 
         return lhsSize < rhsSize;
     });

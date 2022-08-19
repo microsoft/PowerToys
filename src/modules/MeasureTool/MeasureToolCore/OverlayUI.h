@@ -14,7 +14,7 @@ class OverlayUIState final
                    const CommonState& commonState,
                    HWND window);
 
-    ScreenSize _monitorArea;
+    Box _monitorArea;
     HWND _window = {};
     const CommonState& _commonState;
     D2DState _d2dState;

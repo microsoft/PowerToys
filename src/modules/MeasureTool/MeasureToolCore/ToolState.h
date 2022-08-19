@@ -10,6 +10,7 @@
 #include <d2d1helper.h>
 #include <dCommon.h>
 
+#include <common/Display/monitors.h>
 #include <common/utils/serialized.h>
 
 struct OverlayBoxText
@@ -21,7 +22,7 @@ struct CommonState
 {
     std::function<void()> sessionCompletedCallback;
     D2D1::ColorF lineColor = D2D1::ColorF::OrangeRed;
-    RECT toolbarBoundingBox = {};
+    Box toolbarBoundingBox;
 
     mutable Serialized<OverlayBoxText> overlayBoxText;
     POINT cursorPos = {}; // updated atomically
