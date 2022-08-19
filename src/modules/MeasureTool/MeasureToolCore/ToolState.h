@@ -4,6 +4,7 @@
 #include <functional>
 #include <mutex>
 #include <vector>
+#include <thread>
 
 #include <windef.h>
 #include <d2d1helper.h>

@@ -42,6 +42,10 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _overlayUIState = {};
         _boundsToolState = { .commonState = &_commonState };
         _measureToolState.Reset();
+        if (_screenCaptureThread.joinable())
+        {
+            _screenCaptureThread.join();
+        }
 
         _settings = Settings::LoadFromFile();
 
@@ -77,7 +81,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _overlayUIState = OverlayUIState::Create(_measureToolState, _commonState, primaryMonitor);
         if (_overlayUIState)
         {
-            StartCapturingThread(_commonState, _measureToolState, _overlayUIState->overlayWindowHandle(), primaryMonitor);
+            _screenCaptureThread = StartCapturingThread(_commonState, _measureToolState, _overlayUIState->overlayWindowHandle(), primaryMonitor);
         }
     }
 

@@ -45,10 +45,6 @@ void SetClipBoardToText(const std::wstring_view text)
 
 LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
-    const auto closeWindow = [&] {
-        PostMessageW(window, WM_CLOSE, {}, {});
-    };
-
     switch (message)
     {
     case WM_CREATE:
@@ -69,11 +65,11 @@ LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
     case WM_KEYUP:
         if (wparam == VK_ESCAPE)
         {
-            closeWindow();
+            PostMessageW(window, WM_CLOSE, {}, {});
         }
         break;
     case WM_RBUTTONUP:
-        closeWindow();
+        PostMessageW(window, WM_CLOSE, {}, {});
         break;
     case WM_LBUTTONUP:
         if (auto commonState = GetWindowParam<const CommonState*>(window))
@@ -92,10 +88,6 @@ LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
 
 LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
-    const auto closeWindow = [&] {
-        PostMessageW(window, WM_CLOSE, {}, {});
-    };
-
     switch (message)
     {
     case WM_DESTROY:
@@ -111,7 +103,7 @@ LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     case WM_KEYUP:
         if (wparam == VK_ESCAPE)
         {
-            closeWindow();
+            PostMessageW(window, WM_CLOSE, {}, {});
         }
         break;
     case WM_LBUTTONDOWN:
@@ -139,7 +131,7 @@ LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         }
         break;
     case WM_RBUTTONUP:
-        closeWindow();
+        PostMessageW(window, WM_CLOSE, {}, {});
         break;
     case WM_ERASEBKGND:
         return 1;
@@ -210,6 +202,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     }
 
     RECT windowRect = {};
+    // Exclude toolbar from the window's region to be able to use toolbar during tool usage.
     if (GetWindowRect(window, &windowRect))
     {
         // will be freed during SetWindowRgn call
@@ -268,7 +261,7 @@ OverlayUIState::OverlayUIState(StateT& toolState,
     _commonState{ commonState },
     _d2dState{ window, AppendCommonOverlayUIColors(commonState.lineColor) },
     _tickFunc{ [&] {
-        tickFunc(commonState, toolState, _window, _d2dState);
+        tickFunc(_commonState, toolState, _window, _d2dState);
     } }
 {
 }
@@ -276,11 +269,7 @@ OverlayUIState::OverlayUIState(StateT& toolState,
 OverlayUIState::~OverlayUIState()
 {
     PostMessageW(_window, WM_CLOSE, {}, {});
-
-    while (IsWindow(_window))
-    {
-        Sleep(20);
-    }
+    _uiThread.join();
 }
 
 // Returning unique_ptr, since we need to pin ui state in memory
@@ -294,7 +283,7 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
 {
     wil::shared_event uiCreatedEvent(wil::EventOptions::ManualReset);
     std::unique_ptr<OverlayUIState> uiState;
-    SpawnLoggedThread(L"OverlayUI thread", [&] {
+    auto threadHandle = SpawnLoggedThread(L"OverlayUI thread", [&] {
         const HWND window = CreateOverlayUIWindow(commonState, monitor, toolWindowClassName, windowParam);
         uiState = std::unique_ptr<OverlayUIState>{ new OverlayUIState{ toolState, tickFunc, commonState, window } };
 
@@ -305,7 +294,7 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
     });
 
     uiCreatedEvent.wait();
-
+    uiState->_uiThread = std::move(threadHandle);
     return uiState;
 }
 

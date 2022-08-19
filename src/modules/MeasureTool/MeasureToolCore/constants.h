@@ -11,4 +11,7 @@ namespace consts
     constexpr inline float TEXT_BOX_CORNER_RADIUS = 4.f;
     constexpr inline float FEET_HALF_LENGTH = 2.f;
 
+    /* Offset to not try not to use the cursor immediate pixels in measuring, but it seems only necessary for continuous mode. */
+    constexpr inline long CURSOR_OFFSET_AMOUNT_X = 4;
+    constexpr inline long CURSOR_OFFSET_AMOUNT_Y = 4;
 }

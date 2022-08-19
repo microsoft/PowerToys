@@ -22,6 +22,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         void MouseCaptureThread();
 
         std::thread _mouseCaptureThread;
+        std::thread _screenCaptureThread;
         wil::shared_event _stopMouseCaptureThreadSignal;
         std::unique_ptr<OverlayUIState> _overlayUIState = nullptr;
         Serialized<MeasureToolState> _measureToolState;

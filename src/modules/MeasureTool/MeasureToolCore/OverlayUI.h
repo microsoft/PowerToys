@@ -17,6 +17,7 @@ class OverlayUIState final
     const CommonState& _commonState;
     D2DState _d2dState;
     std::function<void()> _tickFunc;
+    std::thread _uiThread;
 
     template<typename ToolT, typename TickFuncT>
     static std::unique_ptr<OverlayUIState> CreateInternal(ToolT& toolState,

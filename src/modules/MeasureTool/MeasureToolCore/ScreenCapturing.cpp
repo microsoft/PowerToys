@@ -329,12 +329,12 @@ void UpdateCaptureState(const CommonState& commonState,
     });
 }
 
-void StartCapturingThread(const CommonState& commonState,
-                          Serialized<MeasureToolState>& state,
-                          HWND targetWindow,
-                          HMONITOR targetMonitor)
+std::thread StartCapturingThread(const CommonState& commonState,
+                                 Serialized<MeasureToolState>& state,
+                                 HWND targetWindow,
+                                 HMONITOR targetMonitor)
 {
-    SpawnLoggedThread(L"Screen Capture thread", [&state, &commonState, targetMonitor, targetWindow] {
+    return SpawnLoggedThread(L"Screen Capture thread", [&state, &commonState, targetMonitor, targetWindow] {
         winrt::check_pointer(targetMonitor);
 
         auto captureInterop = winrt::get_activation_factory<

@@ -1,16 +1,12 @@
 #include "pch.h"
 
+#include "constants.h"
 #include "EdgeDetection.h"
-
-const uint8_t DEFAULT_TOLERANCE = 1;
-
-/* Offset to not try not to use the cursor immediate pixels in measuring, but it seems only necessary for continuous mode. */
-const long CURSOR_OFFSET_AMOUNT_X = 4;
-const long CURSOR_OFFSET_AMOUNT_Y = 4;
-
 template<bool continuousCapture, bool IsX, bool Increment>
 inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance)
 {
+    using namespace consts;
+
     long xOffset = 0;
     long yOffset = 0;
 

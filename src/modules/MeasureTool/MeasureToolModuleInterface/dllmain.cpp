@@ -30,7 +30,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 const static wchar_t* MODULE_NAME = L"Measure Tool";
-const static wchar_t* MODULE_DESC = L"Focus the mouse pointer";
+const static wchar_t* MODULE_DESC = L"Measure your screen contents";
 
 namespace
 {

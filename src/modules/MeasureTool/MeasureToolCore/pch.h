@@ -1,4 +1,7 @@
 ﻿#pragma once
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+
 #include <windows.h>
 #include <unknwn.h>
 #include <restrictederrorinfo.h>
@@ -68,9 +71,9 @@ namespace winrt
 }
 
 template<typename Func>
-void SpawnLoggedThread(const wchar_t* description, Func&& f)
+[[nodiscard]] std::thread SpawnLoggedThread(const wchar_t* description, Func&& f)
 {
-    std::thread{ [f = std::move(f), description = std::wstring{ description }] {
+    return std::thread{ [f = std::move(f), description = std::wstring{ description }] {
         try
         {
             f();
@@ -88,5 +91,5 @@ void SpawnLoggedThread(const wchar_t* description, Func&& f)
         {
             Logger::error(L"{} unknown error: {}", description, get_last_error_or_default(GetLastError()));
         }
-    } }.detach();
+    } };
 }

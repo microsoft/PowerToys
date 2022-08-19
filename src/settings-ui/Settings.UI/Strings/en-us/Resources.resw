@@ -126,7 +126,8 @@
     <comment>Product name: Navigation view item name for Screen Ruler</comment>
   </data>
   <data name="MeasureTool.ModuleDescription" xml:space="preserve">
-    <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
+    <value>Screen Ruler is a quick and easy way to measure pixels on your screen.
+Inspired by Roolr.</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="MeasureTool.ModuleTitle" xml:space="preserve">
