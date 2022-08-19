@@ -76,6 +76,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         public const string VirtualHostName = "PowerToysLocalMarkdown";
 
         /// <summary>
+        /// URI of the local file saved with the contents
+        /// </summary>
+        private Uri _localFileURI;
+
+        /// <summary>
         /// True if external image is blocked, false otherwise.
         /// </summary>
         private bool _infoBarDisplayed;
@@ -156,9 +161,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
 
                 InvokeOnControlThread(() =>
                 {
+                    var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
                     ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                         webView2EnvironmentAwaiter = CoreWebView2Environment
-                            .CreateAsync(userDataFolder: _webView2UserDataFolder)
+                            .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
                             .ConfigureAwait(true).GetAwaiter();
                     webView2EnvironmentAwaiter.OnCompleted(() =>
                     {
@@ -168,19 +174,36 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                             {
                                 _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                                 await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
-                                await _browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
-                                _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                                _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
+                                _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+                                _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                                _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+                                _browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
+                                _browser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
+                                _browser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
+                                _browser.CoreWebView2.Settings.IsScriptEnabled = false;
+                                _browser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+
+                                // Don't load any resources.
+                                _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+                                _browser.CoreWebView2.WebResourceRequested += (object sender, CoreWebView2WebResourceRequestedEventArgs e) =>
+                                {
+                                    // Show local file we've saved with the svg contents. Block all else.
+                                    if (new Uri(e.Request.Uri) != _localFileURI)
+                                    {
+                                        e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
+                                    }
+                                };
 
                                 // WebView2.NavigateToString() limitation
                                 // See https://docs.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
                                 // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
-                                Uri filenameUri = null;
                                 if (markdownHTML.Length > 1_500_000)
                                 {
                                     string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
                                     File.WriteAllText(filename, markdownHTML);
-                                    filenameUri = new Uri(filename);
-                                    _browser.Source = filenameUri;
+                                    _localFileURI = new Uri(filename);
+                                    _browser.Source = _localFileURI;
                                 }
                                 else
                                 {
@@ -191,7 +214,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
 
                                 _browser.NavigationStarting += async (object sender, CoreWebView2NavigationStartingEventArgs args) =>
                                 {
-                                    if (args.Uri != null && args.Uri != filenameUri?.ToString() && args.IsUserInitiated)
+                                    if (args.Uri != null && args.Uri != _localFileURI?.ToString() && args.IsUserInitiated)
                                     {
                                         args.Cancel = true;
                                         await Launcher.LaunchUriAsync(new Uri(args.Uri));
