@@ -306,8 +306,8 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
         commonState.sessionCompletedCallback();
     });
 
-    uiCreatedEvent.wait();
     uiState->_uiThread = std::move(threadHandle);
+    uiCreatedEvent.wait();
     return uiState;
 }
 
