@@ -2191,4 +2191,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_PowerOCR_TipsAndTricks.Text" xml:space="preserve">
     <value>Hold the shift key to pan the selection region around.</value>
   </data>
+  <data name="PowerOCR.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="Oobe_PowerOCR.Description" xml:space="preserve">
+    <value>PowerOCR works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard.</value>
+  </data>
 </root>

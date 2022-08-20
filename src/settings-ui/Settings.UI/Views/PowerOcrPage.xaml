@@ -37,5 +37,8 @@
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="LearnMore_PowerOcr" Link="https://aka.ms/PowerToysOverview_PowerOCR" />
         </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Text="Based upon Joseph Finney's Text Grab" Link="https://github.com/TheJoeFin/Text-Grab"/>
+        </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>
