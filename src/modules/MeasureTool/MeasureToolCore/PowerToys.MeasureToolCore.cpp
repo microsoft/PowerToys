@@ -91,7 +91,6 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 
         for (const auto& monitorInfo : MonitorInfo::GetMonitors(true))
         {
-            const auto monitor = monitorInfo.GetHandle();
             auto overlayUI = OverlayUIState::Create(_measureToolState, _commonState, monitorInfo);
             if (!overlayUI)
                 continue;

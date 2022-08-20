@@ -19,8 +19,11 @@ struct D2DState
     wil::com_ptr<ID2D1Factory> d2dFactory;
     wil::com_ptr<IDWriteFactory> writeFactory;
     wil::com_ptr<ID2D1HwndRenderTarget> rt;
+    wil::com_ptr<ID2D1BitmapRenderTarget> bitmapRt;
     wil::com_ptr<IDWriteTextFormat> textFormat;
     std::vector<wil::com_ptr<ID2D1SolidColorBrush>> solidBrushes;
+    wil::com_ptr<ID2D1Effect> shadowEffect;
+    wil::com_ptr<ID2D1Effect> affineTransformEffect;
     float dpiScale = 1.f;
 
     D2DState(HWND window, std::vector<D2D1::ColorF> solidBrushesColors);

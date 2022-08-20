@@ -32,7 +32,7 @@ void DrawBoundsToolTick(const CommonState& commonState,
     });
     d2dState.DrawTextBox(text.buffer.data(),
                          textLen,
-                         toolState.currentRegionStart->x,
-                         toolState.currentRegionStart->y,
+                         rect.right,
+                         rect.bottom,
                          overlayWindow);
 }

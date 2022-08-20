@@ -235,13 +235,14 @@ void OverlayUIState::RunUILoop()
         const auto cursor = _commonState.cursorPos;
         const bool cursorOverToolbar = _commonState.toolbarBoundingBox.inside(cursor);
         const bool cursorOnScreen = _monitorArea.inside(cursor);
-        if (!cursorOverToolbar && cursorOnScreen)
+        const bool draw = !cursorOverToolbar && cursorOnScreen;
+        if (draw)
         {
             _tickFunc();
         }
 
         _d2dState.rt->EndDraw();
-        if (!cursorOverToolbar)
+        if (draw)
         {
             InvalidateRect(_window, nullptr, true);
         }

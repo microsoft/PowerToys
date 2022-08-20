@@ -37,6 +37,7 @@ D2DState::D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesCol
     auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(overlayWindow, renderTargetSize);
 
     winrt::check_hresult(d2dFactory->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, &rt));
+    winrt::check_hresult(rt->CreateCompatibleRenderTarget(&bitmapRt));
 
     unsigned dpi = DPIAware::DEFAULT_DPI;
     DPIAware::GetScreenDPIForWindow(overlayWindow, dpi);
@@ -58,6 +59,14 @@ D2DState::D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesCol
     {
         winrt::check_hresult(rt->CreateSolidColorBrush(solidBrushesColors[i], &solidBrushes[i]));
     }
+
+    auto deviceContext = rt.query<ID2D1DeviceContext>();
+    winrt::check_hresult(deviceContext->CreateEffect(CLSID_D2D1Shadow, &shadowEffect));
+    winrt::check_hresult(shadowEffect->SetValue(D2D1_SHADOW_PROP_BLUR_STANDARD_DEVIATION, consts::SHADOW_RADIUS));
+    winrt::check_hresult(shadowEffect->SetValue(D2D1_SHADOW_PROP_COLOR, D2D1::ColorF(0.f, 0.f, 0.f, consts::SHADOW_OPACITY)));
+    
+    winrt::check_hresult(deviceContext->CreateEffect(CLSID_D2D12DAffineTransform, &affineTransformEffect));
+    affineTransformEffect->SetInputEffect(0, shadowEffect.get());
 }
 
 void D2DState::DrawTextBox(const wchar_t* text, uint32_t textLen, const float cornerX, const float cornerY, HWND window) const
@@ -86,14 +95,34 @@ void D2DState::DrawTextBox(const wchar_t* text, uint32_t textLen, const float co
                           .right = cornerX + TEXT_BOX_WIDTH / 2.f + TEXT_BOX_OFFSET_X,
                           .bottom = cornerY + TEXT_BOX_HEIGHT / 2.f + TEXT_BOX_OFFSET_Y };
 
+    bitmapRt->BeginDraw();
+    bitmapRt->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
     D2D1_ROUNDED_RECT textBoxRect;
     textBoxRect.radiusX = textBoxRect.radiusY = consts::TEXT_BOX_CORNER_RADIUS * dpiScale;
-    textBoxRect.rect.bottom = textRect.bottom - TEXT_BOX_PADDING;
-    textBoxRect.rect.top = textRect.top + TEXT_BOX_PADDING;
-    textBoxRect.rect.left = textRect.left - TEXT_BOX_PADDING;
-    textBoxRect.rect.right = textRect.right + TEXT_BOX_PADDING;
+    textBoxRect.rect.bottom = textRect.bottom;
+    textBoxRect.rect.top = textRect.top;
+    textBoxRect.rect.left = textRect.left;
+    textBoxRect.rect.right = textRect.right;
+    bitmapRt->FillRoundedRectangle(textBoxRect, solidBrushes[Brush::border].get());
+    bitmapRt->EndDraw();
+
+    wil::com_ptr<ID2D1Bitmap> rtBitmap;
+    bitmapRt->GetBitmap(&rtBitmap);
+
+    shadowEffect->SetInput(0, rtBitmap.get());
+    affineTransformEffect->SetValue(D2D1_2DAFFINETRANSFORM_PROP_TRANSFORM_MATRIX,
+                                    D2D1::Matrix3x2F::Translation(consts::SHADOW_OFFSET * dpiScale, consts::SHADOW_OFFSET * dpiScale));
+
+    auto deviceContext = rt.query<ID2D1DeviceContext>();
+    deviceContext->DrawImage(affineTransformEffect.get(), D2D1_INTERPOLATION_MODE_LINEAR);
 
     rt->DrawRoundedRectangle(textBoxRect, solidBrushes[Brush::border].get());
+
+    textBoxRect.rect.bottom -= TEXT_BOX_PADDING;
+    textBoxRect.rect.top += TEXT_BOX_PADDING;
+    textBoxRect.rect.left += TEXT_BOX_PADDING;
+    textBoxRect.rect.right -= TEXT_BOX_PADDING;
     rt->FillRoundedRectangle(textBoxRect, solidBrushes[Brush::background].get());
+
     rt->DrawTextW(text, textLen, textFormat.get(), textRect, solidBrushes[Brush::foreground].get(), D2D1_DRAW_TEXT_OPTIONS_NO_SNAP);
 }
