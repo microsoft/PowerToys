@@ -266,7 +266,7 @@ OverlayUIState::OverlayUIState(StateT& toolState,
     _window{ window },
     _commonState{ commonState },
     _d2dState{ window, AppendCommonOverlayUIColors(commonState.lineColor) },
-    _tickFunc{ [&] {
+    _tickFunc{ [this, tickFunc, &toolState] {
         tickFunc(_commonState, toolState, _window, _d2dState);
     } }
 {
@@ -300,14 +300,17 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
         const HWND window = CreateOverlayUIWindow(commonState, monitor, toolWindowClassName, windowParam);
         uiState = std::unique_ptr<OverlayUIState>{ new OverlayUIState{ toolState, tickFunc, commonState, window } };
         uiState->_monitorArea = monitor.GetScreenSize(true);
+        // we must create window + d2d state in the same thread, then store thread handle in uiState, thus
+        // lifetime is ok here, since we join the thread in destructor
+        auto* state = uiState.get();
         uiCreatedEvent.SetEvent();
 
-        uiState->RunUILoop();
+        state->RunUILoop();
         commonState.sessionCompletedCallback();
     });
 
-    uiState->_uiThread = std::move(threadHandle);
     uiCreatedEvent.wait();
+    uiState->_uiThread = std::move(threadHandle);
     return uiState;
 }
 
