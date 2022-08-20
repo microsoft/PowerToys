@@ -74,11 +74,6 @@ public partial class Selector : Window, IDisposable
         _powerAccent.ReloadSettings();
     }
 
-    public void HideTaskbarIcon()
-    {
-        this.TaskbarIcon.Visibility = Visibility.Collapsed;
-    }
-
     public void Dispose()
     {
         GC.SuppressFinalize(this);
