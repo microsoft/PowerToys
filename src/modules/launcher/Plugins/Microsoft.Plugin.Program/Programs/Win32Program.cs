@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Windows.Input;
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Win32;
@@ -44,17 +45,28 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string IcoPath { get; set; }
 
+        public string Description { get; set; } = string.Empty;
+
+        // Path of app executable or lnk target executable
         public string FullPath { get; set; }
 
-        public string LnkResolvedPath { get; set; }
-
-        public string LnkResolvedExecutableName { get; set; }
+        // Localized path based on windows display language
+        public string FullPathLocalized { get; set; } = string.Empty;
 
         public string ParentDirectory { get; set; }
 
         public string ExecutableName { get; set; }
 
-        public string Description { get; set; } = string.Empty;
+        // Localized executable name based on windows display language
+        public string ExecutableNameLocalized { get; set; } = string.Empty;
+
+        // Path to the lnk file on LnkProgram
+        public string LnkFilePath { get; set; }
+
+        public string LnkResolvedExecutableName { get; set; }
+
+        // Localized path based on windows display language
+        public string LnkResolvedExecutableNameLocalized { get; set; } = string.Empty;
 
         public bool Valid { get; set; }
 
@@ -104,8 +116,10 @@ namespace Microsoft.Plugin.Program.Programs
             var locNameMatch = StringMatcher.FuzzySearch(query, NameLocalized);
             var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
             var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
+            var locExecutableNameMatch = StringMatcher.FuzzySearch(query, ExecutableNameLocalized);
             var lnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableName);
-            var score = new[] { nameMatch.Score, locNameMatch.Score, descriptionMatch.Score / 2, executableNameMatch.Score, lnkResolvedExecutableNameMatch.Score }.Max();
+            var locLnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableNameLocalized);
+            var score = new[] { nameMatch.Score, locNameMatch.Score, descriptionMatch.Score / 2, executableNameMatch.Score, locExecutableNameMatch.Score, lnkResolvedExecutableNameMatch.Score, locLnkResolvedExecutableNameMatch.Score }.Max();
             return score;
         }
 
@@ -246,7 +260,8 @@ namespace Microsoft.Plugin.Program.Programs
 
             // Using CurrentCulture since this is user facing
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
-            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, FullPath);
+            string filePath = !string.IsNullOrEmpty(FullPathLocalized) ? FullPathLocalized : FullPath;
+            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, filePath);
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
@@ -345,7 +360,7 @@ namespace Microsoft.Plugin.Program.Programs
         {
             return new ProcessStartInfo
             {
-                FileName = LnkResolvedPath ?? FullPath,
+                FileName = LnkFilePath ?? FullPath,
                 WorkingDirectory = ParentDirectory,
                 UseShellExecute = true,
                 Arguments = programArguments,
@@ -373,11 +388,7 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     Name = Path.GetFileNameWithoutExtension(path),
                     ExecutableName = Path.GetFileName(path),
-
                     IcoPath = path,
-
-                    // Localized name based on windows display language
-                    NameLocalized = Main.ShellLocalizationHelper.GetLocalizedName(path),
 
                     // Using InvariantCulture since this is user facing
                     FullPath = path.ToLowerInvariant(),
@@ -387,6 +398,11 @@ namespace Microsoft.Plugin.Program.Programs
                     Valid = true,
                     Enabled = true,
                     AppType = ApplicationType.Win32Application,
+
+                    // Localized name, path and executble based on windows display language
+                    NameLocalized = Main.ShellLocalizationHelper.GetLocalizedName(path),
+                    FullPathLocalized = Main.ShellLocalizationHelper.GetLocalizedPath(path),
+                    ExecutableNameLocalized = Path.GetFileName(Main.ShellLocalizationHelper.GetLocalizedPath(path)),
                 };
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
@@ -500,11 +516,13 @@ namespace Microsoft.Plugin.Program.Programs
                         return InvalidProgram;
                     }
 
-                    program.LnkResolvedPath = program.FullPath;
+                    program.LnkFilePath = program.FullPath;
                     program.LnkResolvedExecutableName = Path.GetFileName(target);
+                    program.LnkResolvedExecutableNameLocalized = Path.GetFileName(Main.ShellLocalizationHelper.GetLocalizedPath(target));
 
                     // Using CurrentCulture since this is user facing
                     program.FullPath = Path.GetFullPath(target).ToLowerInvariant();
+                    program.FullPathLocalized = Main.ShellLocalizationHelper.GetLocalizedPath(target).ToLowerInvariant();
 
                     program.Arguments = ShellLinkHelper.Arguments;
 
