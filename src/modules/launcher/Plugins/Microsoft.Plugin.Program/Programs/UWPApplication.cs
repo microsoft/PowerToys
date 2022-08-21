@@ -55,6 +55,9 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string Location => Package.Location;
 
+        // Localized path based on windows display language
+        public string LocationLocalized => Package.LocationLocalized;
+
         public bool Enabled { get; set; }
 
         public bool CanRunElevated { get; set; }
@@ -119,7 +122,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             // Using CurrentCulture since this is user facing
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
-            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, Package.Location);
+            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, LocationLocalized);
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
