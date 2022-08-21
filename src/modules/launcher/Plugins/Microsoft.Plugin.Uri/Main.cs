@@ -50,7 +50,7 @@ namespace Microsoft.Plugin.Uri
             {
                 results.Add(new Result
                 {
-                    Title = Properties.Resources.Microsoft_plugin_uri_open,
+                    Title = Properties.Resources.Microsoft_plugin_uri_default_browser,
                     SubTitle = BrowserInfo.Path,
                     IcoPath = DefaultIconPath,
                     Action = action =>
@@ -70,34 +70,54 @@ namespace Microsoft.Plugin.Uri
             }
 
             if (!string.IsNullOrEmpty(query?.Search)
-                && _uriParser.TryParse(query.Search, out var uriResult, out var isWebUri)
-                && _uriResolver.IsValidHost(uriResult))
+                && _uriParser.TryParse(query.Search, out var webUriResult, out var systemUriResult)
+                && _uriResolver.IsValidHost(webUriResult))
             {
-                var uriResultString = uriResult.ToString();
-                var isWebUriBool = isWebUri;
-
-                results.Add(new Result
+                if (webUriResult is not null)
                 {
-                    Title = uriResultString,
-                    SubTitle = isWebUriBool
-                        ? Properties.Resources.Microsoft_plugin_uri_website
-                        : Properties.Resources.Microsoft_plugin_uri_open,
-                    IcoPath = isWebUriBool && BrowserInfo.IconPath != null
-                        ? BrowserInfo.IconPath
-                        : DefaultIconPath,
-                    Action = action =>
+                    var resultString = webUriResult.ToString();
+                    results.Add(new Result
                     {
-                        if (!Helper.OpenInShell(uriResultString))
+                        Title = resultString,
+                        SubTitle = Properties.Resources.Microsoft_plugin_uri_website,
+                        IcoPath = BrowserInfo.IconPath,
+                        Action = action =>
                         {
-                            var title = $"Plugin: {Properties.Resources.Microsoft_plugin_uri_plugin_name}";
-                            var message = $"{Properties.Resources.Microsoft_plugin_uri_open_failed}: {uriResultString}";
-                            Context.API.ShowMsg(title, message);
-                            return false;
-                        }
+                            if (!Helper.OpenInShell(resultString))
+                            {
+                                var title = $"Plugin: {Properties.Resources.Microsoft_plugin_uri_plugin_name}";
+                                var message = $"{Properties.Resources.Microsoft_plugin_uri_open_failed}: {resultString}";
+                                Context.API.ShowMsg(title, message);
+                                return false;
+                            }
 
-                        return true;
-                    },
-                });
+                            return true;
+                        },
+                    });
+                }
+
+                if (systemUriResult is not null)
+                {
+                    var resultString = systemUriResult.ToString();
+                    results.Add(new Result
+                    {
+                        Title = resultString,
+                        SubTitle = Properties.Resources.Microsoft_plugin_uri_open,
+                        IcoPath = DefaultIconPath,
+                        Action = action =>
+                        {
+                            if (!Helper.OpenInShell(resultString))
+                            {
+                                var title = $"Plugin: {Properties.Resources.Microsoft_plugin_uri_plugin_name}";
+                                var message = $"{Properties.Resources.Microsoft_plugin_uri_open_failed}: {resultString}";
+                                Context.API.ShowMsg(title, message);
+                                return false;
+                            }
+
+                            return true;
+                        },
+                    });
+                }
             }
 
             return results;
