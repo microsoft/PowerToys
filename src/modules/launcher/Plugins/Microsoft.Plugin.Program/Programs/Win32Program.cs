@@ -37,6 +37,9 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string Name { get; set; }
 
+        // Localized name based on windows display language
+        public string NameLocalized { get; set; } = string.Empty;
+
         public string UniqueIdentifier { get; set; }
 
         public string IcoPath { get; set; }
@@ -46,9 +49,6 @@ namespace Microsoft.Plugin.Program.Programs
         public string LnkResolvedPath { get; set; }
 
         public string LnkResolvedExecutableName { get; set; }
-
-        // Localized name based on windows display language
-        public string LocalizedName { get; set; } = string.Empty;
 
         public string ParentDirectory { get; set; }
 
@@ -101,7 +101,7 @@ namespace Microsoft.Plugin.Program.Programs
         private int Score(string query)
         {
             var nameMatch = StringMatcher.FuzzySearch(query, Name);
-            var locNameMatch = StringMatcher.FuzzySearch(query, LocalizedName);
+            var locNameMatch = StringMatcher.FuzzySearch(query, NameLocalized);
             var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
             var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
             var lnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableName);
@@ -226,7 +226,7 @@ namespace Microsoft.Plugin.Program.Programs
             var result = new Result
             {
                 // To set the title for the result to always be the name of the application
-                Title = !string.IsNullOrEmpty(LocalizedName) ? LocalizedName : Name,
+                Title = !string.IsNullOrEmpty(NameLocalized) ? NameLocalized : Name,
                 SubTitle = GetSubtitle(),
                 IcoPath = IcoPath,
                 Score = score,
@@ -373,10 +373,11 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     Name = Path.GetFileNameWithoutExtension(path),
                     ExecutableName = Path.GetFileName(path),
+
                     IcoPath = path,
 
                     // Localized name based on windows display language
-                    LocalizedName = ShellLocalization.GetLocalizedName(path),
+                    NameLocalized = Main.ShellLocalizationHelper.GetLocalizedName(path),
 
                     // Using InvariantCulture since this is user facing
                     FullPath = path.ToLowerInvariant(),
