@@ -43,7 +43,7 @@ namespace Wox.Plugin.Common
         /// <returns>The localized name as string or <see cref="string.Empty"/>.</returns>
         public string GetLocalizedName(string path)
         {
-            // Checking cahce if path is already localized
+            // Checking cache if path is already localized
             if (_localizationCache.ContainsKey(path.ToLowerInvariant()))
             {
                 return _localizationCache[path.ToLowerInvariant()];
