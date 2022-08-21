@@ -313,6 +313,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public int SearchInputDelayFast
+        {
+            get
+            {
+                return settings.Properties.SearchInputDelayFast;
+            }
+
+            set
+            {
+                if (settings.Properties.SearchInputDelayFast != value)
+                {
+                    settings.Properties.SearchInputDelayFast = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         public int SearchInputDelay
         {
             get

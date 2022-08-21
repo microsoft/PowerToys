@@ -159,15 +159,16 @@ namespace PowerLauncher
 
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += Launcher_KeyDown;
-            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting(), _viewModel.GetSearchInputDelaySetting());
+
+            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting());
             _viewModel.RegisterSettingsChangeListener(
                 (s, prop_e) =>
                 {
-                    if (prop_e.PropertyName == nameof(PowerToysRunSettings.SearchQueryResultsWithDelay) || prop_e.PropertyName == nameof(PowerToysRunSettings.SearchInputDelay))
+                    if (prop_e.PropertyName == nameof(PowerToysRunSettings.SearchQueryResultsWithDelay) || prop_e.PropertyName == nameof(PowerToysRunSettings.SearchInputDelay) || prop_e.PropertyName == nameof(PowerToysRunSettings.SearchInputDelayFast))
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting(), _viewModel.GetSearchInputDelaySetting());
+                            SetupSearchTextBoxReactiveness(_viewModel.GetSearchQueryResultsWithDelaySetting());
                         });
                     }
                 });
@@ -191,7 +192,7 @@ namespace PowerLauncher
             BringProcessToForeground();
         }
 
-        private void SetupSearchTextBoxReactiveness(bool showResultsWithDelay, int searchInputDelayMs)
+        private void SetupSearchTextBoxReactiveness(bool showResultsWithDelay)
         {
             if (_reactiveSubscription != null)
             {
@@ -206,10 +207,54 @@ namespace PowerLauncher
                 _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
                     add => SearchBox.QueryTextBox.TextChanged += add,
                     remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                    .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                    .Throttle(TimeSpan.FromMilliseconds(_settings.SearchInputDelayFast))
+                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
+                    .Throttle(TimeSpan.FromMilliseconds(_settings.SearchInputDelay))
+                    .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
+                    .Subscribe();
+
+                /*
+                if (_settings.PTRSearchQueryFastResultsWithDelay)
+                {
+                    // old mode, delay fast and delayed execution
+                    _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                        add => SearchBox.QueryTextBox.TextChanged += add,
+                        remove => SearchBox.QueryTextBox.TextChanged -= remove)
                         .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
                         .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
                         .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender)))
                         .Subscribe();
+                }
+                else
+                {
+                    if (_settings.PTRSearchQueryFastResultsWithPartialDelay)
+                    {
+                        // new mode, fire non-delayed right away, and then later the delayed execution
+                        _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                            add => SearchBox.QueryTextBox.TextChanged += add,
+                            remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                            .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
+                            .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
+                            .Subscribe();
+                    }
+                    else
+                    {
+                        // new mode, fire non-delayed after short delay, and then later the delayed execution
+                        _reactiveSubscription = Observable.FromEventPattern<TextChangedEventHandler, TextChangedEventArgs>(
+                            add => SearchBox.QueryTextBox.TextChanged += add,
+                            remove => SearchBox.QueryTextBox.TextChanged -= remove)
+                            .Do(@event => ClearAutoCompleteText((TextBox)@event.Sender))
+                            .Throttle(TimeSpan.FromMilliseconds(_settings.SearchInputDelayFast))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, false)))
+                            .Throttle(TimeSpan.FromMilliseconds(searchInputDelayMs))
+                            .Do(@event => Dispatcher.InvokeAsync(() => PerformSearchQuery((TextBox)@event.Sender, true)))
+                            .Subscribe();
+                    }
+                }
+                */
             }
             else
             {
@@ -475,21 +520,79 @@ namespace PowerLauncher
             {
                 SearchBox.AutoCompleteTextBlock.Text = string.Empty;
             }
+
+            var showResultsWithDelay = _viewModel.GetSearchQueryResultsWithDelaySetting();
+
+            // only if we are using throttled search and throttled 'fast' search, do we need to do anything different with the current results.
+            if (showResultsWithDelay && _settings.PTRSearchQueryFastResultsWithDelay)
+            {
+                // Default means we don't do anything we did not do before... leave the results as is, they will be changed as needed when results are returned
+                var pTRunStartNewSearchAction = _settings.PTRunStartNewSearchAction ?? "Default";
+
+                if (pTRunStartNewSearchAction == "DeSelect")
+                {
+                    // leave the results, be deselect anything to it will not be activated by <enter> key, can still be arrow-key or clicked though
+                    if (!_isTextSetProgrammatically)
+                    {
+                        DeselectAllResults();
+                    }
+                }
+                else if (pTRunStartNewSearchAction == "Clear")
+                {
+                    // remove all results to prepare for new results, this causes flashing usually and is not cool
+                    if (!_isTextSetProgrammatically)
+                    {
+                        ClearResults();
+                    }
+                }
+            }
+        }
+
+        private void ClearResults()
+        {
+            _viewModel.Results.SelectedItem = null;
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                {
+                    _viewModel.Results.Clear();
+                    _viewModel.Results.Results.NotifyChanges();
+                }));
+            });
+        }
+
+        private void DeselectAllResults()
+        {
+            Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+            {
+                _viewModel.Results.SelectedIndex = -1;
+            }));
         }
 
         private void PerformSearchQuery(TextBox textBox)
+        {
+            PerformSearchQuery(textBox, null);
+        }
+
+        private void PerformSearchQuery(TextBox textBox, bool? delayedExecution)
         {
             var text = textBox.Text;
 
             if (_isTextSetProgrammatically)
             {
                 textBox.SelectionStart = textBox.Text.Length;
-                _isTextSetProgrammatically = false;
+
+                // because IF this is delayedExecution = false (run fast queries) we know this will be called again with delayedExecution = true
+                // if we don't do this, the second (partner) call will not be called _isTextSetProgrammatically = true also, and we need it to.
+                if (delayedExecution.HasValue && delayedExecution.Value)
+                {
+                    _isTextSetProgrammatically = false;
+                }
             }
             else
             {
                 _viewModel.QueryText = text;
-                _viewModel.Query();
+                _viewModel.Query(delayedExecution);
             }
         }
 

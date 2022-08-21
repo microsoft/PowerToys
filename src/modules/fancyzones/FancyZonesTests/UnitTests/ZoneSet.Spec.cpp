@@ -1,16 +1,14 @@
 #include "pch.h"
-#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
-#include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
-#include "FancyZonesLib\FancyZonesDataTypes.h"
-#include "FancyZonesLib\ZoneIndexSetBitmask.h"
-#include "FancyZonesLib\JsonHelpers.h"
-#include "FancyZonesLib\VirtualDesktop.h"
-#include "FancyZonesLib\ZoneSet.h"
 
 #include <filesystem>
 
+#include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
+#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include "FancyZonesLib\ZoneIndexSetBitmask.h"
+#include "FancyZonesLib\ZoneSet.h"
+#include <FancyZonesLib/util.h>
+
 #include "Util.h"
-#include <common/SettingsAPI/settings_helpers.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace FancyZonesDataTypes;
@@ -38,14 +36,14 @@ namespace FancyZonesUnitTests
             std::filesystem::remove_all(CustomLayouts::CustomLayoutsFileName());
         }
 
-            void compareZones(const winrt::com_ptr<IZone>& expected, const winrt::com_ptr<IZone>& actual)
-            {
-                Assert::AreEqual(expected->Id(), actual->Id());
-                Assert::AreEqual(expected->GetZoneRect().left, actual->GetZoneRect().left);
-                Assert::AreEqual(expected->GetZoneRect().right, actual->GetZoneRect().right);
-                Assert::AreEqual(expected->GetZoneRect().top, actual->GetZoneRect().top);
-                Assert::AreEqual(expected->GetZoneRect().bottom, actual->GetZoneRect().bottom);
-            }
+        void compareZones(const winrt::com_ptr<IZone>& expected, const winrt::com_ptr<IZone>& actual)
+        {
+            Assert::AreEqual(expected->Id(), actual->Id());
+            Assert::AreEqual(expected->GetZoneRect().left, actual->GetZoneRect().left);
+            Assert::AreEqual(expected->GetZoneRect().right, actual->GetZoneRect().right);
+            Assert::AreEqual(expected->GetZoneRect().top, actual->GetZoneRect().top);
+            Assert::AreEqual(expected->GetZoneRect().bottom, actual->GetZoneRect().bottom);
+        }
 
             void saveCustomLayout(const std::vector<RECT>& zones)
             {
@@ -89,34 +87,16 @@ namespace FancyZonesUnitTests
                 CustomAssert::AreEqual(m_set->LayoutType(), m_layoutType);
             }
 
-            TEST_METHOD (TestCreateZoneSetGuidEmpty)
-            {
-                GUID zoneSetId{};
-                ZoneSetConfig config(zoneSetId, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius);
-                winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
+        TEST_METHOD (TestCreateZoneSetGuidEmpty)
+        {
+            GUID zoneSetId{};
+            ZoneSetConfig config(zoneSetId, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius);
+            winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
 
-                Assert::IsNotNull(&set);
-                CustomAssert::AreEqual(set->Id(), zoneSetId);
-                CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
-            }
-
-            TEST_METHOD (TestCreateZoneSetMonitorEmpty)
-            {
-                ZoneSetConfig config(m_id, m_layoutType, nullptr, DefaultValues::SensitivityRadius);
-                winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
-                Assert::IsNotNull(&set);
-                CustomAssert::AreEqual(set->Id(), m_id);
-                CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
-            }
-
-            TEST_METHOD (TestCreateZoneSetKeyEmpty)
-            {
-                ZoneSetConfig config(m_id, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius);
-                winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
-                Assert::IsNotNull(&set);
-                CustomAssert::AreEqual(set->Id(), m_id);
-                CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
-            }
+            Assert::IsNotNull(&set);
+            CustomAssert::AreEqual(set->Id(), zoneSetId);
+            CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
+        }
 
             TEST_METHOD (EmptyZones)
             {
@@ -578,15 +558,14 @@ namespace FancyZonesUnitTests
                 Assert::IsFalse(moreZonesInLayout);
             }
     };
-
+    
     TEST_CLASS (ZoneSetCalculateZonesUnitTests)
     {
         GUID m_id;
         const ZoneSetLayoutType m_layoutType = ZoneSetLayoutType::Custom;
-        const PCWSTR m_resolutionKey = L"WorkAreaIn";
         winrt::com_ptr<IZoneSet> m_set;
 
-        HMONITOR m_monitor;
+        HMONITOR m_monitor{};
         const std::array<MONITORINFO, 9> m_popularMonitors{
             MONITORINFO{ .cbSize = sizeof(MONITORINFO), .rcWork{ .left = 0, .top = 0, .right = 1024, .bottom = 768 } },
             MONITORINFO{ .cbSize = sizeof(MONITORINFO), .rcWork{ .left = 0, .top = 0, .right = 1280, .bottom = 720 } },
@@ -599,54 +578,42 @@ namespace FancyZonesUnitTests
             MONITORINFO{ .cbSize = sizeof(MONITORINFO), .rcWork{ .left = 0, .top = 0, .right = 1920, .bottom = 1080 } }
         };
 
-        MONITORINFO m_monitorInfo;
+        void checkZones(const winrt::com_ptr<IZoneSet>& set, ZoneSetLayoutType type, size_t expectedCount, MONITORINFO monitorInfo)
+        {
+            auto zones = set->GetZones();
+            Assert::AreEqual(expectedCount, zones.size());
 
-        const std::wstring m_path = PTSettingsHelper::get_module_save_folder_location(L"FancyZones") + L"\\" + std::wstring(L"testzones.json");
+            int zoneId = 0;
+            for (const auto& zone : zones)
+            {
+                Assert::IsTrue(set->IsZoneEmpty(zoneId));
+
+                const auto& zoneRect = zone.second->GetZoneRect();
+                Assert::IsTrue(zoneRect.left >= 0, L"left border is less than zero");
+                Assert::IsTrue(zoneRect.top >= 0, L"top border is less than zero");
+
+                Assert::IsTrue(zoneRect.left < zoneRect.right, L"rect.left >= rect.right");
+                Assert::IsTrue(zoneRect.top < zoneRect.bottom, L"rect.top >= rect.bottom");
+
+                if (type != ZoneSetLayoutType::Focus)
+                {
+                    Assert::IsTrue(zoneRect.right <= monitorInfo.rcWork.right, L"right border is bigger than monitor work space");
+                    Assert::IsTrue(zoneRect.bottom <= monitorInfo.rcWork.bottom, L"bottom border is bigger than monitor work space");
+                }
+
+                zoneId++;
+            }
+        }
 
         TEST_METHOD_INITIALIZE(Init)
-            {
-                auto hres = CoCreateGuid(&m_id);
-                Assert::AreEqual(S_OK, hres);
+        {
+            m_id = FancyZonesUtils::GuidFromString(L"{33A2B101-06E0-437B-A61E-CDBECF502906}").value();
+            
+            ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, m_monitor, DefaultValues::SensitivityRadius);
+            m_set = MakeZoneSet(m_config);
+        }
 
-                m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
-
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, m_monitor, DefaultValues::SensitivityRadius);
-                m_set = MakeZoneSet(m_config);
-            }
-
-            TEST_METHOD_CLEANUP(Cleanup)
-                {
-                    std::filesystem::remove(m_path);
-                }
-
-                void checkZones(const winrt::com_ptr<IZoneSet>& set, ZoneSetLayoutType type, size_t expectedCount, MONITORINFO monitorInfo)
-                {
-                    auto zones = set->GetZones();
-                    Assert::AreEqual(expectedCount, zones.size());
-
-                    int zoneId = 0;
-                    for (const auto& zone : zones)
-                    {
-                        Assert::IsTrue(set->IsZoneEmpty(zoneId));
-
-                        const auto& zoneRect = zone.second->GetZoneRect();
-                        Assert::IsTrue(zoneRect.left >= 0, L"left border is less than zero");
-                        Assert::IsTrue(zoneRect.top >= 0, L"top border is less than zero");
-
-                        Assert::IsTrue(zoneRect.left < zoneRect.right, L"rect.left >= rect.right");
-                        Assert::IsTrue(zoneRect.top < zoneRect.bottom, L"rect.top >= rect.bottom");
-
-                        if (type != ZoneSetLayoutType::Focus)
-                        {
-                            Assert::IsTrue(zoneRect.right <= monitorInfo.rcWork.right, L"right border is bigger than monitor work space");
-                            Assert::IsTrue(zoneRect.bottom <= monitorInfo.rcWork.bottom, L"bottom border is bigger than monitor work space");
-                        }
-
-                        zoneId++;
-                    }
-                }
-
-            public:
+        public:
                 TEST_METHOD (ValidValues)
                 {
                     const int spacing = 10;
@@ -741,7 +708,7 @@ namespace FancyZonesUnitTests
                             auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             if (type == static_cast<int>(ZoneSetLayoutType::Focus))
                             {
-                                //Focus doesn't depends on spacing
+                                //Focus doesn't depend on spacing
                                 Assert::IsTrue(result);
                             }
                             else
@@ -767,7 +734,7 @@ namespace FancyZonesUnitTests
                             auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             if (type == static_cast<int>(ZoneSetLayoutType::Focus))
                             {
-                                //Focus doesn't depends on spacing
+                                //Focus doesn't depend on spacing
                                 Assert::IsTrue(result);
                             }
                             else
@@ -798,13 +765,11 @@ namespace FancyZonesUnitTests
 
                 TEST_METHOD (BigZoneCount)
                 {
-                    const int spacing = 1;
+                    const int zoneCount = 128; //editor limit
+                    const int spacing = 0;
 
                     for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
                     {
-                        const int spacing = 10;
-                        const int zoneCount = 40; //editor limit
-
                         ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<ZoneSetLayoutType>(type), m_monitor, DefaultValues::SensitivityRadius);
 
                         for (const auto& monitorInfo : m_popularMonitors)
@@ -816,117 +781,8 @@ namespace FancyZonesUnitTests
                         }
                     }
                 }
-
-                TEST_METHOD (CustomZonesFromNonexistentFile)
-                {
-                    const int spacing = 10;
-                    const int zoneCount = 0;
-
-                    //be sure that file does not exist
-                    if (std::filesystem::exists(m_path))
-                    {
-                        std::filesystem::remove(m_path);
-                    }
-
-                    ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-                    auto set = MakeZoneSet(m_config);
-
-                    for (const auto& monitorInfo : m_popularMonitors)
-                    {
-                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
-                        Assert::IsFalse(result);
-                    }
-                }
-
-                TEST_METHOD (CustomZoneFromEmptyFile)
-                {
-                    const int spacing = 10;
-                    const int zoneCount = 0;
-
-                    Assert::IsTrue(std::filesystem::create_directories(m_path));
-                    Assert::IsTrue(std::filesystem::exists(m_path));
-
-                    ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-                    auto set = MakeZoneSet(m_config);
-
-                    for (const auto& monitorInfo : m_popularMonitors)
-                    {
-                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
-                        Assert::IsFalse(result);
-                    }
-                }
-
-                TEST_METHOD (CustomZoneFromInvalidCanvasLayoutInfo)
-                {
-                    const std::wstring uuid = L"uuid";
-                    const CanvasLayoutInfo info{ -1, 100, { CanvasLayoutInfo::Rect{ -10, -10, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomLayoutData{ L"name", CustomLayoutType::Canvas, info } };
-                    json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
-                    Assert::IsTrue(std::filesystem::exists(m_path));
-
-                    const int spacing = 10;
-                    const int zoneCount = static_cast<int>(info.zones.size());
-
-                    ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-                    auto set = MakeZoneSet(m_config);
-
-                    for (const auto& monitorInfo : m_popularMonitors)
-                    {
-                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
-                        Assert::IsFalse(result);
-                    }
-                }
-
-                TEST_METHOD (CustomZoneFromInvalidGridLayoutInfo)
-                {
-                    const std::wstring uuid = L"uuid";
-                    const GridLayoutInfo grid(GridLayoutInfo(GridLayoutInfo::Full{
-                        .rows = 1,
-                        .columns = 3,
-                        .rowsPercents = { -100 }, //rows percents are negative
-                        .columnsPercents = { 2500, 2500 }, //column percents count is invalid
-                        .cellChildMap = { { 0, 1, 2 } } }));
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomLayoutData{ L"name", CustomLayoutType::Grid, grid } };
-                    json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
-                    Assert::IsTrue(std::filesystem::exists(m_path));
-
-                    const int spacing = 0;
-                    const int zoneCount = grid.rows() * grid.columns();
-
-                    ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-                    auto set = MakeZoneSet(m_config);
-
-                    for (const auto& monitorInfo : m_popularMonitors)
-                    {
-                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
-                        Assert::IsFalse(result);
-                    }
-                }
-
-                TEST_METHOD (CustomZoneFromValidGridMinimalLayoutInfo)
-                {
-                    const std::wstring uuid = L"uuid";
-                    const GridLayoutInfo grid(GridLayoutInfo(GridLayoutInfo::Minimal{
-                        .rows = 1,
-                        .columns = 3 }));
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomLayoutData{ L"name", CustomLayoutType::Grid, grid } };
-                    json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
-                    Assert::IsTrue(std::filesystem::exists(m_path));
-
-                    const int spacing = 0;
-                    const int zoneCount = grid.rows() * grid.columns();
-
-                    ZoneSetConfig m_config = ZoneSetConfig(m_id, ZoneSetLayoutType::Custom, m_monitor, DefaultValues::SensitivityRadius);
-                    auto set = MakeZoneSet(m_config);
-
-                    for (const auto& monitorInfo : m_popularMonitors)
-                    {
-                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
-                        Assert::IsFalse(result);
-                    }
-                }
     };
-
+    
     TEST_CLASS(ZoneIndexSetUnitTests)
     {
         TEST_METHOD (BitmaskFromIndexSetTest)

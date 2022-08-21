@@ -15,6 +15,7 @@
     <ClInclude Include="VideoConferenceModule.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="AudioDeviceNotificationClient.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="black.bmp" />
@@ -98,5 +99,8 @@
     <Filter Include="Icons">
       <UniqueIdentifier>{735361e2-82fa-4034-b9c9-cd6aa099eaa5}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="VideoConferenceModule.rc" />
   </ItemGroup>
 </Project>

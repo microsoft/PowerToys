@@ -12,18 +12,19 @@ namespace Microsoft.Plugin.Uri.UriHelper
     public class ExtendedUriParser : IUriParser
     {
         // When updating this method, also update the local method IsUri() in Community.PowerToys.Run.Plugin.WebSearch.Main.Query
-        public bool TryParse(string input, out System.Uri result, out bool isWebUri)
+        public bool TryParse(string input, out System.Uri webUri, out System.Uri systemUri)
         {
+            webUri = default;
+            systemUri = default;
+
             if (string.IsNullOrEmpty(input))
             {
-                result = default;
-                isWebUri = false;
                 return false;
             }
 
             // Handling URL with only scheme, typically mailto or application uri.
             // Do nothing, return the result without urlBuilder
-            // And check if scheme match REC3986 (issue #15035)
+            // And check if scheme match RFC3986 (issue #15035)
             const string schemeRegex = @"^([a-z][a-z0-9+\-.]*):";
             if (input.EndsWith(":", StringComparison.OrdinalIgnoreCase)
                 && !input.StartsWith("http", StringComparison.OrdinalIgnoreCase)
@@ -31,8 +32,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 && !input.All(char.IsDigit)
                 && Regex.IsMatch(input, schemeRegex))
             {
-                result = new System.Uri(input);
-                isWebUri = false;
+                systemUri = new System.Uri(input);
                 return true;
             }
 
@@ -44,42 +44,66 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 || input.EndsWith("://", StringComparison.CurrentCulture)
                 || input.All(char.IsDigit))
             {
-                result = default;
-                isWebUri = false;
                 return false;
             }
 
             try
             {
+                string isDomainPortRegex = @"^[\w\.]+:\d+";
+                string isIPv6PortRegex = @"^\[([\w:]+:+)+[\w]+\]:\d+";
                 var urlBuilder = new UriBuilder(input);
-                var hadDefaultPort = urlBuilder.Uri.IsDefaultPort;
-                urlBuilder.Port = hadDefaultPort ? -1 : urlBuilder.Port;
+                urlBuilder.Port = urlBuilder.Uri.IsDefaultPort ? -1 : urlBuilder.Port;
 
                 if (input.StartsWith("HTTP://", StringComparison.OrdinalIgnoreCase))
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttp;
-                    isWebUri = true;
+                }
+                else if (Regex.IsMatch(input, isDomainPortRegex) ||
+                         Regex.IsMatch(input, isIPv6PortRegex))
+                {
+                    var secondUrlBuilder = urlBuilder;
+
+                    try
+                    {
+                        urlBuilder = new UriBuilder("https://" + input);
+
+                        if (urlBuilder.Port == 80)
+                        {
+                            urlBuilder.Scheme = System.Uri.UriSchemeHttp;
+                        }
+                    }
+                    catch (UriFormatException)
+                    {
+                        // This handles the situation in tel:xxxx and others
+                        // When xxxx > 65535, it will throw UriFormatException
+                        // The catch ensures it will at least still try to return a systemUri
+                    }
+
+                    string singleLabelRegex = @"[\.:]+|^http$|^https$|^localhost$";
+                    systemUri = Regex.IsMatch(urlBuilder.Host, singleLabelRegex) ? null : secondUrlBuilder.Uri;
                 }
                 else if (input.Contains(':', StringComparison.OrdinalIgnoreCase) &&
                         !input.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
                         !input.Contains('[', StringComparison.OrdinalIgnoreCase))
                 {
                     // Do nothing, leave unchanged
-                    isWebUri = false;
+                    systemUri = urlBuilder.Uri;
                 }
                 else
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttps;
-                    isWebUri = true;
                 }
 
-                result = urlBuilder.Uri;
+                if (urlBuilder.Scheme.Equals(System.Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                    urlBuilder.Scheme.Equals(System.Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+                {
+                    webUri = urlBuilder.Uri;
+                }
+
                 return true;
             }
             catch (UriFormatException)
             {
-                result = default;
-                isWebUri = false;
                 return false;
             }
         }
