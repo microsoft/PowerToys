@@ -2149,7 +2149,4 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
     <value>Enable round corners</value>
   </data>
-  <data name="Run_ConflictingActionKeywordWarning.Title" xml:space="preserve">
-    <value>Activation command may conflict with global queries of this or other plugins.</value>
-  </data>
 </root>

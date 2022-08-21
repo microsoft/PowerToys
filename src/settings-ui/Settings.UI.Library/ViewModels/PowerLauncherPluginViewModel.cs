@@ -8,7 +8,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
@@ -57,12 +56,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.Disabled = value;
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
-                    NotifyPropertyChanged(nameof(ShowConflictingKeywordWarning));
                     NotifyPropertyChanged(nameof(Enabled));
                     NotifyPropertyChanged(nameof(DisabledOpacity));
                     NotifyPropertyChanged(nameof(IsGlobalAndEnabled));
-                    NotifyPropertyChanged(nameof(ShowPluginSettingBadgeError));
-                    NotifyPropertyChanged(nameof(ShowPluginSettingBadgeWarning));
+                    NotifyPropertyChanged(nameof(ShowBadgeOnPluginSettingError));
                 }
             }
         }
@@ -94,8 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
                     NotifyPropertyChanged(nameof(IsGlobalAndEnabled));
-                    NotifyPropertyChanged(nameof(ShowPluginSettingBadgeError));
-                    NotifyPropertyChanged(nameof(ShowPluginSettingBadgeWarning));
+                    NotifyPropertyChanged(nameof(ShowBadgeOnPluginSettingError));
                 }
             }
         }
@@ -131,9 +127,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.ActionKeyword = value;
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
-                    NotifyPropertyChanged(nameof(ShowConflictingKeywordWarning));
-                    NotifyPropertyChanged(nameof(ShowPluginSettingBadgeError));
-                    NotifyPropertyChanged(nameof(ShowPluginSettingBadgeWarning));
+                    NotifyPropertyChanged(nameof(ShowBadgeOnPluginSettingError));
                 }
             }
         }
@@ -185,30 +179,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get => !Disabled && !IsGlobal && string.IsNullOrWhiteSpace(ActionKeyword);
         }
 
-        private static readonly List<string> ConflictingSimpleKeywords = new List<string>()
-        {
-            "~", @"\", @"\\", "%", // Folder path
-            ".", ",", "+", "-", "(", // Calculator
-        };
-
-        private static readonly List<Regex> ConflictingComplexKeywordRules = new List<Regex>()
-        {
-            // new Regex(@"[a-zA-Z]*\(?\d*[\.\,]?\d*\)?"),
-        };
-
-        public bool ShowConflictingKeywordWarning
-        {
-            get => !Disabled && (ConflictingSimpleKeywords.Contains(ActionKeyword) || ConflictingComplexKeywordRules.Any(x => x.IsMatch(ActionKeyword)));
-        }
-
-        public bool ShowPluginSettingBadgeError
+        public bool ShowBadgeOnPluginSettingError
         {
             get => !Disabled && ShowNotAccessibleWarning;
-        }
-
-        public bool ShowPluginSettingBadgeWarning
-        {
-            get => !Disabled && ShowConflictingKeywordWarning;
         }
     }
 }
