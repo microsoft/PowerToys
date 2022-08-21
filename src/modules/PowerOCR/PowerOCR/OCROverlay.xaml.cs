@@ -58,6 +58,27 @@ public partial class OCROverlay : Window
         BackgroundBrush.Opacity = 0.4;
     }
 
+    private void Window_Unloaded(object sender, RoutedEventArgs e)
+    {
+        BackgroundImage.Source = null;
+        BackgroundImage.UpdateLayout();
+
+        CurrentScreen = null;
+        dpiScale = null;
+
+        KeyDown -= MainWindow_KeyDown;
+        KeyUp -= MainWindow_KeyUp;
+
+        Loaded -= Window_Loaded;
+        Unloaded -= Window_Unloaded;
+
+        RegionClickCanvas.MouseDown -= RegionClickCanvas_MouseDown;
+        RegionClickCanvas.MouseUp -= RegionClickCanvas_MouseUp;
+        RegionClickCanvas.MouseMove -= RegionClickCanvas_MouseMove;
+
+        CancelMenuItem.Click -= CancelMenuItem_Click;
+    }
+
     private void MainWindow_KeyUp(object sender, KeyEventArgs e)
     {
         switch (e.Key)
@@ -233,6 +254,7 @@ public partial class OCROverlay : Window
         try
         {
             RegionClickCanvas.Children.Remove(selectBorder);
+            clippingGeometry.Rect = new Rect(0, 0, 0, 0);
         }
         catch
         {
@@ -251,9 +273,8 @@ public partial class OCROverlay : Window
         if (string.IsNullOrWhiteSpace(grabbedText) == false)
         {
             Clipboard.SetText(grabbedText);
+            WindowUtilities.CloseAllOCROverlays();
         }
-
-        WindowUtilities.CloseAllOCROverlays();
     }
 
     private void CancelMenuItem_Click(object sender, RoutedEventArgs e)

@@ -11,6 +11,7 @@
     AllowsTransparency="True"
     Background="Transparent"
     Loaded="Window_Loaded"
+    Unloaded="Window_Unloaded"
     ResizeMode="NoResize"
     Topmost="True"
     WindowStyle="None"

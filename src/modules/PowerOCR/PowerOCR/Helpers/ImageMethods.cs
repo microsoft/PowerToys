@@ -45,8 +45,8 @@ internal class ImageMethods
             windowHeight -= (int)(70 * dpi.DpiScaleY);
         }
 
-        Bitmap bmp = new Bitmap(windowWidth, windowHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-        Graphics g = Graphics.FromImage(bmp);
+        using Bitmap bmp = new Bitmap(windowWidth, windowHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        using Graphics g = Graphics.FromImage(bmp);
 
         g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
         return BitmapToImageSource(bmp);
@@ -54,8 +54,8 @@ internal class ImageMethods
 
     internal static async Task<string> GetRegionsText(Window? passedWindow, Rectangle selectedRegion)
     {
-        Bitmap bmp = new Bitmap(selectedRegion.Width, selectedRegion.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-        Graphics g = Graphics.FromImage(bmp);
+        using Bitmap bmp = new Bitmap(selectedRegion.Width, selectedRegion.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        using Graphics g = Graphics.FromImage(bmp);
 
         System.Windows.Point absPosPoint = passedWindow == null ? default(System.Windows.Point) : passedWindow.GetAbsolutePosition();
 
@@ -122,7 +122,7 @@ internal class ImageMethods
             scaleBMP = false;
         }
 
-        Bitmap scaledBitmap = scaleBMP ? ScaleBitmapUniform(bmp, 1.5) : ScaleBitmapUniform(bmp, 1.0);
+        using Bitmap scaledBitmap = scaleBMP ? ScaleBitmapUniform(bmp, 1.5) : ScaleBitmapUniform(bmp, 1.0);
         StringBuilder text = new StringBuilder();
 
         await using (MemoryStream memory = new MemoryStream())
@@ -193,11 +193,13 @@ internal class ImageMethods
         bitmapimage.StreamSource = memory;
         bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
         bitmapimage.EndInit();
+        bitmapimage.Freeze();
         TransformedBitmap transformedBmp = new TransformedBitmap();
         transformedBmp.BeginInit();
         transformedBmp.Source = bitmapimage;
         transformedBmp.Transform = new ScaleTransform(scale, scale);
         transformedBmp.EndInit();
+        transformedBmp.Freeze();
         return BitmapSourceToBitmap(transformedBmp);
     }
 
@@ -230,6 +232,7 @@ internal class ImageMethods
         bitmapimage.StreamSource = memory;
         bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
         bitmapimage.EndInit();
+        bitmapimage.Freeze();
 
         return bitmapimage;
     }
