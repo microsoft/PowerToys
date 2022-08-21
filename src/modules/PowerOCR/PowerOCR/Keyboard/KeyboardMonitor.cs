@@ -76,6 +76,7 @@ public class KeyboardMonitor : IDisposable
             )
         {
             WindowUtilities.CloseAllOCROverlays();
+            e.Handled = true;
             return;
         }
 
@@ -108,7 +109,7 @@ public class KeyboardMonitor : IDisposable
             if (!_activationShortcutPressed)
             {
                 _activationShortcutPressed = true;
-
+                e.Handled = true;
                 WindowUtilities.LaunchOCROverlayOnEveryScreen();
             }
         }
