@@ -16,7 +16,7 @@
                 <TextBlock x:Uid="Oobe_HowToUse"
                            Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <!--<controls:PowerAccentShortcutControl x:Name="HotkeyControl" x:Uid="Oobe_PowerAccent_HowToUse" />-->
+                <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_PowerAccent_HowToUse" />
 
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                     <Button x:Uid="OOBE_Settings"
