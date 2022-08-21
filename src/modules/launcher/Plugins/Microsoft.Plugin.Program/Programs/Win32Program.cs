@@ -399,7 +399,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Enabled = true,
                     AppType = ApplicationType.Win32Application,
 
-                    // Localized name, path and executble based on windows display language
+                    // Localized name, path and executable based on windows display language
                     NameLocalized = Main.ShellLocalizationHelper.GetLocalizedName(path),
                     FullPathLocalized = Main.ShellLocalizationHelper.GetLocalizedPath(path),
                     ExecutableNameLocalized = Path.GetFileName(Main.ShellLocalizationHelper.GetLocalizedPath(path)),
