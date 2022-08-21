@@ -2186,10 +2186,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>PowerOCR</value>
   </data>
   <data name="Oobe_PowerOCR_HowToUse.Text" xml:space="preserve">
-    <value>Open **PowerToys Settings** and enable PowerOCR, press activation keys to launch. Select a region to copy the text from.</value>
+    <value>to open PowerOCR and then selecting a region to copy the text from.</value>
   </data>
   <data name="Oobe_PowerOCR_TipsAndTricks.Text" xml:space="preserve">
-    <value>Hold the shift key to pan the selection region around.</value>
+    <value>Hold the shift key to move the selection region around.</value>
   </data>
   <data name="PowerOCR.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
