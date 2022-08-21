@@ -128,7 +128,7 @@
     <value>Video Conference Mute is a quick and easy way to do a global "mute" of both your microphone and webcam. Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
   </data>
   <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Mute camera and microphone</value>
+    <value>Mute camera &amp; microphone</value>
   </data>
   <data name="VideoConference_MicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
     <value>Mute microphone</value>
@@ -415,16 +415,28 @@
     <value>Clear the previous query on launch</value>
   </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
-    <value>Delay search</value>
+    <value>Input Smoothing</value>
     <comment>This is about adding a delay to wait for more input before executing a search</comment>
   </data>
   <data name="PowerLauncher_SearchQueryResultsWithDelay.Description" xml:space="preserve">
-    <value>Add a delay to wait for more input before executing a search</value>
+    <value>Wait for more input before searching. This reduces interface jumpiness and system load.</value>
   </data>
-  <data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
-    <value>Search delay (ms)</value>
+  <data name="PowerLauncher_FastSearchInputDelayMs.Header" xml:space="preserve">
+    <value>Immediate plugins</value>    
+  </data>
+	<data name="PowerLauncher_FastSearchInputDelayMs.Description" xml:space="preserve">
+    <value>Affects the plugins that make the UI wait for their results by this amount. Recommended: 30-50 ms.</value>    
+  </data>
+	<data name="PowerLauncher_SlowSearchInputDelayMs.Header" xml:space="preserve">
+    <value>Background execution plugins</value>    
+  </data>
+	<data name="PowerLauncher_SlowSearchInputDelayMs.Description" xml:space="preserve">
+    <value>Affects the plugins that execute in the background by this amount. Recommended: 100-150 ms.</value>    
+  </data>
+	<data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
+    <value>Fast plugin throttle (ms)</value>
     <comment>ms = milliseconds</comment>
-  </data>
+  </data>	
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
@@ -587,7 +599,7 @@
     <value>PowerToys will launch automatically</value>
   </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
-    <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
+    <value>A Windows Shell extension for more advanced bulk renaming using search &amp; replace or regular expressions.</value>
   </data>
   <data name="PowerRename_ShellIntegration.Header" xml:space="preserve">
     <value>Shell integration</value>
@@ -687,7 +699,7 @@
     <value>Open-source notice</value>
   </data>
   <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
-    <value>Enable auto-complete for the search and replace fields</value>
+    <value>Enable auto-complete for the search &amp; replace fields</value>
   </data>
   <data name="FancyZones_BorderColor.Header" xml:space="preserve">
     <value>Border color</value>
@@ -1586,7 +1598,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>PowerToys is up to date</value>
   </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
-    <value>Download and install</value>
+    <value>Download &amp; install</value>
   </data>
   <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
     <value>Fills</value>

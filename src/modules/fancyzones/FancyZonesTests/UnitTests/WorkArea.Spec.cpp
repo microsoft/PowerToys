@@ -14,6 +14,8 @@
 
 #include <common/utils/process_path.h>
 
+#include <CppUnitTestLogger.h>
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests
@@ -26,13 +28,15 @@ namespace FancyZonesUnitTests
         FancyZonesDataTypes::WorkAreaId m_uniqueId;
         FancyZonesDataTypes::WorkAreaId m_emptyUniqueId;
 
+        HINSTANCE m_hInst{};
+        HMONITOR m_monitor{};
+
         TEST_METHOD_INITIALIZE(Init)
         {
             m_uniqueId.monitorId.deviceId.id = L"DELA026";
             m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
             m_uniqueId.monitorId.serialNumber = L"serial-number";
-            auto res = CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
-            Assert::IsTrue(SUCCEEDED(res));
+            m_uniqueId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value();
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();
@@ -71,7 +75,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD (CreateWorkAreaClonedFromParent)
         {
             using namespace FancyZonesDataTypes;
-
+            
             FancyZonesDataTypes::WorkAreaId parentUniqueId;
             parentUniqueId.monitorId.deviceId.id = L"DELA026";
             parentUniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
@@ -87,11 +91,10 @@ namespace FancyZonesUnitTests
                 .sensitivityRadius = 20,
             };
 
-            auto parentWorkArea = MakeWorkArea({}, Mocks::Monitor(), parentUniqueId, m_emptyUniqueId);
+            auto parentWorkArea = MakeWorkArea(m_hInst, m_monitor, parentUniqueId, m_emptyUniqueId);
             AppliedLayouts::instance().ApplyLayout(parentUniqueId, layout);
 
-            auto actualWorkArea = MakeWorkArea({}, Mocks::Monitor(), m_uniqueId, parentUniqueId);
-
+            auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, parentUniqueId);
             Assert::IsNotNull(actualWorkArea->ZoneSet());
 
             Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().contains(m_uniqueId));
@@ -119,7 +122,7 @@ namespace FancyZonesUnitTests
             m_uniqueId.monitorId.deviceId.id = L"DELA026";
             m_uniqueId.monitorId.deviceId.instanceId = L"5&10a58c63&0&UID16777488";
             m_uniqueId.monitorId.serialNumber = L"serial-number";
-            CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &m_uniqueId.virtualDesktopId);
+            m_uniqueId.virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value();
 
             AppZoneHistory::instance().LoadData();
             AppliedLayouts::instance().LoadData();

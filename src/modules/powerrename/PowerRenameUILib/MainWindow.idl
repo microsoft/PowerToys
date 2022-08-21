@@ -1,10 +1,9 @@
 import "ExplorerItem.idl";
 import "PatternSnippet.idl";
-import "UIUpdates.idl";
 
 namespace PowerRenameUI
 {
-    [default_interface] runtimeclass MainWindow : Microsoft.UI.Xaml.Window
+    [default_interface] runtimeclass MainWindow : Microsoft.UI.Xaml.Window, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
     {
         MainWindow();
 
@@ -15,13 +14,11 @@ namespace PowerRenameUI
         Windows.Foundation.Collections.IObservableVector<PatternSnippet> SearchRegExShortcuts { get; };
         Windows.Foundation.Collections.IObservableVector<PatternSnippet> DateTimeShortcuts { get; };
 
-        UIUpdates UIUpdatesItem { get; };
+        String OriginalCount;
+        String RenamedCount;
 
         void AddExplorerItem(Int32 id, String original, String renamed, Int32 type, UInt32 depth, Boolean checked);
         void UpdateExplorerItem(Int32 id, String newName);
         void UpdateRenamedExplorerItem(Int32 id, String newOriginalName);
-        void AppendSearchMRU(String value);
-        void AppendReplaceMRU(String value);
-
     }
 }
