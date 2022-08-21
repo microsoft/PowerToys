@@ -225,6 +225,18 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+
+                    <muxc:InfoBar x:Uid="Run_ConflictingKeywordInfo"
+                                          Severity="Informational"
+                                          IsClosable="False"
+                                          IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                                          IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                        <muxc:InfoBar.ActionButton>
+                            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun#direct-activation-commands"
+                                                x:Uid="Run_ConflictingKeywordInfo_Link"/>
+                        </muxc:InfoBar.ActionButton>
+                    </muxc:InfoBar>
+
                     <controls:Setting x:Uid="Run_PluginUseDescription" Icon="&#xEA86;">
                         <controls:Setting.ActionContent>
                             <AutoSuggestBox x:Uid="PowerLauncher_SearchList"
