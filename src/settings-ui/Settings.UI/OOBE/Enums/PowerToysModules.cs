@@ -15,11 +15,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         ImageResizer,
         KBM,
         MouseUtils,
+        PowerAccent,
         PowerRename,
         Run,
         ShortcutGuide,
         VideoConference,
         WhatsNew,
-        PowerAccent,
     }
 }
