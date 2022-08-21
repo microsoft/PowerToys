@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -12,33 +13,42 @@ namespace Wox.Plugin.Common
     /// Class to get localized name of shell items like 'My computer'. The localization is based on the 'windows display language'.
     /// Reused code from https://stackoverflow.com/questions/41423491/how-to-get-localized-name-of-known-folder for the method <see cref="GetLocalizedName"/>
     /// </summary>
-    public static class ShellLocalization
+    public class ShellLocalization
     {
-        internal const uint DONTRESOLVEDLLREFERENCES = 0x00000001;
-        internal const uint LOADLIBRARYASDATAFILE = 0x00000002;
+        // Cache for already localized names. This makes localization of already localized string faster.
+        private Dictionary<string, string> _localizationCache = new Dictionary<string, string>();
+
+        private const uint DONTRESOLVEDLLREFERENCES = 0x00000001;
+        private const uint LOADLIBRARYASDATAFILE = 0x00000002;
 
         [DllImport("shell32.dll", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
-        internal static extern int SHGetLocalizedName(string pszPath, StringBuilder pszResModule, ref int cch, out int pidsRes);
+        private static extern int SHGetLocalizedName(string pszPath, StringBuilder pszResModule, ref int cch, out int pidsRes);
 
         [DllImport("user32.dll", EntryPoint = "LoadStringW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
-        internal static extern int LoadString(IntPtr hModule, int resourceID, StringBuilder resourceValue, int len);
+        private static extern int LoadString(IntPtr hModule, int resourceID, StringBuilder resourceValue, int len);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, EntryPoint = "LoadLibraryExW")]
-        internal static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, uint dwFlags);
+        private static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, uint dwFlags);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
-        internal static extern int FreeLibrary(IntPtr hModule);
+        private static extern int FreeLibrary(IntPtr hModule);
 
         [DllImport("kernel32.dll", EntryPoint = "ExpandEnvironmentStringsW", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        internal static extern uint ExpandEnvironmentStrings(string lpSrc, StringBuilder lpDst, int nSize);
+        private static extern uint ExpandEnvironmentStrings(string lpSrc, StringBuilder lpDst, int nSize);
 
         /// <summary>
         /// Returns the localized name of a shell item.
         /// </summary>
         /// <param name="path">Path to the shell item (e. g. shortcut 'File Explorer.lnk').</param>
         /// <returns>The localized name as string or <see cref="string.Empty"/>.</returns>
-        public static string GetLocalizedName(string path)
+        public string GetLocalizedName(string path)
         {
+            // Checking cahce if path is already localized
+            if (_localizationCache.ContainsKey(path.ToLowerInvariant()))
+            {
+                return _localizationCache[path.ToLowerInvariant()];
+            }
+
             StringBuilder resourcePath = new StringBuilder(1024);
             StringBuilder localizedName = new StringBuilder(1024);
             int len, id;
@@ -55,6 +65,8 @@ namespace Wox.Plugin.Common
                     {
                         string lString = localizedName.ToString();
                         _ = FreeLibrary(hMod);
+
+                        _localizationCache.Add(path.ToLowerInvariant(), lString);
                         return lString;
                     }
 
@@ -70,7 +82,7 @@ namespace Wox.Plugin.Common
         /// </summary>
         /// <param name="path">The path to localize</param>
         /// <returns>The localized path or the original path if localized version is not available</returns>
-        public static string GetLocalizedPath(string path)
+        public string GetLocalizedPath(string path)
         {
             path = Environment.ExpandEnvironmentVariables(path);
             string ext = Path.GetExtension(path);
