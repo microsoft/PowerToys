@@ -105,6 +105,13 @@
                 "modules\\MouseUtils\\PowerToys.MouseHighlighter.dll",
                 "modules\\MouseUtils\\PowerToys.MousePointerCrosshairs.dll",
 
+                "modules\\PowerAccent\\PowerAccent.Core.dll",
+                "modules\\PowerAccent\\PowerAccent.dll",
+                "modules\\PowerAccent\\PowerAccent.exe",
+                "modules\\PowerAccent\\PowerToys.PowerAccent.dll",
+                "modules\\PowerAccent\\PowerToys.PowerAccent.exe",
+                "modules\\PowerAccent\\PowerToys.PowerAccentModuleInterface.dll",
+
                 "modules\\PowerRename\\PowerToys.PowerRenameExt.dll",
                 "modules\\PowerRename\\PowerToys.PowerRename.exe",
                 "modules\\PowerRename\\PowerToys.PowerRenameContextMenu.dll",
