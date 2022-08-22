@@ -369,6 +369,7 @@ customaction
 CUSTOMACTIONTEST
 cvd
 CVirtual
+cvtepu
 cvtsi
 cwchar
 cwd
