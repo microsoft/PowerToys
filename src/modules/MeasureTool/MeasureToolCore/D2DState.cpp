@@ -53,6 +53,7 @@ D2DState::D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesCol
                                                         &textFormat));
     winrt::check_hresult(textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
     winrt::check_hresult(textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
+    winrt::check_hresult(textFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP));
 
     solidBrushes.resize(solidBrushesColors.size());
     for (size_t i = 0; i < solidBrushes.size(); ++i)
@@ -64,36 +65,43 @@ D2DState::D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesCol
     winrt::check_hresult(deviceContext->CreateEffect(CLSID_D2D1Shadow, &shadowEffect));
     winrt::check_hresult(shadowEffect->SetValue(D2D1_SHADOW_PROP_BLUR_STANDARD_DEVIATION, consts::SHADOW_RADIUS));
     winrt::check_hresult(shadowEffect->SetValue(D2D1_SHADOW_PROP_COLOR, D2D1::ColorF(0.f, 0.f, 0.f, consts::SHADOW_OPACITY)));
-    
+
     winrt::check_hresult(deviceContext->CreateEffect(CLSID_D2D12DAffineTransform, &affineTransformEffect));
     affineTransformEffect->SetInputEffect(0, shadowEffect.get());
 }
 
-void D2DState::DrawTextBox(const wchar_t* text, uint32_t textLen, const float cornerX, const float cornerY, HWND window) const
+void D2DState::DrawTextBox(const wchar_t* text,
+                           const uint32_t textLen,
+                           const float cornerX,
+                           const float cornerY,
+                           HWND window) const
 {
+    wil::com_ptr<IDWriteTextLayout> textLayout;
+    winrt::check_hresult(writeFactory->CreateTextLayout(text, textLen, textFormat.get(), 1000.f, 1000.f, &textLayout));
+    DWRITE_TEXT_METRICS metrics = {};
+    textLayout->GetMetrics(&metrics);
+
     bool cursorInLeftScreenHalf = false;
     bool cursorInTopScreenHalf = false;
-
     DetermineScreenQuadrant(window,
                             static_cast<long>(cornerX),
                             static_cast<long>(cornerY),
                             cursorInLeftScreenHalf,
                             cursorInTopScreenHalf);
-
-    // TODO: determine text bounding box instead of hard-coding it
-    const float TEXT_BOX_WIDTH = 80.f * dpiScale;
-    const float TEXT_BOX_HEIGHT = 32.f * dpiScale;
+    const float TEXT_BOX_MARGIN = 1.25f;
+    const float textBoxWidth = metrics.width * TEXT_BOX_MARGIN;
+    const float textBoxHeight = metrics.height * TEXT_BOX_MARGIN;
 
     const float TEXT_BOX_PADDING = 1.f * dpiScale;
-    const float TEXT_BOX_OFFSET_AMOUNT_X = TEXT_BOX_WIDTH * dpiScale;
-    const float TEXT_BOX_OFFSET_AMOUNT_Y = TEXT_BOX_WIDTH * dpiScale;
+    const float TEXT_BOX_OFFSET_AMOUNT_X = textBoxWidth * dpiScale;
+    const float TEXT_BOX_OFFSET_AMOUNT_Y = textBoxWidth * dpiScale;
     const float TEXT_BOX_OFFSET_X = cursorInLeftScreenHalf ? TEXT_BOX_OFFSET_AMOUNT_X : -TEXT_BOX_OFFSET_AMOUNT_X;
     const float TEXT_BOX_OFFSET_Y = cursorInTopScreenHalf ? TEXT_BOX_OFFSET_AMOUNT_Y : -TEXT_BOX_OFFSET_AMOUNT_Y;
 
-    D2D1_RECT_F textRect{ .left = cornerX - TEXT_BOX_WIDTH / 2.f + TEXT_BOX_OFFSET_X,
-                          .top = cornerY - TEXT_BOX_HEIGHT / 2.f + TEXT_BOX_OFFSET_Y,
-                          .right = cornerX + TEXT_BOX_WIDTH / 2.f + TEXT_BOX_OFFSET_X,
-                          .bottom = cornerY + TEXT_BOX_HEIGHT / 2.f + TEXT_BOX_OFFSET_Y };
+    D2D1_RECT_F textRect{ .left = cornerX - textBoxWidth / 2.f + TEXT_BOX_OFFSET_X,
+                          .top = cornerY - textBoxHeight / 2.f + TEXT_BOX_OFFSET_Y,
+                          .right = cornerX + textBoxWidth / 2.f + TEXT_BOX_OFFSET_X,
+                          .bottom = cornerY + textBoxHeight / 2.f + TEXT_BOX_OFFSET_Y };
 
     bitmapRt->BeginDraw();
     bitmapRt->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
@@ -124,5 +132,5 @@ void D2DState::DrawTextBox(const wchar_t* text, uint32_t textLen, const float co
     textBoxRect.rect.right -= TEXT_BOX_PADDING;
     rt->FillRoundedRectangle(textBoxRect, solidBrushes[Brush::background].get());
 
-    rt->DrawTextW(text, textLen, textFormat.get(), textRect, solidBrushes[Brush::foreground].get(), D2D1_DRAW_TEXT_OPTIONS_NO_SNAP);
+    rt->DrawTextW(text, textLen, textFormat.get(), textRect, solidBrushes[Brush::foreground].get(), D2D1_DRAW_TEXT_OPTIONS_NONE);
 }

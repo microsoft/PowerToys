@@ -28,7 +28,7 @@ struct D2DState
 
     D2DState(HWND window, std::vector<D2D1::ColorF> solidBrushesColors);
     void DrawTextBox(const wchar_t* text,
-                     uint32_t textLen,
+                     const uint32_t textLen,
                      const float cornerX,
                      const float cornerY,
                      HWND window) const;
