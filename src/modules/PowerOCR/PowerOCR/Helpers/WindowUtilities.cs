@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Forms;
 using Microsoft.PowerToys.Telemetry;
+using PowerOCR.Helpers;
 
 namespace PowerOCR.Utilities;
 
@@ -13,6 +14,12 @@ public static class WindowUtilities
 {
     public static void LaunchOCROverlayOnEveryScreen()
     {
+        if (IsOCROverlayCreated())
+        {
+            Logger.LogWarning("Tired to launch the overlay but it was already created.");
+            return;
+        }
+
         Screen[] allScreens = Screen.AllScreens;
         WindowCollection allWindows = System.Windows.Application.Current.Windows;
 
@@ -71,6 +78,21 @@ public static class WindowUtilities
         }
 
         PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRLaunchOverlayEvent());
+    }
+
+    internal static bool IsOCROverlayCreated()
+    {
+        WindowCollection allWindows = System.Windows.Application.Current.Windows;
+
+        foreach (Window window in allWindows)
+        {
+            if (window is OCROverlay overlay)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal static void CloseAllOCROverlays()
