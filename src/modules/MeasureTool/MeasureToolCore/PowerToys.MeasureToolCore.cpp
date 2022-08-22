@@ -44,7 +44,6 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     {
         _overlayUIStates.clear();
         _boundsToolState = { .commonState = &_commonState };
-        _measureToolState.Reset();
         for (auto& thread : _screenCaptureThreads)
         {
             if (thread.joinable())
@@ -53,12 +52,17 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             }
         }
         _screenCaptureThreads.clear();
+        _measureToolState.Reset();
+        _measureToolState.Access([&](MeasureToolState& s) {
+            s.commonState = &_commonState;
+        });
 
         _settings = Settings::LoadFromFile();
 
         _commonState.lineColor.r = _settings.lineColor[0] / 255.f;
         _commonState.lineColor.g = _settings.lineColor[1] / 255.f;
         _commonState.lineColor.b = _settings.lineColor[2] / 255.f;
+        _commonState.closeOnOtherMonitors = false;
     }
 
     void Core::StartBoundsTool()
@@ -87,6 +91,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             state.continuousCapture = _settings.continuousCapture;
             state.drawFeetOnCross = _settings.drawFeetOnCross;
             state.pixelTolerance = _settings.pixelTolerance;
+            state.perColorChannelEdgeDetection = _settings.perColorChannelEdgeDetection;
         });
 
         for (const auto& monitorInfo : MonitorInfo::GetMonitors(true))

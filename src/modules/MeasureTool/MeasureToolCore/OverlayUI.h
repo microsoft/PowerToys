@@ -25,20 +25,20 @@ class OverlayUIState final
     template<typename ToolT, typename TickFuncT>
     static std::unique_ptr<OverlayUIState> CreateInternal(ToolT& toolState,
                                                           TickFuncT tickFunc,
-                                                          const CommonState& commonState,
+                                                          CommonState& commonState,
                                                           const wchar_t* toolWindowClassName,
                                                           void* windowParam,
                                                           const MonitorInfo& monitor);
 
 public:
     OverlayUIState(OverlayUIState&&) noexcept = default;
-    ~OverlayUIState() noexcept;
+    ~OverlayUIState();
 
     static std::unique_ptr<OverlayUIState> Create(BoundsToolState& toolState,
-                                                  const CommonState& commonState,
+                                                  CommonState& commonState,
                                                   const MonitorInfo& monitor);
     static std::unique_ptr<OverlayUIState> Create(Serialized<MeasureToolState>& toolState,
-                                                  const CommonState& commonState,
+                                                  CommonState& commonState,
                                                   const MonitorInfo& monitor);
     inline HWND overlayWindowHandle() const
     {

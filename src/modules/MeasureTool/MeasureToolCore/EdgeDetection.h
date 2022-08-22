@@ -2,4 +2,8 @@
 
 #include "BGRATextureView.h"
 
-RECT DetectEdges(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance, const bool continuousCapture);
+RECT DetectEdges(const BGRATextureView& texture,
+                 const POINT centerPoint,
+                 const bool perChannel,
+                 const uint8_t tolerance,
+                 const bool continuousCapture);

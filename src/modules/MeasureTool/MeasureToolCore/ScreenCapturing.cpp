@@ -314,7 +314,6 @@ void D3DCaptureState::StopCapture()
 void UpdateCaptureState(const CommonState& commonState,
                         Serialized<MeasureToolState>& state,
                         HWND targetWindow,
-                        const uint8_t pixelTolerance,
                         const OwnedTextureView& textureView,
                         const bool continuousCapture)
 {
@@ -322,13 +321,25 @@ void UpdateCaptureState(const CommonState& commonState,
     ScreenToClient(targetWindow, &cursorPos);
     const bool cursorInLeftScreenHalf = cursorPos.x < textureView.view.width / 2;
     const bool cursorInTopScreenHalf = cursorPos.y < textureView.view.height / 2;
+    uint8_t pixelTolerance = {};
+    bool perColorChannelEdgeDetection = {};
+    state.Access([&](MeasureToolState& state) {
+        state.cursorInLeftScreenHalf = cursorInLeftScreenHalf;
+        state.cursorInTopScreenHalf = cursorInTopScreenHalf;
+        pixelTolerance = state.pixelTolerance;
+        perColorChannelEdgeDetection = state.perColorChannelEdgeDetection;
+    });
 
     // Every one of 4 edges is a coordinate of the last similar pixel in a row
     // Example: given a 5x5 green square on a blue background with its top-left pixel
     //          at 20x100, bounds should be [20,100]-[24,104]. We don't include [25,105] or
     //          [19,99], since those pixels are blue. Thus, square dims are equal to
     //          [24-20+1,104-100+1]=[5,5].
-    const RECT bounds = DetectEdges(textureView.view, cursorPos, pixelTolerance, continuousCapture);
+    const RECT bounds = DetectEdges(textureView.view,
+                                    cursorPos,
+                                    perColorChannelEdgeDetection,
+                                    pixelTolerance,
+                                    continuousCapture);
 
 #if defined(DEBUG_EDGES)
     char buffer[256];
@@ -344,8 +355,6 @@ void UpdateCaptureState(const CommonState& commonState,
 #endif
     state.Access([&](MeasureToolState& state) {
         state.measuredEdges = bounds;
-        state.cursorInLeftScreenHalf = cursorInLeftScreenHalf;
-        state.cursorInTopScreenHalf = cursorInTopScreenHalf;
     });
 }
 
@@ -366,10 +375,8 @@ std::thread StartCapturingThread(const CommonState& commonState,
             winrt::guid_of<winrt::GraphicsCaptureItem>(),
             winrt::put_abi(item)));
 
-        uint8_t pixelTolerance = {};
         bool continuousCapture = {};
-        state.Access([&](MeasureToolState& state) {
-            pixelTolerance = state.pixelTolerance;
+        state.Read([&](const MeasureToolState& state) {
             continuousCapture = state.continuousCapture;
         });
 
@@ -380,8 +387,8 @@ std::thread StartCapturingThread(const CommonState& commonState,
                                                     !continuousCapture);
         if (continuousCapture)
         {
-            captureState->StartCapture([&, targetWindow, pixelTolerance](OwnedTextureView textureView) {
-                UpdateCaptureState(commonState, state, targetWindow, pixelTolerance, textureView, continuousCapture);
+            captureState->StartCapture([&, targetWindow](OwnedTextureView textureView) {
+                UpdateCaptureState(commonState, state, targetWindow, textureView, continuousCapture);
             });
 
             while (IsWindow(targetWindow))
@@ -398,7 +405,7 @@ std::thread StartCapturingThread(const CommonState& commonState,
                 const auto now = std::chrono::high_resolution_clock::now();
                 if (monitorArea.inside(commonState.cursorPos))
                 {
-                    UpdateCaptureState(commonState, state, targetWindow, pixelTolerance, textureView, continuousCapture);
+                    UpdateCaptureState(commonState, state, targetWindow, textureView, continuousCapture);
                 }
                 const auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
                 if (frameTime < consts::TARGET_FRAME_DURATION)

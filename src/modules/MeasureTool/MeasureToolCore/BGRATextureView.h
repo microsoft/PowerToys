@@ -52,7 +52,7 @@ inline int _mm_cvtsi128_si32(__m128i a)
 
 #endif
 
-inline __m128i distance_epi8(const __m128i a, __m128i b)
+inline __m128i distance_epu8(const __m128i a, __m128i b)
 {
     return _mm_or_si128(_mm_subs_epu8(a, b),
                         _mm_subs_epu8(b, a));
@@ -80,18 +80,25 @@ struct BGRATextureView
         return pixels[x + width * y];
     }
 
-    static inline bool PixelsClose(const uint32_t pixel1, const uint32_t pixel2, const uint8_t tolerance)
+    template<bool perChannel>
+    static inline bool PixelsClose(const uint32_t pixel1, const uint32_t pixel2, uint8_t tolerance)
     {
         const __m128i rgba1 = _mm_cvtsi32_si128(pixel1);
         const __m128i rgba2 = _mm_cvtsi32_si128(pixel2);
-        const __m128i distances = distance_epi8(rgba1, rgba2);
+        const __m128i distances = distance_epu8(rgba1, rgba2);
 
-        // Method 1: Test whether each channel distance is not great than tolerance
-        //const __m128i tolerances = _mm_set1_epi8(tolerance);
-        //return _mm_cvtsi128_si32(_mm_cmpgt_epi8(distances, tolerances)) == 0;
-
-        // Method 2: Test whether sum of all channel differences is smaller than tolerance
-        return _mm_cvtsi128_si32(_mm_sad_epu8(distances, _mm_setzero_si128())) <= tolerance;
+        // Method 1: Test whether each channel distance is not greater than tolerance
+        if constexpr (perChannel)
+        {
+            const __m128i tolerances = _mm_set1_epi16(tolerance);
+            const int gtResults = _mm_cvtsi128_si32(_mm_cmpgt_epi16(_mm_cvtepu8_epi16(distances), tolerances));
+            return gtResults == 0;
+        }
+        else
+        {
+            // Method 2: Test whether sum of all channel differences is smaller than tolerance
+            return _mm_cvtsi128_si32(_mm_sad_epu8(distances, _mm_setzero_si128())) <= tolerance;
+        }
     }
 
 #if !defined(NDEBUG)

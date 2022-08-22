@@ -13,6 +13,7 @@ namespace
     const wchar_t JSON_KEY_CONTINUOUS_CAPTURE[] = L"ContinuousCapture";
     const wchar_t JSON_KEY_DRAW_FEET_ON_CROSS[] = L"DrawFeetOnCross";
     const wchar_t JSON_KEY_PIXEL_TOLERANCE[] = L"PixelTolerance";
+    const wchar_t JSON_KEY_PER_COLOR_CHANNEL_EDGE_DETECTION[] = L"PerColorChannelEdgeDetection";
     const wchar_t JSON_KEY_MEASURE_CROSS_COLOR[] = L"MeasureCrossColor";
 }
 
@@ -52,6 +53,14 @@ Settings Settings::LoadFromFile()
         {
             const auto colorString = props.GetNamedObject(JSON_KEY_MEASURE_CROSS_COLOR).GetNamedString(JSON_KEY_VALUE);
             checkValidRGB(colorString, &result.lineColor[0], &result.lineColor[1], &result.lineColor[2]);
+        }
+        catch (...)
+        {
+        }
+
+        try
+        {
+            result.perColorChannelEdgeDetection = props.GetNamedObject(JSON_KEY_PER_COLOR_CHANNEL_EDGE_DETECTION).GetNamedBoolean(JSON_KEY_VALUE);
         }
         catch (...)
         {

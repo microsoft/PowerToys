@@ -2,7 +2,10 @@
 
 #include "constants.h"
 #include "EdgeDetection.h"
-template<bool continuousCapture, bool IsX, bool Increment>
+template<bool PerChannel,
+         bool ContinuousCapture,
+         bool IsX,
+         bool Increment>
 inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance)
 {
     using namespace consts;
@@ -11,7 +14,7 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
     long yOffset = 0;
 
     // For continuous capture, we'll be a bit off center from the cursor so the cross we draw won't interfere with the measurement.
-    if constexpr (continuousCapture)
+    if constexpr (ContinuousCapture)
     {
         if constexpr (IsX)
         {
@@ -63,7 +66,7 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
         }
 
         const uint32_t nextPixel = texture.GetPixel(x, y);
-        if (!texture.PixelsClose(startPixel, nextPixel, tolerance))
+        if (!texture.PixelsClose<PerChannel>(startPixel, nextPixel, tolerance))
         {
             return IsX ? oldX : oldY;
         }
@@ -72,16 +75,36 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
     return Increment ? static_cast<long>(IsX ? texture.width : texture.height) - 1 : 0;
 }
 
-template<bool continuousCapture>
+template<bool PerChannel, bool ContinuousCapture>
 inline RECT DetectEdgesInternal(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance)
 {
-    return RECT{ .left = FindEdge<continuousCapture, true, false>(texture, centerPoint, tolerance),
-                 .top = FindEdge<continuousCapture, false, false>(texture, centerPoint, tolerance),
-                 .right = FindEdge<continuousCapture, true, true>(texture, centerPoint, tolerance),
-                 .bottom = FindEdge<continuousCapture, false, true>(texture, centerPoint, tolerance) };
+    return RECT{ .left = FindEdge<PerChannel,
+                                  ContinuousCapture,
+                                  true,
+                                  false>(texture, centerPoint, tolerance),
+                 .top = FindEdge<PerChannel,
+                                 ContinuousCapture,
+                                 false,
+                                 false>(texture, centerPoint, tolerance),
+                 .right = FindEdge<PerChannel,
+                                   ContinuousCapture,
+                                   true,
+                                   true>(texture, centerPoint, tolerance),
+                 .bottom = FindEdge<PerChannel,
+                                    ContinuousCapture,
+                                    false,
+                                    true>(texture, centerPoint, tolerance) };
 }
 
-RECT DetectEdges(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance, const bool continuousCapture)
+RECT DetectEdges(const BGRATextureView& texture,
+                 const POINT centerPoint,
+                 const bool perChannel,
+                 const uint8_t tolerance,
+                 const bool continuousCapture)
 {
-    return (continuousCapture ? &DetectEdgesInternal<true> : &DetectEdgesInternal<false>)(texture, centerPoint, tolerance);
+    auto function = perChannel ? &DetectEdgesInternal<true, false> : DetectEdgesInternal<false, false>;
+    if (continuousCapture)
+        function = perChannel ? &DetectEdgesInternal<true, true> : &DetectEdgesInternal<false, true>;
+    
+    return function(texture, centerPoint, tolerance);
 }

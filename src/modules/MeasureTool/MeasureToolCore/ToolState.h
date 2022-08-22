@@ -26,6 +26,7 @@ struct CommonState
 
     mutable Serialized<OverlayBoxText> overlayBoxText;
     POINT cursorPos = {}; // updated atomically
+    std::atomic_bool closeOnOtherMonitors = false;
 };
 
 struct BoundsToolState
@@ -48,5 +49,7 @@ struct MeasureToolState
     RECT measuredEdges = {};
     bool cursorInLeftScreenHalf = false;
     bool cursorInTopScreenHalf = false;
+    bool perColorChannelEdgeDetection = false;
     Mode mode = Mode::Cross;
+    CommonState* commonState = nullptr; // required for WndProc
 };

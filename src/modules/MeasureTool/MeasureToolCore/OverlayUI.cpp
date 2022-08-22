@@ -49,8 +49,8 @@ LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
     {
     case WM_CREATE:
     {
-        auto commonState = GetWindowCreateParam<const CommonState*>(lparam);
-        StoreWindowParam(window, commonState);
+        auto state = GetWindowCreateParam<Serialized<MeasureToolState>*>(lparam);
+        StoreWindowParam(window, state);
 
 #if !defined(DEBUG_OVERLAY)
         for (; ShowCursor(false) > 0;)
@@ -58,6 +58,8 @@ LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
 #endif
         break;
     }
+    case WM_ERASEBKGND:
+        return 1;
     case WM_CLOSE:
         DestroyWindow(window);
         break;
@@ -71,15 +73,24 @@ LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
         PostMessageW(window, WM_CLOSE, {}, {});
         break;
     case WM_LBUTTONUP:
-        if (auto commonState = GetWindowParam<const CommonState*>(window))
+        if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
         {
-            commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
-                SetClipBoardToText(text.buffer);
+            state->Read([](const MeasureToolState& s) { s.commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
+                                                            SetClipBoardToText(text.buffer);
+                                                        }); });
+        }
+        break;
+    case WM_MOUSEWHEEL:
+        if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
+        {
+            const int8_t step = static_cast<short>(HIWORD(wparam)) < 0 ? -15: 15;
+            state->Access([step](MeasureToolState& s) {
+                int wideVal = s.pixelTolerance;
+                wideVal += step;
+                s.pixelTolerance = static_cast<uint8_t>(std::clamp(wideVal, 1, 254));
             });
         }
         break;
-    case WM_ERASEBKGND:
-        return 1;
     }
 
     return DefWindowProcW(window, message, wparam, lparam);
@@ -89,15 +100,17 @@ LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
 {
     switch (message)
     {
-    case WM_CLOSE:
-        DestroyWindow(window);
-        break;
     case WM_CREATE:
     {
         auto toolState = GetWindowCreateParam<BoundsToolState*>(lparam);
         StoreWindowParam(window, toolState);
         break;
     }
+    case WM_ERASEBKGND:
+        return 1;
+    case WM_CLOSE:
+        DestroyWindow(window);
+        break;
     case WM_KEYUP:
         if (wparam == VK_ESCAPE)
         {
@@ -107,6 +120,8 @@ LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     case WM_LBUTTONDOWN:
     {
         auto toolState = GetWindowParam<BoundsToolState*>(window);
+        if (!toolState)
+            break;
         POINT cursorPos = toolState->commonState->cursorPos;
         ScreenToClient(window, &cursorPos);
 
@@ -118,26 +133,28 @@ LRESULT CALLBACK boundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     case WM_USER:
     {
         auto toolState = GetWindowParam<BoundsToolState*>(window);
+        if (!toolState)
+            break;
         toolState->currentRegionStart = std::nullopt;
         break;
     }
     case WM_LBUTTONUP:
-        if (auto toolState = GetWindowParam<BoundsToolState*>(window); toolState->currentRegionStart.has_value())
-        {
-            const auto cursorPos = toolState->commonState->cursorPos;
-            D2D_POINT_2F newRegionEnd = { .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
-            toolState->currentRegionStart = std::nullopt;
+    {
+        auto toolState = GetWindowParam<BoundsToolState*>(window);
+        if (!toolState)
+            break;
+        const auto cursorPos = toolState->commonState->cursorPos;
+        D2D_POINT_2F newRegionEnd = { .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
+        toolState->currentRegionStart = std::nullopt;
 
-            toolState->commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
-                SetClipBoardToText(text.buffer);
-            });
-        }
+        toolState->commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
+            SetClipBoardToText(text.buffer);
+        });
         break;
+    }
     case WM_RBUTTONUP:
         PostMessageW(window, WM_CLOSE, {}, {});
         break;
-    case WM_ERASEBKGND:
-        return 1;
     }
 
     return DefWindowProcW(window, message, wparam, lparam);
@@ -228,7 +245,7 @@ std::vector<D2D1::ColorF> AppendCommonOverlayUIColors(const D2D1::ColorF lineCol
 
 void OverlayUIState::RunUILoop()
 {
-    while (IsWindow(_window))
+    while (IsWindow(_window) && !_commonState.closeOnOtherMonitors)
     {
         _d2dState.rt->BeginDraw();
         _d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
@@ -272,13 +289,13 @@ OverlayUIState::OverlayUIState(StateT& toolState,
 {
 }
 
-OverlayUIState::~OverlayUIState() noexcept
+OverlayUIState::~OverlayUIState()
 {
     PostMessageW(_window, WM_CLOSE, {}, {});
-    // Extra cautious to not trigger termination due to noexcept
     try
     {
-        _uiThread.join();
+        if (_uiThread.joinable())
+            _uiThread.join();
     }
     catch (...)
     {
@@ -289,7 +306,7 @@ OverlayUIState::~OverlayUIState() noexcept
 template<typename ToolT, typename TickFuncT>
 inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& toolState,
                                                                       TickFuncT tickFunc,
-                                                                      const CommonState& commonState,
+                                                                      CommonState& commonState,
                                                                       const wchar_t* toolWindowClassName,
                                                                       void* windowParam,
                                                                       const MonitorInfo& monitor)
@@ -306,6 +323,7 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
         uiCreatedEvent.SetEvent();
 
         state->RunUILoop();
+        commonState.closeOnOtherMonitors = true;
         commonState.sessionCompletedCallback();
     });
 
@@ -315,20 +333,19 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
 }
 
 std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolState>& toolState,
-                                                       const CommonState& commonState,
+                                                       CommonState& commonState,
                                                        const MonitorInfo& monitor)
 {
     return OverlayUIState::CreateInternal(toolState,
                                           DrawMeasureToolTick,
                                           commonState,
                                           NonLocalizable::MeasureToolOverlayWindowName,
-                                          // ok to cast away const, since member access is serialized
-                                          (void*)(&commonState),
+                                          &toolState,
                                           monitor);
 }
 
 std::unique_ptr<OverlayUIState> OverlayUIState::Create(BoundsToolState& toolState,
-                                                       const CommonState& commonState,
+                                                       CommonState& commonState,
                                                        const MonitorInfo& monitor)
 {
     return OverlayUIState::CreateInternal(toolState,

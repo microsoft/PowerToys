@@ -134,6 +134,9 @@ Inspired by Roolr.</value>
     <value>Screen Ruler</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
+  <data name="MeasureTool_ActivationSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
   <data name="MeasureTool_Settings.Header" xml:space="preserve">
     <value>Behavior</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
@@ -156,6 +159,12 @@ Inspired by Roolr.</value>
   </data>
   <data name="MeasureTool_ContinuousCapture.Description" xml:space="preserve">
     <value>For measuring animated graphics. Measurement is less precise.</value>
+  </data>
+  <data name="MeasureTool_PerColorChannelEdgeDetection.Header" xml:space="preserve">
+    <value>Per color channel edge detection</value>
+  </data>
+  <data name="MeasureTool_PerColorChannelEdgeDetection.Description" xml:space="preserve">
+    <value>If enabled, test that all color channels are within a tolerance distance from each other. Otherwise, check that the sum of all color channels differences is smaller than the tolerance.</value>
   </data>
   <data name="MeasureTool_DrawFeetOnCross.Header" xml:space="preserve">
     <value>Draw feet on cross</value>

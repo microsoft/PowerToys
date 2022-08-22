@@ -17,6 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PixelTolerance = new IntProperty(5);
             ContinuousCapture = false;
             DrawFeetOnCross = true;
+            PerColorChannelEdgeDetection = false;
             MeasureCrossColor = new StringProperty("#FF4500");
         }
 
@@ -27,6 +28,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool DrawFeetOnCross { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool PerColorChannelEdgeDetection { get; set; }
 
         public IntProperty PixelTolerance { get; set; }
 

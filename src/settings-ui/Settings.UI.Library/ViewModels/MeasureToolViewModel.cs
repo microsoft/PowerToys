@@ -108,6 +108,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool PerColorChannelEdgeDetection
+        {
+            get
+            {
+                return Settings.Properties.PerColorChannelEdgeDetection;
+            }
+
+            set
+            {
+                if (Settings.Properties.PerColorChannelEdgeDetection != value)
+                {
+                    Settings.Properties.PerColorChannelEdgeDetection = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public int PixelTolerance
         {
             get
