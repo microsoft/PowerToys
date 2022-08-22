@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Forms;
+using Microsoft.PowerToys.Telemetry;
 
 namespace PowerOCR.Utilities;
 
@@ -68,6 +69,8 @@ public static class WindowUtilities
             overlay.Activate();
             allFullscreenGrab.Add(overlay);
         }
+
+        PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRLaunchOverlayEvent());
     }
 
     internal static void CloseAllOCROverlays()

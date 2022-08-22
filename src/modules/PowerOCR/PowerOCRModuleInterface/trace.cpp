@@ -17,3 +17,14 @@ void Trace::UnregisterProvider()
 {
     TraceLoggingUnregister(g_hProvider);
 }
+
+// Log if the user has MousePointerCrosshairs enabled or disabled
+void Trace::EnablePowerOCR(const bool enabled) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "PowerOCR_EnablePowerOCR",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, "Enabled"));
+}

@@ -21,13 +21,13 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="trace.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Generated Files\resource.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="PowerOcrConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

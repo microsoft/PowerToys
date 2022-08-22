@@ -61,8 +61,6 @@ private:
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
 
-    HANDLE send_telemetry_event;
-
     Hotkey m_hotkey;
 
     // Handle to event used to invoke PowerOCR
@@ -229,10 +227,10 @@ public:
     virtual void enable()
     {
         Logger::trace("PowerOCR::enable()");
-        ResetEvent(send_telemetry_event);
         ResetEvent(m_hInvokeEvent);
         launch_process();
         m_enabled = true;
+        Trace::EnablePowerOCR(true);
     };
 
     virtual void disable()
@@ -240,12 +238,12 @@ public:
         Logger::trace("PowerOCR::disable()");
         if (m_enabled)
         {
-            ResetEvent(send_telemetry_event);
             ResetEvent(m_hInvokeEvent);
             TerminateProcess(m_hProcess, 1);
         }
 
         m_enabled = false;
+        Trace::EnablePowerOCR(false);
     }
 
     virtual bool on_hotkey(size_t hotkeyId) override
@@ -287,10 +285,6 @@ public:
         return m_enabled;
     }
 
-    virtual void send_settings_telemetry() override
-    {
-        SetEvent(send_telemetry_event);
-    }
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
