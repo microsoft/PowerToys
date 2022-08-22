@@ -83,11 +83,11 @@ LRESULT CALLBACK measureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
     case WM_MOUSEWHEEL:
         if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
         {
-            const int8_t step = static_cast<short>(HIWORD(wparam)) < 0 ? -15: 15;
+            const int8_t step = static_cast<short>(HIWORD(wparam)) < 0 ? -15 : 15;
             state->Access([step](MeasureToolState& s) {
                 int wideVal = s.pixelTolerance;
                 wideVal += step;
-                s.pixelTolerance = static_cast<uint8_t>(std::clamp(wideVal, 1, 254));
+                s.pixelTolerance = static_cast<uint8_t>(std::clamp(wideVal, 0, 255));
             });
         }
         break;

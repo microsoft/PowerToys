@@ -29,11 +29,6 @@ inline __m128i _mm_subs_epu8(__m128i a, __m128i b)
         vqsubq_u8(vreinterpretq_u8_s64(a), vreinterpretq_u8_s64(b)));
 }
 
-inline __m128i _mm_set1_epi8(signed char w)
-{
-    return vreinterpretq_s64_s8(vdupq_n_s8(w));
-}
-
 inline __m128i _mm_sad_epu8(__m128i a, __m128i b)
 {
     uint16x8_t t = vpaddlq_u8(vabdq_u8((uint8x16_t)a, (uint8x16_t)b));
@@ -50,6 +45,28 @@ inline int _mm_cvtsi128_si32(__m128i a)
     return vgetq_lane_s32(vreinterpretq_s32_s64(a), 0);
 }
 
+inline __m128i _mm_set1_epi16(short w)
+{
+    return vreinterpretq_s64_s16(vdupq_n_s16(w));
+}
+
+inline __m128i _mm_cmpgt_epi16(__m128i a, __m128i b)
+{
+    return vreinterpretq_s64_u16(
+        vcgtq_s16(vreinterpretq_s16_s64(a), vreinterpretq_s16_s64(b)));
+}
+
+inline __m128i _mm_cvtepu8_epi16(__m128i a)
+{
+    uint8x16_t u8x16 = vreinterpretq_u8_s64(a); /* xxxx xxxx HGFE DCBA */
+    uint16x8_t u16x8 = vmovl_u8(vget_low_u8(u8x16)); /* 0H0G 0F0E 0D0C 0B0A */
+    return vreinterpretq_s64_u16(u16x8);
+}
+
+inline int64_t _mm_cvtsi128_si64(__m128i a)
+{
+    return vgetq_lane_s64(a, 0);
+}
 #endif
 
 inline __m128i distance_epu8(const __m128i a, __m128i b)
@@ -91,8 +108,8 @@ struct BGRATextureView
         if constexpr (perChannel)
         {
             const __m128i tolerances = _mm_set1_epi16(tolerance);
-            const int gtResults = _mm_cvtsi128_si32(_mm_cmpgt_epi16(_mm_cvtepu8_epi16(distances), tolerances));
-            return gtResults == 0;
+            const auto gtResults128 = _mm_cmpgt_epi16(_mm_cvtepu8_epi16(distances), tolerances);
+            return _mm_cvtsi128_si64(gtResults128) == 0;
         }
         else
         {
