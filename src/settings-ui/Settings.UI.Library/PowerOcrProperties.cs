@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public PowerOcrProperties()
         {
-            ActivationShortcut = new HotkeySettings(true, false, false, true, 0x4F);
+            ActivationShortcut = new HotkeySettings(true, false, false, true, 0x52); // Win+Shift+R
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
