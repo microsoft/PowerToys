@@ -29,6 +29,11 @@ namespace Wox.Plugin
         void RestartApp();
 
         /// <summary>
+        /// Remove user selected history item and refresh/requery
+        /// </summary>
+        void RemoveUserSelectedItem(Result result);
+
+        /// <summary>
         /// Get current theme
         /// </summary>
         Theme GetCurrentTheme();
