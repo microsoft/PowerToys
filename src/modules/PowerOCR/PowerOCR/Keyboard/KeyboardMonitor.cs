@@ -70,20 +70,6 @@ public class KeyboardMonitor : IDisposable
         var currentlyPressedKeys = new List<string>();
         var virtualCode = e.KeyboardData.VirtualCode;
 
-        // ESC pressed
-        if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape)
-            && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown
-            )
-        {
-            if (WindowUtilities.IsOCROverlayCreated())
-            {
-                WindowUtilities.CloseAllOCROverlays();
-                e.Handled = true; // Only consume the event if we did something, otherwise we would block the key for all other applications.
-            }
-
-            return;
-        }
-
         var name = Helper.GetKeyName((uint)virtualCode);
 
         // If the last key pressed is a modifier key, then currentlyPressedKeys cannot possibly match with _activationKeys
