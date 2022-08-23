@@ -6,8 +6,6 @@
 
 #include <common/utils/window.h>
 
-//#define DEBUG_OVERLAY
-
 namespace
 {
     inline std::pair<D2D_POINT_2F, D2D_POINT_2F> ComputeCrossFeetLine(D2D_POINT_2F center, const bool horizontal)

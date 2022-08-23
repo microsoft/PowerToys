@@ -14,6 +14,8 @@
 #include <common/Display/monitors.h>
 #include <common/utils/serialized.h>
 
+//#define DEBUG_OVERLAY
+
 struct OverlayBoxText
 {
     std::array<wchar_t, 32> buffer = {};
