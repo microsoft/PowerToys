@@ -825,6 +825,7 @@ idl
 IDLIST
 IDOn
 IDR
+IDrawing
 IDrive
 idx
 IDXGI
@@ -1954,6 +1955,7 @@ stoull
 strcmp
 streampos
 strftime
+strikethrough
 Stringified
 Stringify
 STRINGIZE
@@ -2251,6 +2253,7 @@ wcscpy
 wcslen
 wcsncmp
 wcsnicmp
+wcsstr
 wdp
 wdupenv
 weakme
