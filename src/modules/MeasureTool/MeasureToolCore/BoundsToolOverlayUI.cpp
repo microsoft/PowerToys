@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "BoundsToolOverlayUI.h"
 
 void DrawBoundsToolTick(const CommonState& commonState,
@@ -23,7 +23,7 @@ void DrawBoundsToolTick(const CommonState& commonState,
     OverlayBoxText text;
     const uint32_t textLen = swprintf_s(text.buffer.data(),
                                         text.buffer.size(),
-                                        L"%.0f x %.0f",
+                                        L"%.0f × %.0f",
                                         std::abs(rect.right - rect.left + 1),
                                         std::abs(rect.top - rect.bottom + 1));
 

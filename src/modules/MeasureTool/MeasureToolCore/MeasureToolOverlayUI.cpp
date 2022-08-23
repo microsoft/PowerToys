@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 
 #include "constants.h"
 #include "MeasureToolOverlayUI.h"
@@ -125,7 +125,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
     case MeasureToolState::Mode::Cross:
         measureStringBufLen = swprintf_s(text.buffer.data(),
                                          text.buffer.size(),
-                                         L"%.0f x %.0f",
+                                         L"%.0f × %.0f",
                                          hMeasure,
                                          vMeasure);
         break;
