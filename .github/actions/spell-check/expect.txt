@@ -1237,6 +1237,7 @@ MINIMIZEEND
 MINIMIZESTART
 miniz
 minlevel
+minmax
 MINORVERSION
 Miracast
 Mishkeegogamang
