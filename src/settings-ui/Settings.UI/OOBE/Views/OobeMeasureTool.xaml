@@ -9,7 +9,7 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_MeasureTool" HeroImage="ms-appx:///Assets/Modules/OOBE/ScreenRuler.png">
+    <controls:OOBEPageControl x:Uid="Oobe_MeasureTool" HeroImage="ms-appx:///Assets/Modules/OOBE/ScreenRuler.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
