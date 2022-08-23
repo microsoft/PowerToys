@@ -72,45 +72,51 @@ D2DState::D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesCol
 
 void D2DState::DrawTextBox(const wchar_t* text,
                            const uint32_t textLen,
-                           const float cornerX,
-                           const float cornerY,
+                           const float centerX,
+                           const float centerY,
                            const bool screenQuadrantAware,
                            HWND window) const
 {
     wil::com_ptr<IDWriteTextLayout> textLayout;
-    winrt::check_hresult(writeFactory->CreateTextLayout(text, textLen, textFormat.get(), 1000.f, 1000.f, &textLayout));
-    DWRITE_TEXT_METRICS metrics = {};
-    textLayout->GetMetrics(&metrics);
+    winrt::check_hresult(writeFactory->CreateTextLayout(text,
+                                                        textLen,
+                                                        textFormat.get(),
+                                                        std::numeric_limits<float>::max(),
+                                                        std::numeric_limits<float>::max(),
+                                                        &textLayout));
+    DWRITE_TEXT_METRICS textMetrics = {};
+    winrt::check_hresult(textLayout->GetMetrics(&textMetrics));
+    textMetrics.width *= consts::TEXT_BOX_MARGIN_COEFF;
+    textMetrics.height *= consts::TEXT_BOX_MARGIN_COEFF;
+    winrt::check_hresult(textLayout->SetMaxWidth(textMetrics.width));
+    winrt::check_hresult(textLayout->SetMaxHeight(textMetrics.height));
 
-    bool cursorInLeftScreenHalf = false;
-    bool cursorInTopScreenHalf = false;
-    DetermineScreenQuadrant(window,
-                            static_cast<long>(cornerX),
-                            static_cast<long>(cornerY),
-                            cursorInLeftScreenHalf,
-                            cursorInTopScreenHalf);
-    const float TEXT_BOX_MARGIN = 1.25f;
-    const float textBoxWidth = metrics.width * TEXT_BOX_MARGIN;
-    const float textBoxHeight = metrics.height * TEXT_BOX_MARGIN;
-
-    const float TEXT_BOX_PADDING = 1.f * dpiScale;
-    const float TEXT_BOX_OFFSET_AMOUNT_X = textBoxWidth * dpiScale;
-    const float TEXT_BOX_OFFSET_AMOUNT_Y = textBoxWidth * dpiScale;
-    const float TEXT_BOX_OFFSET_X = cursorInLeftScreenHalf ? TEXT_BOX_OFFSET_AMOUNT_X : -TEXT_BOX_OFFSET_AMOUNT_X;
-    const float TEXT_BOX_OFFSET_Y = cursorInTopScreenHalf ? TEXT_BOX_OFFSET_AMOUNT_Y : -TEXT_BOX_OFFSET_AMOUNT_Y;
-
-    D2D1_RECT_F textRect{ .left = cornerX - textBoxWidth / 2.f,
-                          .top = cornerY - textBoxHeight / 2.f,
-                          .right = cornerX + textBoxWidth / 2.f,
-                          .bottom = cornerY + textBoxHeight / 2.f };
+    D2D1_RECT_F textRect{ .left = centerX - textMetrics.width / 2.f,
+                          .top = centerY - textMetrics.height / 2.f,
+                          .right = centerX + textMetrics.width / 2.f,
+                          .bottom = centerY + textMetrics.height / 2.f };
     if (screenQuadrantAware)
     {
-        textRect.left += TEXT_BOX_OFFSET_X;
-        textRect.right += TEXT_BOX_OFFSET_X;
-        textRect.top += TEXT_BOX_OFFSET_Y;
-        textRect.bottom += TEXT_BOX_OFFSET_Y;
+        bool cursorInLeftScreenHalf = false;
+        bool cursorInTopScreenHalf = false;
+        DetermineScreenQuadrant(window,
+                                static_cast<long>(centerX),
+                                static_cast<long>(centerY),
+                                cursorInLeftScreenHalf,
+                                cursorInTopScreenHalf);
+        float textQuadrantOffsetX = textMetrics.width * dpiScale;
+        float textQuadrantOffsetY = textMetrics.height * dpiScale;
+        if (!cursorInLeftScreenHalf)
+            textQuadrantOffsetX *= -1.f;
+        if (!cursorInTopScreenHalf)
+            textQuadrantOffsetY *= -1.f;
+        textRect.left += textQuadrantOffsetX;
+        textRect.right += textQuadrantOffsetX;
+        textRect.top += textQuadrantOffsetY;
+        textRect.bottom += textQuadrantOffsetY;
     }
 
+    // Draw shadow
     bitmapRt->BeginDraw();
     bitmapRt->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
     D2D1_ROUNDED_RECT textBoxRect;
@@ -126,19 +132,20 @@ void D2DState::DrawTextBox(const wchar_t* text,
     bitmapRt->GetBitmap(&rtBitmap);
 
     shadowEffect->SetInput(0, rtBitmap.get());
-    affineTransformEffect->SetValue(D2D1_2DAFFINETRANSFORM_PROP_TRANSFORM_MATRIX,
-                                    D2D1::Matrix3x2F::Translation(consts::SHADOW_OFFSET * dpiScale, consts::SHADOW_OFFSET * dpiScale));
-
+    winrt::check_hresult(affineTransformEffect->SetValue(D2D1_2DAFFINETRANSFORM_PROP_TRANSFORM_MATRIX,
+                                                         D2D1::Matrix3x2F::Translation(consts::SHADOW_OFFSET * dpiScale,
+                                                                                       consts::SHADOW_OFFSET * dpiScale)));
     auto deviceContext = rt.query<ID2D1DeviceContext>();
     deviceContext->DrawImage(affineTransformEffect.get(), D2D1_INTERPOLATION_MODE_LINEAR);
 
+    // Draw text box border rectangle
     rt->DrawRoundedRectangle(textBoxRect, solidBrushes[Brush::border].get());
-
+    const float TEXT_BOX_PADDING = 1.f * dpiScale;
     textBoxRect.rect.bottom -= TEXT_BOX_PADDING;
     textBoxRect.rect.top += TEXT_BOX_PADDING;
     textBoxRect.rect.left += TEXT_BOX_PADDING;
     textBoxRect.rect.right -= TEXT_BOX_PADDING;
+    // Draw text & its box
     rt->FillRoundedRectangle(textBoxRect, solidBrushes[Brush::background].get());
-
-    rt->DrawTextW(text, textLen, textFormat.get(), textRect, solidBrushes[Brush::foreground].get(), D2D1_DRAW_TEXT_OPTIONS_NONE);
+    rt->DrawTextLayout(D2D1_POINT_2F{ .x = textRect.left, .y = textRect.top }, textLayout.get(), solidBrushes[Brush::foreground].get());
 }

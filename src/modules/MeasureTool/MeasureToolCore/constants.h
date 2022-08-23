@@ -9,6 +9,7 @@ namespace consts
 
     constexpr inline float FONT_SIZE = 14.f;
     constexpr inline float TEXT_BOX_CORNER_RADIUS = 4.f;
+    constexpr inline float TEXT_BOX_MARGIN_COEFF = 1.25f;
     constexpr inline float FEET_HALF_LENGTH = 2.f;
     constexpr inline float SHADOW_OPACITY = .4f;
     constexpr inline float SHADOW_RADIUS = 6.f;

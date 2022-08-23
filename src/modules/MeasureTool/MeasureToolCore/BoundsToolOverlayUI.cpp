@@ -101,7 +101,10 @@ namespace
                          const D2DState& d2dState)
     {
         const bool screenQuadrantAware = !alignTextBoxToCenter;
+        const auto prevMode = d2dState.rt->GetAntialiasMode();
+        d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
         d2dState.rt->DrawRectangle(rect, d2dState.solidBrushes[Brush::line].get());
+        d2dState.rt->SetAntialiasMode(prevMode);
 
         OverlayBoxText text;
         const auto width = std::abs(rect.right - rect.left + 1);

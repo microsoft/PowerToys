@@ -22,6 +22,7 @@
 #include <functional>
 #include <cassert>
 #include <iomanip>
+#include <limits>
 #include <sstream>
 #include <string_view>
 #include <chrono>
