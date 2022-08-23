@@ -1418,6 +1418,12 @@
           Directory="Resource$(var.IdSafeLanguage)OneNotePluginFolder">
         <File Id="Launcher_OneNote_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\OneNote\$(var.Language)\Microsoft.PowerToys.Run.Plugin.OneNote.resources.dll" />
       </Component>
+      <Component
+          Id="MonacoPreviewHandler_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
+          Guid="$(var.CompGUIDPrefix)1A">
+        <File Id="MonacoPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.Language)\PowerToys.MonacoPreviewHandler.resources.dll" />
+      </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>

@@ -86,10 +86,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             base.DoPreview(dataSource);
 
             // Sets background color
-            new Task(SetBackground).Start();
+            SetBackground();
 
             // Starts loading screen
-            new Task(InitializeLoadingScreen).Start();
+            InitializeLoadingScreen();
 
             // New webview2 element
             _webView = new WebView2();
