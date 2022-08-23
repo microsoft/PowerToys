@@ -13,7 +13,8 @@ namespace consts
     constexpr inline float FEET_HALF_LENGTH = 2.f;
     constexpr inline float SHADOW_OPACITY = .4f;
     constexpr inline float SHADOW_RADIUS = 6.f;
-    const inline auto SHADOW_OFFSET = 5.f;
+    constexpr inline float SHADOW_OFFSET = 5.f;
+    constexpr inline float CROSS_OPACITY = .25f;
 
     /* Offset to not try not to use the cursor immediate pixels in measuring, but it seems only necessary for continuous mode. */
     constexpr inline long CURSOR_OFFSET_AMOUNT_X = 4;

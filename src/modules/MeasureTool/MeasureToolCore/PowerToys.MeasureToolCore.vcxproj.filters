@@ -15,6 +15,8 @@
     <ClCompile Include="BoundsToolOverlayUI.cpp" />
     <ClCompile Include="MeasureToolOverlayUI.cpp" />
     <ClCompile Include="..\MeasureToolModuleInterface\trace.cpp" />
+    <ClCompile Include="Clipboard.cpp" />
+    <ClCompile Include="PerGlyphOpacityTextRender.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -29,6 +31,8 @@
     <ClInclude Include="MeasureToolOverlayUI.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="..\MeasureToolModuleInterface\trace.h" />
+    <ClInclude Include="Clipboard.h" />
+    <ClInclude Include="PerGlyphOpacityTextRender.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

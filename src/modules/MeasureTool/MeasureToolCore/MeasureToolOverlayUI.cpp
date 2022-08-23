@@ -176,6 +176,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
     uint32_t measureStringBufLen = 0;
 
     OverlayBoxText text;
+    std::optional<size_t> crossSymbolPos;
     switch (mts.mode)
     {
     case MeasureToolState::Mode::Cross:
@@ -184,6 +185,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
                                          L"%.0f × %.0f",
                                          hMeasure,
                                          vMeasure);
+        crossSymbolPos = wcsstr(text.buffer.data(), L" ") - text.buffer.data() + 1;
         break;
     case MeasureToolState::Mode::Vertical:
         measureStringBufLen = swprintf_s(text.buffer.data(),
@@ -205,6 +207,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
 
     d2dState.DrawTextBox(text.buffer.data(),
                          measureStringBufLen,
+                         crossSymbolPos,
                          static_cast<float>(cursorPos.x),
                          static_cast<float>(cursorPos.y),
                          true,

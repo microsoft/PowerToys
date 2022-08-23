@@ -77,6 +77,7 @@
     <ClInclude Include="constants.h" />
     <ClInclude Include="D2DState.h" />
     <ClInclude Include="MeasureToolOverlayUI.h" />
+    <ClInclude Include="PerGlyphOpacityTextRender.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="PowerToys.MeasureToolCore.h">
       <DependentUpon>PowerToys.MeasureToolCore.idl</DependentUpon>
@@ -97,6 +98,7 @@
     <ClCompile Include="EdgeDetection.cpp" />
     <ClCompile Include="MeasureToolOverlayUI.cpp" />
     <ClCompile Include="OverlayUI.cpp" />
+    <ClCompile Include="PerGlyphOpacityTextRender.cpp" />
     <ClCompile Include="PowerToys.MeasureToolCore.cpp">
       <DependentUpon>PowerToys.MeasureToolCore.idl</DependentUpon>
     </ClCompile>

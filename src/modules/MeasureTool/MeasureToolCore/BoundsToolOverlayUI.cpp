@@ -114,6 +114,7 @@ namespace
                                             L"%.0f × %.0f",
                                             width,
                                             height);
+        std::optional<size_t> crossSymbolPos = wcsstr(text.buffer.data(), L" ") - text.buffer.data() + 1;
 
         commonState.overlayBoxText.Access([&](OverlayBoxText& v) {
             v = text;
@@ -129,6 +130,7 @@ namespace
 
         d2dState.DrawTextBox(text.buffer.data(),
                              textLen,
+                             crossSymbolPos,
                              cornerX,
                              cornerY,
                              screenQuadrantAware,

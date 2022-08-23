@@ -68,10 +68,13 @@ D2DState::D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesCol
 
     winrt::check_hresult(deviceContext->CreateEffect(CLSID_D2D12DAffineTransform, &affineTransformEffect));
     affineTransformEffect->SetInputEffect(0, shadowEffect.get());
+
+    textRenderer = winrt::make_self<PerGlyphOpacityTextRender>(d2dFactory, rt, solidBrushes[Brush::foreground]);
 }
 
 void D2DState::DrawTextBox(const wchar_t* text,
                            const uint32_t textLen,
+                           const std::optional<size_t> halfOpaqueSymbolPos,
                            const float centerX,
                            const float centerY,
                            const bool screenQuadrantAware,
@@ -147,5 +150,13 @@ void D2DState::DrawTextBox(const wchar_t* text,
     textBoxRect.rect.right -= TEXT_BOX_PADDING;
     // Draw text & its box
     rt->FillRoundedRectangle(textBoxRect, solidBrushes[Brush::background].get());
-    rt->DrawTextLayout(D2D1_POINT_2F{ .x = textRect.left, .y = textRect.top }, textLayout.get(), solidBrushes[Brush::foreground].get());
+
+    if (halfOpaqueSymbolPos.has_value())
+    {
+        DWRITE_TEXT_RANGE textRange = { static_cast<uint32_t>(*halfOpaqueSymbolPos), 2 };
+        auto opacityEffect = winrt::make_self<OpacityEffect>();
+        opacityEffect->alpha = consts::CROSS_OPACITY;
+        winrt::check_hresult(textLayout->SetDrawingEffect(opacityEffect.get(), textRange));
+    }
+    winrt::check_hresult(textLayout->Draw(nullptr, textRenderer.get(), textRect.left, textRect.top));
 }
