@@ -74,6 +74,7 @@ void D2DState::DrawTextBox(const wchar_t* text,
                            const uint32_t textLen,
                            const float cornerX,
                            const float cornerY,
+                           const bool screenQuadrantAware,
                            HWND window) const
 {
     wil::com_ptr<IDWriteTextLayout> textLayout;
@@ -98,10 +99,17 @@ void D2DState::DrawTextBox(const wchar_t* text,
     const float TEXT_BOX_OFFSET_X = cursorInLeftScreenHalf ? TEXT_BOX_OFFSET_AMOUNT_X : -TEXT_BOX_OFFSET_AMOUNT_X;
     const float TEXT_BOX_OFFSET_Y = cursorInTopScreenHalf ? TEXT_BOX_OFFSET_AMOUNT_Y : -TEXT_BOX_OFFSET_AMOUNT_Y;
 
-    D2D1_RECT_F textRect{ .left = cornerX - textBoxWidth / 2.f + TEXT_BOX_OFFSET_X,
-                          .top = cornerY - textBoxHeight / 2.f + TEXT_BOX_OFFSET_Y,
-                          .right = cornerX + textBoxWidth / 2.f + TEXT_BOX_OFFSET_X,
-                          .bottom = cornerY + textBoxHeight / 2.f + TEXT_BOX_OFFSET_Y };
+    D2D1_RECT_F textRect{ .left = cornerX - textBoxWidth / 2.f,
+                          .top = cornerY - textBoxHeight / 2.f,
+                          .right = cornerX + textBoxWidth / 2.f,
+                          .bottom = cornerY + textBoxHeight / 2.f };
+    if (screenQuadrantAware)
+    {
+        textRect.left += TEXT_BOX_OFFSET_X;
+        textRect.right += TEXT_BOX_OFFSET_X;
+        textRect.top += TEXT_BOX_OFFSET_Y;
+        textRect.bottom += TEXT_BOX_OFFSET_Y;
+    }
 
     bitmapRt->BeginDraw();
     bitmapRt->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));

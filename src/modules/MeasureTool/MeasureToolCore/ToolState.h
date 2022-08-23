@@ -5,6 +5,7 @@
 #include <mutex>
 #include <vector>
 #include <thread>
+#include <unordered_map>
 
 #include <windef.h>
 #include <d2d1helper.h>
@@ -32,6 +33,7 @@ struct CommonState
 struct BoundsToolState
 {
     std::optional<D2D_POINT_2F> currentRegionStart;
+    std::unordered_map<HWND, std::vector<D2D1_RECT_F>> measurementsByScreen;
     CommonState* commonState = nullptr; // required for WndProc
 };
 

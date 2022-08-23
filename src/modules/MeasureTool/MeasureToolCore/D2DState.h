@@ -31,5 +31,6 @@ struct D2DState
                      const uint32_t textLen,
                      const float cornerX,
                      const float cornerY,
+                     const bool screenQuadrantAware,
                      HWND window) const;
 };

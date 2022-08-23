@@ -1,7 +1,12 @@
 ﻿#include "pch.h"
 
 #include "constants.h"
+#include "Clipboard.h"
 #include "MeasureToolOverlayUI.h"
+
+#include <common/utils/window.h>
+
+//#define DEBUG_OVERLAY
 
 namespace
 {
@@ -29,6 +34,59 @@ namespace
 
         return { start, end };
     }
+}
+
+LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
+{
+    switch (message)
+    {
+    case WM_CREATE:
+    {
+        auto state = GetWindowCreateParam<Serialized<MeasureToolState>*>(lparam);
+        StoreWindowParam(window, state);
+
+#if !defined(DEBUG_OVERLAY)
+        for (; ShowCursor(false) > 0;)
+            ;
+#endif
+        break;
+    }
+    case WM_ERASEBKGND:
+        return 1;
+    case WM_CLOSE:
+        DestroyWindow(window);
+        break;
+    case WM_KEYUP:
+        if (wparam == VK_ESCAPE)
+        {
+            PostMessageW(window, WM_CLOSE, {}, {});
+        }
+        break;
+    case WM_RBUTTONUP:
+        PostMessageW(window, WM_CLOSE, {}, {});
+        break;
+    case WM_LBUTTONUP:
+        if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
+        {
+            state->Read([](const MeasureToolState& s) { s.commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
+                                                            SetClipBoardToText(text.buffer);
+                                                        }); });
+        }
+        break;
+    case WM_MOUSEWHEEL:
+        if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
+        {
+            const int8_t step = static_cast<short>(HIWORD(wparam)) < 0 ? -15 : 15;
+            state->Access([step](MeasureToolState& s) {
+                int wideVal = s.pixelTolerance;
+                wideVal += step;
+                s.pixelTolerance = static_cast<uint8_t>(std::clamp(wideVal, 0, 255));
+            });
+        }
+        break;
+    }
+
+    return DefWindowProcW(window, message, wparam, lparam);
 }
 
 void DrawMeasureToolTick(const CommonState& commonState,
@@ -151,5 +209,6 @@ void DrawMeasureToolTick(const CommonState& commonState,
                          measureStringBufLen,
                          static_cast<float>(cursorPos.x),
                          static_cast<float>(cursorPos.y),
+                         true,
                          overlayWindow);
 }

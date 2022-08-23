@@ -8,3 +8,5 @@ void DrawMeasureToolTick(const CommonState& commonState,
                          Serialized<MeasureToolState>& toolState,
                          HWND overlayWindow,
                          D2DState& d2dState);
+
+LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
