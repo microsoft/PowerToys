@@ -19,11 +19,14 @@ struct PerGlyphOpacityTextRender : winrt::implements<PerGlyphOpacityTextRender, 
     wil::com_ptr<ID2D1Factory> _pD2DFactory;
     wil::com_ptr<ID2D1HwndRenderTarget> _rt;
     wil::com_ptr<ID2D1SolidColorBrush> _baseBrush;
+    float _dpiScale = 1.f;
 
     PerGlyphOpacityTextRender(
         wil::com_ptr<ID2D1Factory> pD2DFactory,
         wil::com_ptr<ID2D1HwndRenderTarget> rt,
-        wil::com_ptr<ID2D1SolidColorBrush> baseBrush);
+        wil::com_ptr<ID2D1SolidColorBrush> baseBrush,
+        const float _dpiScale);
+
     HRESULT __stdcall DrawGlyphRun(void* clientDrawingContext,
                                    FLOAT baselineOriginX,
                                    FLOAT baselineOriginY,

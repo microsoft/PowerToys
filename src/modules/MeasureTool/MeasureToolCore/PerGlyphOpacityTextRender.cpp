@@ -5,10 +5,12 @@
 PerGlyphOpacityTextRender::PerGlyphOpacityTextRender(
     wil::com_ptr<ID2D1Factory> pD2DFactory,
     wil::com_ptr<ID2D1HwndRenderTarget> rt,
-    wil::com_ptr<ID2D1SolidColorBrush> baseBrush) :
+    wil::com_ptr<ID2D1SolidColorBrush> baseBrush,
+    const float dpiScale) :
     _pD2DFactory{ pD2DFactory },
     _rt{ rt },
-    _baseBrush{ baseBrush }
+    _baseBrush{ baseBrush },
+    _dpiScale{ dpiScale }
 {
 }
 
@@ -121,28 +123,18 @@ HRESULT __stdcall PerGlyphOpacityTextRender::IsPixelSnappingDisabled(void* /*cli
 {
     RETURN_HR_IF_NULL(E_INVALIDARG, isDisabled);
 
-    *isDisabled = true;
+    *isDisabled = false;
     return S_OK;
 }
 
 HRESULT __stdcall PerGlyphOpacityTextRender::GetCurrentTransform(void* /*clientDrawingContext*/, DWRITE_MATRIX* transform) noexcept
 {
-    D2D1_MATRIX_3X2_F d2d1Matrix{};
-
-    _rt->GetTransform(&d2d1Matrix);
-
-    transform->dx = d2d1Matrix.dx;
-    transform->dy = d2d1Matrix.dy;
-    transform->m11 = d2d1Matrix.m11;
-    transform->m12 = d2d1Matrix.m12;
-    transform->m21 = d2d1Matrix.m21;
-    transform->m22 = d2d1Matrix.m22;
-
+    _rt->GetTransform(reinterpret_cast<D2D1_MATRIX_3X2_F*>(transform));
     return S_OK;
 }
 
 HRESULT __stdcall PerGlyphOpacityTextRender::GetPixelsPerDip(void* /*clientDrawingContext*/, FLOAT* pixelsPerDip) noexcept
 {
-    *pixelsPerDip = 1.f;
+    *pixelsPerDip = _dpiScale;
     return S_OK;
 }
