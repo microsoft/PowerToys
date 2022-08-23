@@ -5,6 +5,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/logger/logger.h>
 
+#include "../MeasureToolModuleInterface/trace.h"
 #include "constants.h"
 #include "PowerToys.MeasureToolCore.h"
 #include "Core.g.cpp"
@@ -29,6 +30,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _mouseCaptureThread{ [this] { MouseCaptureThread(); } },
         _stopMouseCaptureThreadSignal{ wil::EventOptions::ManualReset }
     {
+        Trace::RegisterProvider();
         LoggerHelpers::init_logger(L"Measure Tool", L"Core", "Measure Tool");
     }
 
@@ -38,6 +40,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _mouseCaptureThread.join();
 
         ResetState();
+        Trace::UnregisterProvider();
     }
 
     void Core::ResetState()
@@ -76,6 +79,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
                 continue;
             _overlayUIStates.push_back(std::move(overlayUI));
         }
+        Trace::BoundsToolActivated();
     }
 
     void Core::StartMeasureTool(const bool horizontal, const bool vertical)
@@ -105,6 +109,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
                                                                  monitorInfo));
             _overlayUIStates.push_back(std::move(overlayUI));
         }
+        Trace::MeasureToolActivated();
     }
 
     void MeasureToolCore::implementation::Core::SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger)

@@ -49,7 +49,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(SolutionDir)src\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\;$(SolutionDir)src\common\Telemetry\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -66,6 +66,7 @@
     <None Include="MeasureToolCore.def" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\MeasureToolModuleInterface\trace.h" />
     <ClInclude Include="BoundsToolOverlayUI.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="D2DState.h" />
@@ -82,6 +83,7 @@
     <ClInclude Include="ScreenCapturing.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\MeasureToolModuleInterface\trace.cpp" />
     <ClCompile Include="BGRATextureView.cpp" />
     <ClCompile Include="BoundsToolOverlayUI.cpp" />
     <ClCompile Include="D2DState.cpp" />

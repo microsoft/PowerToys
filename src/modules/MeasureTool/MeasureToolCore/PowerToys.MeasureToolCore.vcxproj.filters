@@ -14,6 +14,7 @@
     <ClCompile Include="D2DState.cpp" />
     <ClCompile Include="BoundsToolOverlayUI.cpp" />
     <ClCompile Include="MeasureToolOverlayUI.cpp" />
+    <ClCompile Include="..\MeasureToolModuleInterface\trace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -27,6 +28,7 @@
     <ClInclude Include="D2DState.h" />
     <ClInclude Include="MeasureToolOverlayUI.h" />
     <ClInclude Include="constants.h" />
+    <ClInclude Include="..\MeasureToolModuleInterface\trace.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

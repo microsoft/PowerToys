@@ -26,6 +26,7 @@
 #include <string_view>
 #include <chrono>
 #include <stdio.h>
+#include <ProjectTelemetry.h>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
