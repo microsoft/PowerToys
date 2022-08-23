@@ -3,16 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Windows;
 using ManagedCommon;
 using PowerOCR.Helpers;
 using PowerOCR.Keyboard;
 using PowerOCR.Settings;
-using PowerOCR.Utilities;
 
 namespace PowerOCR;
 
@@ -22,6 +19,7 @@ namespace PowerOCR;
 public partial class App : Application, IDisposable
 {
     private KeyboardMonitor? keyboardMonitor;
+    private EventMonitor? eventMonitor;
     private Mutex? _instanceMutex;
     private int _powerToysRunnerPid;
 
@@ -55,6 +53,8 @@ public partial class App : Application, IDisposable
                     Logger.LogInfo("PowerToys Runner exited. Exiting PowerOCR");
                     Environment.Exit(0);
                 });
+                var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
+                eventMonitor = new EventMonitor();
             }
             catch (Exception ex)
             {
@@ -65,11 +65,10 @@ public partial class App : Application, IDisposable
         {
             Logger.LogInfo($"PowerOCR started detached from PowerToys Runner.");
             _powerToysRunnerPid = -1;
+            var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
+            keyboardMonitor = new KeyboardMonitor(userSettings);
+            keyboardMonitor?.Start();
         }
-
-        var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
-        keyboardMonitor = new KeyboardMonitor(userSettings);
-        keyboardMonitor?.Start();
     }
 
     protected override void OnExit(ExitEventArgs e)

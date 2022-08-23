@@ -39,7 +39,6 @@ namespace CommonSharedConstants
     const wchar_t ALWAYS_ON_TOP_PIN_EVENT[] = L"Local\\AlwaysOnTopPinEvent-892e0aa2-cfa8-4cc4-b196-ddeb32314ce8";
 
     // Path to the event used by PowerOCR
-    const wchar_t POWEROCR_EXIT_EVENT[] = L"Local\\PowerOcrExitEvent-e74e426f-b5b6-46cc-9d90-5d7d6de93253";
     const wchar_t SHOW_POWEROCR_SHARED_EVENT[] = L"Local\\PowerOCREvent-dc864e06-e1af-4ecc-9078-f98bee745e3a";
 
     // Max DWORD for key code to disable keys.

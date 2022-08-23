@@ -195,12 +195,13 @@ public
             return gcnew String(CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT);
         }
 
+        static String ^ ShowPowerOCRSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_POWEROCR_SHARED_EVENT);
+        }
+
         static String ^ AwakeExitEvent() {
             return gcnew String(CommonSharedConstants::AWAKE_EXIT_EVENT);
         }
 
-        static String ^ PowerOCRExitEvent() {
-            return gcnew String(CommonSharedConstants::POWEROCR_EXIT_EVENT);
-        }
     };
 }
