@@ -75,8 +75,12 @@ public class KeyboardMonitor : IDisposable
             && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown
             )
         {
-            WindowUtilities.CloseAllOCROverlays();
-            e.Handled = true;
+            if (WindowUtilities.IsOCROverlayCreated())
+            {
+                WindowUtilities.CloseAllOCROverlays();
+                e.Handled = true; // Only consume the event if we did something, otherwise we would block the key for all other applications.
+            }
+
             return;
         }
 
