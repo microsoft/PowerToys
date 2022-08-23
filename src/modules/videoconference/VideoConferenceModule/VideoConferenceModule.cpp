@@ -549,6 +549,19 @@ void VideoConferenceModule::unmuteAll()
     }
 }
 
+void VideoConferenceModule::muteAll()
+{
+    if (!getVirtualCameraMuteState())
+    {
+        reverseVirtualCameraMuteState();
+    }
+
+    if (!getMicrophoneMuteState())
+    {
+        reverseMicrophoneMute();
+    }
+}
+
 void VideoConferenceModule::disable()
 {
     if (_enabled)

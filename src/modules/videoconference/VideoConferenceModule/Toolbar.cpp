@@ -129,6 +129,7 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         if (toolbar->audioConfChangesNotifier.PullPendingNotifications())
         {
             instance->onMicrophoneConfigurationChanged();
+
         }
         toolbar->microphoneMuted = instance->getMicrophoneMuteState();
 
@@ -160,10 +161,18 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         }
         else if (toolbar->ToolbarHide == L"When both camera and microphone are muted")
         {
+            if(!toolbar->previouscameraInUse && toolbar->cameraInUse && !toolbar->moduleSettingsUpdateScheduled)
+            {
+                VideoConferenceModule::muteAll();
+            }
             show = !(toolbar->microphoneMuted && (toolbar->cameraMuted || !toolbar->cameraInUse));
         }
         else if (toolbar->ToolbarHide == L"When both camera and microphone are unmuted")
         {
+            if(!toolbar->previouscameraInUse && toolbar->cameraInUse && !toolbar->moduleSettingsUpdateScheduled)
+            {
+                VideoConferenceModule::unmuteAll();
+            }
             show = toolbar->microphoneMuted || toolbar->cameraMuted;
         }
 
