@@ -1398,9 +1398,15 @@
         <File Id="Launcher_OneNote_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\OneNote\$(var.Language)\Microsoft.PowerToys.Run.Plugin.OneNote.resources.dll" />
       </Component>
       <Component
+          Id="MonacoPreviewHandler_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder"
+          Guid="$(var.CompGUIDPrefix)1A">
+        <File Id="MonacoPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.Language)\PowerToys.MonacoPreviewHandler.resources.dll" />
+      </Component>
+      <Component
           Id="Launcher_History_$(var.IdSafeLanguage)_Component"
           Directory="Resource$(var.IdSafeLanguage)HistoryPluginFolder"
-          Guid="$(var.CompGUIDPrefix)1A">
+          Guid="$(var.CompGUIDPrefix)1B">
         <File Id="Launcher_History_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\History\$(var.Language)\Microsoft.PowerToys.Run.Plugin.History.resources.dll" />
       </Component>	  
       <?undef IdSafeLanguage?>

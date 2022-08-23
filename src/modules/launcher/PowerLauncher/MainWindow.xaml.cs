@@ -584,7 +584,8 @@ namespace PowerLauncher
 
                 // because IF this is delayedExecution = false (run fast queries) we know this will be called again with delayedExecution = true
                 // if we don't do this, the second (partner) call will not be called _isTextSetProgrammatically = true also, and we need it to.
-                if (delayedExecution.HasValue && delayedExecution.Value)
+                // Also, if search query delay is disabled, second call won't come, so reset _isTextSetProgrammatically anyway
+                if ((delayedExecution.HasValue && delayedExecution.Value) || !_viewModel.GetSearchQueryResultsWithDelaySetting())
                 {
                     _isTextSetProgrammatically = false;
                 }

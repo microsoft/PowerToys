@@ -312,12 +312,13 @@ void AlwaysOnTop::RegisterLLKH()
 void AlwaysOnTop::SubscribeToEvents()
 {
     // subscribe to windows events
-    std::array<DWORD, 5> events_to_subscribe = {
+    std::array<DWORD, 6> events_to_subscribe = {
         EVENT_OBJECT_LOCATIONCHANGE,
         EVENT_SYSTEM_MINIMIZESTART,
         EVENT_SYSTEM_MINIMIZEEND,
         EVENT_SYSTEM_MOVESIZEEND,
-        EVENT_OBJECT_NAMECHANGE
+        EVENT_OBJECT_NAMECHANGE,
+        EVENT_OBJECT_DESTROY
     };
 
     for (const auto event : events_to_subscribe)
