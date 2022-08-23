@@ -86,6 +86,7 @@
                 "modules\\launcher\\Plugins\\Folder\\Microsoft.Plugin.Folder.dll",
                 "modules\\launcher\\Plugins\\Indexer\\Microsoft.Plugin.Indexer.dll",
                 "modules\\launcher\\Plugins\\OneNote\\Microsoft.PowerToys.Run.Plugin.OneNote.dll",
+                "modules\\launcher\\Plugins\\History\\Microsoft.PowerToys.Run.Plugin.History.dll",				
                 "modules\\launcher\\Plugins\\Program\\Microsoft.Plugin.Program.dll",
                 "modules\\launcher\\Plugins\\Registry\\Microsoft.PowerToys.Run.Plugin.Registry.dll",
                 "modules\\launcher\\Plugins\\WindowsSettings\\Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll",
