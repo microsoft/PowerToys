@@ -35,7 +35,7 @@ public partial class App : Application, IDisposable
         _instanceMutex = new Mutex(true, @"Local\PowerToys_PowerOCR_InstanceMutex", out bool createdNew);
         if (!createdNew)
         {
-            Logger.LogWarning("Another running PowerOCR instance was detected. Exiting Color Picker");
+            Logger.LogWarning("Another running PowerOCR instance was detected. Exiting PowerOCR");
             _instanceMutex = null;
             Environment.Exit(0);
             return;
@@ -45,9 +45,9 @@ public partial class App : Application, IDisposable
         {
             try
             {
+                _ = int.TryParse(e.Args[0], out _powerToysRunnerPid);
                 Logger.LogInfo($"PowerOCR started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
 
-                _ = int.TryParse(e.Args[0], out _powerToysRunnerPid);
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
                     Logger.LogInfo("PowerToys Runner exited. Exiting PowerOCR");
