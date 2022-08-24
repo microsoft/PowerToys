@@ -158,7 +158,7 @@ Inspired by Roolr.</value>
     <value>Capture screen continuously during measuring</value>
   </data>
   <data name="MeasureTool_ContinuousCapture.Description" xml:space="preserve">
-    <value>Refresh screen contexts in real-time instead of making a screenshot once. If enabled, tracing is slightly offset from the cursor position to not intersect with previosuly rendered cross lines.</value>
+    <value>Refresh screen contexts in real-time instead of making a screenshot once. If enabled, tracing is slightly offset from the cursor position to not intersect with previously rendered cross lines.</value>
   </data>
   <data name="MeasureTool_PerColorChannelEdgeDetection.Header" xml:space="preserve">
     <value>Per color channel edge detection</value>
