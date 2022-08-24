@@ -304,7 +304,7 @@ void cleanup_updates()
     if (std::filesystem::exists(update_dir))
     {
         // Msi and exe files
-        for (const auto& entry : std::filesystem::directory_iterator(updating::get_pending_updates_path()))
+        for (const auto& entry : std::filesystem::directory_iterator(update_dir))
         {
             auto entryPath = entry.path().wstring();
             std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
