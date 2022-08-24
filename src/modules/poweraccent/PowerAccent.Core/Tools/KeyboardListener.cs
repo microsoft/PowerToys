@@ -265,7 +265,6 @@ internal static class InterceptKeys
     private static uint lastVKCode;
     private static uint lastScanCode;
     private static byte[] lastKeyState = new byte[255];
-    private static bool lastIsDead;
 
     /// <summary>
     /// Convert VKCode to Unicode.
@@ -281,7 +280,6 @@ internal static class InterceptKeys
 
         byte[] bKeyState = new byte[255];
         bool bKeyStateStatus;
-        bool isDead = false;
 
         // Gets the current windows window handle, threadID, processID
         IntPtr currentHWnd = GetForegroundWindow();
@@ -325,18 +323,15 @@ internal static class InterceptKeys
         }
 
         // Converts the VKCode to unicode
-        int relevantKeyCountInBuffer = ToUnicodeEx(vKCode, lScanCode, bKeyState, sbString, sbString.Capacity, 0, hKL);
+        const uint wFlags = 1 << 2; // If bit 2 is set, keyboard state is not changed (Windows 10, version 1607 and newer)
+        int relevantKeyCountInBuffer = ToUnicodeEx(vKCode, lScanCode, bKeyState, sbString, sbString.Capacity, wFlags, hKL);
 
         string ret = string.Empty;
 
         switch (relevantKeyCountInBuffer)
         {
-            // Dead keys (^,`...)
+            // dead key
             case -1:
-                isDead = true;
-
-                // We must clear the buffer because ToUnicodeEx messed it up, see below.
-                ClearKeyboardBuffer(vKCode, lScanCode, hKL);
                 break;
 
             case 0:
@@ -354,39 +349,11 @@ internal static class InterceptKeys
                 break;
         }
 
-        // We inject the last dead key back, since ToUnicodeEx removed it.
-        // More about this peculiar behavior see e.g:
-        //   http://www.experts-exchange.com/Programming/System/Windows__Programming/Q_23453780.html
-        //   http://blogs.msdn.com/michkap/archive/2005/01/19/355870.aspx
-        //   http://blogs.msdn.com/michkap/archive/2007/10/27/5717859.aspx
-        if (lastVKCode != 0 && lastIsDead)
-        {
-            System.Text.StringBuilder sbTemp = new System.Text.StringBuilder(5);
-            _ = ToUnicodeEx(lastVKCode, lastScanCode, lastKeyState, sbTemp, sbTemp.Capacity, 0, hKL);
-            lastVKCode = 0;
-
-            return ret;
-        }
-
         // Save these
         lastScanCode = lScanCode;
         lastVKCode = vKCode;
-        lastIsDead = isDead;
         lastKeyState = (byte[])bKeyState.Clone();
 
         return ret;
-    }
-
-    private static void ClearKeyboardBuffer(uint vk, uint sc, IntPtr hkl)
-    {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder(10);
-
-        int rc;
-        do
-        {
-            byte[] lpKeyStateNull = new byte[255];
-            rc = ToUnicodeEx(vk, sc, lpKeyStateNull, sb, sb.Capacity, 0, hkl);
-        }
-        while (rc < 0);
     }
 }
