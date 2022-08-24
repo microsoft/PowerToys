@@ -222,6 +222,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                new object[] { "sign(2)", +1M },
                new object[] { "abs(-2)", 2M },
                new object[] { "abs(2)", 2M },
+               new object[] { "0+(8*9)/(0+7)", decimal.Parse("10.2857142857143", NumberStyles.Number, new CultureInfo("en-US")) }, // Validate that division by "(0+7)" is not interpret as division by zero.
            };
 
         [DataTestMethod]
@@ -232,8 +233,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
-            // Using InvariantCulture since this is internal
-            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
+            // Using en-us culture to have a fixed number style
+            var result = engine.Interpret(input, new CultureInfo("en-us"), out _);
 
             // Assert
             Assert.IsNotNull(result);
