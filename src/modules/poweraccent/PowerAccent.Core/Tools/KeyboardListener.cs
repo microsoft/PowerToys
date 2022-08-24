@@ -311,10 +311,10 @@ internal static class InterceptKeys
         }
 
         // Gets the layout of keyboard
-        IntPtr hKL = GetKeyboardLayout(currentWindowThreadID);
+        IntPtr hkl = GetKeyboardLayout(currentWindowThreadID);
 
         // Maps the virtual keycode
-        uint lScanCode = MapVirtualKeyEx(vKCode, 0, hKL);
+        uint lScanCode = MapVirtualKeyEx(vKCode, 0, hkl);
 
         // Keyboard state goes inconsistent if this is not in place. In other words, we need to call above commands in UP events also.
         if (!isKeyDown)
@@ -324,7 +324,7 @@ internal static class InterceptKeys
 
         // Converts the VKCode to unicode
         const uint wFlags = 1 << 2; // If bit 2 is set, keyboard state is not changed (Windows 10, version 1607 and newer)
-        int relevantKeyCountInBuffer = ToUnicodeEx(vKCode, lScanCode, bKeyState, sbString, sbString.Capacity, wFlags, hKL);
+        int relevantKeyCountInBuffer = ToUnicodeEx(vKCode, lScanCode, bKeyState, sbString, sbString.Capacity, wFlags, hkl);
 
         string ret = string.Empty;
 

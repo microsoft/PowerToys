@@ -732,7 +732,6 @@ HKCR
 HKCU
 hkey
 hkl
-HKL
 HKLM
 HKPD
 HKU
@@ -1281,7 +1280,6 @@ msclr
 mscoree
 mscorlib
 msdata
-msdn
 MSDN
 msedge
 MSGFLT
