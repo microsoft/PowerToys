@@ -174,6 +174,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("abcde", false)]
         [DataRow("1 + 2 +", false)]
         [DataRow("1+2*", false)]
+        [DataRow("1+2/", false)]
+        [DataRow("1+2%", false)]
         [DataRow("1 && 3 &&", false)]
         [DataRow("sqrt( 36)", true)]
         [DataRow("max 4", false)]
