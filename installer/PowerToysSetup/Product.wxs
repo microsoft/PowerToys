@@ -70,6 +70,8 @@
 
   <?define ShellComponentFiles=plugin.json;Microsoft.Plugin.Shell.deps.json;Microsoft.Plugin.Shell.dll;PowerToys.ManagedTelemetry.dll?>
 
+  <?define HistoryPluginComponentFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.History.deps.json;Microsoft.PowerToys.Run.Plugin.History.dll?>
+
   <?define ShellImagesComponentFiles=shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
 
   <?define IndexerComponentFiles=Microsoft.Plugin.Indexer.deps.json;Microsoft.Plugin.Indexer.dll;plugin.json;PowerToys.ManagedTelemetry.dll;Ijwhost.dll?>
@@ -487,6 +489,10 @@
                   <Directory Id="UriImagesFolder" Name="Images" />
                   <Directory Id="UriLanguagesFolder" Name="Languages" />
                 </Directory>
+                <Directory Id="HistoryPluginFolder" Name="History">
+                  <Directory Id="HistoryImagesFolder" Name="Images" />
+                  <Directory Id="HistoryLanguagesFolder" Name="Languages" />
+                </Directory>								
                 <Directory Id="UnitConverterPluginFolder" Name="UnitConverter">
                   <Directory Id="UnitConverterImagesFolder" Name="Images" />
                   <Directory Id="UnitConverterLanguagesFolder" Name="Languages" />
@@ -1105,7 +1111,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
+    <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;TimeZonePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder?>
     <DirectoryRef Id="$(var.ParentDirectory)">
       <!-- Resource file directories -->
       <?foreach Language in $(var.LocLanguageList)?>
@@ -1397,6 +1403,12 @@
           Guid="$(var.CompGUIDPrefix)1A">
         <File Id="MonacoPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\FileExplorerPreview\$(var.Language)\PowerToys.MonacoPreviewHandler.resources.dll" />
       </Component>
+      <Component
+          Id="Launcher_History_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)HistoryPluginFolder"
+          Guid="$(var.CompGUIDPrefix)1B">
+        <File Id="Launcher_History_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)modules\launcher\Plugins\History\$(var.Language)\Microsoft.PowerToys.Run.Plugin.History.resources.dll" />
+      </Component>	  
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>
@@ -1836,6 +1848,19 @@
         <File Id="WebSearchDark" Source="$(var.BinDir)modules\launcher\Plugins\WebSearch\Images\WebSearch.dark.png" />
       </Component>
 
+      <!-- History Plugin -->
+      <?foreach File in $(var.HistoryPluginComponentFiles)?>
+      <Component Id="HistoryComponent_$(var.File)" Win64="yes" Directory="HistoryPluginFolder">
+        <File Id="HistoryComponentFile_$(var.File)" Source="$(var.BinDir)modules\launcher\Plugins\History\$(var.File)" />
+      </Component>
+      <?endforeach?>
+      <Component Id="HistoryImagesComponentLight" Directory="HistoryImagesFolder" >
+        <File Id="HistoryLightIcon" Source="$(var.BinDir)modules\launcher\Plugins\History\Images\history.light.png" />
+      </Component>
+      <Component Id="HistoryImagesComponentDark" Directory="HistoryImagesFolder" >
+        <File Id="HistoryDarkIcon" Source="$(var.BinDir)modules\launcher\Plugins\History\Images\history.dark.png" />
+      </Component>
+	  
       <!-- Uri Plugin -->
       <?foreach File in $(var.UriComponentFiles)?>
       <Component Id="UriComponent_$(var.File)" Win64="yes" Directory="UriPluginFolder">

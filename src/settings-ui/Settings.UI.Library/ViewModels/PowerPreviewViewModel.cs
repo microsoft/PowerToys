@@ -57,6 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _pdfThumbnailIsEnabled = Settings.Properties.EnablePdfThumbnail;
             _gcodeThumbnailIsEnabled = Settings.Properties.EnableGcodeThumbnail;
             _stlThumbnailIsEnabled = Settings.Properties.EnableStlThumbnail;
+            _stlThumbnailColor = Settings.Properties.StlThumbnailColor.Value;
         }
 
         private bool _svgRenderIsEnabled;
@@ -70,6 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _pdfThumbnailIsEnabled;
         private bool _gcodeThumbnailIsEnabled;
         private bool _stlThumbnailIsEnabled;
+        private string _stlThumbnailColor;
 
         public bool SVGRenderIsEnabled
         {
@@ -264,6 +266,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _stlThumbnailIsEnabled = value;
                     Settings.Properties.EnableStlThumbnail = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public string STLThumbnailColor
+        {
+            get
+            {
+                return _stlThumbnailColor;
+            }
+
+            set
+            {
+                if (value != _stlThumbnailColor)
+                {
+                    _stlThumbnailColor = value;
+                    Settings.Properties.StlThumbnailColor.Value = value;
                     RaisePropertyChanged();
                 }
             }
