@@ -222,7 +222,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                new object[] { "sign(2)", +1M },
                new object[] { "abs(-2)", 2M },
                new object[] { "abs(2)", 2M },
-               new object[] { "0+(8*9)/(0+7)", decimal.Parse("10.2857142857143", NumberStyles.Number, new CultureInfo("en-US")) }, // Validate that division by "(0+7)" is not interpret as division by zero.
+               new object[] { "0+(1*2)/(0+1)", 2M }, // Validate that division by "(0+1)" is not interpret as division by zero.
            };
 
         [DataTestMethod]
