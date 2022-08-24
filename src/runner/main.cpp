@@ -301,19 +301,23 @@ void cleanup_updates()
         return;
     }
 
-    // Msi and exe files
-    for (const auto& entry : std::filesystem::directory_iterator(updating::get_pending_updates_path()))
+    auto update_dir = updating::get_pending_updates_path();
+    if (std::filesystem::exists(update_dir))
     {
-        auto entryPath = entry.path().wstring();
-        std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
-
-        if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
+        // Msi and exe files
+        for (const auto& entry : std::filesystem::directory_iterator(update_dir))
         {
-            std::error_code err;
-            std::filesystem::remove(entry, err);
-            if (err.value())
+            auto entryPath = entry.path().wstring();
+            std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+
+            if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
             {
-                Logger::warn("Failed to delete installer file {}. {}", entry.path().string(), err.message());
+                std::error_code err;
+                std::filesystem::remove(entry, err);
+                if (err.value())
+                {
+                    Logger::warn("Failed to delete installer file {}. {}", entry.path().string(), err.message());
+                }
             }
         }
     }
@@ -321,17 +325,20 @@ void cleanup_updates()
     // Log files
     auto rootPath{ PTSettingsHelper::get_root_save_folder_location() };
     auto currentVersion = left_trim<wchar_t>(get_product_version(), L"v");
-    for (const auto& entry : std::filesystem::directory_iterator(rootPath))
+    if (std::filesystem::exists(rootPath))
     {
-        auto entryPath = entry.path().wstring();
-        std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
-        if (entry.is_regular_file() && entryPath.ends_with(L".log") && entryPath.find(currentVersion) == std::string::npos)
+        for (const auto& entry : std::filesystem::directory_iterator(rootPath))
         {
-            std::error_code err;
-            std::filesystem::remove(entry, err);
-            if (err.value())
+            auto entryPath = entry.path().wstring();
+            std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+            if (entry.is_regular_file() && entryPath.ends_with(L".log") && entryPath.find(currentVersion) == std::string::npos)
             {
-                Logger::warn("Failed to delete log file {}. {}", entry.path().string(), err.message());
+                std::error_code err;
+                std::filesystem::remove(entry, err);
+                if (err.value())
+                {
+                    Logger::warn("Failed to delete log file {}. {}", entry.path().string(), err.message());
+                }
             }
         }
     }

@@ -14,13 +14,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         public string UnitName { get; }
 
-        public QuantityType QuantityType { get; }
+        public QuantityInfo QuantityInfo { get; }
 
-        public UnitConversionResult(double convertedValue, string unitName, QuantityType quantityType)
+        public UnitConversionResult(double convertedValue, string unitName, QuantityInfo quantityInfo)
         {
             ConvertedValue = convertedValue;
             UnitName = unitName;
-            QuantityType = quantityType;
+            QuantityInfo = quantityInfo;
         }
 
         public string ToString(System.IFormatProvider provider = null)

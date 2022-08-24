@@ -851,6 +851,7 @@ IFilter
 ifndef
 IFolder
 IFormat
+IFormatter
 ifstream
 IGraph
 IGraphics

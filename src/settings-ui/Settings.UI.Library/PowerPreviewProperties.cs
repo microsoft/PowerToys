@@ -99,6 +99,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool monacoPreviewTryFormat;
+
+        [JsonPropertyName("monaco-previewer-toggle-try-format")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool MonacoPreviewTryFormat
+        {
+            get => monacoPreviewTryFormat;
+            set
+            {
+                if (value != monacoPreviewTryFormat)
+                {
+                    LogTelemetryEvent(value);
+                    monacoPreviewTryFormat = value;
+                }
+            }
+        }
+
         private bool enablePdfPreview;
 
         [JsonPropertyName("pdf-previewer-toggle-setting")]

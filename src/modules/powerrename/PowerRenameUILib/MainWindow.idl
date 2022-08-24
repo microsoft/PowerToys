@@ -16,9 +16,5 @@ namespace PowerRenameUI
 
         String OriginalCount;
         String RenamedCount;
-
-        void AddExplorerItem(Int32 id, String original, String renamed, Int32 type, UInt32 depth, Boolean checked);
-        void UpdateExplorerItem(Int32 id, String newName);
-        void UpdateRenamedExplorerItem(Int32 id, String newOriginalName);
     }
 }
