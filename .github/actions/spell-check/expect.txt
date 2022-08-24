@@ -1667,7 +1667,7 @@ rects
 recyclebin
 redirectedfrom
 Redist
-Redistributable
+redistributable
 reencode
 reencoded
 refactor
@@ -1912,6 +1912,7 @@ srme
 srre
 srw
 srwlock
+sse
 ssf
 ssh
 sstream
@@ -2029,6 +2030,7 @@ taskkill
 tasklist
 taskschd
 tchar
+Tcollab
 tcscpy
 TCustom
 tdbuild

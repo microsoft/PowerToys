@@ -1518,7 +1518,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>to bring up the Screen Ruler command bar.</value>
   </data>
   <data name="Oobe_MeasureTool_HowToLaunch.Text" xml:space="preserve">
-    <value>The Bounds mode lets you select a specific area to measure while the various Spacing modes allows tracing similar pixels along horizontal and vertical axes.</value>
+    <value>The Bounds mode lets you select a specific area to measure. You can also shift-drag an area to persist in on screen. The various Spacing modes allows tracing similar pixels along horizontal and vertical axes with a customizable pixel tolerance threshold (use settings or mouse wheel to adjust it).</value>
   </data>
 	<data name="Oobe_MeasureTool.Title" xml:space="preserve">
     <value>Screen Ruler</value>
