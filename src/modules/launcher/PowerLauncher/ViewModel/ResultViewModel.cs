@@ -151,11 +151,10 @@ namespace PowerLauncher.ViewModel
                     {
                         bool hideWindow =
                             r.Action != null &&
-                            r.Action(
-                                new ActionContext
-                                {
-                                    SpecialKeyState = KeyboardHelper.CheckModifiers(),
-                                });
+                            r.Action(new ActionContext
+                            {
+                                SpecialKeyState = KeyboardHelper.CheckModifiers(),
+                            });
 
                         if (hideWindow)
                         {

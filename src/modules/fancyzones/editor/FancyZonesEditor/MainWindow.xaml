@@ -11,7 +11,8 @@
         xmlns:props="clr-namespace:FancyZonesEditor.Properties"
         xmlns:local1="clr-namespace:FancyZonesEditor.ViewModels"
         xmlns:controls="clr-namespace:ModernWpf.Controls;assembly=ModernWpf"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib" 
+        xmlns:fancyZonesControls="clr-namespace:FancyZonesEditor.Controls"
         mc:Ignorable="d"
         Title="{x:Static props:Resources.Fancy_Zones_Editor_App_Title}"
         ui:WindowHelper.UseModernWindowStyle="True"
@@ -174,6 +175,8 @@
                 </Button>
             </Grid>
         </DataTemplate>
+
+        <Style TargetType="{x:Type fancyZonesControls:CustomSlider}" BasedOn="{StaticResource {x:Type Slider}}"></Style>
     </Window.Resources>
 
     <Grid>
@@ -599,21 +602,32 @@
                                        VerticalAlignment="Center"
                                        FontSize="16"
                                        ToolTip="{x:Static props:Resources.Distance_adjacent_zones}"
-                                        AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
                                        Text="&#xE78A;" />
 
-                            <ui:NumberBox Text="{Binding SensitivityRadius}"
-                                          Width="216"
-                                          Minimum="0"
-                                          Maximum="1000"
-                                          KeyDown="EditDialogNumberBox_KeyDown"
-                                          Margin="12,0,0,0"
-                                          Loaded="NumberBox_Loaded"
-                                          AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
-                                          AutomationProperties.LabeledBy="{Binding ElementName=distanceTitle}"
-                                          SpinButtonPlacementMode="Compact"
-                                          HorizontalAlignment="Left" />
-                            <TextBlock Text="{x:Static props:Resources.Pixels}"
+                            <fancyZonesControls:CustomSlider x:Name="SensitivityInput"
+                                Value="{Binding SensitivityRadius}"
+                                Minimum="{Binding SensitivityRadiusMinimum}"
+                                Maximum="{Binding SensitivityRadiusMaximum}"
+                                IsMoveToPointEnabled="True"
+                                AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
+                                AutomationProperties.HelpText="{Binding SensitivityRadius}"
+                                ToolTip="{Binding SensitivityRadius}"
+                                ValueChanged="SensitivityInput_ValueChanged"
+                                MinWidth="216"
+                                Margin="12,0,0,0"
+                                HorizontalAlignment="Left"
+                                SmallChange="1" 
+                                LargeChange="10"
+                                DockPanel.Dock="Top"/>
+
+                                <TextBlock
+                                    Text="{Binding SensitivityRadius}"
+                                    Margin="6,8,0,0"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                    TextWrapping="Wrap" />
+
+                                <TextBlock Text="{x:Static props:Resources.Pixels}"
                                        Margin="6,-4,0,0"
                                        FontSize="12"
                                        Foreground="{DynamicResource SecondaryForegroundBrush}"

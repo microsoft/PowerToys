@@ -38,6 +38,12 @@ namespace Wox
             };
         }
 
+        public void RemoveUserSelectedItem(Result result)
+        {
+            _mainVM.RemoveUserSelectedRecord(result);
+            _mainVM.ChangeQueryText(_mainVM.QueryText, true);
+        }
+
         public void ChangeQuery(string query, bool requery = false)
         {
             _mainVM.ChangeQueryText(query, requery);

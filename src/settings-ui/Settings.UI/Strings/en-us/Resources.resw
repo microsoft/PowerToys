@@ -684,6 +684,9 @@
     <value>.stl</value>
     <comment>File extension, should not be altered</comment>
   </data>
+  <data name="FileExplorerPreview_Color_Thumbnail_STL.Header" xml:space="preserve">
+    <value>Color</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
     <comment>File type, do not translate</comment>
@@ -1266,9 +1269,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Run_AllPluginsDisabled.Message" xml:space="preserve">
     <value>Enable at least one plugin to get started</value>
-  </data>
-  <data name="Run_NotAllowedActionKeyword.Title" xml:space="preserve">
-    <value>This activation command is already in use by another plugin.</value>
   </data>
   <data name="Run_PluginUseDescription.Header" xml:space="preserve">
     <value>Plugins</value>
@@ -2196,5 +2196,11 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_PowerOCR.Description" xml:space="preserve">
     <value>PowerOCR works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard.</value>
+  </data>
+  <data name="Run_ConflictingKeywordInfo.Title" xml:space="preserve">
+    <value>Some characters and phrases may conflict with global queries of other plugins if you use them as activation command.</value>
+  </data>
+  <data name="Run_ConflictingKeywordInfo_Link.Content" xml:space="preserve">
+    <value>Learn more about conflicting activation commands</value>
   </data>
 </root>
