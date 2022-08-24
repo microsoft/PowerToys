@@ -154,8 +154,8 @@
                         </muxc:InfoBar.Content>
                         <muxc:InfoBar.ActionButton>
                             <HyperlinkButton x:Uid="SeeWhatsNew"
-                                                 NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
-                                                 HorizontalAlignment="Right"
+                                             NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
+                                             HorizontalAlignment="Right"
                                              Style="{StaticResource TextButtonStyle}"/>
                         </muxc:InfoBar.ActionButton>
                     </muxc:InfoBar>
