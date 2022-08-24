@@ -12,6 +12,7 @@
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/os-detect.h>
+#include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 
 #include <filesystem>
@@ -57,7 +58,7 @@ private:
         Logger::trace(L"Launching PowerToys PowerAccent process");
         unsigned long powertoys_pid = GetCurrentProcessId();
 
-        std::wstring executable_args = L"--pid " + std::to_wstring(powertoys_pid);
+        std::wstring executable_args = L"" + std::to_wstring(powertoys_pid);
         std::wstring application_path = L"modules\\PowerAccent\\PowerToys.PowerAccent.exe";
         std::wstring full_command_path = application_path + L" " + executable_args.data();
         Logger::trace(L"PowerToys PowerAccent launching: " + full_command_path);
@@ -78,9 +79,7 @@ public:
     {
         app_name = MODULE_NAME;
         app_key = PowerAccentConstants::ModuleKey;
-        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
-        logFilePath.append(LogSettings::powerAccentLogPath);
-        Logger::init(LogSettings::launcherLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", "PowerAccent");
         Logger::info("Launcher object is constructing");
     };
 

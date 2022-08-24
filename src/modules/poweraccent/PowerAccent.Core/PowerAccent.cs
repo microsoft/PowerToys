@@ -132,7 +132,7 @@ public class PowerAccent : IDisposable
             {
                 if (_stopWatch.ElapsedMilliseconds < _settingService.InputTime)
                 {
-                    Debug.WriteLine("Insert before inputTime - " + _stopWatch.ElapsedMilliseconds);
+                    /* Debug.WriteLine("Insert before inputTime - " + _stopWatch.ElapsedMilliseconds); */
 
                     // WindowsFunctions.Insert('e');
                     WindowsFunctions.Insert(' ');
@@ -142,7 +142,7 @@ public class PowerAccent : IDisposable
                     return false;
                 }
 
-                Debug.WriteLine("Insert after inputTime - " + _stopWatch.ElapsedMilliseconds);
+                /* Debug.WriteLine("Insert after inputTime - " + _stopWatch.ElapsedMilliseconds); */
                 OnChangeDisplay?.Invoke(false, null);
                 if (_selectedIndex != -1)
                 {
@@ -163,7 +163,7 @@ public class PowerAccent : IDisposable
         Rect screen = new Rect(activeDisplay.Location, activeDisplay.Size) / activeDisplay.Dpi;
         Position position = _settingService.Position;
 
-        Debug.WriteLine("Dpi: " + activeDisplay.Dpi);
+        /* Debug.WriteLine("Dpi: " + activeDisplay.Dpi); */
 
         return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
     }
