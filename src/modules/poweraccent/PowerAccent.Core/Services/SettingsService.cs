@@ -143,15 +143,17 @@ public class SettingsService
         switch (letter)
         {
             case LetterKey.A:
-                return new char[] { 'à', 'â', 'á', 'ä', 'ã' };
+                return new char[] { 'à', 'â', 'á', 'ä', 'ã', 'å' };
             case LetterKey.C:
                 return new char[] { 'ç' };
             case LetterKey.E:
                 return new char[] { 'é', 'è', 'ê', 'ë', '€' };
             case LetterKey.I:
                 return new char[] { 'î', 'ï', 'í', 'ì' };
+            case LetterKey.N:
+                return new char[] { 'ñ' };
             case LetterKey.O:
-                return new char[] { 'ô', 'ö', 'ó', 'ò', 'õ' };
+                return new char[] { 'ô', 'ö', 'ó', 'ò', 'õ', 'ø' };
             case LetterKey.U:
                 return new char[] { 'û', 'ù', 'ü', 'ú' };
             case LetterKey.Y:
