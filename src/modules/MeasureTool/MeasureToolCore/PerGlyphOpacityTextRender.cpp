@@ -74,7 +74,11 @@ HRESULT __stdcall PerGlyphOpacityTextRender::DrawGlyphRun(void* /*clientDrawingC
 
     float prevOpacity = _baseBrush->GetOpacity();
     OpacityEffect* opacityEffect = nullptr;
-    hr = clientDrawingEffect->QueryInterface(__uuidof(IDrawingEffect), reinterpret_cast<void**>(&opacityEffect));
+    if (SUCCEEDED(hr))
+    {
+        hr = clientDrawingEffect->QueryInterface(__uuidof(IDrawingEffect), reinterpret_cast<void**>(&opacityEffect));
+    }
+
     if (SUCCEEDED(hr))
     {
         _baseBrush->SetOpacity(opacityEffect->alpha);

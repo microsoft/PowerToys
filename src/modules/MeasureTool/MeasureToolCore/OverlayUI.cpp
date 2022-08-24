@@ -83,7 +83,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     return window;
 }
 
-std::vector<D2D1::ColorF> AppendCommonOverlayUIColors(const D2D1::ColorF lineColor)
+std::vector<D2D1::ColorF> AppendCommonOverlayUIColors(const D2D1::ColorF& lineColor)
 {
     D2D1::ColorF foreground = D2D1::ColorF::Black;
     D2D1::ColorF background = D2D1::ColorF(0.96f, 0.96f, 0.96f, 1.0f);

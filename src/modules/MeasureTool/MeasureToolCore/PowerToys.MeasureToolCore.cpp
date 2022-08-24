@@ -103,10 +103,10 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             auto overlayUI = OverlayUIState::Create(_measureToolState, _commonState, monitorInfo);
             if (!overlayUI)
                 continue;
-            _screenCaptureThreads.push_back(StartCapturingThread(_commonState,
-                                                                 _measureToolState,
-                                                                 overlayUI->overlayWindowHandle(),
-                                                                 monitorInfo));
+            _screenCaptureThreads.emplace_back(StartCapturingThread(_commonState,
+                                                                    _measureToolState,
+                                                                    overlayUI->overlayWindowHandle(),
+                                                                    monitorInfo));
             _overlayUIStates.push_back(std::move(overlayUI));
         }
         Trace::MeasureToolActivated();
