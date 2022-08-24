@@ -4,6 +4,16 @@
 //
 #define IDS_POWERACCENT_NAME            101
 
+//////////////////////////////
+// Non-localizable
+
+#define FILE_DESCRIPTION "PowerToys PowerAccent Module"
+#define INTERNAL_NAME "PowerToys.PowerAccentModuleInterface"
+#define ORIGINAL_FILENAME "PowerToys.PowerAccentModuleInterface.dll"
+
+// Non-localizable
+//////////////////////////////
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
