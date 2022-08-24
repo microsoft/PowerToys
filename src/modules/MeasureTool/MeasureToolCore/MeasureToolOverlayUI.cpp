@@ -74,7 +74,7 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
     case WM_MOUSEWHEEL:
         if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
         {
-            const int8_t step = static_cast<short>(HIWORD(wparam)) < 0 ? -15 : 15;
+            const int8_t step = static_cast<short>(HIWORD(wparam)) < 0 ? -consts::MOUSE_WHEEL_TOLERANCE_STEP : consts::MOUSE_WHEEL_TOLERANCE_STEP;
             state->Access([step](MeasureToolState& s) {
                 int wideVal = s.pixelTolerance;
                 wideVal += step;

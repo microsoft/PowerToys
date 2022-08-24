@@ -5,7 +5,7 @@
 
 struct Settings
 {
-    uint8_t pixelTolerance = 5;
+    uint8_t pixelTolerance = 30;
     bool continuousCapture = false;
     bool drawFeetOnCross = true;
     bool perColorChannelEdgeDetection = false;

@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public MeasureToolProperties()
         {
             ActivationShortcut = new HotkeySettings(true, false, false, true, 0x4D);
-            PixelTolerance = new IntProperty(5);
+            PixelTolerance = new IntProperty(30);
             ContinuousCapture = false;
             DrawFeetOnCross = true;
             PerColorChannelEdgeDetection = false;

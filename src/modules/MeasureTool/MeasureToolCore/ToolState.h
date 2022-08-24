@@ -47,7 +47,7 @@ struct MeasureToolState
         Vertical,
         Cross
     };
-    uint8_t pixelTolerance = 5;
+    uint8_t pixelTolerance = 30;
     bool continuousCapture = false;
     bool drawFeetOnCross = true;
     RECT measuredEdges = {};
