@@ -422,21 +422,21 @@
     <value>Wait for more input before searching. This reduces interface jumpiness and system load.</value>
   </data>
   <data name="PowerLauncher_FastSearchInputDelayMs.Header" xml:space="preserve">
-    <value>Immediate plugins</value>    
+    <value>Immediate plugins</value>
   </data>
-	<data name="PowerLauncher_FastSearchInputDelayMs.Description" xml:space="preserve">
-    <value>Affects the plugins that make the UI wait for their results by this amount. Recommended: 30-50 ms.</value>    
+  <data name="PowerLauncher_FastSearchInputDelayMs.Description" xml:space="preserve">
+    <value>Affects the plugins that make the UI wait for their results by this amount. Recommended: 30-50 ms.</value>
   </data>
-	<data name="PowerLauncher_SlowSearchInputDelayMs.Header" xml:space="preserve">
-    <value>Background execution plugins</value>    
+  <data name="PowerLauncher_SlowSearchInputDelayMs.Header" xml:space="preserve">
+    <value>Background execution plugins</value>
   </data>
-	<data name="PowerLauncher_SlowSearchInputDelayMs.Description" xml:space="preserve">
-    <value>Affects the plugins that execute in the background by this amount. Recommended: 100-150 ms.</value>    
+  <data name="PowerLauncher_SlowSearchInputDelayMs.Description" xml:space="preserve">
+    <value>Affects the plugins that execute in the background by this amount. Recommended: 100-150 ms.</value>
   </data>
-	<data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
+  <data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
     <value>Fast plugin throttle (ms)</value>
     <comment>ms = milliseconds</comment>
-  </data>	
+  </data>
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
@@ -680,6 +680,9 @@
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Description" xml:space="preserve">
     <value>.stl</value>
     <comment>File extension, should not be altered</comment>
+  </data>
+  <data name="FileExplorerPreview_Color_Thumbnail_STL.Header" xml:space="preserve">
+    <value>Color</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
@@ -1263,9 +1266,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Run_AllPluginsDisabled.Message" xml:space="preserve">
     <value>Enable at least one plugin to get started</value>
-  </data>
-  <data name="Run_NotAllowedActionKeyword.Title" xml:space="preserve">
-    <value>This activation command is forbidden or reserved for the use in other plugins.</value>
   </data>
   <data name="Run_PluginUseDescription.Header" xml:space="preserve">
     <value>Plugins</value>
@@ -2160,5 +2160,17 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
     <value>Enable round corners</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format.Description" xml:space="preserve">
+    <value>Applies to json and xml. Files remain unchanged.</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format.Header" xml:space="preserve">
+    <value>Try to format the source for preview</value>
+  </data>
+  <data name="Run_ConflictingKeywordInfo.Title" xml:space="preserve">
+    <value>Some characters and phrases may conflict with global queries of other plugins if you use them as activation command.</value>
+  </data>
+  <data name="Run_ConflictingKeywordInfo_Link.Content" xml:space="preserve">
+    <value>Learn more about conflicting activation commands</value>
   </data>
 </root>

@@ -415,6 +415,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageResizerContextMenu", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageResizerLib", "src\modules\imageresizer\ImageResizerLib\ImageResizerLib.vcxproj", "{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.History", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.History\Microsoft.PowerToys.Run.Plugin.History.csproj", "{212AD910-8488-4036-BE20-326931B75FB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -1632,6 +1634,18 @@ Global
 		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|x64.Build.0 = Release|x64
 		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|x86.ActiveCfg = Release|x64
 		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853}.Release|x86.Build.0 = Release|x64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Debug|ARM64.Build.0 = Debug|ARM64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Debug|x64.ActiveCfg = Debug|x64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Debug|x64.Build.0 = Debug|x64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Debug|x86.ActiveCfg = Debug|x64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Debug|x86.Build.0 = Debug|x64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Release|ARM64.ActiveCfg = Release|ARM64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Release|ARM64.Build.0 = Release|ARM64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Release|x64.ActiveCfg = Release|x64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Release|x64.Build.0 = Release|x64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Release|x86.ActiveCfg = Release|x64
+		{212AD910-8488-4036-BE20-326931B75FB2}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1770,6 +1784,7 @@ Global
 		{5A1DB2F0-0715-4B3B-98E6-79BC41540045} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{93B72A06-C8BD-484F-A6F7-C9F280B150BF} = {6C7F47CC-2151-44A3-A546-41C70025132C}
 		{18B3DB45-4FFE-4D01-97D6-5223FEEE1853} = {6C7F47CC-2151-44A3-A546-41C70025132C}
+		{212AD910-8488-4036-BE20-326931B75FB2} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

@@ -65,7 +65,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 Title = result.ToString(),
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.copy_to_clipboard, result.QuantityType),
+                SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.copy_to_clipboard, result.QuantityInfo.Name),
                 Action = c =>
                 {
                     var ret = false;

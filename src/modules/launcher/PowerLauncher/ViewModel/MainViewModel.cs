@@ -82,6 +82,11 @@ namespace PowerLauncher.ViewModel
             RegisterResultsUpdatedEvent();
         }
 
+        public void RemoveUserSelectedRecord(Result result)
+        {
+            _userSelectedRecord.Remove(result);
+        }
+
         public void RegisterHotkey(IntPtr hwnd)
         {
             Log.Info("RegisterHotkey()", GetType());
@@ -566,6 +571,7 @@ namespace PowerLauncher.ViewModel
                                     {
                                         var plugin = pluginQueryItem.Key;
                                         var query = pluginQueryItem.Value;
+                                        query.SelectedItems = _userSelectedRecord.GetGenericHistory();
                                         var results = PluginManager.QueryForPlugin(plugin, query);
                                         resultPluginPair[plugin.Metadata] = results;
                                         currentCancellationToken.ThrowIfCancellationRequested();
@@ -586,6 +592,7 @@ namespace PowerLauncher.ViewModel
                                 {
                                     var plugin = pluginQueryItem.Key;
                                     var query = pluginQueryItem.Value;
+                                    query.SelectedItems = _userSelectedRecord.GetGenericHistory();
                                     var results = PluginManager.QueryForPlugin(plugin, query);
                                     resultPluginPair[plugin.Metadata] = results;
                                     currentCancellationToken.ThrowIfCancellationRequested();
