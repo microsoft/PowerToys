@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
 
@@ -43,7 +44,9 @@ public class PowerAccent : IDisposable
             if (Enum.IsDefined(typeof(TriggerKey), (int)args.Key))
             {
                 triggerPressed = (TriggerKey)args.Key;
-                if (triggerPressed == TriggerKey.Space && !_settingService.IsSpaceBarActive)
+
+                if ((triggerPressed == TriggerKey.Space && _settingService.ActivationKey == PowerAccentActivationKey.LeftRightArrow) ||
+                    ((triggerPressed == TriggerKey.Left || triggerPressed == TriggerKey.Right) && _settingService.ActivationKey == PowerAccentActivationKey.Space))
                 {
                     triggerPressed = null;
                 }
@@ -162,30 +165,12 @@ public class PowerAccent : IDisposable
 
         Debug.WriteLine("Dpi: " + activeDisplay.Dpi);
 
-        if (!_settingService.UseCaretPosition)
-        {
-            return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
-        }
-
-        Point carretPixel = WindowsFunctions.GetCaretPosition();
-        if (carretPixel.X == 0 && carretPixel.Y == 0)
-        {
-            return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
-        }
-
-        Point dpi = new Point(activeDisplay.Dpi, activeDisplay.Dpi);
-        Point caret = new Point(carretPixel.X / dpi.X, carretPixel.Y / dpi.Y);
-        return Calculation.GetRawCoordinatesFromCaret(caret, screen, window);
+        return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
     }
 
     public char[] GetLettersFromKey(LetterKey letter)
     {
         return _settingService.GetLetterKey(letter);
-    }
-
-    public void ReloadSettings()
-    {
-        _settingService.Reload();
     }
 
     public void Dispose()

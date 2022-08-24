@@ -2180,4 +2180,57 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_PowerAccent_HowToUse.Text" xml:space="preserve">
     <value>Open **PowerToys Settings** and enable PowerAccent</value>
   </data>
+  <data name="PowerAccent_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="PowerAccent_Activation_Shortcut.Header" xml:space="preserve">
+    <value>Activation key</value>
+  </data>
+  <data name="PowerAccent_Activation_Shortcut.Description" xml:space="preserve">
+    <value>Select the activation key to activate this module by holding down the letter and pressing the activation key</value>
+  </data>
+  <data name="PowerAccent_Activation_Key_Arrows.Content" xml:space="preserve">
+    <value>Left/Right Arrow</value>
+    <comment>Left/Right arrow keyboard keys.</comment>
+  </data>
+  <data name="PowerAccent_Activation_Key_Space.Content" xml:space="preserve">
+    <value>Space</value>
+    <comment>Space is the space keyboard key.</comment>
+  </data>
+  <data name="PowerAccent_Activation_Key_Both.Content" xml:space="preserve">
+    <value>Both</value>
+  </data>
+  <data name="PowerAccent_Toolbar.Header" xml:space="preserve">
+    <value>Toolbar</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition.Header" xml:space="preserve">
+    <value>Toolbar position</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_TopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_TopLeftCorner.Content" xml:space="preserve">
+    <value>Top left corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_TopRightCorner.Content" xml:space="preserve">
+    <value>Top right corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_BottomLeftCorner.Content" xml:space="preserve">
+    <value>Bottom left corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_BottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_BottomRightCorner.Content" xml:space="preserve">
+    <value>Bottom right corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_Center.Content" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
 </root>

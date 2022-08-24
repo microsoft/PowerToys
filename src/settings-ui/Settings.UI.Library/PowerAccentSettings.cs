@@ -12,10 +12,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const string ModuleName = "PowerAccent";
         public const string ModuleVersion = "0.0.1";
 
+        [JsonPropertyName("properties")]
+        public PowerAccentProperties Properties { get; set; }
+
         public PowerAccentSettings()
         {
             Name = ModuleName;
             Version = ModuleVersion;
+            Properties = new PowerAccentProperties();
         }
 
         public string GetModuleName()

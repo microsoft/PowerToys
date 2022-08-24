@@ -44,7 +44,6 @@ class PowerAccent : public PowertoyModuleIface
 
 private:
     bool m_enabled = false;
-    HANDLE send_telemetry_event;
     HANDLE m_hInvokeEvent;
     PROCESS_INFORMATION p_info;
 
@@ -130,10 +129,10 @@ public:
 
     virtual void enable()
     {
-        ResetEvent(send_telemetry_event);
         ResetEvent(m_hInvokeEvent);
         launch_process();
         m_enabled = true;
+        Trace::EnablePowerAccent(true);
     };
 
     virtual void disable()
@@ -141,7 +140,6 @@ public:
         if (m_enabled)
         {
             Logger::trace(L"Disabling PowerAccent... {}", m_enabled);
-            ResetEvent(send_telemetry_event);
             ResetEvent(m_hInvokeEvent);
 
             auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::POWERACCENT_EXIT_EVENT);
@@ -168,6 +166,7 @@ public:
         }
 
         m_enabled = false;
+        Trace::EnablePowerAccent(false);
     }
 
     virtual bool is_enabled() override

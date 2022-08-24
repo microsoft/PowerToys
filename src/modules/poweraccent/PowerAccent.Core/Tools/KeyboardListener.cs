@@ -80,14 +80,12 @@ internal class KeyboardListener : IDisposable
         if (nCode >= 0)
         {
             if (wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_KEYDOWN ||
-                wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_KEYUP ||
-                wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_SYSKEYDOWN ||
-                wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_SYSKEYUP)
+                wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_KEYUP)
             {
                 // Captures the character(s) pressed only on WM_KEYDOWN
                 var chars = InterceptKeys.VKCodeToString(
                     (uint)Marshal.ReadInt32(lParam),
-                    wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_KEYDOWN || wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_SYSKEYDOWN);
+                    wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_KEYDOWN);
 
                 if (!hookedKeyboardCallbackAsync.Invoke((InterceptKeys.KeyEvent)wParam.ToUInt32(), Marshal.ReadInt32(lParam), chars))
                 {
@@ -117,13 +115,6 @@ internal class KeyboardListener : IDisposable
                 }
 
                 break;
-            case InterceptKeys.KeyEvent.WM_SYSKEYDOWN:
-                if (KeyDown != null)
-                {
-                    return KeyDown.Invoke(this, new RawKeyEventArgs(vkCode, character));
-                }
-
-                break;
 
             // KeyUp events
             case InterceptKeys.KeyEvent.WM_KEYUP:
@@ -133,14 +124,6 @@ internal class KeyboardListener : IDisposable
                 }
 
                 break;
-            case InterceptKeys.KeyEvent.WM_SYSKEYUP:
-                if (KeyUp != null)
-                {
-                    return KeyUp.Invoke(this, new RawKeyEventArgs(vkCode, character));
-                }
-
-                break;
-
             default:
                 break;
         }

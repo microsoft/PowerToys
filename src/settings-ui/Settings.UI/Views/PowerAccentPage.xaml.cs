@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PowerAccentPage()
         {
             var settingsUtils = new SettingsUtils();
-            ViewModel = new PowerAccentViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            ViewModel = new PowerAccentViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             this.InitializeComponent();
         }

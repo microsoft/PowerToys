@@ -2,139 +2,139 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Configuration;
-
 namespace PowerAccent.Core.Services;
 
-public class SettingsService : ApplicationSettingsBase
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using System.IO.Abstractions;
+using System.Text.Json;
+
+public class SettingsService
 {
-    [UserScopedSetting]
-    [DefaultSettingValue("Top")]
+    private const string PowerAccentModuleName = "PowerAccent";
+    private readonly ISettingsUtils _settingsUtils;
+    private readonly IFileSystemWatcher _watcher;
+    private readonly object _loadingSettingsLock = new object();
+
+    public SettingsService()
+    {
+        _settingsUtils = new SettingsUtils();
+        ReadSettings();
+        _watcher = Helper.GetFileWatcher(PowerAccentModuleName, "settings.json", () => { ReadSettings(); });
+    }
+
+    private void ReadSettings()
+    {
+        // TODO this IO call should by Async, update GetFileWatcher helper to support async
+        lock (_loadingSettingsLock)
+        {
+            {
+                try
+                {
+                    if (!_settingsUtils.SettingsExists(PowerAccentModuleName))
+                    {
+                        Logger.LogInfo("PowerAccent settings.json was missing, creating a new one");
+                        var defaultSettings = new PowerAccentSettings();
+                        var options = new JsonSerializerOptions
+                        {
+                            WriteIndented = true,
+                        };
+
+                        _settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), PowerAccentModuleName);
+                    }
+
+                    var settings = _settingsUtils.GetSettingsOrDefault<PowerAccentSettings>(PowerAccentModuleName);
+                    if (settings != null)
+                    {
+                        ActivationKey = settings.Properties.ActivationKey;
+                        switch (settings.Properties.ToolbarPosition.Value)
+                        {
+                            case "Top center":
+                                Position = Position.Top;
+                                break;
+                            case "Bottom center":
+                                Position = Position.Bottom;
+                                break;
+                            case "Left":
+                                Position = Position.Left;
+                                break;
+                            case "Right":
+                                Position = Position.Right;
+                                break;
+                            case "Top right corner":
+                                Position = Position.TopRight;
+                                break;
+                            case "Top left corner":
+                                Position = Position.TopLeft;
+                                break;
+                            case "Bottom right corner":
+                                Position = Position.BottomRight;
+                                break;
+                            case "Bottom left corner":
+                                Position = Position.BottomLeft;
+                                break;
+                            case "Center":
+                                Position = Position.Center;
+                                break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to read changed settings", ex);
+                }
+            }
+        }
+    }
+
+    private PowerAccentActivationKey _activationKey = PowerAccentActivationKey.LeftRightArrow;
+
+    public PowerAccentActivationKey ActivationKey
+    {
+        get
+        {
+            return _activationKey;
+        }
+
+        set
+        {
+            _activationKey = value;
+        }
+    }
+
+    private Position _position = Position.Top;
+
     public Position Position
     {
         get
         {
-            return (Position)this[nameof(Position)];
+            return _position;
         }
 
         set
         {
-            this[nameof(Position)] = value;
-            Save();
+            _position = value;
         }
     }
 
-    [UserScopedSetting]
-    [DefaultSettingValue("False")]
-    public bool UseCaretPosition
-    {
-        get
-        {
-            return (bool)this[nameof(UseCaretPosition)];
-        }
+    private int _inputTime = 200;
 
-        set
-        {
-            this[nameof(UseCaretPosition)] = value;
-            Save();
-        }
-    }
-
-    [UserScopedSetting]
-    [DefaultSettingValue("True")]
-    public bool IsSpaceBarActive
-    {
-        get
-        {
-            return (bool)this[nameof(IsSpaceBarActive)];
-        }
-
-        set
-        {
-            this[nameof(IsSpaceBarActive)] = value;
-            Save();
-        }
-    }
-
-    [UserScopedSetting]
-    [DefaultSettingValue("200")]
     public int InputTime
     {
         get
         {
-            return (int)this[nameof(InputTime)];
+            return _inputTime;
         }
 
         set
         {
-            this[nameof(InputTime)] = value;
-            Save();
+            _inputTime = value;
         }
-    }
-
-    [UserScopedSetting]
-    public char[] LetterKeyA
-    {
-        get { return (char[])this[nameof(LetterKeyA)]; }
-        set { this[nameof(LetterKeyA)] = value; }
-    }
-
-    [UserScopedSetting]
-    public char[] LetterKeyC
-    {
-        get { return (char[])this[nameof(LetterKeyC)]; }
-        set { this[nameof(LetterKeyC)] = value; }
-    }
-
-    [UserScopedSetting]
-    public char[] LetterKeyE
-    {
-        get { return (char[])this[nameof(LetterKeyE)]; }
-        set { this[nameof(LetterKeyE)] = value; }
-    }
-
-    [UserScopedSetting]
-    public char[] LetterKeyI
-    {
-        get { return (char[])this[nameof(LetterKeyI)]; }
-        set { this[nameof(LetterKeyI)] = value; }
-    }
-
-    [UserScopedSetting]
-    public char[] LetterKeyO
-    {
-        get { return (char[])this[nameof(LetterKeyO)]; }
-        set { this[nameof(LetterKeyO)] = value; }
-    }
-
-    [UserScopedSetting]
-    public char[] LetterKeyU
-    {
-        get { return (char[])this[nameof(LetterKeyU)]; }
-        set { this[nameof(LetterKeyU)] = value; }
-    }
-
-    [UserScopedSetting]
-    public char[] LetterKeyY
-    {
-        get { return (char[])this[nameof(LetterKeyY)]; }
-        set { this[nameof(LetterKeyY)] = value; }
-    }
-
-    public void SetLetterKey(LetterKey letter, char[] value)
-    {
-        string key = $"LetterKey{letter}";
-        this[key] = value;
     }
 
     public char[] GetLetterKey(LetterKey letter)
     {
-        string key = $"LetterKey{letter}";
-        if (this[key] != null)
-        {
-            return (char[])this[key];
-        }
-
         return GetDefaultLetterKey(letter);
     }
 

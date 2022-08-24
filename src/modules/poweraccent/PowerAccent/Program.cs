@@ -58,23 +58,17 @@ internal static class Program
             getDefaultValue: () => 0,
             description: $"Bind the execution of {PROGRAM_NAME} to another process.");
 
-        Option<bool> openSettingsOption = new (
-            aliases: new[] { "--settings", "-s" },
-            getDefaultValue: () => false,
-            description: $"Open Settings window.");
-
         RootCommand rootCommand = new RootCommand
         {
             pidOption,
-            openSettingsOption,
         };
 
         rootCommand.Description = PROGRAM_NAME;
-        rootCommand.SetHandler(HandleCommandLineArguments, pidOption, openSettingsOption);
+        rootCommand.SetHandler(HandleCommandLineArguments, pidOption);
         return rootCommand.InvokeAsync(args).Result;
     }
 
-    private static void HandleCommandLineArguments(int pid, bool isOpenSettings)
+    private static void HandleCommandLineArguments(int pid)
     {
         if (pid != 0)
         {
@@ -83,12 +77,6 @@ internal static class Program
                 {
                     RunnerHelper.WaitForPowerToysRunner(pid, Terminate);
                 }, _tokenSource.Token);
-        }
-
-        if (isOpenSettings)
-        {
-            Settings settings = new Settings();
-            settings.Show();
         }
     }
 

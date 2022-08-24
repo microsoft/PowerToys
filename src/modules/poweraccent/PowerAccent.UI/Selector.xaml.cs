@@ -43,12 +43,6 @@ public partial class Selector : Window, IDisposable
         }
     }
 
-    private void Settings_Click(object sender, RoutedEventArgs e)
-    {
-        Settings settings = new Settings();
-        settings.Show();
-    }
-
     private void MenuExit_Click(object sender, RoutedEventArgs e)
     {
         Application.Current.Shutdown();
@@ -67,11 +61,6 @@ public partial class Selector : Window, IDisposable
     {
         _powerAccent.Dispose();
         base.OnClosed(e);
-    }
-
-    public void RefreshSettings()
-    {
-        _powerAccent.ReloadSettings();
     }
 
     public void Dispose()

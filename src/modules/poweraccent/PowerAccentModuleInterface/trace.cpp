@@ -17,3 +17,13 @@ void Trace::UnregisterProvider()
 {
     TraceLoggingUnregister(g_hProvider);
 }
+
+void Trace::EnablePowerAccent(const bool enabled) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "PowerAccent_EnablePowerAccent",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, "Enabled"));
+}
