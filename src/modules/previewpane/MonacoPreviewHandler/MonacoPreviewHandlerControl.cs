@@ -3,14 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Common;
+using Microsoft.PowerToys.PreviewHandler.Monaco.Formatters;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Helpers;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
 using Microsoft.Web.WebView2.Core;
@@ -25,6 +27,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// Settings class
         /// </summary>
         private readonly Settings _settings = new Settings();
+
+        /// <summary>
+        /// Formatters applied before rendering the preview
+        /// </summary>
+        private readonly IReadOnlyCollection<IFormatter> _formatters = new List<IFormatter>
+        {
+            new JsonFormatter(),
+            new XmlFormatter(),
+        }.AsReadOnly();
 
         /// <summary>
         /// Saves if the user already navigated to the index page
@@ -367,6 +378,23 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             {
                 Logger.LogInfo("Starting reading requested file");
                 var fileContent = fileReader.ReadToEnd();
+
+                if (_settings.TryFormat)
+                {
+                    var formatter = _formatters.SingleOrDefault(f => f.LangSet == _vsCodeLangSet);
+                    if (formatter != null)
+                    {
+                        try
+                        {
+                            fileContent = formatter.Format(fileContent);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"Failed to apply formatting to {filePath}", ex);
+                        }
+                    }
+                }
+
                 fileReader.Close();
                 _base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
                 Logger.LogInfo("Reading requested file ended");
@@ -379,7 +407,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 _html = htmlFileReader.ReadToEnd();
                 htmlFileReader.Close();
                 Logger.LogInfo("Reading HTML source file ended");
-        }
+            }
 
             _html = _html.Replace("[[PT_LANG]]", _vsCodeLangSet, StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
