@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             {
                 if (GetTheme() == "dark")
                 {
-                    return Color.DimGray;
+                    return System.Drawing.ColorTranslator.FromHtml("#1e1e1e");
                 }
                 else
                 {

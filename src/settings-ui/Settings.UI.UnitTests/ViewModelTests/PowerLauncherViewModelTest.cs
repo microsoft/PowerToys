@@ -19,7 +19,7 @@ namespace ViewModelTests
             public int TimesSent { get; set; }
 
             // PowerLauncherSettings is unused, but required according to SendCallback's signature.
-            // Naming parameter with discard symbol to suppress FxCop warnings.
+            // Naming parameter with discard symbol to suppress StyleCop warnings.
             [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1313:Parameter names should begin with lower-case letter", Justification = "We actually don't validate setting, just calculate it was sent")]
             public void OnSend(PowerLauncherSettings _)
             {

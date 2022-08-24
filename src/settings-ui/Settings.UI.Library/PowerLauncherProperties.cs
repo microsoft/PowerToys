@@ -57,6 +57,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("search_input_delay")]
         public int SearchInputDelay { get; set; }
 
+        [JsonPropertyName("search_input_delay_fast")]
+        public int SearchInputDelayFast { get; set; }
+
         [JsonPropertyName("search_clicked_item_weight")]
         public int SearchClickedItemWeight { get; set; }
 
