@@ -242,6 +242,18 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+
+                    <muxc:InfoBar x:Uid="Run_ConflictingKeywordInfo"
+                                          Severity="Informational"
+                                          IsClosable="False"
+                                          IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                                          IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                        <muxc:InfoBar.ActionButton>
+                            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun#direct-activation-commands"
+                                                x:Uid="Run_ConflictingKeywordInfo_Link"/>
+                        </muxc:InfoBar.ActionButton>
+                    </muxc:InfoBar>
+
                     <controls:Setting x:Uid="Run_PluginUseDescription" Icon="&#xEA86;">
                         <controls:Setting.ActionContent>
                             <AutoSuggestBox x:Uid="PowerLauncher_SearchList"
@@ -283,14 +295,21 @@
                                                         Height="20" />
                                                 </controls:Setting.Icon>
                                                 <controls:Setting.ActionContent>
-                                                    <StackPanel Orientation="Horizontal" Spacing="16">
+                                                    <StackPanel Orientation="Horizontal" Spacing="16" >
 
                                                         <!-- todo(Stefan): InfoBadge not available
                                                         <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
-                                                                        Visibility="{x:Bind ShowNotAccessibleWarning}"
+                                                                        Visibility="{x:Bind ShowBadgeOnPluginSettingError}"
                                                                         Style="{StaticResource CriticalIconInfoBadgeStyle}" />
                                                         -->
 
+                                                        <!-- Temporary badge replacement for InfoBadge control (htcfreek). (Normally you need one grid per icon group. But if you want to show two badges at the same place in a StackPanel you have to put all FontIcons into the same Grid.)-->
+                                                        <Grid>
+                                                            <!-- Error badge -->
+                                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource InfoBarIconBackgroundGlyph}" Foreground="{ThemeResource InfoBarErrorSeverityIconBackground}" Visibility="{x:Bind ShowBadgeOnPluginSettingError}"/>
+                                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="{StaticResource InfoBarErrorIconGlyph}" Foreground="{ThemeResource InfoBarErrorSeverityIconForeground}" Visibility="{x:Bind ShowBadgeOnPluginSettingError}"/>
+                                                        </Grid>
+                                                        
                                                         <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
                                                                       IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"/>
                                                     </StackPanel>
@@ -310,11 +329,6 @@
                                                 <muxc:InfoBar Severity="Error" x:Uid="Run_NotAccessibleWarning"
                                                               IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                               IsOpen="{x:Bind ShowNotAccessibleWarning}"
-                                                              IsClosable="False" />
-                                                <muxc:InfoBar Severity="Error"
-                                                              x:Uid="Run_NotAllowedActionKeyword"
-                                                              IsTabStop="{x:Bind ShowNotAllowedKeywordWarning}"
-                                                              IsOpen="{x:Bind ShowNotAllowedKeywordWarning}"
                                                               IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                                 

@@ -56,10 +56,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.Disabled = value;
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
-                    NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
                     NotifyPropertyChanged(nameof(Enabled));
                     NotifyPropertyChanged(nameof(DisabledOpacity));
                     NotifyPropertyChanged(nameof(IsGlobalAndEnabled));
+                    NotifyPropertyChanged(nameof(ShowBadgeOnPluginSettingError));
                 }
             }
         }
@@ -91,6 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
                     NotifyPropertyChanged(nameof(IsGlobalAndEnabled));
+                    NotifyPropertyChanged(nameof(ShowBadgeOnPluginSettingError));
                 }
             }
         }
@@ -108,8 +109,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     settings.WeightBoost = value;
                     NotifyPropertyChanged();
-                    NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
-                    NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
                 }
             }
         }
@@ -128,7 +127,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.ActionKeyword = value;
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
-                    NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
+                    NotifyPropertyChanged(nameof(ShowBadgeOnPluginSettingError));
                 }
             }
         }
@@ -180,14 +179,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get => !Disabled && !IsGlobal && string.IsNullOrWhiteSpace(ActionKeyword);
         }
 
-        private static readonly List<string> NotAllowedKeywords = new List<string>()
+        public bool ShowBadgeOnPluginSettingError
         {
-            "~", @"\", @"\\",
-        };
-
-        public bool ShowNotAllowedKeywordWarning
-        {
-            get => !Disabled && NotAllowedKeywords.Contains(ActionKeyword);
+            get => !Disabled && ShowNotAccessibleWarning;
         }
     }
 }

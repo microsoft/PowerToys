@@ -14,6 +14,7 @@ using Common.UI;
 using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
+using ModernWpf.Automation.Peers;
 using ModernWpf.Controls;
 
 namespace FancyZonesEditor
@@ -561,6 +562,27 @@ namespace FancyZonesEditor
         {
             EditLayoutDialogTitle.TextTrimming = TextTrimming.CharacterEllipsis;
             EditLayoutDialogTitle.TextWrapping = TextWrapping.NoWrap;
+        }
+
+        private void SensitivityInput_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            {
+                SliderAutomationPeer peer =
+                    FrameworkElementAutomationPeer.FromElement(SensitivityInput) as SliderAutomationPeer;
+                string activityId = "sliderValueChanged";
+
+                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Slider_Value, SensitivityInput.Value);
+
+                if (peer != null && value != null)
+                {
+                    peer.RaiseNotificationEvent(
+                        AutomationNotificationKind.ActionCompleted,
+                        AutomationNotificationProcessing.ImportantMostRecent,
+                        value,
+                        activityId);
+                }
+            }
         }
     }
 }

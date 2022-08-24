@@ -408,4 +408,10 @@
   <data name="Error_Parsing_Custom_Layouts_Message" xml:space="preserve">
     <value>An error occurred while parsing custom layouts.</value>
   </data>
+  <data name="Distance_adjacent_zones_slider_announce" xml:space="preserve">
+    <value>Highlight distance slider. Possible range is from {0} to {1}. Value is {2}.</value>
+  </data>
+  <data name="Slider_Value" xml:space="preserve">
+    <value>{0} pixels</value>
+  </data>
 </root>
