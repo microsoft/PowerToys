@@ -66,7 +66,6 @@ namespace Wox.Infrastructure
 
             for (int startIndex = 0; startIndex < stringToCompare.Length; startIndex++)
             {
-                // TODO optimize by only starting from if equal to query[0]
                 MatchResult result = FuzzyMatch(query, stringToCompare, opt, startIndex);
                 if (result.Success && (!bestResult.Success || result.Score > bestResult.Score))
                 {
