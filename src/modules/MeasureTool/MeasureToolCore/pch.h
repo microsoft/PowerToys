@@ -21,6 +21,7 @@
 #include <thread>
 #include <functional>
 #include <cassert>
+#include <cinttypes>
 #include <iomanip>
 #include <limits>
 #include <sstream>

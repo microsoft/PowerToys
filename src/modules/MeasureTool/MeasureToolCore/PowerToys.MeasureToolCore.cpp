@@ -45,6 +45,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 
     void Core::ResetState()
     {
+        _commonState.closeOnOtherMonitors = true;
         _overlayUIStates.clear();
         _boundsToolState = { .commonState = &_commonState };
         for (auto& thread : _screenCaptureThreads)

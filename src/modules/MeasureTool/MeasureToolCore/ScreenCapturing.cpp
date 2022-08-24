@@ -16,7 +16,10 @@ class OwnedTextureView
 
 public:
     BGRATextureView view;
-    OwnedTextureView(winrt::com_ptr<ID3D11Texture2D> _texture, winrt::com_ptr<ID3D11DeviceContext> _context) :
+    OwnedTextureView(winrt::com_ptr<ID3D11Texture2D> _texture,
+                     winrt::com_ptr<ID3D11DeviceContext> _context,
+                     const size_t textureWidth,
+                     const size_t textureHeight) :
         texture{ std::move(_texture) }, context{ std::move(_context) }
     {
         D3D11_TEXTURE2D_DESC desc;
@@ -25,12 +28,10 @@ public:
         D3D11_MAPPED_SUBRESOURCE resource;
         winrt::check_hresult(context->Map(texture.get(), D3D11CalcSubresource(0, 0, 0), D3D11_MAP_READ, 0, &resource));
 
-        const size_t texWidth = resource.RowPitch / 4;
-        const size_t texHeight = resource.DepthPitch / texWidth / 4;
         view.pixels = static_cast<const uint32_t*>(resource.pData);
 
-        view.width = texWidth;
-        view.height = texHeight;
+        view.width = textureWidth;
+        view.height = textureHeight;
     }
 
     OwnedTextureView(OwnedTextureView&&) = default;
@@ -167,7 +168,7 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
             winrt::check_hresult(swapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), texture.put_void()));
             auto gpuTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
             texture = CopyFrameToCPU(gpuTexture);
-            OwnedTextureView textureView{ texture, context };
+            OwnedTextureView textureView{ texture, context, static_cast<size_t>(frameSize.Width), static_cast<size_t>(frameSize.Height) };
 
             frameCallback(std::move(textureView));
         }
@@ -344,13 +345,15 @@ void UpdateCaptureState(const CommonState& commonState,
 #if defined(DEBUG_EDGES)
     char buffer[256];
     sprintf_s(buffer,
-              "Cursor: [%ld,%ld] Bounds: [%ld,%ld]-[%ld,%ld]\n",
+              "Cursor: [%ld,%ld] Bounds: [%ld,%ld]-[%ld,%ld] Screen size: [%zu, %zu]\n",
               cursorPos.x,
               cursorPos.y,
               bounds.left,
               bounds.top,
               bounds.right,
-              bounds.bottom);
+              bounds.bottom,
+              textureView.view.width,
+              textureView.view.height);
     OutputDebugStringA(buffer);
 #endif
     state.Access([&](MeasureToolState& state) {
@@ -391,7 +394,7 @@ std::thread StartCapturingThread(const CommonState& commonState,
                 UpdateCaptureState(commonState, state, targetWindow, textureView, continuousCapture);
             });
 
-            while (IsWindow(targetWindow))
+            while (IsWindow(targetWindow) && !commonState.closeOnOtherMonitors)
             {
                 std::this_thread::sleep_for(consts::TARGET_FRAME_DURATION);
             }
@@ -400,7 +403,7 @@ std::thread StartCapturingThread(const CommonState& commonState,
         else
         {
             const auto textureView = captureState->CaptureSingleFrame();
-            while (IsWindow(targetWindow))
+            while (IsWindow(targetWindow) && !commonState.closeOnOtherMonitors)
             {
                 const auto now = std::chrono::high_resolution_clock::now();
                 if (monitorArea.inside(commonState.cursorPos))
