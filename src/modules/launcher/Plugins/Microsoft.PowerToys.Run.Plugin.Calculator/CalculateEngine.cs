@@ -34,6 +34,13 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 return default;
             }
 
+            // check for division by zero
+            if (input.Contains("/0") || input.Contains("/ 0"))
+            {
+                error = Properties.Resources.wox_plugin_calculator_division_by_zero;
+                return default;
+            }
+
             // mages has quirky log representation
             // mage has log == ln vs log10
             input = input.

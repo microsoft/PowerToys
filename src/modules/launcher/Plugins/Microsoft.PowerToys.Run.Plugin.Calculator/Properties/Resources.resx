@@ -158,4 +158,7 @@
     <value>Ignores your system setting and returns numbers in the format '{0}'.</value>
     <comment>{0} is a placeholder and will be replaced in code.</comment>
   </data>
+  <data name="wox_plugin_calculator_division_by_zero" xml:space="preserve">
+    <value>Expression contains division by zero</value>
+  </data>
 </root>
