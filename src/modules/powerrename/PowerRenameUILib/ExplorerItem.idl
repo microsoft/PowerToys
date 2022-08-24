@@ -1,6 +1,6 @@
 namespace PowerRenameUI
 {
-    runtimeclass ExplorerItem : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    [default_interface] runtimeclass ExplorerItem : Microsoft.UI.Xaml.Controls.UserControl, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
     {
         ExplorerItem();
         ExplorerItem(Int32 id, String original, String renamed, Int32 type, UInt32 depth, Boolean checked);
@@ -12,6 +12,6 @@ namespace PowerRenameUI
         String ImagePath { get; };
         Int32 Type;
         Boolean Checked;
-        Microsoft.UI.Xaml.Visibility Highlight { get; };
+        Int32 State;
     }
 }
