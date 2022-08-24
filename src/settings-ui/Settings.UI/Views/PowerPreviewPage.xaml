@@ -57,6 +57,11 @@
                                           IsChecked="{x:Bind ViewModel.MonacoWrapText, Mode=TwoWay}"
                                           Margin="{StaticResource ExpanderSettingMargin}"
                                           IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}" />
+                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format"
+                                                                         IsChecked="{x:Bind ViewModel.MonacoPreviewTryFormat, Mode=TwoWay}"
+                                                                         Margin="{StaticResource ExpanderSettingMargin}"
+                                                                         IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}"/>
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>

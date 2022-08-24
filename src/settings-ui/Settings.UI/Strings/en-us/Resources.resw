@@ -2197,6 +2197,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_PowerOCR.Description" xml:space="preserve">
     <value>PowerOCR works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard.</value>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format.Description" xml:space="preserve">
+    <value>Applies to json and xml. Files remain unchanged.</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format.Header" xml:space="preserve">
+    <value>Try to format the source for preview</value>
+  </data>
   <data name="Run_ConflictingKeywordInfo.Title" xml:space="preserve">
     <value>Some characters and phrases may conflict with global queries of other plugins if you use them as activation command.</value>
   </data>

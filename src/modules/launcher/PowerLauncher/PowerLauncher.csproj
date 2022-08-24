@@ -90,7 +90,7 @@
     <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.7" />
     <PackageReference Include="System.Data.OleDb" Version="6.0.0" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="6.0.0" />
-    <PackageReference Include="UnitsNet" Version="4.76.0" />
+    <PackageReference Include="UnitsNet" Version="4.144.0" />
   </ItemGroup>
 
   <ItemGroup>
