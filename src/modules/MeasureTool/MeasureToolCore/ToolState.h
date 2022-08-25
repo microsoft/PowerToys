@@ -70,7 +70,7 @@ struct MeasureToolState
         // While not in a continuous capturing mode, we need to draw captured backgrounds. These are passed
         // directly from a capturing thread.
         winrt::com_ptr<ID3D11Texture2D> capturedScreenTexture;
-        // After the drawing thread finds its capturedScreen, it converts it to
+        // After the drawing thread finds its capturedScreenTexture, it converts it to
         // a Direct2D compatible bitmap and caches it here
         winrt::com_ptr<ID2D1Bitmap> capturedScreenBitmap;
     };
