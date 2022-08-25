@@ -2164,6 +2164,39 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
     <value>Enable round corners</value>
   </data>
+  <data name="LearnMore_PowerOcr.Text" xml:space="preserve">
+    <value>Learn more about PowerOCR</value>
+  </data>
+  <data name="PowerOCR.ModuleDescription" xml:space="preserve">
+    <value>PowerOCR is a convenient way to copy text from anywhere on screen</value>
+  </data>
+  <data name="PowerOCR.ModuleTitle" xml:space="preserve">
+    <value>PowerOCR</value>
+  </data>
+  <data name="PowerOCR_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable PowerOCR</value>
+  </data>
+  <data name="Shell_PowerOcr.Content" xml:space="preserve">
+    <value>PowerOCR</value>
+  </data>
+  <data name="Launch_PowerOCR.Content" xml:space="preserve">
+    <value>Launch PowerOCR</value>
+  </data>
+  <data name="Oobe_PowerOCR.Title" xml:space="preserve">
+    <value>PowerOCR</value>
+  </data>
+  <data name="Oobe_PowerOCR_HowToUse.Text" xml:space="preserve">
+    <value>to open PowerOCR and then selecting a region to copy the text from.</value>
+  </data>
+  <data name="Oobe_PowerOCR_TipsAndTricks.Text" xml:space="preserve">
+    <value>Hold the shift key to move the selection region around.</value>
+  </data>
+  <data name="PowerOCR.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="Oobe_PowerOCR.Description" xml:space="preserve">
+    <value>PowerOCR works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard.</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format.Description" xml:space="preserve">
     <value>Applies to json and xml. Files remain unchanged.</value>
   </data>

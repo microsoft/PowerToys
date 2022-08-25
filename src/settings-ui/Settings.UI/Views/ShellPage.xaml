@@ -120,6 +120,14 @@
                                     ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
+                
+                <muxc:NavigationViewItem x:Uid="Shell_PowerOcr"
+                                         helpers:NavHelper.NavigateTo="views:PowerOcrPage">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
                 <muxc:NavigationViewItem x:Uid="Shell_PowerLauncher"
                                          helpers:NavHelper.NavigateTo="views:PowerLauncherPage">

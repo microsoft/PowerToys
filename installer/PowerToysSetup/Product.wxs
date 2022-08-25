@@ -8,6 +8,7 @@
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
   <?define ColorPickerProjectName="ColorPicker"?>
+  <?define PowerOCRProjectName="PowerOCR"?>
   <?define VideoConferenceProjectName="VideoConference"?>
   <?define AwakeProjectName="Awake"?>
   <?define MouseUtilsProjectName="MouseUtils"?>
@@ -48,11 +49,11 @@
 
   <?define SettingsV2Files=Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.IO.Abstractions.dll;System.Text.Json.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;MRM.dll;PushNotificationsLongRunningTask.ProxyStub.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinUIEdit.dll;wuceffectsi.dll?>
 
-  <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png?>
+  <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png;PowerOCR.png?>
 
-  <?define SettingsV2OOBEAssetsModulesFiles=ColorPicker.gif;AlwaysOnTop.png;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
+  <?define SettingsV2OOBEAssetsModulesFiles=ColorPicker.gif;AlwaysOnTop.png;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png;PowerOCR.gif?>
 
-  <?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png?>
+  <?define SettingsV2OOBEAssetsFluentIconsFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;FileExplorerPreview.png;FindMyMouse.png;ImageResizer.png;KeyboardManager.png;MouseHighlighter.png;MouseCrosshairs.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png;PowerOcr.png?>
 
 	<?define SettingsV2MicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
@@ -431,6 +432,7 @@
               <Directory Id="MonacoPreviewHandlerMonacoSRCFolder" Name="monacoSRC" />
             </Directory>
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
+            <Directory Id="PowerOCRInstallFolder" Name="$(var.PowerOCRProjectName)" />
             <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
               <Directory Id="AwakeImagesFolder" Name="Images" />
             </Directory>
@@ -894,6 +896,16 @@
       </Component>
     </DirectoryRef>
 
+    <!-- PowerOCR Resources -->
+    <DirectoryRef Id="PowerOCRInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerOCRProjectName)">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="Module_PowerOCR" Guid="5640A7E8-E165-4368-8F08-F8E1E9242BDD" Win64="yes">
+        <?foreach File in PowerToys.PowerOCR.dll;ControlzEx.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Common.UI.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerOCR.deps.json;PowerToys.PowerOCR.exe;PowerToys.PowerOCR.runtimeconfig.json;PowerToys.PowerOCRModuleInterface.dll;PowerToys.Settings.UI.Lib.dll;System.ComponentModel.Composition.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;WinRT.Runtime.dll?>
+        <File Id="PowerOCRFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerOCRProjectName)\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
     <!-- Awake -->
     <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinDir)modules\$(var.AwakeProjectName)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
@@ -1063,6 +1075,7 @@
       <ComponentRef Id="Module_KeyboardManager" />
       <ComponentRef Id="Module_KeyboardManager_Editor" />
       <ComponentRef Id="Module_KeyboardManager_Engine" />
+      <ComponentRef Id="Module_PowerOCR" />
       <ComponentRef Id="Module_ColorPicker" />
       <ComponentRef Id="Module_ColorPicker_Icon"/>
       <ComponentRef Id="Module_ColorPicker_Cursor"/>

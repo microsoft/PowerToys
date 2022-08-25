@@ -1,0 +1,55 @@
+﻿<Window
+    x:Class="PowerOCR.OCROverlay"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:PowerOCR"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="PowerOCR"
+    Width="800"
+    Height="450"
+    AllowsTransparency="True"
+    Background="Transparent"
+    Loaded="Window_Loaded"
+    Unloaded="Window_Unloaded"
+    ResizeMode="NoResize"
+    Topmost="True"
+    WindowStyle="None"
+    mc:Ignorable="d">
+    <Grid>
+        <Viewbox>
+            <Image x:Name="BackgroundImage" Stretch="UniformToFill" />
+        </Viewbox>
+        <Canvas
+            Name="RegionClickCanvas"
+            Cursor="Cross"
+            MouseDown="RegionClickCanvas_MouseDown"
+            MouseMove="RegionClickCanvas_MouseMove"
+            MouseUp="RegionClickCanvas_MouseUp">
+            <Canvas.Clip>
+                <CombinedGeometry GeometryCombineMode="Exclude">
+                    <CombinedGeometry.Geometry1>
+                        <RectangleGeometry x:Name="FullWindow" />
+                    </CombinedGeometry.Geometry1>
+                    <CombinedGeometry.Geometry2>
+                        <RectangleGeometry x:Name="clippingGeometry" />
+                    </CombinedGeometry.Geometry2>
+                </CombinedGeometry>
+            </Canvas.Clip>
+            <Canvas.Background>
+                <SolidColorBrush
+                    x:Name="BackgroundBrush"
+                    Opacity="0"
+                    Color="Black" />
+            </Canvas.Background>
+            <Canvas.ContextMenu>
+                <ContextMenu>
+                    <MenuItem
+                        Name="CancelMenuItem"
+                        Click="CancelMenuItem_Click"
+                        Header="Cancel" />
+                </ContextMenu>
+            </Canvas.ContextMenu>
+        </Canvas>
+    </Grid>
+</Window>
