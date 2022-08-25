@@ -8,6 +8,7 @@
 #include <emmintrin.h>
 #endif
 #include <cassert>
+#include <limits>
 
 //#define DEBUG_TEXTURE
 
@@ -115,7 +116,8 @@ struct BGRATextureView
         else
         {
             // Method 2: Test whether sum of all channel differences is smaller than tolerance
-            return _mm_cvtsi128_si32(_mm_sad_epu8(distances, _mm_setzero_si128())) <= tolerance;
+            const int32_t score = _mm_cvtsi128_si32(_mm_sad_epu8(distances, _mm_setzero_si128()));
+            return std::clamp<int32_t>(score, 0, std::numeric_limits<uint8_t>::max()) <= tolerance;
         }
     }
 
