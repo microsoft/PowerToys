@@ -25,11 +25,11 @@ public:
         D3D11_TEXTURE2D_DESC desc;
         texture->GetDesc(&desc);
 
-        D3D11_MAPPED_SUBRESOURCE resource;
+        D3D11_MAPPED_SUBRESOURCE resource = {};
         winrt::check_hresult(context->Map(texture.get(), D3D11CalcSubresource(0, 0, 0), D3D11_MAP_READ, 0, &resource));
 
         view.pixels = static_cast<const uint32_t*>(resource.pData);
-
+        view.pitch = resource.RowPitch / 4;
         view.width = textureWidth;
         view.height = textureHeight;
     }
@@ -410,7 +410,8 @@ std::thread StartCapturingThread(const CommonState& commonState,
                 if (monitorArea.inside(commonState.cursorPos))
                 {
 #if defined(DEBUG_TEXTURE)
-                    textureView.view.SaveAsBitmap("R:\\frame.bmp");
+                    auto path = std::filesystem::temp_directory_path() / "frame.bmp";
+                    textureView.view.SaveAsBitmap(path.string().c_str());
 #endif
                     UpdateCaptureState(commonState, state, targetWindow, textureView, continuousCapture);
                 }

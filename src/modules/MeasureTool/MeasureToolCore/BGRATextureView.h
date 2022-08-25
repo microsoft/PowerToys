@@ -83,23 +83,19 @@ inline __m128i distance_epu8(const __m128i a, __m128i b)
 struct BGRATextureView
 {
     const uint32_t* pixels = nullptr;
+    size_t pitch = {};
     size_t width = {};
     size_t height = {};
 
     BGRATextureView() = default;
 
-    BGRATextureView(BGRATextureView&& rhs) noexcept
-    {
-        pixels = rhs.pixels;
-        width = rhs.width;
-        height = rhs.height;
-    }
+    BGRATextureView(BGRATextureView&& rhs) = default;
 
     inline uint32_t GetPixel(const size_t x, const size_t y) const
     {
         assert(x < width && x >= 0);
         assert(y < height && y >= 0);
-        return pixels[x + width * y];
+        return pixels[x + pitch * y];
     }
 
     template<bool perChannel>
