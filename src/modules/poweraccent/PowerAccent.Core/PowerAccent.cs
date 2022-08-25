@@ -60,11 +60,14 @@ public class PowerAccent : IDisposable
             _triggeredWithSpace = triggerPressed.Value == TriggerKey.Space;
             _visible = true;
             _characters = WindowsFunctions.IsCapitalState() ? ToUpper(_settingService.GetLetterKey(letterPressed.Value)) : _settingService.GetLetterKey(letterPressed.Value);
-            Task.Delay(_settingService.InputTime).ContinueWith(t =>
-            {
-                if (_visible)
-                    OnChangeDisplay?.Invoke(true, _characters);
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+            Task.Delay(_settingService.InputTime).ContinueWith(
+                t =>
+                {
+                    if (_visible)
+                    {
+                        OnChangeDisplay?.Invoke(true, _characters);
+                    }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         if (_visible && triggerPressed.HasValue)
