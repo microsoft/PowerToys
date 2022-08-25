@@ -38,4 +38,5 @@
     "theme": { "value": "light" },
     "toolbar_monitor": { "value": "All monitors" },
     "toolbar_position": { "value": "Bottom center" }
-  }}
+  }
+}

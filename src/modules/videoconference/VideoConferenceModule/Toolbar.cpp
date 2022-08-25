@@ -129,7 +129,6 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         if (toolbar->audioConfChangesNotifier.PullPendingNotifications())
         {
             instance->onMicrophoneConfigurationChanged();
-
         }
         toolbar->microphoneMuted = instance->getMicrophoneMuteState();
 
