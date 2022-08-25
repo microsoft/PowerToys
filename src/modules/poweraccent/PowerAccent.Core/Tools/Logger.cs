@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-/* TODO: Add the logs, but it's currently conflicting with System.Diagnostics.Trace.WriteLine hacks for PowerShell. (WindowsFunctions.cs)
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -78,4 +77,3 @@ namespace PowerAccent.Core.Tools
         }
     }
 }
-*/
