@@ -4,7 +4,7 @@
 
 void DrawBoundsToolTick(const CommonState& commonState,
                         const BoundsToolState& toolState,
-                        HWND overlayWindow,
+                        const HWND overlayWindow,
                         const D2DState& d2dState);
 
 LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;

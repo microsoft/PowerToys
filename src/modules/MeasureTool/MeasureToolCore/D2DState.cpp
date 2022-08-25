@@ -7,7 +7,7 @@
 
 namespace
 {
-    void DetermineScreenQuadrant(HWND window, long x, long y, bool& inLeftHalf, bool& inTopHalf)
+    void DetermineScreenQuadrant(const HWND window, long x, long y, bool& inLeftHalf, bool& inTopHalf)
     {
         RECT windowRect{};
         GetWindowRect(window, &windowRect);
@@ -18,7 +18,7 @@ namespace
     }
 }
 
-D2DState::D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesColors)
+D2DState::D2DState(const HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesColors)
 {
     RECT clientRect = {};
 
@@ -61,7 +61,7 @@ D2DState::D2DState(HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesCol
         winrt::check_hresult(rt->CreateSolidColorBrush(solidBrushesColors[i], &solidBrushes[i]));
     }
 
-    auto deviceContext = rt.query<ID2D1DeviceContext>();
+    const auto deviceContext = rt.query<ID2D1DeviceContext>();
     winrt::check_hresult(deviceContext->CreateEffect(CLSID_D2D1Shadow, &shadowEffect));
     winrt::check_hresult(shadowEffect->SetValue(D2D1_SHADOW_PROP_BLUR_STANDARD_DEVIATION, consts::SHADOW_RADIUS));
     winrt::check_hresult(shadowEffect->SetValue(D2D1_SHADOW_PROP_COLOR, D2D1::ColorF(0.f, 0.f, 0.f, consts::SHADOW_OPACITY)));
@@ -78,7 +78,7 @@ void D2DState::DrawTextBox(const wchar_t* text,
                            const float centerX,
                            const float centerY,
                            const bool screenQuadrantAware,
-                           HWND window) const
+                           const HWND window) const
 {
     wil::com_ptr<IDWriteTextLayout> textLayout;
     winrt::check_hresult(writeFactory->CreateTextLayout(text,
@@ -135,9 +135,10 @@ void D2DState::DrawTextBox(const wchar_t* text,
     bitmapRt->GetBitmap(&rtBitmap);
 
     shadowEffect->SetInput(0, rtBitmap.get());
+    const auto shadowMatrix = D2D1::Matrix3x2F::Translation(consts::SHADOW_OFFSET * dpiScale,
+                                                            consts::SHADOW_OFFSET * dpiScale);
     winrt::check_hresult(affineTransformEffect->SetValue(D2D1_2DAFFINETRANSFORM_PROP_TRANSFORM_MATRIX,
-                                                         D2D1::Matrix3x2F::Translation(consts::SHADOW_OFFSET * dpiScale,
-                                                                                       consts::SHADOW_OFFSET * dpiScale)));
+                                                         shadowMatrix));
     auto deviceContext = rt.query<ID2D1DeviceContext>();
     deviceContext->DrawImage(affineTransformEffect.get(), D2D1_INTERPOLATION_MODE_LINEAR);
 
@@ -148,6 +149,7 @@ void D2DState::DrawTextBox(const wchar_t* text,
     textBoxRect.rect.top += TEXT_BOX_PADDING;
     textBoxRect.rect.left += TEXT_BOX_PADDING;
     textBoxRect.rect.right -= TEXT_BOX_PADDING;
+
     // Draw text & its box
     rt->FillRoundedRectangle(textBoxRect, solidBrushes[Brush::background].get());
 

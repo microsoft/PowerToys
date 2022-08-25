@@ -76,7 +76,9 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
 }
 
 template<bool PerChannel, bool ContinuousCapture>
-inline RECT DetectEdgesInternal(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance)
+inline RECT DetectEdgesInternal(const BGRATextureView& texture,
+                                const POINT centerPoint,
+                                const uint8_t tolerance)
 {
     return RECT{ .left = FindEdge<PerChannel,
                                   ContinuousCapture,
@@ -105,6 +107,6 @@ RECT DetectEdges(const BGRATextureView& texture,
     auto function = perChannel ? &DetectEdgesInternal<true, false> : DetectEdgesInternal<false, false>;
     if (continuousCapture)
         function = perChannel ? &DetectEdgesInternal<true, true> : &DetectEdgesInternal<false, true>;
-    
+
     return function(texture, centerPoint, tolerance);
 }

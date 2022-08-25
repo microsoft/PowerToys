@@ -137,7 +137,7 @@ namespace
 
 void DrawBoundsToolTick(const CommonState& commonState,
                         const BoundsToolState& toolState,
-                        HWND overlayWindow,
+                        const HWND overlayWindow,
                         const D2DState& d2dState)
 {
     if (const auto it = toolState.measurementsByScreen.find(overlayWindow); it != end(toolState.measurementsByScreen))

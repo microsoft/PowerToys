@@ -148,12 +148,11 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
     GetCursorPos(&cursorPos);
 
     auto frame = sender.TryGetNextFrame();
+    winrt::check_bool(frame);
     if (monitorArea.inside(cursorPos) || captureOutsideOfMonitor)
     {
         winrt::com_ptr<ID3D11Texture2D> texture;
         {
-            winrt::check_bool(frame);
-
             if (auto newFrameSize = frame.ContentSize(); newFrameSize != frameSize)
             {
                 winrt::check_hresult(swapChain->ResizeBuffers(2,
@@ -173,6 +172,8 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
             frameCallback(std::move(textureView));
         }
     }
+
+    frame.Close();
 
     DXGI_PRESENT_PARAMETERS presentParameters = {};
     swapChain->Present1(1, 0, &presentParameters);
@@ -223,18 +224,17 @@ std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(const winrt::GraphicsCa
     winrt::com_ptr<IInspectable> d3dDeviceInspectable;
     winrt::check_hresult(CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.get(), d3dDeviceInspectable.put()));
 
-    DXGI_SWAP_CHAIN_DESC1 desc = {};
-    desc.Width = static_cast<uint32_t>(item.Size().Width);
-    desc.Height = static_cast<uint32_t>(item.Size().Height);
-    desc.Format = static_cast<DXGI_FORMAT>(pixelFormat);
-    desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    desc.SampleDesc.Count = 1;
-    desc.SampleDesc.Quality = 0;
-    desc.BufferCount = 2;
-    desc.Scaling = DXGI_SCALING_STRETCH;
-    desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-    desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
-    auto dxgiDevice2 = d3dDevice.as<IDXGIDevice2>();
+    const DXGI_SWAP_CHAIN_DESC1 desc = {
+        .Width = static_cast<uint32_t>(item.Size().Width),
+        .Height = static_cast<uint32_t>(item.Size().Height),
+        .Format = static_cast<DXGI_FORMAT>(pixelFormat),
+        .SampleDesc = { .Count = 1, .Quality = 0 },
+        .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
+        .BufferCount = 2,
+        .Scaling = DXGI_SCALING_STRETCH,
+        .SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL,
+        .AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
+    };
     winrt::com_ptr<IDXGIAdapter> adapter;
     winrt::check_hresult(dxgiDevice->GetParent(winrt::guid_of<IDXGIAdapter>(), adapter.put_void()));
     winrt::com_ptr<IDXGIFactory2> factory;
@@ -265,6 +265,7 @@ D3DCaptureState::~D3DCaptureState()
     std::unique_lock callbackLock{ destructorMutex };
     StopCapture();
     framePool.Close();
+    device.Close();
 }
 
 void D3DCaptureState::StartSessionInPreferredMode()

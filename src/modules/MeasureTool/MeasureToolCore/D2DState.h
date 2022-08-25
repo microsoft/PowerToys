@@ -31,12 +31,12 @@ struct D2DState
 
     float dpiScale = 1.f;
 
-    D2DState(HWND window, std::vector<D2D1::ColorF> solidBrushesColors);
+    D2DState(const HWND window, std::vector<D2D1::ColorF> solidBrushesColors);
     void DrawTextBox(const wchar_t* text,
                      const uint32_t textLen,
                      const std::optional<size_t> halfOpaqueSymbolPos,
                      const float centerX,
                      const float centerY,
                      const bool screenQuadrantAware,
-                     HWND window) const;
+                     const HWND window) const;
 };
