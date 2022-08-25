@@ -98,7 +98,7 @@ private:
             m_hotkey.alt = false;
             m_hotkey.shift = true;
             m_hotkey.ctrl = false;
-            m_hotkey.key = 'R';
+            m_hotkey.key = 'T';
         }
     }
 
