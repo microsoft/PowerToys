@@ -2191,7 +2191,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>PowerAccent</value>
   </data>
   <data name="Oobe_PowerAccent_HowToUse.Text" xml:space="preserve">
-    <value>Open **PowerToys Settings** and enable PowerAccent. While holding the key for the character you want to add an accent to, press the Activation Key and a overlay to select the accented character will appear.</value>
+    <value>Open **PowerToys Settings** and enable PowerAccent. While holding the key for the character you want to add an accent to, press the Activation Key and an overlay to select the accented character will appear.</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="PowerAccent_Activation_GroupSettings.Header" xml:space="preserve">
