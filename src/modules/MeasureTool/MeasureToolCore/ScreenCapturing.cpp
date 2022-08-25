@@ -320,21 +320,21 @@ void D3DCaptureState::StopCapture()
 
 void UpdateCaptureState(const CommonState& commonState,
                         Serialized<MeasureToolState>& state,
-                        HWND targetWindow,
+                        HWND window,
                         const MappedTextureView& textureView,
                         const bool continuousCapture)
 {
     auto cursorPos = commonState.cursorPos;
-    ScreenToClient(targetWindow, &cursorPos);
+    ScreenToClient(window, &cursorPos);
     const bool cursorInLeftScreenHalf = cursorPos.x < textureView.view.width / 2;
     const bool cursorInTopScreenHalf = cursorPos.y < textureView.view.height / 2;
     uint8_t pixelTolerance = {};
     bool perColorChannelEdgeDetection = {};
     state.Access([&](MeasureToolState& state) {
-        state.cursorInLeftScreenHalf = cursorInLeftScreenHalf;
-        state.cursorInTopScreenHalf = cursorInTopScreenHalf;
-        pixelTolerance = state.pixelTolerance;
-        perColorChannelEdgeDetection = state.perColorChannelEdgeDetection;
+        state.perScreen[window].cursorInLeftScreenHalf = cursorInLeftScreenHalf;
+        state.perScreen[window].cursorInTopScreenHalf = cursorInTopScreenHalf;
+        pixelTolerance = state.global.pixelTolerance;
+        perColorChannelEdgeDetection = state.global.perColorChannelEdgeDetection;
     });
 
     // Every one of 4 edges is a coordinate of the last similar pixel in a row
@@ -363,16 +363,16 @@ void UpdateCaptureState(const CommonState& commonState,
     OutputDebugStringA(buffer);
 #endif
     state.Access([&](MeasureToolState& state) {
-        state.measuredEdges = bounds;
+        state.perScreen[window].measuredEdges = bounds;
     });
 }
 
 std::thread StartCapturingThread(const CommonState& commonState,
                                  Serialized<MeasureToolState>& state,
-                                 HWND targetWindow,
+                                 HWND window,
                                  MonitorInfo targetMonitor)
 {
-    return SpawnLoggedThread(L"Screen Capture thread", [&state, &commonState, targetMonitor, targetWindow] {
+    return SpawnLoggedThread(L"Screen Capture thread", [&state, &commonState, targetMonitor, window] {
         auto captureInterop = winrt::get_activation_factory<
             winrt::GraphicsCaptureItem,
             IGraphicsCaptureItemInterop>();
@@ -386,7 +386,7 @@ std::thread StartCapturingThread(const CommonState& commonState,
 
         bool continuousCapture = {};
         state.Read([&](const MeasureToolState& state) {
-            continuousCapture = state.continuousCapture;
+            continuousCapture = state.global.continuousCapture;
         });
 
         const auto monitorArea = targetMonitor.GetScreenSize(true);
@@ -396,11 +396,11 @@ std::thread StartCapturingThread(const CommonState& commonState,
                                                     !continuousCapture);
         if (continuousCapture)
         {
-            captureState->StartCapture([&, targetWindow](MappedTextureView textureView) {
-                UpdateCaptureState(commonState, state, targetWindow, textureView, continuousCapture);
+            captureState->StartCapture([&, window](MappedTextureView textureView) {
+                UpdateCaptureState(commonState, state, window, textureView, continuousCapture);
             });
 
-            while (IsWindow(targetWindow) && !commonState.closeOnOtherMonitors)
+            while (IsWindow(window) && !commonState.closeOnOtherMonitors)
             {
                 std::this_thread::sleep_for(consts::TARGET_FRAME_DURATION);
             }
@@ -411,10 +411,10 @@ std::thread StartCapturingThread(const CommonState& commonState,
             const auto textureView = captureState->CaptureSingleFrame();
 
             state.Access([&](MeasureToolState& s) {
-                s.capturedScreenTextures[targetWindow] = textureView.GetTexture();
+                s.perScreen[window].capturedScreenTexture = textureView.GetTexture();
             });
 
-            while (IsWindow(targetWindow) && !commonState.closeOnOtherMonitors)
+            while (IsWindow(window) && !commonState.closeOnOtherMonitors)
             {
                 const auto now = std::chrono::high_resolution_clock::now();
                 if (monitorArea.inside(commonState.cursorPos))
@@ -423,7 +423,7 @@ std::thread StartCapturingThread(const CommonState& commonState,
                     auto path = std::filesystem::temp_directory_path() / "frame.bmp";
                     textureView.view.SaveAsBitmap(path.string().c_str());
 #endif
-                    UpdateCaptureState(commonState, state, targetWindow, textureView, continuousCapture);
+                    UpdateCaptureState(commonState, state, window, textureView, continuousCapture);
                 }
 
                 const auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);

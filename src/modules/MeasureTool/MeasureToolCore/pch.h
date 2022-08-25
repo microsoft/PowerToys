@@ -98,3 +98,5 @@ template<typename Func>
         }
     } };
 }
+
+#define WM_CURSOR_LEFT_MONITOR (WM_USER + 1)

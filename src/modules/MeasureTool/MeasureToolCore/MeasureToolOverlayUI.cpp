@@ -64,6 +64,18 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
 {
     switch (message)
     {
+    case WM_CURSOR_LEFT_MONITOR:
+    {
+        if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
+        {
+            state->Access([&](MeasureToolState& s) {
+                s.perScreen[window].measuredEdges = {};
+            });
+        }
+        break;
+    }
+    case WM_NCHITTEST:
+        return HTCLIENT;
     case WM_CREATE:
     {
         auto state = GetWindowCreateParam<Serialized<MeasureToolState>*>(lparam);
@@ -99,9 +111,9 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
         {
             const int8_t step = static_cast<short>(HIWORD(wparam)) < 0 ? -consts::MOUSE_WHEEL_TOLERANCE_STEP : consts::MOUSE_WHEEL_TOLERANCE_STEP;
             state->Access([step](MeasureToolState& s) {
-                int wideVal = s.pixelTolerance;
+                int wideVal = s.global.pixelTolerance;
                 wideVal += step;
-                s.pixelTolerance = static_cast<uint8_t>(std::clamp(wideVal, 0, 255));
+                s.global.pixelTolerance = static_cast<uint8_t>(std::clamp(wideVal, 0, 255));
             });
         }
         break;
@@ -112,7 +124,7 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
 
 void DrawMeasureToolTick(const CommonState& commonState,
                          Serialized<MeasureToolState>& toolState,
-                         HWND overlayWindow,
+                         HWND window,
                          D2DState& d2dState)
 {
     bool continuousCapture = {};
@@ -125,23 +137,26 @@ void DrawMeasureToolTick(const CommonState& commonState,
     winrt::com_ptr<ID3D11Texture2D> backgroundTextureToConvert;
 
     toolState.Read([&](const MeasureToolState& state) {
-        continuousCapture = state.continuousCapture;
-        drawFeetOnCross = state.drawFeetOnCross;
-        mode = state.mode;
-        measuredEdges = state.measuredEdges;
+        continuousCapture = state.global.continuousCapture;
+        drawFeetOnCross = state.global.drawFeetOnCross;
+        mode = state.global.mode;
 
-        if (continuousCapture)
-            return;
+        if (auto it = state.perScreen.find(window); it != end(state.perScreen))
+        {
+            const auto& perScreen = it->second;
+            measuredEdges = perScreen.measuredEdges;
 
-        if (const auto bitmap = state.capturedScreenBitmaps.find(overlayWindow);
-            bitmap != end(state.capturedScreenBitmaps))
-        {
-            backgroundBitmap = bitmap->second;
-        }
-        else if (const auto texture = state.capturedScreenTextures.find(overlayWindow);
-                 texture != end(state.capturedScreenTextures))
-        {
-            backgroundTextureToConvert = texture->second;
+            if (continuousCapture)
+                return;
+
+            if (perScreen.capturedScreenBitmap)
+            {
+                backgroundBitmap = perScreen.capturedScreenBitmap;
+            }
+            else if (perScreen.capturedScreenTexture)
+            {
+                backgroundTextureToConvert = perScreen.capturedScreenTexture;
+            }
         }
     });
     switch (mode)
@@ -166,11 +181,14 @@ void DrawMeasureToolTick(const CommonState& commonState,
         if (backgroundBitmap)
         {
             toolState.Access([&](MeasureToolState& state) {
-                state.capturedScreenTextures.erase(overlayWindow);
-                state.capturedScreenBitmaps[overlayWindow] = backgroundBitmap;
+                state.perScreen[window].capturedScreenTexture = {};
+                state.perScreen[window].capturedScreenBitmap = backgroundBitmap;
             });
         }
     }
+
+    if (continuousCapture)
+        d2dState.rt->Clear();
 
     // Add 1px to each dim, since the range we obtain from measuredEdges is inclusive.
     const float hMeasure = static_cast<float>(measuredEdges.right - measuredEdges.left + 1);
@@ -193,7 +211,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
     d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
 
     POINT cursorPos = commonState.cursorPos;
-    ScreenToClient(overlayWindow, &cursorPos);
+    ScreenToClient(window, &cursorPos);
 
     if (drawHorizontalCrossLine)
     {
@@ -271,5 +289,5 @@ void DrawMeasureToolTick(const CommonState& commonState,
                          static_cast<float>(cursorPos.x),
                          static_cast<float>(cursorPos.y),
                          true,
-                         overlayWindow);
+                         window);
 }

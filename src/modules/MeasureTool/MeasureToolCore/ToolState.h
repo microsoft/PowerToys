@@ -34,8 +34,12 @@ struct CommonState
 
 struct BoundsToolState
 {
-    std::optional<D2D_POINT_2F> currentRegionStart;
-    std::unordered_map<HWND, std::vector<D2D1_RECT_F>> measurementsByScreen;
+    struct PerScreen
+    {
+        std::optional<D2D_POINT_2F> currentRegionStart;
+        std::vector<D2D1_RECT_F> measurements;
+    };
+    std::unordered_map<HWND, PerScreen> perScreen;
 
     CommonState* commonState = nullptr; // required for WndProc
 };
@@ -48,21 +52,29 @@ struct MeasureToolState
         Vertical,
         Cross
     };
-    uint8_t pixelTolerance = 30;
-    bool continuousCapture = true;
-    bool drawFeetOnCross = true;
-    RECT measuredEdges = {};
-    bool cursorInLeftScreenHalf = false;
-    bool cursorInTopScreenHalf = false;
-    bool perColorChannelEdgeDetection = false;
-    Mode mode = Mode::Cross;
 
-    // While not in a continuous capturing mode, we need to draw captured backgrounds. These are passed
-    // directly from a capturing thread.
-    std::unordered_map<HWND, winrt::com_ptr<ID3D11Texture2D>> capturedScreenTextures;
-    // After the drawing thread finds its capturedScreen, it converts it to
-    // a Direct2D compatible bitmap and caches it here
-    std::unordered_map<HWND, winrt::com_ptr<ID2D1Bitmap>> capturedScreenBitmaps;
+    struct Global
+    {
+        uint8_t pixelTolerance = 30;
+        bool continuousCapture = true;
+        bool drawFeetOnCross = true;
+        bool perColorChannelEdgeDetection = false;
+        Mode mode = Mode::Cross;
+    } global;
+
+    struct PerScreen
+    {
+        bool cursorInLeftScreenHalf = false;
+        bool cursorInTopScreenHalf = false;
+        RECT measuredEdges = {};
+        // While not in a continuous capturing mode, we need to draw captured backgrounds. These are passed
+        // directly from a capturing thread.
+        winrt::com_ptr<ID3D11Texture2D> capturedScreenTexture;
+        // After the drawing thread finds its capturedScreen, it converts it to
+        // a Direct2D compatible bitmap and caches it here
+        winrt::com_ptr<ID2D1Bitmap> capturedScreenBitmap;
+    };
+    std::unordered_map<HWND, PerScreen> perScreen;
 
     CommonState* commonState = nullptr; // required for WndProc
 };

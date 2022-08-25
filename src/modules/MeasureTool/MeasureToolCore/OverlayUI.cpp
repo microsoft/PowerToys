@@ -19,6 +19,7 @@ namespace NonLocalizable
 void CreateOverlayWindowClasses()
 {
     WNDCLASSEXW wcex{ .cbSize = sizeof(WNDCLASSEX), .hInstance = GetModuleHandleW(nullptr) };
+
     wcex.lpfnWndProc = MeasureToolWndProc;
     wcex.lpszClassName = NonLocalizable::MeasureToolOverlayWindowName;
     RegisterClassExW(&wcex);
@@ -38,7 +39,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     std::call_once(windowClassesCreatedFlag, CreateOverlayWindowClasses);
 
     const auto screenArea = monitor.GetScreenSize(false);
-    HWND window{ CreateWindowExW(WS_EX_TOOLWINDOW,
+    HWND window{ CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
                                  windowClass,
                                  L"PowerToys.MeasureToolOverlay",
                                  WS_POPUP,
@@ -46,7 +47,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
                                  screenArea.top(),
                                  screenArea.width(),
                                  screenArea.height(),
-                                 nullptr,
+                                 HWND_DESKTOP,
                                  nullptr,
                                  GetModuleHandleW(nullptr),
                                  extraParam) };
@@ -104,23 +105,27 @@ void OverlayUIState::RunUILoop()
     while (IsWindow(_window) && !_commonState.closeOnOtherMonitors)
     {
         _d2dState.rt->BeginDraw();
-        _d2dState.rt->Clear(D2D1::ColorF(1.f, 1.f, 1.f, 0.f));
+        
         const auto cursor = _commonState.cursorPos;
         const bool cursorOverToolbar = _commonState.toolbarBoundingBox.inside(cursor);
-        const bool cursorOnScreen = _monitorArea.inside(cursor);
-        const bool draw = !cursorOverToolbar && cursorOnScreen;
-        if (draw)
-        {
+        if (!cursorOverToolbar)
             _tickFunc();
-        }
+        else 
+            _d2dState.rt->Clear();
 
         _d2dState.rt->EndDraw();
 
+        const bool cursorOnScreen = _monitorArea.inside(cursor);
         if (cursorOnScreen != _cursorOnScreen)
         {
             _cursorOnScreen = cursorOnScreen;
-            PostMessageW(_window, WM_USER, {}, {});
-            ShowWindow(_window, cursorOnScreen ? SW_SHOW : SW_HIDE);
+            if (!cursorOnScreen)
+            {
+                _d2dState.rt->BeginDraw();
+                _d2dState.rt->Clear();
+                _d2dState.rt->EndDraw();
+                PostMessageW(_window, WM_CURSOR_LEFT_MONITOR, {}, {});
+            }
         }
 
         run_message_loop(true, 1);

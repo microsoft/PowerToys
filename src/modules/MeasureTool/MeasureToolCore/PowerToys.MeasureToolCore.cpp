@@ -12,6 +12,8 @@
 #include "OverlayUI.h"
 #include "ScreenCapturing.h"
 
+//#define DEBUG_PRIMARY_MONITOR_ONLY
+
 namespace winrt::PowerToys::MeasureToolCore::implementation
 {
     void Core::MouseCaptureThread()
@@ -89,21 +91,27 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 
         _measureToolState.Access([horizontal, vertical, this](MeasureToolState& state) {
             if (horizontal)
-                state.mode = vertical ? MeasureToolState::Mode::Cross : MeasureToolState::Mode::Horizontal;
+                state.global.mode = vertical ? MeasureToolState::Mode::Cross : MeasureToolState::Mode::Horizontal;
             else
-                state.mode = MeasureToolState::Mode::Vertical;
+                state.global.mode = MeasureToolState::Mode::Vertical;
 
-            state.continuousCapture = _settings.continuousCapture;
-            state.drawFeetOnCross = _settings.drawFeetOnCross;
-            state.pixelTolerance = _settings.pixelTolerance;
-            state.perColorChannelEdgeDetection = _settings.perColorChannelEdgeDetection;
+            state.global.continuousCapture = _settings.continuousCapture;
+            state.global.drawFeetOnCross = _settings.drawFeetOnCross;
+            state.global.pixelTolerance = _settings.pixelTolerance;
+            state.global.perColorChannelEdgeDetection = _settings.perColorChannelEdgeDetection;
         });
 
+#if defined(DEBUG_PRIMARY_MONITOR_ONLY)
+        const auto& monitorInfo = MonitorInfo::GetPrimaryMonitor();
+#else
         for (const auto& monitorInfo : MonitorInfo::GetMonitors(true))
+#endif
         {
             auto overlayUI = OverlayUIState::Create(_measureToolState, _commonState, monitorInfo);
+#if !defined(DEBUG_PRIMARY_MONITOR_ONLY)
             if (!overlayUI)
                 continue;
+#endif
             _screenCaptureThreads.emplace_back(StartCapturingThread(_commonState,
                                                                     _measureToolState,
                                                                     overlayUI->overlayWindowHandle(),

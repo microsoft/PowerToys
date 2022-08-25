@@ -7,7 +7,7 @@
 #include <wil/com.h>
 #include <windef.h>
 
-#include <PerGlyphOpacityTextRender.h>
+#include "PerGlyphOpacityTextRender.h"
 
 enum Brush : size_t
 {

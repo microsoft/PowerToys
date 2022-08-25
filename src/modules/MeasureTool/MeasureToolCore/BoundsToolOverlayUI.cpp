@@ -31,22 +31,21 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         ScreenToClient(window, &cursorPos);
 
         D2D_POINT_2F newRegionStart = { .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
-        toolState->currentRegionStart = newRegionStart;
+        toolState->perScreen[window].currentRegionStart = newRegionStart;
         break;
     }
-    // We signal this when active monitor has changed -> must reset the state
-    case WM_USER:
+    case WM_CURSOR_LEFT_MONITOR:
     {
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
-        toolState->currentRegionStart = std::nullopt;
+        toolState->perScreen[window].currentRegionStart = std::nullopt;
         break;
     }
     case WM_LBUTTONUP:
     {
         auto toolState = GetWindowParam<BoundsToolState*>(window);
-        if (!toolState || !toolState->currentRegionStart)
+        if (!toolState || !toolState->perScreen[window].currentRegionStart)
             break;
 
         toolState->commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
@@ -59,12 +58,12 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
             ScreenToClient(window, &cursorPos);
 
             D2D1_RECT_F rect;
-            std::tie(rect.left, rect.right) = std::minmax(static_cast<float>(cursorPos.x), toolState->currentRegionStart->x);
-            std::tie(rect.top, rect.bottom) = std::minmax(static_cast<float>(cursorPos.y), toolState->currentRegionStart->y);
-            toolState->measurementsByScreen[window].push_back(rect);
+            std::tie(rect.left, rect.right) = std::minmax(static_cast<float>(cursorPos.x), toolState->perScreen[window].currentRegionStart->x);
+            std::tie(rect.top, rect.bottom) = std::minmax(static_cast<float>(cursorPos.y), toolState->perScreen[window].currentRegionStart->y);
+            toolState->perScreen[window].measurements.push_back(rect);
         }
 
-        toolState->currentRegionStart = std::nullopt;
+        toolState->perScreen[window].currentRegionStart = std::nullopt;
         break;
     }
     case WM_RBUTTONUP:
@@ -73,14 +72,14 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         if (!toolState)
             break;
 
-        if (toolState->currentRegionStart)
-            toolState->currentRegionStart = std::nullopt;
+        if (toolState->perScreen[window].currentRegionStart)
+            toolState->perScreen[window].currentRegionStart = std::nullopt;
         else
         {
-            if (toolState->measurementsByScreen[window].empty())
+            if (toolState->perScreen[window].measurements.empty())
                 PostMessageW(window, WM_CLOSE, {}, {});
             else
-                toolState->measurementsByScreen[window].clear();
+                toolState->perScreen[window].measurements.clear();
         }
         break;
     }
@@ -94,7 +93,7 @@ namespace
     void DrawMeasurement(const D2D1_RECT_F rect,
                          const bool alignTextBoxToCenter,
                          const CommonState& commonState,
-                         HWND overlayWindow,
+                         HWND window,
                          const D2DState& d2dState)
     {
         const bool screenQuadrantAware = !alignTextBoxToCenter;
@@ -131,30 +130,34 @@ namespace
                              cornerX,
                              cornerY,
                              screenQuadrantAware,
-                             overlayWindow);
+                             window);
     }
 }
 
 void DrawBoundsToolTick(const CommonState& commonState,
                         const BoundsToolState& toolState,
-                        const HWND overlayWindow,
+                        const HWND window,
                         const D2DState& d2dState)
 {
-    if (const auto it = toolState.measurementsByScreen.find(overlayWindow); it != end(toolState.measurementsByScreen))
-    {
-        for (const auto& measure : it->second)
-            DrawMeasurement(measure, true, commonState, overlayWindow, d2dState);
-    }
+    const auto it = toolState.perScreen.find(window);
+    if (it == end(toolState.perScreen))
+        return;
+    
+    d2dState.rt->Clear();
 
-    if (!toolState.currentRegionStart.has_value())
+    const auto& perScreen = it->second;
+    for (const auto& measure : perScreen.measurements)
+        DrawMeasurement(measure, true, commonState, window, d2dState);
+
+    if (!perScreen.currentRegionStart.has_value())
         return;
 
     POINT cursorPos = commonState.cursorPos;
-    ScreenToClient(overlayWindow, &cursorPos);
+    ScreenToClient(window, &cursorPos);
 
-    const D2D1_RECT_F rect{ .left = toolState.currentRegionStart->x,
-                            .top = toolState.currentRegionStart->y,
+    const D2D1_RECT_F rect{ .left = perScreen.currentRegionStart->x,
+                            .top = perScreen.currentRegionStart->y,
                             .right = static_cast<float>(cursorPos.x),
                             .bottom = static_cast<float>(cursorPos.y) };
-    DrawMeasurement(rect, false, commonState, overlayWindow, d2dState);
+    DrawMeasurement(rect, false, commonState, window, d2dState);
 }
