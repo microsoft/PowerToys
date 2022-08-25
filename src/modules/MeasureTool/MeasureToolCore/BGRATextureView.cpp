@@ -5,7 +5,7 @@
 #if defined(DEBUG_TEXTURE)
 void BGRATextureView::SaveAsBitmap(const char* filename) const
 {
-    wil::unique_hbitmap bitmap{ CreateBitmap(static_cast<int>(width), static_cast<int>(height), 1, 32, pixels) };
+    wil::unique_hbitmap bitmap{ CreateBitmap(static_cast<int>(pitch), static_cast<int>(height), 1, 32, pixels) };
     const HBITMAP hBitmap = bitmap.get();
     DWORD dwPaletteSize = 0, dwBmBitsSize = 0, dwDIBSize = 0, dwWritten = 0;
     LPBITMAPINFOHEADER lpBitmapInfo;
