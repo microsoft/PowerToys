@@ -9,6 +9,8 @@
 #endif
 #include <cassert>
 
+//#define DEBUG_TEXTURE
+
 #if defined(_M_ARM64)
 
 // Adopted from https://github.com/DLTcollab/sse2neon/blob/master/sse2neon.h
@@ -121,7 +123,7 @@ struct BGRATextureView
         }
     }
 
-#if !defined(NDEBUG)
+#if defined(DEBUG_TEXTURE)
     void SaveAsBitmap(const char* filename) const;
 #endif
 };

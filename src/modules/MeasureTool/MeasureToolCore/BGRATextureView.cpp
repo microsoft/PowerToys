@@ -2,7 +2,7 @@
 
 #include "BGRATextureView.h"
 
-#if !defined(NDEBUG)
+#if defined(DEBUG_TEXTURE)
 void BGRATextureView::SaveAsBitmap(const char* filename) const
 {
     wil::unique_hbitmap bitmap{ CreateBitmap(static_cast<int>(width), static_cast<int>(height), 1, 32, pixels) };

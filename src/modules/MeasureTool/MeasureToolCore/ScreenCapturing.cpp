@@ -409,6 +409,9 @@ std::thread StartCapturingThread(const CommonState& commonState,
                 const auto now = std::chrono::high_resolution_clock::now();
                 if (monitorArea.inside(commonState.cursorPos))
                 {
+#if defined(DEBUG_TEXTURE)
+                    textureView.view.SaveAsBitmap("R:\\frame.bmp");
+#endif
                     UpdateCaptureState(commonState, state, targetWindow, textureView, continuousCapture);
                 }
                 const auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
