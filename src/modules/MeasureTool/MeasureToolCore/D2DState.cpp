@@ -27,6 +27,7 @@ D2DState::D2DState(const HWND overlayWindow, std::vector<D2D1::ColorF> solidBrus
 
     winrt::check_hresult(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), writeFactory.put_unknown()));
 
+    // We should always use DPIAware::DEFAULT_DPI, since it's the correct thing to do in DPI-Aware mode
     auto renderTargetProperties = D2D1::RenderTargetProperties(
         D2D1_RENDER_TARGET_TYPE_DEFAULT,
         D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
