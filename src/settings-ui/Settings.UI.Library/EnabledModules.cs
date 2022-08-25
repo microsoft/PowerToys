@@ -239,6 +239,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool powerOCR = true;
+
+        [JsonPropertyName("PowerOCR")]
+        public bool PowerOCR
+        {
+            get => powerOCR;
+            set
+            {
+                if (powerOCR != value)
+                {
+                    LogTelemetryEvent(value);
+                    powerOCR = value;
+                }
+            }
+        }
+
         private bool measureTool = true;
 
         [JsonPropertyName("Measure Tool")]
@@ -253,7 +269,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     measureTool = value;
                 }
             }
-        }
+        }        
 
         public string ToJsonString()
         {

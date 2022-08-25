@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Version.props" />
+
+  <PropertyGroup>
+    <AssemblyTitle>PowerToys.PowerOCR</AssemblyTitle>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerOCR</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ProjectGuid>{25C91A4E-BA4E-467A-85CD-8B62545BF674}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <ApplicationIcon>PowerOCRLogo.ico</ApplicationIcon>
+    <PackageIcon>PowerOCRLogo.png</PackageIcon>
+    <RootNamespace>PowerOCR</RootNamespace>
+    <AssemblyName>PowerToys.PowerOCR</AssemblyName>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <ProjectTypeGuids>{2150E333-8FDC-42A3-9474-1A3956D46DE8}</ProjectTypeGuids>
+    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <Resource Include="PowerOCRLogo.ico" />
+	  <Resource Include="PowerOCRLogo.png" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+
+</Project>
