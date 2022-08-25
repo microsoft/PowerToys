@@ -156,6 +156,7 @@ BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
 BITMAPINFOHEADER
+Bitmaps
 bitmask
 BITSPIXEL
 bla
@@ -468,6 +469,7 @@ dllexport
 dllhost
 dllmain
 dlls
+Dmap
 DNLEN
 Dns
 doctype
@@ -487,6 +489,7 @@ dreamsofameaningfullife
 drivedetectionwarning
 dshow
 dst
+DTo
 dutil
 DVASPECT
 DVASPECTINFO
