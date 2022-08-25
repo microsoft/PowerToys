@@ -115,10 +115,6 @@ void OverlayUIState::RunUILoop()
         }
 
         _d2dState.rt->EndDraw();
-        if (draw)
-        {
-            InvalidateRect(_window, nullptr, true);
-        }
 
         if (cursorOnScreen != _cursorOnScreen)
         {
