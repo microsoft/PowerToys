@@ -19,6 +19,7 @@ public class PowerAccent : IDisposable
     private char[] _characters = Array.Empty<char>();
     private int _selectedIndex = -1;
     private Stopwatch _stopWatch;
+    private bool _triggeredWithSpace;
 
     public event Action<bool, char[]> OnChangeDisplay;
 
@@ -55,6 +56,8 @@ public class PowerAccent : IDisposable
 
         if (!_visible && letterPressed.HasValue && triggerPressed.HasValue)
         {
+            // Keep track if it was triggered with space so that it can be typed on false starts.
+            _triggeredWithSpace = triggerPressed.Value == TriggerKey.Space;
             _visible = true;
             _characters = WindowsFunctions.IsCapitalState() ? ToUpper(_settingService.GetLetterKey(letterPressed.Value)) : _settingService.GetLetterKey(letterPressed.Value);
             OnChangeDisplay?.Invoke(true, _characters);
@@ -133,6 +136,12 @@ public class PowerAccent : IDisposable
                 if (_stopWatch.ElapsedMilliseconds < _settingService.InputTime)
                 {
                     /* Debug.WriteLine("Insert before inputTime - " + _stopWatch.ElapsedMilliseconds); */
+
+                    // False start, we should output the space if it was the trigger.
+                    if (_triggeredWithSpace)
+                    {
+                        WindowsFunctions.Insert(' ');
+                    }
 
                     OnChangeDisplay?.Invoke(false, null);
                     _selectedIndex = -1;
