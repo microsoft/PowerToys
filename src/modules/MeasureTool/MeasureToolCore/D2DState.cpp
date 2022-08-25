@@ -71,7 +71,7 @@ D2DState::D2DState(const HWND overlayWindow, std::vector<D2D1::ColorF> solidBrus
     winrt::check_hresult(deviceContext->CreateEffect(CLSID_D2D12DAffineTransform, &affineTransformEffect));
     affineTransformEffect->SetInputEffect(0, shadowEffect.get());
 
-    textRenderer = winrt::make_self<PerGlyphOpacityTextRender>(d2dFactory, rt, solidBrushes[Brush::foreground], dpiScale);
+    textRenderer = winrt::make_self<PerGlyphOpacityTextRender>(d2dFactory, rt, solidBrushes[Brush::foreground]);
 }
 
 void D2DState::DrawTextBox(const wchar_t* text,

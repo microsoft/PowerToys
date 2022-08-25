@@ -5,12 +5,10 @@
 PerGlyphOpacityTextRender::PerGlyphOpacityTextRender(
     wil::com_ptr<ID2D1Factory> pD2DFactory,
     wil::com_ptr<ID2D1HwndRenderTarget> rt,
-    wil::com_ptr<ID2D1SolidColorBrush> baseBrush,
-    const float dpiScale) :
+    wil::com_ptr<ID2D1SolidColorBrush> baseBrush) :
     _pD2DFactory{ pD2DFactory },
     _rt{ rt },
-    _baseBrush{ baseBrush },
-    _dpiScale{ dpiScale }
+    _baseBrush{ baseBrush }
 {
 }
 
@@ -28,7 +26,6 @@ HRESULT __stdcall PerGlyphOpacityTextRender::DrawGlyphRun(void* /*clientDrawingC
         _rt->DrawGlyphRun(D2D1_POINT_2F{ .x = baselineOriginX, .y = baselineOriginY }, glyphRun, _baseBrush.get(), measuringMode);
         return hr;
     }
-
     // Create the path geometry.
     wil::com_ptr<ID2D1PathGeometry> pathGeometry;
     hr = _pD2DFactory->CreatePathGeometry(&pathGeometry);
@@ -139,6 +136,6 @@ HRESULT __stdcall PerGlyphOpacityTextRender::GetCurrentTransform(void* /*clientD
 
 HRESULT __stdcall PerGlyphOpacityTextRender::GetPixelsPerDip(void* /*clientDrawingContext*/, FLOAT* pixelsPerDip) noexcept
 {
-    *pixelsPerDip = _dpiScale;
+    _rt->GetDpi(pixelsPerDip, pixelsPerDip);
     return S_OK;
 }
