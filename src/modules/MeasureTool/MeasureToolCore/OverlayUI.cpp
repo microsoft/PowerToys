@@ -129,6 +129,8 @@ void OverlayUIState::RunUILoop()
 
         run_message_loop(true, 1);
     }
+    
+    DestroyWindow(_window);
 }
 
 template<typename StateT, typename TickFuncT>

@@ -51,9 +51,6 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
     }
     case WM_ERASEBKGND:
         return 1;
-    case WM_CLOSE:
-        DestroyWindow(window);
-        break;
     case WM_KEYUP:
         if (wparam == VK_ESCAPE)
         {

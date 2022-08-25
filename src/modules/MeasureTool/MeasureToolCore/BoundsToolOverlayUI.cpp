@@ -16,9 +16,6 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     }
     case WM_ERASEBKGND:
         return 1;
-    case WM_CLOSE:
-        DestroyWindow(window);
-        break;
     case WM_KEYUP:
         if (wparam == VK_ESCAPE)
         {
