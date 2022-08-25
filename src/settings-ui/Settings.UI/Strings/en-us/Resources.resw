@@ -2175,7 +2175,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>PowerAccent</value>
   </data>
   <data name="PowerAccent.ModuleDescription" xml:space="preserve">
-    <value>PowerAccent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent. While holding the key for the character you want to add an accent to, press the Activation Key and a overlay to select the accented character will appear.</value>
+    <value>PowerAccent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent. While holding the key for the character you want to add an accent to, press the Activation Key and an overlay to select the accented character will appear.</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="PowerAccent.ModuleTitle" xml:space="preserve">
