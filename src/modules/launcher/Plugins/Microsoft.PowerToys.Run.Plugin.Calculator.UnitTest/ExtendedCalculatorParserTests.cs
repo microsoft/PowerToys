@@ -223,6 +223,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                new object[] { "abs(-2)", 2M },
                new object[] { "abs(2)", 2M },
                new object[] { "0+(1*2)/(0+1)", 2M }, // Validate that division by "(0+1)" is not interpret as division by zero.
+               new object[] { "0+(1*2)/0.5", 4M }, // Validate that division by  number with decimal digits is not interpret as division by zero.
            };
 
         [DataTestMethod]

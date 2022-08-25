@@ -92,5 +92,26 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(result, 0);
             Assert.AreEqual(resultWithKeyword, 0);
         }
+
+        [DataTestMethod]
+        [DataRow("10+(8*9)/0,5")] // German decimal digit separator
+        [DataRow("10+(8*9)/0.5")]
+        [DataRow("10+(8*9)/1,5")] // German decimal digit separator
+        [DataRow("10+(8*9)/1.5")]
+        public void NoErrorForDivisionByNumberWithDecimalDigits(string typedString)
+        {
+            // Setup
+            Mock<Main> main = new ();
+            Query expectedQuery = new (typedString);
+            Query expectedQueryWithKeyword = new ("=" + typedString, "=");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
+            var resultWithKeyword = main.Object.Query(expectedQueryWithKeyword).FirstOrDefault().SubTitle;
+
+            // Assert
+            Assert.AreEqual(result, "Copy this number to the clipboard");
+            Assert.AreEqual(resultWithKeyword, "Copy this number to the clipboard");
+        }
     }
 }
