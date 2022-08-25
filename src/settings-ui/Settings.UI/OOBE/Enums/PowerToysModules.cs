@@ -16,6 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         KBM,
         MouseUtils,
         PowerAccent,
+        PowerOCR,
         PowerRename,
         Run,
         ShortcutGuide,

@@ -1429,6 +1429,7 @@ Objbase
 OBJID
 objidl
 oblitum
+ocr
 odbc
 odbccp
 Oem
@@ -1488,6 +1489,7 @@ PARENTNOTIFY
 PARENTRELATIVEEDITING
 PARENTRELATIVEFORADDRESSBAR
 PARENTRELATIVEPARSING
+PArgb
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
 pathcch
@@ -1545,6 +1547,7 @@ posix
 powercfg
 poweraccent
 powerlauncher
+POWEROCR
 powerpreview
 powerrename
 POWERRENAMECONTEXTMENU

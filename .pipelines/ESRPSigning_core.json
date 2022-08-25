@@ -25,13 +25,13 @@
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTop.exe",
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTopModuleInterface.dll",
                 
-                "modules\\ColorPicker\\ColorPicker.dll",
-                "modules\\ColorPicker\\ColorPickerUI.dll",
-                "modules\\ColorPicker\\ColorPickerUI.exe",
-
                 "modules\\ColorPicker\\PowerToys.ColorPicker.dll",
                 "modules\\ColorPicker\\PowerToys.ColorPickerUI.dll",
                 "modules\\ColorPicker\\PowerToys.ColorPickerUI.exe",
+
+                "modules\\PowerOCR\\PowerToys.PowerOCRModuleInterface.dll",
+                "modules\\PowerOCR\\PowerToys.PowerOCR.dll",
+                "modules\\PowerOCR\\PowerToys.PowerOCR.exe",
 
                 "modules\\Awake\\PowerToys.AwakeModuleInterface.dll",
                 "modules\\Awake\\PowerToys.Awake.exe",
