@@ -269,7 +269,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     measureTool = value;
                 }
             }
-        }        
+        }
 
         public string ToJsonString()
         {
