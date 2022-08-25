@@ -22,9 +22,8 @@ internal static class WindowsFunctions
                     new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = (ushort)User32.VK.VK_BACK, dwFlags = User32.KEYEVENTF.KEYEVENTF_KEYUP } },
                 };
 
-                // DO NOT REMOVE Trace.WriteLine (Powershell doesn't take back issue)
                 var temp1 = User32.SendInput((uint)inputsBack.Length, inputsBack, sizeof(User32.INPUT));
-                System.Diagnostics.Trace.WriteLine(temp1);
+                System.Threading.Thread.Sleep(1); // Some apps, like Terminal, need a little wait to process the sent backspace or they'll ignore it.
             }
 
             // Letter
@@ -33,7 +32,6 @@ internal static class WindowsFunctions
                 new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = 0, dwFlags = User32.KEYEVENTF.KEYEVENTF_UNICODE, wScan = c } },
             };
             var temp2 = User32.SendInput((uint)inputsInsert.Length, inputsInsert, sizeof(User32.INPUT));
-            System.Diagnostics.Trace.WriteLine(temp2);
         }
     }
 
