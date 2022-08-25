@@ -337,6 +337,13 @@ void UpdateCaptureState(const CommonState& commonState,
         perColorChannelEdgeDetection = state.global.perColorChannelEdgeDetection;
     });
 
+    // We must offset mouse cursor, since its position is off by one from its center (TODO: reason?)
+    if (cursorPos.x > 0)
+        --cursorPos.x;
+
+    if (cursorPos.y > 0)
+        --cursorPos.y;
+
     // Every one of 4 edges is a coordinate of the last similar pixel in a row
     // Example: given a 5x5 green square on a blue background with its top-left pixel
     //          at 20x100, bounds should be [20,100]-[24,104]. We don't include [25,105] or
