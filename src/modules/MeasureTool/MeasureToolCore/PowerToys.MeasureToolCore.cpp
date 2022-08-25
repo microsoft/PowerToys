@@ -75,11 +75,17 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     {
         ResetState();
 
+#if defined(DEBUG_PRIMARY_MONITOR_ONLY)
+        const auto& monitorInfo = MonitorInfo::GetPrimaryMonitor();
+#else
         for (const auto& monitorInfo : MonitorInfo::GetMonitors(true))
+#endif
         {
             auto overlayUI = OverlayUIState::Create(_boundsToolState, _commonState, monitorInfo);
+#if !defined(DEBUG_PRIMARY_MONITOR_ONLY)
             if (!overlayUI)
                 continue;
+#endif
             _overlayUIStates.push_back(std::move(overlayUI));
         }
         Trace::BoundsToolActivated();
