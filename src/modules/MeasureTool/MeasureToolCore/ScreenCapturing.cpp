@@ -9,17 +9,17 @@
 
 //#define DEBUG_EDGES
 
-class OwnedTextureView
+class MappedTextureView
 {
-    winrt::com_ptr<ID3D11Texture2D> texture;
     winrt::com_ptr<ID3D11DeviceContext> context;
+    winrt::com_ptr<ID3D11Texture2D> texture;
 
 public:
     BGRATextureView view;
-    OwnedTextureView(winrt::com_ptr<ID3D11Texture2D> _texture,
-                     winrt::com_ptr<ID3D11DeviceContext> _context,
-                     const size_t textureWidth,
-                     const size_t textureHeight) :
+    MappedTextureView(winrt::com_ptr<ID3D11Texture2D> _texture,
+                      winrt::com_ptr<ID3D11DeviceContext> _context,
+                      const size_t textureWidth,
+                      const size_t textureHeight) :
         texture{ std::move(_texture) }, context{ std::move(_context) }
     {
         D3D11_TEXTURE2D_DESC desc;
@@ -34,10 +34,15 @@ public:
         view.height = textureHeight;
     }
 
-    OwnedTextureView(OwnedTextureView&&) = default;
-    OwnedTextureView& operator=(OwnedTextureView&&) = default;
+    MappedTextureView(MappedTextureView&&) = default;
+    MappedTextureView& operator=(MappedTextureView&&) = default;
 
-    ~OwnedTextureView()
+    inline winrt::com_ptr<ID3D11Texture2D> GetTexture() const
+    {
+        return texture;
+    }
+
+    ~MappedTextureView()
     {
         if (context && texture)
             context->Unmap(texture.get(), D3D11CalcSubresource(0, 0, 0));
@@ -56,7 +61,7 @@ class D3DCaptureState final
     winrt::Direct3D11CaptureFramePool framePool;
     winrt::GraphicsCaptureSession session;
 
-    std::function<void(OwnedTextureView)> frameCallback;
+    std::function<void(MappedTextureView)> frameCallback;
     Box monitorArea;
     bool captureOutsideOfMonitor = false;
 
@@ -85,8 +90,8 @@ public:
 
     ~D3DCaptureState();
 
-    void StartCapture(std::function<void(OwnedTextureView)> _frameCallback);
-    OwnedTextureView CaptureSingleFrame();
+    void StartCapture(std::function<void(MappedTextureView)> _frameCallback);
+    MappedTextureView CaptureSingleFrame();
 
     void StopCapture();
 };
@@ -167,7 +172,7 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
             winrt::check_hresult(swapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), texture.put_void()));
             auto gpuTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
             texture = CopyFrameToCPU(gpuTexture);
-            OwnedTextureView textureView{ texture, context, static_cast<size_t>(frameSize.Width), static_cast<size_t>(frameSize.Height) };
+            MappedTextureView textureView{ texture, context, static_cast<size_t>(frameSize.Width), static_cast<size_t>(frameSize.Height) };
 
             frameCallback(std::move(textureView));
         }
@@ -280,18 +285,18 @@ void D3DCaptureState::StartSessionInPreferredMode()
     session.StartCapture();
 }
 
-void D3DCaptureState::StartCapture(std::function<void(OwnedTextureView)> _frameCallback)
+void D3DCaptureState::StartCapture(std::function<void(MappedTextureView)> _frameCallback)
 {
     frameCallback = std::move(_frameCallback);
     StartSessionInPreferredMode();
 }
 
-OwnedTextureView D3DCaptureState::CaptureSingleFrame()
+MappedTextureView D3DCaptureState::CaptureSingleFrame()
 {
-    std::optional<OwnedTextureView> result;
+    std::optional<MappedTextureView> result;
     wil::shared_event frameArrivedEvent(wil::EventOptions::ManualReset);
 
-    frameCallback = [frameArrivedEvent, &result, this](OwnedTextureView tex) {
+    frameCallback = [frameArrivedEvent, &result, this](MappedTextureView tex) {
         if (result)
             return;
 
@@ -316,7 +321,7 @@ void D3DCaptureState::StopCapture()
 void UpdateCaptureState(const CommonState& commonState,
                         Serialized<MeasureToolState>& state,
                         HWND targetWindow,
-                        const OwnedTextureView& textureView,
+                        const MappedTextureView& textureView,
                         const bool continuousCapture)
 {
     auto cursorPos = commonState.cursorPos;
@@ -391,7 +396,7 @@ std::thread StartCapturingThread(const CommonState& commonState,
                                                     !continuousCapture);
         if (continuousCapture)
         {
-            captureState->StartCapture([&, targetWindow](OwnedTextureView textureView) {
+            captureState->StartCapture([&, targetWindow](MappedTextureView textureView) {
                 UpdateCaptureState(commonState, state, targetWindow, textureView, continuousCapture);
             });
 
@@ -404,6 +409,11 @@ std::thread StartCapturingThread(const CommonState& commonState,
         else
         {
             const auto textureView = captureState->CaptureSingleFrame();
+
+            state.Access([&](MeasureToolState& s) {
+                s.capturedScreenTextures[targetWindow] = textureView.GetTexture();
+            });
+
             while (IsWindow(targetWindow) && !commonState.closeOnOtherMonitors)
             {
                 const auto now = std::chrono::high_resolution_clock::now();
@@ -415,6 +425,7 @@ std::thread StartCapturingThread(const CommonState& commonState,
 #endif
                     UpdateCaptureState(commonState, state, targetWindow, textureView, continuousCapture);
                 }
+
                 const auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
                 if (frameTime < consts::TARGET_FRAME_DURATION)
                 {

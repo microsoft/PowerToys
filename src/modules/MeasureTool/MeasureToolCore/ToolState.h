@@ -36,6 +36,7 @@ struct BoundsToolState
 {
     std::optional<D2D_POINT_2F> currentRegionStart;
     std::unordered_map<HWND, std::vector<D2D1_RECT_F>> measurementsByScreen;
+
     CommonState* commonState = nullptr; // required for WndProc
 };
 
@@ -55,5 +56,13 @@ struct MeasureToolState
     bool cursorInTopScreenHalf = false;
     bool perColorChannelEdgeDetection = false;
     Mode mode = Mode::Cross;
+
+    // While not in a continuous capturing mode, we need to draw captured backgrounds. These are passed
+    // directly from a capturing thread.
+    std::unordered_map<HWND, winrt::com_ptr<ID3D11Texture2D>> capturedScreenTextures;
+    // After the drawing thread finds its capturedScreen, it converts it to
+    // a Direct2D compatible bitmap and caches it here
+    std::unordered_map<HWND, winrt::com_ptr<ID2D1Bitmap>> capturedScreenBitmaps;
+
     CommonState* commonState = nullptr; // required for WndProc
 };

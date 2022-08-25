@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 
+#include "BGRATextureView.h"
 #include "constants.h"
 #include "Clipboard.h"
 #include "MeasureToolOverlayUI.h"
@@ -32,6 +33,31 @@ namespace
 
         return { start, end };
     }
+}
+
+winrt::com_ptr<ID2D1Bitmap> ConvertID3D11Texture2DToD2D1Bitmap(const wil::com_ptr<ID2D1HwndRenderTarget>& rt,
+                                                               const winrt::com_ptr<ID3D11Texture2D>& texture)
+{
+    auto dxgiSurface = texture.try_as<IDXGISurface>();
+    if (!dxgiSurface)
+        return nullptr;
+
+    DXGI_MAPPED_RECT bitmap2Dmap;
+    winrt::check_hresult(dxgiSurface->Map(&bitmap2Dmap, DXGI_MAP_READ));
+
+    D2D1_BITMAP_PROPERTIES props = { .pixelFormat = rt->GetPixelFormat() };
+    rt->GetDpi(&props.dpiX, &props.dpiY);
+    const auto sizeF = rt->GetSize();
+    winrt::com_ptr<ID2D1Bitmap> bitmap;
+    winrt::check_hresult(rt->CreateBitmap(D2D1::SizeU(static_cast<uint32_t>(sizeF.width),
+                                                      static_cast<uint32_t>(sizeF.height)),
+                                          bitmap2Dmap.pBits,
+                                          bitmap2Dmap.Pitch,
+                                          props,
+                                          bitmap.put()));
+    winrt::check_hresult(dxgiSurface->Unmap());
+
+    return bitmap;
 }
 
 LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
@@ -89,16 +115,36 @@ void DrawMeasureToolTick(const CommonState& commonState,
                          HWND overlayWindow,
                          D2DState& d2dState)
 {
-    MeasureToolState mts;
-    toolState.Read([&mts](const MeasureToolState& state) {
-        mts = state;
-    });
+    bool continuousCapture = {};
+    bool drawFeetOnCross = {};
     bool drawHorizontalCrossLine = true;
     bool drawVerticalCrossLine = true;
+    RECT measuredEdges{};
+    MeasureToolState::Mode mode = {};
+    winrt::com_ptr<ID2D1Bitmap> backgroundBitmap;
+    winrt::com_ptr<ID3D11Texture2D> backgroundTextureToConvert;
 
-    const bool continuousCapture = mts.continuousCapture;
-    const bool drawFeetOnCross = mts.drawFeetOnCross;
-    switch (mts.mode)
+    toolState.Read([&](const MeasureToolState& state) {
+        continuousCapture = state.continuousCapture;
+        drawFeetOnCross = state.drawFeetOnCross;
+        mode = state.mode;
+        measuredEdges = state.measuredEdges;
+
+        if (continuousCapture)
+            return;
+
+        if (const auto bitmap = state.capturedScreenBitmaps.find(overlayWindow);
+            bitmap != end(state.capturedScreenBitmaps))
+        {
+            backgroundBitmap = bitmap->second;
+        }
+        else if (const auto texture = state.capturedScreenTextures.find(overlayWindow);
+                 texture != end(state.capturedScreenTextures))
+        {
+            backgroundTextureToConvert = texture->second;
+        }
+    });
+    switch (mode)
     {
     case MeasureToolState::Mode::Cross:
         drawHorizontalCrossLine = true;
@@ -114,15 +160,32 @@ void DrawMeasureToolTick(const CommonState& commonState,
         break;
     }
 
+    if (!continuousCapture && !backgroundBitmap && backgroundTextureToConvert)
+    {
+        backgroundBitmap = ConvertID3D11Texture2DToD2D1Bitmap(d2dState.rt, backgroundTextureToConvert);
+        if (backgroundBitmap)
+        {
+            toolState.Access([&](MeasureToolState& state) {
+                state.capturedScreenTextures.erase(overlayWindow);
+                state.capturedScreenBitmaps[overlayWindow] = backgroundBitmap;
+            });
+        }
+    }
+
     // Add 1px to each dim, since the range we obtain from measuredEdges is inclusive.
-    const float hMeasure = static_cast<float>(mts.measuredEdges.right - mts.measuredEdges.left + 1);
-    const float vMeasure = static_cast<float>(mts.measuredEdges.bottom - mts.measuredEdges.top + 1);
+    const float hMeasure = static_cast<float>(measuredEdges.right - measuredEdges.left + 1);
+    const float vMeasure = static_cast<float>(measuredEdges.bottom - measuredEdges.top + 1);
 
     // Prevent drawing until we get the first capture
-    const bool hasMeasure = (mts.measuredEdges.right != mts.measuredEdges.left) && (mts.measuredEdges.bottom != mts.measuredEdges.top);
+    const bool hasMeasure = (measuredEdges.right != measuredEdges.left) && (measuredEdges.bottom != measuredEdges.top);
     if (!hasMeasure)
     {
         return;
+    }
+
+    if (!continuousCapture && backgroundBitmap)
+    {
+        d2dState.rt->DrawBitmap(backgroundBitmap.get());
     }
 
     const auto previousAliasingMode = d2dState.rt->GetAntialiasMode();
@@ -134,7 +197,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
 
     if (drawHorizontalCrossLine)
     {
-        const D2D_POINT_2F hLineStart{ .x = static_cast<float>(mts.measuredEdges.left), .y = static_cast<float>(cursorPos.y) };
+        const D2D_POINT_2F hLineStart{ .x = static_cast<float>(measuredEdges.left), .y = static_cast<float>(cursorPos.y) };
         D2D_POINT_2F hLineEnd{ .x = hLineStart.x + hMeasure, .y = hLineStart.y };
         d2dState.rt->DrawLine(hLineStart, hLineEnd, d2dState.solidBrushes[Brush::line].get());
 
@@ -153,7 +216,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
 
     if (drawVerticalCrossLine)
     {
-        const D2D_POINT_2F vLineStart{ .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(mts.measuredEdges.top) };
+        const D2D_POINT_2F vLineStart{ .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(measuredEdges.top) };
         D2D_POINT_2F vLineEnd{ .x = vLineStart.x, .y = vLineStart.y + vMeasure };
         d2dState.rt->DrawLine(vLineStart, vLineEnd, d2dState.solidBrushes[Brush::line].get());
 
@@ -174,7 +237,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
 
     OverlayBoxText text;
     std::optional<size_t> crossSymbolPos;
-    switch (mts.mode)
+    switch (mode)
     {
     case MeasureToolState::Mode::Cross:
         measureStringBufLen = swprintf_s(text.buffer.data(),
