@@ -40,6 +40,7 @@ public partial class Selector : Window, IDisposable
         {
             CenterWindow();
             characters.ItemsSource = chars;
+            Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
         }
     }
 
