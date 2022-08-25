@@ -21,7 +21,10 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
             var argsPrefix = string.Empty;
             if (openQuake)
             {
-                argsPrefix = "--window _quake nt";
+                // It does not matter whether we add the "nt" argument here; when specifying the
+                // _quake window explicitly, Windows Terminal will always open a new tab when the
+                // window exists, or open a new window when it does not yet.
+                argsPrefix = "--window _quake";
             }
             else if (openNewTab)
             {

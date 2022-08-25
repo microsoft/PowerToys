@@ -15,8 +15,8 @@ namespace Microsoft.Plugin.WindowsTerminal.UnitTests
     public class TerminalHelperTests
     {
         [DataTestMethod]
-        [DataRow("Windows PowerShell", true, true, "--window _quake nt --profile \"Windows PowerShell\"")]
-        [DataRow("Windows PowerShell", false, true, "--window _quake nt --profile \"Windows PowerShell\"")]
+        [DataRow("Windows PowerShell", true, true, "--window _quake --profile \"Windows PowerShell\"")]
+        [DataRow("Windows PowerShell", false, true, "--window _quake --profile \"Windows PowerShell\"")]
         [DataRow("Windows PowerShell", true, false, "--window 0 nt --profile \"Windows PowerShell\"")]
         [DataRow("Windows PowerShell", false, false, " --profile \"Windows PowerShell\"")]
         public void ArgumentsTest(string profile, bool openNewTab, bool openQuake, string expectedArguments)

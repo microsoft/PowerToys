@@ -45,16 +45,16 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
 
             new PluginAdditionalOption()
             {
-                Key = ShowHiddenProfiles,
-                DisplayLabel = Resources.show_hidden_profiles,
+                Key = OpenQuake,
+                DisplayLabel = Resources.open_quake,
+                DisplayDescription = Resources.open_quake_description,
                 Value = false,
             },
 
             new PluginAdditionalOption()
             {
-                Key = OpenQuake,
-                DisplayLabel = Resources.open_quake,
-                DisplayDescription = Resources.open_quake_description,
+                Key = ShowHiddenProfiles,
+                DisplayLabel = Resources.show_hidden_profiles,
                 Value = false,
             },
         };
