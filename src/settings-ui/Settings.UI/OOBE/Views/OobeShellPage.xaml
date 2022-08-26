@@ -116,6 +116,14 @@
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
 
+                <muxc:NavigationViewItem x:Uid="Shell_PowerAccent"
+                                       Tag="PowerAccent">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                
                 <muxc:NavigationViewItem x:Uid="Shell_PowerOCR"
                                         Tag="PowerOCR">
                     <muxc:NavigationViewItem.Icon>

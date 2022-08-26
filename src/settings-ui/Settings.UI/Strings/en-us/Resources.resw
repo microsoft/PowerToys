@@ -2164,6 +2164,89 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
     <value>Enable round corners</value>
   </data>
+  <data name="LearnMore_PowerAccent.Text" xml:space="preserve">
+    <value>Learn more about PowerAccent</value>
+    <comment>PowerAccent is a product name, do not loc</comment>
+  </data>
+  <data name="PowerAccent_EnablePowerAccent.Header" xml:space="preserve">
+    <value>Enable PowerAccent</value>
+  </data>
+  <data name="Shell_PowerAccent.Content" xml:space="preserve">
+    <value>PowerAccent</value>
+  </data>
+  <data name="PowerAccent.ModuleDescription" xml:space="preserve">
+    <value>PowerAccent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent. While holding the key for the character you want to add an accent to, press the Activation Key (space key or left and right arrow keys) and an overlay to select the accented character will appear.</value>
+    <comment>key refers to a physical key on a keyboard</comment>
+  </data>
+  <data name="PowerAccent.ModuleTitle" xml:space="preserve">
+    <value>PowerAccent</value>
+  </data>
+  <data name="PowerAccent.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="Oobe_PowerAccent.Description" xml:space="preserve">
+    <value>PowerAccent is an easy way to write letters with accents, like on the phone or Mac.</value>
+  </data>
+  <data name="Oobe_PowerAccent.Title" xml:space="preserve">
+    <value>PowerAccent</value>
+  </data>
+  <data name="Oobe_PowerAccent_HowToUse.Text" xml:space="preserve">
+    <value>Open **PowerToys Settings** and enable PowerAccent. While holding the key for the character you want to add an accent to, press the Activation Key and an overlay to select the accented character will appear.</value>
+    <comment>key refers to a physical key on a keyboard</comment>
+  </data>
+  <data name="PowerAccent_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="PowerAccent_Activation_Shortcut.Header" xml:space="preserve">
+    <value>Activation key</value>
+  </data>
+  <data name="PowerAccent_Activation_Shortcut.Description" xml:space="preserve">
+    <value>Select the activation key to activate this module by holding down the letter and pressing the activation key</value>
+  </data>
+  <data name="PowerAccent_Activation_Key_Arrows.Content" xml:space="preserve">
+    <value>Left/Right Arrow</value>
+    <comment>Left/Right arrow keyboard keys.</comment>
+  </data>
+  <data name="PowerAccent_Activation_Key_Space.Content" xml:space="preserve">
+    <value>Space</value>
+    <comment>Space is the space keyboard key.</comment>
+  </data>
+  <data name="PowerAccent_Activation_Key_Both.Content" xml:space="preserve">
+    <value>Both</value>
+  </data>
+  <data name="PowerAccent_Toolbar.Header" xml:space="preserve">
+    <value>Toolbar</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition.Header" xml:space="preserve">
+    <value>Toolbar position</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_TopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_TopLeftCorner.Content" xml:space="preserve">
+    <value>Top left corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_TopRightCorner.Content" xml:space="preserve">
+    <value>Top right corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_BottomLeftCorner.Content" xml:space="preserve">
+    <value>Bottom left corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_BottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_BottomRightCorner.Content" xml:space="preserve">
+    <value>Bottom right corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_Center.Content" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
   <data name="LearnMore_PowerOcr.Text" xml:space="preserve">
     <value>Learn more about PowerOCR</value>
   </data>

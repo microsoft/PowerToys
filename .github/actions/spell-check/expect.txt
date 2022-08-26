@@ -201,10 +201,13 @@ BYPOSITION
 bytearray
 Caiguna
 CALG
+Calibri
 callbackptr
 Cangjie
 CANRENAME
+coord
 CAPTURECHANGED
+carret
 cassert
 CAtl
 cch
@@ -379,6 +382,7 @@ CYVIRTUALSCREEN
 cziplib
 Dac
 dacl
+damienleroy
 Danmarkshavn
 DARKPURPLE
 DARKTEAL
@@ -472,6 +476,7 @@ DPolicy
 DPSAPI
 DQTAT
 DQTYPE
+dragdrop
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
@@ -488,6 +493,7 @@ DVSD
 DVSL
 DVTARGETDEVICE
 DWINRT
+dwhkl
 dwl
 dwm
 dwmapi
@@ -678,6 +684,7 @@ HACCEL
 hangeul
 hanselman
 hardcoded
+hardcodet
 Hardlines
 HARDWAREINPUT
 hashcode
@@ -718,12 +725,13 @@ HIMAGELIST
 himl
 hinst
 hinstance
+hitted
 HIWORD
 HKCC
 HKCR
 HKCU
 hkey
-HKL
+hkl
 HKLM
 HKPD
 HKU
@@ -879,6 +887,7 @@ inheritdoc
 initguid
 Inkscape
 Inlines
+Inlining
 inorder
 INotification
 INotify
@@ -1008,6 +1017,7 @@ jxr
 jyuwono
 KBDLLHOOKSTRUCT
 kbm
+KCode
 KEYBDINPUT
 keybindings
 keyboardeventhandlers
@@ -1102,6 +1112,7 @@ LOCATIONCHANGE
 logconsole
 logfile
 LOGFONT
+Logique
 LOGMSG
 logon
 LOGPIXELSX
@@ -1153,6 +1164,8 @@ lzw
 Maarten
 Macquarie
 Magadan
+mah
+mahapps
 Mainwindow
 majortype
 MAJORVERSION
@@ -1209,6 +1222,7 @@ mfplat
 Mfsensorgroup
 mftransform
 mic
+michkap
 microsoft
 Midl
 mii
@@ -1531,6 +1545,7 @@ popup
 POPUPWINDOW
 posix
 powercfg
+poweraccent
 powerlauncher
 POWEROCR
 powerpreview
@@ -2163,6 +2178,7 @@ uwp
 uxtheme
 UYVY
 validmodulename
+Vanara
 vcamp
 vcdl
 VCINSTALLDIR
@@ -2188,11 +2204,14 @@ VIDEOINFOHEADER
 viewbox
 viewmodel
 vih
+Virt
 virtualization
+Virtualizing
 visiblecolorformats
 Visibletrue
 visualbrush
 visualstudio
+viter
 VKey
 VKTAB
 VOS

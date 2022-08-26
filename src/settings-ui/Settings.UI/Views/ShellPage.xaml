@@ -113,6 +113,14 @@
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
 
+                <muxc:NavigationViewItem x:Uid="Shell_PowerAccent"
+                                         helpers:NavHelper.NavigateTo="views:PowerAccentPage">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                
                 <muxc:NavigationViewItem x:Uid="Shell_PowerRename"
                                          helpers:NavHelper.NavigateTo="views:PowerRenamePage">
                     <muxc:NavigationViewItem.Icon>
