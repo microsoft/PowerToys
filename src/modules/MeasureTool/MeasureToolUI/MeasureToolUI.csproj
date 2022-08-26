@@ -1,4 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Version.props" />
+
   <PropertyGroup>
     <AssemblyTitle>PowerToys.MeasureTool</AssemblyTitle>
     <AssemblyDescription>PowerToys MeasureTool</AssemblyDescription>
