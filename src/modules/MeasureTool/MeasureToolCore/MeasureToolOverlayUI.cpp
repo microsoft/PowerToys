@@ -13,8 +13,7 @@ namespace
     inline std::pair<D2D_POINT_2F, D2D_POINT_2F> ComputeCrossFeetLine(D2D_POINT_2F center, const bool horizontal)
     {
         D2D_POINT_2F start = center, end = center;
-        // Computing in this way to achieve pixel-perfect axial symmetry.
-        // TODO: investigate why we need 1.f offset.
+        // Computing in this way to achieve pixel-perfect axial symmetry of aliased D2D lines 
         if (horizontal)
         {
             start.x -= consts::FEET_HALF_LENGTH + 1.f;
@@ -36,9 +35,11 @@ namespace
     }
 }
 
-winrt::com_ptr<ID2D1Bitmap> ConvertID3D11Texture2DToD2D1Bitmap(const wil::com_ptr<ID2D1HwndRenderTarget>& rt,
-                                                               const winrt::com_ptr<ID3D11Texture2D>& texture)
+winrt::com_ptr<ID2D1Bitmap> ConvertID3D11Texture2DToD2D1Bitmap(wil::com_ptr<ID2D1HwndRenderTarget> rt,
+                                                               winrt::com_ptr<ID3D11Texture2D> texture)
 {
+    std::lock_guard guard{ gpuAccessLock };
+
     auto dxgiSurface = texture.try_as<IDXGISurface>();
     if (!dxgiSurface)
         return nullptr;

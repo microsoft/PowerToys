@@ -84,7 +84,7 @@ class D3DCaptureState final
     std::mutex destructorMutex;
 
 public:
-    static std::unique_ptr<D3DCaptureState> Create(const winrt::GraphicsCaptureItem& item,
+    static std::unique_ptr<D3DCaptureState> Create(winrt::GraphicsCaptureItem item,
                                                    const winrt::DirectXPixelFormat pixelFormat,
                                                    Box monitorSize,
                                                    const bool captureOutsideOfMonitor);
@@ -190,11 +190,13 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
     }
 }
 
-std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(const winrt::GraphicsCaptureItem& item,
+std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(winrt::GraphicsCaptureItem item,
                                                          const winrt::DirectXPixelFormat pixelFormat,
                                                          Box monitorArea,
                                                          const bool captureOutsideOfMonitor)
 {
+    std::lock_guard guard{ gpuAccessLock };
+
     winrt::com_ptr<ID3D11Device> d3dDevice;
     UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #ifndef NDEBUG
@@ -305,7 +307,7 @@ MappedTextureView D3DCaptureState::CaptureSingleFrame()
         result.emplace(std::move(tex));
         frameArrivedEvent.SetEvent();
     };
-
+    std::lock_guard guard{ gpuAccessLock };
     StartSessionInPreferredMode();
 
     frameArrivedEvent.wait();

@@ -21,6 +21,7 @@ class OverlayUIState final
     std::function<void()> _tickFunc;
     std::thread _uiThread;
     bool _cursorOnScreen = true;
+    bool _clearOnCursorLeavingScreen = false;
 
     template<typename ToolT, typename TickFuncT>
     static std::unique_ptr<OverlayUIState> CreateInternal(ToolT& toolState,
@@ -28,7 +29,8 @@ class OverlayUIState final
                                                           CommonState& commonState,
                                                           const wchar_t* toolWindowClassName,
                                                           void* windowParam,
-                                                          const MonitorInfo& monitor);
+                                                          const MonitorInfo& monitor,
+                                                          const bool clearOnCursorLeavingScreen);
 
 public:
     OverlayUIState(OverlayUIState&&) noexcept = default;

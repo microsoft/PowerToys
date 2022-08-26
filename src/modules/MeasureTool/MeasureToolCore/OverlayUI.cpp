@@ -104,33 +104,43 @@ void OverlayUIState::RunUILoop()
 {
     while (IsWindow(_window) && !_commonState.closeOnOtherMonitors)
     {
-        _d2dState.rt->BeginDraw();
-        
         const auto cursor = _commonState.cursorPosSystemSpace;
-        const bool cursorOverToolbar = _commonState.toolbarBoundingBox.inside(cursor);
-        if (!cursorOverToolbar)
-            _tickFunc();
-        else 
-            _d2dState.rt->Clear();
-
-        _d2dState.rt->EndDraw();
-
         const bool cursorOnScreen = _monitorArea.inside(cursor);
+        const bool cursorOverToolbar = _commonState.toolbarBoundingBox.inside(cursor);
+
         if (cursorOnScreen != _cursorOnScreen)
         {
             _cursorOnScreen = cursorOnScreen;
             if (!cursorOnScreen)
             {
-                _d2dState.rt->BeginDraw();
-                _d2dState.rt->Clear();
-                _d2dState.rt->EndDraw();
+                if (_clearOnCursorLeavingScreen)
+                {
+                    _d2dState.rt->BeginDraw();
+                    _d2dState.rt->Clear();
+                    _d2dState.rt->EndDraw();
+                }
                 PostMessageW(_window, WM_CURSOR_LEFT_MONITOR, {}, {});
+            }
+        }
+        if (cursorOnScreen)
+        {
+            _d2dState.rt->BeginDraw();
+            if (!cursorOverToolbar)
+                _tickFunc();
+            else
+                _d2dState.rt->Clear();
+
+            {
+                // TODO: use latch to wait until all threads are created their corresponding d2d textures
+                // in the non-continuous mode
+                // std::lock_guard guard{ gpuAccessLock };
+                _d2dState.rt->EndDraw();
             }
         }
 
         run_message_loop(true, 1);
     }
-    
+
     DestroyWindow(_window);
 }
 
@@ -168,7 +178,8 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
                                                                       CommonState& commonState,
                                                                       const wchar_t* toolWindowClassName,
                                                                       void* windowParam,
-                                                                      const MonitorInfo& monitor)
+                                                                      const MonitorInfo& monitor,
+                                                                      const bool clearOnCursorLeavingScreen)
 {
     wil::shared_event uiCreatedEvent(wil::EventOptions::ManualReset);
     std::unique_ptr<OverlayUIState> uiState;
@@ -176,12 +187,14 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
         const HWND window = CreateOverlayUIWindow(commonState, monitor, toolWindowClassName, windowParam);
         uiState = std::unique_ptr<OverlayUIState>{ new OverlayUIState{ toolState, tickFunc, commonState, window } };
         uiState->_monitorArea = monitor.GetScreenSize(true);
+        uiState->_clearOnCursorLeavingScreen = clearOnCursorLeavingScreen;
         // we must create window + d2d state in the same thread, then store thread handle in uiState, thus
         // lifetime is ok here, since we join the thread in destructor
         auto* state = uiState.get();
         uiCreatedEvent.SetEvent();
 
         state->RunUILoop();
+
         commonState.closeOnOtherMonitors = true;
         commonState.sessionCompletedCallback();
     });
@@ -200,7 +213,8 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolSta
                                           commonState,
                                           NonLocalizable::MeasureToolOverlayWindowName,
                                           &toolState,
-                                          monitor);
+                                          monitor,
+                                          true);
 }
 
 std::unique_ptr<OverlayUIState> OverlayUIState::Create(BoundsToolState& toolState,
@@ -212,5 +226,6 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(BoundsToolState& toolStat
                                           commonState,
                                           NonLocalizable::BoundsToolOverlayWindowName,
                                           &toolState,
-                                          monitor);
+                                          monitor,
+                                          false);
 }

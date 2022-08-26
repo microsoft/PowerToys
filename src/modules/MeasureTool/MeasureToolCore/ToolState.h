@@ -78,3 +78,6 @@ struct MeasureToolState
 
     CommonState* commonState = nullptr; // required for WndProc
 };
+
+// Concurrently accessing Direct2D and Direct3D APIs make the driver go boom
+extern std::recursive_mutex gpuAccessLock;

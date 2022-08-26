@@ -14,6 +14,8 @@
 
 //#define DEBUG_PRIMARY_MONITOR_ONLY
 
+std::recursive_mutex gpuAccessLock;
+
 namespace winrt::PowerToys::MeasureToolCore::implementation
 {
     void Core::MouseCaptureThread()

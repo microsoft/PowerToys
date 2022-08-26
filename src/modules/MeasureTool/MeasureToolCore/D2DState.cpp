@@ -4,6 +4,7 @@
 #include "D2DState.h"
 
 #include <common/Display/dpi_aware.h>
+#include <ToolState.h>
 
 namespace
 {
@@ -20,6 +21,8 @@ namespace
 
 D2DState::D2DState(const HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesColors)
 {
+    std::lock_guard guard{ gpuAccessLock };
+
     RECT clientRect = {};
 
     winrt::check_bool(GetClientRect(overlayWindow, &clientRect));
