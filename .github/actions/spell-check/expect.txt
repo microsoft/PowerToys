@@ -2258,6 +2258,7 @@ wchar
 WClass
 wcout
 wcscat
+wcschr
 wcscmp
 wcscpy
 wcslen
