@@ -38,7 +38,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeaderOutputFile Condition="'$(CIBuild)'!='true'">$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(CIBuild)'!='true'">pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
