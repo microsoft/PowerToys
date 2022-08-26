@@ -143,7 +143,7 @@ public class SettingsService
         switch (letter)
         {
             case LetterKey.A:
-                return new char[] { 'à', 'â', 'á', 'ä', 'ã', 'å' };
+                return new char[] { 'à', 'â', 'á', 'ä', 'ã', 'å', 'æ' };
             case LetterKey.C:
                 return new char[] { 'ć', 'ĉ', 'č', 'ċ', 'ç', 'ḉ' };
             case LetterKey.E:
