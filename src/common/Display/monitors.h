@@ -30,7 +30,7 @@ struct Box
     POINT bottom_left() const { return { rect.left, rect.bottom }; };
     POINT bottom_middle() const { return { rect.left + width() / 2, rect.bottom }; };
     POINT bottom_right() const { return { rect.right, rect.bottom }; };
-    inline bool inside(const POINT& point) const { return PtInRect(&rect, point); }
+    inline bool inside(const POINT point) const { return PtInRect(&rect, point); }
 
     inline friend auto operator<=>(const Box& lhs, const Box& rhs)
     {

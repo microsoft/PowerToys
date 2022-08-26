@@ -42,20 +42,26 @@ winrt::com_ptr<ID2D1Bitmap> ConvertID3D11Texture2DToD2D1Bitmap(const wil::com_pt
     if (!dxgiSurface)
         return nullptr;
 
-    DXGI_MAPPED_RECT bitmap2Dmap;
-    winrt::check_hresult(dxgiSurface->Map(&bitmap2Dmap, DXGI_MAP_READ));
+    DXGI_MAPPED_RECT bitmap2Dmap = {};
+    HRESULT hr = dxgiSurface->Map(&bitmap2Dmap, DXGI_MAP_READ);
+    if (FAILED(hr))
+    {
+        return nullptr;
+    }
 
     D2D1_BITMAP_PROPERTIES props = { .pixelFormat = rt->GetPixelFormat() };
     rt->GetDpi(&props.dpiX, &props.dpiY);
     const auto sizeF = rt->GetSize();
     winrt::com_ptr<ID2D1Bitmap> bitmap;
-    winrt::check_hresult(rt->CreateBitmap(D2D1::SizeU(static_cast<uint32_t>(sizeF.width),
-                                                      static_cast<uint32_t>(sizeF.height)),
-                                          bitmap2Dmap.pBits,
-                                          bitmap2Dmap.Pitch,
-                                          props,
-                                          bitmap.put()));
-    winrt::check_hresult(dxgiSurface->Unmap());
+    if (FAILED(rt->CreateBitmap(D2D1::SizeU(static_cast<uint32_t>(sizeF.width),
+                                            static_cast<uint32_t>(sizeF.height)),
+                                bitmap2Dmap.pBits,
+                                bitmap2Dmap.Pitch,
+                                props,
+                                bitmap.put())))
+        return nullptr;
+    if (FAILED(dxgiSurface->Unmap()))
+        return nullptr;
 
     return bitmap;
 }
@@ -187,7 +193,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
         }
     }
 
-    if (continuousCapture)
+    if (continuousCapture || !backgroundBitmap)
         d2dState.rt->Clear();
 
     // Add 1px to each dim, since the range we obtain from measuredEdges is inclusive.
@@ -263,7 +269,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
                                          L"%.0f × %.0f",
                                          hMeasure,
                                          vMeasure);
-        crossSymbolPos = wcsstr(text.buffer.data(), L" ") - text.buffer.data() + 1;
+        crossSymbolPos = wcschr(text.buffer.data(), L' ') - text.buffer.data() + 1;
         break;
     case MeasureToolState::Mode::Vertical:
         measureStringBufLen = swprintf_s(text.buffer.data(),
