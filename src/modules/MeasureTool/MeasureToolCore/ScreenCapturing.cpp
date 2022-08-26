@@ -1,9 +1,10 @@
 #include "pch.h"
 
-#include "constants.h"
-#include "ScreenCapturing.h"
 #include "BGRATextureView.h"
+#include "constants.h"
+#include "CoordinateSystemConversion.h"
 #include "EdgeDetection.h"
+#include "ScreenCapturing.h"
 
 #include <common/Display/monitors.h>
 
@@ -324,8 +325,7 @@ void UpdateCaptureState(const CommonState& commonState,
                         const MappedTextureView& textureView,
                         const bool continuousCapture)
 {
-    auto cursorPos = commonState.cursorPos;
-    ScreenToClient(window, &cursorPos);
+    const auto cursorPos = convert::FromSystemToRelative(window, commonState.cursorPosSystemSpace);
     const bool cursorInLeftScreenHalf = cursorPos.x < textureView.view.width / 2;
     const bool cursorInTopScreenHalf = cursorPos.y < textureView.view.height / 2;
     uint8_t pixelTolerance = {};
@@ -336,13 +336,6 @@ void UpdateCaptureState(const CommonState& commonState,
         pixelTolerance = state.global.pixelTolerance;
         perColorChannelEdgeDetection = state.global.perColorChannelEdgeDetection;
     });
-
-    // We must offset mouse cursor, since its position is off by one from its center (TODO: reason?)
-    if (cursorPos.x > 0)
-        --cursorPos.x;
-
-    if (cursorPos.y > 0)
-        --cursorPos.y;
 
     // Every one of 4 edges is a coordinate of the last similar pixel in a row
     // Example: given a 5x5 green square on a blue background with its top-left pixel
@@ -424,10 +417,14 @@ std::thread StartCapturingThread(const CommonState& commonState,
             while (IsWindow(window) && !commonState.closeOnOtherMonitors)
             {
                 const auto now = std::chrono::high_resolution_clock::now();
-                if (monitorArea.inside(commonState.cursorPos))
+                if (monitorArea.inside(commonState.cursorPosSystemSpace))
                 {
 #if defined(DEBUG_TEXTURE)
-                    auto path = std::filesystem::temp_directory_path() / "frame.bmp";
+                    SYSTEMTIME lt{};
+                    GetLocalTime(&lt);
+                    char buf[256];
+                    sprintf_s(buf, "frame-%02d-%02d-Monitor-%zu.bmp", lt.wHour, lt.wMinute, (uint64_t)window);
+                    auto path = std::filesystem::temp_directory_path() / buf;
                     textureView.view.SaveAsBitmap(path.string().c_str());
 #endif
                     UpdateCaptureState(commonState, state, window, textureView, continuousCapture);

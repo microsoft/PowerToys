@@ -68,7 +68,7 @@ template<typename T>
 inline void StoreWindowParam(HWND window, T data)
 {
     static_assert(sizeof(T) <= sizeof(void*));
-    SetWindowLongPtrW(window, GWLP_USERDATA, (LONG_PTR)(data));
+    SetWindowLongPtrW(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(data));
 }
 
 template<typename T>

@@ -28,7 +28,7 @@ struct CommonState
     Box toolbarBoundingBox;
 
     mutable Serialized<OverlayBoxText> overlayBoxText;
-    POINT cursorPos = {}; // updated atomically
+    POINT cursorPosSystemSpace = {}; // updated atomically
     std::atomic_bool closeOnOtherMonitors = false;
 };
 

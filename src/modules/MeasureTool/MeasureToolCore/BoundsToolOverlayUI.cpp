@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "BoundsToolOverlayUI.h"
+#include "CoordinateSystemConversion.h"
 #include "Clipboard.h"
 
 #include <common/utils/window.h>
@@ -27,8 +28,7 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
-        POINT cursorPos = toolState->commonState->cursorPos;
-        ScreenToClient(window, &cursorPos);
+        const POINT cursorPos = convert::FromSystemToRelativeForDirect2D(window, toolState->commonState->cursorPosSystemSpace);
 
         D2D_POINT_2F newRegionStart = { .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
         toolState->perScreen[window].currentRegionStart = newRegionStart;
@@ -54,8 +54,7 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
 
         if (const bool shiftPress = GetKeyState(VK_SHIFT) & 0x8000; shiftPress)
         {
-            auto cursorPos = toolState->commonState->cursorPos;
-            ScreenToClient(window, &cursorPos);
+            const auto cursorPos = convert::FromSystemToRelativeForDirect2D(window, toolState->commonState->cursorPosSystemSpace);
 
             D2D1_RECT_F rect;
             std::tie(rect.left, rect.right) = std::minmax(static_cast<float>(cursorPos.x), toolState->perScreen[window].currentRegionStart->x);
@@ -142,7 +141,7 @@ void DrawBoundsToolTick(const CommonState& commonState,
     const auto it = toolState.perScreen.find(window);
     if (it == end(toolState.perScreen))
         return;
-    
+
     d2dState.rt->Clear();
 
     const auto& perScreen = it->second;
@@ -152,8 +151,7 @@ void DrawBoundsToolTick(const CommonState& commonState,
     if (!perScreen.currentRegionStart.has_value())
         return;
 
-    POINT cursorPos = commonState.cursorPos;
-    ScreenToClient(window, &cursorPos);
+    const auto cursorPos = convert::FromSystemToRelativeForDirect2D(window, commonState.cursorPosSystemSpace);
 
     const D2D1_RECT_F rect{ .left = perScreen.currentRegionStart->x,
                             .top = perScreen.currentRegionStart->y,

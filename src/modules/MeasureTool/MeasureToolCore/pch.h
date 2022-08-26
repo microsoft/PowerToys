@@ -81,6 +81,7 @@ template<typename Func>
     return std::thread{ [f = std::move(f), description = std::wstring{ description }] {
         try
         {
+            SetThreadDescription(GetCurrentThread(), description.c_str());
             f();
         }
         catch (const std::exception& ex)

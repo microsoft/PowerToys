@@ -20,10 +20,10 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     {
         while (!_stopMouseCaptureThreadSignal.is_signaled())
         {
-            static_assert(sizeof(_commonState.cursorPos) == sizeof(LONG64));
+            static_assert(sizeof(_commonState.cursorPosSystemSpace) == sizeof(LONG64));
             POINT cursorPos = {};
             GetCursorPos(&cursorPos);
-            InterlockedExchange64(reinterpret_cast<LONG64*>(&_commonState.cursorPos), std::bit_cast<LONG64>(cursorPos));
+            InterlockedExchange64(reinterpret_cast<LONG64*>(&_commonState.cursorPosSystemSpace), std::bit_cast<LONG64>(cursorPos));
             std::this_thread::sleep_for(consts::TARGET_FRAME_DURATION);
         }
     }

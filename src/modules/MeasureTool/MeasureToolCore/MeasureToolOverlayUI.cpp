@@ -1,8 +1,9 @@
 ﻿#include "pch.h"
 
 #include "BGRATextureView.h"
-#include "constants.h"
 #include "Clipboard.h"
+#include "CoordinateSystemConversion.h"
+#include "constants.h"
 #include "MeasureToolOverlayUI.h"
 
 #include <common/utils/window.h>
@@ -216,8 +217,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
     // Anti-aliasing is creating artifacts. Aliasing is for drawing straight lines.
     d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
 
-    POINT cursorPos = commonState.cursorPos;
-    ScreenToClient(window, &cursorPos);
+    const auto cursorPos = convert::FromSystemToRelativeForDirect2D(window, commonState.cursorPosSystemSpace);
 
     if (drawHorizontalCrossLine)
     {

@@ -38,7 +38,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     static std::once_flag windowClassesCreatedFlag;
     std::call_once(windowClassesCreatedFlag, CreateOverlayWindowClasses);
 
-    const auto screenArea = monitor.GetScreenSize(false);
+    const auto screenArea = monitor.GetScreenSize(true);
     HWND window{ CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
                                  windowClass,
                                  L"PowerToys.MeasureToolOverlay",
@@ -106,7 +106,7 @@ void OverlayUIState::RunUILoop()
     {
         _d2dState.rt->BeginDraw();
         
-        const auto cursor = _commonState.cursorPos;
+        const auto cursor = _commonState.cursorPosSystemSpace;
         const bool cursorOverToolbar = _commonState.toolbarBoundingBox.inside(cursor);
         if (!cursorOverToolbar)
             _tickFunc();
