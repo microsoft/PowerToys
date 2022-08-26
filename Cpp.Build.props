@@ -37,7 +37,6 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
