@@ -154,6 +154,8 @@ public class SettingsService
                 return new char[] { 'ñ' };
             case LetterKey.O:
                 return new char[] { 'ô', 'ö', 'ó', 'ò', 'õ', 'ø' };
+            case LetterKey.S:
+                return new char[] { 'š', 'ß', 'ś' };
             case LetterKey.U:
                 return new char[] { 'û', 'ù', 'ü', 'ú' };
             case LetterKey.Y:
