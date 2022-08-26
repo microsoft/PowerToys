@@ -149,7 +149,7 @@ public class SettingsService
             case LetterKey.E:
                 return new char[] { 'é', 'è', 'ê', 'ë', '€' };
             case LetterKey.I:
-                return new char[] { 'î', 'ï', 'í', 'ì' };
+                return new char[] { 'î', 'ï', 'í', 'ì', 'ī' };
             case LetterKey.N:
                 return new char[] { 'ñ' };
             case LetterKey.O:
