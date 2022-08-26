@@ -77,6 +77,11 @@
 - [ ] Check `Save and apply` and `Cancel` buttons behavior after editing.
 - [ ] Assign a layout to each monitor.
 - [ ] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
+- [ ] Test duplicate layout focus
+   * Select any layout X in 'Templates' or 'Custom' section by click left mouse button
+   * Mouse right button click on any layout Y in 'Templates' or 'Custom' sections
+   * Duplicate it by clicking 'Create custom layout' (Templates section) or 'Duplicate' in 'Custom' section
+   * Expect the layout Y is duplicated
 
 
 ## FancyZones
