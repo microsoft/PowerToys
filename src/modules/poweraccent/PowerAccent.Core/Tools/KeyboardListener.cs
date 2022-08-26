@@ -17,7 +17,7 @@ internal class KeyboardListener : IDisposable
     /// </summary>
     public KeyboardListener()
     {
-        // We have to store the LowLevelKeyboardProc, so that it is not garbage collected runtime
+        // We have to store the LowLevelKeyboardProc, so that it is not garbage collected by runtime
         _hookedLowLevelKeyboardProc = LowLevelKeyboardProc;
 
         // Set the hook
