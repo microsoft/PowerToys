@@ -102,6 +102,11 @@
                 "modules\\launcher\\Plugins\\WebSearch\\Community.PowerToys.Run.Plugin.WebSearch.dll",
                 "modules\\launcher\\Plugins\\WindowsTerminal\\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll",
                 
+                "modules\\MeasureTool\\PowerToys.MeasureToolModuleInterface.dll",
+                "modules\\MeasureTool\\PowerToys.MeasureToolCore.dll",
+                "modules\\MeasureTool\\PowerToys.MeasureToolUI.dll",
+                "modules\\MeasureTool\\PowerToys.MeasureToolUI.exe",
+
                 "modules\\MouseUtils\\PowerToys.FindMyMouse.dll",
                 "modules\\MouseUtils\\PowerToys.MouseHighlighter.dll",
                 "modules\\MouseUtils\\PowerToys.MousePointerCrosshairs.dll",
