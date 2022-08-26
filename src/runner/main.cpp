@@ -153,6 +153,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/MouseUtils/PowerToys.MouseHighlighter.dll",
             L"modules/AlwaysOnTop/PowerToys.AlwaysOnTopModuleInterface.dll",
             L"modules/MouseUtils/PowerToys.MousePointerCrosshairs.dll",
+            L"modules/PowerAccent/PowerToys.PowerAccentModuleInterface.dll",
             L"modules/PowerOCR/PowerToys.PowerOCRModuleInterface.dll",
 
             L"modules/MeasureTool/PowerToys.MeasureToolModuleInterface.dll",

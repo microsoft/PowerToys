@@ -174,6 +174,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("abcde", false)]
         [DataRow("1 + 2 +", false)]
         [DataRow("1+2*", false)]
+        [DataRow("1+2/", false)]
+        [DataRow("1+2%", false)]
         [DataRow("1 && 3 &&", false)]
         [DataRow("sqrt( 36)", true)]
         [DataRow("max 4", false)]
@@ -220,6 +222,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                new object[] { "sign(2)", +1M },
                new object[] { "abs(-2)", 2M },
                new object[] { "abs(2)", 2M },
+               new object[] { "0+(1*2)/(0+1)", 2M }, // Validate that division by "(0+1)" is not interpret as division by zero.
+               new object[] { "0+(1*2)/0.5", 4M }, // Validate that division by  number with decimal digits is not interpret as division by zero.
            };
 
         [DataTestMethod]
@@ -230,8 +234,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
-            // Using InvariantCulture since this is internal
-            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
+            // Using en-us culture to have a fixed number style
+            var result = engine.Interpret(input, new CultureInfo("en-us"), out _);
 
             // Assert
             Assert.IsNotNull(result);
