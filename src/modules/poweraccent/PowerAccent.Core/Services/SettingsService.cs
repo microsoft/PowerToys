@@ -88,7 +88,7 @@ public class SettingsService
         }
     }
 
-    private PowerAccentActivationKey _activationKey = PowerAccentActivationKey.LeftRightArrow;
+    private PowerAccentActivationKey _activationKey = PowerAccentActivationKey.Both;
 
     public PowerAccentActivationKey ActivationKey
     {
