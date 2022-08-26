@@ -38,7 +38,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     static std::once_flag windowClassesCreatedFlag;
     std::call_once(windowClassesCreatedFlag, CreateOverlayWindowClasses);
 
-    const auto screenArea = monitor.GetScreenSize(false);
+    const auto screenArea = monitor.GetScreenSize(true);
     HWND window{ CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
                                  windowClass,
                                  L"PowerToys.MeasureToolOverlay",
