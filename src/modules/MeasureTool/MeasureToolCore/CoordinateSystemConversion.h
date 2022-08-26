@@ -5,14 +5,14 @@
 
 namespace convert
 {
-    // Converts a given point from multimonitor coordinate system to the one relative to HWND
+    // Converts a given point from multi-monitor coordinate system to the one relative to HWND
     inline POINT FromSystemToRelative(HWND window, POINT p)
     {
         ScreenToClient(window, &p);
         return p;
     }
 
-    // Converts a given point from multimonitor coordinate system to the one relative to HWND and also ready
+    // Converts a given point from multi-monitor coordinate system to the one relative to HWND and also ready
     // to be used in Direct2D calls with AA mode set to aliased
     inline POINT FromSystemToRelativeForDirect2D(HWND window, POINT p)
     {
