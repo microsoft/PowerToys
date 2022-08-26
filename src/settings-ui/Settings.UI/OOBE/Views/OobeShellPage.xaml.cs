@@ -136,6 +136,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "VideoConference",
                 IsNew = true,
             });
+
+            Modules.Insert((int)PowerToysModules.MeasureTool, new OobePowerToysModule()
+            {
+                ModuleName = "MeasureTool",
+                IsNew = true,
+            });
+
             Modules.Insert((int)PowerToysModules.WhatsNew, new OobePowerToysModule()
             {
                 ModuleName = "WhatsNew",
@@ -189,6 +196,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
                     case "VideoConference": NavigationFrame.Navigate(typeof(OobeVideoConference)); break;
                     case "MouseUtils": NavigationFrame.Navigate(typeof(OobeMouseUtils)); break;
+                    case "MeasureTool": NavigationFrame.Navigate(typeof(OobeMeasureTool)); break;
                 }
             }
         }

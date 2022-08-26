@@ -128,6 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         case "FileExplorer": StartupPage = typeof(Views.PowerPreviewPage); break;
                         case "ShortcutGuide": StartupPage = typeof(Views.ShortcutGuidePage); break;
                         case "VideoConference": StartupPage = typeof(Views.VideoConferencePage); break;
+                        case "MeasureTool": StartupPage = typeof(Views.MeasureToolPage); break;
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
                 }
