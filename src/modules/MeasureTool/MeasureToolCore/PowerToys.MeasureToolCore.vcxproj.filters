@@ -33,6 +33,7 @@
     <ClInclude Include="..\MeasureToolModuleInterface\trace.h" />
     <ClInclude Include="Clipboard.h" />
     <ClInclude Include="PerGlyphOpacityTextRender.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">
@@ -45,5 +46,8 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="MeasureToolCore.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PowerToys.MeasureToolCore.rc" />
   </ItemGroup>
 </Project>

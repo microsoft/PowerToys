@@ -78,6 +78,7 @@
     <ClInclude Include="D2DState.h" />
     <ClInclude Include="MeasureToolOverlayUI.h" />
     <ClInclude Include="PerGlyphOpacityTextRender.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="PowerToys.MeasureToolCore.h">
       <DependentUpon>PowerToys.MeasureToolCore.idl</DependentUpon>
@@ -131,6 +132,9 @@
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PowerToys.MeasureToolCore.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
