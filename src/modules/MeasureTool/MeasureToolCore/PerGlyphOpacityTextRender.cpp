@@ -6,9 +6,9 @@ PerGlyphOpacityTextRender::PerGlyphOpacityTextRender(
     wil::com_ptr<ID2D1Factory> pD2DFactory,
     wil::com_ptr<ID2D1HwndRenderTarget> rt,
     wil::com_ptr<ID2D1SolidColorBrush> baseBrush) :
-    _pD2DFactory{ pD2DFactory },
-    _rt{ rt },
-    _baseBrush{ baseBrush }
+    _pD2DFactory{ pD2DFactory.get() },
+    _rt{ rt.get() },
+    _baseBrush{ baseBrush.get() }
 {
 }
 
@@ -18,20 +18,22 @@ HRESULT __stdcall PerGlyphOpacityTextRender::DrawGlyphRun(void* /*clientDrawingC
                                                           DWRITE_MEASURING_MODE measuringMode,
                                                           _In_ const DWRITE_GLYPH_RUN* glyphRun,
                                                           _In_ const DWRITE_GLYPH_RUN_DESCRIPTION* /*glyphRunDescription*/,
-                                                          IUnknown* clientDrawingEffect) noexcept
+                                                          IUnknown* clientDrawingEffect_) noexcept
 {
     HRESULT hr = S_OK;
-    if (!clientDrawingEffect)
+    if (!clientDrawingEffect_)
     {
-        _rt->DrawGlyphRun(D2D1_POINT_2F{ .x = baselineOriginX, .y = baselineOriginY }, glyphRun, _baseBrush.get(), measuringMode);
+        _rt->DrawGlyphRun(D2D1_POINT_2F{ .x = baselineOriginX, .y = baselineOriginY }, glyphRun, _baseBrush, measuringMode);
         return hr;
     }
+    wil::com_ptr<IUnknown> clientDrawingEffect{ clientDrawingEffect_ };
+
     // Create the path geometry.
     wil::com_ptr<ID2D1PathGeometry> pathGeometry;
     hr = _pD2DFactory->CreatePathGeometry(&pathGeometry);
 
     // Write to the path geometry using the geometry sink.
-    ID2D1GeometrySink* pSink = nullptr;
+    wil::com_ptr<ID2D1GeometrySink> pSink;
     if (SUCCEEDED(hr))
     {
         hr = pathGeometry->Open(&pSink);
@@ -49,11 +51,10 @@ HRESULT __stdcall PerGlyphOpacityTextRender::DrawGlyphRun(void* /*clientDrawingC
             glyphRun->glyphCount,
             glyphRun->isSideways,
             glyphRun->bidiLevel % 2,
-            pSink);
+            pSink.get());
     }
 
-    // Close the geometry sink
-    if (SUCCEEDED(hr))
+    if (pSink)
     {
         hr = pSink->Close();
     }
@@ -70,21 +71,15 @@ HRESULT __stdcall PerGlyphOpacityTextRender::DrawGlyphRun(void* /*clientDrawingC
     }
 
     float prevOpacity = _baseBrush->GetOpacity();
-    OpacityEffect* opacityEffect = nullptr;
-    if (SUCCEEDED(hr))
-    {
-        hr = clientDrawingEffect->QueryInterface(__uuidof(IDrawingEffect), reinterpret_cast<void**>(&opacityEffect));
-    }
+    auto opacityEffect = clientDrawingEffect.try_query<IDrawingEffect>();
+
+    if (opacityEffect)
+        _baseBrush->SetOpacity(static_cast<OpacityEffect*>(opacityEffect.get())->alpha);
 
     if (SUCCEEDED(hr))
     {
-        _baseBrush->SetOpacity(opacityEffect->alpha);
-    }
-
-    if (SUCCEEDED(hr))
-    {
-        _rt->DrawGeometry(pTransformedGeometry.get(), _baseBrush.get());
-        _rt->FillGeometry(pTransformedGeometry.get(), _baseBrush.get());
+        _rt->DrawGeometry(pTransformedGeometry.get(), _baseBrush);
+        _rt->FillGeometry(pTransformedGeometry.get(), _baseBrush);
         _baseBrush->SetOpacity(prevOpacity);
     }
 

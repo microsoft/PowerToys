@@ -21,9 +21,9 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         float GetDPIScaleForWindow(uint64_t windowHandle);
         void MouseCaptureThread();
 
+        wil::shared_event _stopMouseCaptureThreadSignal;
         std::thread _mouseCaptureThread;
         std::vector<std::thread> _screenCaptureThreads;
-        wil::shared_event _stopMouseCaptureThreadSignal;
         
         std::vector<std::unique_ptr<OverlayUIState>> _overlayUIStates;
         Serialized<MeasureToolState> _measureToolState;

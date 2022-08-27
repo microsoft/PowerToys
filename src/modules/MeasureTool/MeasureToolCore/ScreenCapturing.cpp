@@ -10,46 +10,6 @@
 
 //#define DEBUG_EDGES
 
-class MappedTextureView
-{
-    winrt::com_ptr<ID3D11DeviceContext> context;
-    winrt::com_ptr<ID3D11Texture2D> texture;
-
-public:
-    BGRATextureView view;
-    MappedTextureView(winrt::com_ptr<ID3D11Texture2D> _texture,
-                      winrt::com_ptr<ID3D11DeviceContext> _context,
-                      const size_t textureWidth,
-                      const size_t textureHeight) :
-        texture{ std::move(_texture) }, context{ std::move(_context) }
-    {
-        D3D11_TEXTURE2D_DESC desc;
-        texture->GetDesc(&desc);
-
-        D3D11_MAPPED_SUBRESOURCE resource = {};
-        winrt::check_hresult(context->Map(texture.get(), D3D11CalcSubresource(0, 0, 0), D3D11_MAP_READ, 0, &resource));
-
-        view.pixels = static_cast<const uint32_t*>(resource.pData);
-        view.pitch = resource.RowPitch / 4;
-        view.width = textureWidth;
-        view.height = textureHeight;
-    }
-
-    MappedTextureView(MappedTextureView&&) = default;
-    MappedTextureView& operator=(MappedTextureView&&) = default;
-
-    inline winrt::com_ptr<ID3D11Texture2D> GetTexture() const
-    {
-        return texture;
-    }
-
-    ~MappedTextureView()
-    {
-        if (context && texture)
-            context->Unmap(texture.get(), D3D11CalcSubresource(0, 0, 0));
-    }
-};
-
 class D3DCaptureState final
 {
     winrt::com_ptr<ID3D11Device> d3dDevice;
@@ -171,8 +131,10 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
             }
 
             winrt::check_hresult(swapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), texture.put_void()));
-            auto gpuTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
+            auto surface = frame.Surface();
+            auto gpuTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(surface);
             texture = CopyFrameToCPU(gpuTexture);
+            surface.Close();
             MappedTextureView textureView{ texture, context, static_cast<size_t>(frameSize.Width), static_cast<size_t>(frameSize.Height) };
 
             frameCallback(std::move(textureView));
@@ -227,6 +189,7 @@ std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(winrt::GraphicsCaptureI
                                nullptr);
     }
     winrt::check_hresult(hr);
+    
 
     auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
     winrt::com_ptr<IInspectable> d3dDeviceInspectable;
@@ -413,7 +376,7 @@ std::thread StartCapturingThread(const CommonState& commonState,
             const auto textureView = captureState->CaptureSingleFrame();
 
             state.Access([&](MeasureToolState& s) {
-                s.perScreen[window].capturedScreenTexture = textureView.GetTexture();
+                s.perScreen[window].capturedScreenTexture = &textureView;
             });
 
             while (IsWindow(window) && !commonState.closeOnOtherMonitors)

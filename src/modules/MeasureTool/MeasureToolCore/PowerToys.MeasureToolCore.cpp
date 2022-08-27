@@ -31,8 +31,8 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     }
 
     Core::Core() :
-        _mouseCaptureThread{ [this] { MouseCaptureThread(); } },
-        _stopMouseCaptureThreadSignal{ wil::EventOptions::ManualReset }
+        _stopMouseCaptureThreadSignal{ wil::EventOptions::ManualReset },
+        _mouseCaptureThread{ [this] { MouseCaptureThread(); } }
     {
         Trace::RegisterProvider();
         LoggerHelpers::init_logger(L"Measure Tool", L"Core", "Measure Tool");
