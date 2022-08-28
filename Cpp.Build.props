@@ -12,14 +12,14 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-	<ProjectConfiguration Include="Debug|ARM64">
-	  <Configuration>Debug</Configuration>
-	  <Platform>ARM64</Platform>
-	</ProjectConfiguration>
-	<ProjectConfiguration Include="Release|ARM64">
-	  <Configuration>Release</Configuration>
-	  <Platform>ARM64</Platform>
-	</ProjectConfiguration>  
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
 
   <!-- Props that should be disabled while building on CI server -->
@@ -32,11 +32,12 @@
 
   <!-- C++ source compile-specific things for all configurations -->
   <PropertyGroup>
+    <VcpkgEnabled>false</VcpkgEnabled>
     <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>    
       <WarningLevel>Level3</WarningLevel>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
@@ -83,8 +84,10 @@
   </ItemDefinitionGroup>
 
   <!-- Global props -->
-  <PropertyGroup Label="Globals" Condition="'$(OverrideWindowsTargetPlatformVersion)'!='True'">
+  <PropertyGroup Label="Globals"
+    Condition="'$(OverrideWindowsTargetPlatformVersion)'!='True'">
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
   </PropertyGroup>
 
   <!-- Props that are constant for both Debug and Release configurations -->
@@ -92,14 +95,17 @@
     <PlatformToolset Condition="'$(OverridePlatformToolset)'!='True'">v143</PlatformToolset>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
     <CharacterSet>Unicode</CharacterSet>
+    <DesktopCompatible>true</DesktopCompatible>
   </PropertyGroup>
 
   <!-- Debug/Release props -->
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'"
+    Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)'=='Release'"
+    Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>

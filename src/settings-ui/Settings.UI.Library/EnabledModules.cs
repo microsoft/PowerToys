@@ -239,6 +239,54 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool powerAccent;
+
+        [JsonPropertyName("PowerAccent")]
+        public bool PowerAccent
+        {
+            get => powerAccent;
+            set
+            {
+                if (powerAccent != value)
+                {
+                    LogTelemetryEvent(value);
+                    powerAccent = value;
+                }
+            }
+        }
+
+        private bool powerOCR = true;
+
+        [JsonPropertyName("PowerOCR")]
+        public bool PowerOCR
+        {
+            get => powerOCR;
+            set
+            {
+                if (powerOCR != value)
+                {
+                    LogTelemetryEvent(value);
+                    powerOCR = value;
+                }
+            }
+        }
+
+        private bool measureTool = true;
+
+        [JsonPropertyName("Measure Tool")]
+        public bool MeasureTool
+        {
+            get => measureTool;
+            set
+            {
+                if (measureTool != value)
+                {
+                    LogTelemetryEvent(value);
+                    measureTool = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

@@ -280,6 +280,22 @@ jobs:
       maximumCpuCount: true
 
   - task: VSBuild@1
+    displayName: Publish Measure Tool UI for Packaging
+    inputs:
+      solution: 'src/modules/MeasureTool/MeasureToolUI/MeasureToolUI.csproj'
+      vsVersion: 17.0
+      # The arguments should be the same as the ones for Settings; make sure they are.
+      msbuildArgs: >-
+        /target:Publish
+        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
+        /p:VCRTForwarders-IncludeDebugCRT=false
+        /p:PowerToysRoot=$(Build.SourcesDirectory)
+        /p:PublishProfile=InstallationPublishProfile.pubxml
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      maximumCpuCount: true
+
+  - task: VSBuild@1
     displayName: Build PowerToysSetupCustomActions DLL # This dll needs to be build and signed before building the MSI.
     inputs:
       solution: '**/installer/PowerToysSetup.sln'

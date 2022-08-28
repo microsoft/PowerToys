@@ -46,8 +46,10 @@ body:
       - PDF Thumbnail
       - G-code Preview
       - G-code Thumbnail
+      - PowerAccent
       - PowerRename
       - PowerToys Run
+      - Screen ruler
       - Shortcut Guide
       - STL Thumbnail
       - SVG Preview

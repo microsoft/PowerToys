@@ -121,6 +121,61 @@
     <value>Video Conference Mute</value>
     <comment>Navigation view item name for Video Conference</comment>
   </data>
+  <data name="Shell_MeasureTool.Content" xml:space="preserve">
+    <value>Screen Ruler</value>
+    <comment>Product name: Navigation view item name for Screen Ruler</comment>
+  </data>
+  <data name="MeasureTool.ModuleDescription" xml:space="preserve">
+    <value>Screen Ruler is a quick and easy way to measure pixels on your screen.
+Inspired by Roolr.</value>
+    <comment>"Screen Ruler" is the name of the utility</comment>
+  </data>
+  <data name="MeasureTool.ModuleTitle" xml:space="preserve">
+    <value>Screen Ruler</value>
+    <comment>"Screen Ruler" is the name of the utility</comment>
+  </data>
+  <data name="MeasureTool_ActivationSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="MeasureTool_Settings.Header" xml:space="preserve">
+    <value>Behavior</value>
+    <comment>"Screen Ruler" is the name of the utility</comment>
+  </data>
+  <data name="MeasureTool_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MeasureTool_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to bring up the command bar</value>
+    <comment>"Screen Ruler" is the name of the utility</comment>
+  </data>
+  <data name="MeasureTool_PixelTolerance.Header" xml:space="preserve">
+    <value>Pixel tolerance for edge detection</value>
+  </data>
+  <data name="MeasureTool_MeasureCrossColor.Header" xml:space="preserve">
+    <value>Line color</value>
+  </data>
+  <data name="MeasureTool_ContinuousCapture.Header" xml:space="preserve">
+    <value>Capture screen continuously during measuring</value>
+  </data>
+  <data name="MeasureTool_ContinuousCapture.Description" xml:space="preserve">
+    <value>Refresh screen contexts in real-time instead of making a screenshot once. If enabled, tracing is slightly offset from the cursor position to not intersect with previously rendered cross lines.</value>
+  </data>
+  <data name="MeasureTool_PerColorChannelEdgeDetection.Header" xml:space="preserve">
+    <value>Per color channel edge detection</value>
+  </data>
+  <data name="MeasureTool_PerColorChannelEdgeDetection.Description" xml:space="preserve">
+    <value>If enabled, test that all color channels are within a tolerance distance from each other. Otherwise, check that the sum of all color channels differences is smaller than the tolerance.</value>
+  </data>
+  <data name="MeasureTool_DrawFeetOnCross.Header" xml:space="preserve">
+    <value>Draw feet on cross</value>
+  </data>
+  <data name="MeasureTool_DrawFeetOnCross.Description" xml:space="preserve">
+    <value>Adds feet to the end of cross lines. Always off for continuous capture.</value>
+  </data>
+  <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
+    <value>Enable Screen Ruler</value>
+    <comment>"Screen Ruler" is the name of the utility</comment>
+  </data>
   <data name="VideoConference_Enable.Header" xml:space="preserve">
     <value>Enable Video Conference Mute</value>
   </data>
@@ -1362,6 +1417,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
   </data>
+	<data name="Oobe_MeasureTool.Description" xml:space="preserve">
+    <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
+  </data>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
     <value>Shortcut Guide presents the user with a listing of available shortcuts for the current state of the desktop.</value>
   </data>
@@ -1452,6 +1510,16 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_VideoConference_ToggleVid.Text" xml:space="preserve">
     <value>to toggle your video</value>
+  </data>
+  <data name="Oobe_MeasureTool_Activation.Text" xml:space="preserve">
+    <value>to bring up the Screen Ruler command bar.</value>
+  </data>
+  <data name="Oobe_MeasureTool_HowToLaunch.Text" xml:space="preserve">
+    <value>The Bounds mode lets you select a specific area to measure. You can also shift-drag an area to persist in on screen. The various Spacing modes allows tracing similar pixels along horizontal and vertical axes with a customizable pixel tolerance threshold (use settings or mouse wheel to adjust it).</value>
+  </data>
+	<data name="Oobe_MeasureTool.Title" xml:space="preserve">
+    <value>Screen Ruler</value>
+    <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_ColorPicker.Title" xml:space="preserve">
     <value>Color Picker</value>
@@ -1695,6 +1763,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="LearnMore_Run.Text" xml:space="preserve">
     <value>Learn more about PowerToys Run</value>
     <comment>PowerToys Run is a product name, do not loc</comment>
+  </data>
+	<data name="LearnMore_MeasureTool.Text" xml:space="preserve">
+    <value>Learn more about Screen Ruler</value>
+    <comment>Screen Ruler is a product name, do not loc</comment>
   </data>
   <data name="LearnMore_ShortcutGuide.Text" xml:space="preserve">
     <value>Learn more about Shortcut Guide</value>
@@ -2160,6 +2232,122 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
     <value>Enable round corners</value>
+  </data>
+  <data name="LearnMore_PowerAccent.Text" xml:space="preserve">
+    <value>Learn more about PowerAccent</value>
+    <comment>PowerAccent is a product name, do not loc</comment>
+  </data>
+  <data name="PowerAccent_EnablePowerAccent.Header" xml:space="preserve">
+    <value>Enable PowerAccent</value>
+  </data>
+  <data name="Shell_PowerAccent.Content" xml:space="preserve">
+    <value>PowerAccent</value>
+  </data>
+  <data name="PowerAccent.ModuleDescription" xml:space="preserve">
+    <value>PowerAccent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent. While holding the key for the character you want to add an accent to, press the Activation Key (space key or left and right arrow keys) and an overlay to select the accented character will appear.</value>
+    <comment>key refers to a physical key on a keyboard</comment>
+  </data>
+  <data name="PowerAccent.ModuleTitle" xml:space="preserve">
+    <value>PowerAccent</value>
+  </data>
+  <data name="PowerAccent.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="Oobe_PowerAccent.Description" xml:space="preserve">
+    <value>PowerAccent is an easy way to write letters with accents, like on the phone or Mac.</value>
+  </data>
+  <data name="Oobe_PowerAccent.Title" xml:space="preserve">
+    <value>PowerAccent</value>
+  </data>
+  <data name="Oobe_PowerAccent_HowToUse.Text" xml:space="preserve">
+    <value>Open **PowerToys Settings** and enable PowerAccent. While holding the key for the character you want to add an accent to, press the Activation Key and an overlay to select the accented character will appear.</value>
+    <comment>key refers to a physical key on a keyboard</comment>
+  </data>
+  <data name="PowerAccent_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="PowerAccent_Activation_Shortcut.Header" xml:space="preserve">
+    <value>Activation key</value>
+  </data>
+  <data name="PowerAccent_Activation_Shortcut.Description" xml:space="preserve">
+    <value>Select the activation key to activate this module by holding down the letter and pressing the activation key</value>
+  </data>
+  <data name="PowerAccent_Activation_Key_Arrows.Content" xml:space="preserve">
+    <value>Left/Right Arrow</value>
+    <comment>Left/Right arrow keyboard keys.</comment>
+  </data>
+  <data name="PowerAccent_Activation_Key_Space.Content" xml:space="preserve">
+    <value>Space</value>
+    <comment>Space is the space keyboard key.</comment>
+  </data>
+  <data name="PowerAccent_Activation_Key_Both.Content" xml:space="preserve">
+    <value>Both</value>
+  </data>
+  <data name="PowerAccent_Toolbar.Header" xml:space="preserve">
+    <value>Toolbar</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition.Header" xml:space="preserve">
+    <value>Toolbar position</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_TopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_TopLeftCorner.Content" xml:space="preserve">
+    <value>Top left corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_TopRightCorner.Content" xml:space="preserve">
+    <value>Top right corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_BottomLeftCorner.Content" xml:space="preserve">
+    <value>Bottom left corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_BottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_BottomRightCorner.Content" xml:space="preserve">
+    <value>Bottom right corner</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_Center.Content" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="PowerAccent_ToolbarPosition_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="LearnMore_PowerOcr.Text" xml:space="preserve">
+    <value>Learn more about PowerOCR</value>
+  </data>
+  <data name="PowerOCR.ModuleDescription" xml:space="preserve">
+    <value>PowerOCR is a convenient way to copy text from anywhere on screen</value>
+  </data>
+  <data name="PowerOCR.ModuleTitle" xml:space="preserve">
+    <value>PowerOCR</value>
+  </data>
+  <data name="PowerOCR_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable PowerOCR</value>
+  </data>
+  <data name="Shell_PowerOcr.Content" xml:space="preserve">
+    <value>PowerOCR</value>
+  </data>
+  <data name="Launch_PowerOCR.Content" xml:space="preserve">
+    <value>Launch PowerOCR</value>
+  </data>
+  <data name="Oobe_PowerOCR.Title" xml:space="preserve">
+    <value>PowerOCR</value>
+  </data>
+  <data name="Oobe_PowerOCR_HowToUse.Text" xml:space="preserve">
+    <value>to open PowerOCR and then selecting a region to copy the text from.</value>
+  </data>
+  <data name="Oobe_PowerOCR_TipsAndTricks.Text" xml:space="preserve">
+    <value>Hold the shift key to move the selection region around.</value>
+  </data>
+  <data name="PowerOCR.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="Oobe_PowerOCR.Description" xml:space="preserve">
+    <value>PowerOCR works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard.</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format.Description" xml:space="preserve">
     <value>Applies to json and xml. Files remain unchanged.</value>

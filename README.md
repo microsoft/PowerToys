@@ -85,7 +85,7 @@ This is a lighter release, with a shorter development cycle and focused on stabi
 - There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
 
 ### General
-- Upgraded the Windows App SDK runtimes to 1.1.2.
+- Upgraded the Windows App SDK runtimes to 1.1.4.
 - The new Windows 11 context menu entries are now correctly added to Windows 11 dev channel insider builds. (This was a hotfix for 0.60)
 - The old context menu entries are shown alongside the new Windows 11 context menu entries to be compatible with software that overrides the Windows 11 context menu behavior. (This was a hotfix for 0.60)
 - Consolidated C# language version across the solution. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
