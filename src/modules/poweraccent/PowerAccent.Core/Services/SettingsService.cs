@@ -16,10 +16,12 @@ public class SettingsService
     private readonly ISettingsUtils _settingsUtils;
     private readonly IFileSystemWatcher _watcher;
     private readonly object _loadingSettingsLock = new object();
+    private PowerToys.PowerAccentKeyboardService.KeyboardListener _keyboardListener;
 
-    public SettingsService()
+    public SettingsService(PowerToys.PowerAccentKeyboardService.KeyboardListener keyboardListener)
     {
         _settingsUtils = new SettingsUtils();
+        _keyboardListener = keyboardListener;
         ReadSettings();
         _watcher = Helper.GetFileWatcher(PowerAccentModuleName, "settings.json", () => { ReadSettings(); });
     }
@@ -48,6 +50,8 @@ public class SettingsService
                     if (settings != null)
                     {
                         ActivationKey = settings.Properties.ActivationKey;
+                        _keyboardListener.UpdateActivationKey((int)ActivationKey);
+
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
                             case "Top center":
@@ -78,6 +82,8 @@ public class SettingsService
                                 Position = Position.Center;
                                 break;
                         }
+
+                        _keyboardListener.UpdateInputTime(InputTime);
                     }
                 }
                 catch (Exception ex)
@@ -133,32 +139,27 @@ public class SettingsService
         }
     }
 
-    public char[] GetLetterKey(LetterKey letter)
-    {
-        return GetDefaultLetterKey(letter);
-    }
-
-    public static char[] GetDefaultLetterKey(LetterKey letter)
+    public static char[] GetDefaultLetterKey(PowerToys.PowerAccentKeyboardService.LetterKey letter)
     {
         switch (letter)
         {
-            case LetterKey.A:
+            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_A:
                 return new char[] { 'à', 'â', 'á', 'ä', 'ã', 'å', 'æ' };
-            case LetterKey.C:
+            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_C:
                 return new char[] { 'ć', 'ĉ', 'č', 'ċ', 'ç', 'ḉ' };
-            case LetterKey.E:
+            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_E:
                 return new char[] { 'é', 'è', 'ê', 'ë', 'ē', 'ė', '€' };
-            case LetterKey.I:
+            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_I:
                 return new char[] { 'î', 'ï', 'í', 'ì', 'ī' };
-            case LetterKey.N:
+            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_N:
                 return new char[] { 'ñ', 'ń' };
-            case LetterKey.O:
+            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_O:
                 return new char[] { 'ô', 'ö', 'ó', 'ò', 'õ', 'ø', 'œ' };
-            case LetterKey.S:
+            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_S:
                 return new char[] { 'š', 'ß', 'ś' };
-            case LetterKey.U:
+            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_U:
                 return new char[] { 'û', 'ù', 'ü', 'ú', 'ū' };
-            case LetterKey.Y:
+            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_Y:
                 return new char[] { 'ÿ', 'ý' };
         }
 
