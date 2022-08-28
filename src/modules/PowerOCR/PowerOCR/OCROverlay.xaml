@@ -8,6 +8,8 @@
     Title="PowerOCR"
     Width="800"
     Height="450"
+    ShowActivated="False"
+    ShowInTaskbar="False"
     AllowsTransparency="True"
     Background="Transparent"
     Loaded="Window_Loaded"
