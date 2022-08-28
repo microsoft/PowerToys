@@ -32,12 +32,9 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
    - [Microsoft Visual C++ Redistributable](https://docs.microsoft.com/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022) installer. This will install one of the latest versions available.
 
-### Via GitHub with EXE [Recommended]
+### Via GitHub with EXE (Recommended)
 
-This is our preferred method. Please use the appropriate the PowerToys installer that matches your machine's architecture. For most people, it is `x64`.
- 
- - **For x64 processors (most common):** [PowerToysSetup-0.61.1-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.61.1/PowerToysSetup-0.61.1-x64.exe)
- - **For ARM64 processors:** [PowerToysSetup-0.61.1-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.61.1/PowerToysSetup-0.61.1-arm64.exe)
+This is our preferred method. Go to [the Release page](https://aka.ms/installPowerToys) and at the bottom, under **Assets**, click the appropriate link to download the installer that matches your machine's architecture. For most, it is `x64`.
 
 ### Via Microsoft Store
 
@@ -74,7 +71,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 This is a lighter release, with a shorter development cycle and focused on stability and improvements.
 
-**Highlights**
+### Highlights
 
 - Quality of life improvements for Always on Top, FancyZones and PowerToys Run.
 
