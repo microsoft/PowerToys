@@ -47,6 +47,7 @@ body:
       - G-code Preview
       - G-code Thumbnail
       - PowerAccent
+      - PowerOCR
       - PowerRename
       - PowerToys Run
       - Screen ruler
