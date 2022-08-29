@@ -264,7 +264,9 @@ namespace FancyZonesEditor
         private void RenderCanvasPreview(CanvasLayoutModel canvas)
         {
             var screenWorkArea = App.Overlay.WorkArea;
-            canvas.ScaleLayout(workAreaWidth: screenWorkArea.Width, workAreaHeight: screenWorkArea.Height);
+
+            var renderLayout = (CanvasLayoutModel)canvas.Clone();
+            renderLayout.ScaleLayout(workAreaWidth: screenWorkArea.Width, workAreaHeight: screenWorkArea.Height);
 
             Viewbox viewbox = new Viewbox
             {
@@ -278,7 +280,7 @@ namespace FancyZonesEditor
             };
             viewbox.Child = frame;
 
-            foreach (Int32Rect zone in canvas.Zones)
+            foreach (Int32Rect zone in renderLayout.Zones)
             {
                 Border rect = new Border();
                 Canvas.SetTop(rect, zone.Y);
