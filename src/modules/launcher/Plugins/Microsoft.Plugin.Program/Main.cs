@@ -20,7 +20,7 @@ namespace Microsoft.Plugin.Program
     public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IDisposable
     {
         // The order of this array is important! The Parsers will be checked in order (index 0 to index Length-1) and the first parser which is able to parse the Query will be used
-        // NoArgumentsArgumentParser does always succeed and therefor should always be last/fallback
+        // NoArgumentsArgumentParser does always succeed and therefore should always be last/fallback
         private static readonly IProgramArgumentParser[] _programArgumentParsers = new IProgramArgumentParser[]
         {
             new DoubleDashProgramArgumentParser(),
