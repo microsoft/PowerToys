@@ -80,7 +80,7 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
         StoreWindowParam(window, state);
 
 #if !defined(DEBUG_OVERLAY)
-        for (; ShowCursor(false) > 0;)
+        for (; ShowCursor(false) >= 0;)
             ;
 #endif
         break;

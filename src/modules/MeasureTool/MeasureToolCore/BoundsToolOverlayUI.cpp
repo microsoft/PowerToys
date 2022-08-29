@@ -25,6 +25,8 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         break;
     case WM_LBUTTONDOWN:
     {
+        for (; ShowCursor(false) >= 0;)
+            ;
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
@@ -36,6 +38,9 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     }
     case WM_CURSOR_LEFT_MONITOR:
     {
+        for (; ShowCursor(true) < 0;)
+            ;
+
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
@@ -44,6 +49,9 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     }
     case WM_LBUTTONUP:
     {
+        for (; ShowCursor(true) < 0;)
+            ;
+
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState || !toolState->perScreen[window].currentRegionStart)
             break;
@@ -67,6 +75,9 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     }
     case WM_RBUTTONUP:
     {
+        for (; ShowCursor(true) < 0;)
+            ;
+
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
