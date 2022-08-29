@@ -13,7 +13,7 @@ namespace
     inline std::pair<D2D_POINT_2F, D2D_POINT_2F> ComputeCrossFeetLine(D2D_POINT_2F center, const bool horizontal)
     {
         D2D_POINT_2F start = center, end = center;
-        // Computing in this way to achieve pixel-perfect axial symmetry of aliased D2D lines 
+        // Computing in this way to achieve pixel-perfect axial symmetry of aliased D2D lines
         if (horizontal)
         {
             start.x -= consts::FEET_HALF_LENGTH + 1.f;
@@ -36,33 +36,23 @@ namespace
 }
 
 winrt::com_ptr<ID2D1Bitmap> ConvertID3D11Texture2DToD2D1Bitmap(wil::com_ptr<ID2D1HwndRenderTarget> rt,
-                                                               winrt::com_ptr<ID3D11Texture2D> texture)
+                                                               const MappedTextureView* capturedScreenTexture)
 {
     std::lock_guard guard{ gpuAccessLock };
 
-    auto dxgiSurface = texture.try_as<IDXGISurface>();
-    if (!dxgiSurface)
-        return nullptr;
-
-    DXGI_MAPPED_RECT bitmap2Dmap = {};
-    HRESULT hr = dxgiSurface->Map(&bitmap2Dmap, DXGI_MAP_READ);
-    if (FAILED(hr))
-    {
-        return nullptr;
-    }
+    capturedScreenTexture->view.pixels;
 
     D2D1_BITMAP_PROPERTIES props = { .pixelFormat = rt->GetPixelFormat() };
     rt->GetDpi(&props.dpiX, &props.dpiY);
     const auto sizeF = rt->GetSize();
     winrt::com_ptr<ID2D1Bitmap> bitmap;
-    if (FAILED(rt->CreateBitmap(D2D1::SizeU(static_cast<uint32_t>(sizeF.width),
-                                            static_cast<uint32_t>(sizeF.height)),
-                                bitmap2Dmap.pBits,
-                                bitmap2Dmap.Pitch,
-                                props,
-                                bitmap.put())))
-        return nullptr;
-    if (FAILED(dxgiSurface->Unmap()))
+    auto hr = rt->CreateBitmap(D2D1::SizeU(static_cast<uint32_t>(capturedScreenTexture->view.width),
+                                           static_cast<uint32_t>(capturedScreenTexture->view.height)),
+                               capturedScreenTexture->view.pixels,
+                               static_cast<uint32_t>(capturedScreenTexture->view.pitch * 4),
+                               props,
+                               bitmap.put());
+    if (FAILED(hr))
         return nullptr;
 
     return bitmap;
@@ -90,7 +80,7 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
         StoreWindowParam(window, state);
 
 #if !defined(DEBUG_OVERLAY)
-        for (; ShowCursor(false) > 0;)
+        for (; ShowCursor(false) >= 0;)
             ;
 #endif
         break;
@@ -142,7 +132,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
     RECT measuredEdges{};
     MeasureToolState::Mode mode = {};
     winrt::com_ptr<ID2D1Bitmap> backgroundBitmap;
-    winrt::com_ptr<ID3D11Texture2D> backgroundTextureToConvert;
+    const MappedTextureView* backgroundTextureToConvert = nullptr;
 
     toolState.Read([&](const MeasureToolState& state) {
         continuousCapture = state.global.continuousCapture;

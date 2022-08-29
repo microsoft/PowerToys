@@ -9,6 +9,8 @@
 #endif
 #include <cassert>
 #include <limits>
+#include <d3d11.h>
+
 
 //#define DEBUG_TEXTURE
 
@@ -124,4 +126,44 @@ struct BGRATextureView
 #if defined(DEBUG_TEXTURE)
     void SaveAsBitmap(const char* filename) const;
 #endif
+};
+
+class MappedTextureView
+{
+    winrt::com_ptr<ID3D11DeviceContext> context;
+    winrt::com_ptr<ID3D11Texture2D> texture;
+
+public:
+    BGRATextureView view;
+    MappedTextureView(winrt::com_ptr<ID3D11Texture2D> _texture,
+                      winrt::com_ptr<ID3D11DeviceContext> _context,
+                      const size_t textureWidth,
+                      const size_t textureHeight) :
+        texture{ std::move(_texture) }, context{ std::move(_context) }
+    {
+        D3D11_TEXTURE2D_DESC desc;
+        texture->GetDesc(&desc);
+
+        D3D11_MAPPED_SUBRESOURCE resource = {};
+        winrt::check_hresult(context->Map(texture.get(), D3D11CalcSubresource(0, 0, 0), D3D11_MAP_READ, 0, &resource));
+
+        view.pixels = static_cast<const uint32_t*>(resource.pData);
+        view.pitch = resource.RowPitch / 4;
+        view.width = textureWidth;
+        view.height = textureHeight;
+    }
+
+    MappedTextureView(MappedTextureView&&) = default;
+    MappedTextureView& operator=(MappedTextureView&&) = default;
+
+    inline winrt::com_ptr<ID3D11Texture2D> GetTexture() const
+    {
+        return texture;
+    }
+
+    ~MappedTextureView()
+    {
+        if (context && texture)
+            context->Unmap(texture.get(), D3D11CalcSubresource(0, 0, 0));
+    }
 };
