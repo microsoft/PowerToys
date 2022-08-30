@@ -12,7 +12,7 @@ Aaron has helped triaging, discussing, and creating a substantial number of issu
 ### [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)
 CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
 
-### [@damienleroy](https://github.com/damienleroy) - Damien Leroy
+### [@damienleroy](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/damien-leroy-b2734416a/)
 Damien has helped out by developing and contributing the Keyboard Accent utility.
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
