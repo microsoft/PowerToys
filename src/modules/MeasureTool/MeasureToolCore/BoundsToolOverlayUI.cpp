@@ -38,9 +38,6 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     }
     case WM_CURSOR_LEFT_MONITOR:
     {
-        for (; ShowCursor(true) < 0;)
-            ;
-
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
