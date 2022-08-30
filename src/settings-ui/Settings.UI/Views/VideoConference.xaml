@@ -17,9 +17,7 @@
     <controls:SettingsPageControl x:Uid="VideoConference"
                                   ModuleImageSource="ms-appx:///Assets/Modules/VideoConference.png">
         <controls:SettingsPageControl.ModuleContent>
-
             <StackPanel Orientation="Vertical">
-            
                 <controls:Setting x:Uid="VideoConference_Enable" IsEnabled="{ Binding Mode=OneWay, Path=IsElevated }">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" ShowAsMonochrome="False" />
@@ -73,7 +71,6 @@
 
 
                 <controls:SettingsGroup x:Uid="VideoConference_Camera" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
-
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="VideoConference_SelectedCamera" Icon="&#xE960;">
@@ -119,7 +116,6 @@
 
 
                 <controls:SettingsGroup x:Uid="VideoConference_Toolbar" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
-
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="VideoConference_ToolbarPosition" Icon="&#xEC12;">
@@ -145,8 +141,8 @@
                                         </ComboBox>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
 
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="VideoConference_HideToolbarWhenUnmuted" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.HideToolbarWhenUnmuted}" Margin="{StaticResource ExpanderSettingMargin}" />
                             </StackPanel>
                         </controls:SettingExpander.Content>

@@ -17,16 +17,14 @@
     <controls:SettingsPageControl x:Uid="FileExplorerPreview"
                                   ModuleImageSource="ms-appx:///Assets/Modules/PowerPreview.png">
         <controls:SettingsPageControl.ModuleContent>
-            
             <StackPanel Orientation="Vertical">
-
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
-                    <muxc:InfoBar Severity="Warning"
-                                   x:Uid="FileExplorerPreview_PreviewHandlerOutlookIncompatibility"
-                                   IsOpen="True"
-                                   IsTabStop="True"
-                                   IsClosable="False"
-                                   />
+                    <muxc:InfoBar x:Uid="FileExplorerPreview_PreviewHandlerOutlookIncompatibility"
+                                  Severity="Warning"
+                                  IsOpen="True"
+                                  IsTabStop="True"
+                                  IsClosable="False"
+                                  />
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}"
@@ -45,8 +43,7 @@
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Monaco" Icon="&#xE99A;">
                                 <controls:Setting.ActionContent>
-                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoRenderIsEnabled}"
-                                          x:Uid="ToggleSwitch"/>
+                                    <ToggleSwitch x:Uid="ToggleSwitch"IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoRenderIsEnabled}"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
@@ -57,7 +54,7 @@
                                           IsChecked="{x:Bind ViewModel.MonacoWrapText, Mode=TwoWay}"
                                           Margin="{StaticResource ExpanderSettingMargin}"
                                           IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}" />
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <MenuFlyoutSeparator/>
                                 <controls:CheckBoxWithDescriptionControl x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format"
                                                                          IsChecked="{x:Bind ViewModel.MonacoPreviewTryFormat, Mode=TwoWay}"
                                                                          Margin="{StaticResource ExpanderSettingMargin}"
@@ -68,15 +65,13 @@
 
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF" Icon="&#xEA90;">
                         <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}"
-                                          x:Uid="ToggleSwitch"/>
+                            <ToggleSwitch x:Uid="ToggleSwitch"IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_GCODE" Icon="&#xE914;">
                         <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODERenderIsEnabled}"
-                                          x:Uid="ToggleSwitch"/>
+                            <ToggleSwitch x:Uid="ToggleSwitch"IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODERenderIsEnabled}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>

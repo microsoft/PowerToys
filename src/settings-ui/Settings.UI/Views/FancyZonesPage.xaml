@@ -27,13 +27,13 @@
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" x:Uid="ToggleSwitch"/>
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
 
                 <controls:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <Button Style="{StaticResource SettingButtonStyle}" x:Uid="FancyZones_LaunchEditorButton_Accessible" Command="{x:Bind ViewModel.LaunchEditorEventHandler}">
+                    <Button x:Uid="FancyZones_LaunchEditorButton_Accessible" Style="{StaticResource SettingButtonStyle}" Command="{x:Bind ViewModel.LaunchEditorEventHandler}">
                         <controls:Setting x:Uid="FancyZones_LaunchEditorButtonControl" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xEB3C;">
                             <!--<controls:Setting.Icon>
                                 <PathIcon Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"/>
@@ -70,14 +70,14 @@
                         <controls:SettingExpander.Content>
                             <StackPanel>
                                 <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}" Margin="{StaticResource ExpanderSettingMargin}"  />
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="FancyZones_MouseDragCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseSwitch}" Margin="{StaticResource ExpanderSettingMargin}"  />
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" Margin="{StaticResource ExpanderSettingMargin}"  />
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <controls:CheckBoxWithDescriptionControl IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}"
-                                                                 Margin="56, -2, 40, 14"
-                                                                 x:Uid="FancyZones_SpanZonesAcrossMonitors"/>
+                                <MenuFlyoutSeparator/>
+                                <controls:CheckBoxWithDescriptionControl x:Uid="FancyZones_SpanZonesAcrossMonitors"
+                                                                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}"
+                                                                         Margin="56, -2, 40, 14"/>
 
                                 <controls:Setting x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
@@ -89,15 +89,12 @@
                                         </ComboBox>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
-
-                               
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
                   
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-
                             <controls:Setting x:Uid="FancyZones_Zone_Appearance" Icon="&#xE790;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
                                     <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.SystemTheme, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
@@ -122,7 +119,7 @@
                                                                    Grid.Column="1"
                                                                    Height="86"/>
                                 
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="FancyZones_ShowZoneNumberCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowZoneNumber}" Margin="{StaticResource ExpanderSettingMargin}"/>
                                 
                                 <controls:Setting x:Uid="FancyZones_HighlightOpacity" Style="{StaticResource ExpanderContentSettingStyle}">
@@ -174,21 +171,21 @@
                         <controls:SettingExpander.Content>
                             <StackPanel>
                                 <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}" Margin="{StaticResource ExpanderSettingMargin}"/>
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}" Margin="{StaticResource ExpanderSettingMargin}"/>
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AppLastZoneMoveWindows}" Margin="{StaticResource ExpanderSettingMargin}"/>
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor" IsChecked="{ Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}" Margin="{StaticResource ExpanderSettingMargin}"/>
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="FancyZones_RestoreSize" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}" Margin="{StaticResource ExpanderSettingMargin}"/>
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}" Margin="{StaticResource ExpanderSettingMargin}"/>
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <MenuFlyoutSeparator/>
                                 <controls:CheckBoxWithDescriptionControl IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowPopupWindowSnap}"
-                                                                 Margin="56, -2, 40, 14"
-                                                                 x:Uid="FancyZones_AllowPopupWindowSnap"/>
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                                                         Margin="56, -2, 40, 14"
+                                                                         x:Uid="FancyZones_AllowPopupWindowSnap"/>
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowChildWindowSnap}" Margin="{StaticResource ExpanderSettingMargin}"/>
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource TrueToVisibleConverter}}"/>
                                 <CheckBox x:Uid="FancyZones_DisableRoundCornersOnWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableRoundCornersOnWindowSnap}" Margin="{StaticResource ExpanderSettingMargin}" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -201,7 +198,7 @@
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FancyZones_WindowSwitching_GroupSettings" Icon="&#xE140;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
-                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.WindowSwitching}" x:Uid="ToggleSwitch"/>
+                                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.WindowSwitching}"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
@@ -256,7 +253,7 @@
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
 
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
                                           Margin="56,8,16,8"
                                           IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}"
@@ -271,7 +268,7 @@
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FancyZones_QuickLayoutSwitch" Icon="&#xeda7;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
-                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" x:Uid="ToggleSwitch"/>
+                                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
@@ -291,15 +288,15 @@
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
-                                 Margin="{StaticResource ExpanderSettingMargin}"
-                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
-                                         ScrollViewer.VerticalScrollBarVisibility ="Visible"
-                                         ScrollViewer.VerticalScrollMode="Enabled"
-                                         ScrollViewer.IsVerticalRailEnabled="True"
-                                         TextWrapping="Wrap"
-                                         AcceptsReturn="True"
-                                         MinWidth="240"
-                                         MinHeight="160" />
+                                Margin="{StaticResource ExpanderSettingMargin}"
+                                Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                ScrollViewer.VerticalScrollBarVisibility ="Visible"
+                                ScrollViewer.VerticalScrollMode="Enabled"
+                                ScrollViewer.IsVerticalRailEnabled="True"
+                                TextWrapping="Wrap"
+                                AcceptsReturn="True"
+                                MinWidth="240"
+                                MinHeight="160" />
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
                 </controls:SettingsGroup>

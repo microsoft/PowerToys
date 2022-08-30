@@ -52,9 +52,4 @@
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
-
-    <Style x:Key="ExpanderSeparatorStyle" TargetType="Rectangle">
-        <Setter Property="Height" Value="1"/>
-        <Setter Property="Stroke" Value="{ThemeResource CardBorderBrush}" />
-    </Style>
 </ResourceDictionary>

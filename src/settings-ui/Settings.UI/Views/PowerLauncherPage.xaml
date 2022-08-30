@@ -46,9 +46,9 @@
                         <controls:SettingExpander.Content>
                             <StackPanel>
                                 <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook"
-                                                                 IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}"
-                                                                 Margin="56, 0, 40, 16"/>
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                                                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}"
+                                                                         Margin="56, 0, 40, 16"/>
+                                <MenuFlyoutSeparator/>
                                 <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen"
                                           IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}"
                                           Margin="{StaticResource ExpanderSettingMargin}" />
@@ -181,12 +181,11 @@
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>-->
                                 
-                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <controls:CheckBoxWithDescriptionControl 
+                                <MenuFlyoutSeparator/>
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults"
                                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}"
-                                                                 Margin="56, -2, 40, 14"
-                                                                 x:Uid="PowerLauncher_WaitForSlowResults"/>
+                                    Margin="56, -2, 40, 14"/>
                                 
                             </StackPanel>
                         </controls:SettingExpander.Content>
@@ -244,13 +243,13 @@
                 <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
 
                     <muxc:InfoBar x:Uid="Run_ConflictingKeywordInfo"
-                                          Severity="Informational"
-                                          IsClosable="False"
-                                          IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                                          IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                                Severity="Informational"
+                                IsClosable="False"
+                                IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                                IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
                         <muxc:InfoBar.ActionButton>
-                            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun#direct-activation-commands"
-                                                x:Uid="Run_ConflictingKeywordInfo_Link"/>
+                            <HyperlinkButton x:Uid="Run_ConflictingKeywordInfo_Link"
+                                             NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun#direct-activation-commands"/>
                         </muxc:InfoBar.ActionButton>
                     </muxc:InfoBar>
 
@@ -330,7 +329,7 @@
                                                               IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                               IsOpen="{x:Bind ShowNotAccessibleWarning}"
                                                               IsClosable="False" />
-                                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                                <MenuFlyoutSeparator/>
                                                 
                                                 <StackPanel Orientation="Vertical">
                                                     <CheckBox AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
@@ -349,8 +348,8 @@
                                                     </CheckBox>
 
                                                     <controls:Setting x:Uid="PowerLauncher_PluginWeightBoost" 
-                                                                          Style="{StaticResource ExpanderContentSettingStyleTight}" 
-                                                                          IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
+                                                                    Style="{StaticResource ExpanderContentSettingStyleTight}" 
+                                                                    IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
                                                         <controls:Setting.ActionContent>
                                                             <muxc:NumberBox Minimum="-1000"
                                                                 Maximum="1000"
@@ -373,7 +372,7 @@
                                                     <ListView.ItemTemplate>
                                                         <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
                                                             <StackPanel Orientation="Vertical">
-                                                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                                                <MenuFlyoutSeparator/>
                                                                 <controls:CheckBoxWithDescriptionControl Header="{x:Bind Path=DisplayLabel}" Description="{x:Bind Path=DisplayDescription}"
                                                                       IsChecked="{x:Bind Path=Value, Mode=TwoWay}"
                                                                       Margin="56, 0, 40, 16"/>
@@ -383,13 +382,13 @@
                                                     </ListView.ItemTemplate>
                                                 </ListView>
 
-                                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                                <MenuFlyoutSeparator/>
                                                 <TextBlock Opacity="{x:Bind DisabledOpacity}"
                                                            HorizontalAlignment="Right"
                                                            Style="{ThemeResource SecondaryTextStyle}"
                                                            Margin="{StaticResource ExpanderSettingMargin}">
-                                                               <Run x:Uid="PowerLauncher_AuthoredBy" />
-                                                               <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
+                                                    <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                                    <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                                 </TextBlock>
                                             </StackPanel>
                                         </controls:SettingExpander.Content>
