@@ -117,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Attribution_Roolr.Text" xml:space="preserve">
+    <value>Inspired by Roolr</value>
+    <comment>Roolr is a name of the tool.</comment>
+  </data>
   <data name="Shell_VideoConference.Content" xml:space="preserve">
     <value>Video Conference Mute</value>
     <comment>Navigation view item name for Video Conference</comment>
@@ -125,9 +129,12 @@
     <value>Screen Ruler</value>
     <comment>Product name: Navigation view item name for Screen Ruler</comment>
   </data>
+  <data name="MeasureTool.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
+  </data>
   <data name="MeasureTool.ModuleDescription" xml:space="preserve">
-    <value>Screen Ruler is a quick and easy way to measure pixels on your screen.
-Inspired by Roolr.</value>
+    <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="MeasureTool.ModuleTitle" xml:space="preserve">

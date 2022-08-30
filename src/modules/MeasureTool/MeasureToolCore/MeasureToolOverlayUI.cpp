@@ -103,6 +103,7 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
                                                             SetClipBoardToText(text.buffer);
                                                         }); });
         }
+        PostMessageW(window, WM_CLOSE, {}, {});
         break;
     case WM_MOUSEWHEEL:
         if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
