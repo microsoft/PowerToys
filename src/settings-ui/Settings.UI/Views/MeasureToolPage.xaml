@@ -46,10 +46,9 @@
                     <muxc:InfoBar
                         Severity="Warning"
                         x:Uid="MeasureTool_ContinuousCapture_Information"
-                        IsOpen="True"
-                        IsTabStop="True"
-                        IsClosable="False"
-                        Visibility="{Binding Mode=OneWay, Path=ContinuousCapture, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuesCaptureWarning}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuesCaptureWarning}"
+                        IsClosable="False" />
                     <controls:Setting x:Uid="MeasureTool_PerColorChannelEdgeDetection" Icon="&#xE7FB;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch
