@@ -176,7 +176,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public bool ShowContinuousCaptureWarning
         {
-            get => IsEnabled & ContinuousCapture;
+            get => IsEnabled && ContinuousCapture;
         }
 
         private Func<string, int> SendConfigMSG { get; }
