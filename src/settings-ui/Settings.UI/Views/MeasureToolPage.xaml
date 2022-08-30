@@ -82,7 +82,7 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_MeasureTool" Link="https://aka.ms/PowerToysOverview_MeasureTool"/>
+            <controls:PageLink x:Uid="LearnMore_MeasureTool" Link="https://aka.ms/PowerToysOverview_ScreenRuler"/>
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink x:Uid="Attribution_Rooler" Link="https://github.com/peteblois/rooler"/>
