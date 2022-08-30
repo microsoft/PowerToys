@@ -257,7 +257,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool powerOCR = true;
 
-        [JsonPropertyName("PowerOCR")]
+        [JsonPropertyName("ImageToText")]
         public bool PowerOCR
         {
             get => powerOCR;

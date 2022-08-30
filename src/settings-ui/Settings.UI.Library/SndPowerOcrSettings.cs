@@ -9,7 +9,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class SndPowerOcrSettings
     {
-        [JsonPropertyName("PowerOCR")]
+        [JsonPropertyName("ImageToText")]
         public PowerOcrSettings Settings { get; set; }
 
         public SndPowerOcrSettings()

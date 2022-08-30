@@ -35,7 +35,7 @@ public partial class App : Application, IDisposable
         _instanceMutex = new Mutex(true, @"Local\PowerToys_PowerOCR_InstanceMutex", out bool createdNew);
         if (!createdNew)
         {
-            Logger.LogWarning("Another running PowerOCR instance was detected. Exiting PowerOCR");
+            Logger.LogWarning("Another running ImageToText instance was detected. Exiting ImageToText");
             _instanceMutex = null;
             Environment.Exit(0);
             return;
@@ -46,11 +46,11 @@ public partial class App : Application, IDisposable
             try
             {
                 _ = int.TryParse(e.Args[0], out _powerToysRunnerPid);
-                Logger.LogInfo($"PowerOCR started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
+                Logger.LogInfo($"ImageToText started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
 
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
-                    Logger.LogInfo("PowerToys Runner exited. Exiting PowerOCR");
+                    Logger.LogInfo("PowerToys Runner exited. Exiting ImageToText");
                     Environment.Exit(0);
                 });
                 var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
@@ -63,7 +63,7 @@ public partial class App : Application, IDisposable
         }
         else
         {
-            Logger.LogInfo($"PowerOCR started detached from PowerToys Runner.");
+            Logger.LogInfo($"ImageToText started detached from PowerToys Runner.");
             _powerToysRunnerPid = -1;
             var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
             keyboardMonitor = new KeyboardMonitor(userSettings);

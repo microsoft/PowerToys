@@ -109,9 +109,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = true,
             });
 
-            Modules.Insert((int)PowerToysModules.PowerOCR, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.ImageToText, new OobePowerToysModule()
             {
-                ModuleName = "PowerOCR",
+                ModuleName = "ImageToText",
                 IsNew = true,
             });
 
@@ -191,7 +191,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "KBM": NavigationFrame.Navigate(typeof(OobeKBM)); break;
                     case "PowerAccent": NavigationFrame.Navigate(typeof(OobePowerAccent)); break;
                     case "PowerRename": NavigationFrame.Navigate(typeof(OobePowerRename)); break;
-                    case "PowerOCR": NavigationFrame.Navigate(typeof(OobePowerOCR)); break;
+                    case "ImageToText": NavigationFrame.Navigate(typeof(OobePowerOCR)); break;
                     case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
                     case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
                     case "VideoConference": NavigationFrame.Navigate(typeof(OobeVideoConference)); break;
