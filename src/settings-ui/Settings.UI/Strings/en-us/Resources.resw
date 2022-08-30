@@ -117,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Attribution_Rooler.Text" xml:space="preserve">
+    <value>Inspired by Rooler</value>
+    <comment>Rooler is a name of the tool.</comment>
+  </data>
   <data name="Shell_VideoConference.Content" xml:space="preserve">
     <value>Video Conference Mute</value>
     <comment>Navigation view item name for Video Conference</comment>
@@ -125,9 +129,12 @@
     <value>Screen Ruler</value>
     <comment>Product name: Navigation view item name for Screen Ruler</comment>
   </data>
+  <data name="MeasureTool.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
+  </data>
   <data name="MeasureTool.ModuleDescription" xml:space="preserve">
-    <value>Screen Ruler is a quick and easy way to measure pixels on your screen.
-Inspired by Roolr.</value>
+    <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="MeasureTool.ModuleTitle" xml:space="preserve">
@@ -158,7 +165,7 @@ Inspired by Roolr.</value>
     <value>Capture screen continuously during measuring</value>
   </data>
   <data name="MeasureTool_ContinuousCapture.Description" xml:space="preserve">
-    <value>Refresh screen contexts in real-time instead of making a screenshot once. If enabled, tracing is slightly offset from the cursor position to not intersect with previously rendered cross lines.</value>
+    <value>Refresh screen contexts in real-time instead of making a screenshot once. </value>
   </data>
   <data name="MeasureTool_PerColorChannelEdgeDetection.Header" xml:space="preserve">
     <value>Per color channel edge detection</value>
@@ -1420,7 +1427,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
   </data>
-	<data name="Oobe_MeasureTool.Description" xml:space="preserve">
+  <data name="Oobe_MeasureTool.Description" xml:space="preserve">
     <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
   </data>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
@@ -1520,7 +1527,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_MeasureTool_HowToLaunch.Text" xml:space="preserve">
     <value>The Bounds mode lets you select a specific area to measure. You can also shift-drag an area to persist in on screen. The various Spacing modes allows tracing similar pixels along horizontal and vertical axes with a customizable pixel tolerance threshold (use settings or mouse wheel to adjust it).</value>
   </data>
-	<data name="Oobe_MeasureTool.Title" xml:space="preserve">
+  <data name="Oobe_MeasureTool.Title" xml:space="preserve">
     <value>Screen Ruler</value>
     <comment>Do not localize this string</comment>
   </data>
@@ -1767,7 +1774,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about PowerToys Run</value>
     <comment>PowerToys Run is a product name, do not loc</comment>
   </data>
-	<data name="LearnMore_MeasureTool.Text" xml:space="preserve">
+  <data name="LearnMore_MeasureTool.Text" xml:space="preserve">
     <value>Learn more about Screen Ruler</value>
     <comment>Screen Ruler is a product name, do not loc</comment>
   </data>
@@ -2247,7 +2254,9 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>PowerAccent</value>
   </data>
   <data name="PowerAccent.ModuleDescription" xml:space="preserve">
-    <value>PowerAccent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent. While holding the key for the character you want to add an accent to, press the Activation Key (space key or left and right arrow keys) and an overlay to select the accented character will appear.</value>
+    <value>PowerAccent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
+
+Activate by holding the key for the character you want to add an accent to, then press the Activation Key (space key or left and right arrow keys). If you continue to hold, an overlay to select the accented between multiple characters will appear!</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="PowerAccent.ModuleTitle" xml:space="preserve">
@@ -2273,7 +2282,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Activation key</value>
   </data>
   <data name="PowerAccent_Activation_Shortcut.Description" xml:space="preserve">
-    <value>Select the activation key to activate this module by holding down the letter and pressing the activation key</value>
+    <value>This is the extra key needed to activate after you are holding your target letter.</value>
   </data>
   <data name="PowerAccent_Activation_Key_Arrows.Content" xml:space="preserve">
     <value>Left/Right Arrow</value>
@@ -2363,5 +2372,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Run_ConflictingKeywordInfo_Link.Content" xml:space="preserve">
     <value>Learn more about conflicting activation commands</value>
+  </data>
+  <data name="MeasureTool_ContinuousCapture_Information.Title" xml:space="preserve">
+    <value>The continuous capture mode will consume more resources when in use.  In addition, the UI will be slightly offset from the pointer position.</value>
+    <comment>pointer as in mouse pointer.  resources refer to things like CPU, GPU, RAM</comment>
   </data>
 </root>

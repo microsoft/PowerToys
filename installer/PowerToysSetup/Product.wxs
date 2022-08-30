@@ -121,8 +121,9 @@
 
   <?define MeasureToolFiles=CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;Microsoft.WinUI.dll;MRM.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MeasureToolCore.dll;PowerToys.MeasureToolUI.deps.json;PowerToys.MeasureToolUI.dll;PowerToys.MeasureToolUI.exe;PowerToys.MeasureToolUI.runtimeconfig.json;PushNotificationsLongRunningTask.ProxyStub.dll;resources.pri;System.CodeDom.dll;System.Management.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinRT.Runtime.dll;WinUIEdit.dll;WinUIEx.dll;wuceffectsi.dll?>
 
-
 	<?define PowerRenameMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+
+  <?define MeasureToolMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
 	<?define PowerAccentFiles=ControlzEx.dll;GongSolutions.WPF.DragDrop.dll;Ijwhost.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerAccent.deps.json;PowerAccent.dll;PowerAccent.exe;PowerAccent.runtimeconfig.json;PowerToys.PowerAccentModuleInterface.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;Vanara.Core.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.User32.dll?>
 
@@ -467,6 +468,9 @@
 
             <!-- MeasureTool -->
             <Directory Id="MeasureToolInstallFolder" Name="$(var.MeasureToolProjectName)">
+                <Directory Id="MeasureToolMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                  <Directory Id="MeasureToolMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+                </Directory>
             </Directory>
 
             <!-- Launcher -->
@@ -797,13 +801,13 @@
       </Component>
     </DirectoryRef>
 
-		<DirectoryRef Id="PowerRenameMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets">
-			<?foreach File in $(var.PowerRenameMicrosoftUIXamlAssetsInstallFiles)?>
-			    <Component Id="PowerRenameMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
-				    <File Id="PowerRenameMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
-			    </Component>
-			<?endforeach?>			
-        </DirectoryRef>
+    <DirectoryRef Id="PowerRenameMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets">
+      <?foreach File in $(var.PowerRenameMicrosoftUIXamlAssetsInstallFiles)?>
+        <Component Id="PowerRenameMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+          <File Id="PowerRenameMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+        </Component>
+      <?endforeach?>			
+    </DirectoryRef>
 
     <DirectoryRef Id="PowerRenameAssetsFolder" FileSource="$(var.BinDir)modules\$(var.PowerRenameProjectName)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
@@ -983,6 +987,14 @@
 
     </DirectoryRef>
 
+    <DirectoryRef Id="MeasureToolMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.MeasureToolProjectName)\Microsoft.UI.Xaml\Assets">
+      <?foreach File in $(var.MeasureToolMicrosoftUIXamlAssetsInstallFiles)?>
+        <Component Id="MeasureToolMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+          <File Id="MeasureToolMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+        </Component>
+      <?endforeach?>			
+    </DirectoryRef>
+
     <!-- SettingsV2 components -->
     <DirectoryRef Id="SettingsV2InstallFolder" FileSource="$(var.BinDir)Settings\">
       <?foreach File in $(var.SettingsV2Files)?>
@@ -1128,6 +1140,9 @@
       <ComponentRef Id="Module_MeasureToolInterface"/>
       <?foreach File in $(var.MeasureToolFiles)?>
       <ComponentRef Id="MEASURE_TOOL_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.MeasureToolMicrosoftUIXamlAssetsInstallFiles)?>
+        <ComponentRef Id="MeasureToolMicrosoftUIXamlAssets_$(var.File)" />
       <?endforeach?>
 
       <?foreach File in $(var.SettingsV2Files)?>
@@ -1476,7 +1491,7 @@
     <!-- Localization languages shipped with WinAppSDK. We should ship these as well. -->
     <?define WinAppSDKLocLanguageList = af-ZA;ar-SA;az-Latn-AZ;bg-BG;bs-Latn-BA;ca-ES;cs-CZ;cy-GB;da-DK;de-DE;el-GR;en-GB;en-us;es-ES;es-MX;et-EE;eu-ES;fa-IR;fi-FI;fr-CA;fr-FR;gl-ES;he-IL;hi-IN;hr-HR;hu-HU;id-ID;is-IS;it-IT;ja-JP;ka-GE;kk-KZ;ko-KR;lt-LT;lv-LV;ms-MY;nb-NO;nl-NL;nn-NO;pl-PL;pt-BR;pt-PT;ro-RO;ru-RU;sk-SK;sl-SI;sq-AL;sr-Cyrl-RS;sr-Latn-RS;sv-SE;th-TH;tr-TR;uk-UA;vi-VN;zh-CN;zh-TW?>
   <Fragment>
-        <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder?>
+        <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
             <?foreach Language in $(var.WinAppSDKLocLanguageList)?>
             <?if $(var.Language) = af-ZA?>
@@ -1787,6 +1802,13 @@
                 Guid="$(var.CompGUIDPrefix)02">
                 <File Id="PowerRename_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
                 <File Id="PowerRename_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.PowerRenameProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+            </Component>
+            <Component
+                Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+                Directory="WinAppSDKLoc$(var.IdSafeLanguage)MeasureToolInstallFolder"
+                Guid="$(var.CompGUIDPrefix)03">
+                <File Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+                <File Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
             </Component>
             <?undef IdSafeLanguage?>
             <?undef CompGUIDPrefix?>
