@@ -2275,7 +2275,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Activation key</value>
   </data>
   <data name="PowerAccent_Activation_Shortcut.Description" xml:space="preserve">
-    <value>This is the extra key needed to activate after your are holding your target letter.</value>
+    <value>This is the extra key needed to activate after you are holding your target letter.</value>
   </data>
   <data name="PowerAccent_Activation_Key_Arrows.Content" xml:space="preserve">
     <value>Left/Right Arrow</value>
