@@ -63,7 +63,7 @@ Their fork of Wox was the base of PowerToys Run.
 Initial base of jjw24's fork, which makes it the base of PowerToys Run.
 
 ### [Text-Grab](https://github.com/TheJoeFin/Text-Grab) - Joseph Finney
-Image to Text is based on Joe Finney's Text Grab.
+Joe helped develop and contribute to the Image to Text utility.  It is directly based on his Text Grab application.
 
 ## Microsoft community members
 
