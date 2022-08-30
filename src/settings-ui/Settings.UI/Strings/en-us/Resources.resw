@@ -2367,7 +2367,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Learn more about conflicting activation commands</value>
   </data>
   <data name="MeasureTool_ContinuousCapture_Information.Title" xml:space="preserve">
-    <value>This mode will consume more resources when in use.  In addition, the UI will be slightly offset from the pointer position.</value>
+    <value>The continuous capture mode will consume more resources when in use.  In addition, the UI will be slightly offset from the pointer position.</value>
     <comment>pointer as in mouse pointer.  resources refer to things like CPU, GPU, RAM</comment>
   </data>
 </root>
