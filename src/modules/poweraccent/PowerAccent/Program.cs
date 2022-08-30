@@ -17,7 +17,7 @@ namespace PowerAccent;
 
 internal static class Program
 {
-    private const string PROGRAM_NAME = "PowerAccent";
+    private const string PROGRAM_NAME = "KeyboardAccent";
     private const string PROGRAM_APP_NAME = "PowerToys.PowerAccent";
     private static App _application;
     private static int _powerToysRunnerPid;
@@ -40,7 +40,7 @@ internal static class Program
         }
         else
         {
-            Logger.LogWarning("Another running PowerAccent instance was detected. Exiting PowerAccent");
+            Logger.LogWarning("Another running KeyboardAccent instance was detected. Exiting KeyboardAccent");
         }
     }
 
@@ -65,11 +65,11 @@ internal static class Program
             {
                 _ = int.TryParse(args[0], out _powerToysRunnerPid);
 
-                Logger.LogInfo($"PowerAccent started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
+                Logger.LogInfo($"KeyboardAccent started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
 
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
-                    Logger.LogInfo("PowerToys Runner exited. Exiting PowerAccent");
+                    Logger.LogInfo("PowerToys Runner exited. Exiting KeyboardAccent");
                     Terminate();
                 });
             }
@@ -80,7 +80,7 @@ internal static class Program
         }
         else
         {
-            Logger.LogInfo($"PowerAccent started detached from PowerToys Runner.");
+            Logger.LogInfo($"KeyboardAccent started detached from PowerToys Runner.");
             _powerToysRunnerPid = -1;
         }
     }

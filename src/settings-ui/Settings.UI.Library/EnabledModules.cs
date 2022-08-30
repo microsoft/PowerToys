@@ -241,7 +241,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool powerAccent;
 
-        [JsonPropertyName("PowerAccent")]
+        [JsonPropertyName("KeyboardAccent")]
         public bool PowerAccent
         {
             get => powerAccent;
