@@ -235,11 +235,6 @@ public partial class OCROverlay : Window
         movingPoint.X = Math.Round(movingPoint.X);
         movingPoint.Y = Math.Round(movingPoint.Y);
 
-        if (mPt == movingPoint)
-        {
-            Debug.WriteLine("Probably on Screen 1");
-        }
-
         double xDimScaled = Canvas.GetLeft(selectBorder) * m.M11;
         double yDimScaled = Canvas.GetTop(selectBorder) * m.M22;
 
@@ -260,7 +255,6 @@ public partial class OCROverlay : Window
         {
         }
 
-        BackgroundBrush.Opacity = 0;
         if (regionScaled.Width < 3 || regionScaled.Height < 3)
         {
             grabbedText = await ImageMethods.GetClickedWord(this, new Point(xDimScaled, yDimScaled));
@@ -276,16 +270,12 @@ public partial class OCROverlay : Window
             {
                 Clipboard.SetText(grabbedText);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError($"Clipboard.SetText exception: {ex}");
             }
 
             WindowUtilities.CloseAllOCROverlays();
-        }
-        else
-        {
-            // The grabbing procedure hasn't been successful
-            BackgroundBrush.Opacity = ActiveOpacity;
         }
     }
 
