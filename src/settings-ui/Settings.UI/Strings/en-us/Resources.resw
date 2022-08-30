@@ -2249,7 +2249,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="PowerAccent.ModuleDescription" xml:space="preserve">
     <value>PowerAccent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
 
-Activate by holding the key for the character you want to add an accent to, then press the Activation Key (space key or left and right arrow keys). If you continue to hold, an an overlay to select the accented between multiple characters will appear!</value>
+Activate by holding the key for the character you want to add an accent to, then press the Activation Key (space key or left and right arrow keys). If you continue to hold, an overlay to select the accented between multiple characters will appear!</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="PowerAccent.ModuleTitle" xml:space="preserve">
