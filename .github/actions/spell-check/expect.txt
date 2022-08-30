@@ -560,7 +560,6 @@ EResize
 ERole
 ERRORMESSAGE
 ERRORTITLE
-esarbanis
 ESettings
 esize
 esrp
@@ -1521,6 +1520,7 @@ PDWORD
 pedrolamas
 PERCEIVEDFLAG
 pesi
+peteblois
 PEXCEPTION
 pfn
 pfo
@@ -1747,7 +1747,7 @@ roadmap
 robmensching
 Roboto
 rohanrdy
-roolr
+rooler
 roslyn
 Rothera
 roundf

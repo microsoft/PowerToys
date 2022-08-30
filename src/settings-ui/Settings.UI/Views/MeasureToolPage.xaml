@@ -85,7 +85,7 @@
             <controls:PageLink x:Uid="LearnMore_MeasureTool" Link="https://aka.ms/PowerToysOverview_MeasureTool"/>
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink x:Uid="Attribution_Roolr" Link="https://github.com/esarbanis/roolr"/>
+            <controls:PageLink x:Uid="Attribution_Rooler" Link="https://github.com/peteblois/rooler"/>
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>
