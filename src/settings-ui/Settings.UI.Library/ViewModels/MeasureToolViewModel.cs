@@ -52,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     SendConfigMSG(outgoing.ToString());
 
                     NotifyPropertyChanged();
-                    NotifyPropertyChanged(nameof(ShowContinuesCaptureWarning));
+                    NotifyPropertyChanged(nameof(ShowContinuousCaptureWarning));
                 }
             }
         }
@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     Settings.Properties.ContinuousCapture = value;
                     NotifyPropertyChanged();
-                    NotifyPropertyChanged(nameof(ShowContinuesCaptureWarning));
+                    NotifyPropertyChanged(nameof(ShowContinuousCaptureWarning));
                 }
             }
         }
@@ -165,7 +165,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             OnPropertyChanged(propertyName);
 
-            if (propertyName == nameof(ShowContinuesCaptureWarning))
+            if (propertyName == nameof(ShowContinuousCaptureWarning))
             {
                 // Don't trigger a settings update if the changed property is for visual notification.
                 return;
@@ -174,7 +174,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SettingsUtils.SaveSettings(Settings.ToJsonString(), MeasureToolSettings.ModuleName);
         }
 
-        public bool ShowContinuesCaptureWarning
+        public bool ShowContinuousCaptureWarning
         {
             get => IsEnabled & ContinuousCapture;
         }
