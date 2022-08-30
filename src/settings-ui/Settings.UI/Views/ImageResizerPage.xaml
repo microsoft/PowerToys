@@ -105,14 +105,14 @@
                                                     </ComboBox>
 
                                                     <StackPanel Spacing="8" Orientation="Horizontal">
-                                                        <muxc:NumberBox
+                                                        <NumberBox
                                                             x:Uid="ImageResizer_Width"
                                                             Value="{x:Bind Path=Width, Mode=TwoWay}" 
                                                             Minimum="0"
                                                             Width="116"
                                                             SpinButtonPlacementMode="Compact"/>
 
-                                                        <muxc:NumberBox
+                                                        <NumberBox
                                                             x:Uid="ImageResizer_Height"
                                                             Value="{x:Bind Path=Height, Mode=TwoWay}" 
                                                             Width="116"

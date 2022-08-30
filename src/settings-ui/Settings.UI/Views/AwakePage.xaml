@@ -45,7 +45,7 @@
                         <controls:Setting.ActionContent>
                             <StackPanel
                                                 Orientation="Horizontal">
-                                <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Hours"
+                                <NumberBox x:Uid="Awake_TemporaryKeepAwake_Hours"
                                                 Value="{x:Bind ViewModel.Hours, Mode=TwoWay}"
                                                 Minimum="0"
                                                 SpinButtonPlacementMode="Compact"
@@ -53,7 +53,7 @@
                                                 Width="96"
                                                 SmallChange="1" 
                                                 LargeChange="5"/>
-                                <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Minutes"
+                                <NumberBox x:Uid="Awake_TemporaryKeepAwake_Minutes"
                                                 Value="{x:Bind ViewModel.Minutes, Mode=TwoWay}"
                                                 Minimum="0"
                                                 SpinButtonPlacementMode="Compact"

@@ -70,7 +70,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!--TODO(stefan) InfoBadge not available
-                        <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
+                        <InfoBadge AutomationProperties.AccessibilityView="Raw"
                                         Margin="2,0,12,0"
                                         Style="{StaticResource CriticalIconInfoBadgeStyle}" />
                     -->

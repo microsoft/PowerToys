@@ -28,7 +28,7 @@
                         <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=IsEnabled}" x:Uid="ToggleSwitch"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
-                <muxc:InfoBar
+                <InfoBar
                     Severity="Warning"
                     x:Uid="VideoConference_RunAsAdminRequired"
                     IsOpen="True"

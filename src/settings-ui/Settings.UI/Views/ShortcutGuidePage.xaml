@@ -50,7 +50,7 @@
 
                     <controls:Setting x:Uid="ShortcutGuide_PressTime" Icon="&#xE916;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource TrueToVisibleConverter}}">
                         <controls:Setting.ActionContent>
-                            <muxc:NumberBox
+                            <NumberBox
                                 Minimum="100"
                                 Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -62,7 +62,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <muxc:InfoBar
+                    <InfoBar
                         x:Uid="ShortcutGuide_PressWinKeyWarning"
                         Severity="Warning"
                         IsTabStop="True"

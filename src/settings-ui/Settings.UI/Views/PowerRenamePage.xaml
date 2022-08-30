@@ -66,7 +66,7 @@
                                                   Style="{StaticResource ExpanderContentSettingStyle}"
                                                   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.GlobalAndMruEnabled}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox SpinButtonPlacementMode="Compact"
+                                        <NumberBox SpinButtonPlacementMode="Compact"
                                             HorizontalAlignment="Left"
                                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaxDispListNum}"
                                             Minimum="0"

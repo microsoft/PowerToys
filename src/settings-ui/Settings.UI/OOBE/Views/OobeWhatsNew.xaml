@@ -31,7 +31,7 @@
                     TextWrapping="Wrap" />
             </HyperlinkButton>
         </StackPanel>
-        <muxc:InfoBar
+        <InfoBar
                 Severity="Error"
                 x:Name="ErrorInfoBar"
                 Grid.Row="1"
@@ -41,7 +41,7 @@
                 IsClosable="False"
                 IsOpen="True"
                 IsTabStop="True" />
-        <muxc:InfoBar
+        <InfoBar
             x:Name="ProxyWarningInfoBar"
             Severity="Warning"
             Grid.Row="1"
@@ -53,7 +53,7 @@
             IsTabStop="True" />
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid Margin="32,24,32,24">
-                <muxc:ProgressRing
+                <ProgressRing
                 x:Name="LoadingProgressRing"
                 IsIndeterminate="True"
                 VerticalAlignment="Center"

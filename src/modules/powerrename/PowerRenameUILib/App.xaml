@@ -304,7 +304,7 @@
                 </Setter>
             </Style>
 
-            <Style x:Key="SplitAccentButtonStyle" TargetType="muxc:SplitButton">
+            <Style x:Key="SplitAccentButtonStyle" TargetType="SplitButton">
                 <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}" />
                 <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
@@ -321,7 +321,7 @@
                 <!--<contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />-->
                 <Setter Property="Template">
                     <Setter.Value>
-                        <ControlTemplate TargetType="muxc:SplitButton">
+                        <ControlTemplate TargetType="SplitButton">
                             <Grid
                         x:Name="RootGrid"
                         Background="Transparent"
@@ -351,12 +351,12 @@
                                                                 <VisualState x:Name="Normal"/>
                                                                 <VisualState x:Name="PointerOver">
                                                                     <VisualState.Setters>
-                                                                        <Setter Target="ContentPresenter.(muxc:AnimatedIcon.State)" Value="PointerOver"/>
+                                                                        <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="PointerOver"/>
                                                                     </VisualState.Setters>
                                                                 </VisualState>
                                                                 <VisualState x:Name="Pressed">
                                                                     <VisualState.Setters>
-                                                                        <Setter Target="ContentPresenter.(muxc:AnimatedIcon.State)" Value="Pressed"/>
+                                                                        <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="Pressed"/>
                                                                     </VisualState.Setters>
                                                                 </VisualState>
                                                                 <VisualState x:Name="Disabled">
@@ -380,7 +380,7 @@
                                                     HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                     VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                                     AutomationProperties.AccessibilityView="Raw"
-                                                    muxc:AnimatedIcon.State="Normal"/>
+                                                    AnimatedIcon.State="Normal"/>
                                                     </Grid>
                                                 </ControlTemplate>
                                             </Setter.Value>
@@ -597,15 +597,15 @@
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw">
                                     <Button.Content>
-                                        <muxc:AnimatedIcon Height="12" Width="12" VerticalAlignment="Center" HorizontalAlignment="Right" AutomationProperties.AccessibilityView="Raw">
+                                        <AnimatedIcon Height="12" Width="12" VerticalAlignment="Center" HorizontalAlignment="Right" AutomationProperties.AccessibilityView="Raw">
                                             <animatedVisuals:AnimatedChevronDownSmallVisualSource/>
-                                            <muxc:AnimatedIcon.FallbackIconSource>
-                                                <muxc:FontIconSource FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            <AnimatedIcon.FallbackIconSource>
+                                                <FontIconSource FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                               FontSize="8"
                                                               Glyph="&#xE96E;"
                                                               IsTextScaleFactorEnabled="False"/>
-                                            </muxc:AnimatedIcon.FallbackIconSource>
-                                        </muxc:AnimatedIcon>
+                                            </AnimatedIcon.FallbackIconSource>
+                                        </AnimatedIcon>
                                     </Button.Content>
                                 </Button>
                             </Grid>
@@ -724,7 +724,7 @@
                                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                                 AutomationProperties.AccessibilityView="Raw"
-                                                muxc:AnimatedIcon.State="Normal">
+                                                AnimatedIcon.State="Normal">
                                                         <VisualStateManager.VisualStateGroups>
                                                             <VisualStateGroup x:Name="CommonStates">
                                                                 <VisualState x:Name="Normal" />
@@ -742,7 +742,7 @@
                                                                         </ObjectAnimationUsingKeyFrames>
                                                                     </Storyboard>
                                                                     <VisualState.Setters>
-                                                                        <Setter Target="ContentPresenter.(muxc:AnimatedIcon.State)" Value="PointerOver"/>
+                                                                        <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="PointerOver"/>
                                                                     </VisualState.Setters>
                                                                 </VisualState>
 
@@ -759,7 +759,7 @@
                                                                         </ObjectAnimationUsingKeyFrames>
                                                                     </Storyboard>
                                                                     <VisualState.Setters>
-                                                                        <Setter Target="ContentPresenter.(muxc:AnimatedIcon.State)" Value="Pressed"/>
+                                                                        <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="Pressed"/>
                                                                     </VisualState.Setters>
                                                                 </VisualState>
 
