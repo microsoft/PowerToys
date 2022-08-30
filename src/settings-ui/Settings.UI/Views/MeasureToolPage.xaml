@@ -7,7 +7,12 @@
     mc:Ignorable="d"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters" 
     AutomationProperties.LandmarkType="Main">
+    <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+    </Page.Resources>
+    
     <controls:SettingsPageControl x:Uid="MeasureTool"
                                   ModuleImageSource="ms-appx:///Assets/Modules/ScreenRuler.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -30,14 +35,21 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>
-                
+
                 <controls:SettingsGroup x:Uid="MeasureTool_Settings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                   
+
                     <controls:Setting x:Uid="MeasureTool_ContinuousCapture" Icon="&#xE7FB;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+                    <muxc:InfoBar
+                        Severity="Warning"
+                        x:Uid="MeasureTool_ContinuousCapture_Information"
+                        IsOpen="True"
+                        IsTabStop="True"
+                        IsClosable="False"
+                        Visibility="{Binding Mode=OneWay, Path=ContinuousCapture, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <controls:Setting x:Uid="MeasureTool_PerColorChannelEdgeDetection" Icon="&#xE7FB;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch
@@ -45,7 +57,6 @@
                                     x:Uid="MeasureTool_PerColorChannelEdgeDetection_ToggleSwitch" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-
                     <controls:Setting x:Uid="MeasureTool_PixelTolerance">
                         <controls:Setting.ActionContent>
                             <Slider Minimum="0"
@@ -54,7 +65,7 @@
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.PixelTolerance}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    
+
                     <controls:Setting x:Uid="MeasureTool_DrawFeetOnCross">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind ViewModel.DrawFeetOnCross, Mode=TwoWay}" x:Uid="MeasureTool_DrawFeetOnCross_ToggleSwitch" />
@@ -66,12 +77,15 @@
                             <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.CrossColor, Mode=TwoWay}" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-
                 </controls:SettingsGroup>
+
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="LearnMore_MeasureTool" Link="https://aka.ms/PowerToysOverview_MeasureTool"/>
         </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink x:Uid="Attribution_Rooler" Link="https://github.com/peteblois/rooler"/>
+        </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

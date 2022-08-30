@@ -156,7 +156,6 @@ BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
 BITMAPINFOHEADER
-Bitmaps
 bitmask
 BITSPIXEL
 bla
@@ -202,13 +201,10 @@ BYPOSITION
 bytearray
 Caiguna
 CALG
-Calibri
 callbackptr
 Cangjie
 CANRENAME
-coord
 CAPTURECHANGED
-carret
 cassert
 CAtl
 cch
@@ -320,7 +316,7 @@ CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
 Controlz
-Coords
+coord
 copiedcolorrepresentation
 cortana
 cotaskmem
@@ -386,9 +382,9 @@ CYVIRTUALSCREEN
 cziplib
 Dac
 dacl
-damienleroy
 DAffine
 DAFFINETRANSFORM
+damienleroy
 Danmarkshavn
 DARKPURPLE
 DARKTEAL
@@ -473,7 +469,6 @@ dllexport
 dllhost
 dllmain
 dlls
-Dmap
 DNLEN
 Dns
 doctype
@@ -504,8 +499,8 @@ dvr
 DVSD
 DVSL
 DVTARGETDEVICE
-DWINRT
 dwhkl
+DWINRT
 dwl
 dwm
 dwmapi
@@ -698,7 +693,6 @@ HACCEL
 hangeul
 hanselman
 hardcoded
-hardcodet
 Hardlines
 HARDWAREINPUT
 hashcode
@@ -740,7 +734,6 @@ HIMAGELIST
 himl
 hinst
 hinstance
-hitted
 HIWORD
 HKCC
 HKCR
@@ -1131,7 +1124,6 @@ LOCATIONCHANGE
 logconsole
 logfile
 LOGFONT
-Logique
 LOGMSG
 logon
 LOGPIXELSX
@@ -1184,8 +1176,6 @@ lzw
 Maarten
 Macquarie
 Magadan
-mah
-mahapps
 Mainwindow
 majortype
 MAJORVERSION
@@ -1242,7 +1232,6 @@ mfplat
 Mfsensorgroup
 mftransform
 mic
-michkap
 microsoft
 Midl
 mii
@@ -1531,6 +1520,7 @@ PDWORD
 pedrolamas
 PERCEIVEDFLAG
 pesi
+peteblois
 PEXCEPTION
 pfn
 pfo
@@ -1564,8 +1554,8 @@ Pohnpei
 popup
 POPUPWINDOW
 posix
-powercfg
 poweraccent
+powercfg
 powerlauncher
 POWEROCR
 powerpreview
@@ -1757,7 +1747,7 @@ roadmap
 robmensching
 Roboto
 rohanrdy
-Roolr
+rooler
 roslyn
 Rothera
 roundf
@@ -2283,7 +2273,6 @@ wcscpy
 wcslen
 wcsncmp
 wcsnicmp
-wcsstr
 wdp
 wdupenv
 weakme
