@@ -94,32 +94,22 @@
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseUtils.png" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
-
-                <muxc:NavigationViewItem x:Uid="Shell_QuickAccent"
-                                         helpers:NavHelper.NavigateTo="views:PowerAccentPage">
-                    <muxc:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png"
-                                    ShowAsMonochrome="False" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
                 
                 <muxc:NavigationViewItem x:Uid="Shell_PowerRename" helpers:NavHelper.NavigateTo="views:PowerRenamePage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerRename.png" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
-                
-                <muxc:NavigationViewItem x:Uid="Shell_TextExtractor"
-                                         helpers:NavHelper.NavigateTo="views:PowerOcrPage">
-                    <muxc:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png"
-                                    ShowAsMonochrome="False" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-
                 <muxc:NavigationViewItem x:Uid="Shell_PowerLauncher" helpers:NavHelper.NavigateTo="views:PowerLauncherPage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_QuickAccent"
+                                         helpers:NavHelper.NavigateTo="views:PowerAccentPage">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png"
+                                    ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
                 <muxc:NavigationViewItem x:Uid="Shell_MeasureTool" helpers:NavHelper.NavigateTo="views:MeasureToolPage">
@@ -130,6 +120,13 @@
                 <muxc:NavigationViewItem x:Uid="Shell_ShortcutGuide" helpers:NavHelper.NavigateTo="views:ShortcutGuidePage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_TextExtractor"
+                                         helpers:NavHelper.NavigateTo="views:PowerOcrPage">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png"
+                                    ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
 

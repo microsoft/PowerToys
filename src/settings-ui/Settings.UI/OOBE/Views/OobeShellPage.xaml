@@ -97,20 +97,6 @@
                                 ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
-                <muxc:NavigationViewItem x:Uid="Shell_QuickAccent" Tag="QuickAccent">
-                    <muxc:NavigationViewItem.Icon>
-                        <BitmapIcon
-                                UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png"
-                                ShowAsMonochrome="False" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-                <muxc:NavigationViewItem x:Uid="Shell_TextExtractor" Tag="TextExtractor">
-                    <muxc:NavigationViewItem.Icon>
-                        <BitmapIcon
-                                UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOCR.png"
-                                ShowAsMonochrome="False" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
                 <muxc:NavigationViewItem x:Uid="Shell_PowerRename" Tag="PowerRename">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon
@@ -125,6 +111,13 @@
                                 ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_QuickAccent" Tag="QuickAccent">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon
+                                UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png"
+                                ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
                 <muxc:NavigationViewItem x:Uid="Shell_MeasureTool" Tag="MeasureTool">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon ShowAsMonochrome="False"
@@ -135,6 +128,13 @@
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon
                                 UriSource="ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png"
+                                ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_TextExtractor" Tag="TextExtractor">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon
+                                UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOCR.png"
                                 ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
