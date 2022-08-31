@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Helpers;
 using PowerOCR.Utilities;
 
@@ -101,6 +102,7 @@ public partial class OCROverlay : Window
         {
             case Key.Escape:
                 WindowUtilities.CloseAllOCROverlays();
+                PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
                 break;
             default:
                 break;
@@ -276,11 +278,13 @@ public partial class OCROverlay : Window
             }
 
             WindowUtilities.CloseAllOCROverlays();
+            PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCaptureEvent());
         }
     }
 
     private void CancelMenuItem_Click(object sender, RoutedEventArgs e)
     {
         WindowUtilities.CloseAllOCROverlays();
+        PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
     }
 }
