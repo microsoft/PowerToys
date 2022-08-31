@@ -46,10 +46,9 @@
                     <muxc:InfoBar
                         Severity="Warning"
                         x:Uid="MeasureTool_ContinuousCapture_Information"
-                        IsOpen="True"
-                        IsTabStop="True"
-                        IsClosable="False"
-                        Visibility="{Binding Mode=OneWay, Path=ContinuousCapture, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
+                        IsClosable="False" />
                     <controls:Setting x:Uid="MeasureTool_PerColorChannelEdgeDetection" Icon="&#xE7FB;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch
@@ -82,7 +81,7 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_MeasureTool" Link="https://aka.ms/PowerToysOverview_MeasureTool"/>
+            <controls:PageLink x:Uid="LearnMore_MeasureTool" Link="https://aka.ms/PowerToysOverview_ScreenRuler"/>
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink x:Uid="Attribution_Rooler" Link="https://github.com/peteblois/rooler"/>
