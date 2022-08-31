@@ -18,7 +18,7 @@ struct LogSettings
     inline const static std::string launcherLoggerName = "launcher";
     inline const static std::wstring launcherLogPath = L"LogsModuleInterface\\launcher-log.txt";
     inline const static std::wstring awakeLogPath = L"Logs\\awake-log.txt";
-    inline const static std::wstring powerAccentLogPath = L"keyboard-accent-log.txt";
+    inline const static std::wstring powerAccentLogPath = L"quick-accent-log.txt";
     inline const static std::string fancyZonesLoggerName = "fancyzones";
     inline const static std::wstring fancyZonesLogPath = L"fancyzones-log.txt";
     inline const static std::wstring fancyZonesOldLogPath = L"FancyZonesLogs\\"; // needed to clean up old logs
