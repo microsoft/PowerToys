@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PowerOCR"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="PowerOCR"
+    Title="TextExtractor"
     Width="800"
     Height="450"
     ShowActivated="False"

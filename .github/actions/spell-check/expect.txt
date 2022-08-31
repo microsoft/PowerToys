@@ -881,6 +881,7 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
+TEXTEXTRACTOR
 imagingdevices
 IMain
 IMarkdown
