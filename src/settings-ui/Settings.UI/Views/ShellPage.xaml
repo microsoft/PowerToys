@@ -95,7 +95,7 @@
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
 
-                <muxc:NavigationViewItem x:Uid="Shell_KeyboardAccent"
+                <muxc:NavigationViewItem x:Uid="Shell_QuickAccent"
                                          helpers:NavHelper.NavigateTo="views:PowerAccentPage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png"

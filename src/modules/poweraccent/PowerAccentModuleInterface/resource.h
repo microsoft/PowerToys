@@ -7,7 +7,7 @@
 //////////////////////////////
 // Non-localizable
 
-#define FILE_DESCRIPTION "PowerToys KeyboardAccent Module"
+#define FILE_DESCRIPTION "PowerToys QuickAccent Module"
 #define INTERNAL_NAME "PowerToys.PowerAccentModuleInterface"
 #define ORIGINAL_FILENAME "PowerToys.PowerAccentModuleInterface.dll"
 
