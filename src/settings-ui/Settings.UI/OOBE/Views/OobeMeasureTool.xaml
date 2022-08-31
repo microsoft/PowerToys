@@ -24,7 +24,7 @@
                     Orientation="Horizontal"
                     Spacing="12">
                     <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
-                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_MeasureTool" Style="{StaticResource TextButtonStyle}">
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ScreenRuler" Style="{StaticResource TextButtonStyle}">
                         <TextBlock x:Uid="LearnMore_MeasureTool" TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>

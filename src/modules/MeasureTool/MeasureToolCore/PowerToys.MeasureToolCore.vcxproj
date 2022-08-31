@@ -86,6 +86,7 @@
     <ClInclude Include="BGRATextureView.h" />
     <ClInclude Include="EdgeDetection.h" />
     <ClInclude Include="ToolState.h" />
+    <ClInclude Include="latch.h" />
     <ClInclude Include="OverlayUI.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ScreenCapturing.h" />

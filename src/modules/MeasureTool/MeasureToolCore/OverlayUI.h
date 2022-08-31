@@ -1,6 +1,7 @@
 #pragma once
 
 #include "D2DState.h"
+#include "latch.h"
 #include "ToolState.h"
 
 #include <common/display/monitors.h>
@@ -27,6 +28,7 @@ class OverlayUIState final
     static std::unique_ptr<OverlayUIState> CreateInternal(ToolT& toolState,
                                                           TickFuncT tickFunc,
                                                           CommonState& commonState,
+                                                          Latch& creationLatch,
                                                           const wchar_t* toolWindowClassName,
                                                           void* windowParam,
                                                           const MonitorInfo& monitor,
@@ -37,9 +39,11 @@ public:
     ~OverlayUIState();
 
     static std::unique_ptr<OverlayUIState> Create(BoundsToolState& toolState,
+                                                  Latch& creationLatch,
                                                   CommonState& commonState,
                                                   const MonitorInfo& monitor);
     static std::unique_ptr<OverlayUIState> Create(Serialized<MeasureToolState>& toolState,
+                                                  Latch& creationLatch,
                                                   CommonState& commonState,
                                                   const MonitorInfo& monitor);
     inline HWND overlayWindowHandle() const

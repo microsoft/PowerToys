@@ -117,9 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Attribution_Roolr.Text" xml:space="preserve">
-    <value>Inspired by Roolr</value>
-    <comment>Roolr is a name of the tool.</comment>
+  <data name="Attribution_Rooler.Text" xml:space="preserve">
+    <value>Inspired by Rooler</value>
+    <comment>Rooler is a name of the tool.</comment>
   </data>
   <data name="Shell_VideoConference.Content" xml:space="preserve">
     <value>Video Conference Mute</value>
@@ -177,7 +177,7 @@
     <value>Draw feet on cross</value>
   </data>
   <data name="MeasureTool_DrawFeetOnCross.Description" xml:space="preserve">
-    <value>Adds feet to the end of cross lines. Always off for continuous capture.</value>
+    <value>Adds feet to the end of cross lines.</value>
   </data>
   <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
     <value>Enable Screen Ruler</value>
@@ -2374,7 +2374,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Learn more about conflicting activation commands</value>
   </data>
   <data name="MeasureTool_ContinuousCapture_Information.Title" xml:space="preserve">
-    <value>The continuous capture mode will consume more resources when in use.  In addition, the UI will be slightly offset from the pointer position.</value>
-    <comment>pointer as in mouse pointer.  resources refer to things like CPU, GPU, RAM</comment>
+    <value>The continuous capture mode will consume more resources when in use.</value>
+    <comment>pointer as in mouse pointer. Resources refer to things like CPU, GPU, RAM</comment>
   </data>
 </root>

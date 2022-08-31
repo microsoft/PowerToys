@@ -9,7 +9,7 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace PowerOCR.Telemetry
 {
     [EventData]
-    public class PowerOCRLaunchOverlayEvent : EventBase, IEvent
+    public class PowerOCRInvokedEvent : EventBase, IEvent
     {
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
