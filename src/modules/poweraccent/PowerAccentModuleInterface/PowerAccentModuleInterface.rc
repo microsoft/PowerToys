@@ -88,7 +88,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_POWERACCENT_NAME       "PowerAccent"
+    IDS_POWERACCENT_NAME       "QuickAccent"
 END
 
 #endif    // English (United States) resources

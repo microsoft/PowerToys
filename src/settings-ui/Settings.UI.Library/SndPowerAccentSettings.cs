@@ -9,7 +9,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class SndPowerAccentSettings
     {
-        [JsonPropertyName("PowerAccent")]
+        [JsonPropertyName("QuickAccent")]
         public PowerAccentSettings PowerAccentSettings { get; set; }
 
         public SndPowerAccentSettings()

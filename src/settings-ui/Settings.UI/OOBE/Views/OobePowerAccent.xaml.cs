@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobePowerAccent()
         {
             InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.PowerAccent]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.QuickAccent]);
             DataContext = ViewModel;
         }
 

@@ -13,7 +13,7 @@ Aaron has helped triaging, discussing, and creating a substantial number of issu
 CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
 
 ### [@damienleroy](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/Damien-Leroy-b2734416a/)
-Damien has helped out by developing and contributing the Keyboard Accent utility.
+Damien has helped out by developing and contributing the Quick Accent utility.
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
 Davide has helped fix multiple bugs, added new features, as well as help us with the ARM64 effort by porting applications to .NET Core.

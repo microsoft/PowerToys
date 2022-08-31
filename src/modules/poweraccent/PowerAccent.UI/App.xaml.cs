@@ -16,7 +16,7 @@ namespace PowerAccent.UI
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            const string appName = "PowerAccent";
+            const string appName = "QuickAccent";
             bool createdNew;
 
             _mutex = new Mutex(true, appName, out createdNew);

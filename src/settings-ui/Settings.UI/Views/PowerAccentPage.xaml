@@ -10,12 +10,12 @@
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
-    <controls:SettingsPageControl x:Uid="PowerAccent" IsTabStop="False"
+    <controls:SettingsPageControl x:Uid="QuickAccent" IsTabStop="False"
                                   ModuleImageSource="ms-appx:///Assets/Modules/PowerAccent.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <controls:Setting x:Uid="PowerAccent_EnablePowerAccent">
+                <controls:Setting x:Uid="QuickAccent_EnableQuickAccent">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerAccent.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
@@ -24,33 +24,33 @@
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
-                <controls:SettingsGroup x:Uid="PowerAccent_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="PowerAccent_Activation_Shortcut" Icon="&#xEDA7;">
+                <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:Setting x:Uid="QuickAccent_Activation_Shortcut" Icon="&#xEDA7;">
                         <controls:Setting.ActionContent>
                             <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
                                       SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}" >
-                                <ComboBoxItem x:Uid="PowerAccent_Activation_Key_Arrows"/>
-                                <ComboBoxItem x:Uid="PowerAccent_Activation_Key_Space"/>
-                                <ComboBoxItem x:Uid="PowerAccent_Activation_Key_Both"/>
+                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows"/>
+                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space"/>
+                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Both"/>
                             </ComboBox>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="PowerAccent_Toolbar" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
-                    <controls:Setting x:Uid="PowerAccent_ToolbarPosition" Icon="&#xEC12;">
+                <controls:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
+                    <controls:Setting x:Uid="QuickAccent_ToolbarPosition" Icon="&#xEC12;">
                         <controls:Setting.ActionContent>
                             <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
                                       SelectedIndex="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay}" >
-                                <ComboBoxItem x:Uid="PowerAccent_ToolbarPosition_TopCenter"/>
-                                <ComboBoxItem x:Uid="PowerAccent_ToolbarPosition_BottomCenter"/>
-                                <ComboBoxItem x:Uid="PowerAccent_ToolbarPosition_Left"/>
-                                <ComboBoxItem x:Uid="PowerAccent_ToolbarPosition_Right"/>
-                                <ComboBoxItem x:Uid="PowerAccent_ToolbarPosition_TopRightCorner"/>
-                                <ComboBoxItem x:Uid="PowerAccent_ToolbarPosition_TopLeftCorner"/>
-                                <ComboBoxItem x:Uid="PowerAccent_ToolbarPosition_BottomRightCorner"/>
-                                <ComboBoxItem x:Uid="PowerAccent_ToolbarPosition_BottomLeftCorner"/>
-                                <ComboBoxItem x:Uid="PowerAccent_ToolbarPosition_Center"/>
+                                <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopCenter"/>
+                                <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomCenter"/>
+                                <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Left"/>
+                                <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Right"/>
+                                <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopRightCorner"/>
+                                <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopLeftCorner"/>
+                                <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomRightCorner"/>
+                                <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomLeftCorner"/>
+                                <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Center"/>
                             </ComboBox>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
@@ -60,10 +60,10 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_PowerAccent" Link="https://aka.ms/PowerToysOverview_PowerAccent"/>
+            <controls:PageLink x:Uid="LearnMore_QuickAccent" Link="https://aka.ms/PowerToysOverview_QuickAccent"/>
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Text="Damien Leroy's PowerAccent" Link="https://github.com/damienleroy"/>
+            <controls:PageLink Text="Damien Leroy's PowerAccent" Link="https://github.com/damienleroy/PowerAccent"/>
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>
