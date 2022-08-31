@@ -16,10 +16,10 @@ struct OpacityEffect : winrt::implements<OpacityEffect, IDrawingEffect>
 
 struct PerGlyphOpacityTextRender : winrt::implements<PerGlyphOpacityTextRender, IDWriteTextRenderer>
 {
-    ID2D1Factory * _pD2DFactory = nullptr;
+    ID2D1Factory* _pD2DFactory = nullptr;
     ID2D1HwndRenderTarget* _rt = nullptr;
     ID2D1SolidColorBrush* _baseBrush = nullptr;
-    
+
     PerGlyphOpacityTextRender(
         wil::com_ptr<ID2D1Factory> pD2DFactory,
         wil::com_ptr<ID2D1HwndRenderTarget> rt,

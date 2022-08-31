@@ -58,7 +58,7 @@ public partial class App : Application, IDisposable
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Logger.LogError($"PowerOCR got an exception on start: {ex}");
             }
         }
         else

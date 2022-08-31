@@ -264,7 +264,7 @@
     <value>Shortcut cannot contain a repeated modifier</value>
   </data>
   <data name="ErrorMessage_ShortcutAtleast2Keys" xml:space="preserve">
-    <value>Shortcut must have atleast 2 keys</value>
+    <value>Shortcut must have at least 2 keys</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="ErrorMessage_ShortcutOneActionKey" xml:space="preserve">
