@@ -117,10 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="PowerOCR_Name" xml:space="preserve">
-    <value>PowerOCR</value>
+  <data name="TextExtractor_Name" xml:space="preserve">
+    <value>Text Extractor</value>
   </data>
-  <data name="PowerOCR_Settings_Desc" xml:space="preserve">
+  <data name="TextExtractor_Settings_Desc" xml:space="preserve">
     <value>This feature requires Windows 10 version 1903 or higher</value>
   </data>
 </root>

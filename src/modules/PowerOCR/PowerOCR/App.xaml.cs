@@ -35,7 +35,7 @@ public partial class App : Application, IDisposable
         _instanceMutex = new Mutex(true, @"Local\PowerToys_PowerOCR_InstanceMutex", out bool createdNew);
         if (!createdNew)
         {
-            Logger.LogWarning("Another running PowerOCR instance was detected. Exiting PowerOCR");
+            Logger.LogWarning("Another running TextExtractor instance was detected. Exiting TextExtractor");
             _instanceMutex = null;
             Environment.Exit(0);
             return;
@@ -46,11 +46,11 @@ public partial class App : Application, IDisposable
             try
             {
                 _ = int.TryParse(e.Args[0], out _powerToysRunnerPid);
-                Logger.LogInfo($"PowerOCR started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
+                Logger.LogInfo($"TextExtractor started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
 
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
-                    Logger.LogInfo("PowerToys Runner exited. Exiting PowerOCR");
+                    Logger.LogInfo("PowerToys Runner exited. Exiting TextExtractor");
                     Environment.Exit(0);
                 });
                 var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
@@ -58,12 +58,12 @@ public partial class App : Application, IDisposable
             }
             catch (Exception ex)
             {
-                Logger.LogError($"PowerOCR got an exception on start: {ex}");
+                Logger.LogError($"TextExtractor got an exception on start: {ex}");
             }
         }
         else
         {
-            Logger.LogInfo($"PowerOCR started detached from PowerToys Runner.");
+            Logger.LogInfo($"TextExtractor started detached from PowerToys Runner.");
             _powerToysRunnerPid = -1;
             var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
             keyboardMonitor = new KeyboardMonitor(userSettings);

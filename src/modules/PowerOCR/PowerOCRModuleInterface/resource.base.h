@@ -5,7 +5,7 @@
 //////////////////////////////
 // Non-localizable
 
-#define FILE_DESCRIPTION "PowerToys PowerOCR"
+#define FILE_DESCRIPTION "PowerToys TextExtractor"
 #define INTERNAL_NAME "PowerToys.PowerOCR"
 #define ORIGINAL_FILENAME "PowerToys.PowerOCR.dll"
 

@@ -21,6 +21,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     {
     case DLL_PROCESS_ATTACH:
         Trace::RegisterProvider();
+        break;
     case DLL_THREAD_ATTACH:
         break;
     case DLL_THREAD_DETACH:
@@ -83,17 +84,17 @@ private:
             }
             catch (...)
             {
-                Logger::error("Failed to initialize PowerOCR start shortcut");
+                Logger::error("Failed to initialize TextExtractor start shortcut");
             }
         }
         else
         {
-            Logger::info("PowerOCR settings are empty");
+            Logger::info("TextExtractor settings are empty");
         }
 
         if (!m_hotkey.key)
         {
-            Logger::info("PowerOCR is going to use default shortcut");
+            Logger::info("TextExtractor is going to use default shortcut");
             m_hotkey.win = true;
             m_hotkey.alt = false;
             m_hotkey.shift = true;
@@ -109,7 +110,7 @@ private:
 
     void launch_process()
     {
-        Logger::trace(L"Starting PowerOCR process");
+        Logger::trace(L"Starting TextExtractor process");
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"";
@@ -122,11 +123,11 @@ private:
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))
         {
-            Logger::trace("Successfully started the PowerOCR process");
+            Logger::trace("Successfully started the TextExtractor process");
         }
         else
         {
-            Logger::error( L"PowerOCR failed to start. {}", get_last_error_or_default(GetLastError()));
+            Logger::error( L"TextExtractor failed to start. {}", get_last_error_or_default(GetLastError()));
         }
 
         m_hProcess = sei.hProcess;
@@ -153,9 +154,9 @@ private:
 public:
     PowerOCR()
     {
-        app_name = GET_RESOURCE_STRING(IDS_POWEROCR_NAME);
+        app_name = GET_RESOURCE_STRING(IDS_TEXTEXTRACTOR_NAME);
         app_key = PowerOcrConstants::ModuleKey;
-        LoggerHelpers::init_logger(app_key, L"ModuleInterface", "PowerOCR");
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", "TextExtractor");
         m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_POWEROCR_SHARED_EVENT);
         init_settings();
     }
@@ -171,7 +172,7 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
-        Logger::trace("PowerOCR::destroy()");
+        Logger::trace("TextExtractor::destroy()");
         delete this;
     }
 
@@ -193,9 +194,9 @@ public:
 
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(GET_RESOURCE_STRING(IDS_POWEROCR_SETTINGS_DESC));
+        settings.set_description(GET_RESOURCE_STRING(IDS_TEXTEXTRACTOR_SETTINGS_DESC));
 
-        settings.set_overview_link(L"https://aka.ms/PowerToysOverview_PowerOCR");
+        settings.set_overview_link(L"https://aka.ms/PowerToysOverview_TextExtractor");
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -227,7 +228,7 @@ public:
 
     virtual void enable()
     {
-        Logger::trace("PowerOCR::enable()");
+        Logger::trace("TextExtractor::enable()");
         ResetEvent(m_hInvokeEvent);
         launch_process();
         m_enabled = true;
@@ -236,7 +237,7 @@ public:
 
     virtual void disable()
     {
-        Logger::trace("PowerOCR::disable()");
+        Logger::trace("TextExtractor::disable()");
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
@@ -251,7 +252,7 @@ public:
     {
         if (m_enabled)
         {
-            Logger::trace(L"PowerOCR hotkey pressed");
+            Logger::trace(L"TextExtractor hotkey pressed");
             if (!is_process_running())
             {
                 launch_process();

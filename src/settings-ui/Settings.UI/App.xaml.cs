@@ -123,7 +123,7 @@ namespace Microsoft.PowerToys.Settings.UI
                         case "KBM": StartupPage = typeof(Views.KeyboardManagerPage); break;
                         case "MouseUtils": StartupPage = typeof(Views.MouseUtilsPage); break;
                         case "QuickAccent": StartupPage = typeof(Views.PowerAccentPage); break;
-                        case "PowerOCR": StartupPage = typeof(Views.PowerOcrPage); break;
+                        case "TextExtractor": StartupPage = typeof(Views.PowerOcrPage); break;
                         case "PowerRename": StartupPage = typeof(Views.PowerRenamePage); break;
                         case "FileExplorer": StartupPage = typeof(Views.PowerPreviewPage); break;
                         case "ShortcutGuide": StartupPage = typeof(Views.ShortcutGuidePage); break;
