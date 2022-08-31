@@ -24,7 +24,7 @@ struct LogSettings
     inline const static std::wstring fancyZonesOldLogPath = L"FancyZonesLogs\\"; // needed to clean up old logs
     inline const static std::string shortcutGuideLoggerName = "shortcut-guide";
     inline const static std::wstring shortcutGuideLogPath = L"ShortcutGuideLogs\\shortcut-guide-log.txt";
-    inline const static std::wstring powerOcrLogPath = L"Logs\\image-to-text-log.txt";
+    inline const static std::wstring powerOcrLogPath = L"Logs\\text-extractor-log.txt";
     inline const static std::string keyboardManagerLoggerName = "keyboard-manager";
     inline const static std::wstring keyboardManagerLogPath = L"Logs\\keyboard-manager-log.txt";
     inline const static std::string findMyMouseLoggerName = "find-my-mouse";
