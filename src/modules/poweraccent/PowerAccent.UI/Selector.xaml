@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:PowerAccent"
         mc:Ignorable="d" SizeToContent="WidthAndHeight" ShowInTaskbar="False" ResizeMode="NoResize"
         Title="MainWindow" Height="50" Width="50" Visibility="Collapsed" WindowStyle="None">
-    <Grid>
+    <Grid Background="Red">
         <ListBox x:Name="characters" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsHitTestVisible="False"
                  BorderThickness="1" BorderBrush="SlateGray">
             <ListBox.ItemsPanel>
@@ -42,7 +42,7 @@
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsSelected" Value="true">
                                         <Setter TargetName="myBorder" Property="Background" Value="White"/>
-                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
