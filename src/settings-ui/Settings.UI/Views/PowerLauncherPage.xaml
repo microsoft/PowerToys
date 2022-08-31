@@ -182,11 +182,11 @@
                                 </controls:Setting>-->
                                 
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <controls:CheckBoxWithDescriptionControl 
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults"
                                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}"
-                                                                 Margin="56, -2, 40, 14"
-                                                                 x:Uid="PowerLauncher_WaitForSlowResults"/>
+                                    Margin="{StaticResource ExpanderSettingMargin}"
+                                    />
                                 
                             </StackPanel>
                         </controls:SettingExpander.Content>
@@ -336,7 +336,7 @@
                                                     <CheckBox AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
                                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
                                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}"
-                                                          Margin="56, 0, 40, 16">
+                                                          Margin="{StaticResource ExpanderSettingMargin}">
                                                         <StackPanel Orientation="Vertical">
                                                             <TextBlock x:Name="IncludeInGlobalResultTitle"
                                                                    Margin="0,10,0,0"
@@ -375,8 +375,7 @@
                                                             <StackPanel Orientation="Vertical">
                                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                                                 <controls:CheckBoxWithDescriptionControl Header="{x:Bind Path=DisplayLabel}" Description="{x:Bind Path=DisplayDescription}"
-                                                                      IsChecked="{x:Bind Path=Value, Mode=TwoWay}"
-                                                                      Margin="56, 0, 40, 16"/>
+                                                                      IsChecked="{x:Bind Path=Value, Mode=TwoWay}" Margin="{StaticResource ExpanderSettingMargin}"/>
                                                             </StackPanel>
 
                                                         </DataTemplate>
