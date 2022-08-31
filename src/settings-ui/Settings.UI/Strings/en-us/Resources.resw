@@ -2328,38 +2328,38 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="PowerAccent_ToolbarPosition_Right.Content" xml:space="preserve">
     <value>Right</value>
   </data>
-  <data name="LearnMore_ImageToText.Text" xml:space="preserve">
-    <value>Learn more about Image To Text</value>
+  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
+    <value>Learn more about Text Extractor</value>
   </data>
-  <data name="ImageToText.ModuleDescription" xml:space="preserve">
-    <value>Image To Text is a convenient way to copy text from anywhere on screen</value>
+  <data name="TextExtractor.ModuleDescription" xml:space="preserve">
+    <value>Text Extractor is a convenient way to copy text from anywhere on screen</value>
   </data>
-  <data name="ImageToText.ModuleTitle" xml:space="preserve">
-    <value>Image To Text</value>
+  <data name="TextExtractor.ModuleTitle" xml:space="preserve">
+    <value>Text Extractor</value>
   </data>
-  <data name="ImageToText_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Image To Text</value>
+  <data name="TextExtractor_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Text Extractor</value>
   </data>
-  <data name="Shell_ImageToText.Content" xml:space="preserve">
-    <value>Image To Text</value>
+  <data name="Shell_TextExtractor.Content" xml:space="preserve">
+    <value>Text Extractor</value>
   </data>
-  <data name="Launch_ImageToText.Content" xml:space="preserve">
-    <value>Launch Image To Text</value>
+  <data name="Launch_TextExtractor.Content" xml:space="preserve">
+    <value>Launch Text Extractor</value>
   </data>
-  <data name="Oobe_ImageToText.Title" xml:space="preserve">
-    <value>Image To Text</value>
+  <data name="Oobe_TextExtractor.Title" xml:space="preserve">
+    <value>Text Extractor</value>
   </data>
-  <data name="Oobe_ImageToText_HowToUse.Text" xml:space="preserve">
-    <value>to open Image To Text and then selecting a region to copy the text from.</value>
+  <data name="Oobe_TextExtractor_HowToUse.Text" xml:space="preserve">
+    <value>to open Text Extractor and then selecting a region to copy the text from.</value>
   </data>
-  <data name="Oobe_ImageToText_TipsAndTricks.Text" xml:space="preserve">
+  <data name="Oobe_TextExtractor_TipsAndTricks.Text" xml:space="preserve">
     <value>Hold the shift key to move the selection region around.</value>
   </data>
-  <data name="ImageToText.SecondaryLinksHeader" xml:space="preserve">
+  <data name="TextExtractor.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
   </data>
-  <data name="Oobe_ImageToText.Description" xml:space="preserve">
-    <value>Image To Text works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard.</value>
+  <data name="Oobe_TextExtractor.Description" xml:space="preserve">
+    <value>Text Extractor works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard.</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format.Description" xml:space="preserve">
     <value>Applies to json and xml. Files remain unchanged.</value>

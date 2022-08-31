@@ -4,5 +4,5 @@
 namespace PowerOcrConstants
 {
     // Name of the powertoy module.
-    inline const std::wstring ModuleKey = L"ImageToText";
+    inline const std::wstring ModuleKey = L"TextExtractor";
 }
