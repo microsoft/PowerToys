@@ -5,6 +5,7 @@
 using System.Windows;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
+using PowerToys.PowerAccentKeyboardService;
 
 namespace PowerAccent.Core;
 
@@ -20,11 +21,11 @@ public class PowerAccent : IDisposable
 
     public event Action<int, char> OnSelectCharacter;
 
-    private PowerToys.PowerAccentKeyboardService.KeyboardListener _keyboardListener;
+    private KeyboardListener _keyboardListener;
 
     public PowerAccent()
     {
-        _keyboardListener = new PowerToys.PowerAccentKeyboardService.KeyboardListener();
+        _keyboardListener = new KeyboardListener();
         _keyboardListener.InitHook();
         _settingService = new SettingsService(_keyboardListener);
 
@@ -33,7 +34,7 @@ public class PowerAccent : IDisposable
 
     private void SetEvents()
     {
-        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((PowerToys.PowerAccentKeyboardService.LetterKey letterKey) =>
+        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -41,7 +42,7 @@ public class PowerAccent : IDisposable
             });
         }));
 
-        _keyboardListener.SetHideToolbarEvent(new PowerToys.PowerAccentKeyboardService.HideToolbar((PowerToys.PowerAccentKeyboardService.InputType inputType) =>
+        _keyboardListener.SetHideToolbarEvent(new PowerToys.PowerAccentKeyboardService.HideToolbar((InputType inputType) =>
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -49,7 +50,7 @@ public class PowerAccent : IDisposable
             });
         }));
 
-        _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((PowerToys.PowerAccentKeyboardService.TriggerKey triggerKey) =>
+        _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey) =>
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -58,7 +59,7 @@ public class PowerAccent : IDisposable
         }));
     }
 
-    private void ShowToolbar(PowerToys.PowerAccentKeyboardService.LetterKey letterKey)
+    private void ShowToolbar(LetterKey letterKey)
     {
         _visible = true;
         _characters = WindowsFunctions.IsCapitalState() ? ToUpper(SettingsService.GetDefaultLetterKey(letterKey)) : SettingsService.GetDefaultLetterKey(letterKey);
@@ -72,17 +73,17 @@ public class PowerAccent : IDisposable
             }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
-    private void SendInputAndHideToolbar(PowerToys.PowerAccentKeyboardService.InputType inputType)
+    private void SendInputAndHideToolbar(InputType inputType)
     {
         switch (inputType)
         {
-            case PowerToys.PowerAccentKeyboardService.InputType.Space:
+            case InputType.Space:
                 {
                     WindowsFunctions.Insert(' ');
                     break;
                 }
 
-            case PowerToys.PowerAccentKeyboardService.InputType.Char:
+            case InputType.Char:
                 {
                     if (_selectedIndex != -1)
                     {
@@ -98,21 +99,21 @@ public class PowerAccent : IDisposable
         _visible = false;
     }
 
-    private void ProcessNextChar(PowerToys.PowerAccentKeyboardService.TriggerKey triggerKey)
+    private void ProcessNextChar(TriggerKey triggerKey)
     {
         if (_visible && _selectedIndex == -1)
         {
-            if (triggerKey == PowerToys.PowerAccentKeyboardService.TriggerKey.Left)
+            if (triggerKey == TriggerKey.Left)
             {
                 _selectedIndex = (_characters.Length / 2) - 1;
             }
 
-            if (triggerKey == PowerToys.PowerAccentKeyboardService.TriggerKey.Right)
+            if (triggerKey == TriggerKey.Right)
             {
                 _selectedIndex = _characters.Length / 2;
             }
 
-            if (triggerKey == PowerToys.PowerAccentKeyboardService.TriggerKey.Space)
+            if (triggerKey == TriggerKey.Space)
             {
                 _selectedIndex = 0;
             }
@@ -130,7 +131,7 @@ public class PowerAccent : IDisposable
             OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
         }
 
-        if (triggerKey == PowerToys.PowerAccentKeyboardService.TriggerKey.Space)
+        if (triggerKey == TriggerKey.Space)
         {
             if (_selectedIndex < _characters.Length - 1)
             {
@@ -142,12 +143,12 @@ public class PowerAccent : IDisposable
             }
         }
 
-        if (triggerKey == PowerToys.PowerAccentKeyboardService.TriggerKey.Left && _selectedIndex > 0)
+        if (triggerKey == TriggerKey.Left && _selectedIndex > 0)
         {
             --_selectedIndex;
         }
 
-        if (triggerKey == PowerToys.PowerAccentKeyboardService.TriggerKey.Right && _selectedIndex < _characters.Length - 1)
+        if (triggerKey == TriggerKey.Right && _selectedIndex < _characters.Length - 1)
         {
             ++_selectedIndex;
         }

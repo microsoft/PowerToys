@@ -7,6 +7,7 @@ namespace PowerAccent.Core.Services;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using PowerToys.PowerAccentKeyboardService;
 using System.IO.Abstractions;
 using System.Text.Json;
 
@@ -16,9 +17,9 @@ public class SettingsService
     private readonly ISettingsUtils _settingsUtils;
     private readonly IFileSystemWatcher _watcher;
     private readonly object _loadingSettingsLock = new object();
-    private PowerToys.PowerAccentKeyboardService.KeyboardListener _keyboardListener;
+    private KeyboardListener _keyboardListener;
 
-    public SettingsService(PowerToys.PowerAccentKeyboardService.KeyboardListener keyboardListener)
+    public SettingsService(KeyboardListener keyboardListener)
     {
         _settingsUtils = new SettingsUtils();
         _keyboardListener = keyboardListener;
@@ -139,27 +140,27 @@ public class SettingsService
         }
     }
 
-    public static char[] GetDefaultLetterKey(PowerToys.PowerAccentKeyboardService.LetterKey letter)
+    public static char[] GetDefaultLetterKey(LetterKey letter)
     {
         switch (letter)
         {
-            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_A:
+            case LetterKey.VK_A:
                 return new char[] { 'à', 'â', 'á', 'ä', 'ã', 'å', 'æ' };
-            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_C:
+            case LetterKey.VK_C:
                 return new char[] { 'ć', 'ĉ', 'č', 'ċ', 'ç', 'ḉ' };
-            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_E:
+            case LetterKey.VK_E:
                 return new char[] { 'é', 'è', 'ê', 'ë', 'ē', 'ė', '€' };
-            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_I:
+            case LetterKey.VK_I:
                 return new char[] { 'î', 'ï', 'í', 'ì', 'ī' };
-            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_N:
+            case LetterKey.VK_N:
                 return new char[] { 'ñ', 'ń' };
-            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_O:
+            case LetterKey.VK_O:
                 return new char[] { 'ô', 'ö', 'ó', 'ò', 'õ', 'ø', 'œ' };
-            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_S:
+            case LetterKey.VK_S:
                 return new char[] { 'š', 'ß', 'ś' };
-            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_U:
+            case LetterKey.VK_U:
                 return new char[] { 'û', 'ù', 'ü', 'ú', 'ū' };
-            case PowerToys.PowerAccentKeyboardService.LetterKey.VK_Y:
+            case LetterKey.VK_Y:
                 return new char[] { 'ÿ', 'ý' };
         }
 
