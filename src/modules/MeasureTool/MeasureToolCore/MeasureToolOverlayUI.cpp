@@ -193,13 +193,6 @@ void DrawMeasureToolTick(const CommonState& commonState,
     const float hMeasure = static_cast<float>(measuredEdges.right - measuredEdges.left + 1);
     const float vMeasure = static_cast<float>(measuredEdges.bottom - measuredEdges.top + 1);
 
-    // Prevent drawing until we get the first capture
-    const bool hasMeasure = (measuredEdges.right != measuredEdges.left) && (measuredEdges.bottom != measuredEdges.top);
-    if (!hasMeasure)
-    {
-        return;
-    }
-
     if (!continuousCapture && backgroundBitmap)
     {
         d2dState.rt->DrawBitmap(backgroundBitmap.get());
