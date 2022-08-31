@@ -339,7 +339,6 @@
                                                           Margin="{StaticResource ExpanderSettingMargin}">
                                                         <StackPanel Orientation="Vertical">
                                                             <TextBlock x:Name="IncludeInGlobalResultTitle"
-                                                                   Margin="0,10,0,0"
                                                                    x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
                                                             <controls:IsEnabledTextBlock x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
                                                                                    FontSize="{StaticResource SecondaryTextFontSize}"
