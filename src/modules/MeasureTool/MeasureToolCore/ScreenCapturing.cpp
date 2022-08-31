@@ -71,7 +71,7 @@ D3DCaptureState::D3DCaptureState(winrt::com_ptr<ID3D11Device> _d3dDevice,
     context{ std::move(_context) },
     frameSize{ item.Size() },
     pixelFormat{ std::move(_pixelFormat) },
-    framePool{ winrt::Direct3D11CaptureFramePool::CreateFreeThreaded(device, pixelFormat, 2, item.Size()) },
+    framePool{ winrt::Direct3D11CaptureFramePool::CreateFreeThreaded(device, pixelFormat, 1, item.Size()) },
     session{ framePool.CreateCaptureSession(item) },
     monitorArea{ _monitorArea },
     captureOutsideOfMonitor{ _captureOutsideOfMonitor }

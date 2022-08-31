@@ -59,6 +59,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     };
     winrt::check_bool(window);
     ShowWindow(window, SW_SHOWNORMAL);
+    SetWindowDisplayAffinity(window, WDA_EXCLUDEFROMCAPTURE);
 #if !defined(DEBUG_OVERLAY)
     SetWindowPos(window, HWND_TOPMOST, {}, {}, {}, {}, SWP_NOMOVE | SWP_NOSIZE);
 #else
