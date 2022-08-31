@@ -739,7 +739,7 @@ HKCC
 HKCR
 HKCU
 hkey
-hkl
+HKL
 HKLM
 HKPD
 HKU
