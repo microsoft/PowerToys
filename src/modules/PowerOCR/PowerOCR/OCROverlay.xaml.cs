@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Helpers;
 using PowerOCR.Utilities;
 
@@ -42,6 +43,8 @@ public partial class OCROverlay : Window
     private double xShiftDelta;
     private double yShiftDelta;
 
+    private const double ActiveOpacity = 0.4;
+
     public OCROverlay()
     {
         InitializeComponent();
@@ -55,7 +58,7 @@ public partial class OCROverlay : Window
         KeyUp += MainWindow_KeyUp;
 
         BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this);
-        BackgroundBrush.Opacity = 0.4;
+        BackgroundBrush.Opacity = ActiveOpacity;
     }
 
     private void Window_Unloaded(object sender, RoutedEventArgs e)
@@ -84,9 +87,6 @@ public partial class OCROverlay : Window
         switch (e.Key)
         {
             case Key.LeftShift:
-                isShiftDown = false;
-                clickedPoint = new Point(clickedPoint.X + xShiftDelta, clickedPoint.Y + yShiftDelta);
-                break;
             case Key.RightShift:
                 isShiftDown = false;
                 clickedPoint = new Point(clickedPoint.X + xShiftDelta, clickedPoint.Y + yShiftDelta);
@@ -102,6 +102,7 @@ public partial class OCROverlay : Window
         {
             case Key.Escape:
                 WindowUtilities.CloseAllOCROverlays();
+                PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
                 break;
             default:
                 break;
@@ -110,7 +111,7 @@ public partial class OCROverlay : Window
 
     private void RegionClickCanvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.RightButton == MouseButtonState.Pressed)
+        if (e.LeftButton != MouseButtonState.Pressed)
         {
             return;
         }
@@ -147,6 +148,7 @@ public partial class OCROverlay : Window
             if (scr.Bounds.Contains(formsPoint))
             {
                 CurrentScreen = scr;
+                break;
             }
         }
     }
@@ -190,7 +192,7 @@ public partial class OCROverlay : Window
 
             clippingGeometry.Rect = new Rect(
                 new Point(leftValue, topValue),
-                new Size(selectBorder.Width - 2, selectBorder.Height - 2));
+                new Size(selectBorder.Width, selectBorder.Height));
             Canvas.SetLeft(selectBorder, leftValue - 1);
             Canvas.SetTop(selectBorder, topValue - 1);
             return;
@@ -235,11 +237,6 @@ public partial class OCROverlay : Window
         movingPoint.X = Math.Round(movingPoint.X);
         movingPoint.Y = Math.Round(movingPoint.Y);
 
-        if (mPt == movingPoint)
-        {
-            Debug.WriteLine("Probably on Screen 1");
-        }
-
         double xDimScaled = Canvas.GetLeft(selectBorder) * m.M11;
         double yDimScaled = Canvas.GetTop(selectBorder) * m.M22;
 
@@ -262,7 +259,6 @@ public partial class OCROverlay : Window
 
         if (regionScaled.Width < 3 || regionScaled.Height < 3)
         {
-            BackgroundBrush.Opacity = 0;
             grabbedText = await ImageMethods.GetClickedWord(this, new Point(xDimScaled, yDimScaled));
         }
         else
@@ -272,13 +268,23 @@ public partial class OCROverlay : Window
 
         if (string.IsNullOrWhiteSpace(grabbedText) == false)
         {
-            Clipboard.SetText(grabbedText);
+            try
+            {
+                Clipboard.SetText(grabbedText);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Clipboard.SetText exception: {ex}");
+            }
+
             WindowUtilities.CloseAllOCROverlays();
+            PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCaptureEvent());
         }
     }
 
     private void CancelMenuItem_Click(object sender, RoutedEventArgs e)
     {
         WindowUtilities.CloseAllOCROverlays();
+        PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
     }
 }

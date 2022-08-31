@@ -346,6 +346,7 @@ CSIDL
 csignal
 cso
 CSRW
+cstddef
 cstdint
 cstdlib
 cstring
@@ -489,6 +490,7 @@ dreamsofameaningfullife
 drivedetectionwarning
 dshow
 dst
+DState
 DTo
 dutil
 DVASPECT
@@ -560,7 +562,6 @@ EResize
 ERole
 ERRORMESSAGE
 ERRORTITLE
-esarbanis
 ESettings
 esize
 esrp
@@ -580,6 +581,7 @@ EWXREBOOT
 EWXSHUTDOWN
 examplehandler
 examplepowertoy
+EXCLUDEFROMCAPTURE
 exdisp
 Executables
 executionpolicy
@@ -1522,6 +1524,7 @@ PDWORD
 pedrolamas
 PERCEIVEDFLAG
 pesi
+peteblois
 PEXCEPTION
 pfn
 pfo
@@ -1629,6 +1632,7 @@ ptd
 PTOKEN
 PToy
 ptr
+ptrdiff
 ptstr
 PVOID
 pwa
@@ -1748,7 +1752,7 @@ roadmap
 robmensching
 Roboto
 rohanrdy
-roolr
+rooler
 roslyn
 Rothera
 roundf
@@ -2274,6 +2278,7 @@ wcscpy
 wcslen
 wcsncmp
 wcsnicmp
+WDA
 wdp
 wdupenv
 weakme

@@ -79,11 +79,17 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 
 #if defined(DEBUG_PRIMARY_MONITOR_ONLY)
         const auto& monitorInfo = MonitorInfo::GetPrimaryMonitor();
+        Latch createOverlayUILatch{ 1 };
 #else
-        for (const auto& monitorInfo : MonitorInfo::GetMonitors(true))
+        const auto monitors = MonitorInfo::GetMonitors(true);
+        Latch createOverlayUILatch{ static_cast<ptrdiff_t>(monitors.size()) };
+        for (const auto& monitorInfo : monitors)
 #endif
         {
-            auto overlayUI = OverlayUIState::Create(_boundsToolState, _commonState, monitorInfo);
+            auto overlayUI = OverlayUIState::Create(_boundsToolState,
+                                                    createOverlayUILatch,
+                                                    _commonState,
+                                                    monitorInfo);
 #if !defined(DEBUG_PRIMARY_MONITOR_ONLY)
             if (!overlayUI)
                 continue;
@@ -110,22 +116,37 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         });
 
 #if defined(DEBUG_PRIMARY_MONITOR_ONLY)
-        const auto& monitorInfo = MonitorInfo::GetPrimaryMonitor();
+        std::vector<MonitorInfo> monitors = { MonitorInfo::GetPrimaryMonitor() };
+        const auto& monitorInfo = monitors[0];
+        Latch createOverlayUILatch{ 1 };
 #else
-        for (const auto& monitorInfo : MonitorInfo::GetMonitors(true))
+        const auto monitors = MonitorInfo::GetMonitors(true);
+        Latch createOverlayUILatch{ static_cast<ptrdiff_t>(monitors.size()) };
+        for (const auto& monitorInfo : monitors)
 #endif
         {
-            auto overlayUI = OverlayUIState::Create(_measureToolState, _commonState, monitorInfo);
+            auto overlayUI = OverlayUIState::Create(_measureToolState,
+                                                    createOverlayUILatch,
+                                                    _commonState,
+                                                    monitorInfo);
 #if !defined(DEBUG_PRIMARY_MONITOR_ONLY)
             if (!overlayUI)
-                continue;
+                return;
 #endif
-            _screenCaptureThreads.emplace_back(StartCapturingThread(_commonState,
-                                                                    _measureToolState,
-                                                                    overlayUI->overlayWindowHandle(),
-                                                                    monitorInfo));
             _overlayUIStates.push_back(std::move(overlayUI));
         }
+
+        for (size_t i = 0; i < monitors.size(); ++i)
+        {
+            auto thread = StartCapturingThread(
+                &_d3dState,
+                _commonState,
+                _measureToolState,
+                _overlayUIStates[i]->overlayWindowHandle(),
+                monitors[i]);
+            _screenCaptureThreads.emplace_back(std::move(thread));
+        }
+
         Trace::MeasureToolActivated();
     }
 
