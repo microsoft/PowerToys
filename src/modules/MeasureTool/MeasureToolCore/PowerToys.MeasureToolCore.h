@@ -6,6 +6,7 @@
 #include "Settings.h"
 
 #include <common/utils/serialized.h>
+#include "ScreenCapturing.h"
 
 namespace winrt::PowerToys::MeasureToolCore::implementation
 {
@@ -20,6 +21,8 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         void ResetState();
         float GetDPIScaleForWindow(uint64_t windowHandle);
         void MouseCaptureThread();
+
+        D3DState _d3dState;
 
         wil::shared_event _stopMouseCaptureThreadSignal;
         std::thread _mouseCaptureThread;
