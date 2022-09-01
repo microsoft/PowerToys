@@ -74,6 +74,7 @@
     <ClInclude Include="..\MeasureToolModuleInterface\trace.h" />
     <ClInclude Include="BoundsToolOverlayUI.h" />
     <ClInclude Include="Clipboard.h" />
+    <ClInclude Include="CoordinateSystemConversion.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="D2DState.h" />
     <ClInclude Include="MeasureToolOverlayUI.h" />

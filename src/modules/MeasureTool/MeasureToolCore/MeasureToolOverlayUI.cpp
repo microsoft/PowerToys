@@ -16,19 +16,13 @@ namespace
         // Computing in this way to achieve pixel-perfect axial symmetry of aliased D2D lines
         if (horizontal)
         {
-            start.x -= consts::FEET_HALF_LENGTH + 1.f;
-            end.x += consts::FEET_HALF_LENGTH;
-
-            start.y += 1.f;
-            end.y += 1.f;
+            start.x -= consts::FEET_HALF_LENGTH;
+            end.x += consts::FEET_HALF_LENGTH + 1.f;
         }
         else
         {
-            start.y -= consts::FEET_HALF_LENGTH + 1.f;
-            end.y += consts::FEET_HALF_LENGTH;
-
-            start.x += 1.f;
-            end.x += 1.f;
+            start.y -= consts::FEET_HALF_LENGTH;
+            end.y += consts::FEET_HALF_LENGTH + 1.f;
         }
 
         return { start, end };
@@ -198,12 +192,9 @@ void DrawMeasureToolTick(const CommonState& commonState,
         d2dState.rt->DrawBitmap(backgroundBitmap.get());
     }
 
-    const auto previousAliasingMode = d2dState.rt->GetAntialiasMode();
-    // Anti-aliasing is creating artifacts. Aliasing is for drawing straight lines.
-    d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
+    const auto cursorPos = convert::FromSystemToWindow(window, commonState.cursorPosSystemSpace);
 
-    const auto cursorPos = convert::FromSystemToRelativeForDirect2D(window, commonState.cursorPosSystemSpace);
-
+    d2dState.ToggleAliasedLinesMode(true);
     if (drawHorizontalCrossLine)
     {
         const D2D_POINT_2F hLineStart{ .x = static_cast<float>(measuredEdges.left), .y = static_cast<float>(cursorPos.y) };
@@ -239,9 +230,6 @@ void DrawMeasureToolTick(const CommonState& commonState,
         }
     }
 
-    // After drawing the lines, restore anti aliasing to draw the measurement tooltip.
-    d2dState.rt->SetAntialiasMode(previousAliasingMode);
-
     uint32_t measureStringBufLen = 0;
 
     OverlayBoxText text;
@@ -274,6 +262,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
         v = text;
     });
 
+    d2dState.ToggleAliasedLinesMode(false);
     d2dState.DrawTextBox(text.buffer.data(),
                          measureStringBufLen,
                          crossSymbolPos,

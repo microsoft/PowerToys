@@ -167,3 +167,19 @@ void D2DState::DrawTextBox(const wchar_t* text,
     }
     winrt::check_hresult(textLayout->Draw(nullptr, textRenderer.get(), textRect.left, textRect.top));
 }
+
+void D2DState::ToggleAliasedLinesMode(const bool enabled) const
+{
+    if (enabled)
+    {
+        // Draw lines in the middle of a pixel to avoid bleeding, since [0,0] pixel is
+        // a rectanle filled from (0,0) to (1,1) and the lines use thickness = 1.
+        rt->SetTransform(D2D1::Matrix3x2F::Translation(.5f, .5f));
+        rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
+    }
+    else
+    {
+        rt->SetTransform(D2D1::Matrix3x2F::Identity());
+        rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+    }
+}

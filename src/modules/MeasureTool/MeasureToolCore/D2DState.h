@@ -39,4 +39,5 @@ struct D2DState
                      const float centerY,
                      const bool screenQuadrantAware,
                      const HWND window) const;
+    void ToggleAliasedLinesMode(const bool enabled) const;
 };
