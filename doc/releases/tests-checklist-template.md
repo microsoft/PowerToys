@@ -357,7 +357,7 @@ Mouse Pointer Crosshairs:
     - [ ] Crosshairs border size
 
 ## VCM
- - [ ] Check "Hide toolbar when both camera and micrphone are unmuted" and verify that it works
+ - [ ] Check "Hide toolbar when both camera and microphone are unmuted" and verify that it works
  - [ ] Uncheck it, mute the microphone with the hotkey and make sure the toolbar doesn't hide after a timeout
  - [ ] Go to some video conference application settings, e.g. meet.google.com, Microsoft Teams, Skype. "Select PowerToys VideoConference Mute" camera as an active device and try to mute it with a hotkey
  - [ ] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now mute the microphone with a corresponding hotkey and verify that mute icon on the right side of volume slider reflects its muted status.
@@ -378,3 +378,51 @@ Mouse Pointer Crosshairs:
  - [ ] Exclude app, try to pin it.
  - [ ] Exclude already pinned app, verify it was unpinned.
  - [ ] Try to pin the app in the Game Mode.
+
+### Screen Ruler
+ * Enable Screen Ruler. Then:
+   - [ ] Press the activation shortcut and verify the toolbar appears.
+   - [ ] Press the activation shortcut again and verify the toolbar disappears.
+   - [ ] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
+   - [ ] Enable tScreen Ruler and press the activation shortcut and verify the toolbar appears.
+   - [ ] Select the close button in the toolbar and verify it closes the utility.
+ * With Screen Ruler enabled and activated:
+   - [ ] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
+   - [ ] Use the Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [ ] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [ ] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [ ] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
+ * In a multi-monitor setup with different dpis on each monitor:
+   - [ ] Verify that the utilities work well on each monitor, with continuous mode on and off.
+   - [ ] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
+ * Test the different settings and verify they are applied:
+   - [ ] Activation shortcut
+   - [ ] Continous mode
+   - [ ] Per color channel edge detection
+   - [ ] Pixel tolerance for edge detection
+   - [ ] Draw feet on cross
+   - [ ] Line color
+
+### Quick Accent
+ * Enable Quick Accent and open notepad. Then:
+   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use the space key to cycle through the options.
+   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+ * Test the different settings and verify they are applied:
+   - [ ] Activation key
+   - [ ] Toolbar position (test every option, some had issues before)
+   - [ ] Input delay
+
+### Text Extractor
+ * Enable Text Extractor. Then:
+   - [ ] Press the activation shortcut and verify the overlay appears.
+   - [ ] Press Escape and verify the overlay disappears.
+   - [ ] Press the activation shortcut and verify the overlay appears.
+   - [ ] Right-click and select Cancel. Verify the overlay disappears.
+   - [ ] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
+ * With Text Extractor enabled and activated:
+   - [ ] Try to select text and verify it is copied to the clipboard.
+ * In a multi-monitor setup with different dpis on each monitor:
+   - [ ] Verify text is correctly captured on all monitors.
+ * Test the different settings and verify they are applied:
+   - [ ] Activation shortcut
