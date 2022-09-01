@@ -55,7 +55,19 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>
-
+                <controls:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
+                    <controls:Setting x:Uid="QuickAccent_InputTimeMs" Icon="&#xE916;">
+                        <controls:Setting.ActionContent>
+                            <muxc:NumberBox Minimum="100"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.InputTimeMs}"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            SpinButtonPlacementMode="Compact"
+                                            HorizontalAlignment="Left"
+                                            SmallChange="10"
+                                            LargeChange="100"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 

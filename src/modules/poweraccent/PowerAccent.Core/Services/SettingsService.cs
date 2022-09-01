@@ -48,6 +48,7 @@ public class SettingsService
                     if (settings != null)
                     {
                         ActivationKey = settings.Properties.ActivationKey;
+                        InputTime = settings.Properties.InputTime.Value;
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
                             case "Top center":
