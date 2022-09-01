@@ -22,11 +22,11 @@ void CreateOverlayWindowClasses()
 
     wcex.lpfnWndProc = MeasureToolWndProc;
     wcex.lpszClassName = NonLocalizable::MeasureToolOverlayWindowName;
+    wcex.hCursor = LoadCursorW(nullptr, IDC_CROSS);
     RegisterClassExW(&wcex);
 
     wcex.lpfnWndProc = BoundsToolWndProc;
     wcex.lpszClassName = NonLocalizable::BoundsToolOverlayWindowName;
-    wcex.hCursor = LoadCursorW(nullptr, IDC_CROSS);
     RegisterClassExW(&wcex);
 }
 
@@ -59,8 +59,8 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     };
     winrt::check_bool(window);
     ShowWindow(window, SW_SHOWNORMAL);
-    SetWindowDisplayAffinity(window, WDA_EXCLUDEFROMCAPTURE);
 #if !defined(DEBUG_OVERLAY)
+    SetWindowDisplayAffinity(window, WDA_EXCLUDEFROMCAPTURE);
     SetWindowPos(window, HWND_TOPMOST, {}, {}, {}, {}, SWP_NOMOVE | SWP_NOSIZE);
 #else
     (void)window;
