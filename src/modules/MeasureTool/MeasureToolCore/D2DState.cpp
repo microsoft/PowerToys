@@ -78,7 +78,7 @@ D2DState::D2DState(const HWND overlayWindow, std::vector<D2D1::ColorF> solidBrus
 }
 
 void D2DState::DrawTextBox(const wchar_t* text,
-                           const uint32_t textLen,
+                           const size_t textLen,
                            const std::optional<size_t> halfOpaqueSymbolPos,
                            const float centerX,
                            const float centerY,
@@ -87,15 +87,17 @@ void D2DState::DrawTextBox(const wchar_t* text,
 {
     wil::com_ptr<IDWriteTextLayout> textLayout;
     winrt::check_hresult(writeFactory->CreateTextLayout(text,
-                                                        textLen,
+                                                        static_cast<uint32_t>(textLen),
                                                         textFormat.get(),
                                                         std::numeric_limits<float>::max(),
                                                         std::numeric_limits<float>::max(),
                                                         &textLayout));
     DWRITE_TEXT_METRICS textMetrics = {};
     winrt::check_hresult(textLayout->GetMetrics(&textMetrics));
-    textMetrics.width *= consts::TEXT_BOX_MARGIN_COEFF;
-    textMetrics.height *= consts::TEXT_BOX_MARGIN_COEFF;
+    // Assumes text doesn't contain new lines
+    const float lineHeight = textMetrics.height;
+    textMetrics.width += lineHeight;
+    textMetrics.height += lineHeight * .5f;
     winrt::check_hresult(textLayout->SetMaxWidth(textMetrics.width));
     winrt::check_hresult(textLayout->SetMaxHeight(textMetrics.height));
 
@@ -103,6 +105,8 @@ void D2DState::DrawTextBox(const wchar_t* text,
                           .top = centerY - textMetrics.height / 2.f,
                           .right = centerX + textMetrics.width / 2.f,
                           .bottom = centerY + textMetrics.height / 2.f };
+    
+    const float SHADOW_OFFSET = consts::SHADOW_OFFSET * dpiScale;
     if (screenQuadrantAware)
     {
         bool cursorInLeftScreenHalf = false;
@@ -112,8 +116,8 @@ void D2DState::DrawTextBox(const wchar_t* text,
                                 static_cast<long>(centerY),
                                 cursorInLeftScreenHalf,
                                 cursorInTopScreenHalf);
-        float textQuadrantOffsetX = textMetrics.width * dpiScale;
-        float textQuadrantOffsetY = textMetrics.height * dpiScale;
+        float textQuadrantOffsetX = textMetrics.width / 2.f + SHADOW_OFFSET;
+        float textQuadrantOffsetY = textMetrics.height / 2.f + SHADOW_OFFSET;
         if (!cursorInLeftScreenHalf)
             textQuadrantOffsetX *= -1.f;
         if (!cursorInTopScreenHalf)
@@ -140,8 +144,7 @@ void D2DState::DrawTextBox(const wchar_t* text,
     bitmapRt->GetBitmap(&rtBitmap);
 
     shadowEffect->SetInput(0, rtBitmap.get());
-    const auto shadowMatrix = D2D1::Matrix3x2F::Translation(consts::SHADOW_OFFSET * dpiScale,
-                                                            consts::SHADOW_OFFSET * dpiScale);
+    const auto shadowMatrix = D2D1::Matrix3x2F::Translation(SHADOW_OFFSET, SHADOW_OFFSET);
     winrt::check_hresult(affineTransformEffect->SetValue(D2D1_2DAFFINETRANSFORM_PROP_TRANSFORM_MATRIX,
                                                          shadowMatrix));
     auto deviceContext = rt.query<ID2D1DeviceContext>();
@@ -173,7 +176,7 @@ void D2DState::ToggleAliasedLinesMode(const bool enabled) const
     if (enabled)
     {
         // Draw lines in the middle of a pixel to avoid bleeding, since [0,0] pixel is
-        // a rectanle filled from (0,0) to (1,1) and the lines use thickness = 1.
+        // a rectangle filled from (0,0) to (1,1) and the lines use thickness = 1.
         rt->SetTransform(D2D1::Matrix3x2F::Translation(.5f, .5f));
         rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
     }

@@ -124,7 +124,8 @@ void DrawMeasureToolTick(const CommonState& commonState,
     bool drawFeetOnCross = {};
     bool drawHorizontalCrossLine = true;
     bool drawVerticalCrossLine = true;
-    RECT measuredEdges{};
+
+    Measurement measuredEdges{};
     MeasureToolState::Mode mode = {};
     winrt::com_ptr<ID2D1Bitmap> backgroundBitmap;
     const MappedTextureView* backgroundTextureToConvert = nullptr;
@@ -133,7 +134,6 @@ void DrawMeasureToolTick(const CommonState& commonState,
         continuousCapture = state.global.continuousCapture;
         drawFeetOnCross = state.global.drawFeetOnCross;
         mode = state.global.mode;
-
         if (auto it = state.perScreen.find(window); it != end(state.perScreen))
         {
             const auto& perScreen = it->second;
@@ -183,9 +183,8 @@ void DrawMeasureToolTick(const CommonState& commonState,
     if (continuousCapture || !backgroundBitmap)
         d2dState.rt->Clear();
 
-    // Add 1px to each dim, since the range we obtain from measuredEdges is inclusive.
-    const float hMeasure = static_cast<float>(measuredEdges.right - measuredEdges.left + 1);
-    const float vMeasure = static_cast<float>(measuredEdges.bottom - measuredEdges.top + 1);
+    const float hMeasure = measuredEdges.Width(Measurement::Unit::Pixel);
+    const float vMeasure = measuredEdges.Height(Measurement::Unit::Pixel);
 
     if (!continuousCapture && backgroundBitmap)
     {
@@ -197,7 +196,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
     d2dState.ToggleAliasedLinesMode(true);
     if (drawHorizontalCrossLine)
     {
-        const D2D_POINT_2F hLineStart{ .x = static_cast<float>(measuredEdges.left), .y = static_cast<float>(cursorPos.y) };
+        const D2D_POINT_2F hLineStart{ .x = measuredEdges.rect.left, .y = static_cast<float>(cursorPos.y) };
         D2D_POINT_2F hLineEnd{ .x = hLineStart.x + hMeasure, .y = hLineStart.y };
         d2dState.rt->DrawLine(hLineStart, hLineEnd, d2dState.solidBrushes[Brush::line].get());
 
@@ -216,7 +215,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
 
     if (drawVerticalCrossLine)
     {
-        const D2D_POINT_2F vLineStart{ .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(measuredEdges.top) };
+        const D2D_POINT_2F vLineStart{ .x = static_cast<float>(cursorPos.x), .y = measuredEdges.rect.top };
         D2D_POINT_2F vLineEnd{ .x = vLineStart.x, .y = vLineStart.y + vMeasure };
         d2dState.rt->DrawLine(vLineStart, vLineEnd, d2dState.solidBrushes[Brush::line].get());
 
@@ -230,39 +229,21 @@ void DrawMeasureToolTick(const CommonState& commonState,
         }
     }
 
-    uint32_t measureStringBufLen = 0;
+    d2dState.ToggleAliasedLinesMode(false);
 
     OverlayBoxText text;
-    std::optional<size_t> crossSymbolPos;
-    switch (mode)
-    {
-    case MeasureToolState::Mode::Cross:
-        measureStringBufLen = swprintf_s(text.buffer.data(),
-                                         text.buffer.size(),
-                                         L"%.0f × %.0f",
-                                         hMeasure,
-                                         vMeasure);
-        crossSymbolPos = wcschr(text.buffer.data(), L' ') - text.buffer.data() + 1;
-        break;
-    case MeasureToolState::Mode::Vertical:
-        measureStringBufLen = swprintf_s(text.buffer.data(),
-                                         text.buffer.size(),
-                                         L"%.0f",
-                                         vMeasure);
-        break;
-    case MeasureToolState::Mode::Horizontal:
-        measureStringBufLen = swprintf_s(text.buffer.data(),
-                                         text.buffer.size(),
-                                         L"%.0f",
-                                         hMeasure);
-        break;
-    }
+
+    const auto [crossSymbolPos, measureStringBufLen] =
+        measuredEdges.Print(text.buffer.data(),
+                            text.buffer.size(),
+                            drawHorizontalCrossLine,
+                            drawVerticalCrossLine,
+                            commonState.units);
 
     commonState.overlayBoxText.Access([&](OverlayBoxText& v) {
         v = text;
     });
 
-    d2dState.ToggleAliasedLinesMode(false);
     d2dState.DrawTextBox(text.buffer.data(),
                          measureStringBufLen,
                          crossSymbolPos,

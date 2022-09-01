@@ -402,6 +402,7 @@ DBLEPSILON
 DCapture
 DCBA
 DCOM
+dcommon
 dcomp
 dcompi
 DComposition

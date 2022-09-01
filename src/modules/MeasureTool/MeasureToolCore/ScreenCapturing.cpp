@@ -326,7 +326,7 @@ void UpdateCaptureState(const CommonState& commonState,
     OutputDebugStringA(buffer);
 #endif
     state.Access([&](MeasureToolState& state) {
-        state.perScreen[window].measuredEdges = bounds;
+        state.perScreen[window].measuredEdges = Measurement{ bounds };
     });
 }
 
