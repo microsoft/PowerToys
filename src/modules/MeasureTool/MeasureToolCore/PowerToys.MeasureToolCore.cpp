@@ -79,15 +79,12 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 
 #if defined(DEBUG_PRIMARY_MONITOR_ONLY)
         const auto& monitorInfo = MonitorInfo::GetPrimaryMonitor();
-        Latch createOverlayUILatch{ 1 };
 #else
         const auto monitors = MonitorInfo::GetMonitors(true);
-        Latch createOverlayUILatch{ static_cast<ptrdiff_t>(monitors.size()) };
         for (const auto& monitorInfo : monitors)
 #endif
         {
             auto overlayUI = OverlayUIState::Create(_boundsToolState,
-                                                    createOverlayUILatch,
                                                     _commonState,
                                                     monitorInfo);
 #if !defined(DEBUG_PRIMARY_MONITOR_ONLY)
@@ -118,15 +115,12 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 #if defined(DEBUG_PRIMARY_MONITOR_ONLY)
         std::vector<MonitorInfo> monitors = { MonitorInfo::GetPrimaryMonitor() };
         const auto& monitorInfo = monitors[0];
-        Latch createOverlayUILatch{ 1 };
 #else
         const auto monitors = MonitorInfo::GetMonitors(true);
-        Latch createOverlayUILatch{ static_cast<ptrdiff_t>(monitors.size()) };
         for (const auto& monitorInfo : monitors)
 #endif
         {
             auto overlayUI = OverlayUIState::Create(_measureToolState,
-                                                    createOverlayUILatch,
                                                     _commonState,
                                                     monitorInfo);
 #if !defined(DEBUG_PRIMARY_MONITOR_ONLY)
