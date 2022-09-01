@@ -2328,7 +2328,17 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_ToolbarPosition_Right.Content" xml:space="preserve">
     <value>Right</value>
   </data>
-  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
+  <data name="QuickAccent_Behavior.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="QuickAccent_InputTimeMs.Header" xml:space="preserve">
+    <value>Input delay (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
+    <value>Hold the key for this long to make the accent menu appear (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
   </data>
   <data name="TextExtractor.ModuleDescription" xml:space="preserve">
