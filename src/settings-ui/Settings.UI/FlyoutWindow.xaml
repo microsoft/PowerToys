@@ -1,0 +1,15 @@
+﻿<Window
+    x:Class="Microsoft.PowerToys.Settings.UI.FlyoutWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:flyout="using:Microsoft.PowerToys.Settings.UI.Flyout"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+   
+    mc:Ignorable="d">
+
+    <Grid>
+        <flyout:ShellPage />
+    </Grid>
+</Window>

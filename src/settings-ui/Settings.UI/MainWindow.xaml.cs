@@ -84,6 +84,17 @@ namespace Microsoft.PowerToys.Settings.UI
                 App.GetOobeWindow().Activate();
             });
 
+            // open oobe
+            ShellPage.SetOpenFlyoutCallback(() =>
+            {
+                if (App.GetFlyoutWindow() == null)
+                {
+                    App.SetFlyoutWindow(new FlyoutWindow());
+                }
+
+                App.GetFlyoutWindow().Activate();
+            });
+
             this.InitializeComponent();
 
             // receive IPC Message

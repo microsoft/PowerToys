@@ -26,3 +26,4 @@ void close_settings_window();
 
 void open_oobe_window();
 void open_scoobe_window();
+void open_flyout();

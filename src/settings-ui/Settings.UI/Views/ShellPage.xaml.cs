@@ -33,6 +33,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate void OobeOpeningCallback();
 
         /// <summary>
+        /// Declaration for the opening oobe window callback function.
+        /// </summary>
+        public delegate void FlyoutOpeningCallback();
+
+        /// <summary>
         /// Gets or sets a shell handler to be used to update contents of the shell dynamically from page within the frame.
         /// </summary>
         public static ShellPage ShellHandler { get; set; }
@@ -56,6 +61,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets callback function for opening oobe window
         /// </summary>
         public static OobeOpeningCallback OpenOobeWindowCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets callback function for opening flyout window
+        /// </summary>
+        public static FlyoutOpeningCallback OpenFlyoutCallback { get; set; }
 
         /// <summary>
         /// Gets view model.
@@ -138,6 +148,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static void SetOpenOobeCallback(OobeOpeningCallback implementation)
         {
             OpenOobeWindowCallback = implementation;
+        }
+
+        /// <summary>
+        /// Set oobe opening callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetOpenFlyoutCallback(FlyoutOpeningCallback implementation)
+        {
+            OpenFlyoutCallback = implementation;
         }
 
         public static void SetElevationStatus(bool isElevated)

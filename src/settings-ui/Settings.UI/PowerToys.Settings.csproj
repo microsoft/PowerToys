@@ -36,6 +36,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="FlyoutWindow.xaml" />
+    <None Remove="Flyout\LaunchPage.xaml" />
+    <None Remove="Flyout\ShellPage.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
@@ -65,6 +71,15 @@
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="FlyoutWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Flyout\LaunchPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Flyout\ShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

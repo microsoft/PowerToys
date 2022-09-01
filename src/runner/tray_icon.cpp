@@ -170,7 +170,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             {
             case WM_LBUTTONDBLCLK:
             {
-                open_settings_window(std::nullopt);
+                open_settings_window(std::nullopt, true);
                 break;
             }
             case WM_RBUTTONUP:

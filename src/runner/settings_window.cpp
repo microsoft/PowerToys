@@ -260,7 +260,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 DWORD g_settings_process_id = 0;
 
-void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window)
+void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window, bool show_flyout = false)
 {
     g_isLaunchInProgress = true;
 
@@ -330,6 +330,9 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // Arg 9: should scoobe window be shown
     std::wstring settings_showScoobe = show_scoobe_window ? L"true" : L"false";
 
+    // Arg 10: should flyout be shown
+    std::wstring settings_showFlyout = show_flyout ? L"true" : L"false";
+
     // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
@@ -343,7 +346,8 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
                                                settings_elevatedStatus,
                                                settings_isUserAnAdmin,
                                                settings_showOobe,
-                                               settings_showScoobe);
+                                               settings_showScoobe,
+                                               settings_showFlyout);
 
     if (settings_window.has_value())
     {
@@ -520,6 +524,13 @@ void open_scoobe_window()
 {
     std::thread([]() {
         run_settings_window(false, true, std::nullopt);
+    }).detach();
+}
+
+void open_flyout()
+{
+    std::thread([]() {
+        run_settings_window(false, false, std::nullopt, true);
     }).detach();
 }
 

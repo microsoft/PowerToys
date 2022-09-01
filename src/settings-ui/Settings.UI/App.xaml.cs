@@ -39,8 +39,8 @@ namespace Microsoft.PowerToys.Settings.UI
         }
 
         // Quantity of arguments
-        private const int RequiredArgumentsQty = 9;
-        private const int RequiredAndOptionalArgumentsQty = 10;
+        private const int RequiredArgumentsQty = 10;
+        private const int RequiredAndOptionalArgumentsQty = 11;
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
@@ -52,6 +52,8 @@ namespace Microsoft.PowerToys.Settings.UI
         public static int PowerToysPID { get; set; }
 
         public bool ShowOobe { get; set; }
+
+        public bool ShowFlyout { get; set; }
 
         public bool ShowScoobe { get; set; }
 
@@ -108,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 ShowOobe = cmdArgs[(int)Arguments.ShowOobeWindow] == "true";
                 ShowScoobe = cmdArgs[(int)Arguments.ShowScoobeWindow] == "true";
 
-                if (cmdArgs.Length == RequiredAndOptionalArgumentsQty)
+                if (cmdArgs.Length >= RequiredAndOptionalArgumentsQty)
                 {
                     // open specific window
                     switch (cmdArgs[(int)Arguments.SettingsWindow])
@@ -147,32 +149,41 @@ namespace Microsoft.PowerToys.Settings.UI
                 });
                 ipcmanager.Start();
 
-                if (!ShowOobe && !ShowScoobe)
+                if (ShowFlyout)
                 {
-                    settingsWindow = new MainWindow(isDark);
-                    settingsWindow.Activate();
-                    settingsWindow.NavigateToSection(StartupPage);
+                    FlyoutWindow flyoutWindow = new FlyoutWindow();
+                    flyoutWindow.Activate();
+                    SetFlyoutWindow(flyoutWindow);
                 }
                 else
                 {
-                    // Create the Settings window hidden so that it's fully initialized and
-                    // it will be ready to receive the notification if the user opens
-                    // the Settings from the tray icon.
-                    settingsWindow = new MainWindow(isDark, true);
-
-                    if (ShowOobe)
+                    if (!ShowOobe && !ShowScoobe)
                     {
-                        PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
-                        OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview, isDark);
-                        oobeWindow.Activate();
-                        SetOobeWindow(oobeWindow);
+                        settingsWindow = new MainWindow(isDark);
+                        settingsWindow.Activate();
+                        settingsWindow.NavigateToSection(StartupPage);
                     }
-                    else if (ShowScoobe)
+                    else
                     {
-                        PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                        OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew, isDark);
-                        scoobeWindow.Activate();
-                        SetOobeWindow(scoobeWindow);
+                        // Create the Settings window hidden so that it's fully initialized and
+                        // it will be ready to receive the notification if the user opens
+                        // the Settings from the tray icon.
+                        settingsWindow = new MainWindow(isDark, true);
+
+                        if (ShowOobe)
+                        {
+                            PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
+                            OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview, isDark);
+                            oobeWindow.Activate();
+                            SetOobeWindow(oobeWindow);
+                        }
+                        else if (ShowScoobe)
+                        {
+                            PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
+                            OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew, isDark);
+                            scoobeWindow.Activate();
+                            SetOobeWindow(scoobeWindow);
+                        }
                     }
                 }
             }
@@ -275,6 +286,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
+        private static FlyoutWindow flyoutWindow;
         private static ThemeListener themeListener;
 
         public static void ClearSettingsWindow()
@@ -292,14 +304,29 @@ namespace Microsoft.PowerToys.Settings.UI
             return oobeWindow;
         }
 
+        public static FlyoutWindow GetFlyoutWindow()
+        {
+            return flyoutWindow;
+        }
+
         public static void SetOobeWindow(OobeWindow window)
         {
             oobeWindow = window;
         }
 
+        public static void SetFlyoutWindow(FlyoutWindow window)
+        {
+            flyoutWindow = window;
+        }
+
         public static void ClearOobeWindow()
         {
             oobeWindow = null;
+        }
+
+        public static void ClearFlyoutWindow()
+        {
+            flyoutWindow = null;
         }
     }
 }
