@@ -287,10 +287,9 @@ void D3DCaptureState::StopCapture()
 void UpdateCaptureState(const CommonState& commonState,
                         Serialized<MeasureToolState>& state,
                         HWND window,
-                        const MappedTextureView& textureView,
-                        const bool continuousCapture)
+                        const MappedTextureView& textureView)
 {
-    const auto cursorPos = convert::FromSystemToRelative(window, commonState.cursorPosSystemSpace);
+    const auto cursorPos = convert::FromSystemToWindow(window, commonState.cursorPosSystemSpace);
     const bool cursorInLeftScreenHalf = cursorPos.x < textureView.view.width / 2;
     const bool cursorInTopScreenHalf = cursorPos.y < textureView.view.height / 2;
     uint8_t pixelTolerance = {};
@@ -310,8 +309,7 @@ void UpdateCaptureState(const CommonState& commonState,
     const RECT bounds = DetectEdges(textureView.view,
                                     cursorPos,
                                     perColorChannelEdgeDetection,
-                                    pixelTolerance,
-                                    continuousCapture);
+                                    pixelTolerance);
 
 #if defined(DEBUG_EDGES)
     char buffer[256];
@@ -364,7 +362,7 @@ std::thread StartCapturingThread(D3DState* d3dState,
         if (continuousCapture)
         {
             captureState->StartCapture([&, window](MappedTextureView textureView) {
-                UpdateCaptureState(commonState, state, window, textureView, continuousCapture);
+                UpdateCaptureState(commonState, state, window, textureView);
             });
 
             while (IsWindow(window) && !commonState.closeOnOtherMonitors)
@@ -394,7 +392,7 @@ std::thread StartCapturingThread(D3DState* d3dState,
                     auto path = std::filesystem::temp_directory_path() / buf;
                     textureView.view.SaveAsBitmap(path.string().c_str());
 #endif
-                    UpdateCaptureState(commonState, state, window, textureView, continuousCapture);
+                    UpdateCaptureState(commonState, state, window, textureView);
                 }
 
                 const auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);

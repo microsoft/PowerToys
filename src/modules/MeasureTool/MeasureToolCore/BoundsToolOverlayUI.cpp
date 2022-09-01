@@ -30,7 +30,7 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
-        const POINT cursorPos = convert::FromSystemToRelativeForDirect2D(window, toolState->commonState->cursorPosSystemSpace);
+        const POINT cursorPos = convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace);
 
         D2D_POINT_2F newRegionStart = { .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
         toolState->perScreen[window].currentRegionStart = newRegionStart;
@@ -59,7 +59,7 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
 
         if (const bool shiftPress = GetKeyState(VK_SHIFT) & 0x8000; shiftPress)
         {
-            const auto cursorPos = convert::FromSystemToRelativeForDirect2D(window, toolState->commonState->cursorPosSystemSpace);
+            const auto cursorPos = convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace);
 
             D2D1_RECT_F rect;
             std::tie(rect.left, rect.right) = std::minmax(static_cast<float>(cursorPos.x), toolState->perScreen[window].currentRegionStart->x);
@@ -104,10 +104,9 @@ namespace
                          const D2DState& d2dState)
     {
         const bool screenQuadrantAware = !alignTextBoxToCenter;
-        const auto prevMode = d2dState.rt->GetAntialiasMode();
-        d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
+        d2dState.ToggleAliasedLinesMode(true);
         d2dState.rt->DrawRectangle(rect, d2dState.solidBrushes[Brush::line].get());
-        d2dState.rt->SetAntialiasMode(prevMode);
+        d2dState.ToggleAliasedLinesMode(false);
 
         OverlayBoxText text;
         const auto width = std::abs(rect.right - rect.left + 1);
@@ -159,7 +158,7 @@ void DrawBoundsToolTick(const CommonState& commonState,
     if (!perScreen.currentRegionStart.has_value())
         return;
 
-    const auto cursorPos = convert::FromSystemToRelativeForDirect2D(window, commonState.cursorPosSystemSpace);
+    const auto cursorPos = convert::FromSystemToWindow(window, commonState.cursorPosSystemSpace);
 
     const D2D1_RECT_F rect{ .left = perScreen.currentRegionStart->x,
                             .top = perScreen.currentRegionStart->y,
