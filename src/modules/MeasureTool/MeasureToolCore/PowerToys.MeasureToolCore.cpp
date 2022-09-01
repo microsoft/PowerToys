@@ -79,7 +79,8 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         ResetState();
 
 #if defined(DEBUG_PRIMARY_MONITOR_ONLY)
-        const auto& monitorInfo = MonitorInfo::GetPrimaryMonitor();
+        std::vector<MonitorInfo> monitors = { MonitorInfo::GetPrimaryMonitor() };
+        const auto& monitorInfo = monitors[0];
 #else
         const auto monitors = MonitorInfo::GetMonitors(true);
         for (const auto& monitorInfo : monitors)
@@ -95,6 +96,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             _overlayUIStates.push_back(std::move(overlayUI));
         }
         Trace::BoundsToolActivated();
+        createOverlayUILatch.wait();
     }
 
     void Core::StartMeasureTool(const bool horizontal, const bool vertical)
@@ -143,6 +145,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         }
 
         Trace::MeasureToolActivated();
+        createOverlayUILatch.wait();
     }
 
     void MeasureToolCore::implementation::Core::SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger)
