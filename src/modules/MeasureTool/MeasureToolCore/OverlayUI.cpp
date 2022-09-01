@@ -178,7 +178,6 @@ template<typename ToolT, typename TickFuncT>
 inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& toolState,
                                                                       TickFuncT tickFunc,
                                                                       CommonState& commonState,
-                                                                      Latch& creationLatch,
                                                                       const wchar_t* toolWindowClassName,
                                                                       void* windowParam,
                                                                       const MonitorInfo& monitor,
@@ -196,9 +195,6 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
         auto* state = uiState.get();
         uiCreatedEvent.SetEvent();
 
-        // Wait until all OverlayUI threads created their corresponding d2d devices
-        creationLatch.arrive_and_wait();
-
         state->RunUILoop();
 
         commonState.closeOnOtherMonitors = true;
@@ -211,14 +207,12 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
 }
 
 std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolState>& toolState,
-                                                       Latch& creationLatch,
                                                        CommonState& commonState,
                                                        const MonitorInfo& monitor)
 {
     return OverlayUIState::CreateInternal(toolState,
                                           DrawMeasureToolTick,
                                           commonState,
-                                          creationLatch,
                                           NonLocalizable::MeasureToolOverlayWindowName,
                                           &toolState,
                                           monitor,
@@ -226,14 +220,12 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolSta
 }
 
 std::unique_ptr<OverlayUIState> OverlayUIState::Create(BoundsToolState& toolState,
-                                                       Latch& creationLatch,
                                                        CommonState& commonState,
                                                        const MonitorInfo& monitor)
 {
     return OverlayUIState::CreateInternal(toolState,
                                           DrawBoundsToolTick,
                                           commonState,
-                                          creationLatch,
                                           NonLocalizable::BoundsToolOverlayWindowName,
                                           &toolState,
                                           monitor,
