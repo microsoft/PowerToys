@@ -32,7 +32,8 @@ class OverlayUIState final
                                                           const wchar_t* toolWindowClassName,
                                                           void* windowParam,
                                                           const MonitorInfo& monitor,
-                                                          const bool clearOnCursorLeavingScreen);
+                                                          const bool clearOnCursorLeavingScreen,
+                                                          const bool excludeFromCapture);
 
 public:
     OverlayUIState(OverlayUIState&&) noexcept = default;

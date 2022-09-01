@@ -32,6 +32,7 @@ void CreateOverlayWindowClasses()
 
 HWND CreateOverlayUIWindow(const CommonState& commonState,
                            const MonitorInfo& monitor,
+                           const bool excludeFromCapture,
                            const wchar_t* windowClass,
                            void* extraParam)
 {
@@ -60,7 +61,10 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     winrt::check_bool(window);
     ShowWindow(window, SW_SHOWNORMAL);
 #if !defined(DEBUG_OVERLAY)
-    SetWindowDisplayAffinity(window, WDA_EXCLUDEFROMCAPTURE);
+    if (excludeFromCapture)
+    {
+        SetWindowDisplayAffinity(window, WDA_EXCLUDEFROMCAPTURE);
+    }
     SetWindowPos(window, HWND_TOPMOST, {}, {}, {}, {}, SWP_NOMOVE | SWP_NOSIZE);
 #else
     (void)window;
@@ -182,12 +186,13 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
                                                                       const wchar_t* toolWindowClassName,
                                                                       void* windowParam,
                                                                       const MonitorInfo& monitor,
-                                                                      const bool clearOnCursorLeavingScreen)
+                                                                      const bool clearOnCursorLeavingScreen,
+                                                                      const bool excludeFromCapture)
 {
     wil::shared_event uiCreatedEvent(wil::EventOptions::ManualReset);
     std::unique_ptr<OverlayUIState> uiState;
     auto threadHandle = SpawnLoggedThread(L"OverlayUI thread", [&] {
-        const HWND window = CreateOverlayUIWindow(commonState, monitor, toolWindowClassName, windowParam);
+        const HWND window = CreateOverlayUIWindow(commonState, monitor, excludeFromCapture, toolWindowClassName, windowParam);
         uiState = std::unique_ptr<OverlayUIState>{ new OverlayUIState{ toolState, tickFunc, commonState, window } };
         uiState->_monitorArea = monitor.GetScreenSize(true);
         uiState->_clearOnCursorLeavingScreen = clearOnCursorLeavingScreen;
@@ -215,6 +220,10 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolSta
                                                        CommonState& commonState,
                                                        const MonitorInfo& monitor)
 {
+    bool excludeFromCapture = false;
+    toolState.Read([&](const MeasureToolState& s) {
+        excludeFromCapture = s.global.continuousCapture;
+    });
     return OverlayUIState::CreateInternal(toolState,
                                           DrawMeasureToolTick,
                                           commonState,
@@ -222,7 +231,8 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolSta
                                           NonLocalizable::MeasureToolOverlayWindowName,
                                           &toolState,
                                           monitor,
-                                          true);
+                                          true,
+                                          excludeFromCapture);
 }
 
 std::unique_ptr<OverlayUIState> OverlayUIState::Create(BoundsToolState& toolState,
@@ -237,5 +247,6 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(BoundsToolState& toolStat
                                           NonLocalizable::BoundsToolOverlayWindowName,
                                           &toolState,
                                           monitor,
+                                          false,
                                           false);
 }
