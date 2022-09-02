@@ -337,7 +337,7 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
 
-    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {}",
+    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {}",
                                                executable_path,
                                                powertoys_pipe_name,
                                                settings_pipe_name,
@@ -484,7 +484,7 @@ void bring_settings_to_front()
     EnumWindows(callback, 0);
 }
 
-void open_settings_window(std::optional<std::wstring> settings_window)
+void open_settings_window(std::optional<std::wstring> settings_window, bool show_flyout)
 {
     if (g_settings_process_id != 0)
     {
@@ -494,8 +494,8 @@ void open_settings_window(std::optional<std::wstring> settings_window)
     {
         if (!g_isLaunchInProgress)
         {
-            std::thread([settings_window]() {
-                run_settings_window(false, false, settings_window);
+            std::thread([settings_window, show_flyout]() {
+                run_settings_window(false, false, settings_window, show_flyout);
             }).detach();
         }
     }
