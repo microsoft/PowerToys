@@ -29,7 +29,7 @@ namespace
     }
 }
 
-winrt::com_ptr<ID2D1Bitmap> ConvertID3D11Texture2DToD2D1Bitmap(wil::com_ptr<ID2D1HwndRenderTarget> rt,
+winrt::com_ptr<ID2D1Bitmap> ConvertID3D11Texture2DToD2D1Bitmap(winrt::com_ptr<ID2D1RenderTarget> rt,
                                                                const MappedTextureView* capturedScreenTexture)
 {
     std::lock_guard guard{ gpuAccessLock };
@@ -170,7 +170,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
 
     if (!continuousCapture && !backgroundBitmap && backgroundTextureToConvert)
     {
-        backgroundBitmap = ConvertID3D11Texture2DToD2D1Bitmap(d2dState.rt, backgroundTextureToConvert);
+        backgroundBitmap = ConvertID3D11Texture2DToD2D1Bitmap(d2dState.dxgiWindowState.rt, backgroundTextureToConvert);
         if (backgroundBitmap)
         {
             toolState.Access([&](MeasureToolState& state) {
@@ -181,14 +181,14 @@ void DrawMeasureToolTick(const CommonState& commonState,
     }
 
     if (continuousCapture || !backgroundBitmap)
-        d2dState.rt->Clear();
+        d2dState.dxgiWindowState.rt->Clear();
 
     const float hMeasure = measuredEdges.Width(Measurement::Unit::Pixel);
     const float vMeasure = measuredEdges.Height(Measurement::Unit::Pixel);
 
     if (!continuousCapture && backgroundBitmap)
     {
-        d2dState.rt->DrawBitmap(backgroundBitmap.get());
+        d2dState.dxgiWindowState.rt->DrawBitmap(backgroundBitmap.get());
     }
 
     const auto cursorPos = convert::FromSystemToWindow(window, commonState.cursorPosSystemSpace);
@@ -198,7 +198,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
     {
         const D2D_POINT_2F hLineStart{ .x = measuredEdges.rect.left, .y = static_cast<float>(cursorPos.y) };
         D2D_POINT_2F hLineEnd{ .x = hLineStart.x + hMeasure, .y = hLineStart.y };
-        d2dState.rt->DrawLine(hLineStart, hLineEnd, d2dState.solidBrushes[Brush::line].get());
+        d2dState.dxgiWindowState.rt->DrawLine(hLineStart, hLineEnd, d2dState.solidBrushes[Brush::line].get());
 
         if (drawFeetOnCross)
         {
@@ -208,8 +208,8 @@ void DrawMeasureToolTick(const CommonState& commonState,
             hLineEnd.x -= 1.f;
             auto [left_start, left_end] = ComputeCrossFeetLine(hLineStart, false);
             auto [right_start, right_end] = ComputeCrossFeetLine(hLineEnd, false);
-            d2dState.rt->DrawLine(left_start, left_end, d2dState.solidBrushes[Brush::line].get());
-            d2dState.rt->DrawLine(right_start, right_end, d2dState.solidBrushes[Brush::line].get());
+            d2dState.dxgiWindowState.rt->DrawLine(left_start, left_end, d2dState.solidBrushes[Brush::line].get());
+            d2dState.dxgiWindowState.rt->DrawLine(right_start, right_end, d2dState.solidBrushes[Brush::line].get());
         }
     }
 
@@ -217,15 +217,15 @@ void DrawMeasureToolTick(const CommonState& commonState,
     {
         const D2D_POINT_2F vLineStart{ .x = static_cast<float>(cursorPos.x), .y = measuredEdges.rect.top };
         D2D_POINT_2F vLineEnd{ .x = vLineStart.x, .y = vLineStart.y + vMeasure };
-        d2dState.rt->DrawLine(vLineStart, vLineEnd, d2dState.solidBrushes[Brush::line].get());
+        d2dState.dxgiWindowState.rt->DrawLine(vLineStart, vLineEnd, d2dState.solidBrushes[Brush::line].get());
 
         if (drawFeetOnCross)
         {
             vLineEnd.y -= 1.f;
             auto [top_start, top_end] = ComputeCrossFeetLine(vLineStart, true);
             auto [bottom_start, bottom_end] = ComputeCrossFeetLine(vLineEnd, true);
-            d2dState.rt->DrawLine(top_start, top_end, d2dState.solidBrushes[Brush::line].get());
-            d2dState.rt->DrawLine(bottom_start, bottom_end, d2dState.solidBrushes[Brush::line].get());
+            d2dState.dxgiWindowState.rt->DrawLine(top_start, top_end, d2dState.solidBrushes[Brush::line].get());
+            d2dState.dxgiWindowState.rt->DrawLine(bottom_start, bottom_end, d2dState.solidBrushes[Brush::line].get());
         }
     }
 

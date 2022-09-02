@@ -40,10 +40,30 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 
     Core::~Core()
     {
-        _stopMouseCaptureThreadSignal.SetEvent();
-        _mouseCaptureThread.join();
+        Close();
+    }
 
+    void Core::Close()
+    {
         ResetState();
+
+        // used to avoid triggering d2d debug layer leak check on shutdown
+        _d3dState = DxgiAPI{ DxgiAPI::Uninitialized{} };
+
+#if 0
+        winrt::com_ptr<IDXGIDebug> dxgiDebug;
+        winrt::check_hresult(DXGIGetDebugInterface1({},
+                                                    winrt::guid_of<IDXGIDebug>(),
+                                                    dxgiDebug.put_void()));
+        dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+#endif
+
+        if (!_stopMouseCaptureThreadSignal.is_signaled())
+            _stopMouseCaptureThreadSignal.SetEvent();
+
+        if (_mouseCaptureThread.joinable())
+            _mouseCaptureThread.join();
+
         Trace::UnregisterProvider();
     }
 
@@ -86,7 +106,8 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         for (const auto& monitorInfo : monitors)
 #endif
         {
-            auto overlayUI = OverlayUIState::Create(_boundsToolState,
+            auto overlayUI = OverlayUIState::Create(&_d3dState,
+                                                    _boundsToolState,
                                                     _commonState,
                                                     monitorInfo);
 #if !defined(DEBUG_PRIMARY_MONITOR_ONLY)
@@ -96,7 +117,6 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             _overlayUIStates.push_back(std::move(overlayUI));
         }
         Trace::BoundsToolActivated();
-        createOverlayUILatch.wait();
     }
 
     void Core::StartMeasureTool(const bool horizontal, const bool vertical)
@@ -123,7 +143,8 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         for (const auto& monitorInfo : monitors)
 #endif
         {
-            auto overlayUI = OverlayUIState::Create(_measureToolState,
+            auto overlayUI = OverlayUIState::Create(&_d3dState,
+                                                    _measureToolState,
                                                     _commonState,
                                                     monitorInfo);
 #if !defined(DEBUG_PRIMARY_MONITOR_ONLY)
@@ -145,7 +166,6 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         }
 
         Trace::MeasureToolActivated();
-        createOverlayUILatch.wait();
     }
 
     void MeasureToolCore::implementation::Core::SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger)

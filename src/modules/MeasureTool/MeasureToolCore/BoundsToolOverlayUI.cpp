@@ -107,7 +107,7 @@ namespace
     {
         const bool screenQuadrantAware = !alignTextBoxToCenter;
         d2dState.ToggleAliasedLinesMode(true);
-        d2dState.rt->DrawRectangle(measurement.rect, d2dState.solidBrushes[Brush::line].get());
+        d2dState.dxgiWindowState.rt->DrawRectangle(measurement.rect, d2dState.solidBrushes[Brush::line].get());
         d2dState.ToggleAliasedLinesMode(false);
 
         OverlayBoxText text;
@@ -147,7 +147,7 @@ void DrawBoundsToolTick(const CommonState& commonState,
     if (it == end(toolState.perScreen))
         return;
 
-    d2dState.rt->Clear();
+    d2dState.dxgiWindowState.rt->Clear();
 
     const auto& perScreen = it->second;
     for (const auto& measure : perScreen.measurements)

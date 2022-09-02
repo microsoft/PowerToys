@@ -40,7 +40,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     std::call_once(windowClassesCreatedFlag, CreateOverlayWindowClasses);
 
     const auto screenArea = monitor.GetScreenSize(true);
-    DWORD windowStyle = WS_EX_TOOLWINDOW;
+    DWORD windowStyle = WS_EX_NOREDIRECTIONBITMAP | WS_EX_TOOLWINDOW;
 #if !defined(DEBUG_OVERLAY)
     windowStyle |= WS_EX_TOPMOST;
 #endif
@@ -48,7 +48,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
         CreateWindowExW(windowStyle,
                         windowClass,
                         L"PowerToys.MeasureToolOverlay",
-                        WS_POPUP,
+                        WS_POPUP | CS_HREDRAW | CS_VREDRAW,
                         screenArea.left(),
                         screenArea.top(),
                         screenArea.width(),
@@ -60,6 +60,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     };
     winrt::check_bool(window);
     ShowWindow(window, SW_SHOWNORMAL);
+    UpdateWindow(window);
 #if !defined(DEBUG_OVERLAY)
     if (excludeFromCapture)
     {
@@ -68,6 +69,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     SetWindowPos(window, HWND_TOPMOST, {}, {}, {}, {}, SWP_NOMOVE | SWP_NOSIZE);
 #else
     (void)window;
+    (void)excludeFromCapture;
 #endif
 
     const int pos = -GetSystemMetrics(SM_CXVIRTUALSCREEN) - 8;
@@ -118,7 +120,7 @@ void OverlayUIState::RunUILoop()
         const auto cursor = _commonState.cursorPosSystemSpace;
         const bool cursorOnScreen = _monitorArea.inside(cursor);
         const bool cursorOverToolbar = _commonState.toolbarBoundingBox.inside(cursor);
-
+        auto& dxgi = _d2dState.dxgiWindowState;
         if (cursorOnScreen != _cursorOnScreen)
         {
             _cursorOnScreen = cursorOnScreen;
@@ -126,22 +128,25 @@ void OverlayUIState::RunUILoop()
             {
                 if (_clearOnCursorLeavingScreen)
                 {
-                    _d2dState.rt->BeginDraw();
-                    _d2dState.rt->Clear();
-                    _d2dState.rt->EndDraw();
+                    dxgi.rt->BeginDraw();
+                    dxgi.rt->Clear();
+                    dxgi.rt->EndDraw();
+                    dxgi.swapChain->Present(1, 0);
                 }
                 PostMessageW(_window, WM_CURSOR_LEFT_MONITOR, {}, {});
             }
         }
+
         if (cursorOnScreen)
         {
-            _d2dState.rt->BeginDraw();
+            dxgi.rt->BeginDraw();
             if (!cursorOverToolbar)
                 _tickFunc();
             else
-                _d2dState.rt->Clear();
+                dxgi.rt->Clear();
 
-            _d2dState.rt->EndDraw();
+            dxgi.rt->EndDraw();
+            dxgi.swapChain->Present(1, 0);
         }
 
         run_message_loop(true, 1);
@@ -151,13 +156,14 @@ void OverlayUIState::RunUILoop()
 }
 
 template<typename StateT, typename TickFuncT>
-OverlayUIState::OverlayUIState(StateT& toolState,
+OverlayUIState::OverlayUIState(const DxgiAPI* dxgiAPI,
+                               StateT& toolState,
                                TickFuncT tickFunc,
                                const CommonState& commonState,
                                HWND window) :
     _window{ window },
     _commonState{ commonState },
-    _d2dState{ window, AppendCommonOverlayUIColors(commonState.lineColor) },
+    _d2dState{ dxgiAPI, window, AppendCommonOverlayUIColors(commonState.lineColor) },
     _tickFunc{ [this, tickFunc, &toolState] {
         tickFunc(_commonState, toolState, _window, _d2dState);
     } }
@@ -179,7 +185,8 @@ OverlayUIState::~OverlayUIState()
 
 // Returning unique_ptr, since we need to pin ui state in memory
 template<typename ToolT, typename TickFuncT>
-inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& toolState,
+inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(const DxgiAPI* dxgi,
+                                                                      ToolT& toolState,
                                                                       TickFuncT tickFunc,
                                                                       CommonState& commonState,
                                                                       const wchar_t* toolWindowClassName,
@@ -190,28 +197,38 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(ToolT& too
 {
     wil::shared_event uiCreatedEvent(wil::EventOptions::ManualReset);
     std::unique_ptr<OverlayUIState> uiState;
-    auto threadHandle = SpawnLoggedThread(L"OverlayUI thread", [&] {
-        const HWND window = CreateOverlayUIWindow(commonState, monitor, excludeFromCapture, toolWindowClassName, windowParam);
-        uiState = std::unique_ptr<OverlayUIState>{ new OverlayUIState{ toolState, tickFunc, commonState, window } };
-        uiState->_monitorArea = monitor.GetScreenSize(true);
-        uiState->_clearOnCursorLeavingScreen = clearOnCursorLeavingScreen;
+    std::thread threadHandle = SpawnLoggedThread(L"OverlayUI thread", [&] {
+        {
+            auto sinalUICreatedEvent = wil::scope_exit([&] { uiCreatedEvent.SetEvent(); });
+
+            const HWND window = CreateOverlayUIWindow(commonState, monitor, excludeFromCapture, toolWindowClassName, windowParam);
+
+            uiState = std::unique_ptr<OverlayUIState>{ new OverlayUIState{ dxgi, toolState, tickFunc, commonState, window } };
+            uiState->_monitorArea = monitor.GetScreenSize(true);
+            uiState->_clearOnCursorLeavingScreen = clearOnCursorLeavingScreen;
+        }
+
         // we must create window + d2d state in the same thread, then store thread handle in uiState, thus
         // lifetime is ok here, since we join the thread in destructor
         auto* state = uiState.get();
-        uiCreatedEvent.SetEvent();
-
-        state->RunUILoop();
+        if (state)
+            state->RunUILoop();
 
         commonState.closeOnOtherMonitors = true;
         commonState.sessionCompletedCallback();
     });
 
     uiCreatedEvent.wait();
-    uiState->_uiThread = std::move(threadHandle);
+    if (uiState)
+        uiState->_uiThread = std::move(threadHandle);
+    else if (threadHandle.joinable())
+        threadHandle.join();
+
     return uiState;
 }
 
-std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolState>& toolState,
+std::unique_ptr<OverlayUIState> OverlayUIState::Create(const DxgiAPI* dxgi,
+                                                       Serialized<MeasureToolState>& toolState,
                                                        CommonState& commonState,
                                                        const MonitorInfo& monitor)
 {
@@ -219,7 +236,8 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolSta
     toolState.Read([&](const MeasureToolState& s) {
         excludeFromCapture = s.global.continuousCapture;
     });
-    return OverlayUIState::CreateInternal(toolState,
+    return OverlayUIState::CreateInternal(dxgi,
+                                          toolState,
                                           DrawMeasureToolTick,
                                           commonState,
                                           NonLocalizable::MeasureToolOverlayWindowName,
@@ -229,11 +247,13 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(Serialized<MeasureToolSta
                                           excludeFromCapture);
 }
 
-std::unique_ptr<OverlayUIState> OverlayUIState::Create(BoundsToolState& toolState,
+std::unique_ptr<OverlayUIState> OverlayUIState::Create(const DxgiAPI* dxgi,
+                                                       BoundsToolState& toolState,
                                                        CommonState& commonState,
                                                        const MonitorInfo& monitor)
 {
-    return OverlayUIState::CreateInternal(toolState,
+    return OverlayUIState::CreateInternal(dxgi,
+                                          toolState,
                                           DrawBoundsToolTick,
                                           commonState,
                                           NonLocalizable::BoundsToolOverlayWindowName,

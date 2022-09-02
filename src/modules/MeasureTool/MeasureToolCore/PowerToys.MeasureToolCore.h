@@ -14,6 +14,8 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     {
         Core();
         ~Core();
+        void Close();
+
         void StartBoundsTool();
         void StartMeasureTool(const bool horizontal, const bool vertical);
         void SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger);
@@ -22,7 +24,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         float GetDPIScaleForWindow(uint64_t windowHandle);
         void MouseCaptureThread();
 
-        D3DState _d3dState;
+        DxgiAPI _d3dState;
 
         wil::shared_event _stopMouseCaptureThreadSignal;
         std::thread _mouseCaptureThread;

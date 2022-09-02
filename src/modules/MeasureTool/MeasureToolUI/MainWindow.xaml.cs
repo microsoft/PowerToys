@@ -18,7 +18,7 @@ namespace MeasureToolUI
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainWindow : WindowEx
+    public sealed partial class MainWindow : WindowEx, IDisposable
     {
         private const int WindowWidth = 216;
         private const int WindowHeight = 50;
@@ -37,11 +37,12 @@ namespace MeasureToolUI
         public MainWindow()
         {
             InitializeComponent();
+            Closed += MainWindow_Closed;
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             _appWindow = AppWindow.GetFromWindowId(windowId);
-
+            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             var presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsAlwaysOnTop = true;
             this.SetIsAlwaysOnTop(true);
@@ -62,6 +63,12 @@ namespace MeasureToolUI
                 _initialPosition.X + (int)(dpiScale * WindowWidth),
                 _initialPosition.Y + (int)(dpiScale * WindowHeight));
             OnPositionChanged(_initialPosition);
+        }
+
+        private void MainWindow_Closed(object sender, WindowEventArgs args)
+        {
+            _coreLogic?.Dispose();
+            _coreLogic = null;
         }
 
         private void UpdateToolUsageCompletionEvent(object sender)
@@ -135,6 +142,11 @@ namespace MeasureToolUI
         {
             _coreLogic.ResetState();
             this.Close();
+        }
+
+        public void Dispose()
+        {
+            _coreLogic?.Dispose();
         }
     }
 }

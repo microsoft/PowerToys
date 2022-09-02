@@ -55,7 +55,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>MeasureTool.def</ModuleDefinitionFile>
-      <AdditionalDependencies>Shell32.lib;Shcore.lib;Dwmapi.lib;Gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shell32.lib;Shcore.lib;dcomp.lib;DXGI.lib;Dwmapi.lib;Gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
@@ -77,6 +77,7 @@
     <ClInclude Include="CoordinateSystemConversion.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="D2DState.h" />
+    <ClInclude Include="DxgiAPI.h" />
     <ClInclude Include="Measurement.h" />
     <ClInclude Include="MeasureToolOverlayUI.h" />
     <ClInclude Include="PerGlyphOpacityTextRender.h" />
@@ -98,6 +99,7 @@
     <ClCompile Include="BoundsToolOverlayUI.cpp" />
     <ClCompile Include="Clipboard.cpp" />
     <ClCompile Include="D2DState.cpp" />
+    <ClCompile Include="DxgiAPI.cpp" />
     <ClCompile Include="EdgeDetection.cpp" />
     <ClCompile Include="Measurement.cpp" />
     <ClCompile Include="MeasureToolOverlayUI.cpp" />

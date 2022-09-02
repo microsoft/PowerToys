@@ -2,6 +2,7 @@
 
 #include "constants.h"
 #include "D2DState.h"
+#include "DxgiAPI.h"
 
 #include <common/Display/dpi_aware.h>
 #include <ToolState.h>
@@ -19,43 +20,28 @@ namespace
     }
 }
 
-D2DState::D2DState(const HWND overlayWindow, std::vector<D2D1::ColorF> solidBrushesColors)
+D2DState::D2DState(const DxgiAPI* dxgi,
+                   HWND window,
+                   std::vector<D2D1::ColorF> solidBrushesColors)
 {
-    std::lock_guard guard{ gpuAccessLock };
-
-    RECT clientRect = {};
-
-    winrt::check_bool(GetClientRect(overlayWindow, &clientRect));
-    winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &d2dFactory));
-
-    // We should always use DPIAware::DEFAULT_DPI, since it's the correct thing to do in DPI-Aware mode
-    auto renderTargetProperties = D2D1::RenderTargetProperties(
-        D2D1_RENDER_TARGET_TYPE_DEFAULT,
-        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
-        DPIAware::DEFAULT_DPI,
-        DPIAware::DEFAULT_DPI,
-        D2D1_RENDER_TARGET_USAGE_NONE,
-        D2D1_FEATURE_LEVEL_DEFAULT);
-
-    auto renderTargetSize = D2D1::SizeU(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
-    auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(overlayWindow, renderTargetSize);
-
-    winrt::check_hresult(d2dFactory->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, &rt));
-    winrt::check_hresult(rt->CreateCompatibleRenderTarget(&bitmapRt));
+    dxgiAPI = dxgi;
 
     unsigned dpi = DPIAware::DEFAULT_DPI;
-    DPIAware::GetScreenDPIForWindow(overlayWindow, dpi);
+    DPIAware::GetScreenDPIForWindow(window, dpi);
     dpiScale = dpi / static_cast<float>(DPIAware::DEFAULT_DPI);
 
-    winrt::check_hresult(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), writeFactory.put_unknown()));
-    winrt::check_hresult(writeFactory->CreateTextFormat(L"Segoe UI Variable Text",
-                                                        nullptr,
-                                                        DWRITE_FONT_WEIGHT_NORMAL,
-                                                        DWRITE_FONT_STYLE_NORMAL,
-                                                        DWRITE_FONT_STRETCH_NORMAL,
-                                                        consts::FONT_SIZE * dpiScale,
-                                                        L"en-US",
-                                                        &textFormat));
+    dxgiWindowState = dxgiAPI->CreateD2D1RenderTarget(window);
+
+    winrt::check_hresult(dxgiWindowState.rt->CreateCompatibleRenderTarget(bitmapRt.put()));
+
+    winrt::check_hresult(dxgiAPI->writeFactory->CreateTextFormat(L"Segoe UI Variable Text",
+                                                                 nullptr,
+                                                                 DWRITE_FONT_WEIGHT_NORMAL,
+                                                                 DWRITE_FONT_STYLE_NORMAL,
+                                                                 DWRITE_FONT_STRETCH_NORMAL,
+                                                                 consts::FONT_SIZE * dpiScale,
+                                                                 L"en-US",
+                                                                 textFormat.put()));
     winrt::check_hresult(textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
     winrt::check_hresult(textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
     winrt::check_hresult(textFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP));
@@ -63,18 +49,18 @@ D2DState::D2DState(const HWND overlayWindow, std::vector<D2D1::ColorF> solidBrus
     solidBrushes.resize(solidBrushesColors.size());
     for (size_t i = 0; i < solidBrushes.size(); ++i)
     {
-        winrt::check_hresult(rt->CreateSolidColorBrush(solidBrushesColors[i], &solidBrushes[i]));
+        winrt::check_hresult(dxgiWindowState.rt->CreateSolidColorBrush(solidBrushesColors[i], solidBrushes[i].put()));
     }
 
-    const auto deviceContext = rt.query<ID2D1DeviceContext>();
-    winrt::check_hresult(deviceContext->CreateEffect(CLSID_D2D1Shadow, &shadowEffect));
+    const auto deviceContext = dxgiWindowState.rt.as<ID2D1DeviceContext>();
+    winrt::check_hresult(deviceContext->CreateEffect(CLSID_D2D1Shadow, shadowEffect.put()));
     winrt::check_hresult(shadowEffect->SetValue(D2D1_SHADOW_PROP_BLUR_STANDARD_DEVIATION, consts::SHADOW_RADIUS));
     winrt::check_hresult(shadowEffect->SetValue(D2D1_SHADOW_PROP_COLOR, D2D1::ColorF(0.f, 0.f, 0.f, consts::SHADOW_OPACITY)));
 
-    winrt::check_hresult(deviceContext->CreateEffect(CLSID_D2D12DAffineTransform, &affineTransformEffect));
+    winrt::check_hresult(deviceContext->CreateEffect(CLSID_D2D12DAffineTransform, affineTransformEffect.put()));
     affineTransformEffect->SetInputEffect(0, shadowEffect.get());
 
-    textRenderer = winrt::make_self<PerGlyphOpacityTextRender>(d2dFactory, rt, solidBrushes[Brush::foreground]);
+    textRenderer = winrt::make_self<PerGlyphOpacityTextRender>(dxgi->d2dFactory2, dxgiWindowState.rt, solidBrushes[Brush::foreground]);
 }
 
 void D2DState::DrawTextBox(const wchar_t* text,
@@ -86,12 +72,13 @@ void D2DState::DrawTextBox(const wchar_t* text,
                            const HWND window) const
 {
     wil::com_ptr<IDWriteTextLayout> textLayout;
-    winrt::check_hresult(writeFactory->CreateTextLayout(text,
-                                                        static_cast<uint32_t>(textLen),
-                                                        textFormat.get(),
-                                                        std::numeric_limits<float>::max(),
-                                                        std::numeric_limits<float>::max(),
-                                                        &textLayout));
+    winrt::check_hresult(
+        dxgiAPI->writeFactory->CreateTextLayout(text,
+                                                static_cast<uint32_t>(textLen),
+                                                textFormat.get(),
+                                                std::numeric_limits<float>::max(),
+                                                std::numeric_limits<float>::max(),
+                                                &textLayout));
     DWRITE_TEXT_METRICS textMetrics = {};
     winrt::check_hresult(textLayout->GetMetrics(&textMetrics));
     // Assumes text doesn't contain new lines
@@ -105,7 +92,7 @@ void D2DState::DrawTextBox(const wchar_t* text,
                           .top = centerY - textMetrics.height / 2.f,
                           .right = centerX + textMetrics.width / 2.f,
                           .bottom = centerY + textMetrics.height / 2.f };
-    
+
     const float SHADOW_OFFSET = consts::SHADOW_OFFSET * dpiScale;
     if (screenQuadrantAware)
     {
@@ -147,11 +134,11 @@ void D2DState::DrawTextBox(const wchar_t* text,
     const auto shadowMatrix = D2D1::Matrix3x2F::Translation(SHADOW_OFFSET, SHADOW_OFFSET);
     winrt::check_hresult(affineTransformEffect->SetValue(D2D1_2DAFFINETRANSFORM_PROP_TRANSFORM_MATRIX,
                                                          shadowMatrix));
-    auto deviceContext = rt.query<ID2D1DeviceContext>();
+    auto deviceContext = dxgiWindowState.rt.as<ID2D1DeviceContext>();
     deviceContext->DrawImage(affineTransformEffect.get(), D2D1_INTERPOLATION_MODE_LINEAR);
 
     // Draw text box border rectangle
-    rt->DrawRoundedRectangle(textBoxRect, solidBrushes[Brush::border].get());
+    dxgiWindowState.rt->DrawRoundedRectangle(textBoxRect, solidBrushes[Brush::border].get());
     const float TEXT_BOX_PADDING = 1.f * dpiScale;
     textBoxRect.rect.bottom -= TEXT_BOX_PADDING;
     textBoxRect.rect.top += TEXT_BOX_PADDING;
@@ -159,7 +146,7 @@ void D2DState::DrawTextBox(const wchar_t* text,
     textBoxRect.rect.right -= TEXT_BOX_PADDING;
 
     // Draw text & its box
-    rt->FillRoundedRectangle(textBoxRect, solidBrushes[Brush::background].get());
+    dxgiWindowState.rt->FillRoundedRectangle(textBoxRect, solidBrushes[Brush::background].get());
 
     if (halfOpaqueSymbolPos.has_value())
     {
@@ -177,12 +164,12 @@ void D2DState::ToggleAliasedLinesMode(const bool enabled) const
     {
         // Draw lines in the middle of a pixel to avoid bleeding, since [0,0] pixel is
         // a rectangle filled from (0,0) to (1,1) and the lines use thickness = 1.
-        rt->SetTransform(D2D1::Matrix3x2F::Translation(.5f, .5f));
-        rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
+        dxgiWindowState.rt->SetTransform(D2D1::Matrix3x2F::Translation(.5f, .5f));
+        dxgiWindowState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
     }
     else
     {
-        rt->SetTransform(D2D1::Matrix3x2F::Identity());
-        rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+        dxgiWindowState.rt->SetTransform(D2D1::Matrix3x2F::Identity());
+        dxgiWindowState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
     }
 }
