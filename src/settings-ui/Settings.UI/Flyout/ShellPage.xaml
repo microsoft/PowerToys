@@ -9,10 +9,6 @@
     mc:Ignorable="d">
 
     <Grid>
-        <Frame
-            x:Name="ContentFrame"
-            Width="350"
-            Height="320"
-            Margin="-16" />
+        <Frame x:Name="ContentFrame" />
     </Grid>
 </Page>

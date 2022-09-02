@@ -7,156 +7,127 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Flyout"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
+    <Page.Resources>
+        <Style x:Key="CustomGridViewItemStyle" TargetType="GridViewItem">
+            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+            <Setter Property="Background" Value="{ThemeResource GridViewItemBackground}" />
+            <Setter Property="Foreground" Value="{ThemeResource GridViewItemForeground}" />
+            <Setter Property="TabNavigation" Value="Local" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="IsHoldingEnabled" Value="True" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,4,4" />
+            <Setter Property="MinWidth" Value="{ThemeResource GridViewItemMinWidth}" />
+            <Setter Property="MinHeight" Value="{ThemeResource GridViewItemMinHeight}" />
+            <Setter Property="AllowDrop" Value="False" />
+            <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+            <Setter Property="FocusVisualMargin" Value="-2" />
+            <Setter Property="FocusVisualPrimaryBrush" Value="{ThemeResource GridViewItemFocusVisualPrimaryBrush}" />
+            <Setter Property="FocusVisualPrimaryThickness" Value="2" />
+            <Setter Property="FocusVisualSecondaryBrush" Value="{ThemeResource GridViewItemFocusVisualSecondaryBrush}" />
+            <Setter Property="FocusVisualSecondaryThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewItem">
+                        <ListViewItemPresenter
+                            x:Name="Root"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            CheckBoxBrush="{ThemeResource GridViewItemCheckBoxBrush}"
+                            CheckBrush="{ThemeResource GridViewItemCheckBrush}"
+                            CheckMode="{ThemeResource GridViewItemCheckMode}"
+                            ContentMargin="{TemplateBinding Padding}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            Control.IsTemplateFocusTarget="True"
+                            DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                            DragBackground="{ThemeResource GridViewItemDragBackground}"
+                            DragForeground="{ThemeResource GridViewItemDragForeground}"
+                            DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                            FocusBorderBrush="{ThemeResource GridViewItemFocusBorderBrush}"
+                            FocusSecondaryBorderBrush="{ThemeResource GridViewItemFocusSecondaryBorderBrush}"
+                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                            FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                            FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                            FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                            FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
+                            IsTabStop="False"
+                            PlaceholderBackground="{ThemeResource GridViewItemPlaceholderBackground}"
+                            PointerOverBackground="Transparent"
+                            PointerOverForeground="{ThemeResource TextFillColorPrimaryBrush}"
+                            PressedBackground="Transparent"
+                            ReorderHintOffset="{ThemeResource GridViewItemReorderHintThemeOffset}"
+                            SelectedBackground="Transparent"
+                            SelectedForeground="{ThemeResource GridViewItemForegroundSelected}"
+                            SelectedPointerOverBackground="{ThemeResource GridViewItemBackgroundSelectedPointerOver}"
+                            SelectedPressedBackground="Transparent"
+                            SelectionCheckMarkVisualEnabled="{ThemeResource GridViewItemSelectionCheckMarkVisualEnabled}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="48" />
+        </Grid.RowDefinitions>
+        <Grid
+            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,0,0,1">
 
-        <Grid>
-            <Grid.RowDefinitions>
-
-                <RowDefinition Height="*" />
-                <RowDefinition Height="48" />
-            </Grid.RowDefinitions>
-            <controls:WrapPanel
-                Grid.Row="0"
-                Width="312"
-                Margin="0,20,0,0"
-                HorizontalAlignment="Center"
-                HorizontalSpacing="12"
-                Orientation="Horizontal"
-                VerticalSpacing="24">
-                <StackPanel Spacing="8">
-                    <Button
-                        Width="96"
-                        Height="48"
-                        Tag="Run"
-                        ToolTipService.ToolTip="Launch Run (Alt + Space)">
-                        <BitmapIcon
-                            Height="24"
-                            ShowAsMonochrome="False"
-                            UriSource="ms-appx:///Assets/Icons/PowerToys Run.png" />
-                    </Button>
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontSize="12"
-                        Text="Run" />
-                </StackPanel>
-                <StackPanel Spacing="8">
-                    <Button
-                        Width="96"
-                        Height="48"
-                        Tag="Color Picker"
-                        ToolTipService.ToolTip="Launch Color Picker (Ctrl + Alt + C)">
-                        <BitmapIcon
-                            Height="20"
-                            ShowAsMonochrome="False"
-                            UriSource="ms-appx:///Assets/Icons/Color Picker.png" />
-                    </Button>
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontSize="12"
-                        Text="Color Picker" />
-                </StackPanel>
-                <StackPanel Spacing="8">
-                    <Button
-                        Width="96"
-                        Height="48"
-                        Tag="Shortcut Guide"
-                        ToolTipService.ToolTip="Launch Shortcut Guide (Windows key)">
-                        <BitmapIcon
-                            Height="20"
-                            ShowAsMonochrome="False"
-                            UriSource="ms-appx:///Assets/Icons/Shortcut Guide.png" />
-                    </Button>
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontSize="12"
-                        Text="Shortcut Guide" />
-                </StackPanel>
-
-
-                <StackPanel Spacing="8">
-                    <Button
-                        Width="96"
-                        Height="48"
-                        Click="Options_Click"
-                        Tag="Awake">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <BitmapIcon
-                                Height="24"
-                                ShowAsMonochrome="False"
-                                UriSource="ms-appx:///Assets/Icons/Awake.png" />
-                            <FontIcon FontSize="12" Glyph="&#xE097;" />
-                        </StackPanel>
-                    </Button>
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontSize="12"
-                        Text="Awake" />
-                </StackPanel>
-
-                <StackPanel Spacing="8">
-                    <Button
-                        Width="96"
-                        Height="48"
-                        Click="Options_Click"
-                        Tag="FancyZones">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <BitmapIcon
-                                Height="24"
-                                ShowAsMonochrome="False"
-                                UriSource="ms-appx:///Assets/Icons/FancyZones.png" />
-                            <FontIcon FontSize="12" Glyph="&#xE097;" />
-                        </StackPanel>
-                    </Button>
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontSize="12"
-                        Text="FancyZones" />
-                </StackPanel>
-
-                <StackPanel Spacing="8">
-                    <Button
-                        Width="96"
-                        Height="48"
-                        Click="Options_Click"
-                        Tag="VCM">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <BitmapIcon
-                                Height="24"
-                                ShowAsMonochrome="False"
-                                UriSource="ms-appx:///Assets/Icons/Video Conference Mute.png" />
-                            <FontIcon FontSize="12" Glyph="&#xE097;" />
-                        </StackPanel>
-                    </Button>
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontSize="12"
-                        Text="Mute" />
-                </StackPanel>
-
-            </controls:WrapPanel>
-
-
-            <Grid
-                Grid.Row="1"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Background="{ThemeResource SystemControlAcrylicElementBrush}" />
-            <Rectangle
-                Grid.Row="1"
-                Height="1"
+            <GridView
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
-                Fill="{ThemeResource FlyoutBorderThemeBrush}" />
+                ItemContainerStyle="{StaticResource CustomGridViewItemStyle}"
+                ItemsSource="{x:Bind menuItems}"
+                TabNavigation="Local">
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid
+                            Margin="0,24,0,0"
+                            HorizontalAlignment="Center"
+                            MaximumRowsOrColumns="3"
+                            Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="local:FlyoutItem">
+                        <StackPanel
+                            Width="104"
+                            Height="112"
+                            IsTabStop="False"
+                            Orientation="Vertical"
+                            Spacing="8">
+                            <Button
+                                Width="96"
+                                Height="48"
+                                HorizontalAlignment="Center"
+                                Click="ModuleButton_Click"
+                                Tag="{x:Bind Tag, Mode=OneWay}">
+                                <BitmapIcon
+                                    Height="20"
+                                    ShowAsMonochrome="False"
+                                    UriSource="{x:Bind Icon, Mode=OneWay}" />
+                            </Button>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="{x:Bind Label, Mode=OneWay}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+        </Grid>
 
+        <Grid Grid.Row="1">
             <StackPanel
                 Grid.Row="1"
                 Margin="0,0,10,0"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal">
-                <!--<Button Background="Transparent" ToolTipService.ToolTip="Documentation" BorderBrush="Transparent">
-                <FontIcon Glyph="&#xE11B;" FontSize="14" />
-            </Button>-->
                 <Button
                     Height="36"
                     Background="Transparent"
@@ -166,12 +137,7 @@
                 </Button>
 
             </StackPanel>
-            <!--<controls1:InfoBar Title="Update available" Message="0.51" Background="Transparent" BorderBrush="Transparent" Margin="4,0,36,0" Grid.Row="1" IsOpen="True" IsClosable="False" />-->
-            <!--<controls1:InfoBar Title="Update installed" Background="Transparent" BorderBrush="Transparent" Margin="4,0,36,0" Grid.Row="1" IsOpen="True" IsClosable="False">
-            <controls1:InfoBar.ActionButton>
-                <HyperlinkButton Content="See what's new"/>
-            </controls1:InfoBar.ActionButton>
-        </controls1:InfoBar>-->
         </Grid>
     </Grid>
+
 </Page>
