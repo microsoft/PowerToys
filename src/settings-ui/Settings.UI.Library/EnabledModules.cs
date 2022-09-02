@@ -241,7 +241,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool powerAccent;
 
-        [JsonPropertyName("PowerAccent")]
+        [JsonPropertyName("QuickAccent")]
         public bool PowerAccent
         {
             get => powerAccent;
@@ -257,7 +257,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool powerOCR = true;
 
-        [JsonPropertyName("PowerOCR")]
+        [JsonPropertyName("TextExtractor")]
         public bool PowerOCR
         {
             get => powerOCR;

@@ -9,7 +9,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PowerAccentSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "PowerAccent";
+        public const string ModuleName = "QuickAccent";
         public const string ModuleVersion = "0.0.1";
 
         [JsonPropertyName("properties")]

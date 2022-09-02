@@ -28,8 +28,6 @@ D2DState::D2DState(const HWND overlayWindow, std::vector<D2D1::ColorF> solidBrus
     winrt::check_bool(GetClientRect(overlayWindow, &clientRect));
     winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &d2dFactory));
 
-    winrt::check_hresult(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), writeFactory.put_unknown()));
-
     // We should always use DPIAware::DEFAULT_DPI, since it's the correct thing to do in DPI-Aware mode
     auto renderTargetProperties = D2D1::RenderTargetProperties(
         D2D1_RENDER_TARGET_TYPE_DEFAULT,
@@ -49,6 +47,7 @@ D2DState::D2DState(const HWND overlayWindow, std::vector<D2D1::ColorF> solidBrus
     DPIAware::GetScreenDPIForWindow(overlayWindow, dpi);
     dpiScale = dpi / static_cast<float>(DPIAware::DEFAULT_DPI);
 
+    winrt::check_hresult(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), writeFactory.put_unknown()));
     winrt::check_hresult(writeFactory->CreateTextFormat(L"Segoe UI Variable Text",
                                                         nullptr,
                                                         DWRITE_FONT_WEIGHT_NORMAL,

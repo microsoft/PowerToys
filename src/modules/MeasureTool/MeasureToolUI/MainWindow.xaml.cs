@@ -39,9 +39,9 @@ namespace MeasureToolUI
             InitializeComponent();
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             _appWindow = AppWindow.GetFromWindowId(windowId);
+
             var presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsAlwaysOnTop = true;
             this.SetIsAlwaysOnTop(true);
@@ -61,7 +61,6 @@ namespace MeasureToolUI
                 _initialPosition.Y,
                 _initialPosition.X + (int)(dpiScale * WindowWidth),
                 _initialPosition.Y + (int)(dpiScale * WindowHeight));
-
             OnPositionChanged(_initialPosition);
         }
 

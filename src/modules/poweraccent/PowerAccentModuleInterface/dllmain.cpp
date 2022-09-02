@@ -35,8 +35,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return TRUE;
 }
 
-const static wchar_t* MODULE_NAME = L"PowerAccent";
-const static wchar_t* MODULE_DESC = L"A module that keeps your computer PowerAccent on-demand.";
+const static wchar_t* MODULE_NAME = L"QuickAccent";
+const static wchar_t* MODULE_DESC = L"A module that keeps your computer QuickAccent on-demand.";
 
 class PowerAccent : public PowertoyModuleIface
 {
@@ -55,20 +55,20 @@ private:
 
     void launch_process()
     {
-        Logger::trace(L"Launching PowerToys PowerAccent process");
+        Logger::trace(L"Launching PowerToys QuickAccent process");
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"" + std::to_wstring(powertoys_pid);
         std::wstring application_path = L"modules\\PowerAccent\\PowerToys.PowerAccent.exe";
         std::wstring full_command_path = application_path + L" " + executable_args.data();
-        Logger::trace(L"PowerToys PowerAccent launching: " + full_command_path);
+        Logger::trace(L"PowerToys QuickAccent launching: " + full_command_path);
 
         STARTUPINFO info = { sizeof(info) };
 
         if (!CreateProcess(application_path.c_str(), full_command_path.data(), NULL, NULL, true, NULL, NULL, NULL, &info, &p_info))
         {
             DWORD error = GetLastError();
-            std::wstring message = L"PowerToys PowerAccent failed to start with error: ";
+            std::wstring message = L"PowerToys QuickAccent failed to start with error: ";
             message += std::to_wstring(error);
             Logger::error(message);
         }
@@ -79,7 +79,7 @@ public:
     {
         app_name = MODULE_NAME;
         app_key = PowerAccentConstants::ModuleKey;
-        LoggerHelpers::init_logger(app_key, L"ModuleInterface", "PowerAccent");
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", "QuickAccent");
         Logger::info("Launcher object is constructing");
     };
 
@@ -138,20 +138,20 @@ public:
     {
         if (m_enabled)
         {
-            Logger::trace(L"Disabling PowerAccent... {}", m_enabled);
+            Logger::trace(L"Disabling QuickAccent... {}", m_enabled);
             ResetEvent(m_hInvokeEvent);
 
             auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::POWERACCENT_EXIT_EVENT);
             if (!exitEvent)
             {
-                Logger::warn(L"Failed to create exit event for PowerToys PowerAccent. {}", get_last_error_or_default(GetLastError()));
+                Logger::warn(L"Failed to create exit event for PowerToys QuickAccent. {}", get_last_error_or_default(GetLastError()));
             }
             else
             {
-                Logger::trace(L"Signaled exit event for PowerToys PowerAccent.");
+                Logger::trace(L"Signaled exit event for PowerToys QuickAccent.");
                 if (!SetEvent(exitEvent))
                 {
-                    Logger::warn(L"Failed to signal exit event for PowerToys PowerAccent. {}", get_last_error_or_default(GetLastError()));
+                    Logger::warn(L"Failed to signal exit event for PowerToys QuickAccent. {}", get_last_error_or_default(GetLastError()));
 
                     // For some reason, we couldn't process the signal correctly, so we still
                     // need to terminate the PowerAccent process.

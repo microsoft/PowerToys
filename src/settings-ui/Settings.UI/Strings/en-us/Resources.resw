@@ -177,7 +177,7 @@
     <value>Draw feet on cross</value>
   </data>
   <data name="MeasureTool_DrawFeetOnCross.Description" xml:space="preserve">
-    <value>Adds feet to the end of cross lines. Always off for continuous capture.</value>
+    <value>Adds feet to the end of cross lines.</value>
   </data>
   <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
     <value>Enable Screen Ruler</value>
@@ -2243,123 +2243,133 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
     <value>Enable round corners</value>
   </data>
-  <data name="LearnMore_PowerAccent.Text" xml:space="preserve">
-    <value>Learn more about PowerAccent</value>
-    <comment>PowerAccent is a product name, do not loc</comment>
+  <data name="LearnMore_QuickAccent.Text" xml:space="preserve">
+    <value>Learn more about Quick Accent</value>
+    <comment>Quick Accent is a product name, do not loc</comment>
   </data>
-  <data name="PowerAccent_EnablePowerAccent.Header" xml:space="preserve">
-    <value>Enable PowerAccent</value>
+  <data name="QuickAccent_EnableQuickAccent.Header" xml:space="preserve">
+    <value>Enable Quick Accent</value>
   </data>
-  <data name="Shell_PowerAccent.Content" xml:space="preserve">
-    <value>PowerAccent</value>
+  <data name="Shell_QuickAccent.Content" xml:space="preserve">
+    <value>Quick Accent</value>
   </data>
-  <data name="PowerAccent.ModuleDescription" xml:space="preserve">
-    <value>PowerAccent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
+  <data name="QuickAccent.ModuleDescription" xml:space="preserve">
+    <value>Quick Accent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
 
 Activate by holding the key for the character you want to add an accent to, then press the Activation Key (space key or left and right arrow keys). If you continue to hold, an overlay to select the accented between multiple characters will appear!</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
-  <data name="PowerAccent.ModuleTitle" xml:space="preserve">
-    <value>PowerAccent</value>
+  <data name="QuickAccent.ModuleTitle" xml:space="preserve">
+    <value>Quick Accent</value>
   </data>
-  <data name="PowerAccent.SecondaryLinksHeader" xml:space="preserve">
+  <data name="QuickAccent.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
   </data>
-  <data name="Oobe_PowerAccent.Description" xml:space="preserve">
-    <value>PowerAccent is an easy way to write letters with accents, like on the phone or Mac.</value>
+  <data name="Oobe_QuickAccent.Description" xml:space="preserve">
+    <value>Quick Accent is an easy way to write letters with accents, like on the phone or Mac.</value>
   </data>
-  <data name="Oobe_PowerAccent.Title" xml:space="preserve">
-    <value>PowerAccent</value>
+  <data name="Oobe_QuickAccent.Title" xml:space="preserve">
+    <value>Quick Accent</value>
   </data>
-  <data name="Oobe_PowerAccent_HowToUse.Text" xml:space="preserve">
-    <value>Open **PowerToys Settings** and enable PowerAccent. While holding the key for the character you want to add an accent to, press the Activation Key and an overlay to select the accented character will appear.</value>
+  <data name="Oobe_QuickAccent_HowToUse.Text" xml:space="preserve">
+    <value>Open **PowerToys Settings** and enable Quick Accent. While holding the key for the character you want to add an accent to, press the Activation Key and an overlay to select the accented character will appear.</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
-  <data name="PowerAccent_Activation_GroupSettings.Header" xml:space="preserve">
+  <data name="QuickAccent_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
   </data>
-  <data name="PowerAccent_Activation_Shortcut.Header" xml:space="preserve">
+  <data name="QuickAccent_Activation_Shortcut.Header" xml:space="preserve">
     <value>Activation key</value>
   </data>
-  <data name="PowerAccent_Activation_Shortcut.Description" xml:space="preserve">
+  <data name="QuickAccent_Activation_Shortcut.Description" xml:space="preserve">
     <value>This is the extra key needed to activate after you are holding your target letter.</value>
   </data>
-  <data name="PowerAccent_Activation_Key_Arrows.Content" xml:space="preserve">
+  <data name="QuickAccent_Activation_Key_Arrows.Content" xml:space="preserve">
     <value>Left/Right Arrow</value>
     <comment>Left/Right arrow keyboard keys.</comment>
   </data>
-  <data name="PowerAccent_Activation_Key_Space.Content" xml:space="preserve">
+  <data name="QuickAccent_Activation_Key_Space.Content" xml:space="preserve">
     <value>Space</value>
     <comment>Space is the space keyboard key.</comment>
   </data>
-  <data name="PowerAccent_Activation_Key_Both.Content" xml:space="preserve">
+  <data name="QuickAccent_Activation_Key_Both.Content" xml:space="preserve">
     <value>Both</value>
   </data>
-  <data name="PowerAccent_Toolbar.Header" xml:space="preserve">
+  <data name="QuickAccent_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
   </data>
-  <data name="PowerAccent_ToolbarPosition.Header" xml:space="preserve">
+  <data name="QuickAccent_ToolbarPosition.Header" xml:space="preserve">
     <value>Toolbar position</value>
   </data>
-  <data name="PowerAccent_ToolbarPosition_TopCenter.Content" xml:space="preserve">
+  <data name="QuickAccent_ToolbarPosition_TopCenter.Content" xml:space="preserve">
     <value>Top center</value>
   </data>
-  <data name="PowerAccent_ToolbarPosition_TopLeftCorner.Content" xml:space="preserve">
+  <data name="QuickAccent_ToolbarPosition_TopLeftCorner.Content" xml:space="preserve">
     <value>Top left corner</value>
   </data>
-  <data name="PowerAccent_ToolbarPosition_TopRightCorner.Content" xml:space="preserve">
+  <data name="QuickAccent_ToolbarPosition_TopRightCorner.Content" xml:space="preserve">
     <value>Top right corner</value>
   </data>
-  <data name="PowerAccent_ToolbarPosition_BottomLeftCorner.Content" xml:space="preserve">
+  <data name="QuickAccent_ToolbarPosition_BottomLeftCorner.Content" xml:space="preserve">
     <value>Bottom left corner</value>
   </data>
-  <data name="PowerAccent_ToolbarPosition_BottomCenter.Content" xml:space="preserve">
+  <data name="QuickAccent_ToolbarPosition_BottomCenter.Content" xml:space="preserve">
     <value>Bottom center</value>
   </data>
-  <data name="PowerAccent_ToolbarPosition_BottomRightCorner.Content" xml:space="preserve">
+  <data name="QuickAccent_ToolbarPosition_BottomRightCorner.Content" xml:space="preserve">
     <value>Bottom right corner</value>
   </data>
-  <data name="PowerAccent_ToolbarPosition_Center.Content" xml:space="preserve">
+  <data name="QuickAccent_ToolbarPosition_Center.Content" xml:space="preserve">
     <value>Center</value>
   </data>
-  <data name="PowerAccent_ToolbarPosition_Left.Content" xml:space="preserve">
+  <data name="QuickAccent_ToolbarPosition_Left.Content" xml:space="preserve">
     <value>Left</value>
   </data>
-  <data name="PowerAccent_ToolbarPosition_Right.Content" xml:space="preserve">
+  <data name="QuickAccent_ToolbarPosition_Right.Content" xml:space="preserve">
     <value>Right</value>
   </data>
-  <data name="LearnMore_PowerOcr.Text" xml:space="preserve">
-    <value>Learn more about PowerOCR</value>
+  <data name="QuickAccent_Behavior.Header" xml:space="preserve">
+    <value>Behavior</value>
   </data>
-  <data name="PowerOCR.ModuleDescription" xml:space="preserve">
-    <value>PowerOCR is a convenient way to copy text from anywhere on screen</value>
+  <data name="QuickAccent_InputTimeMs.Header" xml:space="preserve">
+    <value>Input delay (ms)</value>
+    <comment>ms = milliseconds</comment>
   </data>
-  <data name="PowerOCR.ModuleTitle" xml:space="preserve">
-    <value>PowerOCR</value>
+  <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
+    <value>Hold the key for this long to make the accent menu appear (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
+    <value>Learn more about Text Extractor</value>
   </data>
-  <data name="PowerOCR_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable PowerOCR</value>
+  <data name="TextExtractor.ModuleDescription" xml:space="preserve">
+    <value>Text Extractor is a convenient way to copy text from anywhere on screen</value>
   </data>
-  <data name="Shell_PowerOcr.Content" xml:space="preserve">
-    <value>PowerOCR</value>
+  <data name="TextExtractor.ModuleTitle" xml:space="preserve">
+    <value>Text Extractor</value>
   </data>
-  <data name="Launch_PowerOCR.Content" xml:space="preserve">
-    <value>Launch PowerOCR</value>
+  <data name="TextExtractor_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Text Extractor</value>
   </data>
-  <data name="Oobe_PowerOCR.Title" xml:space="preserve">
-    <value>PowerOCR</value>
+  <data name="Shell_TextExtractor.Content" xml:space="preserve">
+    <value>Text Extractor</value>
   </data>
-  <data name="Oobe_PowerOCR_HowToUse.Text" xml:space="preserve">
-    <value>to open PowerOCR and then selecting a region to copy the text from.</value>
+  <data name="Launch_TextExtractor.Content" xml:space="preserve">
+    <value>Launch Text Extractor</value>
   </data>
-  <data name="Oobe_PowerOCR_TipsAndTricks.Text" xml:space="preserve">
+  <data name="Oobe_TextExtractor.Title" xml:space="preserve">
+    <value>Text Extractor</value>
+  </data>
+  <data name="Oobe_TextExtractor_HowToUse.Text" xml:space="preserve">
+    <value>to open Text Extractor and then selecting a region to copy the text from.</value>
+  </data>
+  <data name="Oobe_TextExtractor_TipsAndTricks.Text" xml:space="preserve">
     <value>Hold the shift key to move the selection region around.</value>
   </data>
-  <data name="PowerOCR.SecondaryLinksHeader" xml:space="preserve">
+  <data name="TextExtractor.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
   </data>
-  <data name="Oobe_PowerOCR.Description" xml:space="preserve">
-    <value>PowerOCR works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard.</value>
+  <data name="Oobe_TextExtractor.Description" xml:space="preserve">
+    <value>Text Extractor works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard.</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format.Description" xml:space="preserve">
     <value>Applies to json and xml. Files remain unchanged.</value>
@@ -2374,7 +2384,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Learn more about conflicting activation commands</value>
   </data>
   <data name="MeasureTool_ContinuousCapture_Information.Title" xml:space="preserve">
-    <value>The continuous capture mode will consume more resources when in use.  In addition, the UI will be slightly offset from the pointer position.</value>
-    <comment>pointer as in mouse pointer.  resources refer to things like CPU, GPU, RAM</comment>
+    <value>The continuous capture mode will consume more resources when in use.</value>
+    <comment>pointer as in mouse pointer. Resources refer to things like CPU, GPU, RAM</comment>
   </data>
 </root>
