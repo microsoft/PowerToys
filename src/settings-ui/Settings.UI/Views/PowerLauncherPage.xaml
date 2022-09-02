@@ -136,7 +136,7 @@
                     </controls:SettingExpander>
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="PowerLauncher_MaximumNumberOfResults" Icon="&#xEB3C;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                            <controls:Setting x:Uid="PowerLauncher_MaximumNumberOfResults" Icon="&#xec8f;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
