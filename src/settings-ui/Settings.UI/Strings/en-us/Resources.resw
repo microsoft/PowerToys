@@ -636,6 +636,15 @@
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
   </data>
+  <data name="GeneralPage_BackupConfigs.Content" xml:space="preserve">
+    <value>Backup Settings Now</value>
+  </data>
+  <data name="GeneralPage_RestoreConfigs.Content" xml:space="preserve">
+    <value>Restore settings and restart</value>
+  </data>
+  <data name="GeneralPage_SettingsBackupLocaitonSelect.Content" xml:space="preserve">
+    <value>Select...</value>
+  </data>
   <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
     <value>Update now</value>
   </data>
@@ -802,6 +811,15 @@
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
+  </data>
+  <data name="ShortcutGuide_SettingsBackupAndSync.Header" xml:space="preserve">
+    <value>Settings backup &amp; restore</value>
+  </data>
+  <data name="ShortcutGuide_SettingsBackupAndSyncDir.Header" xml:space="preserve">
+    <value>ShortcutGuide_SettingsBackupAndSyncDir Header</value>
+  </data>
+  <data name="ShortcutGuide_SettingsBackupAndSyncDir.Description" xml:space="preserve">
+    <value>ShortcutGuide_SettingsBackupAndSyncDir Description</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
@@ -1041,6 +1059,9 @@
   </data>
   <data name="Admin_mode.Header" xml:space="preserve">
     <value>Administrator mode</value>
+  </data>
+  <data name="SettingsBackupLocation.Header" xml:space="preserve">
+    <value>Backup location</value>
   </data>
   <data name="General_RunAsAdminRequired.Title" xml:space="preserve">
     <value>You need to run as administrator to use this setting.</value>
@@ -1677,6 +1698,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download and install</value>
+  </data>
+  <data name="General_SettingsBackupMessageResults.Title" xml:space="preserve">
+    <value />
   </data>
   <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
     <value>Fills</value>
@@ -2341,6 +2365,24 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
   </data>
+  <data name="BackupAndSync_NothingToBackup" xml:space="preserve">
+    <value>Nothing to backup, no settings have been changed since last backup.</value>
+  </data>
+  <data name="BackupAndSync_NothingToRestore" xml:space="preserve">
+    <value>Nothing to restore, no settings have been changed since last backup.</value>
+  </data>
+  <data name="BackupAndSync_NoSettingsFilesFound" xml:space="preserve">
+    <value>No settings files found.</value>
+  </data>
+  <data name="BackupAndSync_BackupComplete" xml:space="preserve">
+    <value>Backup completed.</value>
+  </data>
+  <data name="BackupAndSync_NoBackupsFound" xml:space="preserve">
+    <value>No backups found to restore.</value>
+  </data>
+  <data name="BackupAndSync_InvalidBackupLocation" xml:space="preserve">
+    <value>Invalid backup location.</value>
+  </data>  
   <data name="TextExtractor.ModuleDescription" xml:space="preserve">
     <value>Text Extractor is a convenient way to copy text from anywhere on screen</value>
   </data>

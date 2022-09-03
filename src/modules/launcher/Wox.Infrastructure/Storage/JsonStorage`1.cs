@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;

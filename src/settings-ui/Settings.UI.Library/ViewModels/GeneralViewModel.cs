@@ -4,12 +4,18 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.IO.Abstractions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
@@ -21,7 +27,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
 
+        public ButtonClickCommand BackupConfigsEventHandler { get; set; }
+
+        public ButtonClickCommand RestoreConfigsEventHandler { get; set; }
+
+        public ButtonClickCommand SelectSettingBackupDirEventHandler { get; set; }
+
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
+
+        public ButtonClickCommand RestartButtonEventHandler { get; set; }
 
         public ButtonClickCommand UpdateNowButtonEventHandler { get; set; }
 
@@ -41,11 +55,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private IFileSystemWatcher _fileWatcher;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null)
+        public object ResourceLoader { get; set; }
+
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, object resourceLoader = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
             UpdateNowButtonEventHandler = new ButtonClickCommand(UpdateNowClick);
+            BackupConfigsEventHandler = new ButtonClickCommand(BackupConfigsClick);
+            SelectSettingBackupDirEventHandler = new ButtonClickCommand(SelectSettingBackupDir);
+            RestoreConfigsEventHandler = new ButtonClickCommand(RestoreConfigsClick);
+            RestartButtonEventHandler = new ButtonClickCommand(Restart);
+
+            ResourceLoader = resourceLoader;
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
             if (settingsRepository == null)
@@ -92,6 +114,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             _startup = GeneralSettingsConfig.Startup;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
+
+            // _settingsBackupAndSyncDir = GeneralSettingsConfig.SettingsBackupAndSyncDir;
             _isElevated = isElevated;
             _runElevated = GeneralSettingsConfig.RunElevated;
 
@@ -119,6 +143,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private bool _autoDownloadUpdates;
 
+        // private string _settingsBackupAndSyncDir;
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
         private string _newAvailableVersionLink = string.Empty;
@@ -126,6 +151,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private bool _isNewVersionDownloading;
         private bool _isNewVersionChecked;
+        private bool _settingsBackupWasSuccessful;
+        private bool _settingsBackupWasUnsuccessful;
+
+        private string _settingsBackupMessage;
 
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
@@ -253,6 +282,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public string SettingsBackupAndSyncDir
+        {
+            get
+            {
+                // return _settingsBackupAndSyncDir;
+                return SettingsBackupAndSyncUtils.GetRegSettingsBackupAndSyncDir();
+            }
+
+            set
+            {
+                if (SettingsBackupAndSyncUtils.GetRegSettingsBackupAndSyncDir() != value)
+                {
+                    // _settingsBackupAndSyncDir = value;
+                    // GeneralSettingsConfig.SettingsBackupAndSyncDir = value;
+                    SettingsBackupAndSyncUtils.SetRegSettingsBackupAndSyncDir(value);
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public int ThemeIndex
         {
             get
@@ -284,6 +333,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                     NotifyPropertyChanged();
                 }
+            }
+        }
+
+        public string SettingsBackupAndSyncHeader
+        {
+            get
+            {
+                return "Location";
             }
         }
 
@@ -389,6 +446,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool SettingsBackupWasUnsuccessful
+        {
+            get
+            {
+                return _settingsBackupWasUnsuccessful;
+            }
+        }
+
+        public bool SettingsBackupWasSuccessful
+        {
+            get
+            {
+                return _settingsBackupWasSuccessful;
+            }
+        }
+
+        public string SettingsBackupMessage
+        {
+            get
+            {
+                return _settingsBackupMessage;
+            }
+        }
+
         public bool IsDownloadAllowed
         {
             get
@@ -404,6 +485,64 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
             SendConfigMSG(outsettings.ToString());
+        }
+
+        private void SelectSettingBackupDir()
+        {
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                // Debugger.Launch();
+                var currentDir = SettingsBackupAndSyncUtils.GetRegSettingsBackupAndSyncDir();
+
+                if (!string.IsNullOrEmpty(currentDir) && Directory.Exists(currentDir))
+                {
+                    dialog.InitialDirectory = currentDir;
+                }
+
+                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    SettingsBackupAndSyncDir = dialog.SelectedPath;
+                    SettingsBackupAndSyncUtils.SetRegSettingsBackupAndSyncDir(dialog.SelectedPath);
+                    NotifyPropertyChanged(nameof(SettingsBackupAndSyncDir));
+                }
+            }
+        }
+
+        private void RestoreConfigsClick()
+        {
+            var results = new SettingsUtils().RestoreSettings(SettingsBackupAndSyncUtils.GetRegSettingsBackupAndSyncDir());
+
+            if (!results.success)
+            {
+                _settingsBackupWasSuccessful = results.success;
+                _settingsBackupMessage = GetResourceString(results.message);
+                _settingsBackupWasUnsuccessful = !_settingsBackupWasSuccessful;
+                _settingsBackupMessage = GetResourceString(results.message);
+
+                NotifyPropertyChanged(nameof(SettingsBackupMessage));
+                NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
+                NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
+            }
+            else
+            {
+                // Debugger.Launch();
+                Restart();
+            }
+        }
+
+        private void BackupConfigsClick()
+        {
+            var results = new SettingsUtils().BackupSettings(SettingsBackupAndSyncUtils.GetRegSettingsBackupAndSyncDir());
+
+            _settingsBackupWasSuccessful = results.success;
+            _settingsBackupMessage = GetResourceString(results.message);
+            _settingsBackupWasUnsuccessful = !_settingsBackupWasSuccessful;
+            _settingsBackupMessage = GetResourceString(results.message);
+
+            NotifyPropertyChanged(nameof(SettingsBackupMessage));
+            NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
+            NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
         }
 
         // callback function to launch the URL to check for updates.
@@ -435,6 +574,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             Process.Start(new ProcessStartInfo(Helper.GetPowerToysInstallationFolder() + "\\PowerToys.exe") { Arguments = "powertoys://update_now/" });
         }
 
+        public string GetResourceString(string resource)
+        {
+            if (ResourceLoader != null)
+            {
+                var type = ResourceLoader.GetType();
+                MethodInfo methodInfo = type.GetMethod("GetString");
+                object classInstance = Activator.CreateInstance(type, null);
+                object[] parametersArray = new object[] { resource };
+                var result = (string)methodInfo.Invoke(ResourceLoader, parametersArray);
+                if (string.IsNullOrEmpty(result))
+                {
+                    return resource.ToUpperInvariant() + "!!!";
+                }
+                else
+                {
+                    return result;
+                }
+            }
+            else
+            {
+                return resource;
+            }
+        }
+
         public void RequestUpdateCheckedDate()
         {
             GeneralSettingsConfig.CustomActionName = "request_update_state_date";
@@ -453,6 +616,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendRestartAsAdminConfigMSG(customaction.ToString());
+        }
+
+        public void Restart()
+        {
+            // Debugger.Launch();
+            GeneralSettingsConfig.CustomActionName = "restart_maintain_elevation";
+
+            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
+            GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
+
+            var datatoSend = customaction.ToString();
+            datatoSend = JsonSerializer.Serialize(new { action = new { general = new { action_name = "restart_maintain_elevation" } } });
+            SendRestartAsAdminConfigMSG(datatoSend);
         }
 
         public void RefreshUpdatingState()

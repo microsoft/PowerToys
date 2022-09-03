@@ -25,11 +25,11 @@
                     <controls:Setting Header="{Binding PowerToysVersion}" Icon="&#xE895;">
                         <controls:Setting.Description>
                             <StackPanel Orientation="Vertical">
-                               
-                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+
+                                <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                 <Run x:Uid="General_VersionLastChecked" />
                                 <Run Text="{Binding UpdateCheckedDate, Mode=OneWay}"/>
-                            </TextBlock>
+                                </TextBlock>
                                 <HyperlinkButton x:Uid="ReleaseNotes"
                                                  NavigateUri="https://github.com/microsoft/PowerToys/releases/"
                                                  Margin="0,2,0,0"/>
@@ -77,7 +77,7 @@
                                         Command="{Binding UpdateNowButtonEventHandler}"
                                         IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}"
                                         Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource NegationConverter}}"/>
-                                
+
                                 <!-- In progress panel -->
                                 <StackPanel Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
                                             Orientation="Horizontal"
@@ -138,7 +138,7 @@
                                     Command="{Binding UpdateNowButtonEventHandler}"
                                     IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}"
                                     Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource NegationConverter}}"/>
-                                
+
                                 <!-- In progress panel -->
                                 <StackPanel Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
                                         Orientation="Horizontal"
@@ -168,7 +168,7 @@
                             <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    </controls:SettingsGroup>
+                </controls:SettingsGroup>
 
 
 
@@ -216,26 +216,124 @@
 
                 <controls:SettingsGroup IsEnabled="True" x:Uid="ShortcutGuide_Appearance_Behavior">
                     <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE790;">
-                                <controls:Setting.Description>
-                                    <HyperlinkButton Click="OpenColorsSettings_Click"
+                        <controls:Setting.Description>
+                            <HyperlinkButton Click="OpenColorsSettings_Click"
                                                      x:Uid="Windows_Color_Settings"/>
-                                </controls:Setting.Description>
-                                <controls:Setting.ActionContent>
-                                    <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
-                                        <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
-                                        <ComboBoxItem x:Uid="Radio_Theme_Light"/>
-                                        <ComboBoxItem x:Uid="Radio_Theme_Default"/>
-                                    </ComboBox>
-                                </controls:Setting.ActionContent>
-                            </controls:Setting>
+                        </controls:Setting.Description>
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
+                                <ComboBoxItem x:Uid="Radio_Theme_Light"/>
+                                <ComboBoxItem x:Uid="Radio_Theme_Default"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                     <controls:Setting x:Uid="GeneralPage_RunAtStartUp">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=Startup}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>
+
+                <!-- ShortcutGuide_SettingsBackupAndSync -->
+                <controls:SettingsGroup x:Uid="ShortcutGuide_SettingsBackupAndSync">
+
+
+                    <controls:Setting x:Uid="SettingsBackupLocation" Icon="&#xE777;">
+                        <controls:Setting.Description>
+                            <StackPanel Orientation="Horizontal">
+                                <!--<TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                <Run x:Uid="General_VersionLastChecked" />
+                                <Run Text="{Binding UpdateCheckedDate, Mode=OneWay}"/>
+                                </TextBlock>-->
+
+                                <muxc:TextBox                                                  
+                                        Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndSyncDir}"   
+                                        MaxWidth="300"
+                                        MinWidth="300"
+                                        IsEnabled="True"
+                                        IsReadOnly="True"                                        
+                                        HorizontalAlignment="Left"
+                                        />
+                                <Button x:Uid="GeneralPage_SettingsBackupLocaitonSelect"
+                                        Command="{Binding SelectSettingBackupDirEventHandler}"
+                                        IsEnabled="True"
+                                        Visibility="Visible"
+                                        HorizontalAlignment="Left"/>
+                            </StackPanel>
+                        </controls:Setting.Description>
+                        <controls:Setting.ActionContent>
+                            <StackPanel Orientation="Vertical">
+                                <Button x:Uid="GeneralPage_BackupConfigs"
+                                        Command="{Binding BackupConfigsEventHandler}"
+                                        IsEnabled="True"
+                                        Visibility="Visible"
+                                        HorizontalAlignment="Right"/>
+
+                                <Button x:Uid="GeneralPage_RestoreConfigs"
+                                        Command="{Binding RestoreConfigsEventHandler}"
+                                        IsEnabled="True"
+                                        Visibility="Visible"
+                                        HorizontalAlignment="Right"/>
+
+                                <!--<Button x:Uid="GeneralPage_RestartAsAdmin_Button"
+                                            Command = "{Binding RestartButtonEventHandler}"
+                                            IsEnabled="True"/>-->
+                            </StackPanel>
+
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <!-- SettingsBackupWasSuccessful -->
+                    <muxc:InfoBar x:Uid="General_SettingsBackupMessageResults"
+                                  IsClosable="False"
+                                  Severity="Success"
+                                  IsTabStop="{Binding SettingsBackupWasSuccessful, Mode=OneWay}"
+                                  IsOpen="{Binding SettingsBackupWasSuccessful, Mode=OneWay}"
+                                  Message="{Binding SettingsBackupMessage}"/>
+
+                    <!-- SettingsBackupWasUnsuccessful  -->
+                    <muxc:InfoBar x:Uid="General_SettingsBackupMessageResults"
+                                  IsClosable="False"
+                                  Severity="Warning"
+                                  IsTabStop="{Binding SettingsBackupWasUnsuccessful, Mode=OneWay}"
+                                  IsOpen="{Binding SettingsBackupWasUnsuccessful, Mode=OneWay}"
+                                  Message="{Binding SettingsBackupMessage}">
+                    </muxc:InfoBar>
+
+                    <!-- GeneralPage_ToggleSwitch_AutoAutoBackup  -->
+                    <controls:Setting x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates"
+                                      Margin="0,-6,0,0"
+                                      IsEnabled="True"                                       
+                                      Visibility="Collapsed">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <!--<controls:Setting x:Uid="ColorModeHeader" Icon="&#xE790;">
+                        <controls:Setting.Description>
+                            <HyperlinkButton Click="OpenColorsSettings_Click"
+                                                     x:Uid="Windows_Color_Settings"/>
+                        </controls:Setting.Description>
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
+                                <ComboBoxItem x:Uid="Radio_Theme_Light"/>
+                                <ComboBoxItem x:Uid="Radio_Theme_Default"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                    
+                    <controls:Setting x:Uid="GeneralPage_RunAtStartUp">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=Startup}" x:Uid="ToggleSwitch"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>-->
+                </controls:SettingsGroup>
+
             </StackPanel>
-               
+
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="GeneralPage_Documentation" Link="https://aka.ms/PowerToysOverview"/>

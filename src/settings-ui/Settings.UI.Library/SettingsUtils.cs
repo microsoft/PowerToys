@@ -3,12 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Abstractions;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -139,6 +141,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string GetSettingsFilePath(string powertoy = "", string fileName = "settings.json")
         {
             return _settingsPath.GetSettingsPath(powertoy, fileName);
+        }
+
+        public (bool success, string message) BackupSettings(string settingsBackupAndSyncDir)
+        {
+            // Debugger.Launch();
+            var appBasePath = Path.GetDirectoryName(_settingsPath.GetSettingsPath(string.Empty, string.Empty));
+
+            return SettingsBackupAndSyncUtils.BackupSettings(appBasePath, settingsBackupAndSyncDir);
+        }
+
+        public (bool success, string message) RestoreSettings(string settingsBackupAndSyncDir)
+        {
+            // Debugger.Launch();
+            var appBasePath = Path.GetDirectoryName(_settingsPath.GetSettingsPath(string.Empty, string.Empty));
+
+            return SettingsBackupAndSyncUtils.RestoreSettings(appBasePath, settingsBackupAndSyncDir);
         }
     }
 }
