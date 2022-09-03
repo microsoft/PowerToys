@@ -61,7 +61,7 @@ Measurement::PrintResult Measurement::Print(wchar_t* buf,
             result.crossSymbolPos = result.strLen + 1;
             result.strLen += swprintf_s(buf + result.strLen,
                                         bufSize - result.strLen,
-                                        L" × ");
+                                        L" \x00D7 ");
         }
     }
 

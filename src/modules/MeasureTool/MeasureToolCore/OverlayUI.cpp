@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "BoundsToolOverlayUI.h"
+#include "constants.h"
 #include "MeasureToolOverlayUI.h"
 #include "OverlayUI.h"
 
@@ -61,15 +62,14 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     winrt::check_bool(window);
     ShowWindow(window, SW_SHOWNORMAL);
     UpdateWindow(window);
-#if !defined(DEBUG_OVERLAY)
     if (excludeFromCapture)
     {
         SetWindowDisplayAffinity(window, WDA_EXCLUDEFROMCAPTURE);
     }
+#if !defined(DEBUG_OVERLAY)
     SetWindowPos(window, HWND_TOPMOST, {}, {}, {}, {}, SWP_NOMOVE | SWP_NOSIZE);
 #else
     (void)window;
-    (void)excludeFromCapture;
 #endif
 
     const int pos = -GetSystemMetrics(SM_CXVIRTUALSCREEN) - 8;
@@ -115,41 +115,46 @@ std::vector<D2D1::ColorF> AppendCommonOverlayUIColors(const D2D1::ColorF& lineCo
 
 void OverlayUIState::RunUILoop()
 {
+    bool cursorOnScreen = true;
+
     while (IsWindow(_window) && !_commonState.closeOnOtherMonitors)
     {
+        const auto now = std::chrono::high_resolution_clock::now();
         const auto cursor = _commonState.cursorPosSystemSpace;
-        const bool cursorOnScreen = _monitorArea.inside(cursor);
         const bool cursorOverToolbar = _commonState.toolbarBoundingBox.inside(cursor);
         auto& dxgi = _d2dState.dxgiWindowState;
-        if (cursorOnScreen != _cursorOnScreen)
+        if (_monitorArea.inside(cursor) != cursorOnScreen)
         {
-            _cursorOnScreen = cursorOnScreen;
+            cursorOnScreen = !cursorOnScreen;
             if (!cursorOnScreen)
             {
-                if (_clearOnCursorLeavingScreen)
-                {
-                    dxgi.rt->BeginDraw();
-                    dxgi.rt->Clear();
-                    dxgi.rt->EndDraw();
-                    dxgi.swapChain->Present(1, 0);
-                }
                 PostMessageW(_window, WM_CURSOR_LEFT_MONITOR, {}, {});
             }
         }
+        run_message_loop(true, 1);
+
+        dxgi.rt->BeginDraw();
+        dxgi.rt->Clear();
+
+        if (!cursorOverToolbar)
+            _tickFunc();
+
+        dxgi.rt->EndDraw();
+        dxgi.swapChain->Present(0, 0);
 
         if (cursorOnScreen)
         {
-            dxgi.rt->BeginDraw();
-            if (!cursorOverToolbar)
-                _tickFunc();
-            else
-                dxgi.rt->Clear();
-
-            dxgi.rt->EndDraw();
-            dxgi.swapChain->Present(1, 0);
+            const auto frameTime = std::chrono::high_resolution_clock::now() - now;
+            if (frameTime < consts::TARGET_FRAME_DURATION)
+            {
+                std::this_thread::sleep_for(consts::TARGET_FRAME_DURATION - frameTime);
+            }
         }
-
-        run_message_loop(true, 1);
+        else
+        {
+            // Don't consume resources while nothing could be updated
+            std::this_thread::sleep_for(std::chrono::milliseconds{ 200 });
+        }
     }
 
     DestroyWindow(_window);
@@ -192,12 +197,12 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(const Dxgi
                                                                       const wchar_t* toolWindowClassName,
                                                                       void* windowParam,
                                                                       const MonitorInfo& monitor,
-                                                                      const bool clearOnCursorLeavingScreen,
                                                                       const bool excludeFromCapture)
 {
     wil::shared_event uiCreatedEvent(wil::EventOptions::ManualReset);
     std::unique_ptr<OverlayUIState> uiState;
     std::thread threadHandle = SpawnLoggedThread(L"OverlayUI thread", [&] {
+        OverlayUIState* state = nullptr;
         {
             auto sinalUICreatedEvent = wil::scope_exit([&] { uiCreatedEvent.SetEvent(); });
 
@@ -205,14 +210,12 @@ inline std::unique_ptr<OverlayUIState> OverlayUIState::CreateInternal(const Dxgi
 
             uiState = std::unique_ptr<OverlayUIState>{ new OverlayUIState{ dxgi, toolState, tickFunc, commonState, window } };
             uiState->_monitorArea = monitor.GetScreenSize(true);
-            uiState->_clearOnCursorLeavingScreen = clearOnCursorLeavingScreen;
+            // we must create window + d2d state in the same thread, then store thread handle in uiState, thus
+            // lifetime is ok here, since we join the thread in destructor
+            state = uiState.get();
         }
 
-        // we must create window + d2d state in the same thread, then store thread handle in uiState, thus
-        // lifetime is ok here, since we join the thread in destructor
-        auto* state = uiState.get();
-        if (state)
-            state->RunUILoop();
+        state->RunUILoop();
 
         commonState.closeOnOtherMonitors = true;
         commonState.sessionCompletedCallback();
@@ -243,7 +246,6 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(const DxgiAPI* dxgi,
                                           NonLocalizable::MeasureToolOverlayWindowName,
                                           &toolState,
                                           monitor,
-                                          true,
                                           excludeFromCapture);
 }
 
@@ -259,6 +261,5 @@ std::unique_ptr<OverlayUIState> OverlayUIState::Create(const DxgiAPI* dxgi,
                                           NonLocalizable::BoundsToolOverlayWindowName,
                                           &toolState,
                                           monitor,
-                                          false,
                                           false);
 }

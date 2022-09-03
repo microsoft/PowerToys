@@ -70,7 +70,7 @@ struct MeasureToolState
     {
         bool cursorInLeftScreenHalf = false;
         bool cursorInTopScreenHalf = false;
-        Measurement measuredEdges = {};
+        std::optional<Measurement> measuredEdges;
         // While not in a continuous capturing mode, we need to draw captured backgrounds. These are passed
         // directly from a capturing thread.
         const MappedTextureView* capturedScreenTexture = nullptr;
@@ -82,6 +82,3 @@ struct MeasureToolState
 
     CommonState* commonState = nullptr; // required for WndProc
 };
-
-// Concurrently accessing Direct2D and Direct3D APIs make the driver go boom
-extern std::recursive_mutex gpuAccessLock;

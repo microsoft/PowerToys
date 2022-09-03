@@ -24,7 +24,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         float GetDPIScaleForWindow(uint64_t windowHandle);
         void MouseCaptureThread();
 
-        DxgiAPI _d3dState;
+        DxgiAPI dxgiAPI;
 
         wil::shared_event _stopMouseCaptureThreadSignal;
         std::thread _mouseCaptureThread;

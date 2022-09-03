@@ -23,8 +23,6 @@ class OverlayUIState final
     D2DState _d2dState;
     std::function<void()> _tickFunc;
     std::thread _uiThread;
-    bool _cursorOnScreen = true;
-    bool _clearOnCursorLeavingScreen = false;
 
     template<typename ToolT, typename TickFuncT>
     static std::unique_ptr<OverlayUIState> CreateInternal(const DxgiAPI* dxgi,
@@ -34,7 +32,6 @@ class OverlayUIState final
                                                           const wchar_t* toolWindowClassName,
                                                           void* windowParam,
                                                           const MonitorInfo& monitor,
-                                                          const bool clearOnCursorLeavingScreen,
                                                           const bool excludeFromCapture);
 
 public:

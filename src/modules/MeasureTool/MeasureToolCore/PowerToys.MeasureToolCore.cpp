@@ -14,8 +14,6 @@
 
 //#define DEBUG_PRIMARY_MONITOR_ONLY
 
-std::recursive_mutex gpuAccessLock;
-
 namespace winrt::PowerToys::MeasureToolCore::implementation
 {
     void Core::MouseCaptureThread()
@@ -48,7 +46,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         ResetState();
 
         // used to avoid triggering d2d debug layer leak check on shutdown
-        _d3dState = DxgiAPI{ DxgiAPI::Uninitialized{} };
+        dxgiAPI = DxgiAPI{ DxgiAPI::Uninitialized{} };
 
 #if 0
         winrt::com_ptr<IDXGIDebug> dxgiDebug;
@@ -106,7 +104,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         for (const auto& monitorInfo : monitors)
 #endif
         {
-            auto overlayUI = OverlayUIState::Create(&_d3dState,
+            auto overlayUI = OverlayUIState::Create(&dxgiAPI,
                                                     _boundsToolState,
                                                     _commonState,
                                                     monitorInfo);
@@ -143,7 +141,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         for (const auto& monitorInfo : monitors)
 #endif
         {
-            auto overlayUI = OverlayUIState::Create(&_d3dState,
+            auto overlayUI = OverlayUIState::Create(&dxgiAPI,
                                                     _measureToolState,
                                                     _commonState,
                                                     monitorInfo);
@@ -157,7 +155,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         for (size_t i = 0; i < monitors.size(); ++i)
         {
             auto thread = StartCapturingThread(
-                &_d3dState,
+                &dxgiAPI,
                 _commonState,
                 _measureToolState,
                 _overlayUIStates[i]->overlayWindowHandle(),

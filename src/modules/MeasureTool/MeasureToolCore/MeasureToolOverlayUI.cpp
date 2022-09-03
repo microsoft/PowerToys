@@ -32,8 +32,6 @@ namespace
 winrt::com_ptr<ID2D1Bitmap> ConvertID3D11Texture2DToD2D1Bitmap(winrt::com_ptr<ID2D1RenderTarget> rt,
                                                                const MappedTextureView* capturedScreenTexture)
 {
-    std::lock_guard guard{ gpuAccessLock };
-
     capturedScreenTexture->view.pixels;
 
     D2D1_BITMAP_PROPERTIES props = { .pixelFormat = rt->GetPixelFormat() };
@@ -56,6 +54,7 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
 {
     switch (message)
     {
+    case WM_MOUSELEAVE:
     case WM_CURSOR_LEFT_MONITOR:
     {
         if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
@@ -130,6 +129,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
     winrt::com_ptr<ID2D1Bitmap> backgroundBitmap;
     const MappedTextureView* backgroundTextureToConvert = nullptr;
 
+    bool gotMeasurement = false;
     toolState.Read([&](const MeasureToolState& state) {
         continuousCapture = state.global.continuousCapture;
         drawFeetOnCross = state.global.drawFeetOnCross;
@@ -137,7 +137,13 @@ void DrawMeasureToolTick(const CommonState& commonState,
         if (auto it = state.perScreen.find(window); it != end(state.perScreen))
         {
             const auto& perScreen = it->second;
-            measuredEdges = perScreen.measuredEdges;
+            if (!perScreen.measuredEdges)
+            {
+                return;
+            }
+
+            gotMeasurement = true;
+            measuredEdges = *perScreen.measuredEdges;
 
             if (continuousCapture)
                 return;
@@ -152,6 +158,10 @@ void DrawMeasureToolTick(const CommonState& commonState,
             }
         }
     });
+    
+    if (!gotMeasurement)
+        return;
+
     switch (mode)
     {
     case MeasureToolState::Mode::Cross:

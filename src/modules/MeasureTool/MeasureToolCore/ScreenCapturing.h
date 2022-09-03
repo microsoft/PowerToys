@@ -5,7 +5,6 @@
 
 #include <common/utils/serialized.h>
 
-
 std::thread StartCapturingThread(DxgiAPI* dxgiAPI,
                                  const CommonState& commonState,
                                  Serialized<MeasureToolState>& state,
