@@ -255,7 +255,7 @@
                                         IsReadOnly="True"                                        
                                         HorizontalAlignment="Left"
                                         />
-                                <Button x:Uid="GeneralPage_SettingsBackupLocaitonSelect"
+                                <Button x:Uid="GeneralPage_SettingsBackupLocationSelect"
                                         Command="{Binding SelectSettingBackupDirEventHandler}"
                                         IsEnabled="True"
                                         Visibility="Visible"

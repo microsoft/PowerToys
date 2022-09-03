@@ -7,7 +7,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.VisualBasic.Logging;
 
 namespace Settings.UI.Library
 {
@@ -43,34 +45,40 @@ namespace Settings.UI.Library
 
         public static (bool success, string message) RestoreSettings(string appBasePath, string settingsBackupAndSyncDir)
         {
-            if (!Directory.Exists(appBasePath))
-            {
-                return (false, $"Invalid appBasePath {appBasePath}");
-            }
-
-            if (!Directory.Exists(settingsBackupAndSyncDir))
-            {
-                return (false, $"Invalid settingsBackupAndSyncDir {settingsBackupAndSyncDir}");
-            }
-
-            var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndSyncDir);
-
-            if (latestSettingsFolder == null)
-            {
-                return (false, $"BackupAndSync_NoBackupsFound");
-            }
-
-            var allBackupSettingsFiles = GetSettingsFiles(latestSettingsFolder);
-            var allCurrentSettingsFiles = GetSettingsFiles(appBasePath);
-
-            var hasAnySettingChanged = HasAnySettingChanged(latestSettingsFolder, allBackupSettingsFiles, appBasePath, allCurrentSettingsFiles);
-            if (!hasAnySettingChanged)
-            {
-                return (false, $"BackupAndSync_NothingToRestore");
-            }
-
             try
             {
+                if (!Directory.Exists(appBasePath))
+                {
+                    return (false, $"Invalid appBasePath {appBasePath}");
+                }
+
+                if (string.IsNullOrEmpty(settingsBackupAndSyncDir))
+                {
+                    return (false, $"BackupAndSync_NoBackupSyncPath");
+                }
+
+                if (!Directory.Exists(settingsBackupAndSyncDir))
+                {
+                    Logger.LogError($"Invalid settingsBackupAndSyncDir {settingsBackupAndSyncDir}");
+                    return (false, "BackupAndSync_InvalidBackupLocation");
+                }
+
+                var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndSyncDir);
+
+                if (latestSettingsFolder == null)
+                {
+                    return (false, $"BackupAndSync_NoBackupsFound");
+                }
+
+                var allBackupSettingsFiles = GetSettingsFiles(latestSettingsFolder);
+                var allCurrentSettingsFiles = GetSettingsFiles(appBasePath);
+
+                var hasAnySettingChanged = ShouldDo("restore", latestSettingsFolder, appBasePath);
+                if (!hasAnySettingChanged)
+                {
+                    return (false, $"BackupAndSync_NothingToRestore");
+                }
+
                 foreach (var file in allBackupSettingsFiles)
                 {
                     var relativePath = file.Substring(latestSettingsFolder.Length + 1);
@@ -78,24 +86,32 @@ namespace Settings.UI.Library
 
                     var pathToFullRestore = Path.GetDirectoryName(retoreFullPath);
 
-                    if (Directory.Exists(pathToFullRestore) && File.Exists(retoreFullPath))
+                    if (!File.Exists(retoreFullPath))
                     {
-                        var tempBackName = Path.GetTempFileName();
+                        Logger.LogInfo($"{retoreFullPath} does not exist, creating");
+                        if (!Directory.Exists(pathToFullRestore))
+                        {
+                            Directory.CreateDirectory(pathToFullRestore);
+                        }
 
-                        // make a copy to restore just in cast.
-                        File.WriteAllBytes(tempBackName, File.ReadAllBytes(retoreFullPath));
-                        File.Delete(retoreFullPath);
-                        try
-                        {
-                            File.Copy(file, retoreFullPath);
-                            File.Delete(tempBackName);
-                        }
-                        catch (Exception ex3)
-                        {
-                            // if we failed to copy the new file, try to restore the old
-                            File.Copy(tempBackName, retoreFullPath);
-                            return (false, $"Issue restoring {relativePath}, {ex3.Message}");
-                        }
+                        File.WriteAllBytes(retoreFullPath, Array.Empty<byte>());
+                    }
+
+                    var tempBackName = Path.GetTempFileName();
+
+                    // make a copy to restore just in cast.
+                    File.WriteAllBytes(tempBackName, File.ReadAllBytes(retoreFullPath));
+                    File.Delete(retoreFullPath);
+                    try
+                    {
+                        File.Copy(file, retoreFullPath);
+                        File.Delete(tempBackName);
+                    }
+                    catch (Exception ex3)
+                    {
+                        // if we failed to copy the new file, try to restore the old
+                        File.Copy(tempBackName, retoreFullPath);
+                        return (false, $"Issue restoring {relativePath}, {ex3.Message}");
                     }
                 }
 
@@ -136,70 +152,75 @@ namespace Settings.UI.Library
 
         public static (bool success, string message) BackupSettings(string appBasePath, string settingsBackupAndSyncDir)
         {
-            if (!Directory.Exists(appBasePath))
-            {
-                return (false, $"Invalid appBasePath {appBasePath}");
-            }
-
-            if (!Path.IsPathRooted(settingsBackupAndSyncDir))
-            {
-                return (false, $"Invalid settingsBackupAndSyncDir, not rooted");
-            }
-
-            if (settingsBackupAndSyncDir.StartsWith(appBasePath, StringComparison.InvariantCultureIgnoreCase))
-            {
-                // backup cannot be under app
-                Logger.LogError($"BackupSettings, backup cannot be under app");
-                return (false, "BackupAndSync_InvalidBackupLocation");
-            }
-
-            var dirExists = Directory.Exists(settingsBackupAndSyncDir);
-
             try
             {
-                if (!dirExists)
+                if (!Directory.Exists(appBasePath))
                 {
-                    Directory.CreateDirectory(settingsBackupAndSyncDir);
+                    return (false, $"Invalid appBasePath {appBasePath}");
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to create dir {settingsBackupAndSyncDir}, {ex.Message}");
-                return (false, $"Failed to create dir {settingsBackupAndSyncDir}, {ex.Message}");
-            }
 
-            var allSettingsFiles = GetSettingsFiles(appBasePath);
-
-            if (allSettingsFiles.Length == 0)
-            {
-                return (false, "BackupAndSync_NoSettingsFilesFound");
-            }
-
-            var fullBackupDir = Path.Combine(settingsBackupAndSyncDir, $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
-
-            var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndSyncDir);
-            if (latestSettingsFolder != null)
-            {
-                var allLastSettingsFiles = GetSettingsFiles(latestSettingsFolder);
-
-                var hasAnySettingChanged = HasAnySettingChanged(latestSettingsFolder, allLastSettingsFiles, appBasePath, allSettingsFiles);
-                if (!hasAnySettingChanged)
+                if (string.IsNullOrEmpty(settingsBackupAndSyncDir))
                 {
-                    return (false, $"BackupAndSync_NothingToBackup");
+                    return (false, $"BackupAndSync_NoBackupSyncPath");
                 }
-            }
 
-            if (!Directory.Exists(fullBackupDir))
-            {
-                Directory.CreateDirectory(fullBackupDir);
-            }
-            else
-            {
-                return (false, $"Backup folder already exists?");
-            }
+                if (!Path.IsPathRooted(settingsBackupAndSyncDir))
+                {
+                    return (false, $"Invalid settingsBackupAndSyncDir, not rooted");
+                }
 
-            try
-            {
+                if (settingsBackupAndSyncDir.StartsWith(appBasePath, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    // backup cannot be under app
+                    Logger.LogError($"BackupSettings, backup cannot be under app");
+                    return (false, "BackupAndSync_InvalidBackupLocation");
+                }
+
+                var dirExists = Directory.Exists(settingsBackupAndSyncDir);
+
+                try
+                {
+                    if (!dirExists)
+                    {
+                        Directory.CreateDirectory(settingsBackupAndSyncDir);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to create dir {settingsBackupAndSyncDir}", ex);
+                    return (false, $"BackupAndSync_BackupError");
+                }
+
+                var allSettingsFiles = GetSettingsFiles(appBasePath);
+
+                if (allSettingsFiles.Length == 0)
+                {
+                    return (false, "BackupAndSync_NoSettingsFilesFound");
+                }
+
+                var fullBackupDir = Path.Combine(settingsBackupAndSyncDir, $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
+
+                var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndSyncDir);
+                if (latestSettingsFolder != null)
+                {
+                    var allLastSettingsFiles = GetSettingsFiles(latestSettingsFolder);
+
+                    var hasAnySettingChanged = ShouldDo("backup", latestSettingsFolder, appBasePath);
+                    if (!hasAnySettingChanged)
+                    {
+                        return (false, $"BackupAndSync_NothingToBackup");
+                    }
+                }
+
+                if (!Directory.Exists(fullBackupDir))
+                {
+                    Directory.CreateDirectory(fullBackupDir);
+                }
+                else
+                {
+                    return (false, $"Backup folder already exists?");
+                }
+
                 foreach (var file in allSettingsFiles)
                 {
                     var relativePath = file.Substring(appBasePath.Length + 1);
@@ -214,6 +235,10 @@ namespace Settings.UI.Library
                     File.Copy(file, backupFullPath);
                 }
 
+                // add manifest
+                var manifest = JsonSerializer.Serialize(new { CreateDateTime = DateTime.UtcNow, @Version = Helper.GetProductVersion() }, new JsonSerializerOptions() { WriteIndented = true });
+                File.WriteAllText(Path.Combine(fullBackupDir, "manifest.json"), manifest);
+
                 RemoveOldBackups(settingsBackupAndSyncDir, 10, TimeSpan.FromDays(60));
 
                 // var rm = new ResourceManager("Strings", typeof(Example).Assembly);
@@ -221,35 +246,56 @@ namespace Settings.UI.Library
             }
             catch (Exception ex2)
             {
-                return (false, $"There was an error: {ex2.Message}");
+                Logger.LogError($"There was an error: {ex2.Message}", ex2);
+                return (false, $"BackupAndSync_BackupError");
             }
         }
 
-        private static bool HasAnySettingChanged(string lastSettingsPath, string[] allLastSettingsFiles, string appBasePath, string[] fullBackupDir)
+        private static bool ShouldDo(string purpose, string lastSettingsPath, string appBasePath)
         {
-            var sortFilesA = allLastSettingsFiles.ToList().OrderBy(f => f).ToArray();
-            var sortFilesB = fullBackupDir.ToList().OrderBy(f => f).ToArray();
+            var backupSettingsFiles = GetSettingsFiles(lastSettingsPath).ToList().ToDictionary(x => x.Substring(lastSettingsPath.Length));
+            var currentSettingsFiles = GetSettingsFiles(appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
 
-            if (sortFilesA.Length != sortFilesB.Length)
+            if (purpose == "backup")
             {
-                return true;
-            }
-
-            for (var i = 0; i < sortFilesA.Length; i++)
-            {
-                var lastSettingsFile = sortFilesA[i].Substring(lastSettingsPath.Length);
-                var currentSettingsFile = sortFilesB[i].Substring(appBasePath.Length);
-
-                if (!lastSettingsFile.Equals(currentSettingsFile, StringComparison.OrdinalIgnoreCase))
+                foreach (var currentFile in currentSettingsFiles)
                 {
-                    return true;
+                    if (backupSettingsFiles.ContainsKey(currentFile.Key))
+                    {
+                        var currentFileChecksum = ChecksumUtil.GetChecksum(currentFile.Value);
+                        var backupFileChecksum = ChecksumUtil.GetChecksum(backupSettingsFiles[currentFile.Key]);
+                        if (currentFileChecksum != backupFileChecksum)
+                        {
+                            Logger.LogInfo($"ShouldDo, {currentFile.Value} content is different.");
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogInfo($"ShouldDo, backup is missing file {currentFile.Key}.");
+                        return true;
+                    }
                 }
-
-                var checkSomeA = ChecksumUtil.GetChecksum(sortFilesA[i]);
-                var checkSomeB = ChecksumUtil.GetChecksum(sortFilesB[i]);
-                if (checkSomeA != checkSomeB)
+            }
+            else
+            {
+                foreach (var backupFile in backupSettingsFiles)
                 {
-                    return true;
+                    if (currentSettingsFiles.ContainsKey(backupFile.Key))
+                    {
+                        var backupFileChecksum = ChecksumUtil.GetChecksum(backupFile.Value);
+                        var currentFileChecksum = ChecksumUtil.GetChecksum(currentSettingsFiles[backupFile.Key]);
+                        if (backupFileChecksum != currentFileChecksum)
+                        {
+                            Logger.LogInfo($"ShouldDo, {backupFile.Value} content is different.");
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogInfo($"ShouldDo, restore has extra file {backupFile.Key}, that's OK");
+                        return true;
+                    }
                 }
             }
 

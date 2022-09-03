@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -11,6 +12,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -24,6 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private UpdatingSettings UpdatingSettingsConfig { get; set; }
+
+        private Action HideBackupAndSyncMessageAreaAction { get; set; }
 
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
 
@@ -57,7 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public object ResourceLoader { get; set; }
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, object resourceLoader = null)
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndSyncMessageAreaAction = null, object resourceLoader = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
@@ -66,6 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SelectSettingBackupDirEventHandler = new ButtonClickCommand(SelectSettingBackupDir);
             RestoreConfigsEventHandler = new ButtonClickCommand(RestoreConfigsClick);
             RestartButtonEventHandler = new ButtonClickCommand(Restart);
+            HideBackupAndSyncMessageAreaAction = hideBackupAndSyncMessageAreaAction;
 
             ResourceLoader = resourceLoader;
 
@@ -523,6 +528,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 NotifyPropertyChanged(nameof(SettingsBackupMessage));
                 NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
                 NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
+
+                HideBackupAndSyncMessageAreaAction();
             }
             else
             {
@@ -541,6 +548,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _settingsBackupMessage = GetResourceString(results.message);
 
             NotifyPropertyChanged(nameof(SettingsBackupMessage));
+            NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
+            NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
+
+            HideBackupAndSyncMessageAreaAction();
+        }
+
+        private void HideBackupAndSyncMessage()
+        {
+            _settingsBackupWasSuccessful = false;
+            _settingsBackupWasUnsuccessful = false;
             NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
             NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
         }
@@ -626,9 +643,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
-            var datatoSend = customaction.ToString();
-            datatoSend = JsonSerializer.Serialize(new { action = new { general = new { action_name = "restart_maintain_elevation" } } });
-            SendRestartAsAdminConfigMSG(datatoSend);
+            var dataToSend = customaction.ToString();
+            dataToSend = JsonSerializer.Serialize(new { action = new { general = new { action_name = "restart_maintain_elevation" } } });
+            SendRestartAsAdminConfigMSG(dataToSend);
+        }
+
+        public void HideBackupAndSyncMessageArea()
+        {
+            _settingsBackupWasSuccessful = false;
+            _settingsBackupWasUnsuccessful = false;
+
+            NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
+            NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
         }
 
         public void RefreshUpdatingState()

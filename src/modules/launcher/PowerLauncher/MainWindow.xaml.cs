@@ -619,8 +619,8 @@ namespace PowerLauncher
                 SearchBox.QueryTextBox.Focus();
                 Keyboard.Focus(SearchBox.QueryTextBox);
 
-                _settings.ActivateTimes++;
-
+                // this does not really need to be in the settings does it?
+                // _settings.ActivateTimes++;
                 if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
                 {
                     SearchBox.QueryTextBox.SelectAll();

@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
@@ -20,6 +21,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// </summary>
     public sealed partial class GeneralPage : Page
     {
+        private static DateTime OkToHideBackupAndSyncMessageTime { get; set; }
+
         /// <summary>
         /// Gets or sets view model.
         /// </summary>
@@ -45,6 +48,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 });
             };
 
+            Action hideBackupAndSyncMessageArea = () =>
+            {
+                this.DispatcherQueue.TryEnqueue(async () =>
+                {
+                    const int messageShowTimeIs = 5000;
+
+                    // in order to keep the message for about 5 seconds after the last call
+                    // and not need any lock/thread-synch, use an OK-To-Hide time, and wait just a little longer than that.
+                    OkToHideBackupAndSyncMessageTime = DateTime.UtcNow.AddMilliseconds(messageShowTimeIs - 250);
+                    await System.Threading.Tasks.Task.Delay(messageShowTimeIs);
+                    if (DateTime.UtcNow > OkToHideBackupAndSyncMessageTime)
+                    {
+                        ViewModel.HideBackupAndSyncMessageArea();
+                    }
+                });
+            };
+
             ViewModel = new GeneralViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 loader.GetString("GeneralSettings_RunningAsAdminText"),
@@ -57,6 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendCheckForUpdatesIPCMessage,
                 string.Empty,
                 stateUpdatingAction,
+                hideBackupAndSyncMessageArea,
                 loader);
 
             DataContext = ViewModel;

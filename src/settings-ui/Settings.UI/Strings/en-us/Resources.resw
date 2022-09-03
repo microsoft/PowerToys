@@ -642,7 +642,7 @@
   <data name="GeneralPage_RestoreConfigs.Content" xml:space="preserve">
     <value>Restore settings and restart</value>
   </data>
-  <data name="GeneralPage_SettingsBackupLocaitonSelect.Content" xml:space="preserve">
+  <data name="GeneralPage_SettingsBackupLocationSelect.Content" xml:space="preserve">
     <value>Select...</value>
   </data>
   <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
@@ -2362,7 +2362,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
     <value>Hold the key for this long to make the accent menu appear (ms)</value>
     <comment>ms = milliseconds</comment>
-  </data>  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
+  </data>
+  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
   </data>
   <data name="BackupAndSync_NothingToBackup" xml:space="preserve">
@@ -2374,15 +2375,21 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="BackupAndSync_NoSettingsFilesFound" xml:space="preserve">
     <value>No settings files found.</value>
   </data>
+  <data name="BackupAndSync_BackupError" xml:space="preserve">
+    <value>Sorry, there was an error. Try another backup location.</value>
+  </data>
   <data name="BackupAndSync_BackupComplete" xml:space="preserve">
     <value>Backup completed.</value>
+  </data>
+  <data name="BackupAndSync_NoBackupSyncPath" xml:space="preserve">
+    <value>No backup location selected.</value>
   </data>
   <data name="BackupAndSync_NoBackupsFound" xml:space="preserve">
     <value>No backups found to restore.</value>
   </data>
   <data name="BackupAndSync_InvalidBackupLocation" xml:space="preserve">
     <value>Invalid backup location.</value>
-  </data>  
+  </data>
   <data name="TextExtractor.ModuleDescription" xml:space="preserve">
     <value>Text Extractor is a convenient way to copy text from anywhere on screen</value>
   </data>
