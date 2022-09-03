@@ -112,7 +112,7 @@ This is a lighter release, with a shorter development cycle and focused on stabi
 
 ### File explorer add-ons
 
-- Quality of life improvements to Developer Files preview, including a progress bar while loading, performance improvements, dark mode, and logs. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Quality of life improvements to Developer Files preview, including a progress bar while loading, performance improvements, an improved dark mode, and logs. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - Fixed possible WebView related vulnerabilities in the SVG and Markdown handlers.
 - Fixed some race conditions in Developer Files preview causing the loading bar to hang.
 - Added localization support to the Developer Files preview messages.
