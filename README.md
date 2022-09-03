@@ -140,7 +140,7 @@ This is a lighter release, with a shorter development cycle and focused on stabi
 
 ### Runner
 
-- Clean up old install folders and logs at startup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Improved: Clean up old install folders and logs at startup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Settings
 
