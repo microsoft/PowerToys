@@ -15,6 +15,7 @@
 #include <common/utils/serialized.h>
 
 //#define DEBUG_OVERLAY
+#include "BGRATextureView.h"
 
 struct OverlayBoxText
 {
@@ -69,7 +70,7 @@ struct MeasureToolState
         RECT measuredEdges = {};
         // While not in a continuous capturing mode, we need to draw captured backgrounds. These are passed
         // directly from a capturing thread.
-        winrt::com_ptr<ID3D11Texture2D> capturedScreenTexture;
+        const MappedTextureView* capturedScreenTexture = nullptr;
         // After the drawing thread finds its capturedScreenTexture, it converts it to
         // a Direct2D compatible bitmap and caches it here
         winrt::com_ptr<ID2D1Bitmap> capturedScreenBitmap;

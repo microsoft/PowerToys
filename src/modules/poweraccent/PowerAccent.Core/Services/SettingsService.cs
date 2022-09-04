@@ -12,7 +12,7 @@ using System.Text.Json;
 
 public class SettingsService
 {
-    private const string PowerAccentModuleName = "PowerAccent";
+    private const string PowerAccentModuleName = "QuickAccent";
     private readonly ISettingsUtils _settingsUtils;
     private readonly IFileSystemWatcher _watcher;
     private readonly object _loadingSettingsLock = new object();
@@ -34,7 +34,7 @@ public class SettingsService
                 {
                     if (!_settingsUtils.SettingsExists(PowerAccentModuleName))
                     {
-                        Logger.LogInfo("PowerAccent settings.json was missing, creating a new one");
+                        Logger.LogInfo("QuickAccent settings.json was missing, creating a new one");
                         var defaultSettings = new PowerAccentSettings();
                         var options = new JsonSerializerOptions
                         {
@@ -48,6 +48,7 @@ public class SettingsService
                     if (settings != null)
                     {
                         ActivationKey = settings.Properties.ActivationKey;
+                        InputTime = settings.Properties.InputTime.Value;
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
                             case "Top center":

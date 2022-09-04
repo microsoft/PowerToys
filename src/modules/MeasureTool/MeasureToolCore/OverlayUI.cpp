@@ -39,20 +39,27 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     std::call_once(windowClassesCreatedFlag, CreateOverlayWindowClasses);
 
     const auto screenArea = monitor.GetScreenSize(true);
-    HWND window{ CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
-                                 windowClass,
-                                 L"PowerToys.MeasureToolOverlay",
-                                 WS_POPUP,
-                                 screenArea.left(),
-                                 screenArea.top(),
-                                 screenArea.width(),
-                                 screenArea.height(),
-                                 HWND_DESKTOP,
-                                 nullptr,
-                                 GetModuleHandleW(nullptr),
-                                 extraParam) };
+    DWORD windowStyle = WS_EX_TOOLWINDOW;
+#if !defined(DEBUG_OVERLAY)
+    windowStyle |= WS_EX_TOPMOST;
+#endif
+    HWND window{
+        CreateWindowExW(windowStyle,
+                        windowClass,
+                        L"PowerToys.MeasureToolOverlay",
+                        WS_POPUP,
+                        screenArea.left(),
+                        screenArea.top(),
+                        screenArea.width(),
+                        screenArea.height(),
+                        HWND_DESKTOP,
+                        nullptr,
+                        GetModuleHandleW(nullptr),
+                        extraParam)
+    };
     winrt::check_bool(window);
     ShowWindow(window, SW_SHOWNORMAL);
+    SetWindowDisplayAffinity(window, WDA_EXCLUDEFROMCAPTURE);
 #if !defined(DEBUG_OVERLAY)
     SetWindowPos(window, HWND_TOPMOST, {}, {}, {}, {}, SWP_NOMOVE | SWP_NOSIZE);
 #else
@@ -130,12 +137,7 @@ void OverlayUIState::RunUILoop()
             else
                 _d2dState.rt->Clear();
 
-            {
-                // TODO: use latch to wait until all threads are created their corresponding d2d textures
-                // in the non-continuous mode
-                // std::lock_guard guard{ gpuAccessLock };
-                _d2dState.rt->EndDraw();
-            }
+            _d2dState.rt->EndDraw();
         }
 
         run_message_loop(true, 1);

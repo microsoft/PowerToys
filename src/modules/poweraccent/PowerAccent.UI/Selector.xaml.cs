@@ -38,8 +38,8 @@ public partial class Selector : Window, IDisposable
         this.Visibility = isActive ? Visibility.Visible : Visibility.Collapsed;
         if (isActive)
         {
-            CenterWindow();
             characters.ItemsSource = chars;
+            CenterWindow();
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
         }
     }

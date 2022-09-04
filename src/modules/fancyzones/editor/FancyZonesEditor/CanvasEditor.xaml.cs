@@ -53,7 +53,6 @@ namespace FancyZonesEditor
                 _model = model;
 
                 var workArea = App.Overlay.WorkArea;
-                _model.ScaleLayout(workAreaWidth: workArea.Width, workAreaHeight: workArea.Height);
 
                 UpdateZoneRects();
 

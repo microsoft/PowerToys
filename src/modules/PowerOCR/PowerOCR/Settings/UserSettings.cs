@@ -17,7 +17,7 @@ namespace PowerOCR.Settings
     public class UserSettings : IUserSettings
     {
         private readonly ISettingsUtils _settingsUtils;
-        private const string PowerOcrModuleName = "PowerOCR";
+        private const string PowerOcrModuleName = "TextExtractor";
         private const string DefaultActivationShortcut = "Win + Shift + O";
         private const int MaxNumberOfRetry = 5;
         private const int SettingsReadOnChangeDelayInMs = 300;
@@ -56,7 +56,7 @@ namespace PowerOCR.Settings
 
                             if (!_settingsUtils.SettingsExists(PowerOcrModuleName))
                             {
-                                Logger.LogInfo("PowerOCR settings.json was missing, creating a new one");
+                                Logger.LogInfo("TextExtractor settings.json was missing, creating a new one");
                                 var defaultPowerOcrSettings = new PowerOcrSettings();
                                 defaultPowerOcrSettings.Save(_settingsUtils);
                             }

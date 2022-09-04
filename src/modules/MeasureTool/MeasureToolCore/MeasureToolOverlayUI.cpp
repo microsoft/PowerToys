@@ -13,7 +13,7 @@ namespace
     inline std::pair<D2D_POINT_2F, D2D_POINT_2F> ComputeCrossFeetLine(D2D_POINT_2F center, const bool horizontal)
     {
         D2D_POINT_2F start = center, end = center;
-        // Computing in this way to achieve pixel-perfect axial symmetry of aliased D2D lines 
+        // Computing in this way to achieve pixel-perfect axial symmetry of aliased D2D lines
         if (horizontal)
         {
             start.x -= consts::FEET_HALF_LENGTH + 1.f;
@@ -36,33 +36,23 @@ namespace
 }
 
 winrt::com_ptr<ID2D1Bitmap> ConvertID3D11Texture2DToD2D1Bitmap(wil::com_ptr<ID2D1HwndRenderTarget> rt,
-                                                               winrt::com_ptr<ID3D11Texture2D> texture)
+                                                               const MappedTextureView* capturedScreenTexture)
 {
     std::lock_guard guard{ gpuAccessLock };
 
-    auto dxgiSurface = texture.try_as<IDXGISurface>();
-    if (!dxgiSurface)
-        return nullptr;
-
-    DXGI_MAPPED_RECT bitmap2Dmap = {};
-    HRESULT hr = dxgiSurface->Map(&bitmap2Dmap, DXGI_MAP_READ);
-    if (FAILED(hr))
-    {
-        return nullptr;
-    }
+    capturedScreenTexture->view.pixels;
 
     D2D1_BITMAP_PROPERTIES props = { .pixelFormat = rt->GetPixelFormat() };
     rt->GetDpi(&props.dpiX, &props.dpiY);
     const auto sizeF = rt->GetSize();
     winrt::com_ptr<ID2D1Bitmap> bitmap;
-    if (FAILED(rt->CreateBitmap(D2D1::SizeU(static_cast<uint32_t>(sizeF.width),
-                                            static_cast<uint32_t>(sizeF.height)),
-                                bitmap2Dmap.pBits,
-                                bitmap2Dmap.Pitch,
-                                props,
-                                bitmap.put())))
-        return nullptr;
-    if (FAILED(dxgiSurface->Unmap()))
+    auto hr = rt->CreateBitmap(D2D1::SizeU(static_cast<uint32_t>(capturedScreenTexture->view.width),
+                                           static_cast<uint32_t>(capturedScreenTexture->view.height)),
+                               capturedScreenTexture->view.pixels,
+                               static_cast<uint32_t>(capturedScreenTexture->view.pitch * 4),
+                               props,
+                               bitmap.put());
+    if (FAILED(hr))
         return nullptr;
 
     return bitmap;
@@ -90,7 +80,7 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
         StoreWindowParam(window, state);
 
 #if !defined(DEBUG_OVERLAY)
-        for (; ShowCursor(false) > 0;)
+        for (; ShowCursor(false) >= 0;)
             ;
 #endif
         break;
@@ -113,6 +103,7 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
                                                             SetClipBoardToText(text.buffer);
                                                         }); });
         }
+        PostMessageW(window, WM_CLOSE, {}, {});
         break;
     case WM_MOUSEWHEEL:
         if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
@@ -142,7 +133,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
     RECT measuredEdges{};
     MeasureToolState::Mode mode = {};
     winrt::com_ptr<ID2D1Bitmap> backgroundBitmap;
-    winrt::com_ptr<ID3D11Texture2D> backgroundTextureToConvert;
+    const MappedTextureView* backgroundTextureToConvert = nullptr;
 
     toolState.Read([&](const MeasureToolState& state) {
         continuousCapture = state.global.continuousCapture;
@@ -202,13 +193,6 @@ void DrawMeasureToolTick(const CommonState& commonState,
     const float hMeasure = static_cast<float>(measuredEdges.right - measuredEdges.left + 1);
     const float vMeasure = static_cast<float>(measuredEdges.bottom - measuredEdges.top + 1);
 
-    // Prevent drawing until we get the first capture
-    const bool hasMeasure = (measuredEdges.right != measuredEdges.left) && (measuredEdges.bottom != measuredEdges.top);
-    if (!hasMeasure)
-    {
-        return;
-    }
-
     if (!continuousCapture && backgroundBitmap)
     {
         d2dState.rt->DrawBitmap(backgroundBitmap.get());
@@ -226,7 +210,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
         D2D_POINT_2F hLineEnd{ .x = hLineStart.x + hMeasure, .y = hLineStart.y };
         d2dState.rt->DrawLine(hLineStart, hLineEnd, d2dState.solidBrushes[Brush::line].get());
 
-        if (drawFeetOnCross && !continuousCapture)
+        if (drawFeetOnCross)
         {
             // To fill all pixels which are close, we call DrawLine with end point one pixel too far, since
             // it doesn't get filled, i.e. end point of the range is excluded. However, we want to draw cross
@@ -245,7 +229,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
         D2D_POINT_2F vLineEnd{ .x = vLineStart.x, .y = vLineStart.y + vMeasure };
         d2dState.rt->DrawLine(vLineStart, vLineEnd, d2dState.solidBrushes[Brush::line].get());
 
-        if (drawFeetOnCross && !continuousCapture)
+        if (drawFeetOnCross)
         {
             vLineEnd.y -= 1.f;
             auto [top_start, top_end] = ComputeCrossFeetLine(vLineStart, true);

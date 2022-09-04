@@ -156,7 +156,6 @@ BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
 BITMAPINFOHEADER
-Bitmaps
 bitmask
 BITSPIXEL
 bla
@@ -202,13 +201,10 @@ BYPOSITION
 bytearray
 Caiguna
 CALG
-Calibri
 callbackptr
 Cangjie
 CANRENAME
-coord
 CAPTURECHANGED
-carret
 cassert
 CAtl
 cch
@@ -320,7 +316,7 @@ CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
 Controlz
-Coords
+coord
 copiedcolorrepresentation
 cortana
 cotaskmem
@@ -350,6 +346,7 @@ CSIDL
 csignal
 cso
 CSRW
+cstddef
 cstdint
 cstdlib
 cstring
@@ -386,9 +383,9 @@ CYVIRTUALSCREEN
 cziplib
 Dac
 dacl
-damienleroy
 DAffine
 DAFFINETRANSFORM
+damienleroy
 Danmarkshavn
 DARKPURPLE
 DARKTEAL
@@ -473,7 +470,6 @@ dllexport
 dllhost
 dllmain
 dlls
-Dmap
 DNLEN
 Dns
 doctype
@@ -494,6 +490,7 @@ dreamsofameaningfullife
 drivedetectionwarning
 dshow
 dst
+DState
 DTo
 dutil
 DVASPECT
@@ -504,8 +501,8 @@ dvr
 DVSD
 DVSL
 DVTARGETDEVICE
-DWINRT
 dwhkl
+DWINRT
 dwl
 dwm
 dwmapi
@@ -584,6 +581,7 @@ EWXREBOOT
 EWXSHUTDOWN
 examplehandler
 examplepowertoy
+EXCLUDEFROMCAPTURE
 exdisp
 Executables
 executionpolicy
@@ -698,7 +696,6 @@ HACCEL
 hangeul
 hanselman
 hardcoded
-hardcodet
 Hardlines
 HARDWAREINPUT
 hashcode
@@ -740,7 +737,6 @@ HIMAGELIST
 himl
 hinst
 hinstance
-hitted
 HIWORD
 HKCC
 HKCR
@@ -885,6 +881,7 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
+TEXTEXTRACTOR
 imagingdevices
 IMain
 IMarkdown
@@ -1131,7 +1128,6 @@ LOCATIONCHANGE
 logconsole
 logfile
 LOGFONT
-Logique
 LOGMSG
 logon
 LOGPIXELSX
@@ -1184,8 +1180,6 @@ lzw
 Maarten
 Macquarie
 Magadan
-mah
-mahapps
 Mainwindow
 majortype
 MAJORVERSION
@@ -1242,7 +1236,6 @@ mfplat
 Mfsensorgroup
 mftransform
 mic
-michkap
 microsoft
 Midl
 mii
@@ -1531,6 +1524,7 @@ PDWORD
 pedrolamas
 PERCEIVEDFLAG
 pesi
+peteblois
 PEXCEPTION
 pfn
 pfo
@@ -1564,8 +1558,8 @@ Pohnpei
 popup
 POPUPWINDOW
 posix
-powercfg
 poweraccent
+powercfg
 powerlauncher
 POWEROCR
 powerpreview
@@ -1638,6 +1632,7 @@ ptd
 PTOKEN
 PToy
 ptr
+ptrdiff
 ptstr
 PVOID
 pwa
@@ -1757,7 +1752,7 @@ roadmap
 robmensching
 Roboto
 rohanrdy
-Roolr
+rooler
 roslyn
 Rothera
 roundf
@@ -2283,7 +2278,7 @@ wcscpy
 wcslen
 wcsncmp
 wcsnicmp
-wcsstr
+WDA
 wdp
 wdupenv
 weakme

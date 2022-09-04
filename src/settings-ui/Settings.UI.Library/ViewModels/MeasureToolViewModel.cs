@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
@@ -52,6 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     SendConfigMSG(outgoing.ToString());
 
                     NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ShowContinuousCaptureWarning));
                 }
             }
         }
@@ -69,6 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     Settings.Properties.ContinuousCapture = value;
                     NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ShowContinuousCaptureWarning));
                 }
             }
         }
@@ -155,6 +159,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     Settings.Properties.ActivationShortcut = value;
                     NotifyPropertyChanged();
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            MeasureToolSettings.ModuleName,
+                            JsonSerializer.Serialize(Settings)));
                 }
             }
         }
@@ -162,7 +172,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
+
+            if (propertyName == nameof(ShowContinuousCaptureWarning))
+            {
+                // Don't trigger a settings update if the changed property is for visual notification.
+                return;
+            }
+
             SettingsUtils.SaveSettings(Settings.ToJsonString(), MeasureToolSettings.ModuleName);
+        }
+
+        public bool ShowContinuousCaptureWarning
+        {
+            get => IsEnabled && ContinuousCapture;
         }
 
         private Func<string, int> SendConfigMSG { get; }
