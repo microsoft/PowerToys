@@ -45,7 +45,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
     {
         ResetState();
 
-        // used to avoid triggering d2d debug layer leak check on shutdown
+        // avoid triggering d2d debug layer leak on shutdown
         dxgiAPI = DxgiAPI{ DxgiAPI::Uninitialized{} };
 
 #if 0

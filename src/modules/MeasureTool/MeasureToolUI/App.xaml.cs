@@ -4,6 +4,7 @@
 
 using System;
 using ManagedCommon;
+using MeasureToolUI.Helpers;
 using Microsoft.UI.Xaml;
 
 namespace MeasureToolUI
@@ -42,7 +43,18 @@ namespace MeasureToolUI
                 }
             }
 
-            _window = new MainWindow();
+            PowerToys.MeasureToolCore.Core core = null;
+            try
+            {
+                core = new PowerToys.MeasureToolCore.Core();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"MeasureToolCore failed to initialize: {ex}");
+                Environment.Exit(1);
+            }
+
+            _window = new MainWindow(core);
             _window.Activate();
         }
 

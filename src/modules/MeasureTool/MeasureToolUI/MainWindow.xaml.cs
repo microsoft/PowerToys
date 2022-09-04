@@ -23,7 +23,7 @@ namespace MeasureToolUI
         private const int WindowWidth = 216;
         private const int WindowHeight = 50;
 
-        private PowerToys.MeasureToolCore.Core _coreLogic = new PowerToys.MeasureToolCore.Core();
+        private PowerToys.MeasureToolCore.Core _coreLogic;
 
         private AppWindow _appWindow;
         private PointInt32 _initialPosition;
@@ -34,10 +34,9 @@ namespace MeasureToolUI
             this.SetWindowSize(WindowWidth, WindowHeight);
         }
 
-        public MainWindow()
+        public MainWindow(PowerToys.MeasureToolCore.Core core)
         {
             InitializeComponent();
-            Closed += MainWindow_Closed;
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
@@ -52,6 +51,8 @@ namespace MeasureToolUI
             this.SetIsMaximizable(false);
             IsTitleBarVisible = false;
 
+            _coreLogic = core;
+            Closed += MainWindow_Closed;
             DisplayArea displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
             float dpiScale = _coreLogic.GetDPIScaleForWindow((int)hwnd);
 

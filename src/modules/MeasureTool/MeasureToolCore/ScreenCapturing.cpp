@@ -131,7 +131,7 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
     catch (...)
     {
     }
-
+    
     if (!frame)
         return;
 
