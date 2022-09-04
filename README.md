@@ -20,7 +20,8 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [Always on Top](https://aka.ms/PowerToysOverview_AoT) | [PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) | [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) |
 | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) |
 | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) |
-| [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
+| [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) |
+| [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
 
 ## Installing and running Microsoft PowerToys
 
@@ -74,7 +75,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.62 - August 2022 Update
 
-This is a lighter release, with a shorter development cycle and focused on stability and improvements.
+In this release, we focused on releasing three new PowerToys.
 
 **Highlights**
 
@@ -134,9 +135,9 @@ This is a lighter release, with a shorter development cycle and focused on stabi
 - Added support for port numbers in the URI plugin. Thanks [@KohGeek](https://github.com/KohGeek)!
 - Fixed query errors when the search delay option was turned off.
 - New History plugin to search for old search results. Thanks [@jefflord](https://github.com/jefflord)!
-- Changed the default TimeDate activation keyword to `)` and added information in Settings so users know that some activation keywords may conflict with normal usage of some plugins when trying to do a global query. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Changed the default TimeDate activation keyword to `)`, as queries starting by `(` are expected as Calculator global queries, and added information in Settings so users know that some activation keywords may conflict with normal usage of some plugins when trying to do a global query. Thanks [@htcfreek](https://github.com/htcfreek)!
 - The Unit Converter plugin updated its UnitsNet dependency and now supports plural units. Thanks [@FWest98](https://github.com/FWest98)!
-- The Calculator plugin improved its input validation logic. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Improved the validation logic in the Calculator plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Runner
 
@@ -144,7 +145,7 @@ This is a lighter release, with a shorter development cycle and focused on stabi
 
 ### Settings
 
-- Image and phrasing adjustments. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Image and phrasing adjustments.
 - Icon and image updates for the new utilities. Thanks [@niels9001](https://github.com/niels9001)!
 
 ### Shortcut Guide
