@@ -55,7 +55,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>MeasureTool.def</ModuleDefinitionFile>
-      <AdditionalDependencies>Shell32.lib;Shcore.lib;dcomp.lib;DXGI.lib;Dwmapi.lib;Gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;Shell32.lib;Shcore.lib;dcomp.lib;DXGI.lib;Dwmapi.lib;Gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>

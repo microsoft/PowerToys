@@ -3,6 +3,7 @@
 #include <common/display/dpi_aware.h>
 #include <common/display/monitors.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/UnhandledExceptionHandler.h>
 #include <common/logger/logger.h>
 
 #include "../MeasureToolModuleInterface/trace.h"
@@ -32,8 +33,6 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _stopMouseCaptureThreadSignal{ wil::EventOptions::ManualReset },
         _mouseCaptureThread{ [this] { MouseCaptureThread(); } }
     {
-        Trace::RegisterProvider();
-        LoggerHelpers::init_logger(L"Measure Tool", L"Core", "Measure Tool");
     }
 
     Core::~Core()
@@ -61,8 +60,6 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 
         if (_mouseCaptureThread.joinable())
             _mouseCaptureThread.join();
-
-        Trace::UnregisterProvider();
     }
 
     void Core::ResetState()

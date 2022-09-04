@@ -8,9 +8,24 @@
 #include <common/utils/serialized.h>
 #include "ScreenCapturing.h"
 
+struct PowerToysMisc
+{
+    PowerToysMisc()
+    {
+        Trace::RegisterProvider();
+        LoggerHelpers::init_logger(L"Measure Tool", L"Core", "Measure Tool");
+        InitUnhandledExceptionHandler();
+    }
+
+    ~PowerToysMisc()
+    {
+        Trace::UnregisterProvider();
+    }
+};
+
 namespace winrt::PowerToys::MeasureToolCore::implementation
 {
-    struct Core : CoreT<Core>
+    struct Core : PowerToysMisc, CoreT<Core>
     {
         Core();
         ~Core();
