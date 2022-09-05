@@ -263,7 +263,7 @@ MappedTextureView D3DCaptureState::CaptureSingleFrame()
     wil::shared_event frameArrivedEvent(wil::EventOptions::ManualReset);
 
     frameCallback = [frameArrivedEvent, &result, this](MappedTextureView tex) {
-        if (result)
+        if (frameArrivedEvent.is_signaled())
             return;
 
         StopCapture();
