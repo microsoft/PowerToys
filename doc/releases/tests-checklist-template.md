@@ -384,7 +384,7 @@ Mouse Pointer Crosshairs:
    - [ ] Press the activation shortcut and verify the toolbar appears.
    - [ ] Press the activation shortcut again and verify the toolbar disappears.
    - [ ] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
-   - [ ] Enable tScreen Ruler and press the activation shortcut and verify the toolbar appears.
+   - [ ] Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
    - [ ] Select the close button in the toolbar and verify it closes the utility.
  * With Screen Ruler enabled and activated:
    - [ ] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
@@ -392,9 +392,12 @@ Mouse Pointer Crosshairs:
    - [ ] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
    - [ ] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
    - [ ] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
+   - [ ] Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
  * In a multi-monitor setup with different dpis on each monitor:
    - [ ] Verify that the utilities work well on each monitor, with continuous mode on and off.
    - [ ] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
+   - [ ] Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
+   
  * Test the different settings and verify they are applied:
    - [ ] Activation shortcut
    - [ ] Continous mode
