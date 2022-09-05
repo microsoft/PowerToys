@@ -123,17 +123,21 @@
                                         VerticalAlignment="Center"
                                         Grid.RowSpan="2"
                                         x:Uid="More_Options_Button"
-                                        Content="&#xEDE3;">
+                                        Content="&#xE712;">
                                     <Button.Flyout>
-                                        <MenuFlyout>
-                                            <MenuFlyoutItem IsEnabled="{x:Bind CanMoveUp}" Icon="e74a" x:Uid="MoveUp" Click="ReorderButtonUp_Click"/>
-                                            <MenuFlyoutItem IsEnabled="{x:Bind CanMoveDown}" x:Uid="MoveDown" Click="ReorderButtonDown_Click">
-                                                <MenuFlyoutItem.Icon>
-                                                    <FontIcon Glyph="&#xe74b;" />
-                                                </MenuFlyoutItem.Icon>
-                                            </MenuFlyoutItem>
-                                        </MenuFlyout>
-                                    </Button.Flyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem x:Uid="MoveUp" IsEnabled="{x:Bind CanMoveUp}" Click="ReorderButtonUp_Click">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE74A;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutItem x:Uid="MoveDown" IsEnabled="{x:Bind CanMoveDown}" Click="ReorderButtonDown_Click">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE74B;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                            </MenuFlyout>
+                                        </Button.Flyout>
                                     <ToolTipService.ToolTip>
                                         <TextBlock x:Uid="More_Options_ButtonTooltip" />
                                     </ToolTipService.ToolTip>
