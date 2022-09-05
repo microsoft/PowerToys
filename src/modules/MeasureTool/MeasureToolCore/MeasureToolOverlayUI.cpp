@@ -193,13 +193,6 @@ void DrawMeasureToolTick(const CommonState& commonState,
     const float hMeasure = static_cast<float>(measuredEdges.right - measuredEdges.left + 1);
     const float vMeasure = static_cast<float>(measuredEdges.bottom - measuredEdges.top + 1);
 
-    // Prevent drawing until we get the first capture
-    const bool hasMeasure = (measuredEdges.right != measuredEdges.left) && (measuredEdges.bottom != measuredEdges.top);
-    if (!hasMeasure)
-    {
-        return;
-    }
-
     if (!continuousCapture && backgroundBitmap)
     {
         d2dState.rt->DrawBitmap(backgroundBitmap.get());
@@ -217,7 +210,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
         D2D_POINT_2F hLineEnd{ .x = hLineStart.x + hMeasure, .y = hLineStart.y };
         d2dState.rt->DrawLine(hLineStart, hLineEnd, d2dState.solidBrushes[Brush::line].get());
 
-        if (drawFeetOnCross && !continuousCapture)
+        if (drawFeetOnCross)
         {
             // To fill all pixels which are close, we call DrawLine with end point one pixel too far, since
             // it doesn't get filled, i.e. end point of the range is excluded. However, we want to draw cross
@@ -236,7 +229,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
         D2D_POINT_2F vLineEnd{ .x = vLineStart.x, .y = vLineStart.y + vMeasure };
         d2dState.rt->DrawLine(vLineStart, vLineEnd, d2dState.solidBrushes[Brush::line].get());
 
-        if (drawFeetOnCross && !continuousCapture)
+        if (drawFeetOnCross)
         {
             vLineEnd.y -= 1.f;
             auto [top_start, top_end] = ComputeCrossFeetLine(vLineStart, true);

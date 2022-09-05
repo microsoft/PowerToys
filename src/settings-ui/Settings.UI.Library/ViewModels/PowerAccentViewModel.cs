@@ -41,6 +41,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 _powerAccentSettings = new PowerAccentSettings();
             }
 
+            _inputTimeMs = _powerAccentSettings.Properties.InputTime.Value;
+
             switch (_powerAccentSettings.Properties.ToolbarPosition.Value)
             {
                 case "Top center":
@@ -106,6 +108,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _powerAccentSettings.Properties.ActivationKey = (PowerAccentActivationKey)value;
                     OnPropertyChanged(nameof(ActivationKey));
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        private int _inputTimeMs = 200;
+
+        public int InputTimeMs
+        {
+            get
+            {
+                return _inputTimeMs;
+            }
+
+            set
+            {
+                if (value != _inputTimeMs)
+                {
+                    _inputTimeMs = value;
+                    _powerAccentSettings.Properties.InputTime.Value = value;
+                    OnPropertyChanged(nameof(InputTimeMs));
                     RaisePropertyChanged();
                 }
             }

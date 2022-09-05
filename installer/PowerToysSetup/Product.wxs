@@ -980,8 +980,8 @@
       </Component>
 
       <?foreach File in $(var.MeasureToolFiles)?>
-      <Component Id="MEASURE_TOOL_$(var.File)" Win64="yes">
-        <File Id="MEASURE_TOOL_$(var.File)" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.File)" />
+      <Component Id="MT_$(var.File)" Win64="yes">
+        <File Id="MT_$(var.File)" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.File)" />
       </Component>
       <?endforeach?>
 
@@ -1139,7 +1139,7 @@
       <ComponentRef Id="Module_AlwaysOnTopInterface"/>
       <ComponentRef Id="Module_MeasureToolInterface"/>
       <?foreach File in $(var.MeasureToolFiles)?>
-      <ComponentRef Id="MEASURE_TOOL_$(var.File)" />
+      <ComponentRef Id="MT_$(var.File)" />
       <?endforeach?>
       <?foreach File in $(var.MeasureToolMicrosoftUIXamlAssetsInstallFiles)?>
         <ComponentRef Id="MeasureToolMicrosoftUIXamlAssets_$(var.File)" />

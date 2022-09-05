@@ -12,6 +12,9 @@ Aaron has helped triaging, discussing, and creating a substantial number of issu
 ### [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)
 CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
 
+### [@damienleroy](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/Damien-Leroy-b2734416a/)
+Damien has helped out by developing and contributing the Quick Accent utility.
+
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
 Davide has helped fix multiple bugs, added new features, as well as help us with the ARM64 effort by porting applications to .NET Core.
 
@@ -58,6 +61,9 @@ Their fork of Wox was the base of PowerToys Run.
 ### [WoX Launcher](https://github.com/Wox-launcher/Wox/)
 
 Initial base of jjw24's fork, which makes it the base of PowerToys Run.
+
+### [Text-Grab](https://github.com/TheJoeFin/Text-Grab) - Joseph Finney
+Joe helped develop and contribute to the Text Extractor utility.  It is directly based on his Text Grab application.
 
 ## Microsoft community members
 

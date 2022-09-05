@@ -10,28 +10,10 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
 {
     using namespace consts;
 
-    long xOffset = 0;
-    long yOffset = 0;
-
-    // For continuous capture, we'll be a bit off center from the cursor so the cross we draw won't interfere with the measurement.
-    if constexpr (ContinuousCapture)
-    {
-        if constexpr (IsX)
-        {
-            xOffset = Increment ? CURSOR_OFFSET_AMOUNT_X : -CURSOR_OFFSET_AMOUNT_X;
-            yOffset = 1;
-        }
-        else
-        {
-            xOffset = 1;
-            yOffset = Increment ? CURSOR_OFFSET_AMOUNT_Y : -CURSOR_OFFSET_AMOUNT_Y;
-        }
-    }
-
     const size_t maxDim = IsX ? texture.width : texture.height;
 
-    long x = std::clamp<long>(centerPoint.x + xOffset, 1, static_cast<long>(texture.width - 2));
-    long y = std::clamp<long>(centerPoint.y + yOffset, 1, static_cast<long>(texture.height - 2));
+    long x = std::clamp<long>(centerPoint.x, 1, static_cast<long>(texture.width - 2));
+    long y = std::clamp<long>(centerPoint.y, 1, static_cast<long>(texture.height - 2));
 
     const uint32_t startPixel = texture.GetPixel(x, y);
     while (true)

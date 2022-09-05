@@ -77,7 +77,7 @@ public static class WindowUtilities
             allFullscreenGrab.Add(overlay);
         }
 
-        PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRLaunchOverlayEvent());
+        PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRInvokedEvent());
     }
 
     internal static bool IsOCROverlayCreated()

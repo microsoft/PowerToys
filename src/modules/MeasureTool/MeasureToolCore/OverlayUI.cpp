@@ -59,6 +59,7 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
     };
     winrt::check_bool(window);
     ShowWindow(window, SW_SHOWNORMAL);
+    SetWindowDisplayAffinity(window, WDA_EXCLUDEFROMCAPTURE);
 #if !defined(DEBUG_OVERLAY)
     SetWindowPos(window, HWND_TOPMOST, {}, {}, {}, {}, SWP_NOMOVE | SWP_NOSIZE);
 #else
@@ -136,12 +137,7 @@ void OverlayUIState::RunUILoop()
             else
                 _d2dState.rt->Clear();
 
-            {
-                // TODO: use latch to wait until all threads are created their corresponding d2d textures
-                // in the non-continuous mode
-                // std::lock_guard guard{ gpuAccessLock };
-                _d2dState.rt->EndDraw();
-            }
+            _d2dState.rt->EndDraw();
         }
 
         run_message_loop(true, 1);
