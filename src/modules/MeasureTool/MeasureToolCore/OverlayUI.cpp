@@ -100,13 +100,13 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
 std::vector<D2D1::ColorF> AppendCommonOverlayUIColors(const D2D1::ColorF& lineColor)
 {
     D2D1::ColorF foreground = D2D1::ColorF::Black;
-    D2D1::ColorF background = D2D1::ColorF(0.96f, 0.96f, 0.96f, 1.0f);
+    D2D1::ColorF background = D2D1::ColorF(0.96f, 0.96f, 0.96f, .93f);
     D2D1::ColorF border = D2D1::ColorF(0.44f, 0.44f, 0.44f, 0.4f);
 
     if (WindowsColors::is_dark_mode())
     {
         foreground = D2D1::ColorF::White;
-        background = D2D1::ColorF(0.17f, 0.17f, 0.17f, 1.0f);
+        background = D2D1::ColorF(0.17f, 0.17f, 0.17f, .93f);
         border = D2D1::ColorF(0.44f, 0.44f, 0.44f, 0.4f);
     }
 
