@@ -80,7 +80,7 @@ D3DCaptureState::D3DCaptureState(DxgiAPI* dxgiAPI,
                                  MonitorInfo monitorInfo,
                                  const bool continuousCapture_) :
     dxgiAPI{ dxgiAPI },
-    device{ dxgiAPI->d3dDeviceInspectable.as<winrt::IDirect3DDevice>() },
+    device{ dxgiAPI->d3dForCapture.d3dDeviceInspectable.as<winrt::IDirect3DDevice>() },
     swapChain{ std::move(_swapChain) },
     pixelFormat{ std::move(pixelFormat_) },
     monitor{ monitorInfo.GetHandle() },
@@ -99,8 +99,8 @@ winrt::com_ptr<ID3D11Texture2D> D3DCaptureState::CopyFrameToCPU(const winrt::com
     desc.BindFlags = 0;
 
     winrt::com_ptr<ID3D11Texture2D> cpuTexture;
-    winrt::check_hresult(dxgiAPI->d3dDevice->CreateTexture2D(&desc, nullptr, cpuTexture.put()));
-    dxgiAPI->d3dContext->CopyResource(cpuTexture.get(), frameTexture.get());
+    winrt::check_hresult(dxgiAPI->d3dForCapture.d3dDevice->CreateTexture2D(&desc, nullptr, cpuTexture.put()));
+    dxgiAPI->d3dForCapture.d3dContext->CopyResource(cpuTexture.get(), frameTexture.get());
 
     return cpuTexture;
 }
@@ -131,7 +131,7 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
     catch (...)
     {
     }
-    
+
     if (!frame)
         return;
 
@@ -156,7 +156,7 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
             texture = CopyFrameToCPU(gpuTexture);
             surface.Close();
             MappedTextureView textureView{ texture,
-                                           dxgiAPI->d3dContext,
+                                           dxgiAPI->d3dForCapture.d3dContext,
                                            static_cast<size_t>(frameSize.Width),
                                            static_cast<size_t>(frameSize.Height) };
 
@@ -186,15 +186,15 @@ std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(DxgiAPI* dxgiAPI,
         .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
         .BufferCount = 2,
         .Scaling = DXGI_SCALING_STRETCH,
-        .SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL,
+        .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
         .AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
     };
 
     winrt::com_ptr<IDXGISwapChain1> swapChain;
-    winrt::check_hresult(dxgiAPI->dxgiFactory2->CreateSwapChainForComposition(dxgiAPI->d3dDevice.get(),
-                                                                              &desc,
-                                                                              nullptr,
-                                                                              swapChain.put()));
+    winrt::check_hresult(dxgiAPI->d3dForCapture.dxgiFactory2->CreateSwapChainForComposition(dxgiAPI->d3dForCapture.d3dDevice.get(),
+                                                                                            &desc,
+                                                                                            nullptr,
+                                                                                            swapChain.put()));
 
     // We must create the object in a heap, since we need to pin it in memory to receive callbacks
     auto statePtr = new D3DCaptureState{ dxgiAPI,

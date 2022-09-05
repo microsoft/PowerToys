@@ -15,6 +15,15 @@ struct DxgiWindowState
 
 struct DxgiAPI final
 {
+    struct D3D
+    {
+        winrt::com_ptr<ID3D11Device> d3dDevice;
+        winrt::com_ptr<IDXGIDevice> dxgiDevice;
+        winrt::com_ptr<IInspectable> d3dDeviceInspectable;
+        winrt::com_ptr<IDXGIFactory2> dxgiFactory2;
+        winrt::com_ptr<ID3D11DeviceContext> d3dContext;
+    };
+
     winrt::com_ptr<ID2D1Factory2> d2dFactory2;
     winrt::com_ptr<IDWriteFactory> writeFactory;
 
@@ -23,6 +32,8 @@ struct DxgiAPI final
     winrt::com_ptr<IInspectable> d3dDeviceInspectable;
     winrt::com_ptr<IDXGIFactory2> dxgiFactory2;
     winrt::com_ptr<ID3D11DeviceContext> d3dContext;
+
+    D3D d3dForCapture;
 
     winrt::com_ptr<ID2D1Device1> d2dDevice1;
     winrt::com_ptr<IDCompositionDevice> compositionDevice;

@@ -5,6 +5,58 @@
 #include <common/Display/dpi_aware.h>
 
 //#define DEBUG_DEVICES
+#define SEPARATE_D3D_FOR_CAPTURE
+
+namespace
+{
+    DxgiAPI::D3D CreateD3D()
+    {
+        DxgiAPI::D3D d3d;
+        UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+#if defined(DEBUG_DEVICES)
+        flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+        HRESULT hr =
+            D3D11CreateDevice(nullptr,
+                              D3D_DRIVER_TYPE_HARDWARE,
+                              nullptr,
+                              flags,
+                              nullptr,
+                              0,
+                              D3D11_SDK_VERSION,
+                              d3d.d3dDevice.put(),
+                              nullptr,
+                              nullptr);
+        if (hr == DXGI_ERROR_UNSUPPORTED)
+        {
+            hr = D3D11CreateDevice(nullptr,
+                                   D3D_DRIVER_TYPE_WARP,
+                                   nullptr,
+                                   flags,
+                                   nullptr,
+                                   0,
+                                   D3D11_SDK_VERSION,
+                                   d3d.d3dDevice.put(),
+                                   nullptr,
+                                   nullptr);
+        }
+        winrt::check_hresult(hr);
+
+        d3d.dxgiDevice = d3d.d3dDevice.as<IDXGIDevice>();
+        winrt::check_hresult(CreateDirect3D11DeviceFromDXGIDevice(d3d.dxgiDevice.get(), d3d.d3dDeviceInspectable.put()));
+
+        winrt::com_ptr<IDXGIAdapter> adapter;
+        winrt::check_hresult(d3d.dxgiDevice->GetParent(winrt::guid_of<IDXGIAdapter>(), adapter.put_void()));
+        winrt::check_hresult(adapter->GetParent(winrt::guid_of<IDXGIFactory2>(), d3d.dxgiFactory2.put_void()));
+
+        d3d.d3dDevice->GetImmediateContext(d3d.d3dContext.put());
+        winrt::check_bool(d3d.d3dContext);
+        auto contextMultithread = d3d.d3dContext.as<ID3D11Multithread>();
+        contextMultithread->SetMultithreadProtected(true);
+
+        return d3d;
+    }
+}
 
 DxgiAPI::DxgiAPI()
 {
@@ -22,48 +74,18 @@ DxgiAPI::DxgiAPI()
                                              winrt::guid_of<IDWriteFactory>(),
                                              reinterpret_cast<IUnknown**>(writeFactory.put())));
 
-    UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-#if defined(DEBUG_DEVICES)
-    flags |= D3D11_CREATE_DEVICE_DEBUG;
+    auto d3d = CreateD3D();
+    d3dDevice = d3d.d3dDevice;
+    dxgiDevice = d3d.dxgiDevice;
+    d3dDeviceInspectable = d3d.d3dDeviceInspectable;
+    dxgiFactory2 = d3d.dxgiFactory2;
+    d3dContext = d3d.d3dContext;
+#if defined(SEPARATE_D3D_FOR_CAPTURE)
+    auto d3dFC = CreateD3D();
+    d3dForCapture = d3dFC;
+#else
+    d3dForCapture = d3d;
 #endif
-    HRESULT hr =
-        D3D11CreateDevice(nullptr,
-                          D3D_DRIVER_TYPE_HARDWARE,
-                          nullptr,
-                          flags,
-                          nullptr,
-                          0,
-                          D3D11_SDK_VERSION,
-                          d3dDevice.put(),
-                          nullptr,
-                          nullptr);
-    if (hr == DXGI_ERROR_UNSUPPORTED)
-    {
-        hr = D3D11CreateDevice(nullptr,
-                               D3D_DRIVER_TYPE_WARP,
-                               nullptr,
-                               flags,
-                               nullptr,
-                               0,
-                               D3D11_SDK_VERSION,
-                               d3dDevice.put(),
-                               nullptr,
-                               nullptr);
-    }
-    winrt::check_hresult(hr);
-
-    dxgiDevice = d3dDevice.as<IDXGIDevice>();
-    winrt::check_hresult(CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.get(), d3dDeviceInspectable.put()));
-
-    winrt::com_ptr<IDXGIAdapter> adapter;
-    winrt::check_hresult(dxgiDevice->GetParent(winrt::guid_of<IDXGIAdapter>(), adapter.put_void()));
-    winrt::check_hresult(adapter->GetParent(winrt::guid_of<IDXGIFactory2>(), dxgiFactory2.put_void()));
-
-    d3dDevice->GetImmediateContext(d3dContext.put());
-    winrt::check_bool(d3dContext);
-    auto contextMultithread = d3dContext.as<ID3D11Multithread>();
-    contextMultithread->SetMultithreadProtected(true);
-
     winrt::check_hresult(d2dFactory2->CreateDevice(dxgiDevice.get(), d2dDevice1.put()));
     winrt::check_hresult(DCompositionCreateDevice(
         dxgiDevice.get(),
@@ -84,7 +106,7 @@ DxgiWindowState DxgiAPI::CreateD2D1RenderTarget(HWND window) const
         .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
         .BufferCount = 2,
         .Scaling = DXGI_SCALING_STRETCH,
-        .SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL,
+        .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
         .AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
     };
 
