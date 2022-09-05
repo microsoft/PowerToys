@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PowerOcrSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "PowerOCR";
+        public const string ModuleName = "TextExtractor";
 
         [JsonPropertyName("properties")]
         public PowerOcrProperties Properties { get; set; }

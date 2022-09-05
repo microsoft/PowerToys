@@ -10,9 +10,45 @@
 
 //#define DEBUG_EDGES
 
+D3DState::D3DState()
+{
+    UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+#ifndef NDEBUG
+    flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+    HRESULT hr =
+        D3D11CreateDevice(nullptr,
+                          D3D_DRIVER_TYPE_HARDWARE,
+                          nullptr,
+                          flags,
+                          nullptr,
+                          0,
+                          D3D11_SDK_VERSION,
+                          d3dDevice.put(),
+                          nullptr,
+                          nullptr);
+    if (hr == DXGI_ERROR_UNSUPPORTED)
+    {
+        hr = D3D11CreateDevice(nullptr,
+                               D3D_DRIVER_TYPE_WARP,
+                               nullptr,
+                               flags,
+                               nullptr,
+                               0,
+                               D3D11_SDK_VERSION,
+                               d3dDevice.put(),
+                               nullptr,
+                               nullptr);
+    }
+    winrt::check_hresult(hr);
+
+    dxgiDevice = d3dDevice.as<IDXGIDevice>();
+    winrt::check_hresult(CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.get(), d3dDeviceInspectable.put()));
+}
+
 class D3DCaptureState final
 {
-    winrt::com_ptr<ID3D11Device> d3dDevice;
+    D3DState* d3dState = nullptr;
     winrt::IDirect3DDevice device;
     winrt::com_ptr<IDXGISwapChain1> swapChain;
     winrt::com_ptr<ID3D11DeviceContext> context;
@@ -26,8 +62,7 @@ class D3DCaptureState final
     Box monitorArea;
     bool captureOutsideOfMonitor = false;
 
-    D3DCaptureState(winrt::com_ptr<ID3D11Device> d3dDevice,
-                    winrt::IDirect3DDevice _device,
+    D3DCaptureState(D3DState* d3dState,
                     winrt::com_ptr<IDXGISwapChain1> _swapChain,
                     winrt::com_ptr<ID3D11DeviceContext> _context,
                     const winrt::GraphicsCaptureItem& item,
@@ -44,7 +79,8 @@ class D3DCaptureState final
     std::mutex destructorMutex;
 
 public:
-    static std::unique_ptr<D3DCaptureState> Create(winrt::GraphicsCaptureItem item,
+    static std::unique_ptr<D3DCaptureState> Create(D3DState* d3dState,
+                                                   winrt::GraphicsCaptureItem item,
                                                    const winrt::DirectXPixelFormat pixelFormat,
                                                    Box monitorSize,
                                                    const bool captureOutsideOfMonitor);
@@ -57,21 +93,20 @@ public:
     void StopCapture();
 };
 
-D3DCaptureState::D3DCaptureState(winrt::com_ptr<ID3D11Device> _d3dDevice,
-                                 winrt::IDirect3DDevice _device,
+D3DCaptureState::D3DCaptureState(D3DState* _d3dState,
                                  winrt::com_ptr<IDXGISwapChain1> _swapChain,
                                  winrt::com_ptr<ID3D11DeviceContext> _context,
                                  const winrt::GraphicsCaptureItem& item,
                                  winrt::DirectXPixelFormat _pixelFormat,
                                  Box _monitorArea,
                                  const bool _captureOutsideOfMonitor) :
-    d3dDevice{ std::move(_d3dDevice) },
-    device{ std::move(_device) },
+    d3dState{ _d3dState },
+    device{ _d3dState->d3dDeviceInspectable.as<winrt::IDirect3DDevice>() },
     swapChain{ std::move(_swapChain) },
     context{ std::move(_context) },
     frameSize{ item.Size() },
     pixelFormat{ std::move(_pixelFormat) },
-    framePool{ winrt::Direct3D11CaptureFramePool::CreateFreeThreaded(device, pixelFormat, 2, item.Size()) },
+    framePool{ winrt::Direct3D11CaptureFramePool::CreateFreeThreaded(device, pixelFormat, 1, item.Size()) },
     session{ framePool.CreateCaptureSession(item) },
     monitorArea{ _monitorArea },
     captureOutsideOfMonitor{ _captureOutsideOfMonitor }
@@ -89,7 +124,7 @@ winrt::com_ptr<ID3D11Texture2D> D3DCaptureState::CopyFrameToCPU(const winrt::com
     desc.BindFlags = 0;
 
     winrt::com_ptr<ID3D11Texture2D> cpuTexture;
-    winrt::check_hresult(d3dDevice->CreateTexture2D(&desc, nullptr, cpuTexture.put()));
+    winrt::check_hresult(d3dState->d3dDevice->CreateTexture2D(&desc, nullptr, cpuTexture.put()));
     context->CopyResource(cpuTexture.get(), frameTexture.get());
 
     return cpuTexture;
@@ -152,48 +187,13 @@ void D3DCaptureState::OnFrameArrived(const winrt::Direct3D11CaptureFramePool& se
     }
 }
 
-std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(winrt::GraphicsCaptureItem item,
+std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(D3DState* d3dState,
+                                                         winrt::GraphicsCaptureItem item,
                                                          const winrt::DirectXPixelFormat pixelFormat,
                                                          Box monitorArea,
                                                          const bool captureOutsideOfMonitor)
 {
     std::lock_guard guard{ gpuAccessLock };
-
-    winrt::com_ptr<ID3D11Device> d3dDevice;
-    UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-#ifndef NDEBUG
-    flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
-    HRESULT hr =
-        D3D11CreateDevice(nullptr,
-                          D3D_DRIVER_TYPE_HARDWARE,
-                          nullptr,
-                          flags,
-                          nullptr,
-                          0,
-                          D3D11_SDK_VERSION,
-                          d3dDevice.put(),
-                          nullptr,
-                          nullptr);
-    if (hr == DXGI_ERROR_UNSUPPORTED)
-    {
-        hr = D3D11CreateDevice(nullptr,
-                               D3D_DRIVER_TYPE_WARP,
-                               nullptr,
-                               flags,
-                               nullptr,
-                               0,
-                               D3D11_SDK_VERSION,
-                               d3dDevice.put(),
-                               nullptr,
-                               nullptr);
-    }
-    winrt::check_hresult(hr);
-    
-
-    auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
-    winrt::com_ptr<IInspectable> d3dDeviceInspectable;
-    winrt::check_hresult(CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.get(), d3dDeviceInspectable.put()));
 
     const DXGI_SWAP_CHAIN_DESC1 desc = {
         .Width = static_cast<uint32_t>(item.Size().Width),
@@ -207,20 +207,21 @@ std::unique_ptr<D3DCaptureState> D3DCaptureState::Create(winrt::GraphicsCaptureI
         .AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
     };
     winrt::com_ptr<IDXGIAdapter> adapter;
-    winrt::check_hresult(dxgiDevice->GetParent(winrt::guid_of<IDXGIAdapter>(), adapter.put_void()));
+    winrt::check_hresult(d3dState->dxgiDevice->GetParent(winrt::guid_of<IDXGIAdapter>(), adapter.put_void()));
     winrt::com_ptr<IDXGIFactory2> factory;
     winrt::check_hresult(adapter->GetParent(winrt::guid_of<IDXGIFactory2>(), factory.put_void()));
 
     winrt::com_ptr<IDXGISwapChain1> swapChain;
-    winrt::check_hresult(factory->CreateSwapChainForComposition(d3dDevice.get(), &desc, nullptr, swapChain.put()));
+    winrt::check_hresult(factory->CreateSwapChainForComposition(d3dState->d3dDevice.get(), &desc, nullptr, swapChain.put()));
 
     winrt::com_ptr<ID3D11DeviceContext> context;
-    d3dDevice->GetImmediateContext(context.put());
+    d3dState->d3dDevice->GetImmediateContext(context.put());
     winrt::check_bool(context);
+    auto contextMultithread = context.as<ID3D11Multithread>();
+    contextMultithread->SetMultithreadProtected(true);
 
     // We must create the object in a heap, since we need to pin it in memory to receive callbacks
-    auto statePtr = new D3DCaptureState{ d3dDevice,
-                                         d3dDeviceInspectable.as<winrt::IDirect3DDevice>(),
+    auto statePtr = new D3DCaptureState{ d3dState,
                                          std::move(swapChain),
                                          std::move(context),
                                          item,
@@ -236,7 +237,6 @@ D3DCaptureState::~D3DCaptureState()
     std::unique_lock callbackLock{ destructorMutex };
     StopCapture();
     framePool.Close();
-    device.Close();
 }
 
 void D3DCaptureState::StartSessionInPreferredMode()
@@ -332,12 +332,13 @@ void UpdateCaptureState(const CommonState& commonState,
     });
 }
 
-std::thread StartCapturingThread(const CommonState& commonState,
+std::thread StartCapturingThread(D3DState* d3dState,
+                                 const CommonState& commonState,
                                  Serialized<MeasureToolState>& state,
                                  HWND window,
-                                 MonitorInfo targetMonitor)
+                                 MonitorInfo monitor)
 {
-    return SpawnLoggedThread(L"Screen Capture thread", [&state, &commonState, targetMonitor, window] {
+    return SpawnLoggedThread(L"Screen Capture thread", [&state, &commonState, monitor, window, d3dState] {
         auto captureInterop = winrt::get_activation_factory<
             winrt::GraphicsCaptureItem,
             IGraphicsCaptureItemInterop>();
@@ -345,7 +346,7 @@ std::thread StartCapturingThread(const CommonState& commonState,
         winrt::GraphicsCaptureItem item = nullptr;
 
         winrt::check_hresult(captureInterop->CreateForMonitor(
-            targetMonitor.GetHandle(),
+            monitor.GetHandle(),
             winrt::guid_of<winrt::GraphicsCaptureItem>(),
             winrt::put_abi(item)));
 
@@ -354,8 +355,9 @@ std::thread StartCapturingThread(const CommonState& commonState,
             continuousCapture = state.global.continuousCapture;
         });
 
-        const auto monitorArea = targetMonitor.GetScreenSize(true);
-        auto captureState = D3DCaptureState::Create(item,
+        const auto monitorArea = monitor.GetScreenSize(true);
+        auto captureState = D3DCaptureState::Create(d3dState,
+                                                    item,
                                                     winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized,
                                                     monitorArea,
                                                     !continuousCapture);

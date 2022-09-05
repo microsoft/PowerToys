@@ -14,7 +14,7 @@ namespace PowerOCR.Helpers
     public static class Logger
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
-        private static readonly string ApplicationLogPath = Path.Combine(Constants.AppDataPath(), "PowerOCR\\Logs");
+        private static readonly string ApplicationLogPath = Path.Combine(Constants.AppDataPath(), "TextExtractor\\Logs");
 
         static Logger()
         {

@@ -14,7 +14,7 @@ namespace PowerAccent.Core.Tools
     public static class Logger
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
-        private static readonly string ApplicationLogPath = Path.Combine(Constants.AppDataPath(), "PowerAccent\\Logs");
+        private static readonly string ApplicationLogPath = Path.Combine(Constants.AppDataPath(), "QuickAccent\\Logs");
 
         static Logger()
         {

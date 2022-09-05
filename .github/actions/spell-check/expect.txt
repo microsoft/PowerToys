@@ -346,6 +346,7 @@ CSIDL
 csignal
 cso
 CSRW
+cstddef
 cstdint
 cstdlib
 cstring
@@ -489,6 +490,7 @@ dreamsofameaningfullife
 drivedetectionwarning
 dshow
 dst
+DState
 DTo
 dutil
 DVASPECT
@@ -579,6 +581,7 @@ EWXREBOOT
 EWXSHUTDOWN
 examplehandler
 examplepowertoy
+EXCLUDEFROMCAPTURE
 exdisp
 Executables
 executionpolicy
@@ -878,6 +881,7 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
+TEXTEXTRACTOR
 imagingdevices
 IMain
 IMarkdown
@@ -1628,6 +1632,7 @@ ptd
 PTOKEN
 PToy
 ptr
+ptrdiff
 ptstr
 PVOID
 pwa
@@ -2273,6 +2278,7 @@ wcscpy
 wcslen
 wcsncmp
 wcsnicmp
+WDA
 wdp
 wdupenv
 weakme
