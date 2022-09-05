@@ -42,8 +42,8 @@
         <Setter Property="Padding" Value="{StaticResource ExpanderSettingMarginTight}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
     </Style>
-    
-    
+
+
     <!-- Setting expander style -->
     <Style x:Key="SettingExpanderStyle" TargetType="muxc:Expander">
         <Setter Property="Background" Value="{ThemeResource CardBackgroundBrush}" />
@@ -51,5 +51,9 @@
         <Setter Property="BorderBrush" Value="{ThemeResource CardBorderBrush}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+
+    <Style TargetType="MenuFlyoutSeparator">
+        <Setter Property="Margin" Value="0"/>
     </Style>
 </ResourceDictionary>
