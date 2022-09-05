@@ -15,6 +15,7 @@ namespace
     const wchar_t JSON_KEY_PIXEL_TOLERANCE[] = L"PixelTolerance";
     const wchar_t JSON_KEY_PER_COLOR_CHANNEL_EDGE_DETECTION[] = L"PerColorChannelEdgeDetection";
     const wchar_t JSON_KEY_MEASURE_CROSS_COLOR[] = L"MeasureCrossColor";
+    const wchar_t JSON_KEY_UNITS_OF_MEASURE[] = L"UnitsOfMeasure";
 }
 
 Settings Settings::LoadFromFile()
@@ -61,6 +62,14 @@ Settings Settings::LoadFromFile()
         try
         {
             result.perColorChannelEdgeDetection = props.GetNamedObject(JSON_KEY_PER_COLOR_CHANNEL_EDGE_DETECTION).GetNamedBoolean(JSON_KEY_VALUE);
+        }
+        catch (...)
+        {
+        }
+
+        try
+        {
+            result.units = static_cast<Measurement::Unit>(props.GetNamedObject(JSON_KEY_UNITS_OF_MEASURE).GetNamedNumber(JSON_KEY_VALUE));
         }
         catch (...)
         {

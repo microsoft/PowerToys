@@ -3,6 +3,7 @@
 #include <common/display/dpi_aware.h>
 #include <common/display/monitors.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/UnhandledExceptionHandler.h>
 #include <common/logger/logger.h>
 
 #include "../MeasureToolModuleInterface/trace.h"
@@ -13,8 +14,6 @@
 #include "ScreenCapturing.h"
 
 //#define DEBUG_PRIMARY_MONITOR_ONLY
-
-std::recursive_mutex gpuAccessLock;
 
 namespace winrt::PowerToys::MeasureToolCore::implementation
 {
@@ -34,17 +33,33 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         _stopMouseCaptureThreadSignal{ wil::EventOptions::ManualReset },
         _mouseCaptureThread{ [this] { MouseCaptureThread(); } }
     {
-        Trace::RegisterProvider();
-        LoggerHelpers::init_logger(L"Measure Tool", L"Core", "Measure Tool");
     }
 
     Core::~Core()
     {
-        _stopMouseCaptureThreadSignal.SetEvent();
-        _mouseCaptureThread.join();
+        Close();
+    }
 
+    void Core::Close()
+    {
         ResetState();
-        Trace::UnregisterProvider();
+
+        // avoid triggering d2d debug layer leak on shutdown
+        dxgiAPI = DxgiAPI{ DxgiAPI::Uninitialized{} };
+
+#if 0
+        winrt::com_ptr<IDXGIDebug> dxgiDebug;
+        winrt::check_hresult(DXGIGetDebugInterface1({},
+                                                    winrt::guid_of<IDXGIDebug>(),
+                                                    dxgiDebug.put_void()));
+        dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+#endif
+
+        if (!_stopMouseCaptureThreadSignal.is_signaled())
+            _stopMouseCaptureThreadSignal.SetEvent();
+
+        if (_mouseCaptureThread.joinable())
+            _mouseCaptureThread.join();
     }
 
     void Core::ResetState()
@@ -67,6 +82,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 
         _settings = Settings::LoadFromFile();
 
+        _commonState.units = _settings.units;
         _commonState.lineColor.r = _settings.lineColor[0] / 255.f;
         _commonState.lineColor.g = _settings.lineColor[1] / 255.f;
         _commonState.lineColor.b = _settings.lineColor[2] / 255.f;
@@ -78,13 +94,15 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         ResetState();
 
 #if defined(DEBUG_PRIMARY_MONITOR_ONLY)
-        const auto& monitorInfo = MonitorInfo::GetPrimaryMonitor();
+        std::vector<MonitorInfo> monitors = { MonitorInfo::GetPrimaryMonitor() };
+        const auto& monitorInfo = monitors[0];
 #else
         const auto monitors = MonitorInfo::GetMonitors(true);
         for (const auto& monitorInfo : monitors)
 #endif
         {
-            auto overlayUI = OverlayUIState::Create(_boundsToolState,
+            auto overlayUI = OverlayUIState::Create(&dxgiAPI,
+                                                    _boundsToolState,
                                                     _commonState,
                                                     monitorInfo);
 #if !defined(DEBUG_PRIMARY_MONITOR_ONLY)
@@ -120,7 +138,8 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         for (const auto& monitorInfo : monitors)
 #endif
         {
-            auto overlayUI = OverlayUIState::Create(_measureToolState,
+            auto overlayUI = OverlayUIState::Create(&dxgiAPI,
+                                                    _measureToolState,
                                                     _commonState,
                                                     monitorInfo);
 #if !defined(DEBUG_PRIMARY_MONITOR_ONLY)
@@ -133,7 +152,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         for (size_t i = 0; i < monitors.size(); ++i)
         {
             auto thread = StartCapturingThread(
-                &_d3dState,
+                &dxgiAPI,
                 _commonState,
                 _measureToolState,
                 _overlayUIStates[i]->overlayWindowHandle(),

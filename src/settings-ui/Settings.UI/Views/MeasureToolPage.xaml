@@ -49,6 +49,7 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
                         IsClosable="False" />
+                    
                     <controls:Setting x:Uid="MeasureTool_PerColorChannelEdgeDetection" Icon="&#xE7FB;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch
@@ -56,6 +57,7 @@
                                     x:Uid="MeasureTool_PerColorChannelEdgeDetection_ToggleSwitch" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+                    
                     <controls:Setting x:Uid="MeasureTool_PixelTolerance">
                         <controls:Setting.ActionContent>
                             <Slider Minimum="0"
@@ -64,6 +66,16 @@
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.PixelTolerance}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+
+                    <!--<controls:Setting x:Uid="MeasureTool_UnitsOfMeasure" Icon="&#xECC6;">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Path=ViewModel.UnitsOfMeasure, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Pixels" />
+                                <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Inches" />
+                                <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Centimeters" />
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>-->
 
                     <controls:Setting x:Uid="MeasureTool_DrawFeetOnCross">
                         <controls:Setting.ActionContent>

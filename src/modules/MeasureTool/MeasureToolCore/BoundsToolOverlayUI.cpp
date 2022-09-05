@@ -30,7 +30,7 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
-        const POINT cursorPos = convert::FromSystemToRelativeForDirect2D(window, toolState->commonState->cursorPosSystemSpace);
+        const POINT cursorPos = convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace);
 
         D2D_POINT_2F newRegionStart = { .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
         toolState->perScreen[window].currentRegionStart = newRegionStart;
@@ -38,6 +38,8 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     }
     case WM_CURSOR_LEFT_MONITOR:
     {
+        for (; ShowCursor(true) < 0;)
+            ;
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
@@ -59,12 +61,12 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
 
         if (const bool shiftPress = GetKeyState(VK_SHIFT) & 0x8000; shiftPress)
         {
-            const auto cursorPos = convert::FromSystemToRelativeForDirect2D(window, toolState->commonState->cursorPosSystemSpace);
+            const auto cursorPos = convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace);
 
             D2D1_RECT_F rect;
             std::tie(rect.left, rect.right) = std::minmax(static_cast<float>(cursorPos.x), toolState->perScreen[window].currentRegionStart->x);
             std::tie(rect.top, rect.bottom) = std::minmax(static_cast<float>(cursorPos.y), toolState->perScreen[window].currentRegionStart->y);
-            toolState->perScreen[window].measurements.push_back(rect);
+            toolState->perScreen[window].measurements.push_back(Measurement{ rect });
         }
 
         toolState->perScreen[window].currentRegionStart = std::nullopt;
@@ -97,45 +99,42 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
 
 namespace
 {
-    void DrawMeasurement(const D2D1_RECT_F rect,
+    void DrawMeasurement(const Measurement& measurement,
                          const bool alignTextBoxToCenter,
                          const CommonState& commonState,
                          HWND window,
-                         const D2DState& d2dState)
+                         const D2DState& d2dState,
+                         float mouseX,
+                         float mouseY)
     {
         const bool screenQuadrantAware = !alignTextBoxToCenter;
-        const auto prevMode = d2dState.rt->GetAntialiasMode();
-        d2dState.rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
-        d2dState.rt->DrawRectangle(rect, d2dState.solidBrushes[Brush::line].get());
-        d2dState.rt->SetAntialiasMode(prevMode);
+        d2dState.ToggleAliasedLinesMode(true);
+        d2dState.dxgiWindowState.rt->DrawRectangle(measurement.rect, d2dState.solidBrushes[Brush::line].get());
+        d2dState.ToggleAliasedLinesMode(false);
 
         OverlayBoxText text;
-        const auto width = std::abs(rect.right - rect.left + 1);
-        const auto height = std::abs(rect.top - rect.bottom + 1);
-        const uint32_t textLen = swprintf_s(text.buffer.data(),
-                                            text.buffer.size(),
-                                            L"%.0f × %.0f",
-                                            width,
-                                            height);
-        std::optional<size_t> crossSymbolPos = wcschr(text.buffer.data(), L' ') - text.buffer.data() + 1;
+        const auto [crossSymbolPos, measureStringBufLen] =
+            measurement.Print(text.buffer.data(),
+                              text.buffer.size(),
+                              true,
+                              true,
+                              commonState.units);
 
         commonState.overlayBoxText.Access([&](OverlayBoxText& v) {
             v = text;
         });
 
-        float cornerX = rect.right;
-        float cornerY = rect.bottom;
         if (alignTextBoxToCenter)
         {
-            cornerX = rect.left + width / 2;
-            cornerY = rect.top + height / 2;
+            mouseX = measurement.rect.left + measurement.Width(Measurement::Unit::Pixel) / 2;
+            mouseY = measurement.rect.top + measurement.Height(Measurement::Unit::Pixel) / 2;
         }
 
         d2dState.DrawTextBox(text.buffer.data(),
-                             textLen,
+                             measureStringBufLen,
                              crossSymbolPos,
-                             cornerX,
-                             cornerY,
+                             mouseX,
+                             mouseY,
                              screenQuadrantAware,
                              window);
     }
@@ -150,20 +149,21 @@ void DrawBoundsToolTick(const CommonState& commonState,
     if (it == end(toolState.perScreen))
         return;
 
-    d2dState.rt->Clear();
+    d2dState.dxgiWindowState.rt->Clear();
 
     const auto& perScreen = it->second;
     for (const auto& measure : perScreen.measurements)
-        DrawMeasurement(measure, true, commonState, window, d2dState);
+        DrawMeasurement(measure, true, commonState, window, d2dState, measure.rect.right, measure.rect.bottom);
 
     if (!perScreen.currentRegionStart.has_value())
         return;
 
-    const auto cursorPos = convert::FromSystemToRelativeForDirect2D(window, commonState.cursorPosSystemSpace);
+    const auto cursorPos = convert::FromSystemToWindow(window, commonState.cursorPosSystemSpace);
 
-    const D2D1_RECT_F rect{ .left = perScreen.currentRegionStart->x,
-                            .top = perScreen.currentRegionStart->y,
-                            .right = static_cast<float>(cursorPos.x),
-                            .bottom = static_cast<float>(cursorPos.y) };
-    DrawMeasurement(rect, false, commonState, window, d2dState);
+    D2D1_RECT_F rect;
+    const float cursorX = static_cast<float>(cursorPos.x);
+    const float cursorY = static_cast<float>(cursorPos.y);
+    std::tie(rect.left, rect.right) = std::minmax(cursorX, perScreen.currentRegionStart->x);
+    std::tie(rect.top, rect.bottom) = std::minmax(cursorY, perScreen.currentRegionStart->y);
+    DrawMeasurement(Measurement{ rect }, false, commonState, window, d2dState, cursorX, cursorY);
 }
