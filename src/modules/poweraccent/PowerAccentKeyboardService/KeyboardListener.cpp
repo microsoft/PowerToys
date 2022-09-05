@@ -184,12 +184,18 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                 {
                 case WM_KEYDOWN:
                 {
-                    return s_instance->OnKeyDown(*key);
+                    if (s_instance->OnKeyDown(*key))
+                    {
+                        return true;
+                    }
                 }
                 break;
                 case WM_KEYUP:
                 {
-                    return s_instance->OnKeyUp(*key);
+                    if (s_instance->OnKeyUp(*key))
+                    {
+                        return true;
+                    }
                 }
                 break;
                 }

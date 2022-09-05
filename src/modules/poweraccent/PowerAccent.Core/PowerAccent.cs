@@ -129,6 +129,7 @@ public class PowerAccent : IDisposable
             }
 
             OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
+            return;
         }
 
         if (triggerKey == TriggerKey.Space)
