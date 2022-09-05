@@ -67,7 +67,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="MeasureTool_UnitsOfMeasure" Icon="&#xECC6;">
+                    <!--<controls:Setting x:Uid="MeasureTool_UnitsOfMeasure" Icon="&#xECC6;">
                         <controls:Setting.ActionContent>
                             <ComboBox SelectedIndex="{x:Bind Path=ViewModel.UnitsOfMeasure, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                 <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Pixels" />
@@ -75,7 +75,7 @@
                                 <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Centimeters" />
                             </ComboBox>
                         </controls:Setting.ActionContent>
-                    </controls:Setting>
+                    </controls:Setting>-->
 
                     <controls:Setting x:Uid="MeasureTool_DrawFeetOnCross">
                         <controls:Setting.ActionContent>
