@@ -27,6 +27,13 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     {
         for (; ShowCursor(false) >= 0;)
             ;
+        
+        RECT windowRect;
+        if (GetWindowRect(window, &windowRect))
+        {
+            ClipCursor(&windowRect);
+        }
+
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
@@ -40,6 +47,8 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
     {
         for (; ShowCursor(true) < 0;)
             ;
+
+        ClipCursor(nullptr);
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
@@ -51,6 +60,7 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         for (; ShowCursor(true) < 0;)
             ;
 
+        ClipCursor(nullptr);
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState || !toolState->perScreen[window].currentRegionStart)
             break;
