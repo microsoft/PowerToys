@@ -48,6 +48,11 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
                 case "FancyZones": // Launch FancyZones Editor
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FZEToggleEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
                     break;
                 case "Run": // Launch Run
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerLauncherSharedEvent()))
@@ -57,10 +62,25 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
                 case "MeasureTool": // Launch Screen Ruler
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MasureToolTriggerEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
                     break;
                 case "ShortcutGuide": // Launch Shortcut Guide
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
                     break;
                 case "PowerOCR": // Launch Text Extractor
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowPowerOCRSharedEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
                     break;
             }
         }
