@@ -307,7 +307,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     if (!DeleteFolder(reportDir))
     {
         printf("Failed to delete temp folder\n");
-        return 1;
     }
 
     try
@@ -332,7 +331,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     catch (...)
     {
         printf("Failed to copy logs saved in LocalLow\n");
-        return 1;
     }
 
 #ifndef _DEBUG
