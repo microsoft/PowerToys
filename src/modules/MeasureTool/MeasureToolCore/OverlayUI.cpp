@@ -60,6 +60,12 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
                         extraParam)
     };
     winrt::check_bool(window);
+
+    // Exclude overlay window from displaying in WIN+TAB preview, since WS_EX_TOOLWINDOW windows are displayed simultaneously on all virtual desktops.
+    // We can't remove WS_EX_TOOLWINDOW/WS_EX_NOACTIVATE flag, since we want to exclude the window from tasbar
+    BOOL val = TRUE;
+    DwmSetWindowAttribute(window, DWMWA_EXCLUDED_FROM_PEEK, &val, sizeof(val));
+
     ShowWindow(window, SW_SHOWNORMAL);
     UpdateWindow(window);
     if (excludeFromCapture)
