@@ -192,7 +192,7 @@ void WindowBorder::UpdateBorderProperties() const
     int cornerRadius = 0;
     if (AlwaysOnTopSettings::settings().roundCornersEnabled)
     {
-        cornerRadius = WindowBordersUtils::AreCornersRounded(m_trackingWindow) ? 8 : 0;
+        cornerRadius = WindowCornerUtils::CornersRadius(m_trackingWindow);
     }
     
     m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness, cornerRadius);
