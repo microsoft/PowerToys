@@ -5,6 +5,8 @@
 namespace Microsoft.PowerToys.Settings.UI.Flyout
 {
     using System.Collections.ObjectModel;
+    using System.Threading;
+    using interop;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
 
@@ -39,10 +41,20 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             switch ((string)selectedModuleBtn.Tag)
             {
                 case "ColorPicker": // Launch ColorPicker
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowColorPickerSharedEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
                     break;
                 case "FancyZones": // Launch FancyZones Editor
                     break;
                 case "Run": // Launch Run
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerLauncherSharedEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
                     break;
                 case "MeasureTool": // Launch Screen Ruler
                     break;
