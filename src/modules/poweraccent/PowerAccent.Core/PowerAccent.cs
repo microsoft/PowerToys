@@ -115,14 +115,25 @@ public class PowerAccent : IDisposable
                 }
             }
 
-            if (triggerPressed.Value == TriggerKey.Left && _selectedIndex > 0)
+            if (triggerPressed.Value == TriggerKey.Left)
             {
                 --_selectedIndex;
             }
 
-            if (triggerPressed.Value == TriggerKey.Right && _selectedIndex < _characters.Length - 1)
+            if (triggerPressed.Value == TriggerKey.Right)
             {
                 ++_selectedIndex;
+            }
+
+            // Wrap around at beginning and end of _selectedIndex range
+            if (_selectedIndex < 0)
+            {
+                _selectedIndex = _characters.Length - 1;
+            }
+
+            if (_selectedIndex > _characters.Length - 1)
+            {
+                _selectedIndex = 0;
             }
 
             OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
