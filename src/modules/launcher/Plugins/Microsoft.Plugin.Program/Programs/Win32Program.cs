@@ -28,6 +28,8 @@ namespace Microsoft.Plugin.Program.Programs
     [Serializable]
     public class Win32Program : IProgram
     {
+        private const string AppPathsRegistryKeyName = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
+
         public static readonly Win32Program InvalidProgram = new Win32Program { Valid = false, Enabled = false };
 
         private static readonly IFileSystem FileSystem = new FileSystem();
@@ -799,9 +801,8 @@ namespace Microsoft.Plugin.Program.Programs
         private static IEnumerable<string> RegistryAppProgramPaths(IList<string> suffixes)
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
-            const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
             var paths = new List<string>();
-            using (var root = Registry.LocalMachine.OpenSubKey(appPaths))
+            using (var root = Registry.LocalMachine.OpenSubKey(AppPathsRegistryKeyName))
             {
                 if (root != null)
                 {
@@ -809,7 +810,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            using (var root = Registry.CurrentUser.OpenSubKey(appPaths))
+            using (var root = Registry.CurrentUser.OpenSubKey(AppPathsRegistryKeyName))
             {
                 if (root != null)
                 {
@@ -917,10 +918,45 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
+        private static bool TryGetIcoPathForRunCommandProgram(Win32Program program, out string icoPath)
+        {
+            if (program.AppType == ApplicationType.RunCommand)
+            {
+                icoPath = null;
+                return false;
+            }
+
+            var fileName = Path.GetFileName(program.FullPath);
+
+            try
+            {
+                using var appPathRegistryKey = Registry.CurrentUser.OpenSubKey(AppPathsRegistryKeyName);
+                var redirectionPath = GetPathFromRegistrySubkey(appPathRegistryKey, fileName);
+                if (!string.IsNullOrEmpty(redirectionPath))
+                {
+                    icoPath = ExpandEnvironmentVariables(redirectionPath);
+                    return true;
+                }
+            }
+            catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+            {
+                ProgramLogger.Warn($"|Permission denied when trying to obtain IcoPath the program from {program.FullPath}", e, MethodBase.GetCurrentMethod().DeclaringType, program.FullPath);
+            }
+
+            icoPath = null;
+            return false;
+        }
+
         private static Win32Program GetRunCommandProgramFromPath(string path)
         {
             var program = GetProgramFromPath(path);
             program.AppType = ApplicationType.RunCommand;
+
+            if (TryGetIcoPathForRunCommandProgram(program, out var icoPath))
+            {
+                program.IcoPath = icoPath;
+            }
+
             return program;
         }
 
