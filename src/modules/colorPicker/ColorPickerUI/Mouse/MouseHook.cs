@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
 using ColorPicker.Helpers;
+using Microsoft.PowerToys.Common.Utils;
 using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Mouse
@@ -15,6 +16,8 @@ namespace ColorPicker.Mouse
 
     internal class MouseHook
     {
+        private static Logger _logger;
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
         private const int WH_MOUSE_LL = 14;
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
@@ -24,6 +27,11 @@ namespace ColorPicker.Mouse
 
         private IntPtr _mouseHookHandle;
         private HookProc _mouseDelegate;
+
+        public MouseHook()
+        {
+            _logger = new Logger("ColorPicker\\Logs");
+        }
 
         private event MouseUpEventHandler MouseDown;
 
@@ -69,7 +77,7 @@ namespace ColorPicker.Mouse
                 if (!result)
                 {
                     int errorCode = Marshal.GetLastWin32Error();
-                    Logger.LogError("Failed to unsubscribe mouse hook with the error code" + errorCode);
+                    _logger.LogError("Failed to unsubscribe mouse hook with the error code" + errorCode);
                 }
             }
         }
@@ -88,7 +96,7 @@ namespace ColorPicker.Mouse
                 if (_mouseHookHandle == IntPtr.Zero)
                 {
                     int errorCode = Marshal.GetLastWin32Error();
-                    Logger.LogError("Failed to subscribe mouse hook with the error code" + errorCode);
+                    _logger.LogError("Failed to subscribe mouse hook with the error code" + errorCode);
                 }
             }
         }

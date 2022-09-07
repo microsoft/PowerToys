@@ -5,12 +5,15 @@
 using System.Windows;
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
+using Microsoft.PowerToys.Common.Utils;
 using Microsoft.Xaml.Behaviors;
 
 namespace ColorPicker.Behaviors
 {
     public class ChangeWindowPositionBehavior : Behavior<Window>
     {
+        private static Logger _logger;
+
         // color window should not get into these zones, only mouse to avoid window getting outsize of monitor
         private const int MonitorRightSideDeadZone = 285;
         private const int MonitorBottomSideDeadZone = 90;
@@ -20,6 +23,11 @@ namespace ColorPicker.Behaviors
         private const int XOffset = 5;
 
         private Point _lastMousePosition;
+
+        public ChangeWindowPositionBehavior()
+        {
+            _logger = new Logger("ColorPicker\\Logs");
+        }
 
         protected override void OnAttached()
         {
@@ -83,7 +91,7 @@ namespace ColorPicker.Behaviors
                 }
             }
 
-            Logger.LogWarning("Failed to get monitor bounds for mouse position" + mousePosition.X + "," + mousePosition.Y);
+            _logger.LogWarning("Failed to get monitor bounds for mouse position" + mousePosition.X + "," + mousePosition.Y);
             return new Rect(0, 0, 0, 0);
         }
     }

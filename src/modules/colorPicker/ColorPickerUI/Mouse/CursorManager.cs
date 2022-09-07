@@ -4,13 +4,15 @@
 
 using System;
 using System.IO.Abstractions;
-using ColorPicker.Helpers;
+using Microsoft.PowerToys.Common.Utils;
 using Microsoft.Win32;
 
 namespace ColorPicker.Mouse
 {
     public static class CursorManager
     {
+        private static Logger _logger;
+
         private const string CursorsRegistryPath = @"HKEY_CURRENT_USER\Control Panel\Cursors\";
         private const string ArrowRegistryName = "Arrow";
         private const string IBeamRegistryName = "IBeam";
@@ -29,6 +31,11 @@ namespace ColorPicker.Mouse
         private const int SPIF_SENDCHANGE = 0x02;
 
         private static readonly IFileSystem _fileSystem = new FileSystem();
+
+        static CursorManager()
+        {
+            _logger = new Logger("ColorPicker\\Logs");
+        }
 
         public static void SetColorPickerCursor()
         {
@@ -56,12 +63,12 @@ namespace ColorPicker.Mouse
                 }
                 else
                 {
-                    Logger.LogInfo("Cursor file path was null");
+                    _logger.LogInfo("Cursor file path was null");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError("Failed to change cursor", ex);
+                _logger.LogError("Failed to change cursor", ex);
             }
         }
 

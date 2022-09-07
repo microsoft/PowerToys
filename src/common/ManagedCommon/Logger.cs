@@ -29,8 +29,8 @@ namespace Microsoft.PowerToys.Common.Utils
 
             set
             {
-                applicationLogPath = inLocalLowDirectory ?
-                    Path.Combine(Constants.AppDataPath(), value, Version) :
+                applicationLogPath = !inLocalLowDirectory ?
+                    Path.Combine(Constants.AppDataPath(), "\\" + value, Version) :
                     System.Environment.GetEnvironmentVariable("USERPROFILE") + "\\AppData\\LocalLow\\Microsoft\\PowerToys" + value;
             }
         }
@@ -59,12 +59,12 @@ namespace Microsoft.PowerToys.Common.Utils
             Trace.AutoFlush = true;
         }
 
-        public static void LogError(string message)
+        public void LogError(string message)
         {
             Log(message, Error);
         }
 
-        public static void LogError(string message, Exception ex)
+        public void LogError(string message, Exception ex)
         {
             Log(
                 message + Environment.NewLine +
@@ -76,27 +76,27 @@ namespace Microsoft.PowerToys.Common.Utils
                 Error);
         }
 
-        public static void LogWarning(string message)
+        public void LogWarning(string message)
         {
             Log(message, Warning);
         }
 
-        public static void LogInfo(string message)
+        public void LogInfo(string message)
         {
             Log(message, Info);
         }
 
-        public static void LogDebug(string message)
+        public void LogDebug(string message)
         {
             Log(message, Debug);
         }
 
-        public static void LogTrace()
+        public void LogTrace()
         {
             Log(string.Empty, TraceFlag);
         }
 
-        private static void Log(string message, string type)
+        private void Log(string message, string type)
         {
             Trace.WriteLine("[" + DateTime.Now.TimeOfDay + "] [" + type + "] " + GetCallerInfo());
             Trace.Indent();
@@ -108,7 +108,7 @@ namespace Microsoft.PowerToys.Common.Utils
             Trace.Unindent();
         }
 
-        private static string GetCallerInfo()
+        private string GetCallerInfo()
         {
             StackTrace stackTrace = new StackTrace();
 

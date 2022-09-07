@@ -4,6 +4,7 @@
 
 using System;
 using ColorPicker.Telemetry;
+using Microsoft.PowerToys.Common.Utils;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Telemetry;
 
@@ -11,7 +12,14 @@ namespace ColorPicker.Helpers
 {
     public static class SessionEventHelper
     {
+        private static Logger _logger;
+
         public static ColorPickerSession Event { get; private set; }
+
+        static SessionEventHelper()
+        {
+            _logger = new Logger("ColorPicker\\Logs");
+        }
 
         public static void Start(ColorPickerActivationAction startedAs)
         {
@@ -24,7 +32,7 @@ namespace ColorPicker.Helpers
         {
             if (_startTime == null)
             {
-                Logger.LogError("Failed to send ColorPickerSessionEvent");
+                _logger.LogError("Failed to send ColorPickerSessionEvent");
                 return;
             }
 
