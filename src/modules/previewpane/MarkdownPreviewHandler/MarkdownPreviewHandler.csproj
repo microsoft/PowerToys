@@ -18,7 +18,6 @@
     <ProjectGuid>{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Markdown</RootNamespace>
     <EnableComHosting>true</EnableComHosting>
-    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
     <AssemblyName>PowerToys.MarkdownPreviewHandler</AssemblyName>
   </PropertyGroup>
 
