@@ -3,9 +3,9 @@
 #include "PerGlyphOpacityTextRender.h"
 
 PerGlyphOpacityTextRender::PerGlyphOpacityTextRender(
-    wil::com_ptr<ID2D1Factory> pD2DFactory,
-    wil::com_ptr<ID2D1HwndRenderTarget> rt,
-    wil::com_ptr<ID2D1SolidColorBrush> baseBrush) :
+    winrt::com_ptr<ID2D1Factory> pD2DFactory,
+    winrt::com_ptr<ID2D1RenderTarget> rt,
+    winrt::com_ptr<ID2D1SolidColorBrush> baseBrush) :
     _pD2DFactory{ pD2DFactory.get() },
     _rt{ rt.get() },
     _baseBrush{ baseBrush.get() }

@@ -17,6 +17,8 @@
     <ClCompile Include="..\MeasureToolModuleInterface\trace.cpp" />
     <ClCompile Include="Clipboard.cpp" />
     <ClCompile Include="PerGlyphOpacityTextRender.cpp" />
+    <ClCompile Include="Measurement.cpp" />
+    <ClCompile Include="DxgiAPI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -34,6 +36,9 @@
     <ClInclude Include="Clipboard.h" />
     <ClInclude Include="PerGlyphOpacityTextRender.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="CoordinateSystemConversion.h" />
+    <ClInclude Include="Measurement.h" />
+    <ClInclude Include="DxgiAPI.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

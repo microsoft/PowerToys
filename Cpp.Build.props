@@ -32,6 +32,7 @@
 
   <!-- C++ source compile-specific things for all configurations -->
   <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <VcpkgEnabled>false</VcpkgEnabled>
     <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
