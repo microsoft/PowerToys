@@ -16,10 +16,11 @@
 
 //#define DEBUG_OVERLAY
 #include "BGRATextureView.h"
+#include "Measurement.h"
 
 struct OverlayBoxText
 {
-    std::array<wchar_t, 32> buffer = {};
+    std::array<wchar_t, 128> buffer = {};
 };
 
 struct CommonState
@@ -27,6 +28,8 @@ struct CommonState
     std::function<void()> sessionCompletedCallback;
     D2D1::ColorF lineColor = D2D1::ColorF::OrangeRed;
     Box toolbarBoundingBox;
+
+    Measurement::Unit units = Measurement::Unit::Pixel;
 
     mutable Serialized<OverlayBoxText> overlayBoxText;
     POINT cursorPosSystemSpace = {}; // updated atomically
@@ -38,7 +41,7 @@ struct BoundsToolState
     struct PerScreen
     {
         std::optional<D2D_POINT_2F> currentRegionStart;
-        std::vector<D2D1_RECT_F> measurements;
+        std::vector<Measurement> measurements;
     };
     std::unordered_map<HWND, PerScreen> perScreen;
 
@@ -67,7 +70,7 @@ struct MeasureToolState
     {
         bool cursorInLeftScreenHalf = false;
         bool cursorInTopScreenHalf = false;
-        RECT measuredEdges = {};
+        std::optional<Measurement> measuredEdges;
         // While not in a continuous capturing mode, we need to draw captured backgrounds. These are passed
         // directly from a capturing thread.
         const MappedTextureView* capturedScreenTexture = nullptr;
@@ -79,6 +82,3 @@ struct MeasureToolState
 
     CommonState* commonState = nullptr; // required for WndProc
 };
-
-// Concurrently accessing Direct2D and Direct3D APIs make the driver go boom
-extern std::recursive_mutex gpuAccessLock;

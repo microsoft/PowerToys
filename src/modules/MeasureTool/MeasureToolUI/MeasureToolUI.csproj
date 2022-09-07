@@ -79,6 +79,7 @@
     <Folder Include="Assets\Icons\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\MeasureToolCore\PowerToys.MeasureToolCore.vcxproj" />
   </ItemGroup>

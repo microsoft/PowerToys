@@ -14,6 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public MeasureToolProperties()
         {
             ActivationShortcut = new HotkeySettings(true, false, false, true, 0x4D);
+            UnitsOfMeasure = new IntProperty(0);
             PixelTolerance = new IntProperty(30);
             ContinuousCapture = true;
             DrawFeetOnCross = true;
@@ -31,6 +32,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool PerColorChannelEdgeDetection { get; set; }
+
+        public IntProperty UnitsOfMeasure { get; set; }
 
         public IntProperty PixelTolerance { get; set; }
 
