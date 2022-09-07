@@ -59,7 +59,7 @@ public class PowerAccent : IDisposable
             // Keep track if it was triggered with space so that it can be typed on false starts.
             _triggeredWithSpace = triggerPressed.Value == TriggerKey.Space;
             _visible = true;
-            _characters = WindowsFunctions.IsCapitalState() ? ToUpper(_settingService.GetLetterKey(letterPressed.Value)) : _settingService.GetLetterKey(letterPressed.Value);
+            _characters = (WindowsFunctions.IsCapitalState() && WindowsFunctions.IsShiftState()) ? ToUpper(_settingService.GetLetterKey(letterPressed.Value)) : _settingService.GetLetterKey(letterPressed.Value);
             Task.Delay(_settingService.InputTime).ContinueWith(
                 t =>
                 {
@@ -105,14 +105,29 @@ public class PowerAccent : IDisposable
 
             if (triggerPressed.Value == TriggerKey.Space)
             {
-                if (_selectedIndex < _characters.Length - 1)
-                {
-                    ++_selectedIndex;
+                if (WindowsFunctions.IsShiftState()) {
+                    if (_selectedIndex < 0)
+                    {
+                        _selecedIndex = _characters.Length - 1;
+                    }
+                    else
+                    {
+                        --_selecedIndex;
+                    }
                 }
                 else
                 {
-                    _selectedIndex = 0;
+                    if (_selectedIndex < _characters.Length - 1)
+                    {
+                        ++_selectedIndex;
+                    }
+                    else
+                    {
+                        _selectedIndex = 0;
+                    }
                 }
+                OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
+                return false;
             }
 
             if (triggerPressed.Value == TriggerKey.Left)

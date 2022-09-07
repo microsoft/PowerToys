@@ -72,7 +72,12 @@ internal static class WindowsFunctions
     public static bool IsCapitalState()
     {
         var capital = User32.GetKeyState((int)User32.VK.VK_CAPITAL);
+        return capital != 0;
+    }
+
+    public static bool IsShiftState()
+    {
         var shift = User32.GetKeyState((int)User32.VK.VK_SHIFT);
-        return capital != 0 || shift < 0;
+        return shift < 0;
     }
 }
