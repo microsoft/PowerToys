@@ -105,14 +105,15 @@ public class PowerAccent : IDisposable
 
             if (triggerPressed.Value == TriggerKey.Space)
             {
-                if (WindowsFunctions.IsShiftState()) {
+                if (WindowsFunctions.IsShiftState())
+                {
                     if (_selectedIndex < 0)
                     {
-                        _selecedIndex = _characters.Length - 1;
+                        _selectedIndex = _characters.Length - 1;
                     }
                     else
                     {
-                        --_selecedIndex;
+                        --_selectedIndex;
                     }
                 }
                 else
@@ -126,6 +127,7 @@ public class PowerAccent : IDisposable
                         _selectedIndex = 0;
                     }
                 }
+
                 OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
                 return false;
             }
