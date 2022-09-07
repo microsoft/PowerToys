@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,11 +13,14 @@ namespace Hosts
 {
     public partial class App : Application
     {
+        private Window _window;
+
         public App()
         {
             InitializeComponent();
+            UnhandledException += App_UnhandledException;
 
-            var thread = new Thread(() =>
+            new Thread(() =>
             {
                 try
                 {
@@ -30,9 +33,7 @@ namespace Hosts
                 catch
                 {
                 }
-            });
-
-            thread.Start();
+            }).Start();
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
@@ -41,6 +42,9 @@ namespace Hosts
             _window.Activate();
         }
 
-        private Window _window;
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            // TODO: Log and handle exceptions as appropriate.
+        }
     }
 }

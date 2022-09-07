@@ -12,6 +12,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
 using Hosts.Helpers;
+using Hosts.Models;
 using Microsoft.UI.Dispatching;
 
 namespace Hosts

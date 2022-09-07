@@ -7,8 +7,9 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Hosts.Helpers;
 
-namespace Hosts.Helpers
+namespace Hosts.Models
 {
     public partial class Entry : ObservableObject
     {
