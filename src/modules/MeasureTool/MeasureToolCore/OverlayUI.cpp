@@ -124,7 +124,7 @@ std::vector<D2D1::ColorF> AppendCommonOverlayUIColors(const D2D1::ColorF& lineCo
 
 void OverlayUIState::RunUILoop()
 {
-    bool cursorOnScreen = true;
+    bool cursorOnScreen = false;
 
     while (IsWindow(_window) && !_commonState.closeOnOtherMonitors)
     {

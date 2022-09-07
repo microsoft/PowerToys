@@ -67,6 +67,7 @@ namespace MeasureToolUI
                 _initialPosition.X + (int)(dpiScale * WindowWidth),
                 _initialPosition.Y + (int)(dpiScale * WindowHeight));
             OnPositionChanged(_initialPosition);
+            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
