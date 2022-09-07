@@ -6,4 +6,5 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <winternl.h>
-#include <ntstatus.h>
+
+#define STATUS_INFO_LENGTH_MISMATCH ((LONG)0xC00000004)

@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="list_handles.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="per_process.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
