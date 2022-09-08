@@ -60,7 +60,7 @@ struct MeasureToolState
     struct Global
     {
         uint8_t pixelTolerance = 30;
-        bool continuousCapture = true;
+        bool continuousCapture = false;
         bool drawFeetOnCross = true;
         bool perColorChannelEdgeDetection = false;
         Mode mode = Mode::Cross;
