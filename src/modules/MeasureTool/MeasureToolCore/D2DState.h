@@ -36,8 +36,7 @@ struct D2DState
     void DrawTextBox(const wchar_t* text,
                      const size_t textLen,
                      const std::optional<size_t> halfOpaqueSymbolPos,
-                     const float centerX,
-                     const float centerY,
+                     const D2D_POINT_2F center,
                      const bool screenQuadrantAware,
                      const HWND window) const;
     void ToggleAliasedLinesMode(const bool enabled) const;

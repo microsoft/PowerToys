@@ -644,6 +644,7 @@ FRAMECHANGED
 franky
 frankychen
 Froml
+FROMTOUCH
 fstream
 FTYPE
 func
@@ -784,6 +785,7 @@ hsv
 htcfreek
 HTCLIENT
 HTHUMBNAIL
+HTOUCHINPUT
 HTTRANSPARENT
 HValue
 Hvci
@@ -869,6 +871,7 @@ IImage
 Iindex
 IInitialize
 IInspectable
+IInvoke
 IIO
 IItem
 IJson
@@ -1276,6 +1279,7 @@ monitorinfof
 Monthand
 Moq
 MOUSEACTIVATE
+MOUSEEVENTF
 MOUSEHWHEEL
 MOUSEINPUT
 MOUSELEAVE
@@ -2044,6 +2048,7 @@ TARGETHEADER
 targetnametoken
 targetsize
 targetver
+tasbar
 taskbar
 taskkill
 tasklist
@@ -2090,6 +2095,8 @@ Toolset
 toolwindow
 TOPDOWNDIB
 toplevel
+TOUCHEVENTF
+TOUCHINPUT
 touchpad
 toupper
 Towindow
@@ -2109,6 +2116,7 @@ Tshuapa
 TStr
 Tuva
 TValue
+TWF
 TYMED
 typedef
 TYPEKEY
@@ -2263,6 +2271,7 @@ VSTT
 vswhere
 vtable
 Vtbl
+WANTPALM
 wbem
 wbemuuid
 WBounds
