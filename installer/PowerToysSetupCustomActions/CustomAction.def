@@ -3,8 +3,8 @@ LIBRARY "PowerToysSetupCustomActions"
 EXPORTS
 	ApplyModulesRegistryChangeSetsCA
 	CreateScheduledTaskCA
-	CreateWinAppSDKSymlinksCA
-	DeleteWinAppSDKSymlinksCA
+	CreateWinAppSDKHardlinksCA
+	DeleteWinAppSDKHardlinksCA
 	DetectPrevInstallPathCA
 	RemoveScheduledTasksCA
 	TelemetryLogInstallSuccessCA

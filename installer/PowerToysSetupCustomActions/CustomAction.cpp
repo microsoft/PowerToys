@@ -1031,13 +1031,13 @@ UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
     return WcaFinalize(er);
 }
 
-UINT __stdcall CreateWinAppSDKSymlinksCA(MSIHANDLE hInstall)
+UINT __stdcall CreateWinAppSDKHardlinksCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder, winAppSDKFilesSrcDir, settingsDir, powerRenameDir;
 
-    hr = WcaInitialize(hInstall, "CreateWinAppSDKSymlinksCA");
+    hr = WcaInitialize(hInstall, "CreateWinAppSDKHardlinksCA");
     ExitOnFailure(hr, "Failed to initialize");
 
     hr = getInstallFolder(hInstall, installationFolder);
@@ -1051,8 +1051,10 @@ UINT __stdcall CreateWinAppSDKSymlinksCA(MSIHANDLE hInstall)
         for (auto file : winAppSdkFiles)
         {
             std::error_code ec;
-            std::filesystem::create_symlink((winAppSDKFilesSrcDir + file).c_str(), (settingsDir + file).c_str(), ec);
-            std::filesystem::create_symlink((winAppSDKFilesSrcDir + file).c_str(), (powerRenameDir + file).c_str(), ec);
+            //std::filesystem::create_symlink((winAppSDKFilesSrcDir + file).c_str(), (settingsDir + file).c_str(), ec);
+            //std::filesystem::create_symlink((winAppSDKFilesSrcDir + file).c_str(), (powerRenameDir + file).c_str(), ec);
+            std::filesystem::create_hard_link((winAppSDKFilesSrcDir + file).c_str(), (settingsDir + file).c_str(), ec);
+            std::filesystem::create_hard_link((winAppSDKFilesSrcDir + file).c_str(), (powerRenameDir + file).c_str(), ec);
         }
     }
     catch (std::exception e)
@@ -1065,13 +1067,13 @@ LExit:
     return WcaFinalize(er);
 }
 
-UINT __stdcall DeleteWinAppSDKSymlinksCA(MSIHANDLE hInstall)
+UINT __stdcall DeleteWinAppSDKHardlinksCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder, settingsDir, powerRenameDir;
 
-    hr = WcaInitialize(hInstall, "DeleteWinAppSDKSymlinksCA");
+    hr = WcaInitialize(hInstall, "DeleteWinAppSDKHardlinksCA");
     ExitOnFailure(hr, "Failed to initialize");
 
     hr = getInstallFolder(hInstall, installationFolder);
@@ -1084,9 +1086,8 @@ UINT __stdcall DeleteWinAppSDKSymlinksCA(MSIHANDLE hInstall)
     {
         for (auto file : winAppSdkFiles)
         {
-            std::error_code ec;
-            std::filesystem::remove((settingsDir + file).c_str(), ec);
-            std::filesystem::remove((powerRenameDir + file).c_str(), ec);
+            DeleteFile((settingsDir + file).c_str());
+            DeleteFile((powerRenameDir + file).c_str());
         }
     }
     catch (std::exception e)
