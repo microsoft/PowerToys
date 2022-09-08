@@ -17,6 +17,7 @@
     </i:Interaction.Behaviors>
 
     <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="InvertBoolConverter" TrueValue="False" FalseValue="True" />
         <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" />
         <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible" />
     </Page.Resources>
@@ -24,11 +25,58 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0"
+        <AppBarButton Grid.Row="0"
+                      Icon="Filter"
+                      IsCompact="True"
+                      ToolTipService.ToolTip="Filter"
+                      AutomationProperties.Name="Filter"
+                      AllowFocusOnInteraction="True">
+            <AppBarButton.Flyout>
+                <Flyout>
+                    <StackPanel Width="200"
+                                Spacing="32"
+                                HorizontalAlignment="Stretch">
+                        <AutoSuggestBox QueryIcon="Find"
+                                        PlaceholderText="Address"
+                                        Text="{x:Bind ViewModel.AddressFilter, Mode=TwoWay}">
+                            <i:Interaction.Behaviors>
+                                <ic:EventTriggerBehavior EventName="TextChanged">
+                                    <ic:InvokeCommandAction Command="{x:Bind ViewModel.ApplyFiltersCommand}" />
+                                </ic:EventTriggerBehavior>
+                            </i:Interaction.Behaviors>
+                        </AutoSuggestBox>
+                        <AutoSuggestBox QueryIcon="Find"
+                                        PlaceholderText="Hosts"
+                                        Text="{x:Bind ViewModel.HostsFilter, Mode=TwoWay}">
+                            <i:Interaction.Behaviors>
+                                <ic:EventTriggerBehavior EventName="TextChanged">
+                                    <ic:InvokeCommandAction Command="{x:Bind ViewModel.ApplyFiltersCommand}" />
+                                </ic:EventTriggerBehavior>
+                            </i:Interaction.Behaviors>
+                        </AutoSuggestBox>
+                        <AutoSuggestBox QueryIcon="Find"
+                                        PlaceholderText="Comment"
+                                        Text="{x:Bind ViewModel.CommentFilter, Mode=TwoWay}">
+                            <i:Interaction.Behaviors>
+                                <ic:EventTriggerBehavior EventName="TextChanged">
+                                    <ic:InvokeCommandAction Command="{x:Bind ViewModel.ApplyFiltersCommand}" />
+                                </ic:EventTriggerBehavior>
+                            </i:Interaction.Behaviors>
+                        </AutoSuggestBox>
+                        <Button Content="Clear"
+                                Command="{x:Bind ViewModel.ClearFiltersCommand}"
+                                HorizontalAlignment="Right" />
+                    </StackPanel>
+                </Flyout>
+            </AppBarButton.Flyout>
+        </AppBarButton>
+
+        <StackPanel Grid.Row="1"
                     Orientation="Vertical">
             <InfoBar IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
                      Severity="Error"
@@ -45,19 +93,19 @@
         </StackPanel>
 
         <ListView x:Name="Entries"
-                      Grid.Row="1"
-                      ItemsSource="{Binding Entries, Mode=TwoWay}"
-                      SelectedItem="{Binding Selected, Mode=TwoWay}"
-                      IsItemClickEnabled="True"
-                      ItemClick="Entries_ItemClick"
-                      CanDragItems="True"
-                      CanReorderItems="True"
-                      AllowDrop="True">
+                  Grid.Row="2"
+                  ItemsSource="{Binding Entries, Mode=TwoWay}"
+                  SelectedItem="{Binding Selected, Mode=TwoWay}"
+                  IsItemClickEnabled="True"
+                  ItemClick="Entries_ItemClick"
+                  CanDragItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource InvertBoolConverter}}"
+                  CanReorderItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource InvertBoolConverter}}"
+                  AllowDrop="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource InvertBoolConverter}}">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid RightTapped="Grid_RightTapped"
-                              Background="Transparent"
-                              IsRightTapEnabled="True">
+                          Background="Transparent"
+                          IsRightTapEnabled="True">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto" />
                             <ColumnDefinition Width="*" />
@@ -81,25 +129,30 @@
                         </FlyoutBase.AttachedFlyout>
                         <ToggleSwitch Grid.Column="0"
                                       VerticalAlignment="Center"
+                                      OffContent=""
+                                      OnContent=""
                                       IsOn="{Binding Active, Mode=TwoWay}" />
                         <TextBlock Grid.Column="1"
                                    VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
                                    Text="{Binding Address, Mode=OneWay}" />
                         <TextBlock Grid.Column="2"
                                    VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
                                    Text="{Binding Hosts, Mode=OneWay}" />
                         <TextBlock Grid.Column="3"
                                    VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
                                    Text="{Binding Comment, Mode=OneWay}" />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
 
-        <Button Grid.Row="2"
+        <Button Grid.Row="3"
                 Style="{StaticResource AccentButtonStyle}"
                 HorizontalAlignment="Right"
-                Command="{x:Bind NewDialogCommand}"    
+                Command="{x:Bind NewDialogCommand}"
                 Content="Add new entry" />
 
         <ContentDialog x:Name="MainDialog"

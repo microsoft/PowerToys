@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Hosts.Helpers;
+using Hosts.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Hosts.Tests
@@ -23,6 +23,9 @@ namespace Hosts.Tests
         [DataRow("\t\t#\t\t10.1.1.1\thost\t\t#\t\tcomment\t\t", "10.1.1.1", "host", "comment", false)]
         [DataRow("  #  10.1.1.1  host  #  comment  ", "10.1.1.1", "host", "comment", false)]
         [DataRow("#10.1.1.1 host#comment", "10.1.1.1", "host", "comment", false)]
+        [DataRow("# #10.1.1.1 host#comment", "10.1.1.1", "host", "comment", false)]
+        [DataRow("# #\t10.1.1.1 host#comment", "10.1.1.1", "host", "comment", false)]
+        [DataRow("# # \t10.1.1.1 host#comment", "10.1.1.1", "host", "comment", false)]
         public void Valid_Entry_SingleHost(string line, string address, string host, string comment, bool active)
         {
             var entry = new Entry(line);

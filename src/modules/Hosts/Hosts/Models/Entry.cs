@@ -69,16 +69,14 @@ namespace Hosts.Models
         {
             Active = !_line.StartsWith("#", StringComparison.InvariantCultureIgnoreCase);
 
-            var lineSplit = _line.Split('#').ToArray();
+            var lineSplit = _line.TrimStart(' ', '#').Split('#').ToArray();
 
             if (lineSplit.Length == 0)
             {
                 return;
             }
 
-            var index = Active ? 0 : 1;
-            var addressHost = lineSplit[index];
-            index++;
+            var addressHost = lineSplit[0];
 
             var addressHostSplit = addressHost.Split(' ', '\t').Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
             var hostsBuilder = new StringBuilder();
@@ -108,7 +106,7 @@ namespace Hosts.Models
 
             Hosts = hostsBuilder.ToString();
 
-            for (var i = index; i < lineSplit.Length; i++)
+            for (var i = 1; i < lineSplit.Length; i++)
             {
                 if (commentBuilder.Length != 0)
                 {

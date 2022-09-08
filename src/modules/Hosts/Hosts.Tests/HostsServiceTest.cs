@@ -7,6 +7,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Threading.Tasks;
 using Hosts.Helpers;
+using Hosts.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Hosts.Tests

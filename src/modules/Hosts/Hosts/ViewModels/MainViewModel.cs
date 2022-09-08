@@ -15,7 +15,7 @@ using Hosts.Helpers;
 using Hosts.Models;
 using Microsoft.UI.Dispatching;
 
-namespace Hosts
+namespace Hosts.ViewModels
 {
     public partial class MainViewModel : ObservableObject, IDisposable
     {
@@ -33,11 +33,51 @@ namespace Hosts
         [ObservableProperty]
         private bool _fileChanged;
 
+        [ObservableProperty]
+        private string _addressFilter;
+
+        [ObservableProperty]
+        private string _hostsFilter;
+
+        [ObservableProperty]
+        private string _commentFilter;
+
+        [ObservableProperty]
+        private bool _filtered;
+
         private ObservableCollection<Entry> _entries;
 
         public ObservableCollection<Entry> Entries
         {
-            get => _entries;
+            get
+            {
+                if (_filtered)
+                {
+                    var filter = _entries.AsEnumerable();
+
+                    if (!string.IsNullOrWhiteSpace(_addressFilter))
+                    {
+                        filter = filter.Where(e => e.Address.Contains(_addressFilter));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(_hostsFilter))
+                    {
+                        filter = filter.Where(e => e.Hosts.Contains(_hostsFilter));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(_commentFilter))
+                    {
+                        filter = filter.Where(e => e.Comment.Contains(_commentFilter));
+                    }
+
+                    return new ObservableCollection<Entry>(filter);
+                }
+                else
+                {
+                    return _entries;
+                }
+            }
+
             set
             {
                 _entries = value;
@@ -46,6 +86,10 @@ namespace Hosts
         }
 
         public ICommand ReadHostsCommand => new RelayCommand(ReadHosts);
+
+        public ICommand ApplyFiltersCommand => new RelayCommand(ApplyFilters);
+
+        public ICommand ClearFiltersCommand => new RelayCommand(ClearFilters);
 
         public MainViewModel()
         {
@@ -61,7 +105,7 @@ namespace Hosts
         {
             Task.Run(async () =>
             {
-                var error = !await _hostsService.WriteAsync(Entries);
+                var error = !await _hostsService.WriteAsync(_entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
         }
@@ -70,7 +114,7 @@ namespace Hosts
         {
             Task.Run(async () =>
             {
-                var error = !await _hostsService.WriteAsync(Entries);
+                var error = !await _hostsService.WriteAsync(_entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
         }
@@ -125,6 +169,22 @@ namespace Hosts
                     _entries.CollectionChanged += Entries_CollectionChanged;
                 });
             });
+        }
+
+        public void ApplyFilters()
+        {
+            if (_entries != null)
+            {
+                Filtered = !string.IsNullOrWhiteSpace(_addressFilter) || !string.IsNullOrWhiteSpace(_hostsFilter) || !string.IsNullOrWhiteSpace(_commentFilter);
+                OnPropertyChanged(nameof(Entries));
+            }
+        }
+
+        public void ClearFilters()
+        {
+            AddressFilter = null;
+            HostsFilter = null;
+            CommentFilter = null;
         }
 
         protected virtual void Dispose(bool disposing)
