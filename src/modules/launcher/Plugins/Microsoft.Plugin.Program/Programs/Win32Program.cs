@@ -920,14 +920,20 @@ namespace Microsoft.Plugin.Program.Programs
 
         private static bool TryGetIcoPathForRunCommandProgram(Win32Program program, out string icoPath)
         {
-            if (program.AppType == ApplicationType.RunCommand)
+            if (program.AppType != ApplicationType.RunCommand)
             {
                 icoPath = null;
                 return false;
             }
 
-            var fileName = Path.GetFileName(program.FullPath);
+            if (string.IsNullOrEmpty(program.FullPath))
+            {
+                icoPath = null;
+                return false;
+            }
 
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
+            var fileName = Path.GetFileName(program.FullPath);
             try
             {
                 using var appPathRegistryKey = Registry.CurrentUser.OpenSubKey(AppPathsRegistryKeyName);
