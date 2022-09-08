@@ -88,8 +88,7 @@ namespace winrt::PowerRenameUI::implementation
         void PropertyChanged(winrt::event_token const& token) noexcept;
 
         void AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked);
-        void UpdateExplorerItem(int32_t id, hstring const& newName);
-        void UpdateRenamedExplorerItem(int32_t id, hstring const& newOriginalName);
+        void UpdateExplorerItem(int32_t id, std::optional<hstring> newOriginalName, std::optional<hstring> newName, PowerRenameItemRenameStatus itemStatus);
 
         void SelectAll(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ShowAll(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);

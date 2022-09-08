@@ -200,6 +200,9 @@ namespace FancyZonesEditor
         {
             Logger.LogTrace();
 
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            Select((LayoutModel)dataContext);
+
             EditLayoutDialog.Hide();
 
             var mainEditor = App.Overlay;

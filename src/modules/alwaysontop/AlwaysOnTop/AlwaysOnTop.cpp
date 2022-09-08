@@ -317,7 +317,7 @@ void AlwaysOnTop::SubscribeToEvents()
         EVENT_SYSTEM_MINIMIZESTART,
         EVENT_SYSTEM_MINIMIZEEND,
         EVENT_SYSTEM_MOVESIZEEND,
-        EVENT_OBJECT_NAMECHANGE,
+        EVENT_SYSTEM_FOREGROUND,
         EVENT_OBJECT_DESTROY
     };
 
@@ -479,14 +479,9 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         }
     }
     break;
-    case EVENT_OBJECT_NAMECHANGE:
+    case EVENT_SYSTEM_FOREGROUND:
     {
-        // The accessibility name of the desktop window changes whenever the user
-        // switches virtual desktops.
-        if (data->hwnd == GetDesktopWindow())
-        {
-            VirtualDesktopSwitchedHandle();
-        }
+        RefreshBorders();
     }
     break;
     default:
@@ -494,17 +489,23 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     }
 }
 
-void AlwaysOnTop::VirtualDesktopSwitchedHandle()
+void AlwaysOnTop::RefreshBorders()
 {
     for (const auto& [window, border] : m_topmostWindows)
     {
         if (m_virtualDesktopUtils.IsWindowOnCurrentDesktop(window))
         {
-            AssignBorder(window);
+            if (!border)
+            {
+                AssignBorder(window);
+            }
         }
         else
         {
-            m_topmostWindows[window] = nullptr;
+            if (border)
+            {
+                m_topmostWindows[window] = nullptr;
+            }
         }
     }
 }

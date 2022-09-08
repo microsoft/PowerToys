@@ -74,7 +74,7 @@ private:
     bool running = true;
     std::vector<AnimateKeys> key_animations;
     std::vector<MonitorInfo> monitors;
-    ScreenSize total_screen;
+    Box total_screen;
     int monitor_dx = 0, monitor_dy = 0;
     D2DText text;
     WindowsColors colors;

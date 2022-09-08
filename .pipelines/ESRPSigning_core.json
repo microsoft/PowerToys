@@ -25,13 +25,13 @@
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTop.exe",
                 "modules\\AlwaysOnTop\\PowerToys.AlwaysOnTopModuleInterface.dll",
                 
-                "modules\\ColorPicker\\ColorPicker.dll",
-                "modules\\ColorPicker\\ColorPickerUI.dll",
-                "modules\\ColorPicker\\ColorPickerUI.exe",
-
                 "modules\\ColorPicker\\PowerToys.ColorPicker.dll",
                 "modules\\ColorPicker\\PowerToys.ColorPickerUI.dll",
                 "modules\\ColorPicker\\PowerToys.ColorPickerUI.exe",
+
+                "modules\\PowerOCR\\PowerToys.PowerOCRModuleInterface.dll",
+                "modules\\PowerOCR\\PowerToys.PowerOCR.dll",
+                "modules\\PowerOCR\\PowerToys.PowerOCR.exe",
 
                 "modules\\Awake\\PowerToys.AwakeModuleInterface.dll",
                 "modules\\Awake\\PowerToys.Awake.exe",
@@ -102,9 +102,21 @@
                 "modules\\launcher\\Plugins\\WebSearch\\Community.PowerToys.Run.Plugin.WebSearch.dll",
                 "modules\\launcher\\Plugins\\WindowsTerminal\\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll",
                 
+                "modules\\MeasureTool\\PowerToys.MeasureToolModuleInterface.dll",
+                "modules\\MeasureTool\\PowerToys.MeasureToolCore.dll",
+                "modules\\MeasureTool\\PowerToys.MeasureToolUI.dll",
+                "modules\\MeasureTool\\PowerToys.MeasureToolUI.exe",
+
                 "modules\\MouseUtils\\PowerToys.FindMyMouse.dll",
                 "modules\\MouseUtils\\PowerToys.MouseHighlighter.dll",
                 "modules\\MouseUtils\\PowerToys.MousePointerCrosshairs.dll",
+
+                "modules\\PowerAccent\\PowerAccent.Core.dll",
+                "modules\\PowerAccent\\PowerAccent.dll",
+                "modules\\PowerAccent\\PowerAccent.exe",
+                "modules\\PowerAccent\\PowerToys.PowerAccent.dll",
+                "modules\\PowerAccent\\PowerToys.PowerAccent.exe",
+                "modules\\PowerAccent\\PowerToys.PowerAccentModuleInterface.dll",
 
                 "modules\\PowerRename\\PowerToys.PowerRenameExt.dll",
                 "modules\\PowerRename\\PowerToys.PowerRename.exe",
@@ -187,7 +199,12 @@
                 "vccorlib140_app.dll",
                 "vcomp140_app.dll",
                 "vcruntime140_1_app.dll",
-                "vcruntime140_app.dll", 
+                "vcruntime140_app.dll",
+                "modules\\PowerAccent\\Vanara.Core.dll",
+                "modules\\PowerAccent\\Vanara.PInvoke.Gdi32.dll",
+                "modules\\PowerAccent\\Vanara.PInvoke.Kernel32.dll",
+                "modules\\PowerAccent\\Vanara.PInvoke.Shared.dll",
+                "modules\\PowerAccent\\Vanara.PInvoke.User32.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Core.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.WinForms.dll",
                 "modules\\FileExplorerPreview\\Microsoft.Web.WebView2.Wpf.dll",

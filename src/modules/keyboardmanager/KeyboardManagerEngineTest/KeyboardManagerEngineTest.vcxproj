@@ -6,8 +6,6 @@
     <ProjectGuid>{7f4b3a60-bc27-45a7-8000-68b0b6ea7466}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>KeyboardManagerEngineTest</RootNamespace>
-    <OverrideWindowsTargetPlatformVersion>true</OverrideWindowsTargetPlatformVersion>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
     <ProjectName>KeyboardManagerEngineTest</ProjectName>
   </PropertyGroup>

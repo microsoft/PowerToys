@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Mages.Core;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
@@ -31,6 +32,14 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             if (!CalculateHelper.InputValid(input))
             {
+                return default;
+            }
+
+            // check for division by zero
+            // We check if the string contains a slash followed by space (optional) and zero. Whereas the zero must not followed by dot or comma as this indicates a number with decimal digits.
+            if (new Regex("\\/\\s*0(?![,\\.])").Match(input).Success)
+            {
+                error = Properties.Resources.wox_plugin_calculator_division_by_zero;
                 return default;
             }
 
