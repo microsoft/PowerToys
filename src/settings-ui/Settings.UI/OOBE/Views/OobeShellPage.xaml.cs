@@ -112,10 +112,20 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "Run",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.QuickAccent, new OobePowerToysModule()
+            {
+                ModuleName = "QuickAccent",
+                IsNew = true,
+            });
             Modules.Insert((int)PowerToysModules.ShortcutGuide, new OobePowerToysModule()
             {
                 ModuleName = "ShortcutGuide",
                 IsNew = false,
+            });
+            Modules.Insert((int)PowerToysModules.TextExtractor, new OobePowerToysModule()
+            {
+                ModuleName = "TextExtractor",
+                IsNew = true,
             });
 
             Modules.Insert((int)PowerToysModules.VideoConference, new OobePowerToysModule()
@@ -123,6 +133,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "VideoConference",
                 IsNew = true,
             });
+
+            Modules.Insert((int)PowerToysModules.MeasureTool, new OobePowerToysModule()
+            {
+                ModuleName = "MeasureTool",
+                IsNew = true,
+            });
+
             Modules.Insert((int)PowerToysModules.WhatsNew, new OobePowerToysModule()
             {
                 ModuleName = "WhatsNew",
@@ -170,10 +187,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "ImageResizer": NavigationFrame.Navigate(typeof(OobeImageResizer)); break;
                     case "KBM": NavigationFrame.Navigate(typeof(OobeKBM)); break;
                     case "PowerRename": NavigationFrame.Navigate(typeof(OobePowerRename)); break;
+                    case "QuickAccent": NavigationFrame.Navigate(typeof(OobePowerAccent)); break;
                     case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
                     case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
+                    case "TextExtractor": NavigationFrame.Navigate(typeof(OobePowerOCR)); break;
                     case "VideoConference": NavigationFrame.Navigate(typeof(OobeVideoConference)); break;
                     case "MouseUtils": NavigationFrame.Navigate(typeof(OobeMouseUtils)); break;
+                    case "MeasureTool": NavigationFrame.Navigate(typeof(OobeMeasureTool)); break;
                 }
             }
         }

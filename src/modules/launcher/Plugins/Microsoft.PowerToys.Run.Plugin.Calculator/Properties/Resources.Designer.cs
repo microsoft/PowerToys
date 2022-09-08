@@ -88,6 +88,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Expression contains division by zero.
+        /// </summary>
+        public static string wox_plugin_calculator_division_by_zero {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_division_by_zero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unsupported use of square brackets.
         /// </summary>
         public static string wox_plugin_calculator_double_array_returned {

@@ -44,6 +44,16 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         }
 
         [DataTestMethod]
+        [DataRow(new string[] { "1", "metre", "in", "metre" }, new object[] { new string[] { "1", "meter", "in", "meter" } })]
+        [DataRow(new string[] { "1", "centimetre", "in", "kilometre" }, new object[] { new string[] { "1", "centimeter", "in", "kilometer" } })]
+        [DataRow(new string[] { "1", "metres", "in", "kilometres" }, new object[] { new string[] { "1", "meters", "in", "kilometers" } })]
+        public void HandlesMetreVsMeterNotation(string[] input, string[] expectedResult)
+        {
+            InputInterpreter.MetreToMeter(ref input);
+            CollectionAssert.AreEqual(expectedResult, input);
+        }
+
+        [DataTestMethod]
         [DataRow(new string[] { "5", "CeLsIuS", "in", "faHrenheiT" }, new object[] { new string[] { "5", "DegreeCelsius", "in", "DegreeFahrenheit" } })]
         [DataRow(new string[] { "5", "f", "in", "celsius" }, new object[] { new string[] { "5", "°f", "in", "DegreeCelsius" } })]
         [DataRow(new string[] { "5", "c", "in", "f" }, new object[] { new string[] { "5", "°c", "in", "°f" } })]

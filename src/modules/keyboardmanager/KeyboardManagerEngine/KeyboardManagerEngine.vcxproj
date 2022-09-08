@@ -10,9 +10,6 @@
     <ProjectGuid>{ba661f5b-1d5a-4ffc-9bf1-fc39df280bdd}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>KeyboardManagerEngine</RootNamespace>
-    <OverrideWindowsTargetPlatformVersion>true</OverrideWindowsTargetPlatformVersion>
-    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
