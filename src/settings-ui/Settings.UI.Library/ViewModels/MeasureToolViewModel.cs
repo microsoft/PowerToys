@@ -129,6 +129,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public int UnitsOfMeasure
+        {
+            get
+            {
+                return Settings.Properties.UnitsOfMeasure.Value;
+            }
+
+            set
+            {
+                if (Settings.Properties.UnitsOfMeasure.Value != value)
+                {
+                    Settings.Properties.UnitsOfMeasure.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public int PixelTolerance
         {
             get

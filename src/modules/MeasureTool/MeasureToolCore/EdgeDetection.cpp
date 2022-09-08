@@ -2,8 +2,8 @@
 
 #include "constants.h"
 #include "EdgeDetection.h"
+
 template<bool PerChannel,
-         bool ContinuousCapture,
          bool IsX,
          bool Increment>
 inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, const uint8_t tolerance)
@@ -57,25 +57,21 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
     return Increment ? static_cast<long>(IsX ? texture.width : texture.height) - 1 : 0;
 }
 
-template<bool PerChannel, bool ContinuousCapture>
+template<bool PerChannel>
 inline RECT DetectEdgesInternal(const BGRATextureView& texture,
                                 const POINT centerPoint,
                                 const uint8_t tolerance)
 {
     return RECT{ .left = FindEdge<PerChannel,
-                                  ContinuousCapture,
                                   true,
                                   false>(texture, centerPoint, tolerance),
                  .top = FindEdge<PerChannel,
-                                 ContinuousCapture,
                                  false,
                                  false>(texture, centerPoint, tolerance),
                  .right = FindEdge<PerChannel,
-                                   ContinuousCapture,
                                    true,
                                    true>(texture, centerPoint, tolerance),
                  .bottom = FindEdge<PerChannel,
-                                    ContinuousCapture,
                                     false,
                                     true>(texture, centerPoint, tolerance) };
 }
@@ -83,12 +79,9 @@ inline RECT DetectEdgesInternal(const BGRATextureView& texture,
 RECT DetectEdges(const BGRATextureView& texture,
                  const POINT centerPoint,
                  const bool perChannel,
-                 const uint8_t tolerance,
-                 const bool continuousCapture)
+                 const uint8_t tolerance)
 {
-    auto function = perChannel ? &DetectEdgesInternal<true, false> : DetectEdgesInternal<false, false>;
-    if (continuousCapture)
-        function = perChannel ? &DetectEdgesInternal<true, true> : &DetectEdgesInternal<false, true>;
+    auto function = perChannel ? &DetectEdgesInternal<true> : DetectEdgesInternal<false>;
 
     return function(texture, centerPoint, tolerance);
 }

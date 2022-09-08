@@ -65,8 +65,6 @@ private:
     void UnpinAll();
     void CleanUp();
 
-    void VirtualDesktopSwitchedHandle();
-
     bool IsTracked(HWND window) const noexcept;
     bool IsTopmost(HWND window) const noexcept;
     bool IsPinned(HWND window) const noexcept;
@@ -74,6 +72,7 @@ private:
     bool PinTopmostWindow(HWND window) const noexcept;
     bool UnpinTopmostWindow(HWND window) const noexcept;
     bool AssignBorder(HWND window);
+    void RefreshBorders();
 
     virtual void SettingsUpdate(SettingId type) override;
 

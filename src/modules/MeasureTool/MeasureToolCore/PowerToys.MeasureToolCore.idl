@@ -11,7 +11,7 @@ namespace PowerToys
         delegate void ToolSessionCompleted();
 
         [default_interface]
-        runtimeclass Core
+        runtimeclass Core : Windows.Foundation.IClosable
         {
             Core();
             void SetToolCompletionEvent(event ToolSessionCompleted completionTrigger);

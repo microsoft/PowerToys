@@ -18,7 +18,6 @@
     <ProjectGuid>{DA425894-6E13-404F-8DCB-78584EC0557A}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Svg</RootNamespace>
     <EnableComHosting>true</EnableComHosting>
-    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
     <AssemblyName>PowerToys.SvgPreviewHandler</AssemblyName>
   </PropertyGroup>
 
