@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                     // in order to keep the message for about 5 seconds after the last call
                     // and not need any lock/thread-synch, use an OK-To-Hide time, and wait just a little longer than that.
-                    OkToHideBackupAndSyncMessageTime = DateTime.UtcNow.AddMilliseconds(messageShowTimeIs - 250);
+                    OkToHideBackupAndSyncMessageTime = DateTime.UtcNow.AddMilliseconds(messageShowTimeIs - 16);
                     await System.Threading.Tasks.Task.Delay(messageShowTimeIs);
                     if (DateTime.UtcNow > OkToHideBackupAndSyncMessageTime)
                     {

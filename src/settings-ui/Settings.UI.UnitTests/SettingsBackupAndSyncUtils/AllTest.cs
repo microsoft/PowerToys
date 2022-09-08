@@ -6,14 +6,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 
 namespace Settings.UI.UnitTests.SettingsBackupAndSyncUtils
 {
     [TestClass]
     public class AllTest
     {
+        [TestMethod]
+        [DataRow("\\settings.json", "C:\\Users\\jeff\\AppData\\Local\\Microsoft\\PowerToys\\settings.json")]
+        public void GetExportVerion(string settingFileKey, string settingsFileName)
+        {
+            var results = Settings.UI.Library.SettingsBackupAndSyncUtils.GetExportVerion(settingFileKey, settingsFileName);
+
+            var settngsDoc = JObject.Parse(results);
+
+            // Assert.IsTrue(results.success, $"Failed, restore failed: {results.message}.");
+        }
+
         [TestMethod]
         [DataRow("__fakeBackupDir__", "__fakeSettingsDir__")]
         [DataRow(@"C:\Users\jeff\AppData\Local\Microsoft\PowerToys", @"C:\Temp\PowerToysBackup")]

@@ -262,6 +262,7 @@ namespace Settings.UI.Library
                 {
                     if (backupSettingsFiles.ContainsKey(currentFile.Key))
                     {
+                        // var exportJson = GetExportVerion(currentFile.Key, currentFile.Value);
                         var currentFileChecksum = ChecksumUtil.GetChecksum(currentFile.Value);
                         var backupFileChecksum = ChecksumUtil.GetChecksum(backupSettingsFiles[currentFile.Key]);
                         if (currentFileChecksum != backupFileChecksum)
@@ -300,6 +301,13 @@ namespace Settings.UI.Library
             }
 
             return false;
+        }
+
+        public static string GetExportVerion(string settingFileKey, string settingsFileName)
+        {
+            Logger.LogInfo($"{settingFileKey} and {settingsFileName}");
+
+            return File.ReadAllText(settingsFileName);
         }
 
         private static class ChecksumUtil
