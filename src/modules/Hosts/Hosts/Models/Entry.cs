@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using System.Net;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -69,7 +68,7 @@ namespace Hosts.Models
         {
             Active = !_line.StartsWith("#", StringComparison.InvariantCultureIgnoreCase);
 
-            var lineSplit = _line.TrimStart(' ', '#').Split('#').ToArray();
+            var lineSplit = _line.TrimStart(' ', '#').Split('#');
 
             if (lineSplit.Length == 0)
             {
@@ -78,13 +77,18 @@ namespace Hosts.Models
 
             var addressHost = lineSplit[0];
 
-            var addressHostSplit = addressHost.Split(' ', '\t').Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
+            var addressHostSplit = addressHost.Split(' ', '\t');
             var hostsBuilder = new StringBuilder();
             var commentBuilder = new StringBuilder();
 
             for (var i = 0; i < addressHostSplit.Length; i++)
             {
                 var element = addressHostSplit[i].Trim();
+
+                if (string.IsNullOrWhiteSpace(element))
+                {
+                    continue;
+                }
 
                 if (Address == null)
                 {

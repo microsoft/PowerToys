@@ -100,8 +100,8 @@ namespace Hosts.Helpers
 
             if (entries.Any())
             {
-                var addressPadding = entries.Where(e => !string.IsNullOrWhiteSpace(e.Address)).Max(e => e.Address.Length) + 1;
-                var hostsPadding = entries.Where(e => !string.IsNullOrWhiteSpace(e.Hosts)).Max(e => e.Hosts.Length) + 1;
+                var addressPadding = entries.Max(e => e.Address.Length) + 1;
+                var hostsPadding = entries.Max(e => e.Hosts.Length) + 1;
                 var anyDisabled = entries.Any(e => !e.Active);
 
                 if (!string.IsNullOrWhiteSpace(header))
