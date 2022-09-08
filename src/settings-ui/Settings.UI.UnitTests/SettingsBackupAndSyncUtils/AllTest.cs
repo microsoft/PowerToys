@@ -19,11 +19,11 @@ namespace Settings.UI.UnitTests.SettingsBackupAndSyncUtils
     {
         [TestMethod]
         [DataRow("\\settings.json", "C:\\Users\\jeff\\AppData\\Local\\Microsoft\\PowerToys\\settings.json")]
-        public void GetExportVerion(string settingFileKey, string settingsFileName)
+        public void GetExportVersion(string settingFileKey, string settingsFileName)
         {
-            var results = Settings.UI.Library.SettingsBackupAndSyncUtils.GetExportVerion(settingFileKey, settingsFileName);
+            var results = Settings.UI.Library.SettingsBackupAndSyncUtils.GetExportVersion(settingFileKey, settingsFileName);
 
-            var settngsDoc = JObject.Parse(results);
+            var settingsDoc = JObject.Parse(results);
 
             // Assert.IsTrue(results.success, $"Failed, restore failed: {results.message}.");
         }
