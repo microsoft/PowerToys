@@ -21,11 +21,22 @@ namespace Hosts.Views
 
         public ICommand NewDialogCommand => new AsyncRelayCommand(OpenNewDialogAsync);
 
+        public ICommand HeaderDialogCommand => new AsyncRelayCommand(OpenHeaderDialogAsync);
+
         public ICommand AddCommand => new RelayCommand(Add);
 
         public ICommand UpdateCommand => new RelayCommand(Update);
 
         public ICommand DeleteCommand => new RelayCommand(Delete);
+
+        public ICommand UpdateHeaderCommand => new RelayCommand(UpdateHeader);
+
+        public MainPage()
+        {
+            InitializeComponent();
+            ViewModel = new MainViewModel();
+            DataContext = ViewModel;
+        }
 
         private async Task OpenNewDialogAsync()
         {
@@ -34,6 +45,12 @@ namespace Hosts.Views
             MainDialog.PrimaryButtonCommand = AddCommand;
             MainDialog.DataContext = new Entry(string.Empty, string.Empty, string.Empty, true);
             await MainDialog.ShowAsync();
+        }
+
+        private async Task OpenHeaderDialogAsync()
+        {
+            Header.Text = ViewModel.Header;
+            await HeaderDialog.ShowAsync();
         }
 
         private async void Entries_ItemClick(object sender, ItemClickEventArgs e)
@@ -47,26 +64,24 @@ namespace Hosts.Views
             await MainDialog.ShowAsync();
         }
 
-        public MainPage()
-        {
-            InitializeComponent();
-            ViewModel = new MainViewModel();
-            DataContext = ViewModel;
-        }
-
-        public void Add()
+        private void Add()
         {
             ViewModel.Add(MainDialog.DataContext as Entry);
         }
 
-        public void Update()
+        private void Update()
         {
             ViewModel.Update(Entries.SelectedIndex, MainDialog.DataContext as Entry);
         }
 
-        public void Delete()
+        private void Delete()
         {
             ViewModel.DeleteSelected();
+        }
+
+        private void UpdateHeader()
+        {
+            ViewModel.UpdateHeader(Header.Text);
         }
 
         private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)

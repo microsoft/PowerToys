@@ -20,7 +20,6 @@ namespace Hosts.Helpers
         private static SemaphoreSlim _asyncLock = new SemaphoreSlim(1, 1);
         private readonly IFileSystem _fileSystem;
         private readonly IFileSystemWatcher _fileSystemWatcher;
-        private readonly List<string> _invalidLines;
         private bool _backupDone;
         private bool _disposed;
 
@@ -33,7 +32,6 @@ namespace Hosts.Helpers
         public HostsService(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
-            _invalidLines = new List<string>();
 
             _fileSystemWatcher = _fileSystem.FileSystemWatcher.CreateNew();
             _fileSystemWatcher.Path = _fileSystem.Path.GetDirectoryName(HostsFilePath);
@@ -55,14 +53,14 @@ namespace Hosts.Helpers
             return _fileSystem.File.Exists(HostsFilePath);
         }
 
-        public async Task<List<Entry>> ReadAsync()
+        public async Task<(string Header, List<Entry> Entries)> ReadAsync()
         {
-            _invalidLines.Clear();
             var result = new List<Entry>();
+            var headerBuilder = new StringBuilder();
 
             if (!Exists())
             {
-                return result;
+                return (headerBuilder.ToString(), result);
             }
 
             var lines = await _fileSystem.File.ReadAllLinesAsync(HostsFilePath);
@@ -84,14 +82,19 @@ namespace Hosts.Helpers
                 }
                 else
                 {
-                    _invalidLines.Add(line);
+                    if (headerBuilder.Length > 0)
+                    {
+                        headerBuilder.Append(Environment.NewLine);
+                    }
+
+                    headerBuilder.Append(line);
                 }
             }
 
-            return result;
+            return (headerBuilder.ToString(), result);
         }
 
-        public async Task<bool> WriteAsync(IEnumerable<Entry> entries)
+        public async Task<bool> WriteAsync(string header, IEnumerable<Entry> entries)
         {
             var lines = new List<string>();
 
@@ -101,9 +104,9 @@ namespace Hosts.Helpers
                 var hostsPadding = entries.Where(e => !string.IsNullOrWhiteSpace(e.Hosts)).Max(e => e.Hosts.Length) + 1;
                 var anyDisabled = entries.Any(e => !e.Active);
 
-                foreach (var line in _invalidLines)
+                if (!string.IsNullOrWhiteSpace(header))
                 {
-                    lines.Add(line);
+                    lines.Add(header);
                 }
 
                 foreach (var e in entries)

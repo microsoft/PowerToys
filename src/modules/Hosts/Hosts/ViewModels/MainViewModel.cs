@@ -45,6 +45,9 @@ namespace Hosts.ViewModels
         [ObservableProperty]
         private bool _filtered;
 
+        [ObservableProperty]
+        private string _header;
+
         private ObservableCollection<Entry> _entries;
 
         public ObservableCollection<Entry> Entries
@@ -57,17 +60,17 @@ namespace Hosts.ViewModels
 
                     if (!string.IsNullOrWhiteSpace(_addressFilter))
                     {
-                        filter = filter.Where(e => e.Address.Contains(_addressFilter));
+                        filter = filter.Where(e => e.Address.Contains(_addressFilter, StringComparison.OrdinalIgnoreCase));
                     }
 
                     if (!string.IsNullOrWhiteSpace(_hostsFilter))
                     {
-                        filter = filter.Where(e => e.Hosts.Contains(_hostsFilter));
+                        filter = filter.Where(e => e.Hosts.Contains(_hostsFilter, StringComparison.OrdinalIgnoreCase));
                     }
 
                     if (!string.IsNullOrWhiteSpace(_commentFilter))
                     {
-                        filter = filter.Where(e => e.Comment.Contains(_commentFilter));
+                        filter = filter.Where(e => e.Comment.Contains(_commentFilter, StringComparison.OrdinalIgnoreCase));
                     }
 
                     return new ObservableCollection<Entry>(filter);
@@ -101,24 +104,6 @@ namespace Hosts.ViewModels
             };
         }
 
-        private void Entry_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            Task.Run(async () =>
-            {
-                var error = !await _hostsService.WriteAsync(_entries);
-                await _dispatcherQueue.EnqueueAsync(() => Error = error);
-            });
-        }
-
-        private void Entries_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            Task.Run(async () =>
-            {
-                var error = !await _hostsService.WriteAsync(_entries);
-                await _dispatcherQueue.EnqueueAsync(() => Error = error);
-            });
-        }
-
         public void Add(Entry entry)
         {
             entry.PropertyChanged += Entry_PropertyChanged;
@@ -139,6 +124,17 @@ namespace Hosts.ViewModels
             _entries.Remove(Selected);
         }
 
+        public void UpdateHeader(string header)
+        {
+            _header = header;
+
+            Task.Run(async () =>
+            {
+                var error = !await _hostsService.WriteAsync(_header, _entries);
+                await _dispatcherQueue.EnqueueAsync(() => Error = error);
+            });
+        }
+
         public void EnableSelected()
         {
             Selected.Active = true;
@@ -155,7 +151,7 @@ namespace Hosts.ViewModels
 
             Task.Run(async () =>
             {
-                var entries = await _hostsService.ReadAsync();
+                (_header, var entries) = await _hostsService.ReadAsync();
 
                 await _dispatcherQueue.EnqueueAsync(() =>
                 {
@@ -187,6 +183,30 @@ namespace Hosts.ViewModels
             CommentFilter = null;
         }
 
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Entry_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            Task.Run(async () =>
+            {
+                var error = !await _hostsService.WriteAsync(_header, _entries);
+                await _dispatcherQueue.EnqueueAsync(() => Error = error);
+            });
+        }
+
+        private void Entries_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            Task.Run(async () =>
+            {
+                var error = !await _hostsService.WriteAsync(_header, _entries);
+                await _dispatcherQueue.EnqueueAsync(() => Error = error);
+            });
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -197,12 +217,6 @@ namespace Hosts.ViewModels
                     _disposed = true;
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

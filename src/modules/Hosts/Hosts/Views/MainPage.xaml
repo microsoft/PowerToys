@@ -129,8 +129,6 @@
                         </FlyoutBase.AttachedFlyout>
                         <ToggleSwitch Grid.Column="0"
                                       VerticalAlignment="Center"
-                                      OffContent=""
-                                      OnContent=""
                                       IsOn="{Binding Active, Mode=TwoWay}" />
                         <TextBlock Grid.Column="1"
                                    VerticalAlignment="Center"
@@ -149,11 +147,19 @@
             </ListView.ItemTemplate>
         </ListView>
 
-        <Button Grid.Row="3"
-                Style="{StaticResource AccentButtonStyle}"
-                HorizontalAlignment="Right"
-                Command="{x:Bind NewDialogCommand}"
-                Content="Add new entry" />
+        <StackPanel Grid.Row="3"
+                    Spacing="10"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Style="{StaticResource AccentButtonStyle}"
+                    Command="{x:Bind HeaderDialogCommand}"
+                    Content="Edit header" />
+            
+            <Button Style="{StaticResource AccentButtonStyle}"
+                    Command="{x:Bind NewDialogCommand}"
+                    Content="Add new entry" />
+        </StackPanel>
+
 
         <ContentDialog x:Name="MainDialog"
                        PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
@@ -183,6 +189,22 @@
                        PrimaryButtonCommand="{x:Bind DeleteCommand}"
                        CloseButtonText="Cancel">
             <TextBlock Text="The entry will be removed." />
+        </ContentDialog>
+
+        <ContentDialog x:Name="HeaderDialog"
+                       PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+                       PrimaryButtonText="Save"
+                       PrimaryButtonCommand="{x:Bind UpdateHeaderCommand}"
+                       CloseButtonText="Cancel">
+            <StackPanel Width="480"
+                        Spacing="32"
+                        HorizontalAlignment="Stretch">
+                <TextBox x:Name="Header"
+                         Header="Header"
+                         Height="300"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True" />
+            </StackPanel>
         </ContentDialog>
     </Grid>
 </Page>

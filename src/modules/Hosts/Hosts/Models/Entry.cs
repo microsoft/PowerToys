@@ -95,7 +95,7 @@ namespace Hosts.Models
                 }
                 else
                 {
-                    if (hostsBuilder.Length != 0)
+                    if (hostsBuilder.Length > 0)
                     {
                         hostsBuilder.Append(' ');
                     }
@@ -108,7 +108,7 @@ namespace Hosts.Models
 
             for (var i = 1; i < lineSplit.Length; i++)
             {
-                if (commentBuilder.Length != 0)
+                if (commentBuilder.Length > 0)
                 {
                     commentBuilder.Append('#');
                 }

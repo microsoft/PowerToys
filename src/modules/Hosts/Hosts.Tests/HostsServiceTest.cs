@@ -72,9 +72,9 @@ namespace Hosts.Tests
 
             var service = new HostsService(fileSystem);
 
-            var entries = await service.ReadAsync();
+            var (_, entries) = await service.ReadAsync();
             entries.Add(new Entry("10.1.1.30", "host30 host30.local", "new entry", false));
-            await service.WriteAsync(entries);
+            await service.WriteAsync(string.Empty, entries);
 
             var result = fileSystem.GetFile(HostsService.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
@@ -102,9 +102,9 @@ namespace Hosts.Tests
 
             var service = new HostsService(fileSystem);
 
-            var entries = await service.ReadAsync();
+            var (_, entries) = await service.ReadAsync();
             entries.RemoveAt(0);
-            await service.WriteAsync(entries);
+            await service.WriteAsync(string.Empty, entries);
 
             var result = fileSystem.GetFile(HostsService.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
@@ -133,13 +133,13 @@ namespace Hosts.Tests
 
             var service = new HostsService(fileSystem);
 
-            var entries = await service.ReadAsync();
+            var (_, entries) = await service.ReadAsync();
             var entry = entries[0];
             entry.Address = "10.1.1.10";
             entry.Hosts = "host host.local host1.local";
             entry.Comment = "updated comment";
             entry.Active = false;
-            await service.WriteAsync(entries);
+            await service.WriteAsync(string.Empty, entries);
 
             var result = fileSystem.GetFile(HostsService.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
@@ -157,7 +157,7 @@ namespace Hosts.Tests
             };
 
             var service = new HostsService(fileSystem);
-            await service.WriteAsync(Enumerable.Empty<Entry>());
+            await service.WriteAsync(string.Empty, Enumerable.Empty<Entry>());
 
             var result = fileSystem.GetFile(HostsService.HostsFilePath);
             Assert.AreEqual(result.TextContents, string.Empty);
