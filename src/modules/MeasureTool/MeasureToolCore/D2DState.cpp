@@ -66,8 +66,7 @@ D2DState::D2DState(const DxgiAPI* dxgi,
 void D2DState::DrawTextBox(const wchar_t* text,
                            const size_t textLen,
                            const std::optional<size_t> halfOpaqueSymbolPos,
-                           const float centerX,
-                           const float centerY,
+                           const D2D_POINT_2F center,
                            const bool screenQuadrantAware,
                            const HWND window) const
 {
@@ -88,10 +87,10 @@ void D2DState::DrawTextBox(const wchar_t* text,
     winrt::check_hresult(textLayout->SetMaxWidth(textMetrics.width));
     winrt::check_hresult(textLayout->SetMaxHeight(textMetrics.height));
 
-    D2D1_RECT_F textRect{ .left = centerX - textMetrics.width / 2.f,
-                          .top = centerY - textMetrics.height / 2.f,
-                          .right = centerX + textMetrics.width / 2.f,
-                          .bottom = centerY + textMetrics.height / 2.f };
+    D2D1_RECT_F textRect{ .left = center.x - textMetrics.width / 2.f,
+                          .top = center.y - textMetrics.height / 2.f,
+                          .right = center.x + textMetrics.width / 2.f,
+                          .bottom = center.y + textMetrics.height / 2.f };
 
     const float SHADOW_OFFSET = consts::SHADOW_OFFSET * dpiScale;
     if (screenQuadrantAware)
@@ -99,8 +98,8 @@ void D2DState::DrawTextBox(const wchar_t* text,
         bool cursorInLeftScreenHalf = false;
         bool cursorInTopScreenHalf = false;
         DetermineScreenQuadrant(window,
-                                static_cast<long>(centerX),
-                                static_cast<long>(centerY),
+                                static_cast<long>(center.x),
+                                static_cast<long>(center.y),
                                 cursorInLeftScreenHalf,
                                 cursorInTopScreenHalf);
         float textQuadrantOffsetX = textMetrics.width / 2.f + SHADOW_OFFSET;

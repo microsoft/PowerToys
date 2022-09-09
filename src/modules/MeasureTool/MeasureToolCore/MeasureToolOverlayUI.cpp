@@ -158,7 +158,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
             }
         }
     });
-    
+
     if (!gotMeasurement)
         return;
 
@@ -257,8 +257,7 @@ void DrawMeasureToolTick(const CommonState& commonState,
     d2dState.DrawTextBox(text.buffer.data(),
                          measureStringBufLen,
                          crossSymbolPos,
-                         static_cast<float>(cursorPos.x),
-                         static_cast<float>(cursorPos.y),
+                         D2D_POINT_2F{ static_cast<float>(cursorPos.x), static_cast<float>(cursorPos.y) },
                          true,
                          window);
 }
