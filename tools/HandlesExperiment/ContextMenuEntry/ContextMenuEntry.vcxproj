@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="ExplorerCommand.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

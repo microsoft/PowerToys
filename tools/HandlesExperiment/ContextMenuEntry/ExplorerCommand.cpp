@@ -1,6 +1,9 @@
 #include "pch.h"
 
 #include "ExplorerCommand.h"
+#include "Constants.h"
+
+// Implementations of inherited IUnknown methods
 
 IFACEMETHODIMP ExplorerCommand::QueryInterface(REFIID riid, void** ppv)
 {
@@ -24,4 +27,58 @@ IFACEMETHODIMP_(ULONG) ExplorerCommand::Release()
         delete this;
     }
     return result;
+}
+
+// Implementations of inherited IExplorerCommand methods
+
+IFACEMETHODIMP ExplorerCommand::GetTitle(IShellItemArray* psiItemArray, LPWSTR* ppszName)
+{
+    return SHStrDup(constants::localizable::CommandTitle, ppszName);
+}
+
+IFACEMETHODIMP ExplorerCommand::GetIcon(IShellItemArray* psiItemArray, LPWSTR* ppszIcon)
+{
+    // Path to the icon should be computed relative to the path of this module
+    ppszIcon = NULL;
+    return E_NOTIMPL;
+}
+
+IFACEMETHODIMP ExplorerCommand::GetToolTip(IShellItemArray* psiItemArray, LPWSTR* ppszInfotip)
+{
+    // No tooltip for now
+    return E_NOTIMPL;
+}
+
+IFACEMETHODIMP ExplorerCommand::GetCanonicalName(GUID* pguidCommandName)
+{
+    *pguidCommandName = __uuidof(this);
+    return S_OK;
+}
+
+IFACEMETHODIMP ExplorerCommand::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
+{
+    // This should depend on the settings
+    // For now we'll just keep it always enabled.
+    *pCmdState = ECS_ENABLED;
+    return S_OK;
+}
+
+IFACEMETHODIMP ExplorerCommand::Invoke(IShellItemArray* psiItemArray, IBindCtx* pbc)
+{
+    // This should call the main exe.
+    // For now we'll just show a message box.
+    MessageBoxW(NULL, L"OK", L"OK", MB_OK);
+    return S_OK;
+}
+
+IFACEMETHODIMP ExplorerCommand::GetFlags(EXPCMDFLAGS* pFlags)
+{
+    *pFlags = ECF_DEFAULT;
+    return S_OK;
+}
+
+IFACEMETHODIMP ExplorerCommand::EnumSubCommands(IEnumExplorerCommand** ppEnum)
+{
+    *ppEnum = NULL;
+    return E_NOTIMPL;
 }
