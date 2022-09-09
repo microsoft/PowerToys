@@ -22,4 +22,3 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 // 2. A class which implements IClassFactory
 // 3. DLL register/unregister functions which will create registry entries
 // 4. Other DLL exported functions
-
