@@ -112,7 +112,6 @@ atlstr
 Attribs
 attrs
 Atyrau
-augustkarlstedt
 aumid
 Aut
 Authenticode
@@ -144,7 +143,6 @@ bck
 Belarus
 betadele
 betsegaw
-bezgumption
 BGR
 bgra
 bhid
@@ -540,6 +538,7 @@ eltociear
 emmintrin
 Emoji
 emptyrecyclebin
+ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
 endforeach
 endian
@@ -560,6 +559,7 @@ ERASEBKGND
 EREOF
 EResize
 ERole
+ERRORLEVEL
 ERRORMESSAGE
 ERRORTITLE
 ESettings
@@ -1352,6 +1352,7 @@ NDEBUG
 Ndombe
 ndp
 NEEDDISPATCH
+NEQ
 NESW
 netcore
 netcoreapp
@@ -1470,7 +1471,6 @@ openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
 ORPHANEDDIALOGTITLE
-osfanbuff
 oss
 ostr
 ostream
@@ -1752,7 +1752,6 @@ RNumber
 roadmap
 robmensching
 Roboto
-rohanrdy
 rooler
 roslyn
 Rothera
