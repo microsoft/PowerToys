@@ -35,6 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI
             if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
             {
                 System.Diagnostics.Debug.WriteLine("Lost focus");
+                this.Hide();
 
                 // TO DO: WINDOW SHOULD BE HIDDEN OR CLOSED
             }
