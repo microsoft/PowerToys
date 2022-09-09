@@ -125,7 +125,7 @@
 
   <?define MeasureToolMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
-	<?define PowerAccentFiles=ControlzEx.dll;GongSolutions.WPF.DragDrop.dll;Ijwhost.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerAccent.deps.json;PowerAccent.dll;PowerAccent.exe;PowerAccent.runtimeconfig.json;PowerToys.PowerAccentModuleInterface.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;Vanara.Core.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.User32.dll?>
+	<?define PowerAccentFiles=ControlzEx.dll;GongSolutions.WPF.DragDrop.dll;Ijwhost.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerAccent.deps.json;PowerAccent.dll;PowerAccent.exe;PowerAccent.runtimeconfig.json;PowerToys.PowerAccentModuleInterface.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;Vanara.Core.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.User32.dll;PowerToys.PowerAccentKeyboardService.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll?>
 
   <Product Id="*"
        Name="PowerToys (Preview)"
