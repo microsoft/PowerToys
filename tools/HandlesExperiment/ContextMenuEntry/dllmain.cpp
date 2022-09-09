@@ -21,7 +21,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 }
 
 // Things to implement:
-// 1. A class which implements IExplorerCommand
-// 2. A class which implements IClassFactory
+// 1. (DONE) A class which implements IExplorerCommand
+// 2. (DONE) A class which implements IClassFactory
 // 3. DLL register/unregister functions which will create registry entries
 // 4. Other DLL exported functions

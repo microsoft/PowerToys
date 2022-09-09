@@ -135,11 +135,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ClassFactory.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="ExplorerCommand.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ClassFactory.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ExplorerCommand.cpp" />
     <ClCompile Include="pch.cpp">
