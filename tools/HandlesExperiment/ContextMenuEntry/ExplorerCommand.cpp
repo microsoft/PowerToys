@@ -82,3 +82,16 @@ IFACEMETHODIMP ExplorerCommand::EnumSubCommands(IEnumExplorerCommand** ppEnum)
     *ppEnum = NULL;
     return E_NOTIMPL;
 }
+
+HRESULT ExplorerCommand::s_CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
+{
+    *ppvObject = NULL;
+    HRESULT hr = E_OUTOFMEMORY;
+    ExplorerCommand* pNew = new (std::nothrow) ExplorerCommand;
+    if (pNew)
+    {
+        hr = pNew->QueryInterface(riid, ppvObject);
+        pNew->Release();
+    }
+    return hr;
+}
