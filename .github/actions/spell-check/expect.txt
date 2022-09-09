@@ -2048,7 +2048,6 @@ TARGETHEADER
 targetnametoken
 targetsize
 targetver
-tasbar
 taskbar
 taskkill
 tasklist
