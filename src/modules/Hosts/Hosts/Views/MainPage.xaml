@@ -41,8 +41,9 @@
                     <StackPanel Width="200"
                                 Spacing="32"
                                 HorizontalAlignment="Stretch">
-                        <AutoSuggestBox QueryIcon="Find"
-                                        PlaceholderText="Address"
+                        <AutoSuggestBox x:Uid="AddressFilter"
+                                        PlaceholderText=""
+                                        QueryIcon="Find"
                                         Text="{x:Bind ViewModel.AddressFilter, Mode=TwoWay}">
                             <i:Interaction.Behaviors>
                                 <ic:EventTriggerBehavior EventName="TextChanged">
@@ -50,8 +51,8 @@
                                 </ic:EventTriggerBehavior>
                             </i:Interaction.Behaviors>
                         </AutoSuggestBox>
-                        <AutoSuggestBox QueryIcon="Find"
-                                        PlaceholderText="Hosts"
+                        <AutoSuggestBox x:Uid="HostsFilter"
+                                        QueryIcon="Find"
                                         Text="{x:Bind ViewModel.HostsFilter, Mode=TwoWay}">
                             <i:Interaction.Behaviors>
                                 <ic:EventTriggerBehavior EventName="TextChanged">
@@ -59,8 +60,8 @@
                                 </ic:EventTriggerBehavior>
                             </i:Interaction.Behaviors>
                         </AutoSuggestBox>
-                        <AutoSuggestBox QueryIcon="Find"
-                                        PlaceholderText="Comment"
+                        <AutoSuggestBox x:Uid="CommentFilter"
+                                        QueryIcon="Find"
                                         Text="{x:Bind ViewModel.CommentFilter, Mode=TwoWay}">
                             <i:Interaction.Behaviors>
                                 <ic:EventTriggerBehavior EventName="TextChanged">
@@ -68,7 +69,7 @@
                                 </ic:EventTriggerBehavior>
                             </i:Interaction.Behaviors>
                         </AutoSuggestBox>
-                        <Button Content="Clear"
+                        <Button x:Uid="ClearFilters"
                                 Command="{x:Bind ViewModel.ClearFiltersCommand}"
                                 HorizontalAlignment="Right" />
                     </StackPanel>
@@ -78,15 +79,15 @@
 
         <StackPanel Grid.Row="1"
                     Orientation="Vertical">
-            <InfoBar IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
-                     Severity="Error"
-                     Message="Failed to save hosts file!" />
+            <InfoBar x:Uid="FileSaveError"
+                     IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
+                     Severity="Error" />
 
-            <InfoBar IsOpen="{x:Bind ViewModel.FileChanged, Mode=TwoWay}"
-                     Severity="Informational"
-                     Message="File hosts has changed. Do you want to reload it?">
+            <InfoBar x:Uid="FileChanged"
+                     IsOpen="{x:Bind ViewModel.FileChanged, Mode=TwoWay}"
+                     Severity="Informational">
                 <InfoBar.ActionButton>
-                    <Button Content="Reload"
+                    <Button x:Uid="Reload"
                             Command="{x:Bind ViewModel.ReadHostsCommand}" />
                 </InfoBar.ActionButton>
             </InfoBar>
@@ -115,18 +116,18 @@
                         </Grid.ColumnDefinitions>
                         <FlyoutBase.AttachedFlyout>
                             <MenuFlyout>
-                                <MenuFlyoutItem Text="Delete"
+                                <MenuFlyoutItem x:Uid="Delete"
                                                 Icon="Delete"
                                                 Click="Delete_Click" />
-                                <MenuFlyoutItem Text="Enable" 
+                                <MenuFlyoutItem x:Uid="Enable" 
                                                 Icon="Accept"
                                                 Visibility="{Binding Active, Mode=TwoWay, Converter={StaticResource FalseToVisibleConverter}}" 
                                                 Click="Enable_Click"/>
-                                <MenuFlyoutItem Text="Disable" 
+                                <MenuFlyoutItem x:Uid="Disable" 
                                                 Icon="Clear"
                                                 Visibility="{Binding Active, Mode=TwoWay, Converter={StaticResource TrueToVisibleConverter}}"
                                                 Click="Disable_Click" />
-                                <MenuFlyoutItem Text="Ping" 
+                                <MenuFlyoutItem x:Uid="Ping" 
                                                 Icon="TwoBars"
                                                 Click="Ping_Click" />
                             </MenuFlyout>
@@ -190,56 +191,53 @@
                     Spacing="10"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
-            <Button Style="{StaticResource AccentButtonStyle}"
-                    Command="{x:Bind HeaderDialogCommand}"
-                    Content="Edit header" />
-            
-            <Button Style="{StaticResource AccentButtonStyle}"
-                    Command="{x:Bind NewDialogCommand}"
-                    Content="Add new entry" />
+            <Button x:Uid="AdditionalLines"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command="{x:Bind AdditionalLinesDialogCommand}"/>
+
+            <Button x:Uid="AddEntry"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command="{x:Bind NewDialogCommand}">
+            </Button>
         </StackPanel>
 
-
-        <ContentDialog x:Name="MainDialog"
+        <ContentDialog x:Uid="MainDialog"
+                       x:Name="MainDialog"
                        PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-                       IsPrimaryButtonEnabled="{Binding Valid, Mode=TwoWay}"
-                       CloseButtonText="Cancel">
+                       IsPrimaryButtonEnabled="{Binding Valid, Mode=TwoWay}">
             <StackPanel Width="480"
                         Spacing="32"
                         HorizontalAlignment="Stretch">
-                <ToggleSwitch Header="Active"
+                <ToggleSwitch x:Uid="Active"
                               IsOn="{Binding Active, Mode=TwoWay}" />
 
-                <TextBox Header="Address"
+                <TextBox x:Uid="Address"
                          Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                <TextBox Header="Hosts"
+                <TextBox x:Uid="Hosts"
                          Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                <TextBox Header="Comment"
+                <TextBox x:Uid="Comment"
                          Text="{Binding Comment, Mode=TwoWay}" />
             </StackPanel>
         </ContentDialog>
 
-        <ContentDialog x:Name="DeleteDialog"
-                       Title="Are you sure?"
+        <ContentDialog x:Uid="DeleteDialog"
+                       x:Name="DeleteDialog"
                        PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-                       PrimaryButtonText="OK"
-                       PrimaryButtonCommand="{x:Bind DeleteCommand}"
-                       CloseButtonText="Cancel">
-            <TextBlock Text="The entry will be removed." />
+                       PrimaryButtonCommand="{x:Bind DeleteCommand}">
+            <TextBlock x:Uid="DeleteDialogAreYouSure" />
         </ContentDialog>
 
-        <ContentDialog x:Name="HeaderDialog"
+        <ContentDialog x:Uid="AdditionalLinesDialog"
+                       x:Name="AdditionalLinesDialog"
                        PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-                       PrimaryButtonText="Save"
-                       PrimaryButtonCommand="{x:Bind UpdateHeaderCommand}"
-                       CloseButtonText="Cancel">
+                       PrimaryButtonCommand="{x:Bind UpdateHeaderCommand}">
             <StackPanel Width="480"
                         Spacing="32"
                         HorizontalAlignment="Stretch">
-                <TextBox x:Name="Header"
-                         Header="Header"
+                <TextBox x:Uid="AdditionalLinesContent"
+                         x:Name="Header"
                          Height="300"
                          TextWrapping="Wrap"
                          AcceptsReturn="True" />

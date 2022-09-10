@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Windows.ApplicationModel.Resources;
 
 namespace Hosts.Views
 {
@@ -21,7 +22,7 @@ namespace Hosts.Views
 
         public ICommand NewDialogCommand => new AsyncRelayCommand(OpenNewDialogAsync);
 
-        public ICommand HeaderDialogCommand => new AsyncRelayCommand(OpenHeaderDialogAsync);
+        public ICommand AdditionalLinesDialogCommand => new AsyncRelayCommand(OpenAdditionalLinesDialogAsync);
 
         public ICommand AddCommand => new RelayCommand(Add);
 
@@ -40,24 +41,26 @@ namespace Hosts.Views
 
         private async Task OpenNewDialogAsync()
         {
-            MainDialog.Title = "Add entry";
-            MainDialog.PrimaryButtonText = "Add";
+            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+            MainDialog.Title = resourceLoader.GetString("AddEntryTitle");
+            MainDialog.PrimaryButtonText = resourceLoader.GetString("Add");
             MainDialog.PrimaryButtonCommand = AddCommand;
             MainDialog.DataContext = new Entry(string.Empty, string.Empty, string.Empty, true);
             await MainDialog.ShowAsync();
         }
 
-        private async Task OpenHeaderDialogAsync()
+        private async Task OpenAdditionalLinesDialogAsync()
         {
             Header.Text = ViewModel.Header;
-            await HeaderDialog.ShowAsync();
+            await AdditionalLinesDialog.ShowAsync();
         }
 
         private async void Entries_ItemClick(object sender, ItemClickEventArgs e)
         {
+            var resourceLoader = ResourceLoader.GetForViewIndependentUse();
             ViewModel.Selected = e.ClickedItem as Entry;
-            MainDialog.Title = "Update entry";
-            MainDialog.PrimaryButtonText = "Update";
+            MainDialog.Title = resourceLoader.GetString("UpdateEntryTitle");
+            MainDialog.PrimaryButtonText = resourceLoader.GetString("Update");
             MainDialog.PrimaryButtonCommand = UpdateCommand;
             var clone = ViewModel.Selected.Clone();
             MainDialog.DataContext = clone;
@@ -103,7 +106,9 @@ namespace Hosts.Views
 
             if (menuFlyoutItem != null)
             {
-                ViewModel.Selected = menuFlyoutItem.DataContext as Entry;
+                var selectedEntry = menuFlyoutItem.DataContext as Entry;
+                ViewModel.Selected = selectedEntry;
+                DeleteDialog.Title = selectedEntry.Address;
                 await DeleteDialog.ShowAsync();
             }
         }
