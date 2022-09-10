@@ -30,7 +30,7 @@ namespace Hosts.Views
 
         public ICommand DeleteCommand => new RelayCommand(Delete);
 
-        public ICommand UpdateHeaderCommand => new RelayCommand(UpdateHeader);
+        public ICommand UpdateAdditionalLinesCommand => new RelayCommand(UpdateAdditionalLines);
 
         public MainPage()
         {
@@ -51,7 +51,7 @@ namespace Hosts.Views
 
         private async Task OpenAdditionalLinesDialogAsync()
         {
-            Header.Text = ViewModel.Header;
+            AdditionalLines.Text = ViewModel.AdditionalLines;
             await AdditionalLinesDialog.ShowAsync();
         }
 
@@ -82,9 +82,9 @@ namespace Hosts.Views
             ViewModel.DeleteSelected();
         }
 
-        private void UpdateHeader()
+        private void UpdateAdditionalLines()
         {
-            ViewModel.UpdateHeader(Header.Text);
+            ViewModel.UpdateAdditionalLines(AdditionalLines.Text);
         }
 
         private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)

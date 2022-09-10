@@ -47,14 +47,14 @@ namespace Hosts.Helpers
             return _fileSystem.File.Exists(HostsFilePath);
         }
 
-        public async Task<(string Header, List<Entry> Entries)> ReadAsync()
+        public async Task<(string Unparsed, List<Entry> Entries)> ReadAsync()
         {
-            var result = new List<Entry>();
-            var headerBuilder = new StringBuilder();
+            var entries = new List<Entry>();
+            var unparsedBuilder = new StringBuilder();
 
             if (!Exists())
             {
-                return (headerBuilder.ToString(), result);
+                return (unparsedBuilder.ToString(), entries);
             }
 
             var lines = await _fileSystem.File.ReadAllLinesAsync(HostsFilePath);
@@ -72,20 +72,20 @@ namespace Hosts.Helpers
 
                 if (entry.Valid)
                 {
-                    result.Add(entry);
+                    entries.Add(entry);
                 }
                 else
                 {
-                    if (headerBuilder.Length > 0)
+                    if (unparsedBuilder.Length > 0)
                     {
-                        headerBuilder.Append(Environment.NewLine);
+                        unparsedBuilder.Append(Environment.NewLine);
                     }
 
-                    headerBuilder.Append(line);
+                    unparsedBuilder.Append(line);
                 }
             }
 
-            return (headerBuilder.ToString(), result);
+            return (unparsedBuilder.ToString(), entries);
         }
 
         public async Task<bool> WriteAsync(string header, IEnumerable<Entry> entries)

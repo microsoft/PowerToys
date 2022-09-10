@@ -46,7 +46,7 @@ namespace Hosts.ViewModels
         private bool _filtered;
 
         [ObservableProperty]
-        private string _header;
+        private string _additionalLines;
 
         private ObservableCollection<Entry> _entries;
 
@@ -124,13 +124,13 @@ namespace Hosts.ViewModels
             _entries.Remove(Selected);
         }
 
-        public void UpdateHeader(string header)
+        public void UpdateAdditionalLines(string lines)
         {
-            _header = header;
+            _additionalLines = lines;
 
             Task.Run(async () =>
             {
-                var error = !await _hostsService.WriteAsync(_header, _entries);
+                var error = !await _hostsService.WriteAsync(_additionalLines, _entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
         }
@@ -151,7 +151,7 @@ namespace Hosts.ViewModels
 
             Task.Run(async () =>
             {
-                (_header, var entries) = await _hostsService.ReadAsync();
+                (_additionalLines, var entries) = await _hostsService.ReadAsync();
 
                 await _dispatcherQueue.EnqueueAsync(() =>
                 {
@@ -204,7 +204,7 @@ namespace Hosts.ViewModels
 
             Task.Run(async () =>
             {
-                var error = !await _hostsService.WriteAsync(_header, _entries);
+                var error = !await _hostsService.WriteAsync(_additionalLines, _entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
         }
@@ -213,7 +213,7 @@ namespace Hosts.ViewModels
         {
             Task.Run(async () =>
             {
-                var error = !await _hostsService.WriteAsync(_header, _entries);
+                var error = !await _hostsService.WriteAsync(_additionalLines, _entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
         }

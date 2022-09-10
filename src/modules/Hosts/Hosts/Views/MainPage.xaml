@@ -232,12 +232,12 @@
         <ContentDialog x:Uid="AdditionalLinesDialog"
                        x:Name="AdditionalLinesDialog"
                        PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-                       PrimaryButtonCommand="{x:Bind UpdateHeaderCommand}">
+                       PrimaryButtonCommand="{x:Bind UpdateAdditionalLinesCommand}">
             <StackPanel Width="480"
                         Spacing="32"
                         HorizontalAlignment="Stretch">
                 <TextBox x:Uid="AdditionalLinesContent"
-                         x:Name="Header"
+                         x:Name="AdditionalLines"
                          Height="300"
                          TextWrapping="Wrap"
                          AcceptsReturn="True" />
