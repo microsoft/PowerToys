@@ -129,5 +129,16 @@ namespace Hosts.Views
                 ViewModel.DisableSelected();
             }
         }
+
+        private async void Ping_Click(object sender, RoutedEventArgs e)
+        {
+            var menuFlyoutItem = sender as MenuFlyoutItem;
+
+            if (menuFlyoutItem != null)
+            {
+                ViewModel.Selected = menuFlyoutItem.DataContext as Entry;
+                await ViewModel.PingSelectedAsync();
+            }
+        }
     }
 }

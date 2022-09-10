@@ -183,6 +183,11 @@ namespace Hosts.ViewModels
             CommentFilter = null;
         }
 
+        public async Task PingSelectedAsync()
+        {
+            _selected.Ping = await _hostsService.PingAsync(_selected.Address);
+        }
+
         public void Dispose()
         {
             Dispose(disposing: true);
@@ -191,6 +196,12 @@ namespace Hosts.ViewModels
 
         private void Entry_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            // Ping changed should't trigger a file save
+            if (e.PropertyName == nameof(Entry.Ping))
+            {
+                return;
+            }
+
             Task.Run(async () =>
             {
                 var error = !await _hostsService.WriteAsync(_header, _entries);

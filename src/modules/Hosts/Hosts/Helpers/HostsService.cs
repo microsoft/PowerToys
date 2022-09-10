@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,13 +39,6 @@ namespace Hosts.Helpers
             _fileSystemWatcher.Filter = _fileSystem.Path.GetFileName(HostsFilePath);
             _fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
             _fileSystemWatcher.Changed += FileSystemWatcher_Changed;
-            _fileSystemWatcher.EnableRaisingEvents = true;
-        }
-
-        private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
-        {
-            _fileSystemWatcher.EnableRaisingEvents = false;
-            FileChanged?.Invoke(this, EventArgs.Empty);
             _fileSystemWatcher.EnableRaisingEvents = true;
         }
 
@@ -168,6 +162,26 @@ namespace Hosts.Helpers
             return true;
         }
 
+        public async Task<bool> PingAsync(string address)
+        {
+            using var ping = new Ping();
+            var reply = await ping.SendPingAsync(address, 4000); // 4000 is the default ping timeout for ping.exe
+            return reply.Status == IPStatus.Success;
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            _fileSystemWatcher.EnableRaisingEvents = false;
+            FileChanged?.Invoke(this, EventArgs.Empty);
+            _fileSystemWatcher.EnableRaisingEvents = true;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -178,12 +192,6 @@ namespace Hosts.Helpers
                     _disposed = true;
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

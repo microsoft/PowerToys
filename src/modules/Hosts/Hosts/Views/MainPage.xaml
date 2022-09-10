@@ -17,7 +17,7 @@
     </i:Interaction.Behaviors>
 
     <Page.Resources>
-        <converters:BoolToObjectConverter x:Key="InvertBoolConverter" TrueValue="False" FalseValue="True" />
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
         <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" />
         <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible" />
     </Page.Resources>
@@ -98,9 +98,9 @@
                   SelectedItem="{Binding Selected, Mode=TwoWay}"
                   IsItemClickEnabled="True"
                   ItemClick="Entries_ItemClick"
-                  CanDragItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource InvertBoolConverter}}"
-                  CanReorderItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource InvertBoolConverter}}"
-                  AllowDrop="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource InvertBoolConverter}}">
+                  CanDragItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                  CanReorderItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                  AllowDrop="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid RightTapped="Grid_RightTapped"
@@ -108,6 +108,7 @@
                           IsRightTapEnabled="True">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="50" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
@@ -125,20 +126,58 @@
                                                 Icon="Clear"
                                                 Visibility="{Binding Active, Mode=TwoWay, Converter={StaticResource TrueToVisibleConverter}}"
                                                 Click="Disable_Click" />
+                                <MenuFlyoutItem Text="Ping" 
+                                                Icon="TwoBars"
+                                                Click="Ping_Click" />
                             </MenuFlyout>
                         </FlyoutBase.AttachedFlyout>
                         <ToggleSwitch Grid.Column="0"
-                                      VerticalAlignment="Center"
-                                      IsOn="{Binding Active, Mode=TwoWay}" />
-                        <TextBlock Grid.Column="1"
-                                   VerticalAlignment="Center"
-                                   TextWrapping="Wrap"
-                                   Text="{Binding Address, Mode=OneWay}" />
+                                      IsOn="{Binding Active, Mode=TwoWay}"
+                                      OnContent=""
+                                      OffContent=""
+                                      MinWidth="0">
+                        </ToggleSwitch>
+                        <SymbolIcon x:Name="PingIcon"
+                                    Grid.Column="1"
+                                    Visibility="Collapsed">
+                            <i:Interaction.Behaviors>
+                                <ic:DataTriggerBehavior Binding="{Binding Ping, Mode=OneWay}"
+                                                        ComparisonCondition="Equal"
+                                                        Value="True">
+                                    <ic:ChangePropertyAction TargetObject="{Binding ElementName=PingIcon}"
+                                                             PropertyName="Symbol"
+                                                             Value="Accept" />
+                                    <ic:ChangePropertyAction TargetObject="{Binding ElementName=PingIcon}"
+                                                             PropertyName="Visibility"
+                                                             Value="Visible" />
+                                    <ic:ChangePropertyAction TargetObject="{Binding ElementName=PingIcon}"
+                                                             PropertyName="Foreground"
+                                                             Value="{StaticResource SystemFillColorSuccessBrush}" />
+                                </ic:DataTriggerBehavior>
+                                <ic:DataTriggerBehavior Binding="{Binding Ping, Mode=OneWay}"
+                                                        ComparisonCondition="Equal"
+                                                        Value="False">
+                                    <ic:ChangePropertyAction TargetObject="{Binding ElementName=PingIcon}"
+                                                             PropertyName="Symbol"
+                                                             Value="Clear" />
+                                    <ic:ChangePropertyAction TargetObject="{Binding ElementName=PingIcon}"
+                                                             PropertyName="Visibility"
+                                                             Value="Visible" />
+                                    <ic:ChangePropertyAction TargetObject="{Binding ElementName=PingIcon}"
+                                                             PropertyName="Foreground"
+                                                             Value="{StaticResource SystemFillColorCriticalBrush}" />
+                                </ic:DataTriggerBehavior>
+                            </i:Interaction.Behaviors>
+                        </SymbolIcon>
                         <TextBlock Grid.Column="2"
                                    VerticalAlignment="Center"
                                    TextWrapping="Wrap"
-                                   Text="{Binding Hosts, Mode=OneWay}" />
+                                   Text="{Binding Address, Mode=OneWay}" />
                         <TextBlock Grid.Column="3"
+                                   VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding Hosts, Mode=OneWay}" />
+                        <TextBlock Grid.Column="4"
                                    VerticalAlignment="Center"
                                    TextWrapping="Wrap"
                                    Text="{Binding Comment, Mode=OneWay}" />
