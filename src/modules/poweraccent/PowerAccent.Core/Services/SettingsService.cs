@@ -164,6 +164,9 @@ public class SettingsService
                 return new char[] { 'û', 'ù', 'ü', 'ú', 'ū' };
             case LetterKey.VK_Y:
                 return new char[] { 'ÿ', 'ý' };
+            case LetterKey.VK_MINUS:
+                // Left to right: Underscore(U+005F), figure dash (U+2012), en dash (U+2013), em dash (U+2014), horizontal bar (U+2015)
+                return new char[] { '_', '‒', '–', '—', '―' };
         }
 
         throw new ArgumentException("Letter {0} is missing", letter.ToString());

@@ -60,7 +60,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                                                             LetterKey::VK_O,
                                                             LetterKey::VK_S,
                                                             LetterKey::VK_U,
-                                                            LetterKey::VK_Y };
+                                                            LetterKey::VK_Y,
+                                                            LetterKey::VK_MINUS };
         LetterKey letterPressed{};
 
         static inline const std::vector<TriggerKey> triggers = { TriggerKey::Right, TriggerKey::Left, TriggerKey::Space };

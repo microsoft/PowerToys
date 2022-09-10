@@ -13,7 +13,8 @@ namespace PowerToys
             VK_O = 0x4F,
             VK_S = 0x53,
             VK_U = 0x55,
-            VK_Y = 0x59
+            VK_Y = 0x59,
+            VK_MINUS = 0xBD
         };
 
         enum TriggerKey
