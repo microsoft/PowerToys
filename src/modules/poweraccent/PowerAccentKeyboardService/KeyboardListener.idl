@@ -1,0 +1,48 @@
+namespace PowerToys
+{
+    namespace PowerAccentKeyboardService
+    {
+        enum LetterKey
+        {
+            None = 0x00,
+            VK_A = 0x41,
+            VK_C = 0x43,
+            VK_E = 0x45,
+            VK_I = 0x49,
+            VK_N = 0x4E,
+            VK_O = 0x4F,
+            VK_S = 0x53,
+            VK_U = 0x55,
+            VK_Y = 0x59
+        };
+
+        enum TriggerKey
+        {
+            Right = 0x27, // VK_RIGHT
+            Left = 0x25, // VK_LEFT
+            Space = 0x20 // VK_SPACE
+        };
+
+        enum InputType
+        {
+            None,
+            Space,
+            Char
+        };
+
+        [version(1.0), uuid(37197089-5438-4479-af57-30ab3f3c8be4)] delegate void ShowToolbar(LetterKey key);
+        [version(1.0), uuid(8eb79d6b-1826-424f-9fbc-af21ae19725e)] delegate void HideToolbar(InputType inputType);
+        [version(1.0), uuid(db72d45c-a5a2-446f-bdc1-506e9121764a)] delegate void NextChar(TriggerKey inputSpace);
+
+        [default_interface] runtimeclass KeyboardListener {
+            KeyboardListener();
+            void InitHook();
+            void UnInitHook();
+            void SetShowToolbarEvent(event ShowToolbar showToolbarEvent);
+            void SetHideToolbarEvent(event HideToolbar hideToolbarEvent);
+            void SetNextCharEvent(event NextChar nextCharEvent);
+            void UpdateActivationKey(Int32 activationKey);
+            void UpdateInputTime(Int32 inputTime);
+        }
+    }
+}

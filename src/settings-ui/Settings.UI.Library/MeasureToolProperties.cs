@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ActivationShortcut = new HotkeySettings(true, false, false, true, 0x4D);
             UnitsOfMeasure = new IntProperty(0);
             PixelTolerance = new IntProperty(30);
-            ContinuousCapture = true;
+            ContinuousCapture = false;
             DrawFeetOnCross = true;
             PerColorChannelEdgeDetection = false;
             MeasureCrossColor = new StringProperty("#FF4500");

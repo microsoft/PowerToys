@@ -7,6 +7,7 @@ namespace PowerAccent.Core.Services;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using PowerToys.PowerAccentKeyboardService;
 using System.IO.Abstractions;
 using System.Text.Json;
 
@@ -16,10 +17,12 @@ public class SettingsService
     private readonly ISettingsUtils _settingsUtils;
     private readonly IFileSystemWatcher _watcher;
     private readonly object _loadingSettingsLock = new object();
+    private KeyboardListener _keyboardListener;
 
-    public SettingsService()
+    public SettingsService(KeyboardListener keyboardListener)
     {
         _settingsUtils = new SettingsUtils();
+        _keyboardListener = keyboardListener;
         ReadSettings();
         _watcher = Helper.GetFileWatcher(PowerAccentModuleName, "settings.json", () => { ReadSettings(); });
     }
@@ -48,7 +51,10 @@ public class SettingsService
                     if (settings != null)
                     {
                         ActivationKey = settings.Properties.ActivationKey;
+                        _keyboardListener.UpdateActivationKey((int)ActivationKey);
+
                         InputTime = settings.Properties.InputTime.Value;
+                        _keyboardListener.UpdateInputTime(InputTime);
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
                             case "Top center":
@@ -79,6 +85,8 @@ public class SettingsService
                                 Position = Position.Center;
                                 break;
                         }
+
+                        _keyboardListener.UpdateInputTime(InputTime);
                     }
                 }
                 catch (Exception ex)
@@ -134,32 +142,27 @@ public class SettingsService
         }
     }
 
-    public char[] GetLetterKey(LetterKey letter)
-    {
-        return GetDefaultLetterKey(letter);
-    }
-
     public static char[] GetDefaultLetterKey(LetterKey letter)
     {
         switch (letter)
         {
-            case LetterKey.A:
+            case LetterKey.VK_A:
                 return new char[] { 'à', 'â', 'á', 'ä', 'ã', 'å', 'æ' };
-            case LetterKey.C:
+            case LetterKey.VK_C:
                 return new char[] { 'ć', 'ĉ', 'č', 'ċ', 'ç', 'ḉ' };
-            case LetterKey.E:
+            case LetterKey.VK_E:
                 return new char[] { 'é', 'è', 'ê', 'ë', 'ē', 'ė', '€' };
-            case LetterKey.I:
+            case LetterKey.VK_I:
                 return new char[] { 'î', 'ï', 'í', 'ì', 'ī' };
-            case LetterKey.N:
+            case LetterKey.VK_N:
                 return new char[] { 'ñ', 'ń' };
-            case LetterKey.O:
+            case LetterKey.VK_O:
                 return new char[] { 'ô', 'ö', 'ó', 'ò', 'õ', 'ø', 'œ' };
-            case LetterKey.S:
+            case LetterKey.VK_S:
                 return new char[] { 'š', 'ß', 'ś' };
-            case LetterKey.U:
+            case LetterKey.VK_U:
                 return new char[] { 'û', 'ù', 'ü', 'ú', 'ū' };
-            case LetterKey.Y:
+            case LetterKey.VK_Y:
                 return new char[] { 'ÿ', 'ý' };
         }
 

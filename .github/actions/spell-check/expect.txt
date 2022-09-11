@@ -112,7 +112,6 @@ atlstr
 Attribs
 attrs
 Atyrau
-augustkarlstedt
 aumid
 Aut
 Authenticode
@@ -144,7 +143,6 @@ bck
 Belarus
 betadele
 betsegaw
-bezgumption
 BGR
 bgra
 bhid
@@ -540,6 +538,7 @@ eltociear
 emmintrin
 Emoji
 emptyrecyclebin
+ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
 endforeach
 endian
@@ -560,6 +559,7 @@ ERASEBKGND
 EREOF
 EResize
 ERole
+ERRORLEVEL
 ERRORMESSAGE
 ERRORTITLE
 ESettings
@@ -644,6 +644,7 @@ FRAMECHANGED
 franky
 frankychen
 Froml
+FROMTOUCH
 fstream
 FTYPE
 func
@@ -742,7 +743,7 @@ HKCC
 HKCR
 HKCU
 hkey
-hkl
+HKL
 HKLM
 HKPD
 HKU
@@ -784,6 +785,7 @@ hsv
 htcfreek
 HTCLIENT
 HTHUMBNAIL
+HTOUCHINPUT
 HTTRANSPARENT
 HValue
 Hvci
@@ -869,6 +871,7 @@ IImage
 Iindex
 IInitialize
 IInspectable
+IInvoke
 IIO
 IItem
 IJson
@@ -1276,6 +1279,7 @@ monitorinfof
 Monthand
 Moq
 MOUSEACTIVATE
+MOUSEEVENTF
 MOUSEHWHEEL
 MOUSEINPUT
 MOUSELEAVE
@@ -1352,6 +1356,7 @@ NDEBUG
 Ndombe
 ndp
 NEEDDISPATCH
+NEQ
 NESW
 netcore
 netcoreapp
@@ -1470,7 +1475,6 @@ openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
 ORPHANEDDIALOGTITLE
-osfanbuff
 oss
 ostr
 ostream
@@ -1752,7 +1756,6 @@ RNumber
 roadmap
 robmensching
 Roboto
-rohanrdy
 rooler
 roslyn
 Rothera
@@ -2090,6 +2093,8 @@ Toolset
 toolwindow
 TOPDOWNDIB
 toplevel
+TOUCHEVENTF
+TOUCHINPUT
 touchpad
 toupper
 Towindow
@@ -2109,6 +2114,7 @@ Tshuapa
 TStr
 Tuva
 TValue
+TWF
 TYMED
 typedef
 TYPEKEY
@@ -2263,6 +2269,7 @@ VSTT
 vswhere
 vtable
 Vtbl
+WANTPALM
 wbem
 wbemuuid
 WBounds
