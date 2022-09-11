@@ -533,18 +533,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
             else
             {
-                _settingsBackupWasSuccessful = results.success;
-                _settingsBackupMessage = "restored, restart: " + DateTime.Now;
-                _settingsBackupWasUnsuccessful = !_settingsBackupWasSuccessful;
-                _settingsBackupMessage = "restored, restart: " + DateTime.Now;
-
-                NotifyPropertyChanged(nameof(SettingsBackupMessage));
-                NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
-                NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
-                HideBackupAndSyncMessageAreaAction();
-
-                // Debugger.Launch();
-                // Restart();
+                // make sure not to do NotifyPropertyChanged here, else it will persist the configs from memory and
+                // undo the settings restore.
+                Restart();
             }
         }
 
