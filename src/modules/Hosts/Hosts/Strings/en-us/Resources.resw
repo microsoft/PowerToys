@@ -175,7 +175,7 @@
     <value>Enable</value>
   </data>
   <data name="FileChanged.Message" xml:space="preserve">
-    <value>File hosts has changed. Do you want to reload it?</value>
+    <value>Hosts file has changed by another application. Do you want to reload it?</value>
   </data>
   <data name="FileSaveError.Message" xml:space="preserve">
     <value>Failed to save hosts file.</value>
@@ -189,6 +189,9 @@
   <data name="MainDialog.CloseButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
   <data name="Ping.Text" xml:space="preserve">
     <value>Ping</value>
   </data>
@@ -200,5 +203,14 @@
   </data>
   <data name="UpdateEntryTitle" xml:space="preserve">
     <value>Update the entry</value>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="WarningMessage" xml:space="preserve">
+    <value>Altering hosts file has direct real world impact of how this computer resolves domain names. Do you want to continue?</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
   </data>
 </root>

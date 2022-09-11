@@ -16,7 +16,7 @@ using Hosts.Models;
 
 namespace Hosts.Helpers
 {
-    public class HostsService : IDisposable
+    public class HostsService : IHostsService, IDisposable
     {
         private static SemaphoreSlim _asyncLock = new SemaphoreSlim(1, 1);
         private readonly IFileSystem _fileSystem;

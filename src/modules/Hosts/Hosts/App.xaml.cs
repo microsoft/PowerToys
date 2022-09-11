@@ -4,9 +4,15 @@
 
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using Hosts.Helpers;
+using Hosts.Settings;
+using Hosts.ViewModels;
+using Hosts.Views;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 
 namespace Hosts
@@ -15,9 +21,42 @@ namespace Hosts
     {
         private Window _window;
 
+        public IHost Host
+        {
+            get;
+        }
+
+        public static T GetService<T>()
+            where T : class
+        {
+            if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
+            {
+                throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
+            }
+
+            return service;
+        }
+
         public App()
         {
             InitializeComponent();
+
+            Host = Microsoft.Extensions.Hosting.Host.
+                CreateDefaultBuilder().
+                UseContentRoot(AppContext.BaseDirectory).
+                ConfigureServices((context, services) =>
+                {
+                    // Core Services
+                    services.AddSingleton<IFileSystem, FileSystem>();
+                    services.AddSingleton<IHostsService, HostsService>();
+                    services.AddSingleton<IUserSettings, UserSettings>();
+
+                    // Views and ViewModels
+                    services.AddTransient<MainPage>();
+                    services.AddTransient<MainViewModel>();
+                }).
+                Build();
+
             UnhandledException += App_UnhandledException;
 
             new Thread(() =>

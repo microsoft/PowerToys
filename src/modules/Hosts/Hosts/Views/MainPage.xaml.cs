@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Hosts.Models;
+using Hosts.Settings;
 using Hosts.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -32,10 +33,12 @@ namespace Hosts.Views
 
         public ICommand UpdateAdditionalLinesCommand => new RelayCommand(UpdateAdditionalLines);
 
+        public ICommand ExitCommand => new RelayCommand(() => Environment.Exit(0));
+
         public MainPage()
         {
             InitializeComponent();
-            ViewModel = new MainViewModel();
+            ViewModel = App.GetService<MainViewModel>();
             DataContext = ViewModel;
         }
 
@@ -143,6 +146,30 @@ namespace Hosts.Views
             {
                 ViewModel.Selected = menuFlyoutItem.DataContext as Entry;
                 await ViewModel.PingSelectedAsync();
+            }
+        }
+
+        private async void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            var userSettings = App.GetService<IUserSettings>();
+            if (userSettings.ShowStartupWarning)
+            {
+                var resourceLoader = ResourceLoader.GetForViewIndependentUse();
+                var dialog = new ContentDialog();
+
+                dialog.XamlRoot = XamlRoot;
+                dialog.Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style;
+                dialog.Title = resourceLoader.GetString("Warning");
+                dialog.Content = new TextBlock
+                {
+                    Text = resourceLoader.GetString("WarningMessage"),
+                    TextWrapping = TextWrapping.Wrap,
+                };
+                dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
+                dialog.CloseButtonText = resourceLoader.GetString("No");
+                dialog.CloseButtonCommand = ExitCommand;
+
+                await dialog.ShowAsync();
             }
         }
     }

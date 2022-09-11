@@ -13,6 +13,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
 using Hosts.Helpers;
 using Hosts.Models;
+using Hosts.Settings;
 using Microsoft.UI.Dispatching;
 
 namespace Hosts.ViewModels
@@ -20,7 +21,8 @@ namespace Hosts.ViewModels
     public partial class MainViewModel : ObservableObject, IDisposable
     {
         private readonly IFileSystem _fileSystem;
-        private readonly HostsService _hostsService;
+        private readonly IHostsService _hostsService;
+        private readonly IUserSettings _userSettings;
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         private bool _disposed;
 
@@ -94,10 +96,15 @@ namespace Hosts.ViewModels
 
         public ICommand ClearFiltersCommand => new RelayCommand(ClearFilters);
 
-        public MainViewModel()
+        public MainViewModel(
+            IFileSystem fileSystem,
+            IHostsService hostService,
+            IUserSettings userSettings)
         {
-            _fileSystem = new FileSystem();
-            _hostsService = new HostsService(_fileSystem);
+            _fileSystem = fileSystem;
+            _hostsService = hostService;
+            _userSettings = userSettings;
+
             _hostsService.FileChanged += (s, e) =>
             {
                 _dispatcherQueue.TryEnqueue(() => FileChanged = true);
