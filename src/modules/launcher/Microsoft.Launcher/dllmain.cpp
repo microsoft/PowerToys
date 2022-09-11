@@ -176,7 +176,7 @@ public:
             PowerToysSettings::CustomActionObject action_object =
                 PowerToysSettings::CustomActionObject::from_json_string(action);
         }
-        catch (std::exception ex)
+        catch (std::exception&)
         {
             // Improper JSON.
         }
@@ -198,7 +198,7 @@ public:
             // Otherwise call a custom function to process the settings before saving them to disk:
             // save_settings();
         }
-        catch (std::exception ex)
+        catch (std::exception&)
         {
             // Improper JSON.
         }
@@ -366,7 +366,7 @@ void Microsoft_Launcher::init_settings()
 
         parse_hotkey(settings);
     }
-    catch (std::exception ex)
+    catch (std::exception&)
     {
         // Error while loading from the settings file. Let default values stay as they are.
     }
