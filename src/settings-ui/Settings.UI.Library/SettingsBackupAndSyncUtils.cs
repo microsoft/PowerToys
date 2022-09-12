@@ -3,16 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
-using System.Xml.Linq;
+using System.Text.Json.Nodes;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-using Microsoft.VisualBasic.Logging;
-using Newtonsoft.Json.Linq;
 
 namespace Settings.UI.Library
 {
@@ -76,7 +76,12 @@ namespace Settings.UI.Library
 
                 var allCurrentSettingsFiles = GetSettingsFiles(appBasePath);
 
-                var backupRetoreSettings = JObject.Parse(File.ReadAllText(Path.Combine(appBasePath, "backup-restore_settings.json")));
+                var backupRetoreSettings = JsonNode.Parse(File.ReadAllText(Path.Combine(appBasePath, "backup-restore_settings.json")));
+
+                var forecastNode = JsonNode.Parse(File.ReadAllText(Path.Combine(appBasePath, "backup-restore_settings.json")))!;
+
+                // var restartAfterRestore = true;
+                // backupRetoreSettings.RootElement.EnumerateObject()..TryGetProperty("RestartAfterRestore", out restartAfterRestore))
                 var currentSettingsFiles = GetSettingsFiles(appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
                 var backupSettingsFiles = GetSettingsFiles(latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
 
@@ -97,30 +102,44 @@ namespace Settings.UI.Library
                     if (currentSettingsFiles.ContainsKey(currentFile.Key))
                     {
                         // we have a setting file to restore to
-                        var currentSettingsFile = GetExportVersion(backupRetoreSettings, currentFile.Key, currentSettingsFiles[currentFile.Key]);
+                        using var currentSettingsFile = GetExportVersion(backupRetoreSettings, currentFile.Key, currentSettingsFiles[currentFile.Key]);
 
-                        var settingsToRestoreChecksum = ChecksumUtil.GetStringChecksum(settingsToRestore.ToString());
-                        var currentSettingsFileChecksum = ChecksumUtil.GetStringChecksum(currentSettingsFile.ToString());
+                        var settingsToRestoreJson = JsonSerializer.Serialize(settingsToRestore, new JsonSerializerOptions { WriteIndented = true });
+                        var currentSettingsFileJson = JsonSerializer.Serialize(currentSettingsFile, new JsonSerializerOptions { WriteIndented = true });
+
+                        var settingsToRestoreChecksum = ChecksumUtil.GetStringChecksum(settingsToRestoreJson);
+                        var currentSettingsFileChecksum = ChecksumUtil.GetStringChecksum(currentSettingsFileJson);
 
                         if (settingsToRestoreChecksum != currentSettingsFileChecksum)
                         {
                             // the settings file needs to be updated, update the real one with non-excluded stuff...
-                            var realCurrentSettings = JObject.Parse(File.ReadAllText(currentSettingsFiles[currentFile.Key]));
-                            var newCurrentSettingsFile = MergeJObjects(settingsToRestore, realCurrentSettings);
-                            File.WriteAllText(currentSettingsFiles[currentFile.Key], newCurrentSettingsFile.ToString());
+                            Logger.LogInfo($"Settings file {currentFile.Key} is different and is getting updated from backup");
+                            Logger.LogInfo($"X: settingsToRestoreChecksum:{settingsToRestoreChecksum},  currentSettingsFileJson:{currentSettingsFileJson}");
 
+                            using var realCurrentSettings = JsonDocument.Parse(File.ReadAllText(currentSettingsFiles[currentFile.Key]));
+                            using var newCurrentSettingsFile = MergeJObjects(settingsToRestore, realCurrentSettings);
+                            File.WriteAllText(currentSettingsFiles[currentFile.Key], JsonSerializer.Serialize(newCurrentSettingsFile));
                             anyFilesUpdated = true;
                         }
                     }
                     else
                     {
                         // we don't have anything to merge this into, so... copy it all or skip it?
+                        Logger.LogInfo($"Settings file {currentFile.Key} is in the backup but does not exist for restore");
                     }
                 }
 
                 if (anyFilesUpdated)
                 {
-                    return (true, $"START APP");
+                    var temperatureNode = (bool?)backupRetoreSettings!["RestartAfterRestore"];
+                    if (!temperatureNode.HasValue || temperatureNode.Value)
+                    {
+                        return (true, $"RESTART APP");
+                    }
+                    else
+                    {
+                        return (false, $"RESTART APP");
+                    }
                 }
                 else
                 {
@@ -133,91 +152,37 @@ namespace Settings.UI.Library
             }
         }
 
-        private static JObject MergeJObjects(JObject a, JObject b)
+        private static JsonDocument MergeJObjects(JsonDocument newContent, JsonDocument origDoc)
         {
-            b = JObject.Parse(b.ToString());
-            b.Merge(a, new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Union });
-            return b;
-        }
+            var outputBuffer = new ArrayBufferWriter<byte>();
 
-        public static (bool success, string message) RestoreSettingsOld(string appBasePath, string settingsBackupAndSyncDir)
-        {
-            try
+            using (var jsonWriter = new Utf8JsonWriter(outputBuffer, new JsonWriterOptions { Indented = true }))
             {
-                if (!Directory.Exists(appBasePath))
+                JsonElement root1 = origDoc.RootElement;
+                JsonElement root2 = newContent.RootElement;
+
+                jsonWriter.WriteStartObject();
+
+                // Write all the properties of the first document that don't conflict with the second
+                foreach (JsonProperty property in root1.EnumerateObject().OrderBy(p => p.Name))
                 {
-                    return (false, $"Invalid appBasePath {appBasePath}");
-                }
-
-                if (string.IsNullOrEmpty(settingsBackupAndSyncDir))
-                {
-                    return (false, $"BackupAndSync_NoBackupSyncPath");
-                }
-
-                if (!Directory.Exists(settingsBackupAndSyncDir))
-                {
-                    Logger.LogError($"Invalid settingsBackupAndSyncDir {settingsBackupAndSyncDir}");
-                    return (false, "BackupAndSync_InvalidBackupLocation");
-                }
-
-                var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndSyncDir);
-
-                if (latestSettingsFolder == null)
-                {
-                    return (false, $"BackupAndSync_NoBackupsFound");
-                }
-
-                var allBackupSettingsFiles = GetSettingsFiles(latestSettingsFolder);
-                var allCurrentSettingsFiles = GetSettingsFiles(appBasePath);
-
-                var hasAnySettingChanged = ShouldDo("restore", latestSettingsFolder, appBasePath);
-                if (!hasAnySettingChanged)
-                {
-                    return (false, $"BackupAndSync_NothingToRestore");
-                }
-
-                foreach (var file in allBackupSettingsFiles)
-                {
-                    var relativePath = file.Substring(latestSettingsFolder.Length + 1);
-                    var retoreFullPath = Path.Combine(appBasePath, relativePath);
-
-                    var pathToFullRestore = Path.GetDirectoryName(retoreFullPath);
-
-                    if (!File.Exists(retoreFullPath))
+                    if (!root2.TryGetProperty(property.Name, out _))
                     {
-                        Logger.LogInfo($"{retoreFullPath} does not exist, creating");
-                        if (!Directory.Exists(pathToFullRestore))
-                        {
-                            Directory.CreateDirectory(pathToFullRestore);
-                        }
-
-                        File.WriteAllBytes(retoreFullPath, Array.Empty<byte>());
-                    }
-
-                    var tempBackName = Path.GetTempFileName();
-
-                    // make a copy to restore just in cast.
-                    File.WriteAllBytes(tempBackName, File.ReadAllBytes(retoreFullPath));
-                    File.Delete(retoreFullPath);
-                    try
-                    {
-                        File.Copy(file, retoreFullPath);
-                        File.Delete(tempBackName);
-                    }
-                    catch (Exception ex3)
-                    {
-                        // if we failed to copy the new file, try to restore the old
-                        File.Copy(tempBackName, retoreFullPath);
-                        return (false, $"Issue restoring {relativePath}, {ex3.Message}");
+                        property.WriteTo(jsonWriter);
                     }
                 }
 
-                return (true, $"Found {allBackupSettingsFiles.Length} files.");
+                // Write all the properties of the second document (including those that are duplicates which were skipped earlier)
+                // The property values of the second document completely override the values of the first
+                foreach (JsonProperty property in root2.EnumerateObject().OrderBy(p => p.Name))
+                {
+                    property.WriteTo(jsonWriter);
+                }
+
+                jsonWriter.WriteEndObject();
             }
-            catch (Exception ex2)
-            {
-                return (false, $"There was an error: {ex2.Message}");
-            }
+
+            return JsonDocument.Parse(Encoding.UTF8.GetString(outputBuffer.WrittenSpan));
         }
 
         private static string GetLatestSettingsFolder(string settingsBackupAndSyncDir)
@@ -289,7 +254,7 @@ namespace Settings.UI.Library
                     return (false, $"BackupAndSync_BackupError");
                 }
 
-                var backupRetoreSettings = JObject.Parse(File.ReadAllText(Path.Combine(appBasePath, "backup-restore_settings.json")));
+                var backupRetoreSettings = JsonNode.Parse(File.ReadAllText(Path.Combine(appBasePath, "backup-restore_settings.json")));
                 var currentSettingsFiles = GetSettingsFiles(appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
 
                 if (currentSettingsFiles.Count == 0)
@@ -306,8 +271,8 @@ namespace Settings.UI.Library
                 }
 
                 var anyFileBackedUp = false;
-                var skippedSettingsFiles = new Dictionary<string, (string path, JObject settings)>();
-                var updatedSettingsFiles = new Dictionary<string, (string path, JObject settings)>();
+                var skippedSettingsFiles = new Dictionary<string, (string path, JsonDocument settings)>();
+                var updatedSettingsFiles = new Dictionary<string, (string path, JsonDocument settings)>();
                 foreach (var currentFile in currentSettingsFiles)
                 {
                     // need to check and back this up;
@@ -316,19 +281,21 @@ namespace Settings.UI.Library
                     var doBackup = false;
                     if (backupSettingsFiles.ContainsKey(currentFile.Key))
                     {
-                        var newSettingsChecksum = ChecksumUtil.GetStringChecksum(newSettingsToBackup.ToString());
-                        var lastSettingsChecksum = ChecksumUtil.GetFileChecksum(backupSettingsFiles[currentFile.Key]);
+                        var lastSettingsFileDoc = GetExportVersion(backupRetoreSettings, currentFile.Key, backupSettingsFiles[currentFile.Key]);
+
+                        var newSettingsChecksum = ChecksumUtil.GetStringChecksum(JsonSerializer.Serialize(newSettingsToBackup, new JsonSerializerOptions { WriteIndented = true }));
+                        var lastSettingsChecksum = ChecksumUtil.GetStringChecksum(JsonSerializer.Serialize(lastSettingsFileDoc, new JsonSerializerOptions { WriteIndented = true }));
 
                         if (newSettingsChecksum != lastSettingsChecksum)
                         {
                             doBackup = true;
-                            Logger.LogInfo($"ShouldDo, {currentFile.Value} content is different.");
+                            Logger.LogInfo($"BackupSettings, {currentFile.Value} content is different.");
                         }
                     }
                     else
                     {
                         // this has never been backed up
-                        Logger.LogInfo($"ShouldDo, {currentFile.Value} does not exists.");
+                        Logger.LogInfo($"BackupSettings, {currentFile.Value} does not exists.");
                         doBackup = true;
                     }
 
@@ -350,11 +317,11 @@ namespace Settings.UI.Library
                             Directory.CreateDirectory(Path.GetDirectoryName(backupFullPath));
                         }
 
-                        File.WriteAllText(backupFullPath, newSettingsToBackup.ToString());
+                        Logger.LogInfo($"BackupSettings writting, {backupFullPath}.");
+                        File.WriteAllText(backupFullPath, JsonSerializer.Serialize(newSettingsToBackup, new JsonSerializerOptions { WriteIndented = true }));
                     }
                     else
                     {
-                        // save this just in case we need to add it
                         skippedSettingsFiles.Add(currentFile.Key, (currentFile.Value, newSettingsToBackup));
                     }
                 }
@@ -380,7 +347,8 @@ namespace Settings.UI.Library
                         Directory.CreateDirectory(Path.GetDirectoryName(backupFullPath));
                     }
 
-                    File.WriteAllText(backupFullPath, currentFile.Value.settings.ToString());
+                    Logger.LogInfo($"BackupSettings writting, {backupFullPath}.");
+                    File.WriteAllText(backupFullPath, JsonSerializer.Serialize(currentFile.Value.settings, new JsonSerializerOptions { WriteIndented = true }));
                 }
 
                 // add manifest
@@ -389,7 +357,7 @@ namespace Settings.UI.Library
                     CreateDateTime = DateTime.UtcNow,
                     @Version = Helper.GetProductVersion(),
                     UpdatedFiles = updatedSettingsFiles.Keys.ToList(),
-                    NewFiles = skippedSettingsFiles.Keys.ToList(),
+                    UnchangedFiles = skippedSettingsFiles.Keys.ToList(),
                 };
 
                 var manifest = JsonSerializer.Serialize(manifestData, new JsonSerializerOptions() { WriteIndented = true });
@@ -407,214 +375,76 @@ namespace Settings.UI.Library
             }
         }
 
-        public static (bool success, string message) BackupSettingsOld(string appBasePath, string settingsBackupAndSyncDir)
+        public static JsonDocument GetExportVersion(JsonNode backupRetoreSettings, string settingFileKey, string settingsFileName)
         {
-            try
+            var ignoredSettings = GetIgnoredSettings(backupRetoreSettings, settingFileKey);
+            var settingsFile = JsonDocument.Parse(File.ReadAllText(settingsFileName));
+
+            var outputBuffer = new ArrayBufferWriter<byte>();
+
+            using (var jsonWriter = new Utf8JsonWriter(outputBuffer, new JsonWriterOptions { Indented = true }))
             {
-                if (!Directory.Exists(appBasePath))
+                jsonWriter.WriteStartObject();
+                foreach (var property in settingsFile.RootElement.EnumerateObject().OrderBy(p => p.Name))
                 {
-                    return (false, $"Invalid appBasePath {appBasePath}");
-                }
-
-                if (string.IsNullOrEmpty(settingsBackupAndSyncDir))
-                {
-                    return (false, $"BackupAndSync_NoBackupSyncPath");
-                }
-
-                if (!Path.IsPathRooted(settingsBackupAndSyncDir))
-                {
-                    return (false, $"Invalid settingsBackupAndSyncDir, not rooted");
-                }
-
-                if (settingsBackupAndSyncDir.StartsWith(appBasePath, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    // backup cannot be under app
-                    Logger.LogError($"BackupSettings, backup cannot be under app");
-                    return (false, "BackupAndSync_InvalidBackupLocation");
-                }
-
-                var dirExists = Directory.Exists(settingsBackupAndSyncDir);
-
-                try
-                {
-                    if (!dirExists)
+                    if (!ignoredSettings.Contains(property.Name))
                     {
-                        Directory.CreateDirectory(settingsBackupAndSyncDir);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"Failed to create dir {settingsBackupAndSyncDir}", ex);
-                    return (false, $"BackupAndSync_BackupError");
-                }
-
-                var allSettingsFiles = GetSettingsFiles(appBasePath);
-
-                if (allSettingsFiles.Length == 0)
-                {
-                    return (false, "BackupAndSync_NoSettingsFilesFound");
-                }
-
-                var fullBackupDir = Path.Combine(settingsBackupAndSyncDir, $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
-
-                var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndSyncDir);
-                if (latestSettingsFolder != null)
-                {
-                    var allLastSettingsFiles = GetSettingsFiles(latestSettingsFolder);
-
-                    var hasAnySettingChanged = ShouldDo("backup", latestSettingsFolder, appBasePath);
-                    if (!hasAnySettingChanged)
-                    {
-                        return (false, $"BackupAndSync_NothingToBackup");
+                        property.WriteTo(jsonWriter);
                     }
                 }
 
-                if (!Directory.Exists(fullBackupDir))
-                {
-                    Directory.CreateDirectory(fullBackupDir);
-                }
-                else
-                {
-                    return (false, $"Backup folder already exists?");
-                }
-
-                foreach (var file in allSettingsFiles)
-                {
-                    var relativePath = file.Substring(appBasePath.Length + 1);
-                    var backupFullPath = Path.Combine(fullBackupDir, relativePath);
-
-                    var pathToFullBackup = Path.GetDirectoryName(backupFullPath);
-                    if (!Directory.Exists(pathToFullBackup))
-                    {
-                        Directory.CreateDirectory(pathToFullBackup);
-                    }
-
-                    File.Copy(file, backupFullPath);
-                }
-
-                // add manifest
-                var manifest = JsonSerializer.Serialize(new { CreateDateTime = DateTime.UtcNow, @Version = Helper.GetProductVersion() }, new JsonSerializerOptions() { WriteIndented = true });
-                File.WriteAllText(Path.Combine(fullBackupDir, "manifest.json"), manifest);
-
-                RemoveOldBackups(settingsBackupAndSyncDir, 10, TimeSpan.FromDays(60));
-
-                // var rm = new ResourceManager("Strings", typeof(Example).Assembly);
-                return (true, $"BackupAndSync_BackupComplete");
+                jsonWriter.WriteEndObject();
             }
-            catch (Exception ex2)
+
+            if (settingFileKey.Equals("\\PowerToys Run\\settings.json", StringComparison.OrdinalIgnoreCase))
             {
-                Logger.LogError($"There was an error: {ex2.Message}", ex2);
-                return (false, $"BackupAndSync_BackupError");
-            }
-        }
-
-        private static bool ShouldDo(string purpose, string lastSettingsPath, string appBasePath)
-        {
-            var backupRetoreSettings = JObject.Parse(File.ReadAllText(Path.Combine(appBasePath, "backup-restore_settings.json")));
-            var backupSettingsFiles = GetSettingsFiles(lastSettingsPath).ToList().ToDictionary(x => x.Substring(lastSettingsPath.Length));
-            var currentSettingsFiles = GetSettingsFiles(appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
-
-            if (purpose == "backup")
-            {
-                foreach (var currentFile in currentSettingsFiles)
-                {
-                    if (backupSettingsFiles.ContainsKey(currentFile.Key))
-                    {
-                        var exportJson = GetExportVersion(backupRetoreSettings, currentFile.Key, currentFile.Value);
-
-                        // var currentFileChecksum = ChecksumUtil.GetFileChecksum(currentFile.Value);
-                        var currentFileChecksum = ChecksumUtil.GetStringChecksum(exportJson.ToString());
-                        var backupFileChecksum = ChecksumUtil.GetFileChecksum(backupSettingsFiles[currentFile.Key]);
-
-                        if (currentFileChecksum != backupFileChecksum)
-                        {
-                            Logger.LogInfo($"ShouldDo, {currentFile.Value} content is different.");
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        Logger.LogInfo($"ShouldDo, backup is missing file {currentFile.Key}.");
-                        return true;
-                    }
-                }
+                // hack fix-up
+                var json = Encoding.UTF8.GetString(outputBuffer.WrittenSpan);
+                json = json.Replace("VSCodeWorkspaces\\\\Images\\\\code-", "VSCodeWorkspace\\\\Images\\\\code-");
+                return JsonDocument.Parse(json);
             }
             else
             {
-                foreach (var backupFile in backupSettingsFiles)
-                {
-                    if (currentSettingsFiles.ContainsKey(backupFile.Key))
-                    {
-                        var backupFileChecksum = ChecksumUtil.GetFileChecksum(backupFile.Value);
-                        var currentFileChecksum = ChecksumUtil.GetFileChecksum(currentSettingsFiles[backupFile.Key]);
-                        if (backupFileChecksum != currentFileChecksum)
-                        {
-                            Logger.LogInfo($"ShouldDo, {backupFile.Value} content is different.");
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        Logger.LogInfo($"ShouldDo, restore has extra file {backupFile.Key}, that's OK");
-                        return true;
-                    }
-                }
+                return JsonDocument.Parse(Encoding.UTF8.GetString(outputBuffer.WrittenSpan));
             }
-
-            return false;
         }
 
-        public static JObject GetExportVersion(JObject backupRetoreSettings, string settingFileKey, string settingsFileName)
-        {
-            if (settingFileKey.StartsWith("\\", StringComparison.OrdinalIgnoreCase))
-            {
-                settingFileKey = settingFileKey.Substring(1);
-            }
-
-            var ignoredSettings = GetIgnoredSettings(backupRetoreSettings, settingFileKey);
-            var settingsFile = JObject.Parse(File.ReadAllText(settingsFileName));
-
-            if (ignoredSettings.Length == 0)
-            {
-                return settingsFile;
-            }
-
-            foreach (var property in settingsFile.Properties().ToList())
-            {
-                if (ignoredSettings.Contains(property.Name))
-                {
-                    settingsFile.Remove(property.Name);
-                }
-            }
-
-            return settingsFile;
-        }
-
-        private static string[] GetIgnoredSettings(JObject backupRetoreSettings, string settingFileKey)
+        private static string[] GetIgnoredSettings(JsonNode backupRetoreSettings, string settingFileKey)
         {
             if (backupRetoreSettings == null)
             {
                 throw new ArgumentNullException(nameof(backupRetoreSettings));
             }
 
-            var ignoredSettings = backupRetoreSettings["IgnoredSettings"];
-
-            if (ignoredSettings != null && ignoredSettings[settingFileKey] != null)
+            if (settingFileKey.StartsWith("\\", StringComparison.OrdinalIgnoreCase))
             {
-                ignoredSettings = ignoredSettings[settingFileKey];
-                if (ignoredSettings != null)
+                settingFileKey = settingFileKey.Substring(1);
+            }
+
+            if (backupRetoreSettings["IgnoredSettings"] != null)
+            {
+                if (backupRetoreSettings["IgnoredSettings"][settingFileKey] != null)
                 {
-                    return ((JArray)ignoredSettings).ToObject<string[]>();
+                    var settingsArray = (JsonArray)backupRetoreSettings["IgnoredSettings"][settingFileKey];
+
+                    Console.WriteLine("settingsArray " + settingsArray.GetType().FullName);
+
+                    var settingsList = new List<string>();
+
+                    foreach (var setting in settingsArray)
+                    {
+                        settingsList.Add(setting.ToString());
+                    }
+
+                    return settingsList.ToArray();
                 }
                 else
                 {
                     return Array.Empty<string>();
                 }
             }
-            else
-            {
-                return Array.Empty<string>();
-            }
+
+            return Array.Empty<string>();
         }
 
         private static class ChecksumUtil
@@ -663,6 +493,7 @@ namespace Settings.UI.Library
                 {
                     try
                     {
+                        Logger.LogInfo($"RemoveOldBackups killing {item.Value}");
                         Directory.Delete(item.Value, true);
                     }
                     catch (Exception ex2)
