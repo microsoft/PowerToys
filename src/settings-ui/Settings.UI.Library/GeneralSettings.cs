@@ -50,12 +50,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("download_updates_automatically")]
         public bool AutoDownloadUpdates { get; set; }
 
+        [JsonPropertyName("check_updates_automatically")]
+        public bool AutoCheckUpdates { get; set; }
+
         public GeneralSettings()
         {
             Startup = false;
             IsAdmin = false;
             IsElevated = false;
             AutoDownloadUpdates = false;
+            AutoCheckUpdates = false;
             Theme = "system";
             SystemTheme = "light";
             try

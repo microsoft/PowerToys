@@ -988,6 +988,12 @@
   <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Description" xml:space="preserve">
     <value>Except on metered connections</value>
   </data>
+  <data name="GeneralPage_ToggleSwitch_AutoCheckUpdates.Header" xml:space="preserve">
+    <value>Check for updates automatically</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_AutoCheckUpdates.Description" xml:space="preserve">
+    <value>Show a notification when updates are available.</value>
+  </data>
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
     <value>Currently running as administrator</value>
   </data>

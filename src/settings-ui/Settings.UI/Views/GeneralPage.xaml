@@ -168,7 +168,15 @@
                             <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" x:Uid="ToggleSwitch"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    </controls:SettingsGroup>
+                    <controls:Setting x:Uid="GeneralPage_ToggleSwitch_AutoCheckUpdates"
+                                      Margin="0,-6,0,0"
+                                      IsEnabled="{Binding AutoUpdatesEnabled}">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=AutoCheckUpdates}"
+                                          x:Uid="ToggleSwitch" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
 
 
 

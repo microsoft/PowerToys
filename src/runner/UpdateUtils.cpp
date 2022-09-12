@@ -165,6 +165,12 @@ void PeriodicUpdateWorker()
 
         std::this_thread::sleep_for(std::chrono::minutes{ sleep_minutes_till_next_update });
 
+        if (!get_general_settings().checkUpdatesAutomatically)
+        {
+            sleep_minutes_till_next_update = UPDATE_CHECK_INTERVAL_MINUTES;
+            continue;
+        }
+
         const bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
         bool version_info_obtained = false;
         try

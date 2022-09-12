@@ -16,6 +16,7 @@
 static std::wstring settings_theme = L"system";
 static bool run_as_elevated = false;
 static bool download_updates_automatically = true;
+static bool check_updates_automatically = true;
 
 json::JsonObject GeneralSettings::to_json()
 {
@@ -37,6 +38,7 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"is_elevated", json::value(isElevated));
     result.SetNamedValue(L"run_elevated", json::value(isRunElevated));
     result.SetNamedValue(L"download_updates_automatically", json::value(downloadUpdatesAutomatically));
+    result.SetNamedValue(L"check_updates_automatically", json::value(checkUpdatesAutomatically));
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
     result.SetNamedValue(L"theme", json::value(theme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
@@ -55,6 +57,7 @@ json::JsonObject load_general_settings()
     }
     run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
     download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
+    check_updates_automatically = loaded.GetNamedBoolean(L"check_updates_automatically", true);
 
     return loaded;
 }
@@ -67,6 +70,7 @@ GeneralSettings get_general_settings()
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
+        .checkUpdatesAutomatically = check_updates_automatically,
         .theme = settings_theme,
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
         .powerToysVersion = get_product_version()
@@ -88,6 +92,7 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
 
     download_updates_automatically = general_configs.GetNamedBoolean(L"download_updates_automatically", true);
+    check_updates_automatically = general_configs.GetNamedBoolean(L"check_updates_automatically", true);
 
     if (json::has(general_configs, L"startup", json::JsonValueType::Boolean))
     {

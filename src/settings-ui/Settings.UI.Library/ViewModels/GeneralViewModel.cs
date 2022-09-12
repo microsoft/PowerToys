@@ -92,6 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             _startup = GeneralSettingsConfig.Startup;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
+            _autoCheckUpdates = GeneralSettingsConfig.AutoCheckUpdates;
             _isElevated = isElevated;
             _runElevated = GeneralSettingsConfig.RunElevated;
 
@@ -118,6 +119,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private int _themeIndex;
 
         private bool _autoDownloadUpdates;
+        private bool _autoCheckUpdates;
 
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
@@ -240,6 +242,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _autoDownloadUpdates = value;
                     GeneralSettingsConfig.AutoDownloadUpdates = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool AutoCheckUpdates
+        {
+            get
+            {
+                return _autoCheckUpdates;
+            }
+
+            set
+            {
+                if (_autoCheckUpdates != value)
+                {
+                    _autoCheckUpdates = value;
+                    GeneralSettingsConfig.AutoCheckUpdates = value;
                     NotifyPropertyChanged();
                 }
             }
