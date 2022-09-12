@@ -72,12 +72,16 @@ namespace PowerLauncher
             using (var application = new App())
             {
                 application.InitializeComponent();
+
                 NativeEventWaiter.WaitForEventLoop(
                     Constants.RunExitEvent(),
                     () =>
                 {
-                    Log.Warn("RunExitEvent was signaled. Exiting PowerToys", typeof(App));
-                    ExitPowerToys(application);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        Log.Warn("RunExitEvent was signaled. Exiting PowerToys", typeof(App));
+                        ExitPowerToys(application);
+                    });
                 }, NativeThreadCTS.Token);
 
                 if (powerToysPid != 0)

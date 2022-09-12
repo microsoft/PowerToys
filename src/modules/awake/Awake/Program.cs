@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
@@ -17,7 +16,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Awake.Core;
-using Awake.Core.Models;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -67,7 +65,7 @@ namespace Awake
 
             if (!instantiated)
             {
-                Exit(InternalConstants.AppName + " is already running! Exiting the application.", 1, true);
+                Exit(InternalConstants.AppName + " is already running! Exiting the application.", 1, _exitSignal, true);
             }
 
             _settingsUtils = new SettingsUtils();
@@ -163,15 +161,15 @@ namespace Awake
         private static BOOL ExitHandler(uint ctrlType)
         {
             _log.Info($"Exited through handler with control type: {ctrlType}");
-            Exit("Exiting from the internal termination handler.", Environment.ExitCode);
+            Exit("Exiting from the internal termination handler.", Environment.ExitCode, _exitSignal);
             return false;
         }
 
-        private static void Exit(string message, int exitCode, bool force = false)
+        private static void Exit(string message, int exitCode, ManualResetEvent exitSignal, bool force = false)
         {
             _log.Info(message);
 
-            APIHelper.CompleteExit(exitCode, force);
+            APIHelper.CompleteExit(exitCode, exitSignal, force);
         }
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid)
@@ -196,16 +194,17 @@ namespace Awake
                 // and instead watch for changes in the file.
                 try
                 {
+                    // TODO: native event handler
                     new Thread(() =>
                     {
-                        EventWaitHandle? eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.AwakeExitEvent());
+                        EventWaitHandle? eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, Constants.AwakeExitEvent());
                         if (eventHandle.WaitOne())
                         {
-                            Exit("Received a signal to end the process. Making sure we quit...", 0, true);
+                            Exit("Received a signal to end the process. Making sure we quit...", 0, _exitSignal, true);
                         }
                     }).Start();
 
-                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("modules/awake/images/awake.ico"));
+                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("modules/awake/images/awake.ico"), _exitSignal);
 
                     string? settingsPath = _settingsUtils.GetSettingsFilePath(InternalConstants.AppName);
                     _log.Info($"Reading configuration file: {settingsPath}");
@@ -260,15 +259,6 @@ namespace Awake
                 {
                     SetupTimedKeepAwake(timeLimit, displayOn);
                 }
-            }
-
-            if (pid != 0)
-            {
-                RunnerHelper.WaitForPowerToysRunner(pid, () =>
-                {
-                    _log.Info($"Triggered PID-based exit handler for PID {pid}.");
-                    Exit("Terminating from process binding hook.", 0, true);
-                });
             }
 
             _exitSignal.WaitOne();

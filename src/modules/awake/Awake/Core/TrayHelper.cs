@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Awake.Core.Models;
@@ -37,7 +38,7 @@ namespace Awake.Core
             TrayIcon = new NotifyIcon();
         }
 
-        public static void InitializeTray(string text, Icon icon, ContextMenuStrip? contextMenu = null)
+        public static void InitializeTray(string text, Icon icon, ManualResetEvent? exitSignal, ContextMenuStrip? contextMenu = null)
         {
             Task.Factory.StartNew(
                 (tray) =>
@@ -50,7 +51,7 @@ namespace Awake.Core
                         ((NotifyIcon?)tray).ContextMenuStrip = contextMenu;
                         ((NotifyIcon?)tray).Visible = true;
                         ((NotifyIcon?)tray).MouseClick += TrayClickHandler;
-                        Application.AddMessageFilter(new TrayMessageFilter());
+                        Application.AddMessageFilter(new TrayMessageFilter(exitSignal));
                         Application.Run();
                         _log.Info("Tray setup complete.");
                     }
@@ -82,12 +83,6 @@ namespace Awake.Core
                 PInvoke.SetForegroundWindow(windowHandle);
                 PInvoke.TrackPopupMenuEx(TrayMenu, 0, Cursor.Position.X, Cursor.Position.Y, windowHandle, null);
             }
-        }
-
-        public static void ClearTray()
-        {
-            TrayIcon.Icon = null;
-            TrayIcon.Dispose();
         }
 
         internal static void SetTray(string text, AwakeSettings settings)

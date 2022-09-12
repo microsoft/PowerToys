@@ -701,7 +701,15 @@ namespace PowerLauncher
 
         private void OnClosed(object sender, EventArgs e)
         {
-            _hwndSource.RemoveHook(ProcessWindowMessages);
+            try
+            {
+                _hwndSource.RemoveHook(ProcessWindowMessages);
+            }
+            catch (Exception ex)
+            {
+                Log.Exception($"Exception when trying to Remove hook", ex, ex.GetType());
+            }
+
             _hwndSource = null;
         }
     }

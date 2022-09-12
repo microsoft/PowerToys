@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using Awake.Core.Models;
 using Microsoft.Win32;
 using NLog;
@@ -190,10 +191,9 @@ namespace Awake.Core
             }
         }
 
-        internal static void CompleteExit(int exitCode, bool force = false)
+        internal static void CompleteExit(int exitCode, ManualResetEvent? exitSignal, bool force = false)
         {
             SetNoKeepAwake();
-            TrayHelper.ClearTray();
 
             HWND windowHandle = GetHiddenWindow();
 
@@ -206,6 +206,17 @@ namespace Awake.Core
             {
                 PInvoke.PostQuitMessage(0);
             }
+
+            try
+            {
+                exitSignal?.Set();
+            }
+            catch (Exception ex)
+            {
+                _log.Info($"Exit signal error ${ex}");
+            }
+
+            Application.Current.Shutdown();
         }
 
         private static bool RunTimedLoop(uint seconds, bool keepDisplayOn = true)
