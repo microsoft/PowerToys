@@ -41,7 +41,7 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
     result.SetNamedValue(L"theme", json::value(theme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
-    //result.SetNamedValue(L"settings_backup_and_sync_dir", json::value(settingsBackupAndSyncDir));    
+    //result.SetNamedValue(L"settings_backup_and_sync_dir", json::value(settingsBackupAndRestoreDir));    
     result.SetNamedValue(L"powertoys_version", json::value(powerToysVersion));
 
     return result;
@@ -73,7 +73,7 @@ GeneralSettings get_general_settings()
         .isAdmin = is_user_admin,
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .theme = settings_theme,
-        //.settingsBackupAndSyncDir = settings_backup_and_sync_dir,        
+        //.settingsBackupAndRestoreDir = settings_backup_and_sync_dir,        
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
         .powerToysVersion = get_product_version()
     };

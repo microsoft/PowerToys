@@ -143,20 +143,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return _settingsPath.GetSettingsPath(powertoy, fileName);
         }
 
-        public (bool success, string message) BackupSettings(string settingsBackupAndSyncDir)
+        public (bool success, string message) BackupSettings(string settingsBackupAndRestoreDir)
         {
             // Debugger.Launch();
             var appBasePath = Path.GetDirectoryName(_settingsPath.GetSettingsPath(string.Empty, string.Empty));
 
-            return SettingsBackupAndSyncUtils.BackupSettings(appBasePath, settingsBackupAndSyncDir);
+            return SettingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir);
         }
 
-        public (bool success, string message) RestoreSettings(string settingsBackupAndSyncDir)
+        public (bool success, string message) RestoreSettings(string settingsBackupAndRestoreDir)
         {
             // Debugger.Launch();
             var appBasePath = Path.GetDirectoryName(_settingsPath.GetSettingsPath(string.Empty, string.Empty));
 
-            return SettingsBackupAndSyncUtils.RestoreSettings(appBasePath, settingsBackupAndSyncDir);
+            return SettingsBackupAndRestoreUtils.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
         }
     }
 }

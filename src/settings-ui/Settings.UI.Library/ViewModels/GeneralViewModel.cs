@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private UpdatingSettings UpdatingSettingsConfig { get; set; }
 
-        private Action HideBackupAndSyncMessageAreaAction { get; set; }
+        private Action HideBackupAndRestoreMessageAreaAction { get; set; }
 
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
 
@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public object ResourceLoader { get; set; }
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndSyncMessageAreaAction = null, object resourceLoader = null)
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, object resourceLoader = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SelectSettingBackupDirEventHandler = new ButtonClickCommand(SelectSettingBackupDir);
             RestoreConfigsEventHandler = new ButtonClickCommand(RestoreConfigsClick);
             RestartButtonEventHandler = new ButtonClickCommand(Restart);
-            HideBackupAndSyncMessageAreaAction = hideBackupAndSyncMessageAreaAction;
+            HideBackupAndRestoreMessageAreaAction = hideBackupAndRestoreMessageAreaAction;
 
             ResourceLoader = resourceLoader;
 
@@ -120,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _startup = GeneralSettingsConfig.Startup;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
 
-            // _settingsBackupAndSyncDir = GeneralSettingsConfig.SettingsBackupAndSyncDir;
+            // _settingsBackupAndRestoreDir = GeneralSettingsConfig.SettingsBackupAndRestoreDir;
             _isElevated = isElevated;
             _runElevated = GeneralSettingsConfig.RunElevated;
 
@@ -148,7 +148,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private bool _autoDownloadUpdates;
 
-        // private string _settingsBackupAndSyncDir;
+        // private string _settingsBackupAndRestoreDir;
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
         private string _newAvailableVersionLink = string.Empty;
@@ -287,21 +287,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public string SettingsBackupAndSyncDir
+        public string SettingsBackupAndRestoreDir
         {
             get
             {
-                // return _settingsBackupAndSyncDir;
-                return SettingsBackupAndSyncUtils.GetRegSettingsBackupAndSyncDir();
+                // return _settingsBackupAndRestoreDir;
+                return SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreDir();
             }
 
             set
             {
-                if (SettingsBackupAndSyncUtils.GetRegSettingsBackupAndSyncDir() != value)
+                if (SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreDir() != value)
                 {
-                    // _settingsBackupAndSyncDir = value;
-                    // GeneralSettingsConfig.SettingsBackupAndSyncDir = value;
-                    SettingsBackupAndSyncUtils.SetRegSettingsBackupAndSyncDir(value);
+                    // _settingsBackupAndRestoreDir = value;
+                    // GeneralSettingsConfig.SettingsBackupAndRestoreDir = value;
+                    SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreDir(value);
                     NotifyPropertyChanged();
                 }
             }
@@ -341,7 +341,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public string SettingsBackupAndSyncHeader
+        public string SettingsBackupAndRestoreLocationHeader
         {
             get
             {
@@ -497,7 +497,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
                 // Debugger.Launch();
-                var currentDir = SettingsBackupAndSyncUtils.GetRegSettingsBackupAndSyncDir();
+                var currentDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreDir();
 
                 if (!string.IsNullOrEmpty(currentDir) && Directory.Exists(currentDir))
                 {
@@ -507,16 +507,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 System.Windows.Forms.DialogResult result = dialog.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    SettingsBackupAndSyncDir = dialog.SelectedPath;
-                    SettingsBackupAndSyncUtils.SetRegSettingsBackupAndSyncDir(dialog.SelectedPath);
-                    NotifyPropertyChanged(nameof(SettingsBackupAndSyncDir));
+                    SettingsBackupAndRestoreDir = dialog.SelectedPath;
+                    SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreDir(dialog.SelectedPath);
+                    NotifyPropertyChanged(nameof(SettingsBackupAndRestoreDir));
                 }
             }
         }
 
         private void RestoreConfigsClick()
         {
-            var results = new SettingsUtils().RestoreSettings(SettingsBackupAndSyncUtils.GetRegSettingsBackupAndSyncDir());
+            var results = new SettingsUtils().RestoreSettings(SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreDir());
 
             if (!results.success)
             {
@@ -529,7 +529,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
                 NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
 
-                HideBackupAndSyncMessageAreaAction();
+                HideBackupAndRestoreMessageAreaAction();
             }
             else
             {
@@ -541,7 +541,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private void BackupConfigsClick()
         {
-            var results = new SettingsUtils().BackupSettings(SettingsBackupAndSyncUtils.GetRegSettingsBackupAndSyncDir());
+            var results = new SettingsUtils().BackupSettings(SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreDir());
 
             _settingsBackupWasSuccessful = results.success;
             _settingsBackupMessage = GetResourceString(results.message);
@@ -552,10 +552,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
             NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
 
-            HideBackupAndSyncMessageAreaAction();
+            HideBackupAndRestoreMessageAreaAction();
         }
 
-        private void HideBackupAndSyncMessage()
+        private void HideBackupAndRestoreMessage()
         {
             _settingsBackupWasSuccessful = false;
             _settingsBackupWasUnsuccessful = false;
@@ -649,7 +649,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SendRestartAsAdminConfigMSG(dataToSend);
         }
 
-        public void HideBackupAndSyncMessageArea()
+        public void HideBackupAndRestoreMessageArea()
         {
             _settingsBackupWasSuccessful = false;
             _settingsBackupWasUnsuccessful = false;

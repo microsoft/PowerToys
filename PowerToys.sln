@@ -449,7 +449,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeasureToolUI", "src\module
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerAccentKeyboardService", "src\modules\poweraccent\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj", "{C97D9A5D-206C-454E-997E-009E227D7F02}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JlordConsoleTester", "JlordConsoleTester\JlordConsoleTester.csproj", "{F8727922-1D41-4058-8DCD-5473C3C2599C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BackupAndRestoreConsoleTester", "BackupAndRestoreConsoleTester\BackupAndRestoreConsoleTester.csproj", "{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1806,18 +1806,18 @@ Global
 		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|x64.Build.0 = Release|x64
 		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|x86.ActiveCfg = Release|x64
 		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|x86.Build.0 = Release|x64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Debug|ARM64.Build.0 = Debug|ARM64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Debug|x64.ActiveCfg = Debug|x64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Debug|x64.Build.0 = Debug|x64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Debug|x86.ActiveCfg = Debug|x64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Debug|x86.Build.0 = Debug|x64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Release|ARM64.ActiveCfg = Release|ARM64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Release|ARM64.Build.0 = Release|ARM64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Release|x64.ActiveCfg = Release|x64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Release|x64.Build.0 = Release|x64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Release|x86.ActiveCfg = Release|x64
-		{F8727922-1D41-4058-8DCD-5473C3C2599C}.Release|x86.Build.0 = Release|x64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Debug|x64.ActiveCfg = Debug|x64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Debug|x64.Build.0 = Debug|x64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Debug|x86.ActiveCfg = Debug|x64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Debug|x86.Build.0 = Debug|x64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Release|ARM64.Build.0 = Release|ARM64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Release|x64.ActiveCfg = Release|x64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Release|x64.Build.0 = Release|x64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Release|x86.ActiveCfg = Release|x64
+		{C9D8C0F2-E37F-40D0-8ED8-7D8AB08D99B6}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -16,26 +16,26 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Settings.UI.Library
 {
-    public class SettingsBackupAndSyncUtils
+    public class SettingsBackupAndRestoreUtils
     {
-        public static void SetRegSettingsBackupAndSyncDir(string directory)
+        public static void SetRegSettingsBackupAndRestoreDir(string directory)
         {
             using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\PowerToys", true))
             {
                 if (key != null)
                 {
-                    key.SetValue("SettingsBackupAndSyncDir", directory);
+                    key.SetValue("SettingsBackupAndRestoreDir", directory);
                 }
             }
         }
 
-        public static string GetRegSettingsBackupAndSyncDir()
+        public static string GetRegSettingsBackupAndRestoreDir()
         {
             using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\PowerToys"))
             {
                 if (key != null)
                 {
-                    var val = key.GetValue("SettingsBackupAndSyncDir");
+                    var val = key.GetValue("SettingsBackupAndRestoreDir");
                     if (val != null)
                     {
                         return val.ToString();
@@ -46,7 +46,7 @@ namespace Settings.UI.Library
             return null;
         }
 
-        public static (bool success, string message) RestoreSettings(string appBasePath, string settingsBackupAndSyncDir)
+        public static (bool success, string message) RestoreSettings(string appBasePath, string settingsBackupAndRestoreDir)
         {
             try
             {
@@ -56,22 +56,22 @@ namespace Settings.UI.Library
                     return (false, $"Invalid appBasePath {appBasePath}");
                 }
 
-                if (string.IsNullOrEmpty(settingsBackupAndSyncDir))
+                if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
                 {
-                    return (false, $"BackupAndSync_NoBackupSyncPath");
+                    return (false, $"BackupAndRestore_NoBackupSyncPath");
                 }
 
-                if (!Directory.Exists(settingsBackupAndSyncDir))
+                if (!Directory.Exists(settingsBackupAndRestoreDir))
                 {
-                    Logger.LogError($"Invalid settingsBackupAndSyncDir {settingsBackupAndSyncDir}");
-                    return (false, "BackupAndSync_InvalidBackupLocation");
+                    Logger.LogError($"Invalid settingsBackupAndRestoreDir {settingsBackupAndRestoreDir}");
+                    return (false, "BackupAndRestore_InvalidBackupLocation");
                 }
 
-                var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndSyncDir);
+                var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndRestoreDir);
 
                 if (latestSettingsFolder == null)
                 {
-                    return (false, $"BackupAndSync_NoBackupsFound");
+                    return (false, $"BackupAndRestore_NoBackupsFound");
                 }
 
                 var allCurrentSettingsFiles = GetSettingsFiles(appBasePath);
@@ -87,7 +87,7 @@ namespace Settings.UI.Library
 
                 if (backupSettingsFiles.Count == 0)
                 {
-                    return (false, $"BackupAndSync_NoBackupsFound");
+                    return (false, $"BackupAndRestore_NoBackupsFound");
                 }
 
                 var anyFilesUpdated = false;
@@ -143,7 +143,7 @@ namespace Settings.UI.Library
                 }
                 else
                 {
-                    return (false, $"BackupAndSync_NothingToRestore");
+                    return (false, $"BackupAndRestore_NothingToRestore");
                 }
             }
             catch (Exception ex2)
@@ -185,9 +185,9 @@ namespace Settings.UI.Library
             return JsonDocument.Parse(Encoding.UTF8.GetString(outputBuffer.WrittenSpan));
         }
 
-        private static string GetLatestSettingsFolder(string settingsBackupAndSyncDir)
+        private static string GetLatestSettingsFolder(string settingsBackupAndRestoreDir)
         {
-            var settingsBackups = Directory.GetDirectories(settingsBackupAndSyncDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture));
+            var settingsBackups = Directory.GetDirectories(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture));
 
             if (settingsBackups.Count == 0)
             {
@@ -212,7 +212,7 @@ namespace Settings.UI.Library
             return Directory.GetFiles(path, "*.json", SearchOption.AllDirectories).Where(s => SettingFileToUse(s) && !SettingFileToIgnore(s)).ToArray();
         }
 
-        public static (bool success, string message) BackupSettings(string appBasePath, string settingsBackupAndSyncDir)
+        public static (bool success, string message) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir)
         {
             try
             {
@@ -222,36 +222,36 @@ namespace Settings.UI.Library
                     return (false, $"Invalid appBasePath {appBasePath}");
                 }
 
-                if (string.IsNullOrEmpty(settingsBackupAndSyncDir))
+                if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
                 {
-                    return (false, $"BackupAndSync_NoBackupSyncPath");
+                    return (false, $"BackupAndRestore_NoBackupSyncPath");
                 }
 
-                if (!Path.IsPathRooted(settingsBackupAndSyncDir))
+                if (!Path.IsPathRooted(settingsBackupAndRestoreDir))
                 {
-                    return (false, $"Invalid settingsBackupAndSyncDir, not rooted");
+                    return (false, $"Invalid settingsBackupAndRestoreDir, not rooted");
                 }
 
-                if (settingsBackupAndSyncDir.StartsWith(appBasePath, StringComparison.InvariantCultureIgnoreCase))
+                if (settingsBackupAndRestoreDir.StartsWith(appBasePath, StringComparison.InvariantCultureIgnoreCase))
                 {
                     // backup cannot be under app
                     Logger.LogError($"BackupSettings, backup cannot be under app");
-                    return (false, "BackupAndSync_InvalidBackupLocation");
+                    return (false, "BackupAndRestore_InvalidBackupLocation");
                 }
 
-                var dirExists = Directory.Exists(settingsBackupAndSyncDir);
+                var dirExists = Directory.Exists(settingsBackupAndRestoreDir);
 
                 try
                 {
                     if (!dirExists)
                     {
-                        Directory.CreateDirectory(settingsBackupAndSyncDir);
+                        Directory.CreateDirectory(settingsBackupAndRestoreDir);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"Failed to create dir {settingsBackupAndSyncDir}", ex);
-                    return (false, $"BackupAndSync_BackupError");
+                    Logger.LogError($"Failed to create dir {settingsBackupAndRestoreDir}", ex);
+                    return (false, $"BackupAndRestore_BackupError");
                 }
 
                 var backupRetoreSettings = JsonNode.Parse(File.ReadAllText(Path.Combine(appBasePath, "backup-restore_settings.json")));
@@ -259,11 +259,11 @@ namespace Settings.UI.Library
 
                 if (currentSettingsFiles.Count == 0)
                 {
-                    return (false, "BackupAndSync_NoSettingsFilesFound");
+                    return (false, "BackupAndRestore_NoSettingsFilesFound");
                 }
 
-                var fullBackupDir = Path.Combine(settingsBackupAndSyncDir, $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
-                var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndSyncDir);
+                var fullBackupDir = Path.Combine(settingsBackupAndRestoreDir, $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
+                var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndRestoreDir);
                 var backupSettingsFiles = new Dictionary<string, string>();
                 if (latestSettingsFolder != null)
                 {
@@ -328,7 +328,7 @@ namespace Settings.UI.Library
 
                 if (!anyFileBackedUp)
                 {
-                    return (false, $"BackupAndSync_NothingToBackup");
+                    return (false, $"BackupAndRestore_NothingToBackup");
                 }
 
                 // add skipped.
@@ -364,14 +364,14 @@ namespace Settings.UI.Library
 
                 File.WriteAllText(Path.Combine(fullBackupDir, "manifest.json"), manifest);
 
-                RemoveOldBackups(settingsBackupAndSyncDir, 10, TimeSpan.FromDays(60));
+                RemoveOldBackups(settingsBackupAndRestoreDir, 10, TimeSpan.FromDays(60));
 
-                return (true, $"BackupAndSync_BackupComplete");
+                return (true, $"BackupAndRestore_BackupComplete");
             }
             catch (Exception ex2)
             {
                 Logger.LogError($"There was an error: {ex2.Message}", ex2);
-                return (false, $"BackupAndSync_BackupError");
+                return (false, $"BackupAndRestore_BackupError");
             }
         }
 
@@ -474,9 +474,9 @@ namespace Settings.UI.Library
             }
         }
 
-        private static void RemoveOldBackups(string settingsBackupAndSyncDir, int minNumberToKeep, TimeSpan deleteIfOlderThanTs)
+        private static void RemoveOldBackups(string settingsBackupAndRestoreDir, int minNumberToKeep, TimeSpan deleteIfOlderThanTs)
         {
-            var settingsBackups = Directory.GetDirectories(settingsBackupAndSyncDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture));
+            var settingsBackups = Directory.GetDirectories(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture));
 
             if (settingsBackups.Count <= minNumberToKeep)
             {

@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool AutoDownloadUpdates { get; set; }
 
         // [JsonPropertyName("settings_backup_and_sync_dir")]
-        // public string SettingsBackupAndSyncDir { get; set; }
+        // public string SettingsBackupAndRestoreDir { get; set; }
         public GeneralSettings()
         {
             Startup = false;

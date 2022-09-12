@@ -824,14 +824,14 @@
   <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
-  <data name="ShortcutGuide_SettingsBackupAndSync.Header" xml:space="preserve">
+  <data name="ShortcutGuide_SettingsBackupAndRestore.Header" xml:space="preserve">
     <value>Settings backup &amp; restore</value>
   </data>
-  <data name="ShortcutGuide_SettingsBackupAndSyncDir.Header" xml:space="preserve">
-    <value>ShortcutGuide_SettingsBackupAndSyncDir Header</value>
+  <data name="ShortcutGuide_SettingsBackupAndRestoreDir.Header" xml:space="preserve">
+    <value>ShortcutGuide_SettingsBackupAndRestoreDir Header</value>
   </data>
-  <data name="ShortcutGuide_SettingsBackupAndSyncDir.Description" xml:space="preserve">
-    <value>ShortcutGuide_SettingsBackupAndSyncDir Description</value>
+  <data name="ShortcutGuide_SettingsBackupAndRestoreDir.Description" xml:space="preserve">
+    <value>ShortcutGuide_SettingsBackupAndRestoreDir Description</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
@@ -2378,28 +2378,28 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
   </data>
-  <data name="BackupAndSync_NothingToBackup" xml:space="preserve">
+  <data name="BackupAndRestore_NothingToBackup" xml:space="preserve">
     <value>Nothing to backup, no settings have been changed since last backup.</value>
   </data>
-  <data name="BackupAndSync_NothingToRestore" xml:space="preserve">
+  <data name="BackupAndRestore_NothingToRestore" xml:space="preserve">
     <value>Nothing to restore, no settings have been changed since last backup.</value>
   </data>
-  <data name="BackupAndSync_NoSettingsFilesFound" xml:space="preserve">
+  <data name="BackupAndRestore_NoSettingsFilesFound" xml:space="preserve">
     <value>No settings files found.</value>
   </data>
-  <data name="BackupAndSync_BackupError" xml:space="preserve">
+  <data name="BackupAndRestore_BackupError" xml:space="preserve">
     <value>Sorry, there was an error. Try another backup location.</value>
   </data>
-  <data name="BackupAndSync_BackupComplete" xml:space="preserve">
+  <data name="BackupAndRestore_BackupComplete" xml:space="preserve">
     <value>Backup completed.</value>
   </data>
-  <data name="BackupAndSync_NoBackupSyncPath" xml:space="preserve">
+  <data name="BackupAndRestore_NoBackupSyncPath" xml:space="preserve">
     <value>No backup location selected.</value>
   </data>
-  <data name="BackupAndSync_NoBackupsFound" xml:space="preserve">
+  <data name="BackupAndRestore_NoBackupsFound" xml:space="preserve">
     <value>No backups found to restore.</value>
   </data>
-  <data name="BackupAndSync_InvalidBackupLocation" xml:space="preserve">
+  <data name="BackupAndRestore_InvalidBackupLocation" xml:space="preserve">
     <value>Invalid backup location.</value>
   </data>
   <data name="TextExtractor.ModuleDescription" xml:space="preserve">

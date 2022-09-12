@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// </summary>
     public sealed partial class GeneralPage : Page
     {
-        private static DateTime OkToHideBackupAndSyncMessageTime { get; set; }
+        private static DateTime OkToHideBackupAndRestoreMessageTime { get; set; }
 
         /// <summary>
         /// Gets or sets view model.
@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 });
             };
 
-            Action hideBackupAndSyncMessageArea = () =>
+            Action hideBackupAndRestoreMessageArea = () =>
             {
                 this.DispatcherQueue.TryEnqueue(async () =>
                 {
@@ -56,11 +56,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                     // in order to keep the message for about 5 seconds after the last call
                     // and not need any lock/thread-synch, use an OK-To-Hide time, and wait just a little longer than that.
-                    OkToHideBackupAndSyncMessageTime = DateTime.UtcNow.AddMilliseconds(messageShowTimeIs - 16);
+                    OkToHideBackupAndRestoreMessageTime = DateTime.UtcNow.AddMilliseconds(messageShowTimeIs - 16);
                     await System.Threading.Tasks.Task.Delay(messageShowTimeIs);
-                    if (DateTime.UtcNow > OkToHideBackupAndSyncMessageTime)
+                    if (DateTime.UtcNow > OkToHideBackupAndRestoreMessageTime)
                     {
-                        ViewModel.HideBackupAndSyncMessageArea();
+                        ViewModel.HideBackupAndRestoreMessageArea();
                     }
                 });
             };
@@ -77,7 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendCheckForUpdatesIPCMessage,
                 string.Empty,
                 stateUpdatingAction,
-                hideBackupAndSyncMessageArea,
+                hideBackupAndRestoreMessageArea,
                 loader);
 
             DataContext = ViewModel;

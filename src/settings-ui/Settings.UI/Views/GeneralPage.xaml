@@ -235,8 +235,8 @@
                     </controls:Setting>
                 </controls:SettingsGroup>
 
-                <!-- ShortcutGuide_SettingsBackupAndSync -->
-                <controls:SettingsGroup x:Uid="ShortcutGuide_SettingsBackupAndSync">
+                <!-- ShortcutGuide_SettingsBackupAndRestore -->
+                <controls:SettingsGroup x:Uid="ShortcutGuide_SettingsBackupAndRestore">
 
 
                     <controls:Setting x:Uid="SettingsBackupLocation" Icon="&#xE777;">
@@ -248,7 +248,7 @@
                                 </TextBlock>-->
 
                                 <muxc:TextBox                                                  
-                                        Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndSyncDir}"   
+                                        Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"   
                                         MaxWidth="300"
                                         MinWidth="300"
                                         IsEnabled="True"

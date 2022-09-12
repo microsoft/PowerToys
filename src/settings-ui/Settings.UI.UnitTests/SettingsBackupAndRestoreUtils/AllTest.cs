@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
-namespace Settings.UI.UnitTests.SettingsBackupAndSyncUtils
+namespace Settings.UI.UnitTests.SettingsBackupAndRestoreUtils
 {
     [TestClass]
     public class AllTest
@@ -21,7 +21,7 @@ namespace Settings.UI.UnitTests.SettingsBackupAndSyncUtils
         [DataRow("\\settings.json", "C:\\Users\\jeff\\AppData\\Local\\Microsoft\\PowerToys\\settings.json")]
         public void GetExportVersion(string settingFileKey, string settingsFileName)
         {
-            // var results = Settings.UI.Library.SettingsBackupAndSyncUtils.GetExportVersion(settingFileKey, settingsFileName);
+            // var results = Settings.UI.Library.SettingsBackupAndRestoreUtils.GetExportVersion(settingFileKey, settingsFileName);
             // var settingsDoc = JObject.Parse(results);
             // Assert.IsTrue(results.success, $"Failed, restore failed: {results.message}.");
         }
@@ -29,9 +29,9 @@ namespace Settings.UI.UnitTests.SettingsBackupAndSyncUtils
         [TestMethod]
         [DataRow("__fakeBackupDir__", "__fakeSettingsDir__")]
         [DataRow(@"C:\Users\jeff\AppData\Local\Microsoft\PowerToys", @"C:\Temp\PowerToysBackup")]
-        public void BackupSettings(string appBasePath, string settingsBackupAndSyncDir)
+        public void BackupSettings(string appBasePath, string settingsBackupAndRestoreDir)
         {
-            var results = Settings.UI.Library.SettingsBackupAndSyncUtils.BackupSettings(appBasePath, settingsBackupAndSyncDir);
+            var results = Settings.UI.Library.SettingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir);
 
             if (appBasePath == "__fakeBackupDir__")
             {
@@ -39,7 +39,7 @@ namespace Settings.UI.UnitTests.SettingsBackupAndSyncUtils
                 return;
             }
 
-            if (settingsBackupAndSyncDir == "__fakeSettingsDir__")
+            if (settingsBackupAndRestoreDir == "__fakeSettingsDir__")
             {
                 Assert.IsTrue(!results.success, "Failed to detect bad folders.");
                 return;
@@ -51,9 +51,9 @@ namespace Settings.UI.UnitTests.SettingsBackupAndSyncUtils
         [TestMethod]
         [DataRow("__fakeBackupDir__", "__fakeSettingsDir__")]
         [DataRow(@"C:\Users\jeff\AppData\Local\Microsoft\PowerToys", @"C:\Temp\PowerToysBackup")]
-        public void RestoreSettings(string appBasePath, string settingsBackupAndSyncDir)
+        public void RestoreSettings(string appBasePath, string settingsBackupAndRestoreDir)
         {
-            var results = Settings.UI.Library.SettingsBackupAndSyncUtils.RestoreSettings(appBasePath, settingsBackupAndSyncDir);
+            var results = Settings.UI.Library.SettingsBackupAndRestoreUtils.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
 
             if (appBasePath == "__fakeBackupDir__")
             {
@@ -61,7 +61,7 @@ namespace Settings.UI.UnitTests.SettingsBackupAndSyncUtils
                 return;
             }
 
-            if (settingsBackupAndSyncDir == "__fakeSettingsDir__")
+            if (settingsBackupAndRestoreDir == "__fakeSettingsDir__")
             {
                 Assert.IsTrue(!results.success, "Failed to detect bad folders.");
                 return;
