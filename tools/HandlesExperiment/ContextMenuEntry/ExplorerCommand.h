@@ -4,7 +4,7 @@
 
 #define EXPLORER_COMMAND_UUID_STR "84d68575-e186-46ad-b0cb-baeb45ee29c0"
 
-class __declspec(uuid(EXPLORER_COMMAND_UUID_STR)) ExplorerCommand : public IExplorerCommand, public IShellExtInit /*, public IContextMenu */
+class __declspec(uuid(EXPLORER_COMMAND_UUID_STR)) ExplorerCommand : public IExplorerCommand, public IShellExtInit, public IContextMenu
 {
 public:
     // IUnknown
@@ -25,10 +25,10 @@ public:
     // IShellExtInit
     IFACEMETHODIMP Initialize(PCIDLIST_ABSOLUTE pidlFolder, IDataObject* pdtobj, HKEY hkeyProgID) override;
 
-    // IContextMenu (TODO)
-    // IFACEMETHODIMP QueryContextMenu(HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags) override;
-    // IFACEMETHODIMP InvokeCommand(CMINVOKECOMMANDINFO* pici) override;
-    // IFACEMETHODIMP GetCommandString(UINT_PTR idCmd, UINT uType, UINT* pReserved, CHAR* pszName, UINT cchMax) override;
+    // IContextMenu
+    IFACEMETHODIMP QueryContextMenu(HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags) override;
+    IFACEMETHODIMP InvokeCommand(CMINVOKECOMMANDINFO* pici) override;
+    IFACEMETHODIMP GetCommandString(UINT_PTR idCmd, UINT uType, UINT* pReserved, CHAR* pszName, UINT cchMax) override;
 
     // Static member to create an instance
     static HRESULT s_CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject);
@@ -37,6 +37,6 @@ public:
     ~ExplorerCommand();
 
 private:
-    std::atomic<ULONG> m_ref_count;
-    IDataObject* m_data_obj;
+    std::atomic<ULONG> m_ref_count = 1;
+    IDataObject* m_data_obj = NULL;
 };
