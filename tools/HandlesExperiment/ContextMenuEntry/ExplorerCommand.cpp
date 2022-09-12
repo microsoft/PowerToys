@@ -135,7 +135,35 @@ IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
     // TODO implement proper invocation and test
     // This should call the main exe.
     // For now we'll just show a message box.
-    MessageBoxW(NULL, L"InvokeCommand", L"InvokeCommand", MB_OK);
+
+    IShellItemArray* shell_item_array;
+    HRESULT result = SHCreateShellItemArrayFromDataObject(m_data_obj, __uuidof(IShellItemArray), reinterpret_cast<void**>(&shell_item_array));
+    if (SUCCEEDED(result))
+    {
+        DWORD num_items;
+        shell_item_array->GetCount(&num_items);
+        for (DWORD i = 0; i < num_items; i++)
+        {
+            IShellItem* item;
+            result = shell_item_array->GetItemAt(i, &item);
+            if (SUCCEEDED(result))
+            {
+                LPWSTR file_path;
+                result = item->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
+                if (SUCCEEDED(result))
+                {
+                    // TODO Aggregate items and send to UI
+                    MessageBoxW(NULL, file_path, L"InvokeCommand", MB_OK);
+                    CoTaskMemFree(file_path);
+                }
+
+                item->Release();
+            }
+        }
+
+        shell_item_array->Release();
+    }
+
     return S_OK;
 }
 
