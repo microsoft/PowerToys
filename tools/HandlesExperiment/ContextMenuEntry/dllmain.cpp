@@ -73,3 +73,5 @@ STDAPI DllCanUnloadNow(void)
 // 2. (DONE) A class which implements IClassFactory
 // 3. (DONE) DLL register/unregister functions which will create registry entries
 // 4. (DONE) Other DLL exported functions
+// 5. (DONE) Implement IShellExtInit in ExplorerCommand
+// 6. Implement IContextMenu in ExplorerCommand

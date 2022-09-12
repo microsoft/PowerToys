@@ -83,6 +83,15 @@ IFACEMETHODIMP ExplorerCommand::EnumSubCommands(IEnumExplorerCommand** ppEnum)
     return E_NOTIMPL;
 }
 
+// Implementations of inherited IShellExtInit methods
+
+IFACEMETHODIMP ExplorerCommand::Initialize(PCIDLIST_ABSOLUTE pidlFolder, IDataObject* pdtobj, HKEY hkeyProgID)
+{
+    m_data_obj = pdtobj;
+    m_data_obj->AddRef();
+    return S_OK;
+}
+
 HRESULT ExplorerCommand::s_CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
 {
     *ppvObject = NULL;
@@ -94,4 +103,9 @@ HRESULT ExplorerCommand::s_CreateInstance(IUnknown* pUnkOuter, REFIID riid, void
         pNew->Release();
     }
     return hr;
+}
+
+ExplorerCommand::~ExplorerCommand()
+{
+    m_data_obj->Release();
 }
