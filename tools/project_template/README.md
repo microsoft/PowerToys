@@ -147,7 +147,7 @@ Here's an example settings implementation:
       // Otherwise call a custom function to process the settings before saving them to disk:
       // save_settings();
     }
-    catch (std::exception ex) {
+    catch (std::exception& ex) {
       // Improper JSON.
     }
   }
@@ -325,7 +325,7 @@ When the custom action button is pressed, the PowerToy's `call_custom_action()` 
         MessageBox(NULL, msg.c_str(), L"Custom action call.", MB_OK | MB_TOPMOST);
       }
     }
-    catch (std::exception ex) {
+    catch (std::exception& ex) {
       // Improper JSON.
     }
   }
@@ -371,7 +371,7 @@ void ExamplePowertoy::init_settings() {
       g_settings.test_color_prop = settings.get_string_value(L"test_color_picker");
     }
   }
-  catch (std::exception ex) {
+  catch (std::exception& ex) {
     // Error while loading from the settings file. Let default values stay as they are.
   }
 }
@@ -392,7 +392,7 @@ virtual void set_config(const wchar_t* config) override {
 ...
     values.save_to_settings_file();
   }
-  catch (std::exception ex) {
+  catch (std::exception& ex) {
     // Improper JSON.
   }
 }
@@ -434,7 +434,7 @@ void ExamplePowertoy::save_settings() {
     // Save the PowerToyValues JSON to the power toy settings file.
     values.save_to_settings_file();
   }
-  catch (std::exception ex) {
+  catch (std::exception& ex) {
     // Couldn't save the settings.
   }
 }

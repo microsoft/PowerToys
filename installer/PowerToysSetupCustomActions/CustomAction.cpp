@@ -1018,7 +1018,7 @@ UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
             }
         }
     }
-    catch (std::exception e)
+    catch (std::exception& e)
     {
         std::string errorMessage{ "Exception thrown while trying to unregister sparse packages: " };
         errorMessage += e.what();
