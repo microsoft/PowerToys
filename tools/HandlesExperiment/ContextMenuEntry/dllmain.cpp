@@ -5,8 +5,13 @@
 #pragma comment(lib, "shlwapi")
 
 #include "Registry.h"
+#include "ClassFactory.h"
 
-HMODULE dll_instance;
+namespace globals
+{
+    HMODULE instance;
+    std::atomic<ULONG> ref_count;
+}
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -16,7 +21,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        dll_instance = hModule;
+        globals::instance = hModule;
         break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
@@ -44,8 +49,27 @@ STDAPI DllUnregisterServer()
     return delete_registry_keys() ? S_OK : E_FAIL;
 }
 
+STDAPI DllGetClassObject(REFCLSID clsid, REFIID riid, void** ppv)
+{
+    HRESULT result = E_FAIL;
+    *ppv = NULL;
+    ClassFactory* class_factory = new (std::nothrow) ClassFactory(clsid);
+    if (class_factory)
+    {
+        result = class_factory->QueryInterface(riid, ppv);
+        class_factory->Release();
+    }
+
+    return result;
+}
+
+STDAPI DllCanUnloadNow(void)
+{
+    return globals::ref_count == 0 ? S_OK : S_FALSE;
+}
+
 // Things to implement:
 // 1. (DONE) A class which implements IExplorerCommand
 // 2. (DONE) A class which implements IClassFactory
 // 3. (DONE) DLL register/unregister functions which will create registry entries
-// 4. Other DLL exported functions
+// 4. (DONE) Other DLL exported functions
