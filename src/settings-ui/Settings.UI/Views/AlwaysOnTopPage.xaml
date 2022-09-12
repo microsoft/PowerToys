@@ -77,7 +77,7 @@
                                 <controls:Setting x:Uid="AlwaysOnTop_FrameThickness" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
                                     <controls:Setting.ActionContent>
                                         <Slider Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}"
-                                                Minimum="0"
+                                                Minimum="1"
                                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                 HorizontalAlignment="Right"
                                                 Maximum="30"
