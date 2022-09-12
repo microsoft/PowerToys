@@ -22,6 +22,10 @@ using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using NLog;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Console;
+using Windows.Win32.System.Power;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.
@@ -47,8 +51,8 @@ namespace Awake
         private static Logger? _log;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        private static ConsoleEventHandler _handler;
-        private static SystemPowerCapabilities _powerCapabilities;
+        private static PHANDLER_ROUTINE _handler;
+        private static SYSTEM_POWER_CAPABILITIES _powerCapabilities;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         private static ManualResetEvent _exitSignal = new ManualResetEvent(false);
@@ -82,7 +86,7 @@ namespace Awake
 
             // To make it easier to diagnose future issues, let's get the
             // system power capabilities and aggregate them in the log.
-            NativeMethods.GetPwrCapabilities(out _powerCapabilities);
+            PInvoke.GetPwrCapabilities(out _powerCapabilities);
             _log.Info(JsonSerializer.Serialize(_powerCapabilities));
 
             _log.Info("Parsing parameters...");
@@ -156,7 +160,7 @@ namespace Awake
             return rootCommand.InvokeAsync(args).Result;
         }
 
-        private static bool ExitHandler(ControlType ctrlType)
+        private static BOOL ExitHandler(uint ctrlType)
         {
             _log.Info($"Exited through handler with control type: {ctrlType}");
             Exit("Exiting from the internal termination handler.", Environment.ExitCode);
@@ -172,7 +176,7 @@ namespace Awake
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid)
         {
-            _handler += new ConsoleEventHandler(ExitHandler);
+            _handler += ExitHandler;
             APIHelper.SetConsoleControlHandler(_handler, true);
 
             if (pid == 0)
