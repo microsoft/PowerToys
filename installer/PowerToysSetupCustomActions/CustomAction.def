@@ -5,6 +5,8 @@ EXPORTS
 	CreateScheduledTaskCA
 	CreateWinAppSDKHardlinksCA
 	DeleteWinAppSDKHardlinksCA
+	CreatePTInteropHardlinksCA
+	DeletePTInteropHardlinksCA
 	DetectPrevInstallPathCA
 	RemoveScheduledTasksCA
 	TelemetryLogInstallSuccessCA

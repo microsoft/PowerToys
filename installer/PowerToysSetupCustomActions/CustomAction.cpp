@@ -68,6 +68,20 @@ const std::vector<std::wstring> winAppSdkFiles = {
     L"marshal.dll",
     L"wuceffectsi.dll" };
 
+const std::vector<std::wstring> powerToysInteropFiles = {
+    L"concrt140.dll",
+    L"msvcp140.dll",
+    L"msvcp140_1.dll",
+    L"msvcp140_2.dll",
+    L"msvcp140_atomic_wait.dll",
+    L"msvcp140_codecvt_ids.dll",
+    L"PowerToys.Interop.dll",
+    L"vcamp140.dll",
+    L"vccorlib140.dll",
+    L"vcomp140.dll",
+    L"vcruntime140.dll",
+    L"vcruntime140_1.dll" };
+
 struct WcaSink : spdlog::sinks::base_sink<std::mutex>
 {
     virtual void sink_it_(const spdlog::details::log_msg& msg) override
@@ -1067,6 +1081,56 @@ LExit:
     return WcaFinalize(er);
 }
 
+UINT __stdcall CreatePTInteropHardlinksCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder, interopFilesSrcDir, colorPickerDir, powerOCRDir, launcherDir, fancyZonesDir,
+        imageResizerDir, settingsDir, awakeDir, measureToolDir, powerAccentDir;
+
+    hr = WcaInitialize(hInstall, "CreatePTInteropHardlinksCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installation folder");
+
+    interopFilesSrcDir = installationFolder + L"dll\\Interop\\";
+    colorPickerDir = installationFolder + L"modules\\ColorPicker\\";
+    powerOCRDir = installationFolder + L"modules\\PowerOCR\\";
+    launcherDir = installationFolder + L"modules\\launcher\\";
+    fancyZonesDir = installationFolder + L"modules\\FancyZones\\";
+    imageResizerDir = installationFolder + L"modules\\ImageResizer\\";
+    settingsDir = installationFolder + L"Settings\\";
+    awakeDir = installationFolder + L"modules\\Awake\\";
+    measureToolDir = installationFolder + L"modules\\MeasureTool\\";
+    powerAccentDir = installationFolder + L"modules\\PowerAccent\\";
+
+    try
+    {
+        for (auto file : powerToysInteropFiles)
+        {    
+            std::error_code ec;
+            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (colorPickerDir + file).c_str(), ec);
+            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (powerOCRDir + file).c_str(), ec);
+            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (launcherDir + file).c_str(), ec);
+            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (fancyZonesDir + file).c_str(), ec);
+            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (imageResizerDir + file).c_str(), ec);
+            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (settingsDir + file).c_str(), ec);
+            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (awakeDir + file).c_str(), ec);
+            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (measureToolDir + file).c_str(), ec);
+            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (powerAccentDir + file).c_str(), ec);
+        }
+    }
+    catch (std::exception e)
+    {
+        er = ERROR_INSTALL_FAILURE;
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 UINT __stdcall DeleteWinAppSDKHardlinksCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -1088,6 +1152,54 @@ UINT __stdcall DeleteWinAppSDKHardlinksCA(MSIHANDLE hInstall)
         {
             DeleteFile((settingsDir + file).c_str());
             DeleteFile((powerRenameDir + file).c_str());
+        }
+    }
+    catch (std::exception e)
+    {
+        er = ERROR_INSTALL_FAILURE;
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall DeletePTInteropHardlinksCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder, interopFilesSrcDir, colorPickerDir, powerOCRDir, launcherDir, fancyZonesDir,
+        imageResizerDir, settingsDir, awakeDir, measureToolDir, powerAccentDir;
+
+    hr = WcaInitialize(hInstall, "DeletePTInteropHardlinksCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installation folder");
+
+    colorPickerDir = installationFolder + L"modules\\ColorPicker\\";
+    powerOCRDir = installationFolder + L"modules\\PowerOCR\\";
+    launcherDir = installationFolder + L"modules\\launcher\\";
+    fancyZonesDir = installationFolder + L"modules\\FancyZones\\";
+    imageResizerDir = installationFolder + L"modules\\ImageResizer\\";
+    settingsDir = installationFolder + L"Settings\\";
+    awakeDir = installationFolder + L"modules\\Awake\\";
+    measureToolDir = installationFolder + L"modules\\MeasureTool\\";
+    powerAccentDir = installationFolder + L"modules\\PowerAccent\\";
+
+    try
+    {
+        for (auto file : powerToysInteropFiles)
+        {
+            DeleteFile((colorPickerDir + file).c_str());
+            DeleteFile((powerOCRDir + file).c_str());
+            DeleteFile((launcherDir + file).c_str());
+            DeleteFile((fancyZonesDir + file).c_str());
+            DeleteFile((imageResizerDir + file).c_str());
+            DeleteFile((settingsDir + file).c_str());
+            DeleteFile((awakeDir + file).c_str());
+            DeleteFile((measureToolDir + file).c_str());
+            DeleteFile((powerAccentDir + file).c_str());
         }
     }
     catch (std::exception e)

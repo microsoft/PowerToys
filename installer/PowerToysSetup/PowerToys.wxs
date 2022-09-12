@@ -113,23 +113,6 @@
                 PerMachine="yes"
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
-            <ExePackage
-                Name="VCRedist-14.32.31332.exe"
-                DetectCondition="DetectedVCRedistVersion >= 32"
-                Compressed="no"
-                Id="VCRedist"
-                DownloadUrl="$(var.VCRedistDownloadUrl)"
-                InstallCommand="/install /quiet /norestart"
-                RepairCommand="/repair /quiet /norestart"
-                Permanent="yes">
-                <ExitCode Value="1638" Behavior="success"/>
-                <RemotePayload
-                    Description="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31332"
-                    ProductName="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31332"
-                    Size="$(var.VCRedistPayloadSize)"
-                    Version="14.32.31332.0"
-                    Hash="$(var.VCRedistPayloadHash)" />
-            </ExePackage>
             <MsiPackage
                 SourceFile="$(var.PowerToysPlatform)\Release\PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform).msi"
                 Compressed="yes"
