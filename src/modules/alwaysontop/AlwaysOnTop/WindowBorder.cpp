@@ -5,6 +5,7 @@
 #include "winrt/Windows.Foundation.h"
 
 #include <FrameDrawer.h>
+#include <ScalingUtils.h>
 #include <Settings.h>
 #include <WindowCornersUtil.h>
 
@@ -189,10 +190,11 @@ void WindowBorder::UpdateBorderProperties() const
         color = AlwaysOnTopSettings::settings().frameColor;
     }
 
-    int cornerRadius = 0;
+    float scalingFactor = ScalingUtils::ScalingFactor(m_trackingWindow);
+    float cornerRadius = 0.0;
     if (AlwaysOnTopSettings::settings().roundCornersEnabled)
     {
-        cornerRadius = WindowCornerUtils::CornersRadius(m_trackingWindow);
+        cornerRadius = WindowCornerUtils::CornersRadius(m_trackingWindow) * scalingFactor;
     }
     
     m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness, cornerRadius);
