@@ -191,13 +191,14 @@ void WindowBorder::UpdateBorderProperties() const
     }
 
     float scalingFactor = ScalingUtils::ScalingFactor(m_trackingWindow);
+    float thickness = AlwaysOnTopSettings::settings().frameThickness * scalingFactor;
     float cornerRadius = 0.0;
     if (AlwaysOnTopSettings::settings().roundCornersEnabled)
     {
         cornerRadius = WindowCornerUtils::CornersRadius(m_trackingWindow) * scalingFactor;
     }
     
-    m_frameDrawer->SetBorderRect(frameRect, color, AlwaysOnTopSettings::settings().frameThickness, cornerRadius);
+    m_frameDrawer->SetBorderRect(frameRect, color, static_cast<int>(thickness), cornerRadius);
 }
 
 LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept

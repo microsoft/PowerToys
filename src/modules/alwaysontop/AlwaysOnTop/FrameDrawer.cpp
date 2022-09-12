@@ -3,6 +3,8 @@
 
 #include <dwmapi.h>
 
+#include <ScalingUtils.h>
+
 namespace
 {
     size_t D2DRectUHash(D2D1_SIZE_U rect)
@@ -184,20 +186,20 @@ D2D1_COLOR_F FrameDrawer::ConvertColor(COLORREF color)
 D2D1_ROUNDED_RECT FrameDrawer::ConvertRect(RECT rect, int thickness, float radius)
 {
     float halfThickness = thickness / 2.0f;
-    auto d2d1Rect = D2D1::RectF((float)rect.left + halfThickness + 1, 
-        (float)rect.top + halfThickness + 1, 
-        (float)rect.right - halfThickness - 1, 
-        (float)rect.bottom - halfThickness - 1);
+    auto d2d1Rect = D2D1::RectF((float)rect.left + halfThickness, 
+        (float)rect.top + halfThickness, 
+        (float)rect.right - halfThickness, 
+        (float)rect.bottom - halfThickness);
     return D2D1::RoundedRect(d2d1Rect, radius, radius);
 }
 
 D2D1_RECT_F FrameDrawer::ConvertRect(RECT rect, int thickness)
 {
     float halfThickness = thickness / 2.0f;
-    return D2D1::RectF((float)rect.left + halfThickness + 1, 
-        (float)rect.top + halfThickness + 1, 
-        (float)rect.right - halfThickness - 1, 
-        (float)rect.bottom - halfThickness - 1);
+    return D2D1::RectF((float)rect.left + halfThickness, 
+        (float)rect.top + halfThickness, 
+        (float)rect.right - halfThickness, 
+        (float)rect.bottom - halfThickness);
 }
 
 void FrameDrawer::Render()
