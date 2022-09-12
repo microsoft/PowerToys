@@ -2,7 +2,9 @@
 
 #include "pch.h"
 
-class __declspec(uuid("84d68575-e186-46ad-b0cb-baeb45ee29c0")) ExplorerCommand : public IExplorerCommand
+#define EXPLORER_COMMAND_UUID_STR "84d68575-e186-46ad-b0cb-baeb45ee29c0"
+
+class __declspec(uuid(EXPLORER_COMMAND_UUID_STR)) ExplorerCommand : public IExplorerCommand
 {
 public:
     // IUnknown
