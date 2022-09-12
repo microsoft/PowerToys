@@ -12,17 +12,21 @@ namespace PowerLauncher.Helper
 {
     public static class NativeEventWaiter
     {
-        public static void WaitForEventLoop(string eventName, Action callback)
+        public static void WaitForEventLoop(string eventName, Action callback, CancellationToken cancel)
         {
             new Thread(() =>
             {
                 var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
                 while (true)
                 {
-                    if (eventHandle.WaitOne())
+                    if (WaitHandle.WaitAny(new WaitHandle[] { cancel.WaitHandle, eventHandle }) == 1)
                     {
                         Log.Info($"Successfully waited for {eventName}", MethodBase.GetCurrentMethod().DeclaringType);
                         Application.Current.Dispatcher.Invoke(callback);
+                    }
+                    else
+                    {
+                        return;
                     }
                 }
             }).Start();
