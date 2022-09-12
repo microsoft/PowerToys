@@ -2,6 +2,21 @@
 
 #include "ClassFactory.h"
 #include "ExplorerCommand.h"
+#include "dllmain.h"
+
+// Class ctor/dtors
+
+ClassFactory::ClassFactory(_In_ REFCLSID clsid) :
+    m_ref_count(1),
+    m_clsid(clsid)
+{
+    ++globals::ref_count;
+}
+
+ClassFactory::~ClassFactory()
+{
+    --globals::ref_count;
+}
 
 // Implementations of inherited IUnknown methods
 
@@ -48,4 +63,18 @@ IFACEMETHODIMP ClassFactory::CreateInstance(IUnknown* pUnkOuter, REFIID riid, vo
         hr = CLASS_E_CLASSNOTAVAILABLE;
     }
     return hr;
+}
+
+IFACEMETHODIMP ClassFactory::LockServer(BOOL fLock)
+{
+    if (fLock)
+    {
+        ++globals::ref_count;
+    }
+    else
+    {
+        --globals::ref_count;
+    }
+
+    return S_OK;
 }

@@ -2,4 +2,8 @@
 
 #include "pch.h"
 
-extern HMODULE dll_instance;
+namespace globals
+{
+    extern HMODULE instance;
+    extern std::atomic<ULONG> ref_count;
+}

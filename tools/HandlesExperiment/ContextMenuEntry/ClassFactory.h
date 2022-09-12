@@ -5,6 +5,9 @@
 class ClassFactory : public IClassFactory
 {
 public:
+    ClassFactory(_In_ REFCLSID clsid);
+    ~ClassFactory();
+
     // IUnknown
     IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
     IFACEMETHODIMP_(ULONG) AddRef() override;

@@ -63,7 +63,7 @@ bool add_registry_keys()
     }
 
     static WCHAR module_file_name[MAX_PATH];
-    DWORD result = GetModuleFileNameW(dll_instance, module_file_name, ARRAYSIZE(module_file_name));
+    DWORD result = GetModuleFileNameW(globals::instance, module_file_name, ARRAYSIZE(module_file_name));
     if (result == 0)
     {
         return false;
