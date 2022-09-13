@@ -40,10 +40,12 @@ public:
         DWORD pid;
         USHORT handle;
         std::wstring type_name;
-        std::wstring file_name;
+        std::wstring kernel_file_name;
     };
 
     std::wstring file_handle_to_kernel_name(HANDLE file_handle);
+
+    std::wstring path_to_kernel_name(LPCWSTR path);
 
     std::vector<HandleInfo> handles() noexcept;
 

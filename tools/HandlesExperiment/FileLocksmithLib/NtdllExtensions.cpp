@@ -2,7 +2,7 @@
 
 #include "NtdllExtensions.h"
 
-#define STATUS_INFO_LENGTH_MISMATCH ((LONG)0xC00000004)
+#define STATUS_INFO_LENGTH_MISMATCH ((LONG)0xC0000004)
 
 // Calls NtQuerySystemInformation and returns a buffer containing the result.
 
@@ -59,6 +59,29 @@ std::wstring NtdllExtensions::file_handle_to_kernel_name(HANDLE file_handle)
     return file_handle_to_kernel_name(file_handle, buffer);
 }
 
+std::wstring NtdllExtensions::path_to_kernel_name(LPCWSTR path)
+{
+    HANDLE file_handle = CreateFileW(path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    if (file_handle == INVALID_HANDLE_VALUE)
+    {
+        return {};
+    }
+
+    auto kernel_name = file_handle_to_kernel_name(file_handle);
+    CloseHandle(file_handle);
+    return kernel_name;
+}
+
+std::wstring_view NtdllExtensions::unicode_to_view(UNICODE_STRING unicode_str)
+{
+    return std::wstring_view(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
+}
+
+std::wstring NtdllExtensions::unicode_to_str(UNICODE_STRING unicode_str)
+{
+    return std::wstring(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
+}
+
 std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
 {
     auto get_info_result = NtQuerySystemInformationMemoryLoop(SystemHandleInformation);
@@ -106,8 +129,8 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
 
         HANDLE handle_copy;
 
-        auto error = DuplicateHandle(process_handle, (HANDLE)handle_info->Handle, GetCurrentProcess(), &handle_copy, 0, 0, DUPLICATE_SAME_ACCESS);
-        if (error)
+        auto dh_result = DuplicateHandle(process_handle, (HANDLE)handle_info->Handle, GetCurrentProcess(), &handle_copy, 0, 0, DUPLICATE_SAME_ACCESS);
+        if (dh_result == 0)
         {
             // Ignore this handle.
             continue;
