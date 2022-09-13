@@ -7,11 +7,16 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Awake.Core.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
 using NLog;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.
@@ -22,21 +27,18 @@ namespace Awake.Core
     {
         private static readonly Logger _log;
 
-        private static IntPtr _trayMenu;
+        private static DestroyMenuSafeHandle TrayMenu { get; set; }
 
-        private static IntPtr TrayMenu { get => _trayMenu; set => _trayMenu = value; }
-
-        private static NotifyIcon? _trayIcon;
-
-        private static NotifyIcon TrayIcon { get => _trayIcon; set => _trayIcon = value; }
+        private static NotifyIcon TrayIcon { get; set; }
 
         static TrayHelper()
         {
             _log = LogManager.GetCurrentClassLogger();
+            TrayMenu = new DestroyMenuSafeHandle();
             TrayIcon = new NotifyIcon();
         }
 
-        public static void InitializeTray(string text, Icon icon, ContextMenuStrip? contextMenu = null)
+        public static void InitializeTray(string text, Icon icon, ManualResetEvent? exitSignal, ContextMenuStrip? contextMenu = null)
         {
             Task.Factory.StartNew(
                 (tray) =>
@@ -49,7 +51,7 @@ namespace Awake.Core
                         ((NotifyIcon?)tray).ContextMenuStrip = contextMenu;
                         ((NotifyIcon?)tray).Visible = true;
                         ((NotifyIcon?)tray).MouseClick += TrayClickHandler;
-                        Application.AddMessageFilter(new TrayMessageFilter());
+                        Application.AddMessageFilter(new TrayMessageFilter(exitSignal));
                         Application.Run();
                         _log.Info("Tray setup complete.");
                     }
@@ -74,19 +76,13 @@ namespace Awake.Core
         /// <param name="e">MouseEventArgs instance containing mouse click event information.</param>
         private static void TrayClickHandler(object? sender, MouseEventArgs e)
         {
-            IntPtr windowHandle = APIHelper.GetHiddenWindow();
+            HWND windowHandle = APIHelper.GetHiddenWindow();
 
-            if (windowHandle != IntPtr.Zero)
+            if (windowHandle != HWND.Null)
             {
-                NativeMethods.SetForegroundWindow(windowHandle);
-                NativeMethods.TrackPopupMenuEx(TrayMenu, 0, Cursor.Position.X, Cursor.Position.Y, windowHandle, IntPtr.Zero);
+                PInvoke.SetForegroundWindow(windowHandle);
+                PInvoke.TrackPopupMenuEx(TrayMenu, 0, Cursor.Position.X, Cursor.Position.Y, windowHandle, null);
             }
-        }
-
-        public static void ClearTray()
-        {
-            TrayIcon.Icon = null;
-            TrayIcon.Dispose();
         }
 
         internal static void SetTray(string text, AwakeSettings settings)
@@ -101,19 +97,14 @@ namespace Awake.Core
         [SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1005:Single line comments should begin with single space", Justification = "For debugging purposes - will remove later.")]
         public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts)
         {
-            if (TrayMenu != IntPtr.Zero)
-            {
-                var destructionStatus = NativeMethods.DestroyMenu(TrayMenu);
-                if (destructionStatus != true)
-                {
-                    _log.Error("Failed to destroy tray menu and free up memory.");
-                }
-            }
+            TrayMenu = new DestroyMenuSafeHandle(PInvoke.CreatePopupMenu());
 
-            TrayMenu = NativeMethods.CreatePopupMenu();
-            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_EXIT, "Exit");
-            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_SEPARATOR, 0, string.Empty);
-            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (keepDisplayOn ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)TrayCommands.TC_DISPLAY_SETTING, "Keep screen on");
+            if (!TrayMenu.IsInvalid)
+            {
+                PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING, (uint)TrayCommands.TC_EXIT, "Exit");
+                PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_SEPARATOR, 0, string.Empty);
+                PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING | (keepDisplayOn ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)TrayCommands.TC_DISPLAY_SETTING, "Keep screen on");
+            }
 
             // In case there are no tray shortcuts defined for the application default to a
             // reasonable initial set.
@@ -123,18 +114,18 @@ namespace Awake.Core
             }
 
             // TODO: Make sure that this loads from JSON instead of being hard-coded.
-            var awakeTimeMenu = NativeMethods.CreatePopupMenu();
+            var awakeTimeMenu = new DestroyMenuSafeHandle(PInvoke.CreatePopupMenu(), false);
             for (int i = 0; i < trayTimeShortcuts.Count; i++)
             {
-                NativeMethods.InsertMenu(awakeTimeMenu, (uint)i, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
+                PInvoke.InsertMenu(awakeTimeMenu, (uint)i, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
             }
 
-            var modeMenu = NativeMethods.CreatePopupMenu();
-            NativeMethods.InsertMenu(modeMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (mode == AwakeMode.PASSIVE ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, "Off (keep using the selected power plan)");
-            NativeMethods.InsertMenu(modeMenu, 1, NativeConstants.MF_BYPOSITION | NativeConstants.MF_STRING | (mode == AwakeMode.INDEFINITE ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, "Keep awake indefinitely");
+            var modeMenu = new DestroyMenuSafeHandle(PInvoke.CreatePopupMenu(), false);
+            PInvoke.InsertMenu(modeMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING | (mode == AwakeMode.PASSIVE ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, "Off (keep using the selected power plan)");
+            PInvoke.InsertMenu(modeMenu, 1, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING | (mode == AwakeMode.INDEFINITE ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, "Keep awake indefinitely");
 
-            NativeMethods.InsertMenu(modeMenu, 2, NativeConstants.MF_BYPOSITION | NativeConstants.MF_POPUP | (mode == AwakeMode.TIMED ? NativeConstants.MF_CHECKED : NativeConstants.MF_UNCHECKED), (uint)awakeTimeMenu, "Keep awake temporarily");
-            NativeMethods.InsertMenu(TrayMenu, 0, NativeConstants.MF_BYPOSITION | NativeConstants.MF_POPUP, (uint)modeMenu, "Mode");
+            PInvoke.InsertMenu(modeMenu, 2, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_POPUP | (mode == AwakeMode.TIMED ? MENU_ITEM_FLAGS.MF_CHECKED : MENU_ITEM_FLAGS.MF_UNCHECKED), (uint)awakeTimeMenu.DangerousGetHandle(), "Keep awake temporarily");
+            PInvoke.InsertMenu(TrayMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_POPUP, (uint)modeMenu.DangerousGetHandle(), "Mode");
 
             TrayIcon.Text = text;
         }

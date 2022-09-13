@@ -3,26 +3,24 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Reflection;
 using System.Threading;
-using System.Windows;
-using Wox.Plugin.Logger;
 
-namespace PowerLauncher.Helper
+using Dispatcher = System.Windows.Threading.Dispatcher;
+
+namespace Common.UI
 {
     public static class NativeEventWaiter
     {
-        public static void WaitForEventLoop(string eventName, Action callback, CancellationToken cancel)
+        public static void WaitForEventLoop(string eventName, Action callback, Dispatcher dispatcher, CancellationToken cancel)
         {
             new Thread(() =>
             {
-                var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+                var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, eventName);
                 while (true)
                 {
                     if (WaitHandle.WaitAny(new WaitHandle[] { cancel.WaitHandle, eventHandle }) == 1)
                     {
-                        Log.Info($"Successfully waited for {eventName}", MethodBase.GetCurrentMethod().DeclaringType);
-                        Application.Current.Dispatcher.Invoke(callback);
+                        dispatcher.BeginInvoke(callback);
                     }
                     else
                     {
