@@ -261,6 +261,15 @@ namespace Awake
                 }
             }
 
+            if (pid != 0)
+            {
+                RunnerHelper.WaitForPowerToysRunner(pid, () =>
+                {
+                    _log.Info($"Triggered PID-based exit handler for PID {pid}.");
+                    Exit("Terminating from process binding hook.", 0, _exitSignal, true);
+                });
+            }
+
             _exitSignal.WaitOne();
         }
 

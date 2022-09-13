@@ -210,13 +210,12 @@ namespace Awake.Core
             try
             {
                 exitSignal?.Set();
+                Application.Current.Shutdown();
             }
             catch (Exception ex)
             {
                 _log.Info($"Exit signal error ${ex}");
             }
-
-            Application.Current.Shutdown();
         }
 
         private static bool RunTimedLoop(uint seconds, bool keepDisplayOn = true)
