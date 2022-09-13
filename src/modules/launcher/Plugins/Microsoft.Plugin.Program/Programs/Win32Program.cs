@@ -29,8 +29,6 @@ namespace Microsoft.Plugin.Program.Programs
     [Serializable]
     public class Win32Program : IProgram
     {
-        private const string AppPathsRegistryKeyName = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
-
         public static readonly Win32Program InvalidProgram = new Win32Program { Valid = false, Enabled = false };
 
         private static readonly IFileSystem FileSystem = new FileSystem();
@@ -802,8 +800,9 @@ namespace Microsoft.Plugin.Program.Programs
         private static IEnumerable<string> RegistryAppProgramPaths(IList<string> suffixes)
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
+            const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
             var paths = new List<string>();
-            using (var root = Registry.LocalMachine.OpenSubKey(AppPathsRegistryKeyName))
+            using (var root = Registry.LocalMachine.OpenSubKey(appPaths))
             {
                 if (root != null)
                 {
@@ -811,7 +810,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            using (var root = Registry.CurrentUser.OpenSubKey(AppPathsRegistryKeyName))
+            using (var root = Registry.CurrentUser.OpenSubKey(appPaths))
             {
                 if (root != null)
                 {
