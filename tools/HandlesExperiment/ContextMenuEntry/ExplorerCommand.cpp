@@ -2,6 +2,7 @@
 
 #include "ExplorerCommand.h"
 #include "Constants.h"
+#include "dllmain.h"
 
 // Implementations of inherited IUnknown methods
 
@@ -132,9 +133,17 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
 
 IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
 {
-    // TODO implement proper invocation and test
-    // This should call the main exe.
-    // For now we'll just show a message box.
+    ipc::Writer writer;
+
+    if (HRESULT result = writer.start(); FAILED(result))
+    {
+        return result;
+    }
+
+    if (HRESULT result = LaunchUI(pici, &writer); FAILED(result))
+    {
+        return result;
+    }
 
     IShellItemArray* shell_item_array;
     HRESULT result = SHCreateShellItemArrayFromDataObject(m_data_obj, __uuidof(IShellItemArray), reinterpret_cast<void**>(&shell_item_array));
@@ -153,7 +162,7 @@ IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
                 if (SUCCEEDED(result))
                 {
                     // TODO Aggregate items and send to UI
-                    MessageBoxW(NULL, file_path, L"InvokeCommand", MB_OK);
+                    writer.add_path(file_path);
                     CoTaskMemFree(file_path);
                 }
 
@@ -191,4 +200,76 @@ ExplorerCommand::~ExplorerCommand()
     {
         m_data_obj->Release();
     }
+}
+
+// Implementation taken from src/common/utils
+// TODO reference that function
+inline std::wstring get_module_folderpath(HMODULE mod = nullptr, const bool removeFilename = true)
+{
+    wchar_t buffer[MAX_PATH + 1];
+    DWORD actual_length = GetModuleFileNameW(mod, buffer, MAX_PATH);
+    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+    {
+        const DWORD long_path_length = 0xFFFF; // should be always enough
+        std::wstring long_filename(long_path_length, L'\0');
+        actual_length = GetModuleFileNameW(mod, long_filename.data(), long_path_length);
+        PathRemoveFileSpecW(long_filename.data());
+        long_filename.resize(std::wcslen(long_filename.data()));
+        long_filename.shrink_to_fit();
+        return long_filename;
+    }
+
+    if (removeFilename)
+    {
+        PathRemoveFileSpecW(buffer);
+    }
+    return { buffer, (UINT)lstrlenW(buffer) };
+}
+
+HRESULT ExplorerCommand::LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer)
+{
+    // Compute exe path
+    std::wstring exe_path = get_module_folderpath(globals::instance);
+    exe_path += L'\\';
+    exe_path += constants::nonlocalizable::FileNameUIExe;
+
+    HANDLE read_handle = writer->get_read_handle();
+
+    STARTUPINFO startupInfo;
+    ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
+    startupInfo.cb = sizeof(STARTUPINFO);
+    startupInfo.hStdInput = read_handle;
+    startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+
+    if (pici)
+    {
+        startupInfo.wShowWindow = pici->nShow;
+    }
+    else
+    {
+        startupInfo.wShowWindow = SW_SHOWNORMAL;
+    }
+
+    PROCESS_INFORMATION processInformation;
+    std::wstring command_line = L"\"";
+    command_line += exe_path;
+    command_line += L"\"\0";
+
+    CreateProcessW(
+        NULL,
+        command_line.data(),
+        NULL,
+        NULL,
+        TRUE,
+        0,
+        NULL,
+        NULL,
+        &startupInfo,
+        &processInformation);
+
+    // Discard handles
+    CloseHandle(processInformation.hProcess);
+    CloseHandle(processInformation.hThread);
+
+    return S_OK;
 }

@@ -2,6 +2,9 @@
 
 #include "pch.h"
 
+// File Locksmith library
+#include "../FileLocksmithLib/IPC.h"
+
 #define EXPLORER_COMMAND_UUID_STR "84d68575-e186-46ad-b0cb-baeb45ee29c0"
 
 class __declspec(uuid(EXPLORER_COMMAND_UUID_STR)) ExplorerCommand : public IExplorerCommand, public IShellExtInit, public IContextMenu
@@ -37,6 +40,9 @@ public:
     ~ExplorerCommand();
 
 private:
+    // Helpers
+    HRESULT LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer);
+
     std::atomic<ULONG> m_ref_count = 1;
     IDataObject* m_data_obj = NULL;
 };

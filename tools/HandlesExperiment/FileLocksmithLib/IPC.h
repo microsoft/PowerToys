@@ -8,6 +8,7 @@ namespace ipc
 	{
 	public:
 		Writer();
+		~Writer();
 		HRESULT start();
 		HRESULT add_path(LPCWSTR path);
 		void finish();
