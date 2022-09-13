@@ -33,7 +33,7 @@ namespace Hosts.Views
 
         public ICommand UpdateAdditionalLinesCommand => new RelayCommand(UpdateAdditionalLines);
 
-        public ICommand ExitCommand => new RelayCommand(() => Environment.Exit(0));
+        public ICommand ExitCommand => new RelayCommand(() => Application.Current.Exit());
 
         public MainPage()
         {

@@ -37,8 +37,6 @@ namespace Hosts.Settings
 
         private void LoadSettingsFromJson()
         {
-            Thread.Sleep(500);
-
             lock (_loadingSettingsLock)
             {
                 var retry = true;
