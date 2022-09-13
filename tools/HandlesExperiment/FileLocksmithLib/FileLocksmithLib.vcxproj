@@ -135,11 +135,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="IPC.h" />
     <ClInclude Include="NtdllBase.h" />
     <ClInclude Include="NtdllExtensions.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="IPC.cpp" />
     <ClCompile Include="NtdllBase.cpp" />
     <ClCompile Include="NtdllExtensions.cpp" />
     <ClCompile Include="pch.cpp">
