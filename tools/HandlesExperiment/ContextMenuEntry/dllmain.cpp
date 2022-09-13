@@ -76,5 +76,5 @@ STDAPI DllCanUnloadNow(void)
 // 5. (DONE) Implement IShellExtInit in ExplorerCommand
 // 6. (DONE) Implement IContextMenu in ExplorerCommand
 // 7. (DONE) Extract useful functions from HandlesExperiment to a static library
-// 8. Implement IPC in Lib - to be used between UI and DLL
+// 8. (DONE) Implement IPC in Lib - to be used between UI and DLL
 // 9. Implement UI

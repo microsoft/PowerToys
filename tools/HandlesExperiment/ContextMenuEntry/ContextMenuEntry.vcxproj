@@ -161,6 +161,11 @@
   <ItemGroup>
     <None Include="dll.def" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FileLocksmithLib\FileLocksmithLib.vcxproj">
+      <Project>{8290cf58-0e97-45c4-ab41-f3c7c3128aec}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

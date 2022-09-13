@@ -11,6 +11,12 @@ namespace ipc
 {
 	Writer::Writer()
 	{
+		start();
+	}
+
+	Writer::~Writer()
+	{
+		finish();
 	}
 
 	HRESULT Writer::start()
@@ -58,16 +64,26 @@ namespace ipc
 
 	void Writer::finish()
 	{
+		add_path(L"");
+
 		if (m_write_pipe)
 		{
 			CloseHandle(m_write_pipe);
 			m_write_pipe = NULL;
 		}
+
+		if (m_read_pipe)
+		{
+			CloseHandle(m_read_pipe);
+			m_read_pipe = NULL;
+		}
 	}
 
 	HANDLE Writer::get_read_handle()
 	{
-		return m_read_pipe;
+		HANDLE result = m_read_pipe;
+		m_read_pipe = NULL;
+		return result;
 	}
 
 	std::vector<std::wstring> read_paths_from_stdin()
@@ -76,6 +92,11 @@ namespace ipc
 		std::wstring line;
 		while (std::getline(std::wcin, line))
 		{
+			if (line.empty())
+			{
+				break;
+			}
+
 			result.push_back(line);
 		}
 
