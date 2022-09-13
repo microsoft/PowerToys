@@ -210,7 +210,7 @@ namespace Awake.Core
             try
             {
                 exitSignal?.Set();
-                Application.Current.Shutdown();
+                PInvoke.DestroyWindow(windowHandle);
             }
             catch (Exception ex)
             {

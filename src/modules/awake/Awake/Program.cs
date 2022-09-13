@@ -19,6 +19,7 @@ using Awake.Core;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Telemetry.Events;
 using NLog;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -89,7 +90,7 @@ namespace Awake
 
             _log.Info("Parsing parameters...");
 
-            Option<bool>? configOption = new (
+            var configOption = new Option<bool>(
                     aliases: new[] { "--use-pt-config", "-c" },
                     getDefaultValue: () => false,
                     description: $"Specifies whether {InternalConstants.AppName} will be using the PowerToys configuration file for managing the state.")
@@ -102,7 +103,7 @@ namespace Awake
 
             configOption.Required = false;
 
-            Option<bool>? displayOption = new (
+            var displayOption = new Option<bool>(
                     aliases: new[] { "--display-on", "-d" },
                     getDefaultValue: () => true,
                     description: "Determines whether the display should be kept awake.")
@@ -115,7 +116,7 @@ namespace Awake
 
             displayOption.Required = false;
 
-            Option<uint>? timeOption = new (
+            var timeOption = new Option<uint>(
                     aliases: new[] { "--time-limit", "-t" },
                     getDefaultValue: () => 0,
                     description: "Determines the interval, in seconds, during which the computer is kept awake.")
@@ -128,7 +129,7 @@ namespace Awake
 
             timeOption.Required = false;
 
-            Option<int>? pidOption = new (
+            var pidOption = new Option<int>(
                     aliases: new[] { "--pid", "-p" },
                     getDefaultValue: () => 0,
                     description: $"Bind the execution of {InternalConstants.AppName} to another process.")
@@ -194,16 +195,14 @@ namespace Awake
                 // and instead watch for changes in the file.
                 try
                 {
-                    // TODO: native event handler
+                    var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, Constants.AwakeExitEvent());
                     new Thread(() =>
                     {
-                        EventWaitHandle? eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, Constants.AwakeExitEvent());
-                        if (eventHandle.WaitOne())
+                        if (WaitHandle.WaitAny(new WaitHandle[] { _exitSignal, eventHandle }) == 1)
                         {
                             Exit("Received a signal to end the process. Making sure we quit...", 0, _exitSignal, true);
                         }
                     }).Start();
-
                     TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon("modules/awake/images/awake.ico"), _exitSignal);
 
                     string? settingsPath = _settingsUtils.GetSettingsFilePath(InternalConstants.AppName);

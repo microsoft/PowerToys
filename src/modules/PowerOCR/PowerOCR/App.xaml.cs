@@ -43,7 +43,7 @@ public partial class App : Application, IDisposable
         {
             Logger.LogWarning("Another running TextExtractor instance was detected. Exiting TextExtractor");
             _instanceMutex = null;
-            Dispatcher.Invoke(() => Shutdown());
+            Shutdown();
             return;
         }
 

@@ -2,6 +2,7 @@ AllocConsole
 CreateFile
 CreatePopupMenu
 DestroyMenu
+DestroyWindow
 FindWindowEx
 GetClassName
 GetCurrentThreadId
