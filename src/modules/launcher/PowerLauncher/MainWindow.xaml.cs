@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using Common.UI;
 using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
@@ -52,7 +53,11 @@ namespace PowerLauncher
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
-            NativeEventWaiter.WaitForEventLoop(Constants.RunSendSettingsTelemetryEvent(), SendSettingsTelemetry, _nativeWaiterCancelToken);
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.RunSendSettingsTelemetryEvent(),
+                SendSettingsTelemetry,
+                Application.Current.Dispatcher,
+                _nativeWaiterCancelToken);
         }
 
         private void SendSettingsTelemetry()
