@@ -1,0 +1,53 @@
+#pragma once
+
+#include "pch.h"
+
+#include "NtdllBase.h"
+
+class NtdllExtensions : protected Ntdll
+{
+private:
+    constexpr static size_t DefaultResultBufferSize = 64 * 1024;
+    constexpr static size_t MaxResultBufferSize = 1024 * 1024 * 1024;
+
+    constexpr static int ObjectNameInformation = 1;
+    constexpr static int SystemHandleInformation = 16;
+
+    std::wstring_view unicode_to_view(UNICODE_STRING unicode_str);
+
+    std::wstring unicode_to_str(UNICODE_STRING unicode_str);
+
+    struct MemoryLoopResult
+    {
+        NTSTATUS status = 0;
+        std::vector<BYTE> memory;
+    };
+
+    // Calls NtQuerySystemInformation and returns a buffer containing the result.
+    MemoryLoopResult NtQuerySystemInformationMemoryLoop(ULONG SystemInformationClass);
+
+    std::wstring file_handle_to_kernel_name(HANDLE file_handle, std::vector<BYTE>& buffer);
+
+public:
+    struct ProcessInfo
+    {
+        DWORD pid;
+        std::wstring name;
+    };
+
+    struct HandleInfo
+    {
+        DWORD pid;
+        USHORT handle;
+        std::wstring type_name;
+        std::wstring file_name;
+    };
+
+    std::wstring file_handle_to_kernel_name(HANDLE file_handle);
+
+    std::vector<HandleInfo> handles() noexcept;
+
+    // Returns the list of all processes.
+    // On failure, returns an empty vector.
+    std::vector<ProcessInfo> processes() noexcept;
+};
