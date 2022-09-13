@@ -76,7 +76,7 @@ namespace ipc
 		std::wstring line;
 		while (std::getline(std::wcin, line))
 		{
-			result.emplace_back(std::move(line));
+			result.push_back(line);
 		}
 
 		return result;
