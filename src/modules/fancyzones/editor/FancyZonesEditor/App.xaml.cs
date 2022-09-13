@@ -5,9 +5,9 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Common.UI;
 using FancyZonesEditor.Logs;
 using FancyZonesEditor.Utils;
@@ -35,10 +35,6 @@ namespace FancyZonesEditor
 
         private ThemeManager _themeManager;
 
-        private EventWaitHandle _eventHandle;
-
-        private Thread _exitWaitThread;
-
         public static bool DebugMode
         {
             get
@@ -50,6 +46,8 @@ namespace FancyZonesEditor
         private static bool _debugMode;
         private bool _isDisposed;
 
+        private CancellationTokenSource NativeThreadCTS { get; set; }
+
         [Conditional("DEBUG")]
         private void DebugModeCheck()
         {
@@ -59,27 +57,29 @@ namespace FancyZonesEditor
         public App()
         {
             // DebugModeCheck();
+            NativeThreadCTS = new CancellationTokenSource();
             FancyZonesEditorIO = new FancyZonesEditorIO();
             Overlay = new Overlay();
             MainWindowSettings = new MainWindowSettingsModel();
 
-            _exitWaitThread = new Thread(App_WaitExit);
-            _exitWaitThread.Start();
+            App_WaitExit();
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-            RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
-            {
-                Logger.LogInfo("Runner exited");
-                Environment.Exit(0);
-            });
-
             _themeManager = new ThemeManager(this);
 
             var parseResult = FancyZonesEditorIO.ParseParams();
+
+            RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
+            {
+                Logger.LogInfo("Runner exited");
+                NativeThreadCTS.Cancel();
+                Application.Current.Dispatcher.Invoke(Application.Current.Shutdown);
+            });
+
             if (!parseResult.Result)
             {
                 Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
@@ -122,26 +122,23 @@ namespace FancyZonesEditor
 
         private void OnExit(object sender, ExitEventArgs e)
         {
+            NativeThreadCTS.Cancel();
             Dispose();
-
-            if (_eventHandle != null)
-            {
-                _eventHandle.Set();
-            }
-
-            _exitWaitThread.Join();
 
             Logger.LogInfo("FancyZones Editor exited");
         }
 
         private void App_WaitExit()
         {
-            _eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, interop.Constants.FZEExitEvent());
-            if (_eventHandle.WaitOne())
+            NativeEventWaiter.WaitForEventLoop(
+            interop.Constants.FZEExitEvent(),
+            () =>
             {
                 Logger.LogInfo("Exit event triggered");
-                Environment.Exit(0);
-            }
+                Application.Current.Shutdown();
+            },
+            Current.Dispatcher,
+            NativeThreadCTS.Token);
         }
 
         public void App_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)

@@ -7,17 +7,20 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using Awake.Core.Models;
 using Microsoft.Win32;
 using NLog;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Storage.FileSystem;
+using Windows.Win32.System.Console;
+using Windows.Win32.System.Power;
 
 namespace Awake.Core
 {
-    public delegate bool ConsoleEventHandler(ControlType ctrlType);
-
     /// <summary>
     /// Helper class that allows talking to Win32 APIs without having to rely on PInvoke in other parts
     /// of the codebase.
@@ -25,9 +28,6 @@ namespace Awake.Core
     public class APIHelper
     {
         private const string BuildRegistryLocation = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
-        private const int StdOutputHandle = -11;
-        private const uint GenericWrite = 0x40000000;
-        private const uint GenericRead = 0x80000000;
 
         private static readonly Logger _log;
         private static CancellationTokenSource _tokenSource;
@@ -43,21 +43,21 @@ namespace Awake.Core
             _tokenSource = new CancellationTokenSource();
         }
 
-        public static void SetConsoleControlHandler(ConsoleEventHandler handler, bool addHandler)
+        internal static void SetConsoleControlHandler(PHANDLER_ROUTINE handler, bool addHandler)
         {
-            NativeMethods.SetConsoleCtrlHandler(handler, addHandler);
+            PInvoke.SetConsoleCtrlHandler(handler, addHandler);
         }
 
         public static void AllocateConsole()
         {
             _log.Debug("Bootstrapping the console allocation routine.");
-            NativeMethods.AllocConsole();
+            PInvoke.AllocConsole();
             _log.Debug($"Console allocation result: {Marshal.GetLastWin32Error()}");
 
-            var outputFilePointer = NativeMethods.CreateFile("CONOUT$", GenericRead | GenericWrite, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
+            var outputFilePointer = PInvoke.CreateFile("CONOUT$", FILE_ACCESS_FLAGS.FILE_GENERIC_READ | FILE_ACCESS_FLAGS.FILE_GENERIC_WRITE, FILE_SHARE_MODE.FILE_SHARE_WRITE, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
             _log.Debug($"CONOUT creation result: {Marshal.GetLastWin32Error()}");
 
-            NativeMethods.SetStdHandle(StdOutputHandle, outputFilePointer);
+            PInvoke.SetStdHandle(Windows.Win32.System.Console.STD_HANDLE.STD_OUTPUT_HANDLE, outputFilePointer);
             _log.Debug($"SetStdHandle result: {Marshal.GetLastWin32Error()}");
 
             Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
@@ -70,11 +70,11 @@ namespace Awake.Core
         /// </summary>
         /// <param name="state">Single or multiple EXECUTION_STATE entries.</param>
         /// <returns>true if successful, false if failed</returns>
-        private static bool SetAwakeState(ExecutionState state)
+        private static bool SetAwakeState(EXECUTION_STATE state)
         {
             try
             {
-                var stateResult = NativeMethods.SetThreadExecutionState(state);
+                var stateResult = PInvoke.SetThreadExecutionState(state);
                 return stateResult != 0;
             }
             catch
@@ -160,18 +160,18 @@ namespace Awake.Core
             bool success;
             if (keepDisplayOn)
             {
-                success = SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS);
+                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
             }
             else
             {
-                success = SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS);
+                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
             }
 
             try
             {
                 if (success)
                 {
-                    _log.Info($"Initiated indefinite keep awake in background thread: {NativeMethods.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    _log.Info($"Initiated indefinite keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
                     WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
 
@@ -186,28 +186,35 @@ namespace Awake.Core
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                _log.Info($"Background thread termination: {NativeMethods.GetCurrentThreadId()}. Message: {ex.Message}");
+                _log.Info($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
                 return success;
             }
         }
 
-        internal static void CompleteExit(int exitCode, bool force = false)
+        internal static void CompleteExit(int exitCode, ManualResetEvent? exitSignal, bool force = false)
         {
-            APIHelper.SetNoKeepAwake();
-            TrayHelper.ClearTray();
+            SetNoKeepAwake();
 
-            // Because we are running a message loop for the tray, we can't just use Environment.Exit,
-            // but have to make sure that we properly send the termination message.
-            IntPtr windowHandle = APIHelper.GetHiddenWindow();
+            HWND windowHandle = GetHiddenWindow();
 
-            if (windowHandle != IntPtr.Zero)
+            if (windowHandle != HWND.Null)
             {
-                NativeMethods.SendMessage(windowHandle, NativeConstants.WM_CLOSE, 0, string.Empty);
+                PInvoke.SendMessage(windowHandle, PInvoke.WM_CLOSE, 0, 0);
             }
 
             if (force)
             {
-                Environment.Exit(exitCode);
+                PInvoke.PostQuitMessage(0);
+            }
+
+            try
+            {
+                exitSignal?.Set();
+                PInvoke.DestroyWindow(windowHandle);
+            }
+            catch (Exception ex)
+            {
+                _log.Info($"Exit signal error ${ex}");
             }
         }
 
@@ -221,18 +228,18 @@ namespace Awake.Core
             {
                 if (keepDisplayOn)
                 {
-                    success = SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS);
+                    success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
                 }
                 else
                 {
-                    success = SetAwakeState(ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS);
+                    success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
                 }
 
                 if (success)
                 {
-                    _log.Info($"Initiated temporary keep awake in background thread: {NativeMethods.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    _log.Info($"Initiated temporary keep awake in background thread: {PInvoke.GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
-                    _timedLoopTimer = new System.Timers.Timer(seconds * 1000);
+                    _timedLoopTimer = new System.Timers.Timer((seconds * 1000) + 1);
                     _timedLoopTimer.Elapsed += (s, e) =>
                     {
                         _tokenSource.Cancel();
@@ -262,7 +269,7 @@ namespace Awake.Core
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                _log.Info($"Background thread termination: {NativeMethods.GetCurrentThreadId()}. Message: {ex.Message}");
+                _log.Info($"Background thread termination: {PInvoke.GetCurrentThreadId()}. Message: {ex.Message}");
                 return success;
             }
         }
@@ -294,15 +301,20 @@ namespace Awake.Core
         }
 
         [SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Function returns DWORD value that identifies the current thread, but we do not need it.")]
-        public static IEnumerable<IntPtr> EnumerateWindowsForProcess(int processId)
+        internal static IEnumerable<HWND> EnumerateWindowsForProcess(int processId)
         {
-            var handles = new List<IntPtr>();
-            IntPtr hCurrentWnd = IntPtr.Zero;
+            var handles = new List<HWND>();
+            var hCurrentWnd = HWND.Null;
 
             do
             {
-                hCurrentWnd = NativeMethods.FindWindowEx(IntPtr.Zero, hCurrentWnd, null, null);
-                NativeMethods.GetWindowThreadProcessId(hCurrentWnd, out uint targetProcessId);
+                hCurrentWnd = PInvoke.FindWindowEx(HWND.Null, hCurrentWnd, null as string, null);
+                uint targetProcessId = 0;
+                unsafe
+                {
+                    PInvoke.GetWindowThreadProcessId(hCurrentWnd, &targetProcessId);
+                }
+
                 if (targetProcessId == processId)
                 {
                     handles.Add(hCurrentWnd);
@@ -314,23 +326,30 @@ namespace Awake.Core
         }
 
         [SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "In this context, the string is only converted to a hex value.")]
-        public static IntPtr GetHiddenWindow()
+        internal static HWND GetHiddenWindow()
         {
-            IEnumerable<IntPtr> windowHandles = EnumerateWindowsForProcess(Environment.ProcessId);
+            IEnumerable<HWND> windowHandles = EnumerateWindowsForProcess(Environment.ProcessId);
             var domain = AppDomain.CurrentDomain.GetHashCode().ToString("x");
             string targetClass = $"{InternalConstants.TrayWindowId}{domain}";
 
-            foreach (var handle in windowHandles)
+            unsafe
             {
-                StringBuilder className = new (256);
-                int classQueryResult = NativeMethods.GetClassName(handle, className, className.Capacity);
-                if (classQueryResult != 0 && className.ToString().StartsWith(targetClass, StringComparison.InvariantCultureIgnoreCase))
+                var classNameLen = 256;
+                Span<char> className = stackalloc char[classNameLen];
+                foreach (var handle in windowHandles)
                 {
-                    return handle;
+                    fixed (char* ptr = className)
+                    {
+                        int classQueryResult = PInvoke.GetClassName(handle, ptr, classNameLen);
+                        if (classQueryResult != 0 && className.ToString().StartsWith(targetClass, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            return handle;
+                        }
+                    }
                 }
             }
 
-            return IntPtr.Zero;
+            return HWND.Null;
         }
 
         public static Dictionary<string, int> GetDefaultTrayOptions()

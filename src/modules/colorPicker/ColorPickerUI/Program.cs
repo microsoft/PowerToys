@@ -5,7 +5,6 @@
 using System;
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
-
 using ColorPickerUI;
 
 namespace ColorPicker

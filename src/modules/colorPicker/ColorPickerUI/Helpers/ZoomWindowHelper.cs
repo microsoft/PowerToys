@@ -7,11 +7,8 @@ using System.ComponentModel.Composition;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Windows;
 using System.Windows.Media.Imaging;
-using ColorPicker.Telemetry;
 using ColorPicker.ViewModelContracts;
-using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.Helpers
 {
