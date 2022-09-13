@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Plugin.Program.Logger;
+using Microsoft.Plugin.Program.Utils;
 using Microsoft.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.FileSystemHelper;
@@ -933,20 +934,15 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
-            var fileName = Path.GetFileName(program.FullPath);
             try
             {
-                using var appPathRegistryKey = Registry.CurrentUser.OpenSubKey(AppPathsRegistryKeyName);
-                var redirectionPath = GetPathFromRegistrySubkey(appPathRegistryKey, fileName);
-                if (!string.IsNullOrEmpty(redirectionPath))
-                {
-                    icoPath = ExpandEnvironmentVariables(redirectionPath);
-                    return true;
-                }
+                var redirectionPath = ReparsePoint.GetTarget(program.FullPath);
+                icoPath = ExpandEnvironmentVariables(redirectionPath);
+                return true;
             }
-            catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+            catch (IOException e)
             {
-                ProgramLogger.Warn($"|Permission denied when trying to obtain IcoPath the program from {program.FullPath}", e, MethodBase.GetCurrentMethod().DeclaringType, program.FullPath);
+                ProgramLogger.Warn($"|Error whilst retrieving the redirection path from app execution alias {program.FullPath}", e, MethodBase.GetCurrentMethod().DeclaringType, program.FullPath);
             }
 
             icoPath = null;
