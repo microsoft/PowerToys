@@ -17,5 +17,7 @@
 #include <stdexcept>
 #include <vector>
 #include <map>
+#include <iostream>
+#include <string>
 
 #endif //PCH_H

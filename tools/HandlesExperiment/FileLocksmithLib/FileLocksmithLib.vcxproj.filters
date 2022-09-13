@@ -24,6 +24,9 @@
     <ClInclude Include="NtdllExtensions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IPC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NtdllExtensions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IPC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
