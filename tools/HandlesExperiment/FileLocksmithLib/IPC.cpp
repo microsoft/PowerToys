@@ -24,6 +24,8 @@ namespace ipc
 		{
 			return HRESULT_FROM_WIN32(GetLastError());
 		}
+
+		return S_OK;
 	}
 
 	HRESULT Writer::add_path(LPCWSTR path)
