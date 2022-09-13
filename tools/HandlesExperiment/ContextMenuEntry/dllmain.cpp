@@ -74,4 +74,7 @@ STDAPI DllCanUnloadNow(void)
 // 3. (DONE) DLL register/unregister functions which will create registry entries
 // 4. (DONE) Other DLL exported functions
 // 5. (DONE) Implement IShellExtInit in ExplorerCommand
-// 6. Implement IContextMenu in ExplorerCommand
+// 6. (DONE) Implement IContextMenu in ExplorerCommand
+// 7. Extract useful functions from HandlesExperiment to a static library
+// 8. Implement IPC in Lib - to be used between UI and DLL
+// 9. Implement UI
