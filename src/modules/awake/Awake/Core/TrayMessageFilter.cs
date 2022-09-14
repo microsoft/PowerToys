@@ -6,9 +6,11 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Windows.Forms;
 using Awake.Core.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Windows.Win32;
 
 #pragma warning disable CS8603 // Possible null reference return.
 
@@ -20,8 +22,11 @@ namespace Awake.Core
 
         private static SettingsUtils ModuleSettings { get => _moduleSettings; set => _moduleSettings = value; }
 
-        public TrayMessageFilter()
+        private static ManualResetEvent? _exitSignal;
+
+        public TrayMessageFilter(ManualResetEvent? exitSignal)
         {
+            _exitSignal = exitSignal;
             ModuleSettings = new SettingsUtils();
         }
 
@@ -31,12 +36,12 @@ namespace Awake.Core
 
             switch (m.Msg)
             {
-                case (int)NativeConstants.WM_COMMAND:
+                case (int)PInvoke.WM_COMMAND:
                     var targetCommandIndex = m.WParam.ToInt64() & 0xFFFF;
                     switch (targetCommandIndex)
                     {
                         case (long)TrayCommands.TC_EXIT:
-                            ExitCommandHandler();
+                            ExitCommandHandler(_exitSignal);
                             break;
                         case (long)TrayCommands.TC_DISPLAY_SETTING:
                             DisplaySettingCommandHandler(InternalConstants.AppName);
@@ -68,9 +73,9 @@ namespace Awake.Core
             return false;
         }
 
-        private static void ExitCommandHandler()
+        private static void ExitCommandHandler(ManualResetEvent? exitSignal)
         {
-            APIHelper.CompleteExit(0, true);
+            APIHelper.CompleteExit(0, exitSignal, true);
         }
 
         private static void DisplaySettingCommandHandler(string moduleName)

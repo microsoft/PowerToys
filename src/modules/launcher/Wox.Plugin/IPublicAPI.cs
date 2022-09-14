@@ -24,11 +24,6 @@ namespace Wox.Plugin
         void ChangeQuery(string query, bool requery = false);
 
         /// <summary>
-        /// Restart Wox
-        /// </summary>
-        void RestartApp();
-
-        /// <summary>
         /// Remove user selected history item and refresh/requery
         /// </summary>
         void RemoveUserSelectedItem(Result result);
