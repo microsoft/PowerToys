@@ -21,7 +21,7 @@ namespace Settings.UI.Library
     {
         private class JsonMergeHelper
         {
-            // code by ahsonkhan from https://stackoverflow.com/questions/58694837/system-text-json-merge-two-objects
+            // code from https://stackoverflow.com/questions/58694837/system-text-json-merge-two-objects#ahsonkhan
             public static string Merge(string originalJson, string newContent)
             {
                 var outputBuffer = new ArrayBufferWriter<byte>();
@@ -525,13 +525,13 @@ namespace Settings.UI.Library
                 var ptRunIgnoredSettings = GetPTRunIgnoredSettings(backupRetoreSettings);
                 var ptrSettings = JsonNode.Parse(Encoding.UTF8.GetString(outputBuffer.WrittenSpan));
 
-                foreach (JsonObject plugintoChange in ptRunIgnoredSettings)
+                foreach (JsonObject pluginToChange in ptRunIgnoredSettings)
                 {
                     foreach (JsonObject plugin in (JsonArray)ptrSettings["plugins"])
                     {
-                        if (plugin["Id"].ToString() == plugintoChange["Id"].ToString())
+                        if (plugin["Id"].ToString() == pluginToChange["Id"].ToString())
                         {
-                            foreach (var nameOfPropertyToRemove in (JsonArray)plugintoChange["Names"])
+                            foreach (var nameOfPropertyToRemove in (JsonArray)pluginToChange["Names"])
                             {
                                 plugin.Remove(nameOfPropertyToRemove.ToString());
                             }
