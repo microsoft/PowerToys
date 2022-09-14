@@ -72,8 +72,7 @@
                     x:Uid="FilterBtn"
                     Height="36"
                     Background="Transparent"
-                    BorderBrush="Transparent"
-                    Command="{x:Bind AdditionalLinesDialogCommand}">
+                    BorderBrush="Transparent">
                     <TextBlock FontFamily="{StaticResource SymbolThemeFontFamily}" Text="&#xe71c;" />
                     <Button.Flyout>
                         <Flyout>
@@ -172,11 +171,9 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
-
                         </Grid.ColumnDefinitions>
                         <FlyoutBase.AttachedFlyout>
                             <MenuFlyout>
-
                                 <MenuFlyoutItem
                                     x:Uid="Enable"
                                     Click="Enable_Click"
