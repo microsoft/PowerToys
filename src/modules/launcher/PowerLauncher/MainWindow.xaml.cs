@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using Common.UI;
 using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
@@ -20,6 +21,7 @@ using PowerLauncher.Plugin;
 using PowerLauncher.Telemetry.Events;
 using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
+using CancellationToken = System.Threading.CancellationToken;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using Log = Wox.Plugin.Logger.Log;
 using Screen = System.Windows.Forms.Screen;
@@ -30,6 +32,7 @@ namespace PowerLauncher
     {
         private readonly PowerToysRunSettings _settings;
         private readonly MainViewModel _viewModel;
+        private readonly CancellationToken _nativeWaiterCancelToken;
         private bool _isTextSetProgrammatically;
         private bool _deletePressed;
         private HwndSource _hwndSource;
@@ -38,18 +41,23 @@ namespace PowerLauncher
         private bool _disposedValue;
         private IDisposable _reactiveSubscription;
 
-        public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM)
+        public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM, CancellationToken nativeWaiterCancelToken)
             : this()
         {
             DataContext = mainVM;
             _viewModel = mainVM;
+            _nativeWaiterCancelToken = nativeWaiterCancelToken;
             _settings = settings;
 
             InitializeComponent();
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
-            NativeEventWaiter.WaitForEventLoop(Constants.RunSendSettingsTelemetryEvent(), SendSettingsTelemetry);
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.RunSendSettingsTelemetryEvent(),
+                SendSettingsTelemetry,
+                Application.Current.Dispatcher,
+                _nativeWaiterCancelToken);
         }
 
         private void SendSettingsTelemetry()
@@ -697,7 +705,15 @@ namespace PowerLauncher
 
         private void OnClosed(object sender, EventArgs e)
         {
-            _hwndSource.RemoveHook(ProcessWindowMessages);
+            try
+            {
+                _hwndSource.RemoveHook(ProcessWindowMessages);
+            }
+            catch (Exception ex)
+            {
+                Log.Exception($"Exception when trying to Remove hook", ex, ex.GetType());
+            }
+
             _hwndSource = null;
         }
     }

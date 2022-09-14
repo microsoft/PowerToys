@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Common.UI;
 using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
@@ -48,6 +49,7 @@ namespace PowerLauncher.ViewModel
         private CancellationTokenSource _updateSource;
 
         private CancellationToken _updateToken;
+        private CancellationToken _nativeWaiterCancelToken;
         private bool _saved;
         private ushort _hotkeyHandle;
 
@@ -59,7 +61,7 @@ namespace PowerLauncher.ViewModel
 
         internal HotkeyManager HotkeyManager { get; private set; }
 
-        public MainViewModel(PowerToysRunSettings settings)
+        public MainViewModel(PowerToysRunSettings settings, CancellationToken nativeThreadCancelToken)
         {
             _saved = false;
             _queryTextBeforeLeaveResults = string.Empty;
@@ -67,7 +69,7 @@ namespace PowerLauncher.ViewModel
             _disposed = false;
 
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-
+            _nativeWaiterCancelToken = nativeThreadCancelToken;
             _historyItemsStorage = new WoxJsonStorage<QueryHistory>();
             _userSelectedRecordStorage = new WoxJsonStorage<UserSelectedRecord>();
             _history = _historyItemsStorage.Load();
@@ -92,12 +94,12 @@ namespace PowerLauncher.ViewModel
             Log.Info("RegisterHotkey()", GetType());
 
             // Allow OOBE to call PowerToys Run.
-            NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherSharedEvent(), OnHotkey);
+            NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherSharedEvent(), OnHotkey, Application.Current.Dispatcher, _nativeWaiterCancelToken);
 
             if (_settings.StartedFromPowerToysRunner)
             {
                 // Allow runner to call PowerToys Run from the centralized keyboard hook.
-                NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherCentralizedHookSharedEvent(), OnCentralizedKeyboardHookHotKey);
+                NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherCentralizedHookSharedEvent(), OnCentralizedKeyboardHookHotKey, Application.Current.Dispatcher, _nativeWaiterCancelToken);
             }
 
             _settings.PropertyChanged += (s, e) =>

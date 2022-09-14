@@ -31,7 +31,10 @@ namespace PowerLauncher
     {
         public static PublicAPIInstance API { get; private set; }
 
+        public static CancellationTokenSource NativeThreadCTS { get; private set; }
+
         private static bool _disposed;
+
         private PowerToysRunSettings _settings;
         private MainViewModel _mainVM;
         private MainWindow _mainWindow;
@@ -46,6 +49,8 @@ namespace PowerLauncher
         [STAThread]
         public static void Main()
         {
+            NativeThreadCTS = new CancellationTokenSource();
+
             Log.Info($"Starting PowerToys Run with PID={Environment.ProcessId}", typeof(App));
             int powerToysPid = GetPowerToysPId();
             if (powerToysPid != 0)
@@ -67,15 +72,16 @@ namespace PowerLauncher
             using (var application = new App())
             {
                 application.InitializeComponent();
-                new Thread(() =>
-                {
-                    var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RunExitEvent());
-                    if (eventHandle.WaitOne())
+
+                NativeEventWaiter.WaitForEventLoop(
+                    Constants.RunExitEvent(),
+                    () =>
                     {
                         Log.Warn("RunExitEvent was signaled. Exiting PowerToys", typeof(App));
                         ExitPowerToys(application);
-                    }
-                }).Start();
+                    },
+                    Application.Current.Dispatcher,
+                    NativeThreadCTS.Token);
 
                 if (powerToysPid != 0)
                 {
@@ -118,8 +124,8 @@ namespace PowerLauncher
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
-                _mainVM = new MainViewModel(_settings);
-                _mainWindow = new MainWindow(_settings, _mainVM);
+                _mainVM = new MainViewModel(_settings, NativeThreadCTS.Token);
+                _mainWindow = new MainWindow(_settings, _mainVM, NativeThreadCTS.Token);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _themeManager);
                 _settingsReader = new SettingsReader(_settings, _themeManager);
                 _settingsReader.ReadSettings();
@@ -154,14 +160,7 @@ namespace PowerLauncher
         {
             SingleInstance<App>.SingleInstanceMutex.Close();
 
-            try
-            {
-                app.Dispose();
-            }
-            finally
-            {
-                Environment.Exit(0);
-            }
+            app.Dispatcher.Invoke(() => app.Shutdown());
         }
 
         private static int GetPowerToysPId()
@@ -194,6 +193,7 @@ namespace PowerLauncher
 
             Current.Exit += (s, e) =>
             {
+                NativeThreadCTS.Cancel();
                 Log.Info("Application.Current.Exit", GetType());
                 Dispose();
             };
