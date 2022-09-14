@@ -123,16 +123,10 @@
   <data name="Add" xml:space="preserve">
     <value>Add</value>
   </data>
-  <data name="AddEntry.Content" xml:space="preserve">
-    <value>Add entry</value>
+  <data name="AddEntry.Text" xml:space="preserve">
+    <value>New entry</value>
   </data>
-  <data name="AddEntryTitle" xml:space="preserve">
-    <value>Add a new entry</value>
-  </data>
-  <data name="AdditionalLines.Content" xml:space="preserve">
-    <value>Additional lines</value>
-  </data>
-  <data name="AdditionalLinesContent.Header" xml:space="preserve">
+  <data name="AdditionalLinesBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Additional lines</value>
   </data>
   <data name="AdditionalLinesDialog.CloseButtonText" xml:space="preserve">
@@ -141,10 +135,16 @@
   <data name="AdditionalLinesDialog.PrimaryButtonText" xml:space="preserve">
     <value>Save</value>
   </data>
+  <data name="AdditionalLinesDialog.Title" xml:space="preserve">
+    <value>Additional lines</value>
+  </data>
+  <data name="AddNewEntryTitle" xml:space="preserve">
+    <value>Add new entry</value>
+  </data>
   <data name="Address.Header" xml:space="preserve">
     <value>Address</value>
   </data>
-  <data name="AddressFilter.PlaceholderText" xml:space="preserve">
+  <data name="AddressFilter.Header" xml:space="preserve">
     <value>Address</value>
   </data>
   <data name="ClearFilters.Content" xml:space="preserve">
@@ -153,7 +153,7 @@
   <data name="Comment.Header" xml:space="preserve">
     <value>Comment</value>
   </data>
-  <data name="CommentFilter.PlaceholderText" xml:space="preserve">
+  <data name="CommentFilter.Header" xml:space="preserve">
     <value>Comment</value>
   </data>
   <data name="Delete.Text" xml:space="preserve">
@@ -174,20 +174,23 @@
   <data name="Enable.Text" xml:space="preserve">
     <value>Enable</value>
   </data>
+  <data name="EntryDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
   <data name="FileChanged.Message" xml:space="preserve">
     <value>Hosts file has changed by another application. Do you want to reload it?</value>
   </data>
   <data name="FileSaveError.Message" xml:space="preserve">
     <value>Failed to save hosts file.</value>
   </data>
+  <data name="FilterBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Filters</value>
+  </data>
   <data name="Hosts.Header" xml:space="preserve">
     <value>Hosts</value>
   </data>
-  <data name="HostsFilter.PlaceholderText" xml:space="preserve">
+  <data name="HostsFilter.Header" xml:space="preserve">
     <value>Hosts</value>
-  </data>
-  <data name="MainDialog.CloseButtonText" xml:space="preserve">
-    <value>Cancel</value>
   </data>
   <data name="No" xml:space="preserve">
     <value>No</value>

@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using Hosts.Models;
 using Hosts.Settings;
 using Hosts.ViewModels;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -45,11 +46,11 @@ namespace Hosts.Views
         private async Task OpenNewDialogAsync()
         {
             var resourceLoader = ResourceLoader.GetForViewIndependentUse();
-            MainDialog.Title = resourceLoader.GetString("AddEntryTitle");
-            MainDialog.PrimaryButtonText = resourceLoader.GetString("Add");
-            MainDialog.PrimaryButtonCommand = AddCommand;
-            MainDialog.DataContext = new Entry(string.Empty, string.Empty, string.Empty, true);
-            await MainDialog.ShowAsync();
+            EntryDialog.Title = resourceLoader.GetString("AddNewEntryTitle");
+            EntryDialog.PrimaryButtonText = resourceLoader.GetString("Add");
+            EntryDialog.PrimaryButtonCommand = AddCommand;
+            EntryDialog.DataContext = new Entry(string.Empty, string.Empty, string.Empty, true);
+            await EntryDialog.ShowAsync();
         }
 
         private async Task OpenAdditionalLinesDialogAsync()
@@ -62,22 +63,22 @@ namespace Hosts.Views
         {
             var resourceLoader = ResourceLoader.GetForViewIndependentUse();
             ViewModel.Selected = e.ClickedItem as Entry;
-            MainDialog.Title = resourceLoader.GetString("UpdateEntryTitle");
-            MainDialog.PrimaryButtonText = resourceLoader.GetString("Update");
-            MainDialog.PrimaryButtonCommand = UpdateCommand;
+            EntryDialog.Title = resourceLoader.GetString("UpdateEntryTitle");
+            EntryDialog.PrimaryButtonText = resourceLoader.GetString("Update");
+            EntryDialog.PrimaryButtonCommand = UpdateCommand;
             var clone = ViewModel.Selected.Clone();
-            MainDialog.DataContext = clone;
-            await MainDialog.ShowAsync();
+            EntryDialog.DataContext = clone;
+            await EntryDialog.ShowAsync();
         }
 
         private void Add()
         {
-            ViewModel.Add(MainDialog.DataContext as Entry);
+            ViewModel.Add(EntryDialog.DataContext as Entry);
         }
 
         private void Update()
         {
-            ViewModel.Update(Entries.SelectedIndex, MainDialog.DataContext as Entry);
+            ViewModel.Update(Entries.SelectedIndex, EntryDialog.DataContext as Entry);
         }
 
         private void Delete()
