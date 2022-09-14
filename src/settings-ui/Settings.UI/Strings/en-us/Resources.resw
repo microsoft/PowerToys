@@ -1066,6 +1066,15 @@
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
   </data>
+  <data name="General_LastSettingsBackupDate.Text" xml:space="preserve">
+    <value>Last backed up: </value>
+  </data>
+  <data name="General_LastSettingsRestoreDate.Text" xml:space="preserve">
+    <value>Last restored: </value>
+  </data>
+  <data name="General_LastSettingsBackupSource.Text" xml:space="preserve">
+    <value>Last source: </value>
+  </data>
   <data name="General_Version.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>
   </data>
@@ -2382,7 +2391,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Nothing to backup, no settings have been changed since last backup.</value>
   </data>
   <data name="BackupAndRestore_NothingToRestore" xml:space="preserve">
-    <value>Nothing to restore, no settings have been changed since last backup.</value>
+    <value>Nothing to restore.</value>
   </data>
   <data name="BackupAndRestore_NoSettingsFilesFound" xml:space="preserve">
     <value>No settings files found.</value>

@@ -17,7 +17,9 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.VisualBasic;
 using Settings.UI.Library;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
@@ -160,6 +162,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _settingsBackupWasUnsuccessful;
 
         private string _settingsBackupMessage;
+        private string _settingsBackupRestoreInfo;
 
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
@@ -292,16 +295,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get
             {
                 // return _settingsBackupAndRestoreDir;
-                return SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreDir();
+                return SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
             }
 
             set
             {
-                if (SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreDir() != value)
+                if (SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir") != value)
                 {
                     // _settingsBackupAndRestoreDir = value;
                     // GeneralSettingsConfig.SettingsBackupAndRestoreDir = value;
-                    SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreDir(value);
+                    SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreItem("SettingsBackupAndRestoreDir", value);
                     NotifyPropertyChanged();
                 }
             }
@@ -371,6 +374,82 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _updateCheckedDate = value;
                     NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string LastSettingsBackupDate
+        {
+            get
+            {
+                var manifest = SettingsBackupAndRestoreUtils.GetLatestSettingsBackupManifest();
+                if (manifest != null)
+                {
+                    if (manifest["CreateDateTime"] != null)
+                    {
+                        if (DateTime.TryParse(manifest["CreateDateTime"].ToString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var theDateTime))
+                        {
+                            return theDateTime.ToString(CultureInfo.InvariantCulture);
+                        }
+                        else
+                        {
+                            return "Failed to parse time";
+                        }
+                    }
+                    else
+                    {
+                        return "Unknown";
+                    }
+                }
+                else
+                {
+                    return "Non Found";
+                }
+            }
+        }
+
+        public string LastSettingsBackupSource
+        {
+            get
+            {
+                var manifest = SettingsBackupAndRestoreUtils.GetLatestSettingsBackupManifest();
+                if (manifest != null)
+                {
+                    if (manifest["BackupSource"] != null)
+                    {
+                        return manifest["BackupSource"].ToString();
+                    }
+                    else
+                    {
+                        return "Unknown";
+                    }
+                }
+                else
+                {
+                    return "Non Found";
+                }
+            }
+        }
+
+        public string LastSettingsRestoreDate
+        {
+            get
+            {
+                var date = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("LastSettingsRestoreDate");
+                if (date != null)
+                {
+                    if (DateTime.TryParse(date, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var theDateTime))
+                    {
+                        return theDateTime.ToString(CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        return "Failed to parse time";
+                    }
+                }
+                else
+                {
+                    return "Never restored";
                 }
             }
         }
@@ -475,6 +554,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public string SettingsBackupRestoreInfo
+        {
+            get
+            {
+                return _settingsBackupRestoreInfo;
+            }
+        }
+
         public bool IsDownloadAllowed
         {
             get
@@ -497,7 +584,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
                 // Debugger.Launch();
-                var currentDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreDir();
+                var currentDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
 
                 if (!string.IsNullOrEmpty(currentDir) && Directory.Exists(currentDir))
                 {
@@ -508,15 +595,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
                     SettingsBackupAndRestoreDir = dialog.SelectedPath;
-                    SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreDir(dialog.SelectedPath);
+                    SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreItem("SettingsBackupAndRestoreDir", dialog.SelectedPath);
                     NotifyPropertyChanged(nameof(SettingsBackupAndRestoreDir));
+                    NotifyPropertyChanged(nameof(LastSettingsBackupDate));
+                    NotifyPropertyChanged(nameof(LastSettingsBackupSource));
                 }
             }
         }
 
         private void RestoreConfigsClick()
         {
-            var results = new SettingsUtils().RestoreSettings(SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreDir());
+            var results = new SettingsUtils().RestoreSettings(SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir"));
 
             if (!results.success)
             {
@@ -535,22 +624,37 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 // make sure not to do NotifyPropertyChanged here, else it will persist the configs from memory and
                 // undo the settings restore.
+                SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreItem("LastSettingsRestoreDate", DateTime.UtcNow.ToString("u", CultureInfo.InvariantCulture));
+
                 Restart();
             }
         }
 
         private void BackupConfigsClick()
         {
-            var results = new SettingsUtils().BackupSettings(SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreDir());
+            var results = new SettingsUtils().BackupSettings(SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir"));
 
             _settingsBackupWasSuccessful = results.success;
             _settingsBackupMessage = GetResourceString(results.message);
             _settingsBackupWasUnsuccessful = !_settingsBackupWasSuccessful;
             _settingsBackupMessage = GetResourceString(results.message);
 
+            NotifyPropertyChanged(nameof(LastSettingsBackupDate));
+            NotifyPropertyChanged(nameof(LastSettingsBackupSource));
             NotifyPropertyChanged(nameof(SettingsBackupMessage));
             NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
             NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
+
+            if (_settingsBackupWasSuccessful)
+            {
+                _settingsBackupRestoreInfo = "GOOD";
+            }
+            else
+            {
+                _settingsBackupRestoreInfo = "BAD";
+            }
+
+            NotifyPropertyChanged(nameof(SettingsBackupRestoreInfo));
 
             HideBackupAndRestoreMessageAreaAction();
         }

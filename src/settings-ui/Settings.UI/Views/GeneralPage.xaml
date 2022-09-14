@@ -240,14 +240,11 @@
 
 
                     <controls:Setting x:Uid="SettingsBackupLocation" Icon="&#xE777;">
-                        <controls:Setting.Description>
-                            <StackPanel Orientation="Horizontal">
-                                <!--<TextBlock Style="{StaticResource SecondaryTextStyle}">
-                                <Run x:Uid="General_VersionLastChecked" />
-                                <Run Text="{Binding UpdateCheckedDate, Mode=OneWay}"/>
-                                </TextBlock>-->
 
-                                <muxc:TextBox                                                  
+                        <controls:Setting.Description>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <muxc:TextBox                                                  
                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"   
                                         MaxWidth="300"
                                         MinWidth="300"
@@ -255,13 +252,36 @@
                                         IsReadOnly="True"                                        
                                         HorizontalAlignment="Left"
                                         />
-                                <Button x:Uid="GeneralPage_SettingsBackupLocationSelect"
+                                    <Button x:Uid="GeneralPage_SettingsBackupLocationSelect"
                                         Command="{Binding SelectSettingBackupDirEventHandler}"
                                         IsEnabled="True"
                                         Visibility="Visible"
                                         HorizontalAlignment="Left"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Vertical">
+
+                                    <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                        <Run x:Uid="General_LastSettingsBackupDate" />
+                                        <Run Text="{Binding LastSettingsBackupDate, Mode=OneWay}"/>
+                                    </TextBlock>
+                                    
+                                    <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                        <Run x:Uid="General_LastSettingsRestoreDate" />
+                                        <Run Text="{Binding LastSettingsRestoreDate, Mode=OneWay}"/>
+                                    </TextBlock>
+
+                                    <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                        <Run x:Uid="General_LastSettingsBackupSource" />
+                                        <Run Text="{Binding LastSettingsBackupSource, Mode=OneWay}"/>
+                                    </TextBlock>
+
+
+
+                                </StackPanel>
                             </StackPanel>
                         </controls:Setting.Description>
+
                         <controls:Setting.ActionContent>
                             <StackPanel Orientation="Vertical">
                                 <Button x:Uid="GeneralPage_BackupConfigs"
@@ -282,7 +302,12 @@
                             </StackPanel>
 
                         </controls:Setting.ActionContent>
+
+
+
                     </controls:Setting>
+
+
 
                     <!-- SettingsBackupWasSuccessful -->
                     <muxc:InfoBar x:Uid="General_SettingsBackupMessageResults"
