@@ -8,11 +8,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Settings.UI.Library
@@ -185,11 +187,7 @@ namespace Settings.UI.Library
                 }
 
                 var allCurrentSettingsFiles = GetSettingsFiles(appBasePath);
-
                 var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("Settings\\backup_restore_settings.json"));
-
-                // var restartAfterRestore = true;
-                // backupRetoreSettings.RootElement.EnumerateObject()..TryGetProperty("RestartAfterRestore", out restartAfterRestore))
                 var currentSettingsFiles = GetSettingsFiles(appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
                 var backupSettingsFiles = GetSettingsFiles(latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
 
@@ -203,26 +201,19 @@ namespace Settings.UI.Library
                 {
                     var relativePath = currentFile.Value.Substring(latestSettingsFolder.Length + 1);
                     var retoreFullPath = Path.Combine(appBasePath, relativePath);
-                    var pathToFullRestore = Path.GetDirectoryName(retoreFullPath);
-
-                    var settingsToRestore = GetExportVersion(backupRetoreSettings, currentFile.Key, currentFile.Value);
-                    var settingsToRestoreJson = JsonSerializer.Serialize(settingsToRestore, new JsonSerializerOptions { WriteIndented = true });
+                    var settingsToRestoreJson = GetExportVersion(backupRetoreSettings, currentFile.Key, currentFile.Value);
 
                     if (currentSettingsFiles.ContainsKey(currentFile.Key))
                     {
                         // we have a setting file to restore to
-                        using var currentSettingsFile = GetExportVersion(backupRetoreSettings, currentFile.Key, currentSettingsFiles[currentFile.Key]);
-                        var currentSettingsFileJson = JsonSerializer.Serialize(currentSettingsFile, new JsonSerializerOptions { WriteIndented = true });
+                        var currentSettingsFileJson = GetExportVersion(backupRetoreSettings, currentFile.Key, currentSettingsFiles[currentFile.Key]);
 
-                        var settingsToRestoreChecksum = ChecksumUtil.GetStringChecksum(settingsToRestoreJson);
-                        var currentSettingsFileChecksum = ChecksumUtil.GetStringChecksum(currentSettingsFileJson);
-
-                        if (settingsToRestoreChecksum != currentSettingsFileChecksum)
+                        if (ChecksumUtil.GetStringChecksum(settingsToRestoreJson) != ChecksumUtil.GetStringChecksum(currentSettingsFileJson))
                         {
                             // the settings file needs to be updated, update the real one with non-excluded stuff...
                             Logger.LogInfo($"Settings file {currentFile.Key} is different and is getting updated from backup");
 
-                            var newCurrentSettingsFile = JsonMergeHelper.Merge(File.ReadAllText(currentSettingsFiles[currentFile.Key]), JsonSerializer.Serialize(settingsToRestore));
+                            var newCurrentSettingsFile = JsonMergeHelper.Merge(File.ReadAllText(currentSettingsFiles[currentFile.Key]), settingsToRestoreJson);
                             File.WriteAllText(currentSettingsFiles[currentFile.Key], newCurrentSettingsFile);
                             anyFilesUpdated = true;
                         }
@@ -273,36 +264,66 @@ namespace Settings.UI.Library
                 return null;
             }
 
-            var settingsBackups = Directory.GetDirectories(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture));
+            var settingsBackupFolders = Directory.GetDirectories(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture));
 
-            if (settingsBackups.Count == 0)
+            var settingsBackupFiles = Directory.GetFiles(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
+
+            var latestFolder = 0L;
+            var latestFile = 0L;
+
+            if (settingsBackupFolders.Count > 0)
+            {
+                latestFolder = settingsBackupFolders.OrderByDescending(x => x.Key).FirstOrDefault().Key;
+            }
+
+            if (settingsBackupFiles.Count > 0)
+            {
+                latestFile = settingsBackupFiles.OrderByDescending(x => x.Key).FirstOrDefault().Key;
+            }
+
+            if (latestFile == 0 && latestFolder == 0)
             {
                 return null;
             }
+            else if (latestFolder >= latestFile)
+            {
+                return settingsBackupFolders[latestFolder];
+            }
+            else
+            {
+                var tempPath = Path.GetTempPath();
 
-            return settingsBackups.OrderByDescending(x => x.Key).FirstOrDefault().Value;
+                var fullBackupDir = Path.Combine(tempPath, "PowerToys_settings_" + latestFile.ToString(CultureInfo.InvariantCulture));
+                if (!Directory.Exists(fullBackupDir))
+                {
+                    ZipFile.ExtractToDirectory(settingsBackupFiles[latestFile], fullBackupDir);
+                }
+
+                ThreadPool.QueueUserWorkItem((x) =>
+                {
+                    try
+                    {
+                        RemoveOldBackups(tempPath, 1, TimeSpan.FromDays(7));
+                    }
+                    catch
+                    {
+                        // hmm, ok
+                    }
+                });
+
+                return fullBackupDir;
+            }
         }
 
         public static JsonNode GetLatestSettingsBackupManifest()
         {
-            string settingsBackupAndRestoreDir = GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
-
-            if (settingsBackupAndRestoreDir == null)
+            var folder = GetLatestSettingsFolder();
+            if (folder == null)
             {
                 return null;
             }
 
-            var settingsBackups = Directory.GetDirectories(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture));
-
-            if (settingsBackups.Count == 0)
-            {
-                return null;
-            }
-            else
-            {
-                var folder = settingsBackups.OrderByDescending(x => x.Key).FirstOrDefault().Value;
-                return JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "manifest.json")));
-            }
+            return JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "manifest.json")));
         }
 
         private static bool SettingFileToUse(string name)
@@ -378,13 +399,24 @@ namespace Settings.UI.Library
 
                 var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("Settings\\backup_restore_settings.json"));
                 var currentSettingsFiles = GetSettingsFiles(appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
+                var enbleZip = backupRetoreSettings["EnbleZip"] != null && (bool)backupRetoreSettings["EnbleZip"].AsValue();
 
                 if (currentSettingsFiles.Count == 0)
                 {
                     return (false, "BackupAndRestore_NoSettingsFilesFound");
                 }
 
-                var fullBackupDir = Path.Combine(settingsBackupAndRestoreDir, $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
+                var fullBackupDir = string.Empty;
+
+                if (enbleZip)
+                {
+                    fullBackupDir = Path.Combine(Path.GetTempPath(), $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
+                }
+                else
+                {
+                    fullBackupDir = Path.Combine(settingsBackupAndRestoreDir, $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
+                }
+
                 var latestSettingsFolder = GetLatestSettingsFolder();
                 var backupSettingsFiles = new Dictionary<string, string>();
                 if (latestSettingsFolder != null)
@@ -393,8 +425,8 @@ namespace Settings.UI.Library
                 }
 
                 var anyFileBackedUp = false;
-                var skippedSettingsFiles = new Dictionary<string, (string path, JsonDocument settings)>();
-                var updatedSettingsFiles = new Dictionary<string, (string path, JsonDocument settings)>();
+                var skippedSettingsFiles = new Dictionary<string, (string path, string settings)>();
+                var updatedSettingsFiles = new Dictionary<string, string>();
                 foreach (var currentFile in currentSettingsFiles)
                 {
                     // need to check and back this up;
@@ -405,10 +437,7 @@ namespace Settings.UI.Library
                     {
                         var lastSettingsFileDoc = GetExportVersion(backupRetoreSettings, currentFile.Key, backupSettingsFiles[currentFile.Key]);
 
-                        var newSettingsChecksum = ChecksumUtil.GetStringChecksum(JsonSerializer.Serialize(newSettingsToBackup, new JsonSerializerOptions { WriteIndented = true }));
-                        var lastSettingsChecksum = ChecksumUtil.GetStringChecksum(JsonSerializer.Serialize(lastSettingsFileDoc, new JsonSerializerOptions { WriteIndented = true }));
-
-                        if (newSettingsChecksum != lastSettingsChecksum)
+                        if (ChecksumUtil.GetStringChecksum(newSettingsToBackup) != ChecksumUtil.GetStringChecksum(lastSettingsFileDoc))
                         {
                             doBackup = true;
                             Logger.LogInfo($"BackupSettings, {currentFile.Value} content is different.");
@@ -423,7 +452,7 @@ namespace Settings.UI.Library
 
                     if (doBackup)
                     {
-                        updatedSettingsFiles.Add(currentFile.Key, (currentFile.Value, newSettingsToBackup));
+                        updatedSettingsFiles.Add(currentFile.Key, currentFile.Value);
                         anyFileBackedUp = true;
 
                         var relativePath = currentFile.Value.Substring(appBasePath.Length + 1);
@@ -440,7 +469,7 @@ namespace Settings.UI.Library
                         }
 
                         Logger.LogInfo($"BackupSettings writing, {backupFullPath}.");
-                        File.WriteAllText(backupFullPath, JsonSerializer.Serialize(newSettingsToBackup, new JsonSerializerOptions { WriteIndented = true }));
+                        File.WriteAllText(backupFullPath, newSettingsToBackup);
                     }
                     else
                     {
@@ -470,7 +499,7 @@ namespace Settings.UI.Library
                     }
 
                     Logger.LogInfo($"BackupSettings writing, {backupFullPath}.");
-                    File.WriteAllText(backupFullPath, JsonSerializer.Serialize(currentFile.Value.settings, new JsonSerializerOptions { WriteIndented = true }));
+                    File.WriteAllText(backupFullPath, currentFile.Value.settings);
                 }
 
                 // add manifest
@@ -489,6 +518,21 @@ namespace Settings.UI.Library
 
                 RemoveOldBackups(settingsBackupAndRestoreDir, 10, TimeSpan.FromDays(60));
 
+                if (enbleZip)
+                {
+                    var zipName = Path.Combine(settingsBackupAndRestoreDir, Path.GetFileName(fullBackupDir) + ".ptb");
+                    ZipFile.CreateFromDirectory(fullBackupDir, zipName);
+
+                    try
+                    {
+                        Directory.Delete(fullBackupDir, true);
+                    }
+                    catch (Exception ex3)
+                    {
+                        Logger.LogError($"There was an error: {ex3.Message}", ex3);
+                    }
+                }
+
                 return (true, $"BackupAndRestore_BackupComplete");
             }
             catch (Exception ex2)
@@ -498,7 +542,56 @@ namespace Settings.UI.Library
             }
         }
 
-        public static JsonDocument GetExportVersion(JsonNode backupRetoreSettings, string settingFileKey, string settingsFileName)
+        public static string GetExportVersion(JsonNode backupRetoreSettings, string settingFileKey, string settingsFileName)
+        {
+            var ignoredSettings = GetIgnoredSettings(backupRetoreSettings, settingFileKey);
+            var settingsFile = JsonDocument.Parse(File.ReadAllText(settingsFileName));
+
+            var outputBuffer = new ArrayBufferWriter<byte>();
+
+            using (var jsonWriter = new Utf8JsonWriter(outputBuffer, new JsonWriterOptions { Indented = true }))
+            {
+                jsonWriter.WriteStartObject();
+                foreach (var property in settingsFile.RootElement.EnumerateObject().OrderBy(p => p.Name))
+                {
+                    if (!ignoredSettings.Contains(property.Name))
+                    {
+                        property.WriteTo(jsonWriter);
+                    }
+                }
+
+                jsonWriter.WriteEndObject();
+            }
+
+            if (settingFileKey.Equals("\\PowerToys Run\\settings.json", StringComparison.OrdinalIgnoreCase))
+            {
+                // PowerToys Run hack fix-up
+                var ptRunIgnoredSettings = GetPTRunIgnoredSettings(backupRetoreSettings);
+                var ptrSettings = JsonNode.Parse(Encoding.UTF8.GetString(outputBuffer.WrittenSpan));
+
+                foreach (JsonObject pluginToChange in ptRunIgnoredSettings)
+                {
+                    foreach (JsonObject plugin in (JsonArray)ptrSettings["plugins"])
+                    {
+                        if (plugin["Id"].ToString() == pluginToChange["Id"].ToString())
+                        {
+                            foreach (var nameOfPropertyToRemove in (JsonArray)pluginToChange["Names"])
+                            {
+                                plugin.Remove(nameOfPropertyToRemove.ToString());
+                            }
+                        }
+                    }
+                }
+
+                return ptrSettings.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+            }
+            else
+            {
+                return JsonNode.Parse(Encoding.UTF8.GetString(outputBuffer.WrittenSpan)).ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+            }
+        }
+
+        public static JsonDocument GetExportVersionOld(JsonNode backupRetoreSettings, string settingFileKey, string settingsFileName)
         {
             var ignoredSettings = GetIgnoredSettings(backupRetoreSettings, settingFileKey);
             var settingsFile = JsonDocument.Parse(File.ReadAllText(settingsFileName));
@@ -627,18 +720,22 @@ namespace Settings.UI.Library
             }
         }
 
-        private static void RemoveOldBackups(string settingsBackupAndRestoreDir, int minNumberToKeep, TimeSpan deleteIfOlderThanTs)
+        private static void RemoveOldBackups(string location, int minNumberToKeep, TimeSpan deleteIfOlderThanTs)
         {
-            var settingsBackups = Directory.GetDirectories(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture));
+            DateTime deleteIfOlder = DateTime.UtcNow.Subtract(deleteIfOlderThanTs);
 
-            if (settingsBackups.Count <= minNumberToKeep)
+            var settingsBackupFolders = Directory.GetDirectories(location, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture)).ToList();
+
+            settingsBackupFolders.AddRange(Directory.GetDirectories(location, "PowerToys_settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("PowerToys_settings_", string.Empty), CultureInfo.InvariantCulture)));
+
+            var settingsBackupFiles = Directory.GetFiles(location, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
+
+            if (settingsBackupFolders.Count + settingsBackupFiles.Count <= minNumberToKeep)
             {
                 return;
             }
 
-            DateTime deleteIfOlder = DateTime.UtcNow.Subtract(deleteIfOlderThanTs);
-
-            foreach (var item in settingsBackups)
+            foreach (var item in settingsBackupFolders)
             {
                 var backupTime = DateTime.FromFileTimeUtc(item.Key);
 
@@ -648,6 +745,24 @@ namespace Settings.UI.Library
                     {
                         Logger.LogInfo($"RemoveOldBackups killing {item.Value}");
                         Directory.Delete(item.Value, true);
+                    }
+                    catch (Exception ex2)
+                    {
+                        Logger.LogError($"Failed to remove a setting backup folder ({item.Value}), because: ({ex2.Message})");
+                    }
+                }
+            }
+
+            foreach (var item in settingsBackupFiles)
+            {
+                var backupTime = DateTime.FromFileTimeUtc(item.Key);
+
+                if (backupTime < deleteIfOlder)
+                {
+                    try
+                    {
+                        Logger.LogInfo($"RemoveOldBackups killing {item.Value}");
+                        File.Delete(item.Value);
                     }
                     catch (Exception ex2)
                     {

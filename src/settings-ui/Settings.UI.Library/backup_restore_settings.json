@@ -1,5 +1,6 @@
 {
-  "RestartAfterRestore": true,  
+  "RestartAfterRestore": true,
+  "EnbleZip": true,
   "IgnoredPTRunSettings": [
     {
       "Id": "525995402BEF4A8CA860D92F6D108092",
