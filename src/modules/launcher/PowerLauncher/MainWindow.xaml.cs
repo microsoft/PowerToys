@@ -628,6 +628,7 @@ namespace PowerLauncher
                 Keyboard.Focus(SearchBox.QueryTextBox);
 
                 _settings.ActivateTimes++;
+
                 if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
                 {
                     SearchBox.QueryTextBox.SelectAll();

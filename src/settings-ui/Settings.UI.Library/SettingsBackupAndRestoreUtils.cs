@@ -399,7 +399,7 @@ namespace Settings.UI.Library
 
                 var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("Settings\\backup_restore_settings.json"));
                 var currentSettingsFiles = GetSettingsFiles(appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
-                var enbleZip = backupRetoreSettings["EnbleZip"] != null && (bool)backupRetoreSettings["EnbleZip"].AsValue();
+                var enableZip = backupRetoreSettings["EnableZip"] != null && (bool)backupRetoreSettings["EnableZip"].AsValue();
 
                 if (currentSettingsFiles.Count == 0)
                 {
@@ -408,7 +408,7 @@ namespace Settings.UI.Library
 
                 var fullBackupDir = string.Empty;
 
-                if (enbleZip)
+                if (enableZip)
                 {
                     fullBackupDir = Path.Combine(Path.GetTempPath(), $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
                 }
@@ -518,7 +518,7 @@ namespace Settings.UI.Library
 
                 RemoveOldBackups(settingsBackupAndRestoreDir, 10, TimeSpan.FromDays(60));
 
-                if (enbleZip)
+                if (enableZip)
                 {
                     var zipName = Path.Combine(settingsBackupAndRestoreDir, Path.GetFileName(fullBackupDir) + ".ptb");
                     ZipFile.CreateFromDirectory(fullBackupDir, zipName);
