@@ -12,7 +12,6 @@ struct GeneralSettings
     bool isAdmin;
     bool downloadUpdatesAutomatically;
     std::wstring theme;
-    //std::wstring settingsBackupAndRestoreDir;    
     std::wstring systemTheme;
     std::wstring powerToysVersion;
 

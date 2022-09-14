@@ -16,7 +16,6 @@
 static std::wstring settings_theme = L"system";
 static bool run_as_elevated = false;
 static bool download_updates_automatically = true;
-//static std::wstring settings_backup_and_sync_dir = L"";
 
 json::JsonObject GeneralSettings::to_json()
 {
@@ -41,7 +40,6 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
     result.SetNamedValue(L"theme", json::value(theme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
-    //result.SetNamedValue(L"settings_backup_and_sync_dir", json::value(settingsBackupAndRestoreDir));    
     result.SetNamedValue(L"powertoys_version", json::value(powerToysVersion));
 
     return result;
@@ -56,9 +54,6 @@ json::JsonObject load_general_settings()
         settings_theme = L"system";
     }
     run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
-
-    //settings_backup_and_sync_dir = loaded.GetNamedString(L"settings_backup_and_sync_dir", L"");
-
     download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
 
     return loaded;
@@ -73,7 +68,6 @@ GeneralSettings get_general_settings()
         .isAdmin = is_user_admin,
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .theme = settings_theme,
-        //.settingsBackupAndRestoreDir = settings_backup_and_sync_dir,        
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
         .powerToysVersion = get_product_version()
     };
@@ -168,11 +162,6 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     {
         settings_theme = general_configs.GetNamedString(L"theme");
     }
-
-    //if (json::has(general_configs, L"settings_backup_and_sync_dir", json::JsonValueType::String))
-    //{
-    //    settings_backup_and_sync_dir = general_configs.GetNamedString(L"settings_backup_and_sync_dir");
-    //}
 
     if (save)
     {

@@ -97,8 +97,6 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                         schedule_restart_as_non_elevated(true);
                         PostQuitMessage(1);
                     }
-
-                    //result.emplace(L"quit_no_save_settings");
                 }
                 else if (action == L"check_for_updates")
                 {

@@ -150,7 +150,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private bool _autoDownloadUpdates;
 
-        // private string _settingsBackupAndRestoreDir;
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
         private string _newAvailableVersionLink = string.Empty;
@@ -158,9 +157,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private bool _isNewVersionDownloading;
         private bool _isNewVersionChecked;
+
         private bool _settingsBackupWasSuccessful;
         private bool _settingsBackupWasUnsuccessful;
-
         private string _settingsBackupMessage;
         private string _settingsBackupRestoreInfo;
 
@@ -294,7 +293,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                // return _settingsBackupAndRestoreDir;
                 return SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
             }
 
@@ -302,8 +300,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir") != value)
                 {
-                    // _settingsBackupAndRestoreDir = value;
-                    // GeneralSettingsConfig.SettingsBackupAndRestoreDir = value;
                     SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreItem("SettingsBackupAndRestoreDir", value);
                     NotifyPropertyChanged();
                 }
@@ -403,7 +399,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 }
                 else
                 {
-                    return "Non Found";
+                    return "None Found";
                 }
             }
         }
@@ -426,7 +422,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 }
                 else
                 {
-                    return "Non Found";
+                    return "None Found";
                 }
             }
         }
@@ -583,7 +579,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                // Debugger.Launch();
                 var currentDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
 
                 if (!string.IsNullOrEmpty(currentDir) && Directory.Exists(currentDir))
@@ -742,7 +737,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public void Restart()
         {
-            // Debugger.Launch();
             GeneralSettingsConfig.CustomActionName = "restart_maintain_elevation";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);

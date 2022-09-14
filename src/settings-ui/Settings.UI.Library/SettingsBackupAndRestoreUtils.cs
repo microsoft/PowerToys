@@ -162,7 +162,6 @@ namespace Settings.UI.Library
         {
             try
             {
-                // Debugger.Launch();
                 if (!Directory.Exists(appBasePath))
                 {
                     return (false, $"Invalid appBasePath {appBasePath}");
@@ -359,7 +358,6 @@ namespace Settings.UI.Library
         {
             try
             {
-                // Debugger.Launch();
                 if (!Directory.Exists(appBasePath))
                 {
                     return (false, $"Invalid appBasePath {appBasePath}");

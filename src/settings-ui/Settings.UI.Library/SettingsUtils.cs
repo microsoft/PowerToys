@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Abstractions;
@@ -145,7 +144,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public (bool success, string message) BackupSettings(string settingsBackupAndRestoreDir)
         {
-            // Debugger.Launch();
             var appBasePath = Path.GetDirectoryName(_settingsPath.GetSettingsPath(string.Empty, string.Empty));
 
             return SettingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir);
@@ -153,7 +151,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public (bool success, string message) RestoreSettings(string settingsBackupAndRestoreDir)
         {
-            // Debugger.Launch();
             var appBasePath = Path.GetDirectoryName(_settingsPath.GetSettingsPath(string.Empty, string.Empty));
 
             return SettingsBackupAndRestoreUtils.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
