@@ -589,55 +589,6 @@ namespace Settings.UI.Library
             }
         }
 
-        public static JsonDocument GetExportVersionOld(JsonNode backupRetoreSettings, string settingFileKey, string settingsFileName)
-        {
-            var ignoredSettings = GetIgnoredSettings(backupRetoreSettings, settingFileKey);
-            var settingsFile = JsonDocument.Parse(File.ReadAllText(settingsFileName));
-
-            var outputBuffer = new ArrayBufferWriter<byte>();
-
-            using (var jsonWriter = new Utf8JsonWriter(outputBuffer, new JsonWriterOptions { Indented = true }))
-            {
-                jsonWriter.WriteStartObject();
-                foreach (var property in settingsFile.RootElement.EnumerateObject().OrderBy(p => p.Name))
-                {
-                    if (!ignoredSettings.Contains(property.Name))
-                    {
-                        property.WriteTo(jsonWriter);
-                    }
-                }
-
-                jsonWriter.WriteEndObject();
-            }
-
-            if (settingFileKey.Equals("\\PowerToys Run\\settings.json", StringComparison.OrdinalIgnoreCase))
-            {
-                // PowerToys Run hack fix-up
-                var ptRunIgnoredSettings = GetPTRunIgnoredSettings(backupRetoreSettings);
-                var ptrSettings = JsonNode.Parse(Encoding.UTF8.GetString(outputBuffer.WrittenSpan));
-
-                foreach (JsonObject pluginToChange in ptRunIgnoredSettings)
-                {
-                    foreach (JsonObject plugin in (JsonArray)ptrSettings["plugins"])
-                    {
-                        if (plugin["Id"].ToString() == pluginToChange["Id"].ToString())
-                        {
-                            foreach (var nameOfPropertyToRemove in (JsonArray)pluginToChange["Names"])
-                            {
-                                plugin.Remove(nameOfPropertyToRemove.ToString());
-                            }
-                        }
-                    }
-                }
-
-                return JsonDocument.Parse(ptrSettings.ToJsonString());
-            }
-            else
-            {
-                return JsonDocument.Parse(Encoding.UTF8.GetString(outputBuffer.WrittenSpan));
-            }
-        }
-
         private static JsonArray GetPTRunIgnoredSettings(JsonNode backupRetoreSettings)
         {
             if (backupRetoreSettings == null)
