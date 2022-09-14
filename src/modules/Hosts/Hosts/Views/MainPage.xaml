@@ -39,7 +39,7 @@
         <Grid>
             <Button
                 Height="36"
-                Margin="16,0,6,0"
+                Margin="16,0,0,0"
                 Command="{x:Bind NewDialogCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <TextBlock
@@ -47,6 +47,7 @@
                         Margin="0,0,0,0"
                         VerticalAlignment="Center"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                        FontSize="16"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Text="&#xE109;" />
                     <TextBlock x:Uid="AddEntry" />
@@ -221,8 +222,8 @@
                         </StackPanel>
                         <ToggleSwitch
                             Grid.Column="3"
-                            MinWidth="0"
                             Width="40"
+                            MinWidth="0"
                             HorizontalAlignment="Right"
                             IsOn="{Binding Active, Mode=TwoWay}"
                             OffContent=""
@@ -230,6 +231,7 @@
                         <SymbolIcon
                             x:Name="PingIcon"
                             Grid.Column="2"
+                            Margin="0,0,8,0"
                             Visibility="Collapsed">
                             <i:Interaction.Behaviors>
                                 <ic:DataTriggerBehavior
