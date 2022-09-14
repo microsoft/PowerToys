@@ -90,14 +90,33 @@ namespace ipc
 	{
 		std::vector<std::wstring> result;
 		std::wstring line;
-		while (std::getline(std::wcin, line))
-		{
-			if (line.empty())
-			{
-				break;
-			}
+		
+		bool finished = false;
 
-			result.push_back(line);
+		while (!finished)
+		{
+			WCHAR ch;
+			// We have to read data like this
+			if (!std::cin.read(reinterpret_cast<char*>(&ch), 2))
+			{
+				finished = true;
+			}
+			else if (ch == L'\n')
+			{
+				if (line.empty())
+				{
+					finished = true;
+				}
+				else
+				{
+					result.push_back(line);
+					line = {};
+				}
+			}
+			else
+			{
+				line += ch;
+			}
 		}
 
 		return result;

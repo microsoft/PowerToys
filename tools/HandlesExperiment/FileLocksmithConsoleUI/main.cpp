@@ -50,5 +50,5 @@ int wmain(int argc, WCHAR** argv)
         }
     }
 
-    system("pause");
+    Sleep(INFINITE);
 }
