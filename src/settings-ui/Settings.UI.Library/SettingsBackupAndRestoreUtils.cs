@@ -18,6 +18,115 @@ namespace Settings.UI.Library
 {
     public class SettingsBackupAndRestoreUtils
     {
+        private class JsonMergeHelper
+        {
+            // code by ahsonkhan from https://stackoverflow.com/questions/58694837/system-text-json-merge-two-objects
+            public static string Merge(string originalJson, string newContent)
+            {
+                var outputBuffer = new ArrayBufferWriter<byte>();
+
+                using (JsonDocument jDoc1 = JsonDocument.Parse(originalJson))
+                using (JsonDocument jDoc2 = JsonDocument.Parse(newContent))
+                using (var jsonWriter = new Utf8JsonWriter(outputBuffer, new JsonWriterOptions { Indented = true }))
+                {
+                    JsonElement root1 = jDoc1.RootElement;
+                    JsonElement root2 = jDoc2.RootElement;
+
+                    if (root1.ValueKind != JsonValueKind.Array && root1.ValueKind != JsonValueKind.Object)
+                    {
+                        throw new InvalidOperationException($"The original JSON document to merge new content into must be a container type. Instead it is {root1.ValueKind}.");
+                    }
+
+                    if (root1.ValueKind != root2.ValueKind)
+                    {
+                        return originalJson;
+                    }
+
+                    if (root1.ValueKind == JsonValueKind.Array)
+                    {
+                        MergeArrays(jsonWriter, root1, root2);
+                    }
+                    else
+                    {
+                        MergeObjects(jsonWriter, root1, root2);
+                    }
+                }
+
+                return Encoding.UTF8.GetString(outputBuffer.WrittenSpan);
+            }
+
+            private static void MergeObjects(Utf8JsonWriter jsonWriter, JsonElement root1, JsonElement root2)
+            {
+                jsonWriter.WriteStartObject();
+
+                // Write all the properties of the first document.
+                // If a property exists in both documents, either:
+                // * Merge them, if the value kinds match (e.g. both are objects or arrays),
+                // * Completely override the value of the first with the one from the second, if the value kind mismatches (e.g. one is object, while the other is an array or string),
+                // * Or favor the value of the first (regardless of what it may be), if the second one is null (i.e. don't override the first).
+                foreach (JsonProperty property in root1.EnumerateObject())
+                {
+                    string propertyName = property.Name;
+
+                    JsonValueKind newValueKind;
+
+                    if (root2.TryGetProperty(propertyName, out JsonElement newValue) && (newValueKind = newValue.ValueKind) != JsonValueKind.Null)
+                    {
+                        jsonWriter.WritePropertyName(propertyName);
+
+                        JsonElement originalValue = property.Value;
+                        JsonValueKind originalValueKind = originalValue.ValueKind;
+
+                        if (newValueKind == JsonValueKind.Object && originalValueKind == JsonValueKind.Object)
+                        {
+                            MergeObjects(jsonWriter, originalValue, newValue); // Recursive call
+                        }
+                        else if (newValueKind == JsonValueKind.Array && originalValueKind == JsonValueKind.Array)
+                        {
+                            MergeArrays(jsonWriter, originalValue, newValue);
+                        }
+                        else
+                        {
+                            newValue.WriteTo(jsonWriter);
+                        }
+                    }
+                    else
+                    {
+                        property.WriteTo(jsonWriter);
+                    }
+                }
+
+                // Write all the properties of the second document that are unique to it.
+                foreach (JsonProperty property in root2.EnumerateObject())
+                {
+                    if (!root1.TryGetProperty(property.Name, out _))
+                    {
+                        property.WriteTo(jsonWriter);
+                    }
+                }
+
+                jsonWriter.WriteEndObject();
+            }
+
+            private static void MergeArrays(Utf8JsonWriter jsonWriter, JsonElement root1, JsonElement root2)
+            {
+                jsonWriter.WriteStartArray();
+
+                // Write all the elements from both JSON arrays
+                foreach (JsonElement element in root1.EnumerateArray())
+                {
+                    element.WriteTo(jsonWriter);
+                }
+
+                foreach (JsonElement element in root2.EnumerateArray())
+                {
+                    element.WriteTo(jsonWriter);
+                }
+
+                jsonWriter.WriteEndArray();
+            }
+        }
+
         public static void SetRegSettingsBackupAndRestoreDir(string directory)
         {
             using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\PowerToys", true))
@@ -116,9 +225,8 @@ namespace Settings.UI.Library
                             Logger.LogInfo($"Settings file {currentFile.Key} is different and is getting updated from backup");
                             Logger.LogInfo($"X: settingsToRestoreChecksum:{settingsToRestoreChecksum},  currentSettingsFileJson:{currentSettingsFileJson}");
 
-                            using var realCurrentSettings = JsonDocument.Parse(File.ReadAllText(currentSettingsFiles[currentFile.Key]));
-                            using var newCurrentSettingsFile = MergeJObjects(settingsToRestore, realCurrentSettings);
-                            File.WriteAllText(currentSettingsFiles[currentFile.Key], JsonSerializer.Serialize(newCurrentSettingsFile));
+                            var newCurrentSettingsFile = JsonMergeHelper.Merge(File.ReadAllText(currentSettingsFiles[currentFile.Key]), JsonSerializer.Serialize(settingsToRestore));
+                            File.WriteAllText(currentSettingsFiles[currentFile.Key], newCurrentSettingsFile);
                             anyFilesUpdated = true;
                         }
                     }
@@ -152,7 +260,7 @@ namespace Settings.UI.Library
             }
         }
 
-        private static JsonDocument MergeJObjects(JsonDocument newContent, JsonDocument origDoc)
+        private static JsonDocument MergeJObjectsx(JsonDocument newContent, JsonDocument origDoc)
         {
             var outputBuffer = new ArrayBufferWriter<byte>();
 
@@ -317,7 +425,7 @@ namespace Settings.UI.Library
                             Directory.CreateDirectory(Path.GetDirectoryName(backupFullPath));
                         }
 
-                        Logger.LogInfo($"BackupSettings writting, {backupFullPath}.");
+                        Logger.LogInfo($"BackupSettings writing, {backupFullPath}.");
                         File.WriteAllText(backupFullPath, JsonSerializer.Serialize(newSettingsToBackup, new JsonSerializerOptions { WriteIndented = true }));
                     }
                     else
@@ -347,7 +455,7 @@ namespace Settings.UI.Library
                         Directory.CreateDirectory(Path.GetDirectoryName(backupFullPath));
                     }
 
-                    Logger.LogInfo($"BackupSettings writting, {backupFullPath}.");
+                    Logger.LogInfo($"BackupSettings writing, {backupFullPath}.");
                     File.WriteAllText(backupFullPath, JsonSerializer.Serialize(currentFile.Value.settings, new JsonSerializerOptions { WriteIndented = true }));
                 }
 
@@ -398,15 +506,45 @@ namespace Settings.UI.Library
 
             if (settingFileKey.Equals("\\PowerToys Run\\settings.json", StringComparison.OrdinalIgnoreCase))
             {
-                // hack fix-up
-                var json = Encoding.UTF8.GetString(outputBuffer.WrittenSpan);
-                json = json.Replace("VSCodeWorkspaces\\\\Images\\\\code-", "VSCodeWorkspace\\\\Images\\\\code-");
-                return JsonDocument.Parse(json);
+                // PowerToys Run hack fix-up
+                var ptRunIgnoredSettings = GetPTRunIgnoredSettings(backupRetoreSettings);
+                var ptrSettings = JsonNode.Parse(Encoding.UTF8.GetString(outputBuffer.WrittenSpan));
+
+                foreach (JsonObject plugintoChange in ptRunIgnoredSettings)
+                {
+                    foreach (JsonObject plugin in (JsonArray)ptrSettings["plugins"])
+                    {
+                        if (plugin["Id"].ToString() == plugintoChange["Id"].ToString())
+                        {
+                            foreach (var nameOfPropertyToRemove in (JsonArray)plugintoChange["Names"])
+                            {
+                                plugin.Remove(nameOfPropertyToRemove.ToString());
+                            }
+                        }
+                    }
+                }
+
+                return JsonDocument.Parse(ptrSettings.ToJsonString());
             }
             else
             {
                 return JsonDocument.Parse(Encoding.UTF8.GetString(outputBuffer.WrittenSpan));
             }
+        }
+
+        private static JsonArray GetPTRunIgnoredSettings(JsonNode backupRetoreSettings)
+        {
+            if (backupRetoreSettings == null)
+            {
+                throw new ArgumentNullException(nameof(backupRetoreSettings));
+            }
+
+            if (backupRetoreSettings["IgnoredPTRunSettings"] != null)
+            {
+                return (JsonArray)backupRetoreSettings["IgnoredPTRunSettings"];
+            }
+
+            return new JsonArray();
         }
 
         private static string[] GetIgnoredSettings(JsonNode backupRetoreSettings, string settingFileKey)
