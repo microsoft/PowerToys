@@ -2,7 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Linq;
+using System.Unicode;
 using System.Windows;
+using System.Windows.Media.TextFormatting;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
 using PowerToys.PowerAccentKeyboardService;
@@ -15,9 +19,10 @@ public class PowerAccent : IDisposable
 
     private bool _visible;
     private char[] _characters = Array.Empty<char>();
+    private string[] _characterNames = Array.Empty<string>();
     private int _selectedIndex = -1;
 
-    public event Action<bool, char[]> OnChangeDisplay;
+    public event Action<bool, char[], string[]> OnChangeDisplay;
 
     public event Action<int, char> OnSelectCharacter;
 
@@ -63,14 +68,29 @@ public class PowerAccent : IDisposable
     {
         _visible = true;
         _characters = WindowsFunctions.IsCapitalState() ? ToUpper(SettingsService.GetDefaultLetterKey(letterKey)) : SettingsService.GetDefaultLetterKey(letterKey);
+        _characterNames = GetCharacterNames(_characters);
+
         Task.Delay(_settingService.InputTime).ContinueWith(
             t =>
             {
                 if (_visible)
                 {
-                    OnChangeDisplay?.Invoke(true, _characters);
+                    OnChangeDisplay?.Invoke(true, _characters, _characterNames);
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    private string[] GetCharacterNames(char[] characters)
+    {
+        string[] characterNames = Array.Empty<string>();
+        foreach (char character in characters)
+        {
+            UnicodeCharInfo charInfo = UnicodeInfo.GetCharInfo(character);
+            string characterName = charInfo.Name ?? charInfo.OldName;
+            characterNames = characterNames.Append(characterName).ToArray();
+        }
+
+        return characterNames;
     }
 
     private void SendInputAndHideToolbar(InputType inputType)
@@ -94,7 +114,7 @@ public class PowerAccent : IDisposable
                 }
         }
 
-        OnChangeDisplay?.Invoke(false, null);
+        OnChangeDisplay?.Invoke(false, null, null);
         _selectedIndex = -1;
         _visible = false;
     }

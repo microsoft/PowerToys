@@ -15,60 +15,66 @@
     WindowStyle="None"
     mc:Ignorable="d">
     <Grid>
-        <ListBox
-            x:Name="characters"
-            HorizontalContentAlignment="Stretch"
-            VerticalContentAlignment="Stretch"
-            BorderBrush="SlateGray"
-            BorderThickness="1"
-            IsHitTestVisible="False">
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <VirtualizingStackPanel IsItemsHost="False" Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontSize="18"
-                        Text="{Binding}"
-                        TextAlignment="Center" />
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-            <ListBox.ItemContainerStyle>
-                <Style x:Name="ItemStyle" TargetType="ListBoxItem">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                <Border
-                                    x:Name="myBorder"
-                                    Margin="0"
-                                    Padding="0"
-                                    SnapsToDevicePixels="true"
-                                    Style="{DynamicResource borderContent}">
-                                    <ContentPresenter />
-                                </Border>
-                                <ControlTemplate.Resources>
-                                    <Style x:Key="borderContent" TargetType="Border">
-                                        <Setter Property="BorderThickness" Value="0" />
-                                        <Setter Property="BorderBrush" Value="Transparent" />
-                                        <Setter Property="Background" Value="#ECECEC" />
-                                        <Setter Property="Width" Value="50" />
-                                        <Setter Property="Height" Value="50" />
-                                    </Style>
-                                </ControlTemplate.Resources>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="true">
-                                        <Setter TargetName="myBorder" Property="Background" Value="White" />
-                                        <Setter Property="FontWeight" Value="Bold" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </ListBox.ItemContainerStyle>
-        </ListBox>
+        <StackPanel>
+            <ListBox
+                x:Name="characters"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                BorderBrush="SlateGray"
+                BorderThickness="1"
+                IsHitTestVisible="False">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel IsItemsHost="False" Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            Text="{Binding}"
+                            TextAlignment="Center" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.ItemContainerStyle>
+                    <Style x:Name="ItemStyle" TargetType="ListBoxItem">
+
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                    <Border
+                                        x:Name="myBorder"
+                                        Margin="0"
+                                        Padding="0"
+                                        SnapsToDevicePixels="true"
+                                        Style="{DynamicResource borderContent}">
+                                        <StackPanel Orientation="Vertical">
+                                            <ContentPresenter />
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Resources>
+                                        <Style x:Key="borderContent" TargetType="Border">
+                                            <Setter Property="BorderThickness" Value="0" />
+                                            <Setter Property="BorderBrush" Value="Transparent" />
+                                            <Setter Property="Background" Value="#ECECEC" />
+                                            <Setter Property="Width" Value="50" />
+                                            <Setter Property="Height" Value="50" />
+                                        </Style>
+                                    </ControlTemplate.Resources>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="true">
+                                            <Setter TargetName="myBorder" Property="Background" Value="White" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+            <TextBlock FontSize="12" Text="(U+0000) A COOL LETTER NAME COMES HERE"></TextBlock>
+        </StackPanel>
     </Grid>
 </Window>

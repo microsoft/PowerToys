@@ -33,7 +33,7 @@ public partial class Selector : Window, IDisposable
         characters.SelectedIndex = index;
     }
 
-    private void PowerAccent_OnChangeDisplay(bool isActive, char[] chars)
+    private void PowerAccent_OnChangeDisplay(bool isActive, char[] chars, string[] charNames)
     {
         this.Visibility = isActive ? Visibility.Visible : Visibility.Collapsed;
         if (isActive)
