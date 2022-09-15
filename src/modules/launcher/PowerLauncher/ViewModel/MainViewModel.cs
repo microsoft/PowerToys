@@ -481,9 +481,7 @@ namespace PowerLauncher.ViewModel
         private void QueryHistory()
         {
             // Using CurrentCulture since query is received from user and used in downstream comparisons using CurrentCulture
-#pragma warning disable CA1308 // Normalize strings to uppercase
             var query = QueryText.ToLower(CultureInfo.CurrentCulture).Trim();
-#pragma warning restore CA1308 // Normalize strings to uppercase
             History.Clear();
 
             var results = new List<Result>();
@@ -768,9 +766,7 @@ namespace PowerLauncher.ViewModel
             return selected;
         }
 
-#pragma warning disable CA1801 // Review unused parameters
         internal bool ProcessHotKeyMessages(IntPtr wparam, IntPtr lparam)
-#pragma warning restore CA1801 // Review unused parameters
         {
             if (wparam.ToInt32() == _globalHotKeyId)
             {

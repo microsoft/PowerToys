@@ -305,9 +305,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             return _isActive;
         }
 
-#pragma warning disable CA1801 // Review unused parameters
         private void ShortcutDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
-#pragma warning restore CA1801 // Review unused parameters
         {
             if (!ComboIsValid(hotkeySettings))
             {
@@ -340,9 +338,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             await shortcutDialog.ShowAsync();
         }
 
-#pragma warning disable CA1801 // Review unused parameters
         private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
-#pragma warning restore CA1801 // Review unused parameters
         {
             if (ComboIsValid(lastValidSettings))
             {
@@ -366,9 +362,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
-#pragma warning disable CA1801 // Review unused parameters
         private void ShortcutDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
-#pragma warning restore CA1801 // Review unused parameters
         {
             _isActive = false;
         }
