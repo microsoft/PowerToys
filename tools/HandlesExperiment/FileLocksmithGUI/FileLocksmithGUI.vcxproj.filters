@@ -5,6 +5,7 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainWindow.xaml" />
+    <Page Include="ProcessEntry.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
@@ -50,9 +51,6 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="app.manifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <AppxManifest Include="Package.appxmanifest" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
