@@ -1,0 +1,8 @@
+namespace FileLocksmithGUI
+{
+    [default_interface]
+    runtimeclass ProcessEntry : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        ProcessEntry(String process, Int32 pid);
+    }
+}

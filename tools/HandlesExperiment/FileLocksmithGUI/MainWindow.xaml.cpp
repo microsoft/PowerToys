@@ -15,6 +15,8 @@ namespace winrt::FileLocksmithGUI::implementation
     MainWindow::MainWindow()
     {
         InitializeComponent();
+        ProcessEntry entry(L"explorer.exe", 12345);
+        stackPanel().Children().Append(std::move(entry));
     }
 
     int32_t MainWindow::MyProperty()
@@ -29,6 +31,5 @@ namespace winrt::FileLocksmithGUI::implementation
 
     void MainWindow::myButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
-        myButton().Content(box_value(L"Clicked"));
     }
 }
