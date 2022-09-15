@@ -413,16 +413,25 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         return;
     }
 
-    // fix for the https://github.com/microsoft/PowerToys/issues/15300
-    // check if the window was closed, since for some EVENT_OBJECT_DESTROY doesn't work 
     std::vector<HWND> toErase{};
     for (const auto& [window, border] : m_topmostWindows)
     {
+        // check if the window was closed, since for some EVENT_OBJECT_DESTROY doesn't work
+        // fixes https://github.com/microsoft/PowerToys/issues/15300
         bool visible = IsWindowVisible(window);
         if (!visible)
         {
             UnpinTopmostWindow(window);
             toErase.push_back(window);
+            continue;
+        }
+
+        // check reset windows
+        // fixes https://github.com/microsoft/PowerToys/issues/19168
+        if (!IsTopmost(window))
+        {
+            Logger::trace("Reset topmost flag");
+            PinTopmostWindow(window);
         }
     }
 
