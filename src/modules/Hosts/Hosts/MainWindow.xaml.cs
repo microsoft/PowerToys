@@ -4,7 +4,6 @@
 
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
 using WinUIEx;
 
 namespace Hosts
@@ -14,8 +13,9 @@ namespace Hosts
         public MainWindow()
         {
             InitializeComponent();
-            Title = "Hosts Editor";
-            SetTitleBar();
+            Title = "Hosts File Editor";
+
+            // SetTitleBar();
         }
 
         private void SetTitleBar()

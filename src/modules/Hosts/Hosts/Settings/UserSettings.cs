@@ -13,7 +13,7 @@ namespace Hosts.Settings
 {
     public class UserSettings : IUserSettings
     {
-        private const string HostsEditorModuleName = "Hosts Editor";
+        private const string HostsModuleName = "Hosts";
         private const int MaxNumberOfRetry = 5;
 
         private readonly ISettingsUtils _settingsUtils;
@@ -32,7 +32,7 @@ namespace Hosts.Settings
 
             LoadSettingsFromJson();
 
-            _watcher = Helper.GetFileWatcher(HostsEditorModuleName, "settings.json", () => LoadSettingsFromJson());
+            _watcher = Helper.GetFileWatcher(HostsModuleName, "settings.json", () => LoadSettingsFromJson());
         }
 
         private void LoadSettingsFromJson()
@@ -48,14 +48,14 @@ namespace Hosts.Settings
                     {
                         retryCount++;
 
-                        if (!_settingsUtils.SettingsExists(HostsEditorModuleName))
+                        if (!_settingsUtils.SettingsExists(HostsModuleName))
                         {
-                            Logger.LogInfo("HostsEditor settings.json was missing, creating a new one");
-                            var defaultSettings = new HostsEditorSettings();
+                            Logger.LogInfo("Hosts settings.json was missing, creating a new one");
+                            var defaultSettings = new HostsSettings();
                             defaultSettings.Save(_settingsUtils);
                         }
 
-                        var settings = _settingsUtils.GetSettingsOrDefault<HostsEditorSettings>(HostsEditorModuleName);
+                        var settings = _settingsUtils.GetSettingsOrDefault<HostsSettings>(HostsModuleName);
                         if (settings != null)
                         {
                             ShowStartupWarning = settings.Properties.ShowStartupWarning;

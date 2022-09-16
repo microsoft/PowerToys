@@ -53,7 +53,7 @@ private:
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
-    void bring_process_to_front(HANDLE process_id)
+    void bring_process_to_front()
     {
         auto enum_windows = [](HWND hwnd, LPARAM param) -> BOOL {
             HANDLE process_handle = (HANDLE)param;
@@ -68,7 +68,7 @@ private:
             return TRUE;
         };
 
-        EnumWindows(enum_windows, (LPARAM)process_id);
+        EnumWindows(enum_windows, (LPARAM)m_hProcess);
     }
 
     void launch_process()
@@ -137,7 +137,7 @@ public:
     {
         if (is_process_running())
         {
-            bring_process_to_front(m_hProcess);
+            bring_process_to_front();
         }
         else
         {

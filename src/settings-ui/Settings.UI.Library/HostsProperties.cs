@@ -7,14 +7,14 @@ using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class HostsEditorProperties
+    public class HostsProperties
     {
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowStartupWarning { get; set; }
 
         public AdditionalLinesPosition AdditionalLinesPosition { get; set; }
 
-        public HostsEditorProperties()
+        public HostsProperties()
         {
             ShowStartupWarning = true;
             AdditionalLinesPosition = AdditionalLinesPosition.Top;

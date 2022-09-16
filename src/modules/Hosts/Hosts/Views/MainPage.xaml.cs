@@ -9,7 +9,6 @@ using CommunityToolkit.Mvvm.Input;
 using Hosts.Models;
 using Hosts.Settings;
 using Hosts.ViewModels;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -34,7 +33,7 @@ namespace Hosts.Views
 
         public ICommand UpdateAdditionalLinesCommand => new RelayCommand(UpdateAdditionalLines);
 
-        public ICommand ExitCommand => new RelayCommand(() => Application.Current.Exit());
+        public ICommand ExitCommand => new RelayCommand(() => { Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().TryEnqueue(Application.Current.Exit); });
 
         public MainPage()
         {

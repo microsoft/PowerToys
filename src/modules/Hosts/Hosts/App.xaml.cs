@@ -11,8 +11,10 @@ using Hosts.Helpers;
 using Hosts.Settings;
 using Hosts.ViewModels;
 using Hosts.Views;
+using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 namespace Hosts
@@ -77,6 +79,19 @@ namespace Hosts
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+            var cmdArgs = Environment.GetCommandLineArgs();
+            if (cmdArgs?.Length > 1)
+            {
+                if (int.TryParse(cmdArgs[cmdArgs.Length - 1], out int powerToysRunnerPid))
+                {
+                    var dispatcher = DispatcherQueue.GetForCurrentThread();
+                    RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
+                    {
+                        dispatcher.TryEnqueue(App.Current.Exit);
+                    });
+                }
+            }
+
             _window = new MainWindow();
             _window.Activate();
         }

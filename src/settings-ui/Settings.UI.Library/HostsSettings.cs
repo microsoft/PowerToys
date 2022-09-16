@@ -9,16 +9,16 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class HostsEditorSettings : BasePTModuleSettings, ISettingsConfig
+    public class HostsSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "Hosts Editor";
+        public const string ModuleName = "Hosts";
 
         [JsonPropertyName("properties")]
-        public HostsEditorProperties Properties { get; set; }
+        public HostsProperties Properties { get; set; }
 
-        public HostsEditorSettings()
+        public HostsSettings()
         {
-            Properties = new HostsEditorProperties();
+            Properties = new HostsProperties();
             Version = "1.0";
             Name = ModuleName;
         }
