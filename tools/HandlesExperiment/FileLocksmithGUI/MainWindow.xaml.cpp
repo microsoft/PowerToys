@@ -21,20 +21,6 @@ namespace winrt::FileLocksmithGUI::implementation
         find_processes();
     }
 
-    int32_t MainWindow::MyProperty()
-    {
-        throw hresult_not_implemented();
-    }
-
-    void MainWindow::MyProperty(int32_t /* value */)
-    {
-        throw hresult_not_implemented();
-    }
-
-    void MainWindow::myButton_Click(IInspectable const&, RoutedEventArgs const&)
-    {
-    }
-    
     void MainWindow::find_processes()
     {
         auto paths = ipc::read_paths_from_stdin();
