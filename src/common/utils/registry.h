@@ -378,10 +378,10 @@ namespace registry
                     std::wstring kindMapPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\KindMap";
                     changes.push_back({ HKEY_LOCAL_MACHINE, kindMapPath, fileType, fileKindType, false});
                 }
-                if (fileType == L".reg")
+                if (handlerType == PreviewHandlerType::preview && fileType == L".reg")
                 {
                     // this regfile registry key has precedence over Software\Classes\.reg for .reg files
-                    std::wstring regfilePath = L"Software\\Classes\\regfile\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}\\";
+                    std::wstring regfilePath = L"Software\\Classes\\regfile\\shellex\\" + IPREVIEW_HANDLER_CLSID + L"\\";
                     changes.push_back({ scope, regfilePath, std::nullopt, handlerClsid });
                 }
             }
