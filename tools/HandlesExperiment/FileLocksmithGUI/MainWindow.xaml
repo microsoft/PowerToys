@@ -7,5 +7,5 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel x:Name="stackPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <StackPanel x:Name="stackPanel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 </Window>

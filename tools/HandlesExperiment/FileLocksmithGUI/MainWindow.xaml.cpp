@@ -4,6 +4,9 @@
 #include "MainWindow.g.cpp"
 #endif
 
+#include "../FileLocksmithLib/IPC.h"
+#include "../FileLocksmithLib/FileLocksmith.h"
+
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 
@@ -15,8 +18,7 @@ namespace winrt::FileLocksmithGUI::implementation
     MainWindow::MainWindow()
     {
         InitializeComponent();
-        ProcessEntry entry(L"explorer.exe", 12345);
-        stackPanel().Children().Append(std::move(entry));
+        find_processes();
     }
 
     int32_t MainWindow::MyProperty()
@@ -31,5 +33,19 @@ namespace winrt::FileLocksmithGUI::implementation
 
     void MainWindow::myButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
+    }
+    
+    void MainWindow::find_processes()
+    {
+        auto paths = ipc::read_paths_from_stdin();
+        m_process_info = find_processes_nonrecursive(paths);
+
+        // TODO move to another thread
+        stackPanel().Children().Clear();
+        for (const auto& process : m_process_info)
+        {
+            ProcessEntry entry(process.name, process.pid);
+            stackPanel().Children().Append(entry);
+        }
     }
 }
