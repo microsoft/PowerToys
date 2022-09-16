@@ -6,14 +6,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignHeight="80"
+    d:DesignWidth="480">
 
     <StackPanel Orientation="Horizontal">
         <BitmapIcon Name="processIcon"></BitmapIcon>
         <StackPanel Orientation="Vertical">
-            <TextBlock FontSize="24" Name="processName">Process name</TextBlock>
-            <TextBlock FontSize="10" Name="processPid">Process pid</TextBlock>
+            <TextBlock Margin="4" FontSize="24" Name="processName"/>
+            <TextBlock Margin="4" FontSize="10" Name="processPid"/>
         </StackPanel>
+        <Button Click="killProcessClick">Kill process</Button>
     </StackPanel>
 </UserControl>
