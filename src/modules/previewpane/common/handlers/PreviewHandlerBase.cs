@@ -5,9 +5,7 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using Common.ComInterlop;
-using Microsoft.Win32;
 
 namespace Common
 {

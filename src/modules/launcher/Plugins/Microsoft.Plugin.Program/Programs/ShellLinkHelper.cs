@@ -41,7 +41,6 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [Flags]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Represents flags specified in IShellLink interface")]
         public enum SLR_FLAGS
         {
             SLR_NO_UI = 0x1,

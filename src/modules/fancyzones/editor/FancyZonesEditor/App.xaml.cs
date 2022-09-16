@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Common.UI;
 using FancyZonesEditor.Logs;
 using FancyZonesEditor.Utils;

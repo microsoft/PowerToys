@@ -15,8 +15,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
         [DataRow(@"HKLM\", false, @"HKLM\", "")]
         [DataRow(@"HKLM\\", true, @"HKLM", "")]
         [DataRow(@"HKLM\\Test", true, @"HKLM", "Test")]
-        [DataRow(@"HKLM\Test\\TestTest", true,  @"HKLM\Test", "TestTest")]
-        [DataRow(@"HKLM\Test\\\TestTest", true,  @"HKLM\Test", @"\TestTest")]
+        [DataRow(@"HKLM\Test\\TestTest", true, @"HKLM\Test", "TestTest")]
+        [DataRow(@"HKLM\Test\\\TestTest", true, @"HKLM\Test", @"\TestTest")]
         public void GetQueryPartsTest(string query, bool expectedHasValueName, string expectedQueryKey, string expectedQueryValueName)
         {
             var hasValueName = QueryHelper.GetQueryParts(query, out var queryKey, out var queryValueName);

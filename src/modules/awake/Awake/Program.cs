@@ -19,7 +19,6 @@ using Awake.Core;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Telemetry.Events;
 using NLog;
 using Windows.Win32;
 using Windows.Win32.Foundation;

@@ -116,7 +116,6 @@ namespace Wox.Plugin.Common.Win32
         public static extern HRESULT SHCreateStreamOnFileEx(string fileName, STGM grfMode, uint attributes, bool create, System.Runtime.InteropServices.ComTypes.IStream reserved, out System.Runtime.InteropServices.ComTypes.IStream stream);
     }
 
-    [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These are the names used by win32.")]
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "These are the names used by win32.")]
     public static class Win32Constants
     {
@@ -777,16 +776,12 @@ namespace Wox.Plugin.Common.Win32
             }
         }
 
-#pragma warning disable CA2225 // Operator overloads have named alternates
         public static implicit operator System.Drawing.Rectangle(RECT r)
-#pragma warning restore CA2225 // Operator overloads have named alternates
         {
             return new System.Drawing.Rectangle(r.Left, r.Top, r.Width, r.Height);
         }
 
-#pragma warning disable CA2225 // Operator overloads have named alternates
         public static implicit operator RECT(System.Drawing.Rectangle r)
-#pragma warning restore CA2225 // Operator overloads have named alternates
         {
             return new RECT(r);
         }
@@ -854,16 +849,12 @@ namespace Wox.Plugin.Common.Win32
         {
         }
 
-#pragma warning disable CA2225 // Operator overloads have named alternates
         public static implicit operator System.Drawing.Point(POINT p)
-#pragma warning restore CA2225 // Operator overloads have named alternates
         {
             return new System.Drawing.Point(p.X, p.Y);
         }
 
-#pragma warning disable CA2225 // Operator overloads have named alternates
         public static implicit operator POINT(System.Drawing.Point p)
-#pragma warning restore CA2225 // Operator overloads have named alternates
         {
             return new POINT(p.X, p.Y);
         }

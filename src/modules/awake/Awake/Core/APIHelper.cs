@@ -9,8 +9,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using Awake.Core.Models;
 using Microsoft.Win32;
 using NLog;
 using Windows.Win32;

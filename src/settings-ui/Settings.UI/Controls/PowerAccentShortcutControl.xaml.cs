@@ -18,9 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(PowerAccentShortcutControl), new PropertyMetadata(default(string)));
 
-#pragma warning disable CA2227 // Collection properties should be read only
         public List<object> Keys
-#pragma warning restore CA2227 // Collection properties should be read only
         {
             get { return (List<object>)GetValue(KeysProperty); }
             set { SetValue(KeysProperty, value); }
