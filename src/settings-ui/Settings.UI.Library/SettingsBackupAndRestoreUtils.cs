@@ -206,10 +206,10 @@ namespace Settings.UI.Library
                     return (false, $"BackupAndRestore_NoBackupsFound");
                 }
 
-                var allCurrentSettingsFiles = GetSettingsFiles(appBasePath);
                 var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("Settings\\backup_restore_settings.json"));
-                var currentSettingsFiles = GetSettingsFiles(appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
-                var backupSettingsFiles = GetSettingsFiles(latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
+                var allCurrentSettingsFiles = GetSettingsFiles(backupRetoreSettings, appBasePath);
+                var currentSettingsFiles = GetSettingsFiles(backupRetoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
+                var backupSettingsFiles = GetSettingsFiles(backupRetoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
 
                 if (backupSettingsFiles.Count == 0)
                 {
@@ -346,33 +346,35 @@ namespace Settings.UI.Library
             return JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "manifest.json")));
         }
 
-        private static bool SettingFileToUse(string name)
+        private static bool IsIncludeFile(JsonNode settings, string name)
         {
-            // FancyZones
-            if (name.EndsWith("Keyboard Manager\\default.json", StringComparison.InvariantCultureIgnoreCase) || name.EndsWith("settings.json", StringComparison.InvariantCultureIgnoreCase))
+            foreach (var test in (JsonArray)settings["IncludeFiles"])
             {
-                return true;
-            }
-            else if (name.EndsWith("FancyZones\\layout-hotkeys.json", StringComparison.InvariantCultureIgnoreCase) || name.EndsWith("FancyZones\\layout-templates.json", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
+                if (Regex.IsMatch(name, WildCardToRegular(test.ToString())))
+                {
+                    return true;
+                }
             }
 
-            // else if (Regex.IsMatch(name, @"FancyZones\\(.*)?.json$", RegexOptions.IgnoreCase))
+            return false;
         }
 
-        private static bool SettingFileToIgnore(string name)
+        private static bool IsIgnoreFile(JsonNode settings, string name)
         {
-            return name.EndsWith("PowerToys\\log_settings.json", StringComparison.InvariantCultureIgnoreCase) || name.EndsWith("PowerToys\\oobe_settings.json", StringComparison.InvariantCultureIgnoreCase);
+            foreach (var test in (JsonArray)settings["IgnoreFiles"])
+            {
+                if (Regex.IsMatch(name, WildCardToRegular(test.ToString())))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        private static string[] GetSettingsFiles(string path)
+        private static string[] GetSettingsFiles(JsonNode settings, string path)
         {
-            return Directory.GetFiles(path, "*.json", SearchOption.AllDirectories).Where(s => SettingFileToUse(s) && !SettingFileToIgnore(s)).ToArray();
+            return Directory.GetFiles(path, "*.json", SearchOption.AllDirectories).Where(s => IsIncludeFile(settings, s) && !IsIgnoreFile(settings, s)).ToArray();
         }
 
         public static (bool success, string message) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir)
@@ -417,7 +419,7 @@ namespace Settings.UI.Library
                 }
 
                 var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("Settings\\backup_restore_settings.json"));
-                var currentSettingsFiles = GetSettingsFiles(appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
+                var currentSettingsFiles = GetSettingsFiles(backupRetoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
                 var enableZip = backupRetoreSettings["EnableZip"] != null && (bool)backupRetoreSettings["EnableZip"].AsValue();
 
                 if (currentSettingsFiles.Count == 0)
@@ -440,7 +442,7 @@ namespace Settings.UI.Library
                 var backupSettingsFiles = new Dictionary<string, string>();
                 if (latestSettingsFolder != null)
                 {
-                    backupSettingsFiles = GetSettingsFiles(latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
+                    backupSettingsFiles = GetSettingsFiles(backupRetoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
                 }
 
                 var anyFileBackedUp = false;
@@ -559,6 +561,11 @@ namespace Settings.UI.Library
                 Logger.LogError($"There was an error: {ex2.Message}", ex2);
                 return (false, $"BackupAndRestore_BackupError");
             }
+        }
+
+        private static string WildCardToRegular(string value)
+        {
+            return "^" + Regex.Escape(value).Replace("\\*", ".*") + "$";
         }
 
         public static string GetExportVersion(JsonNode backupRetoreSettings, string settingFileKey, string settingsFileName)
