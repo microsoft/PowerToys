@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -50,9 +49,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
                 dialog.PrimaryButtonClick += (s, args) =>
                 {
-                // Using InvariantCulture since this is internal and expected to be numerical
-                bool success = int.TryParse(deleteRowButton?.CommandParameter?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int rowNum);
-                if (success)
+                    // Using InvariantCulture since this is internal and expected to be numerical
+                    bool success = int.TryParse(deleteRowButton?.CommandParameter?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int rowNum);
+                    if (success)
                     {
                         ViewModel.DeleteImageSize(rowNum);
                     }
@@ -77,7 +76,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
         private void ImagesSizesListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             if (ViewModel.IsListViewFocusRequested)

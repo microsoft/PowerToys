@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -400,9 +399,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return _settingsConfigFileFolder + "\\" + ModuleName;
         }
 
-#pragma warning disable CA1030 // Use events where appropriate
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
-#pragma warning restore CA1030 // Use events where appropriate
         {
             OnPropertyChanged(propertyName);
             SndVideoConferenceSettings outsettings = new SndVideoConferenceSettings(Settings);

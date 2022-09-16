@@ -159,7 +159,7 @@ public class PowerAccent : IDisposable
 
     public Point GetDisplayCoordinates(Size window)
     {
-        var activeDisplay = WindowsFunctions.GetActiveDisplay();
+        (Point Location, Size Size, double Dpi) activeDisplay = WindowsFunctions.GetActiveDisplay();
         Rect screen = new Rect(activeDisplay.Location, activeDisplay.Size) / activeDisplay.Dpi;
         Position position = _settingService.Position;
 
