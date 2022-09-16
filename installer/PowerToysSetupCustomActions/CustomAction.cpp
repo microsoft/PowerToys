@@ -1060,20 +1060,20 @@ UINT __stdcall CreateWinAppSDKHardlinksCA(MSIHANDLE hInstall)
     winAppSDKFilesSrcDir = installationFolder + L"dll\\WinAppSDK\\";
     settingsDir = installationFolder + L"Settings\\";
     powerRenameDir = installationFolder + L"modules\\PowerRename\\";
-    try
+
+    for (auto file : winAppSdkFiles)
     {
-        for (auto file : winAppSdkFiles)
+        std::error_code ec;
+        std::filesystem::create_hard_link((winAppSDKFilesSrcDir + file).c_str(), (settingsDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((winAppSDKFilesSrcDir + file).c_str(), (powerRenameDir + file).c_str(), ec);
+
+        if (ec.value() != S_OK)
         {
-            std::error_code ec;
-            //std::filesystem::create_symlink((winAppSDKFilesSrcDir + file).c_str(), (settingsDir + file).c_str(), ec);
-            //std::filesystem::create_symlink((winAppSDKFilesSrcDir + file).c_str(), (powerRenameDir + file).c_str(), ec);
-            std::filesystem::create_hard_link((winAppSDKFilesSrcDir + file).c_str(), (settingsDir + file).c_str(), ec);
-            std::filesystem::create_hard_link((winAppSDKFilesSrcDir + file).c_str(), (powerRenameDir + file).c_str(), ec);
+            std::wstring errorMessage{ L"Error creating hard link for: " };
+            errorMessage += file;
+            errorMessage += L", error code: " + std::to_wstring(ec.value());
+            Logger::error(errorMessage);
         }
-    }
-    catch (std::exception e)
-    {
-        er = ERROR_INSTALL_FAILURE;
     }
 
 LExit:
@@ -1105,25 +1105,26 @@ UINT __stdcall CreatePTInteropHardlinksCA(MSIHANDLE hInstall)
     measureToolDir = installationFolder + L"modules\\MeasureTool\\";
     powerAccentDir = installationFolder + L"modules\\PowerAccent\\";
 
-    try
-    {
-        for (auto file : powerToysInteropFiles)
-        {    
-            std::error_code ec;
-            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (colorPickerDir + file).c_str(), ec);
-            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (powerOCRDir + file).c_str(), ec);
-            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (launcherDir + file).c_str(), ec);
-            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (fancyZonesDir + file).c_str(), ec);
-            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (imageResizerDir + file).c_str(), ec);
-            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (settingsDir + file).c_str(), ec);
-            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (awakeDir + file).c_str(), ec);
-            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (measureToolDir + file).c_str(), ec);
-            std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (powerAccentDir + file).c_str(), ec);
+    for (auto file : powerToysInteropFiles)
+    {    
+        std::error_code ec;
+        std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (colorPickerDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (powerOCRDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (launcherDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (fancyZonesDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (imageResizerDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (settingsDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (awakeDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (measureToolDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((interopFilesSrcDir + file).c_str(), (powerAccentDir + file).c_str(), ec);
+
+        if (ec.value() != S_OK)
+        {
+            std::wstring errorMessage{ L"Error creating hard link for: " };
+            errorMessage += file;
+            errorMessage += L", error code: " + std::to_wstring(ec.value());
+            Logger::error(errorMessage);
         }
-    }
-    catch (std::exception e)
-    {
-        er = ERROR_INSTALL_FAILURE;
     }
 
 LExit:
@@ -1156,6 +1157,10 @@ UINT __stdcall DeleteWinAppSDKHardlinksCA(MSIHANDLE hInstall)
     }
     catch (std::exception e)
     {
+        std::string errorMessage{ "Exception thrown while trying to delete WAS hardlinks: " };
+        errorMessage += e.what();
+        Logger::error(errorMessage);
+
         er = ERROR_INSTALL_FAILURE;
     }
 
@@ -1204,6 +1209,10 @@ UINT __stdcall DeletePTInteropHardlinksCA(MSIHANDLE hInstall)
     }
     catch (std::exception e)
     {
+        std::string errorMessage{ "Exception thrown while trying to delete PowerToys Interop and VC Redist hardlinks: " };
+        errorMessage += e.what();
+        Logger::error(errorMessage);
+
         er = ERROR_INSTALL_FAILURE;
     }
 
