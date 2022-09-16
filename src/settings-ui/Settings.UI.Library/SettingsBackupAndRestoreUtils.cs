@@ -23,7 +23,7 @@ namespace Settings.UI.Library
     {
         private class JsonMergeHelper
         {
-            // code from https://stackoverflow.com/questions/58694837/system-text-json-merge-two-objects#ahsonkhan
+            // code from https://stackoverflow.com/questions/58694837/system-text-json-merge-two-objects
             public static string Merge(string originalJson, string newContent)
             {
                 var outputBuffer = new ArrayBufferWriter<byte>();
@@ -768,15 +768,15 @@ namespace Settings.UI.Library
                 {
                     if (item != null)
                     {
-                        var jelement = (JsonElement)item;
+                        var currentItem = (JsonElement)item;
 
-                        if (jelement.ValueKind == JsonValueKind.Object)
+                        if (currentItem.ValueKind == JsonValueKind.Object)
                         {
-                            updates.Add(Deserialize(jelement.ToString()));
+                            updates.Add(Deserialize(currentItem.ToString()));
                         }
                         else if (((JsonElement)item).ValueKind == JsonValueKind.Array)
                         {
-                            updates.Add(DeserializeArray(jelement.ToString()));
+                            updates.Add(DeserializeArray(currentItem.ToString()));
                         }
                         else
                         {
