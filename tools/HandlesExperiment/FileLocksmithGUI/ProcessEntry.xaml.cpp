@@ -18,4 +18,12 @@ namespace winrt::FileLocksmithGUI::implementation
         processName().Text(process);
         processPid().Text(winrt::to_hstring(pid));
     }
+
+    void ProcessEntry::killProcessClick(Windows::Foundation::IInspectable const&, RoutedEventArgs const&)
+    {
+        MessageBoxW(NULL, L"Kill process", L"OK", MB_OK);
+    }
 }
+
+
+
