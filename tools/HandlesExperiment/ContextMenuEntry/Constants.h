@@ -19,7 +19,7 @@ namespace constants::nonlocalizable
 	constexpr WCHAR FileNameDLL[] = L"ContextMenuEntry.dll";
 
 	// File name of the UI executable
-	constexpr WCHAR FileNameUIExe[] = L"FileLocksmithConsoleUI.exe";
+	constexpr WCHAR FileNameUIExe[] = L"FileLocksmithGUI\\FileLocksmithGUI.exe";
 }
 
 // Macros, non-localizable
