@@ -19,10 +19,16 @@ public class PowerAccent : IDisposable
 
     private bool _visible;
     private char[] _characters = Array.Empty<char>();
-    private string[] _characterNames = Array.Empty<string>();
+    private UnicodeCharInfo[] _characterNames = Array.Empty<UnicodeCharInfo>();
     private int _selectedIndex = -1;
 
-    public event Action<bool, char[], string[]> OnChangeDisplay;
+    public UnicodeCharInfo[] CharacterNames
+    {
+        get { return _characterNames; }
+        set { _characterNames = value; }
+    }
+
+    public event Action<bool, char[]> OnChangeDisplay;
 
     public event Action<int, char> OnSelectCharacter;
 
@@ -75,22 +81,20 @@ public class PowerAccent : IDisposable
             {
                 if (_visible)
                 {
-                    OnChangeDisplay?.Invoke(true, _characters, _characterNames);
+                    OnChangeDisplay?.Invoke(true, _characters);
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
-    private string[] GetCharacterNames(char[] characters)
+    private UnicodeCharInfo[] GetCharacterNames(char[] characters)
     {
-        string[] characterNames = Array.Empty<string>();
+        UnicodeCharInfo[] charInfoCollection = Array.Empty<UnicodeCharInfo>();
         foreach (char character in characters)
         {
-            UnicodeCharInfo charInfo = UnicodeInfo.GetCharInfo(character);
-            string characterName = charInfo.Name ?? charInfo.OldName;
-            characterNames = characterNames.Append(characterName).ToArray();
+            charInfoCollection = charInfoCollection.Append<UnicodeCharInfo>(UnicodeInfo.GetCharInfo(character)).ToArray<UnicodeCharInfo>();
         }
 
-        return characterNames;
+        return charInfoCollection;
     }
 
     private void SendInputAndHideToolbar(InputType inputType)
@@ -114,7 +118,7 @@ public class PowerAccent : IDisposable
                 }
         }
 
-        OnChangeDisplay?.Invoke(false, null, null);
+        OnChangeDisplay?.Invoke(false, null);
         _selectedIndex = -1;
         _visible = false;
     }

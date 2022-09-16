@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
+using System.Unicode;
 using System.Windows;
 using Point = PowerAccent.Core.Point;
 using Size = PowerAccent.Core.Size;
@@ -31,9 +33,12 @@ public partial class Selector : Window, IDisposable
     private void PowerAccent_OnSelectionCharacter(int index, char character)
     {
         characters.SelectedIndex = index;
+        string charUnicodeNumber = _powerAccent.CharacterNames[index].CodePoint.ToString("X4", CultureInfo.InvariantCulture);
+        string characterNameInfoBoxText = "(U+" + charUnicodeNumber + ") " + _powerAccent.CharacterNames[index].Name;
+        characterName.Text = characterNameInfoBoxText;
     }
 
-    private void PowerAccent_OnChangeDisplay(bool isActive, char[] chars, string[] charNames)
+    private void PowerAccent_OnChangeDisplay(bool isActive, char[] chars)
     {
         this.Visibility = isActive ? Visibility.Visible : Visibility.Collapsed;
         if (isActive)
