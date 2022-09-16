@@ -27,6 +27,11 @@
       "WindowLeft",
       "WindowTop",
       "ActivateTimes"
+    ],
+    "PowerToys Run\\Settings\\Plugins\\Microsoft.Plugin.Program\\ProgramPluginSettings.json": [
+      "LastIndexTime",
+      "WindowTop",
+      "ActivateTimes"
     ]
   }
 }

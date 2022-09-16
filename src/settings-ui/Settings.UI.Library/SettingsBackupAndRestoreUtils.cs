@@ -47,7 +47,7 @@ namespace Settings.UI.Library
 
                     if (root1.ValueKind == JsonValueKind.Array)
                     {
-                        MergeArrays(jsonWriter, root1, root2);
+                        MergeArrays(jsonWriter, root1, root2, false);
                     }
                     else
                     {
@@ -86,7 +86,7 @@ namespace Settings.UI.Library
                         }
                         else if (newValueKind == JsonValueKind.Array && originalValueKind == JsonValueKind.Array)
                         {
-                            MergeArrays(jsonWriter, originalValue, newValue);
+                            MergeArrays(jsonWriter, originalValue, newValue, false);
                         }
                         else
                         {
@@ -111,19 +111,40 @@ namespace Settings.UI.Library
                 jsonWriter.WriteEndObject();
             }
 
-            private static void MergeArrays(Utf8JsonWriter jsonWriter, JsonElement root1, JsonElement root2)
+            private static void MergeArrays(Utf8JsonWriter jsonWriter, JsonElement root1, JsonElement root2, bool allowDupes)
             {
+                // just does one level!!!
                 jsonWriter.WriteStartArray();
 
-                // Write all the elements from both JSON arrays
-                foreach (JsonElement element in root1.EnumerateArray())
+                if (allowDupes)
                 {
-                    element.WriteTo(jsonWriter);
-                }
+                    // Write all the elements from both JSON arrays
+                    foreach (JsonElement element in root1.EnumerateArray())
+                    {
+                        element.WriteTo(jsonWriter);
+                    }
 
-                foreach (JsonElement element in root2.EnumerateArray())
+                    foreach (JsonElement element in root2.EnumerateArray())
+                    {
+                        element.WriteTo(jsonWriter);
+                    }
+                }
+                else
                 {
-                    element.WriteTo(jsonWriter);
+                    var arrayItems = new HashSet<string>();
+                    foreach (JsonElement element in root1.EnumerateArray())
+                    {
+                        element.WriteTo(jsonWriter);
+                        arrayItems.Add(element.ToString());
+                    }
+
+                    foreach (JsonElement element in root2.EnumerateArray())
+                    {
+                        if (!arrayItems.Contains(element.ToString()))
+                        {
+                            element.WriteTo(jsonWriter);
+                        }
+                    }
                 }
 
                 jsonWriter.WriteEndArray();
@@ -207,7 +228,7 @@ namespace Settings.UI.Library
                         // we have a setting file to restore to
                         var currentSettingsFileJson = GetExportVersion(backupRetoreSettings, currentFile.Key, currentSettingsFiles[currentFile.Key]);
 
-                        if (ChecksumUtil.GetStringChecksum(settingsToRestoreJson) != ChecksumUtil.GetStringChecksum(currentSettingsFileJson))
+                        if (JsonNormalizer.Normalize(settingsToRestoreJson) != JsonNormalizer.Normalize(currentSettingsFileJson))
                         {
                             // the settings file needs to be updated, update the real one with non-excluded stuff...
                             Logger.LogInfo($"Settings file {currentFile.Key} is different and is getting updated from backup");
@@ -435,7 +456,7 @@ namespace Settings.UI.Library
                     {
                         var lastSettingsFileDoc = GetExportVersion(backupRetoreSettings, currentFile.Key, backupSettingsFiles[currentFile.Key]);
 
-                        if (ChecksumUtil.GetStringChecksum(newSettingsToBackup) != ChecksumUtil.GetStringChecksum(lastSettingsFileDoc))
+                        if (JsonNormalizer.Normalize(newSettingsToBackup) != JsonNormalizer.Normalize(lastSettingsFileDoc))
                         {
                             doBackup = true;
                             Logger.LogInfo($"BackupSettings, {currentFile.Value} content is different.");
@@ -718,6 +739,87 @@ namespace Settings.UI.Library
                         Logger.LogError($"Failed to remove a setting backup folder ({item.Value}), because: ({ex2.Message})");
                     }
                 }
+            }
+        }
+
+        private class JsonNormalizer
+        {
+            public static string Normalize(string json)
+            {
+                var doc1 = JsonNormalizer.Deserialize(json);
+                var newJson1 = JsonSerializer.Serialize(doc1, new JsonSerializerOptions { WriteIndented = true });
+                return newJson1;
+            }
+
+            private static List<object> DeserializeArray(string json)
+            {
+                var result = JsonSerializer.Deserialize<List<object>>(json);
+
+                var updates = new List<object>();
+
+                foreach (var item in result)
+                {
+                    if (item != null)
+                    {
+                        var jelement = (JsonElement)item;
+
+                        if (jelement.ValueKind == JsonValueKind.Object)
+                        {
+                            updates.Add(Deserialize(jelement.ToString()));
+                        }
+                        else if (((JsonElement)item).ValueKind == JsonValueKind.Array)
+                        {
+                            updates.Add(DeserializeArray(jelement.ToString()));
+                        }
+                        else
+                        {
+                            updates.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        updates.Add(item);
+                    }
+                }
+
+                return updates.OrderBy(x => JsonSerializer.Serialize(x)).ToList();
+            }
+
+            private static Dictionary<string, object> Deserialize(string json)
+            {
+                var doc = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+
+                var updates = new Dictionary<string, object>();
+
+                foreach (var item in doc)
+                {
+                    if (item.Value != null)
+                    {
+                        if (((JsonElement)item.Value).ValueKind == JsonValueKind.Object)
+                        {
+                            updates.Add(item.Key, Deserialize(((JsonElement)item.Value).ToString()));
+                        }
+                        else if (((JsonElement)item.Value).ValueKind == JsonValueKind.Array)
+                        {
+                            updates.Add(item.Key, DeserializeArray(((JsonElement)item.Value).ToString()));
+                        }
+                    }
+                }
+
+                foreach (var item in updates)
+                {
+                    doc.Remove(item.Key);
+                    doc.Add(item.Key, item.Value);
+                }
+
+                var ordered = new Dictionary<string, object>();
+
+                foreach (var item in doc.Keys.OrderBy(x => x))
+                {
+                    ordered.Add(item, doc[item]);
+                }
+
+                return ordered;
             }
         }
     }

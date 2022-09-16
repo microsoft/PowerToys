@@ -399,7 +399,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 }
                 else
                 {
-                    return "None Found";
+                    return "No backup found";
                 }
             }
         }
@@ -422,7 +422,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 }
                 else
                 {
-                    return "None Found";
+                    return "No backup found";
                 }
             }
         }
