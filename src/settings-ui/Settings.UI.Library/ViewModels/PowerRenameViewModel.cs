@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -89,14 +88,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (value != _powerRenameEnabled)
                 {
-                        GeneralSettingsConfig.Enabled.PowerRename = value;
-                        OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    GeneralSettingsConfig.Enabled.PowerRename = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
-                        SendConfigMSG(snd.ToString());
+                    SendConfigMSG(snd.ToString());
 
-                        _powerRenameEnabled = value;
-                        OnPropertyChanged(nameof(IsEnabled));
-                        RaisePropertyChanged(nameof(GlobalAndMruEnabled));
+                    _powerRenameEnabled = value;
+                    OnPropertyChanged(nameof(IsEnabled));
+                    RaisePropertyChanged(nameof(GlobalAndMruEnabled));
                 }
             }
         }

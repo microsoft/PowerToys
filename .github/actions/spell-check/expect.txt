@@ -60,7 +60,6 @@ APeriod
 api
 APIENTRY
 APIIs
-Apm
 APPBARDATA
 appdata
 APPICON
@@ -130,7 +129,6 @@ Avanc
 Awaitable
 awakeness
 awakeversion
-AWAYMODE
 AYUV
 backend
 backtracer
@@ -498,7 +496,6 @@ dvr
 DVSD
 DVSL
 DVTARGETDEVICE
-dwhkl
 DWINRT
 dwl
 dwm
@@ -728,8 +725,6 @@ hhk
 HHmmss
 HHOOK
 hhx
-Hiber
-Hiberboot
 HIBYTE
 HICON
 HIDEWINDOW
@@ -907,7 +902,6 @@ inheritdoc
 initguid
 Inkscape
 Inlines
-Inlining
 inorder
 INotification
 INotify
@@ -1037,7 +1031,6 @@ jxr
 jyuwono
 KBDLLHOOKSTRUCT
 kbm
-KCode
 KEYBDINPUT
 keybindings
 keyboardeventhandlers
@@ -1161,7 +1154,6 @@ lpsz
 lpt
 LPTHREAD
 LPTOP
-lptpm
 LPTSTR
 LPVOID
 LPW
@@ -1226,7 +1218,6 @@ Melman
 memcmp
 memcpy
 memset
-MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 Metadatas
@@ -1432,7 +1423,6 @@ ntdll
 NTFS
 NTSTATUS
 nuget
-nuint
 nullonfailure
 nullopt
 nullptr
@@ -1494,7 +1484,6 @@ overlaywindow
 Overridable
 Oversampling
 OWNDC
-OWNERDRAW
 PACL
 pagos
 PAINTSTRUCT
@@ -1536,6 +1525,7 @@ pfo
 pft
 pgp
 pguid
+PHANDLER
 phbm
 phbmp
 phwnd
@@ -1938,6 +1928,7 @@ sse
 ssf
 ssh
 sstream
+stackalloc
 STACKFRAME
 stackoverflow
 stackpanel
@@ -2237,14 +2228,12 @@ VIDEOINFOHEADER
 viewbox
 viewmodel
 vih
-Virt
 virtualization
 Virtualizing
 visiblecolorformats
 Visibletrue
 visualbrush
 visualstudio
-viter
 VKey
 VKTAB
 vmovl

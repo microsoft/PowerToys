@@ -6,9 +6,6 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using interop;
-using Microsoft.VisualBasic;
-using Windows.Storage;
 
 namespace MeasureToolUI.Helpers
 {

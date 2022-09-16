@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel.Composition;
 using System.Threading;
 using System.Windows;
 using ColorPicker.Helpers;
@@ -23,8 +24,16 @@ namespace ColorPickerUI
         private bool disposedValue;
         private ThemeManager _themeManager;
 
+        private CancellationTokenSource NativeThreadCTS { get; set; }
+
+        [Export]
+        private static CancellationToken ExitToken { get; set; }
+
         protected override void OnStartup(StartupEventArgs e)
         {
+            NativeThreadCTS = new CancellationTokenSource();
+            ExitToken = NativeThreadCTS.Token;
+
             _args = e?.Args;
 
             // allow only one instance of color picker
@@ -33,7 +42,7 @@ namespace ColorPickerUI
             {
                 Logger.LogWarning("There is ColorPicker instance running. Exiting Color Picker");
                 _instanceMutex = null;
-                Environment.Exit(0);
+                Shutdown(0);
                 return;
             }
 
@@ -45,7 +54,8 @@ namespace ColorPickerUI
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
                     Logger.LogInfo("PowerToys Runner exited. Exiting ColorPicker");
-                    Environment.Exit(0);
+                    NativeThreadCTS.Cancel();
+                    Dispatcher.Invoke(Shutdown);
                 });
             }
             else

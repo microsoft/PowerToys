@@ -5,6 +5,7 @@
 using System;
 using ManagedCommon;
 using MeasureToolUI.Helpers;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 namespace MeasureToolUI
@@ -36,9 +37,10 @@ namespace MeasureToolUI
             {
                 if (int.TryParse(cmdArgs[cmdArgs.Length - 1], out int powerToysRunnerPid))
                 {
+                    var dispatcher = DispatcherQueue.GetForCurrentThread();
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {
-                        Environment.Exit(0);
+                        dispatcher.TryEnqueue(App.Current.Exit);
                     });
                 }
             }
@@ -51,7 +53,8 @@ namespace MeasureToolUI
             catch (Exception ex)
             {
                 Logger.LogError($"MeasureToolCore failed to initialize: {ex}");
-                Environment.Exit(1);
+                App.Current.Exit();
+                return;
             }
 
             _window = new MainWindow(core);

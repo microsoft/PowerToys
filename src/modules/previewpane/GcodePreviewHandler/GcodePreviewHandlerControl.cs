@@ -53,9 +53,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
                     {
                         using (var reader = new StreamReader(stream))
                         {
-#pragma warning disable CA2000 // Do not dispose here
                             thumbnail = GetThumbnail(reader);
-#pragma warning restore CA2000
                         }
                     }
 

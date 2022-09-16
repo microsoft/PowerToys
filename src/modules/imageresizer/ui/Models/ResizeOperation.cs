@@ -85,10 +85,10 @@ namespace ImageResizer.Models
                     {
                         BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
 
-    #if DEBUG
+#if DEBUG
                         Debug.WriteLine($"### Processing metadata of file {_file}");
                         originalMetadata.PrintsAllMetadataToDebugOutput();
-    #endif
+#endif
 
                         var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
 
