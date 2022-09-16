@@ -38,7 +38,7 @@ namespace winrt::FileLocksmithGUI::implementation
     void MainWindow::find_processes()
     {
         auto paths = ipc::read_paths_from_stdin();
-        m_process_info = find_processes_nonrecursive(paths);
+        m_process_info = find_processes_recursive(paths);
 
         // TODO move to another thread
         stackPanel().Children().Clear();
