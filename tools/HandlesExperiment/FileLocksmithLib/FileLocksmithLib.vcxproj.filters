@@ -27,6 +27,9 @@
     <ClInclude Include="IPC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FileLocksmith.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -39,6 +42,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IPC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileLocksmith.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
