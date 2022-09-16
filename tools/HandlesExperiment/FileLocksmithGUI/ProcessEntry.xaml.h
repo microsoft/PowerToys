@@ -9,7 +9,7 @@ namespace winrt::FileLocksmithGUI::implementation
 {
     struct ProcessEntry : ProcessEntryT<ProcessEntry>
     {
-        ProcessEntry(const winrt::hstring& process, int pid);
+        ProcessEntry(const winrt::hstring& process, DWORD pid, uint64_t num_files);
         void killProcessClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
     };
 }

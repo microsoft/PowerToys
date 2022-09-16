@@ -12,11 +12,16 @@ using namespace Microsoft::UI::Xaml;
 
 namespace winrt::FileLocksmithGUI::implementation
 {
-    ProcessEntry::ProcessEntry(const winrt::hstring& process, int pid)
+    ProcessEntry::ProcessEntry(const winrt::hstring& process, DWORD pid, uint64_t num_files)
     {
         InitializeComponent();
         processName().Text(process);
-        processPid().Text(winrt::to_hstring(pid));
+
+        auto processPidStr = L"Process ID: " + std::to_wstring(pid);
+        auto processFileCountStr = L"Files used: " + std::to_wstring(num_files);
+
+        processPid().Text(processPidStr);
+        processFileCount().Text(processFileCountStr);
     }
 
     void ProcessEntry::killProcessClick(Windows::Foundation::IInspectable const&, RoutedEventArgs const&)
@@ -24,6 +29,3 @@ namespace winrt::FileLocksmithGUI::implementation
         MessageBoxW(NULL, L"Kill process", L"OK", MB_OK);
     }
 }
-
-
-

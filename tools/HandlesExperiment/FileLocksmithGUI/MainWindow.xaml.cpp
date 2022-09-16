@@ -44,7 +44,7 @@ namespace winrt::FileLocksmithGUI::implementation
         stackPanel().Children().Clear();
         for (const auto& process : m_process_info)
         {
-            ProcessEntry entry(process.name, process.pid);
+            ProcessEntry entry(process.name, process.pid, process.num_files);
             stackPanel().Children().Append(entry);
         }
     }
