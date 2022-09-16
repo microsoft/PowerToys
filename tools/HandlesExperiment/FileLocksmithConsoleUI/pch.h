@@ -1,8 +1,8 @@
 #pragma once
 
 // Library includes
-#include "../FileLocksmithLib/NtdllExtensions.h"
 #include "../FileLocksmithLib/IPC.h"
+#include "../FileLocksmithLib/FileLocksmith.h"
 
 // C++ standard library
 
