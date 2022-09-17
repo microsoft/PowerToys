@@ -29,9 +29,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private UpdatingSettings UpdatingSettingsConfig { get; set; }
 
-        private Action HideBackupAndRestoreMessageAreaAction { get; set; }
-
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
+
+        public object ResourceLoader { get; set; }
+
+        private Action HideBackupAndRestoreMessageAreaAction { get; set; }
 
         public ButtonClickCommand BackupConfigsEventHandler { get; set; }
 
@@ -39,9 +41,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public ButtonClickCommand SelectSettingBackupDirEventHandler { get; set; }
 
-        public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
-
         public ButtonClickCommand RestartButtonEventHandler { get; set; }
+
+        public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
         public ButtonClickCommand UpdateNowButtonEventHandler { get; set; }
 
@@ -60,8 +62,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private string _settingsConfigFileFolder = string.Empty;
 
         private IFileSystemWatcher _fileWatcher;
-
-        public object ResourceLoader { get; set; }
 
         public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, object resourceLoader = null)
         {
@@ -122,7 +122,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _startup = GeneralSettingsConfig.Startup;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
 
-            // _settingsBackupAndRestoreDir = GeneralSettingsConfig.SettingsBackupAndRestoreDir;
             _isElevated = isElevated;
             _runElevated = GeneralSettingsConfig.RunElevated;
 
@@ -335,14 +334,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                     NotifyPropertyChanged();
                 }
-            }
-        }
-
-        public string SettingsBackupAndRestoreLocationHeader
-        {
-            get
-            {
-                return "Location";
             }
         }
 
