@@ -333,7 +333,7 @@ namespace Settings.UI.Library
         /// Method <c>GetLatestSettingsFolder</c> returns a folder that has the latest backup in it.
         /// </summary>
         /// <remarks>
-        /// The backup will usually be a backup file that has to be extraced to a temp folder. This will do that for us.
+        /// The backup will usually be a backup file that has to be extracted to a temp folder. This will do that for us.
         /// </remarks>
         private static string GetLatestSettingsFolder()
         {
@@ -630,7 +630,7 @@ namespace Settings.UI.Library
 
         /// <summary>
         /// Method <c>GetExportVersion</c> gets the version of the settings file that we want to backup.
-        /// It will be formatted and all problamatic settings removed from it.
+        /// It will be formatted and all problematic settings removed from it.
         /// </summary>
         public static string GetExportVersion(JsonNode backupRetoreSettings, string settingFileKey, string settingsFileName)
         {
