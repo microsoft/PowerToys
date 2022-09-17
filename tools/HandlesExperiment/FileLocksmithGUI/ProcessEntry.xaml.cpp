@@ -22,10 +22,25 @@ namespace winrt::FileLocksmithGUI::implementation
 
         processPid().Text(processPidStr);
         processFileCount().Text(processFileCountStr);
+
+        m_pid = pid;
     }
 
     void ProcessEntry::killProcessClick(Windows::Foundation::IInspectable const&, RoutedEventArgs const&)
     {
-        MessageBoxW(NULL, L"Kill process", L"OK", MB_OK);
+        HANDLE process = OpenProcess(PROCESS_TERMINATE, FALSE, m_pid);
+        if (!process || !TerminateProcess(process, 1))
+        {
+            MessageBoxW(NULL, L"Failed to kill process.", L"Error", MB_OK);
+            return;
+        }
+
+        CloseHandle(process);
+
+        auto parent = Parent().as<Controls::StackPanel>().Children();
+        if (uint32_t index; parent.IndexOf(*this, index))
+        {
+            parent.RemoveAt(index);
+        }
     }
 }

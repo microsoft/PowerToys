@@ -11,6 +11,8 @@ namespace winrt::FileLocksmithGUI::implementation
     {
         ProcessEntry(const winrt::hstring& process, DWORD pid, uint64_t num_files);
         void killProcessClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+    private:
+        DWORD m_pid;
     };
 }
 
