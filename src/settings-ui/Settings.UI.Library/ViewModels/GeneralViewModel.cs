@@ -158,6 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _isNewVersionChecked;
 
         private bool _settingsBackupWasSuccessful;
+        private bool _settingsBackupWasUnsuccessful;
         private string _settingsBackupMessage;
 
         // Gets or sets a value indicating whether run powertoys on start-up.
@@ -519,7 +520,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return !_settingsBackupWasSuccessful;
+                return _settingsBackupWasUnsuccessful;
             }
         }
 
@@ -592,6 +593,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             if (!results.success)
             {
                 _settingsBackupWasSuccessful = results.success;
+                _settingsBackupWasUnsuccessful = !_settingsBackupWasSuccessful;
                 _settingsBackupMessage = GetResourceString(results.message);
 
                 NotifyPropertyChanged(nameof(SettingsBackupMessage));
@@ -618,6 +620,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             var results = SettingsUtils.BackupSettings();
 
             _settingsBackupWasSuccessful = results.success;
+            _settingsBackupWasUnsuccessful = !_settingsBackupWasSuccessful;
             _settingsBackupMessage = GetResourceString(results.message);
 
             NotifyPropertyChanged(nameof(LastSettingsBackupDate));
@@ -632,6 +635,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private void HideBackupAndRestoreMessage()
         {
             _settingsBackupWasSuccessful = false;
+            _settingsBackupWasUnsuccessful = false;
             NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
             NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
         }
