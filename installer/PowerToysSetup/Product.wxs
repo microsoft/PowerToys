@@ -119,13 +119,13 @@
 
   <?define ImageResizerSparsePackageAssets=LargeTile.png;SmallTile.png;SplashScreen.png;Square150x150Logo.png;Square44x44Logo.png;storelogo.png;Wide310x150Logo.png?>
 
-  <?define MeasureToolFiles=CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;Microsoft.WinUI.dll;MRM.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MeasureToolCore.dll;PowerToys.MeasureToolUI.deps.json;PowerToys.MeasureToolUI.dll;PowerToys.MeasureToolUI.exe;PowerToys.MeasureToolUI.runtimeconfig.json;PushNotificationsLongRunningTask.ProxyStub.dll;resources.pri;System.CodeDom.dll;System.Management.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinRT.Runtime.dll;WinUIEdit.dll;WinUIEx.dll;wuceffectsi.dll?>
+  <?define MeasureToolFiles=CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;Microsoft.WinUI.dll;MRM.dll;PowerToys.ManagedCommon.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MeasureToolCore.dll;PowerToys.MeasureToolUI.deps.json;PowerToys.MeasureToolUI.dll;PowerToys.MeasureToolUI.exe;PowerToys.MeasureToolUI.runtimeconfig.json;PushNotificationsLongRunningTask.ProxyStub.dll;resources.pri;System.CodeDom.dll;System.Management.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinRT.Runtime.dll;WinUIEdit.dll;WinUIEx.dll;wuceffectsi.dll?>
 
 	<?define PowerRenameMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
   <?define MeasureToolMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
-	<?define PowerAccentFiles=ControlzEx.dll;GongSolutions.WPF.DragDrop.dll;Ijwhost.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerAccent.deps.json;PowerAccent.dll;PowerAccent.exe;PowerAccent.runtimeconfig.json;PowerToys.PowerAccentModuleInterface.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;Vanara.Core.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.User32.dll?>
+	<?define PowerAccentFiles=ControlzEx.dll;GongSolutions.WPF.DragDrop.dll;Ijwhost.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerAccent.deps.json;PowerAccent.dll;PowerAccent.exe;PowerAccent.runtimeconfig.json;PowerToys.PowerAccentModuleInterface.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;Vanara.Core.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.User32.dll;PowerToys.PowerAccentKeyboardService.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll?>
 
   <Product Id="*"
        Name="PowerToys (Preview)"
@@ -980,8 +980,8 @@
       </Component>
 
       <?foreach File in $(var.MeasureToolFiles)?>
-      <Component Id="MEASURE_TOOL_$(var.File)" Win64="yes">
-        <File Id="MEASURE_TOOL_$(var.File)" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.File)" />
+      <Component Id="MT_$(var.File)" Win64="yes">
+        <File Id="MT_$(var.File)" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.File)" />
       </Component>
       <?endforeach?>
 
@@ -1139,7 +1139,7 @@
       <ComponentRef Id="Module_AlwaysOnTopInterface"/>
       <ComponentRef Id="Module_MeasureToolInterface"/>
       <?foreach File in $(var.MeasureToolFiles)?>
-      <ComponentRef Id="MEASURE_TOOL_$(var.File)" />
+      <ComponentRef Id="MT_$(var.File)" />
       <?endforeach?>
       <?foreach File in $(var.MeasureToolMicrosoftUIXamlAssetsInstallFiles)?>
         <ComponentRef Id="MeasureToolMicrosoftUIXamlAssets_$(var.File)" />

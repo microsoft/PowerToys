@@ -2,10 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -14,8 +12,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public MeasureToolProperties()
         {
             ActivationShortcut = new HotkeySettings(true, false, false, true, 0x4D);
+            UnitsOfMeasure = new IntProperty(0);
             PixelTolerance = new IntProperty(30);
-            ContinuousCapture = true;
+            ContinuousCapture = false;
             DrawFeetOnCross = true;
             PerColorChannelEdgeDetection = false;
             MeasureCrossColor = new StringProperty("#FF4500");
@@ -31,6 +30,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool PerColorChannelEdgeDetection { get; set; }
+
+        public IntProperty UnitsOfMeasure { get; set; }
 
         public IntProperty PixelTolerance { get; set; }
 

@@ -6,13 +6,31 @@
 #include "Settings.h"
 
 #include <common/utils/serialized.h>
+#include "ScreenCapturing.h"
+
+struct PowerToysMisc
+{
+    PowerToysMisc()
+    {
+        Trace::RegisterProvider();
+        LoggerHelpers::init_logger(L"Measure Tool", L"Core", "Measure Tool");
+        InitUnhandledExceptionHandler();
+    }
+
+    ~PowerToysMisc()
+    {
+        Trace::UnregisterProvider();
+    }
+};
 
 namespace winrt::PowerToys::MeasureToolCore::implementation
 {
-    struct Core : CoreT<Core>
+    struct Core : PowerToysMisc, CoreT<Core>
     {
         Core();
         ~Core();
+        void Close();
+
         void StartBoundsTool();
         void StartMeasureTool(const bool horizontal, const bool vertical);
         void SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger);
@@ -20,6 +38,8 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         void ResetState();
         float GetDPIScaleForWindow(uint64_t windowHandle);
         void MouseCaptureThread();
+
+        DxgiAPI dxgiAPI;
 
         wil::shared_event _stopMouseCaptureThreadSignal;
         std::thread _mouseCaptureThread;

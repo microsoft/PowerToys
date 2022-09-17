@@ -94,7 +94,7 @@ public:
             // Otherwise call a custom function to process the settings before saving them to disk:
             // save_settings();
         }
-        catch (std::exception ex)
+        catch (std::exception&)
         {
             // Improper JSON.
         }
@@ -273,7 +273,7 @@ private:
 
             parse_hotkey(settings);
         }
-        catch (std::exception ex)
+        catch (std::exception&)
         {
             Logger::warn(L"An exception occurred while loading the settings file");
             // Error while loading from the settings file. Let default values stay as they are.

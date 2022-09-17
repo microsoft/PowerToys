@@ -73,6 +73,16 @@
 
         <Chain>
             <ExePackage
+                Name="terminate_powertoys.cmd"
+                Cache="no"
+                Compressed="yes"
+                Id="TerminatePowerToys"
+                SourceFile="terminate_powertoys.cmd"
+                Permanent="yes"
+                PerMachine="yes"
+                Vital="no">
+            </ExePackage>
+            <ExePackage
                 Name="windowsdesktop-runtime-6.0.8-win-$(var.PowerToysPlatform).exe"
                 Compressed="no"
                 Id="DotnetRuntime6"

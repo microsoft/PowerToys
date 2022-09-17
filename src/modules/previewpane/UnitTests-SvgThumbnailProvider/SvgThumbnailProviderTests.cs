@@ -7,7 +7,6 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using System.Windows.Forms;
 using Common.ComInterlop;
 using Microsoft.PowerToys.STATestExtension;
 using Microsoft.PowerToys.ThumbnailHandler.Svg;

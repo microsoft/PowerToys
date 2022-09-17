@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Microsoft.Plugin.Indexer.Interop;
 using Wox.Plugin.Logger;
 

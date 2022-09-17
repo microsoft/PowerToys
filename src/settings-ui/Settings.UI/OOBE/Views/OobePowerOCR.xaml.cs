@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
@@ -19,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobePowerOCR()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.PowerOCR]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.TextExtractor]);
             DataContext = ViewModel;
         }
 

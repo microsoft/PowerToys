@@ -137,9 +137,24 @@ internal class ImageMethods
 
             if (singlePoint == null)
             {
-                foreach (OcrLine line in ocrResult.Lines)
+                if (isCJKLang == false)
                 {
-                    text.AppendLine(line.Text);
+                    foreach (OcrLine line in ocrResult.Lines)
+                    {
+                        text.AppendLine(line.Text);
+                    }
+                }
+                else
+                {
+                    foreach (OcrLine ocrLine in ocrResult.Lines)
+                    {
+                        foreach (OcrWord ocrWord in ocrLine.Words)
+                        {
+                            _ = text.Append(ocrWord.Text);
+                        }
+
+                        text.Append(Environment.NewLine);
+                    }
                 }
             }
             else

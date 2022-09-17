@@ -187,7 +187,7 @@ namespace winrt::PowerRenameUI::implementation
             SetHandlers();
             ReadSettings();
         }
-        catch (std::exception e)
+        catch (std::exception& e)
         {
             Logger::error("Exception thrown during explorer items population: {}", std::string{ e.what() });
         }

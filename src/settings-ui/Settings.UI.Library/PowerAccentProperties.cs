@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
-using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -16,10 +15,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("toolbar_position")]
         public StringProperty ToolbarPosition { get; set; }
 
+        [JsonPropertyName("input_time_ms")]
+        public IntProperty InputTime { get; set; }
+
         public PowerAccentProperties()
         {
             ActivationKey = PowerAccentActivationKey.Both;
             ToolbarPosition = "Top center";
+            InputTime = new IntProperty(200);
         }
     }
 }

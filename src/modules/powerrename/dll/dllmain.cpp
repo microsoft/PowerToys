@@ -286,7 +286,7 @@ public:
 
             Trace::SettingsChanged();
         }
-        catch (std::exception e)
+        catch (std::exception& e)
         {
             Logger::error("Configuration parsing failed: {}", std::string{ e.what() });
         }

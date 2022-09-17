@@ -14,7 +14,6 @@ using Common.UI;
 using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
-using ModernWpf.Automation.Peers;
 using ModernWpf.Controls;
 
 namespace FancyZonesEditor

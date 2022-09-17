@@ -34,7 +34,7 @@ namespace ImageResizer.Views
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-             return (Visibility)value == Visibility.Visible;
+            return (Visibility)value == Visibility.Visible;
         }
     }
 }

@@ -9,11 +9,11 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="PowerOCR" ModuleImageSource="ms-appx:///Assets/Modules/PowerOCR.png">
+    <controls:SettingsPageControl x:Uid="TextExtractor" ModuleImageSource="ms-appx:///Assets/Modules/PowerOCR.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <controls:Setting x:Uid="PowerOCR_EnableToggleControl_HeaderText">
+                <controls:Setting x:Uid="TextExtractor_EnableToggleControl_HeaderText">
                     <controls:Setting.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerOcr.png" />
                     </controls:Setting.Icon>
@@ -35,7 +35,7 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_PowerOcr" Link="https://aka.ms/PowerToysOverview_PowerOCR" />
+            <controls:PageLink x:Uid="LearnMore_TextExtractor" Link="https://aka.ms/PowerToysOverview_TextExtractor" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Text="Based upon Joseph Finney's Text Grab" Link="https://github.com/TheJoeFin/Text-Grab"/>
