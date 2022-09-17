@@ -4,7 +4,7 @@
 
 namespace Awake.Core.Models
 {
-    // See: https://docs.microsoft.com/windows/console/handlerroutine
+    // See: https://learn.microsoft.com/windows/console/handlerroutine
     public enum ControlType
     {
         CTRL_C_EVENT = 0,
