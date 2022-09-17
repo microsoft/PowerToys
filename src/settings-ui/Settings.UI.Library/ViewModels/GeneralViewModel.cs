@@ -632,14 +632,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             HideBackupAndRestoreMessageAreaAction();
         }
 
-        private void HideBackupAndRestoreMessage()
-        {
-            _settingsBackupWasSuccessful = false;
-            _settingsBackupWasUnsuccessful = false;
-            NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
-            NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
-        }
-
         // callback function to launch the URL to check for updates.
         private void CheckForUpdatesClick()
         {
@@ -746,6 +738,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public void HideBackupAndRestoreMessageArea()
         {
             _settingsBackupWasSuccessful = false;
+            _settingsBackupWasUnsuccessful = false;
 
             NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
             NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));

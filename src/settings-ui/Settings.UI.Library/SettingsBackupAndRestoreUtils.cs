@@ -682,7 +682,7 @@ namespace Settings.UI.Library
         }
 
         /// <summary>
-        /// Method <c>GetPTRunIgnoredSettings</c> gets the 'Run-Plugin-level' settings we should ignore because they are problamatic to backup/restore.
+        /// Method <c>GetPTRunIgnoredSettings</c> gets the 'Run-Plugin-level' settings we should ignore because they are problematic to backup/restore.
         /// </summary>
         private static JsonArray GetPTRunIgnoredSettings(JsonNode backupRetoreSettings)
         {
@@ -700,7 +700,7 @@ namespace Settings.UI.Library
         }
 
         /// <summary>
-        /// Method <c>GetIgnoredSettings</c> gets the 'top-level' settings we should ignore because they are problamatic to backup/restore.
+        /// Method <c>GetIgnoredSettings</c> gets the 'top-level' settings we should ignore because they are problematic to backup/restore.
         /// </summary>
         private static string[] GetIgnoredSettings(JsonNode backupRetoreSettings, string settingFileKey)
         {
