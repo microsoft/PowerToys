@@ -37,10 +37,10 @@ namespace winrt::FileLocksmithGUI::implementation
 
         CloseHandle(process);
 
-        auto parent = Parent().as<Controls::StackPanel>().Children();
-        if (uint32_t index; parent.IndexOf(*this, index))
+        auto siblings = Parent().as<Controls::StackPanel>().Children();
+        if (uint32_t index; siblings.IndexOf(*this, index))
         {
-            parent.RemoveAt(index);
+            siblings.RemoveAt(index);
         }
     }
 }
