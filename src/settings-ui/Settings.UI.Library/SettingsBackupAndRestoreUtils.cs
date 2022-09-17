@@ -15,6 +15,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Windows.Forms;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Settings.UI.Library
@@ -152,6 +153,44 @@ namespace Settings.UI.Library
             }
         }
 
+        private static bool TryCreateDirectory(string path)
+        {
+            try
+            {
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                    return true;
+                }
+            }
+            catch (Exception ex3)
+            {
+                Logger.LogError($"There was an error in TryCreateDirectory {path}: {ex3.Message}", ex3);
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool TryDeleteDirectory(string path)
+        {
+            try
+            {
+                if (Directory.Exists(path))
+                {
+                    Directory.Delete(path, true);
+                    return true;
+                }
+            }
+            catch (Exception ex3)
+            {
+                Logger.LogError($"There was an error in TryDeleteDirectory {path}: {ex3.Message}", ex3);
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Method <c>SetRegSettingsBackupAndRestoreItem</c> helper method to write to the registry.
         /// </summary>
@@ -197,6 +236,7 @@ namespace Settings.UI.Library
         {
             try
             {
+                // verify inputs
                 if (!Directory.Exists(appBasePath))
                 {
                     return (false, $"Invalid appBasePath {appBasePath}");
@@ -220,8 +260,8 @@ namespace Settings.UI.Library
                     return (false, $"BackupAndRestore_NoBackupsFound");
                 }
 
+                // get data needed for process
                 var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("Settings\\backup_restore_settings.json"));
-                var allCurrentSettingsFiles = GetSettingsFiles(backupRetoreSettings, appBasePath);
                 var currentSettingsFiles = GetSettingsFiles(backupRetoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
                 var backupSettingsFiles = GetSettingsFiles(backupRetoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
 
@@ -231,6 +271,7 @@ namespace Settings.UI.Library
                 }
 
                 var anyFilesUpdated = false;
+
                 foreach (var currentFile in backupSettingsFiles)
                 {
                     var relativePath = currentFile.Value.Substring(latestSettingsFolder.Length + 1);
@@ -254,20 +295,19 @@ namespace Settings.UI.Library
                     }
                     else
                     {
-                        // we don't have anything to merge this into, so... copy it all or skip it?
+                        // we don't have anything to merge this into, we need to use it as is
                         Logger.LogInfo($"Settings file {currentFile.Key} is in the backup but does not exist for restore");
-                        var thisPathToRestore = Path.Combine(appBasePath, currentFile.Key.Substring(1));
-                        if (Directory.Exists(Path.GetDirectoryName(thisPathToRestore)))
-                        {
-                            File.WriteAllText(thisPathToRestore, settingsToRestoreJson);
-                        }
 
+                        var thisPathToRestore = Path.Combine(appBasePath, currentFile.Key.Substring(1));
+                        TryCreateDirectory(Path.GetDirectoryName(thisPathToRestore));
+                        File.WriteAllText(thisPathToRestore, settingsToRestoreJson);
                         anyFilesUpdated = true;
                     }
                 }
 
                 if (anyFilesUpdated)
                 {
+                    // something was changed do we need to return true to indicate a restart is needed.
                     var restartAfterRestore = (bool?)backupRetoreSettings!["RestartAfterRestore"];
                     if (!restartAfterRestore.HasValue || restartAfterRestore.Value)
                     {
@@ -406,8 +446,19 @@ namespace Settings.UI.Library
             return false;
         }
 
+        /// <summary>
+        /// Class <c>GetSettingsFiles</c> returns the effective list of settings files.
+        /// </summary>
+        /// <remarks>
+        /// Handles all the included/exclude files.
+        /// </remarks>
         private static string[] GetSettingsFiles(JsonNode settings, string path)
         {
+            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
+            {
+                return Array.Empty<string>();
+            }
+
             return Directory.GetFiles(path, "*.json", SearchOption.AllDirectories).Where(s => IsIncludeFile(settings, s) && !IsIgnoreFile(settings, s)).ToArray();
         }
 
@@ -422,6 +473,7 @@ namespace Settings.UI.Library
         {
             try
             {
+                // verify inputs
                 if (!Directory.Exists(appBasePath))
                 {
                     return (false, $"Invalid appBasePath {appBasePath}");
@@ -444,62 +496,42 @@ namespace Settings.UI.Library
                     return (false, "BackupAndRestore_InvalidBackupLocation");
                 }
 
-                var dirExists = Directory.Exists(settingsBackupAndRestoreDir);
-
-                try
+                var dirExists = TryCreateDirectory(settingsBackupAndRestoreDir);
+                if (!dirExists)
                 {
-                    if (!dirExists)
-                    {
-                        Directory.CreateDirectory(settingsBackupAndRestoreDir);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"Failed to create dir {settingsBackupAndRestoreDir}", ex);
+                    Logger.LogError($"Failed to create dir {settingsBackupAndRestoreDir}");
                     return (false, $"BackupAndRestore_BackupError");
                 }
 
+                // get data needed for process
                 var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("Settings\\backup_restore_settings.json"));
                 var currentSettingsFiles = GetSettingsFiles(backupRetoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
-                var enableZip = backupRetoreSettings["EnableZip"] != null && (bool)backupRetoreSettings["EnableZip"].AsValue();
+                var fullBackupDir = Path.Combine(Path.GetTempPath(), $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
+                var latestSettingsFolder = GetLatestSettingsFolder();
+                var lastBackupSettingsFiles = GetSettingsFiles(backupRetoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
 
                 if (currentSettingsFiles.Count == 0)
                 {
                     return (false, "BackupAndRestore_NoSettingsFilesFound");
                 }
 
-                var fullBackupDir = string.Empty;
-
-                if (enableZip)
-                {
-                    fullBackupDir = Path.Combine(Path.GetTempPath(), $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
-                }
-                else
-                {
-                    fullBackupDir = Path.Combine(settingsBackupAndRestoreDir, $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
-                }
-
-                var latestSettingsFolder = GetLatestSettingsFolder();
-                var backupSettingsFiles = new Dictionary<string, string>();
-                if (latestSettingsFolder != null)
-                {
-                    backupSettingsFiles = GetSettingsFiles(backupRetoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
-                }
-
                 var anyFileBackedUp = false;
                 var skippedSettingsFiles = new Dictionary<string, (string path, string settings)>();
                 var updatedSettingsFiles = new Dictionary<string, string>();
+
                 foreach (var currentFile in currentSettingsFiles)
                 {
                     // need to check and back this up;
-                    var newSettingsToBackup = GetExportVersion(backupRetoreSettings, currentFile.Key, currentFile.Value);
+                    var currentSettingsFileToBackup = GetExportVersion(backupRetoreSettings, currentFile.Key, currentFile.Value);
 
                     var doBackup = false;
-                    if (backupSettingsFiles.ContainsKey(currentFile.Key))
+                    if (lastBackupSettingsFiles.ContainsKey(currentFile.Key))
                     {
-                        var lastSettingsFileDoc = GetExportVersion(backupRetoreSettings, currentFile.Key, backupSettingsFiles[currentFile.Key]);
+                        // there is a previous backup for this, get an export version of it.
+                        var lastSettingsFileDoc = GetExportVersion(backupRetoreSettings, currentFile.Key, lastBackupSettingsFiles[currentFile.Key]);
 
-                        if (JsonNormalizer.Normalize(newSettingsToBackup) != JsonNormalizer.Normalize(lastSettingsFileDoc))
+                        // check to see if the new export version would be same as last export version.
+                        if (JsonNormalizer.Normalize(currentSettingsFileToBackup) != JsonNormalizer.Normalize(lastSettingsFileDoc))
                         {
                             doBackup = true;
                             Logger.LogInfo($"BackupSettings, {currentFile.Value} content is different.");
@@ -507,58 +539,52 @@ namespace Settings.UI.Library
                     }
                     else
                     {
-                        // this has never been backed up
+                        // this has never been backed up, we need to do it now.
                         Logger.LogInfo($"BackupSettings, {currentFile.Value} does not exists.");
                         doBackup = true;
                     }
 
                     if (doBackup)
                     {
+                        // add to list of files we noted as needing backup
                         updatedSettingsFiles.Add(currentFile.Key, currentFile.Value);
+
+                        // mark overall flag that a backup will be made
                         anyFileBackedUp = true;
 
+                        // write the export version of the settings file to backup location.
                         var relativePath = currentFile.Value.Substring(appBasePath.Length + 1);
                         var backupFullPath = Path.Combine(fullBackupDir, relativePath);
 
-                        if (!Directory.Exists(fullBackupDir))
-                        {
-                            Directory.CreateDirectory(fullBackupDir);
-                        }
-
-                        if (!Directory.Exists(Path.GetDirectoryName(backupFullPath)))
-                        {
-                            Directory.CreateDirectory(Path.GetDirectoryName(backupFullPath));
-                        }
+                        TryCreateDirectory(fullBackupDir);
+                        TryCreateDirectory(Path.GetDirectoryName(backupFullPath));
 
                         Logger.LogInfo($"BackupSettings writing, {backupFullPath}.");
-                        File.WriteAllText(backupFullPath, newSettingsToBackup);
+                        File.WriteAllText(backupFullPath, currentSettingsFileToBackup);
                     }
                     else
                     {
-                        skippedSettingsFiles.Add(currentFile.Key, (currentFile.Value, newSettingsToBackup));
+                        // if we found no reason to backup this settings file, record that in this collection
+                        skippedSettingsFiles.Add(currentFile.Key, (currentFile.Value, currentSettingsFileToBackup));
                     }
                 }
 
                 if (!anyFileBackedUp)
                 {
+                    // nothing was done!
                     return (false, $"BackupAndRestore_NothingToBackup");
                 }
 
                 // add skipped.
                 foreach (var currentFile in skippedSettingsFiles)
                 {
+                    // if we did do a backup, we need to copy in all the settings files we skipped so the backup is complete.
+                    // this is needed since we might use the backup on another machine/
                     var relativePath = currentFile.Value.path.Substring(appBasePath.Length + 1);
                     var backupFullPath = Path.Combine(fullBackupDir, relativePath);
 
-                    if (!Directory.Exists(fullBackupDir))
-                    {
-                        Directory.CreateDirectory(fullBackupDir);
-                    }
-
-                    if (!Directory.Exists(Path.GetDirectoryName(backupFullPath)))
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(backupFullPath));
-                    }
+                    TryCreateDirectory(fullBackupDir);
+                    TryCreateDirectory(Path.GetDirectoryName(backupFullPath));
 
                     Logger.LogInfo($"BackupSettings writing, {backupFullPath}.");
                     File.WriteAllText(backupFullPath, currentFile.Value.settings);
@@ -575,25 +601,15 @@ namespace Settings.UI.Library
                 };
 
                 var manifest = JsonSerializer.Serialize(manifestData, new JsonSerializerOptions() { WriteIndented = true });
-
                 File.WriteAllText(Path.Combine(fullBackupDir, "manifest.json"), manifest);
 
+                // clean up, to prevent runaway disk usage.
                 RemoveOldBackups(settingsBackupAndRestoreDir, 10, TimeSpan.FromDays(60));
 
-                if (enableZip)
-                {
-                    var zipName = Path.Combine(settingsBackupAndRestoreDir, Path.GetFileName(fullBackupDir) + ".ptb");
-                    ZipFile.CreateFromDirectory(fullBackupDir, zipName);
-
-                    try
-                    {
-                        Directory.Delete(fullBackupDir, true);
-                    }
-                    catch (Exception ex3)
-                    {
-                        Logger.LogError($"There was an error: {ex3.Message}", ex3);
-                    }
-                }
+                // compress the backup
+                var zipName = Path.Combine(settingsBackupAndRestoreDir, Path.GetFileName(fullBackupDir) + ".ptb");
+                ZipFile.CreateFromDirectory(fullBackupDir, zipName);
+                TryDeleteDirectory(fullBackupDir);
 
                 return (true, $"BackupAndRestore_BackupComplete");
             }

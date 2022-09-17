@@ -1,6 +1,5 @@
 {
-  "RestartAfterRestore": true,
-  "EnableZip": true,
+  "RestartAfterRestore": true,  
   "IncludeFiles": [
     "*Keyboard Manager\\default.json",
     "*settings.json",
