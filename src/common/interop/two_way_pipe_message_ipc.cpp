@@ -77,7 +77,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::end()
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstring message)
 {
-    // Adapted from https://docs.microsoft.com/en-us/windows/win32/ipc/named-pipe-client
+    // Adapted from https://learn.microsoft.com/windows/win32/ipc/named-pipe-client
     HANDLE output_pipe_handle;
     const wchar_t* message_send = message.c_str();
     BOOL fSuccess = FALSE;
@@ -161,7 +161,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::consume_output_queue_thread
 
 BOOL TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::GetLogonSID(HANDLE hToken, PSID* ppsid)
 {
-    // From https://docs.microsoft.com/en-us/previous-versions/aa446670(v=vs.85)
+    // From https://learn.microsoft.com/previous-versions/aa446670(v=vs.85)
     BOOL bSuccess = FALSE;
     DWORD dwIndex;
     DWORD dwLength = 0;
@@ -240,7 +240,7 @@ Cleanup:
 
 VOID TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::FreeLogonSID(PSID* ppsid)
 {
-    // From https://docs.microsoft.com/en-us/previous-versions/aa446670(v=vs.85)
+    // From https://learn.microsoft.com/previous-versions/aa446670(v=vs.85)
     HeapFree(GetProcessHeap(), 0, (LPVOID)*ppsid);
 }
 
@@ -397,7 +397,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(HAND
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HANDLE token)
 {
-    // Adapted from https://docs.microsoft.com/en-us/windows/win32/ipc/multithreaded-pipe-server
+    // Adapted from https://learn.microsoft.com/windows/win32/ipc/multithreaded-pipe-server
     const wchar_t* pipe_name = input_pipe_name.c_str();
     BOOL connected = FALSE;
     HANDLE connect_pipe_handle = INVALID_HANDLE_VALUE;
