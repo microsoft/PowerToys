@@ -1621,7 +1621,6 @@ pstr
 pstream
 pstrm
 psz
-PTB
 ptb
 ptc
 ptd
