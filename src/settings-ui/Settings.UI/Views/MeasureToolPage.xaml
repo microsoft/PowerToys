@@ -43,7 +43,7 @@
                             <ToggleSwitch IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    <muxc:InfoBar
+                    <InfoBar
                         Severity="Warning"
                         x:Uid="MeasureTool_ContinuousCapture_Information"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
