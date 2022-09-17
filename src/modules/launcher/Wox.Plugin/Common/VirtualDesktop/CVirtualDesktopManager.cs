@@ -8,7 +8,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Interop
 {
     /// <summary>
     /// Virtual Desktop Manager class
-    /// Code used from <see href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10"./>
+    /// Code used from <see href="https://learn.microsoft.com/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10"./>
     /// </summary>
     [ComImport]
     [Guid("aa509086-5ca9-4c25-8f95-589d3c07b48a")]

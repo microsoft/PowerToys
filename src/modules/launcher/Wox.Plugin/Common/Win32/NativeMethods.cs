@@ -205,7 +205,7 @@ namespace Wox.Plugin.Common.Win32
     }
 
     /// <remarks>
-    /// <see href="https://docs.microsoft.com/windows/win32/api/winnt/ne-winnt-firmware_type">see docs.microsoft.com</see>
+    /// <see href="https://learn.microsoft.com/windows/win32/api/winnt/ne-winnt-firmware_type">see learn.microsoft.com</see>
     /// </remarks>
     public enum FirmwareType
     {
@@ -216,7 +216,7 @@ namespace Wox.Plugin.Common.Win32
     }
 
     /// <summary>
-    /// <see href="https://docs.microsoft.com/windows/win32/stg/stgm-constants">see all STGM values</see>
+    /// <see href="https://learn.microsoft.com/windows/win32/stg/stgm-constants">see all STGM values</see>
     /// </summary>
     [Flags]
     public enum STGM : long
