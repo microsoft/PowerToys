@@ -20,6 +20,6 @@ To capture a trace for the PowerToys provider, run the following:
 Open the trace.etl file in WPA.
 
 ## Additional Resources
-[Tracelogging on MSDN](https://docs.microsoft.com/en-us/windows/win32/tracelogging/trace-logging-portal)
+[Tracelogging on Microsoft Learn](https://learn.microsoft.com/windows/win32/tracelogging/trace-logging-portal)
 
-[Recording and Viewing Events](https://docs.microsoft.com/en-us/windows/win32/tracelogging/tracelogging-record-and-display-tracelogging-events)
+[Recording and Viewing Events](https://learn.microsoft.com/windows/win32/tracelogging/tracelogging-record-and-display-tracelogging-events)
