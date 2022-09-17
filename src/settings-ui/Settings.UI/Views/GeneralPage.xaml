@@ -246,7 +246,7 @@
                                 <StackPanel Orientation="Horizontal">
                                     <muxc:TextBox                                                  
                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"   
-                                        MaxWidth="300"
+                                        MaxWidth="600"
                                         MinWidth="300"
                                         IsEnabled="True"
                                         IsReadOnly="True"                                        
@@ -261,11 +261,77 @@
 
                                 <StackPanel Orientation="Vertical">
 
-                                    <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                    <Grid Padding="10,10,10,10">
+                                        <Grid.Resources >
+                                            <Style TargetType="Border" >
+                                                <!--Left,Top,Right,Bottom-->
+                                                <Setter Property="Padding" Value="0,0,5,0" />
+                                            </Style>
+                                        </Grid.Resources>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <!--<ColumnDefinition Width="Auto" />-->
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="1*" />
+                                            <RowDefinition Height="1*" />
+                                            <RowDefinition Height="1*" />
+                                        </Grid.RowDefinitions>
+
+                                        <Border Grid.Row="0" Grid.Column="0">
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run x:Uid="General_LastSettingsBackupDate" />
+                                            </TextBlock>
+                                        </Border>
+
+                                        <Border Grid.Row="0" Grid.Column="1">
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsBackupDate, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </Border>
+
+                                        <Border Grid.Row="1" Grid.Column="0">
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run x:Uid="General_LastSettingsRestoreDate" />
+                                            </TextBlock>
+                                        </Border>
+
+                                        <Border Grid.Row="1" Grid.Column="1">
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsRestoreDate, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </Border>
+
+
+                                        <Border Grid.Row="2" Grid.Column="0">
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run x:Uid="General_LastSettingsBackupSource" />
+                                            </TextBlock>
+                                        </Border>
+
+                                        <Border Grid.Row="2" Grid.Column="1">
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsBackupSource, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </Border>
+                                        
+
+                                        <!--<Button Grid.Column="2">Button 3x</Button>
+                                        <Button Grid.Row="1">Button 4</Button>
+                                        <Button Grid.Column="1" Grid.Row="1">Button 5</Button>
+                                        <Button Grid.Column="2" Grid.Row="1">Button 6</Button>
+                                        <Button Grid.Row="2">Button 7</Button>
+                                        <Button Grid.Column="1" Grid.Row="2">Button 8</Button>
+                                        <Button Grid.Column="2" Grid.Row="2">Button 9</Button>-->
+                                        
+                                    </Grid>
+
+                                    <!--<TextBlock Style="{StaticResource SecondaryTextStyle}">
                                         <Run x:Uid="General_LastSettingsBackupDate" />
                                         <Run Text="{Binding LastSettingsBackupDate, Mode=OneWay}"/>
                                     </TextBlock>
-                                    
+
                                     <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                         <Run x:Uid="General_LastSettingsRestoreDate" />
                                         <Run Text="{Binding LastSettingsRestoreDate, Mode=OneWay}"/>
@@ -274,7 +340,7 @@
                                     <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                         <Run x:Uid="General_LastSettingsBackupSource" />
                                         <Run Text="{Binding LastSettingsBackupSource, Mode=OneWay}"/>
-                                    </TextBlock>
+                                    </TextBlock>-->
 
 
 
@@ -283,8 +349,41 @@
                         </controls:Setting.Description>
 
                         <controls:Setting.ActionContent>
-                            <StackPanel Orientation="Vertical">
-                                <Button x:Uid="GeneralPage_BackupConfigs"
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="1*" />
+                                    <!--<ColumnDefinition Width="1*" />-->
+                                </Grid.ColumnDefinitions>
+                                <!--<Grid.RowDefinitions>
+                                    <RowDefinition Height="2*" />
+                                    <RowDefinition Height="1*" />
+                                    <RowDefinition Height="1*" />
+                                </Grid.RowDefinitions>-->
+                                <Button Grid.Column="0" x:Uid="GeneralPage_BackupConfigs"
+                                        Command="{Binding BackupConfigsEventHandler}"
+                                        IsEnabled="True"
+                                        Visibility="Visible"
+                                        HorizontalAlignment="Right"/>
+
+                                <Button Grid.Column="2" x:Uid="GeneralPage_RestoreConfigs"
+                                        Command="{Binding RestoreConfigsEventHandler}"
+                                        IsEnabled="True"
+                                        Visibility="Visible"
+                                        HorizontalAlignment="Right"/>
+
+                                <!--<Button Grid.Column="2">Button 2</Button>-->
+
+                                <!--<Button Grid.Row="1">Button 4</Button>
+                                <Button Grid.Column="1" Grid.Row="1">Button 5</Button>
+                                <Button Grid.Column="2" Grid.Row="1">Button 6</Button>
+                                <Button Grid.Row="2">Button 7</Button>
+                                <Button Grid.Column="1" Grid.Row="2">Button 8</Button>
+                                <Button Grid.Column="2" Grid.Row="2">Button 9</Button>-->
+                            </Grid>
+
+                            <!--<StackPanel Orientation="Vertical">
+                                <Button Grid.Column="0" x:Uid="GeneralPage_BackupConfigs"
                                         Command="{Binding BackupConfigsEventHandler}"
                                         IsEnabled="True"
                                         Visibility="Visible"
@@ -296,10 +395,12 @@
                                         Visibility="Visible"
                                         HorizontalAlignment="Right"/>
 
-                                <!--<Button x:Uid="GeneralPage_RestartAsAdmin_Button"
+                                -->
+                            <!--<Button x:Uid="GeneralPage_RestartAsAdmin_Button"
                                             Command = "{Binding RestartButtonEventHandler}"
                                             IsEnabled="True"/>-->
-                            </StackPanel>
+                            <!--
+                            </StackPanel>-->
 
                         </controls:Setting.ActionContent>
 

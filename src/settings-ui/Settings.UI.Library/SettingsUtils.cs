@@ -142,16 +142,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return _settingsPath.GetSettingsPath(powertoy, fileName);
         }
 
-        public (bool success, string message) BackupSettings(string settingsBackupAndRestoreDir)
+        /// <summary>
+        /// Method <c>BackupSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.BackupSettings
+        /// </summary>
+        public static (bool success, string message) BackupSettings()
         {
-            var appBasePath = Path.GetDirectoryName(_settingsPath.GetSettingsPath(string.Empty, string.Empty));
+            var settingsUtils = new SettingsUtils();
+            var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
+            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
 
             return SettingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir);
         }
 
-        public (bool success, string message) RestoreSettings(string settingsBackupAndRestoreDir)
+        /// <summary>
+        /// Method <c>RestoreSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.RestoreSettings
+        /// </summary>
+        public static (bool success, string message) RestoreSettings()
         {
-            var appBasePath = Path.GetDirectoryName(_settingsPath.GetSettingsPath(string.Empty, string.Empty));
+            var settingsUtils = new SettingsUtils();
+            var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
+            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
 
             return SettingsBackupAndRestoreUtils.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
         }

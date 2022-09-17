@@ -649,13 +649,13 @@
     <value>Check for updates</value>
   </data>
   <data name="GeneralPage_BackupConfigs.Content" xml:space="preserve">
-    <value>Backup Settings Now</value>
+    <value>Backup</value>
   </data>
   <data name="GeneralPage_RestoreConfigs.Content" xml:space="preserve">
-    <value>Restore settings and restart</value>
+    <value>Restore</value>
   </data>
   <data name="GeneralPage_SettingsBackupLocationSelect.Content" xml:space="preserve">
-    <value>Select...</value>
+    <value>Browse</value>
   </data>
   <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
     <value>Update now</value>
@@ -1067,13 +1067,13 @@
     <value>Last checked: </value>
   </data>
   <data name="General_LastSettingsBackupDate.Text" xml:space="preserve">
-    <value>Last backed up: </value>
+    <value>Last backed up at:</value>
   </data>
   <data name="General_LastSettingsRestoreDate.Text" xml:space="preserve">
-    <value>Last restored: </value>
+    <value>Last restored at:</value>
   </data>
   <data name="General_LastSettingsBackupSource.Text" xml:space="preserve">
-    <value>Last source: </value>
+    <value>Backup source:</value>
   </data>
   <data name="General_Version.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>
@@ -2389,6 +2389,12 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="BackupAndRestore_NothingToBackup" xml:space="preserve">
     <value>Nothing to backup, no settings have been changed since last backup.</value>
+  </data>
+  <data name="BackupAndRestore_NoBackupFound" xml:space="preserve">
+    <value>No backup found</value>
+  </data>
+  <data name="BackupAndRestore_NeverRestored" xml:space="preserve">
+    <value>Never restored</value>
   </data>
   <data name="BackupAndRestore_NothingToRestore" xml:space="preserve">
     <value>Nothing to restore.</value>

@@ -159,9 +159,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _isNewVersionChecked;
 
         private bool _settingsBackupWasSuccessful;
-        private bool _settingsBackupWasUnsuccessful;
         private string _settingsBackupMessage;
-        private string _settingsBackupRestoreInfo;
 
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
@@ -385,7 +383,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     {
                         if (DateTime.TryParse(manifest["CreateDateTime"].ToString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var theDateTime))
                         {
-                            return theDateTime.ToString(CultureInfo.InvariantCulture);
+                            return theDateTime.ToString("G", CultureInfo.CurrentCulture);
                         }
                         else
                         {
@@ -399,7 +397,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 }
                 else
                 {
-                    return "No backup found";
+                    return GetResourceString("BackupAndRestore_NoBackupFound");
                 }
             }
         }
@@ -422,7 +420,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 }
                 else
                 {
-                    return "No backup found";
+                    return GetResourceString("BackupAndRestore_NoBackupFound");
                 }
             }
         }
@@ -436,7 +434,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     if (DateTime.TryParse(date, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var theDateTime))
                     {
-                        return theDateTime.ToString(CultureInfo.InvariantCulture);
+                        return theDateTime.ToString("G", CultureInfo.CurrentCulture);
                     }
                     else
                     {
@@ -445,7 +443,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 }
                 else
                 {
-                    return "Never restored";
+                    return GetResourceString("BackupAndRestore_NeverRestored");
                 }
             }
         }
@@ -530,7 +528,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return _settingsBackupWasUnsuccessful;
+                return !_settingsBackupWasSuccessful;
             }
         }
 
@@ -547,14 +545,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get
             {
                 return _settingsBackupMessage;
-            }
-        }
-
-        public string SettingsBackupRestoreInfo
-        {
-            get
-            {
-                return _settingsBackupRestoreInfo;
             }
         }
 
@@ -575,6 +565,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SendConfigMSG(outsettings.ToString());
         }
 
+        /// <summary>
+        /// Class <c>SelectSettingBackupDir</c> opens folder browwer to select a backup and retore location.
+        /// </summary>
         private void SelectSettingBackupDir()
         {
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
@@ -598,15 +591,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        /// <summary>
+        /// Class <c>RestoreConfigsClick</c> starts the restore.
+        /// </summary>
         private void RestoreConfigsClick()
         {
-            var results = new SettingsUtils().RestoreSettings(SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir"));
+            var results = SettingsUtils.RestoreSettings();
 
             if (!results.success)
             {
                 _settingsBackupWasSuccessful = results.success;
-                _settingsBackupMessage = GetResourceString(results.message);
-                _settingsBackupWasUnsuccessful = !_settingsBackupWasSuccessful;
                 _settingsBackupMessage = GetResourceString(results.message);
 
                 NotifyPropertyChanged(nameof(SettingsBackupMessage));
@@ -625,13 +619,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        /// <summary>
+        /// Class <c>BackupConfigsClick</c> starts the backup.
+        /// </summary>
         private void BackupConfigsClick()
         {
-            var results = new SettingsUtils().BackupSettings(SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir"));
+            var results = SettingsUtils.BackupSettings();
 
             _settingsBackupWasSuccessful = results.success;
-            _settingsBackupMessage = GetResourceString(results.message);
-            _settingsBackupWasUnsuccessful = !_settingsBackupWasSuccessful;
             _settingsBackupMessage = GetResourceString(results.message);
 
             NotifyPropertyChanged(nameof(LastSettingsBackupDate));
@@ -640,24 +635,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
             NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
 
-            if (_settingsBackupWasSuccessful)
-            {
-                _settingsBackupRestoreInfo = "GOOD";
-            }
-            else
-            {
-                _settingsBackupRestoreInfo = "BAD";
-            }
-
-            NotifyPropertyChanged(nameof(SettingsBackupRestoreInfo));
-
             HideBackupAndRestoreMessageAreaAction();
         }
 
         private void HideBackupAndRestoreMessage()
         {
             _settingsBackupWasSuccessful = false;
-            _settingsBackupWasUnsuccessful = false;
             NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
             NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));
         }
@@ -691,6 +674,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             Process.Start(new ProcessStartInfo(Helper.GetPowerToysInstallationFolder() + "\\PowerToys.exe") { Arguments = "powertoys://update_now/" });
         }
 
+        /// <summary>
+        /// Class <c>GetResourceString</c> gets a localized text.
+        /// </summary>
+        /// <remarks>
+        /// To do: see if there is a betting way to do this, there should be. It does allow us to return missing localization in a way that makes it obvious they were missed.
+        /// </remarks>
         public string GetResourceString(string resource)
         {
             if (ResourceLoader != null)
@@ -735,6 +724,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SendRestartAsAdminConfigMSG(customaction.ToString());
         }
 
+        /// <summary>
+        /// Class <c>Restart</c> begin a restart and signal we want to maintain elevation
+        /// </summary>
+        /// <remarks>
+        /// Other restarts either raised or lowered elevation
+        /// </remarks>
         public void Restart()
         {
             GeneralSettingsConfig.CustomActionName = "restart_maintain_elevation";
@@ -747,10 +742,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SendRestartAsAdminConfigMSG(dataToSend);
         }
 
+        /// <summary>
+        /// Class <c>HideBackupAndRestoreMessageArea</c> hides the backup/restore message area
+        /// </summary>
+        /// <remarks>
+        /// We want to have it go away after a short period.
+        /// </remarks>
         public void HideBackupAndRestoreMessageArea()
         {
             _settingsBackupWasSuccessful = false;
-            _settingsBackupWasUnsuccessful = false;
 
             NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
             NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));

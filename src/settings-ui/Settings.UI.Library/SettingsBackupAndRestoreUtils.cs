@@ -23,7 +23,8 @@ namespace Settings.UI.Library
     {
         private class JsonMergeHelper
         {
-            // code from https://stackoverflow.com/questions/58694837/system-text-json-merge-two-objects
+            // mostly from https://stackoverflow.com/questions/58694837/system-text-json-merge-two-objects
+            // but with some update to prevent array item duplicates
             public static string Merge(string originalJson, string newContent)
             {
                 var outputBuffer = new ArrayBufferWriter<byte>();
@@ -151,6 +152,9 @@ namespace Settings.UI.Library
             }
         }
 
+        /// <summary>
+        /// Method <c>SetRegSettingsBackupAndRestoreItem</c> helper method to write to the registry.
+        /// </summary>
         public static void SetRegSettingsBackupAndRestoreItem(string itemName, string itemValue)
         {
             using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\PowerToys", true))
@@ -162,6 +166,9 @@ namespace Settings.UI.Library
             }
         }
 
+        /// <summary>
+        /// Method <c>GetRegSettingsBackupAndRestoreRegItem</c> helper method to read from the registry.
+        /// </summary>
         public static string GetRegSettingsBackupAndRestoreRegItem(string itemName)
         {
             using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\PowerToys"))
@@ -179,6 +186,13 @@ namespace Settings.UI.Library
             return null;
         }
 
+        /// <summary>
+        /// Method <c>RestoreSettings</c> returns a folder that has the latest backup in it.
+        /// </summary>
+        /// <returns>
+        /// A tuple that indicates if the backup was done or not, and a message.
+        /// The message usually is a localized reference key.
+        /// </returns>
         public static (bool success, string message) RestoreSettings(string appBasePath, string settingsBackupAndRestoreDir)
         {
             try
@@ -275,11 +289,22 @@ namespace Settings.UI.Library
             }
         }
 
+        /// <summary>
+        /// Method <c>GetLatestSettingsFolder</c> returns a folder that has the latest backup in it.
+        /// </summary>
+        /// <remarks>
+        /// The backup will usually be a backup file that has to be extraced to a temp folder. This will do that for us.
+        /// </remarks>
         private static string GetLatestSettingsFolder()
         {
             string settingsBackupAndRestoreDir = GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
 
             if (settingsBackupAndRestoreDir == null)
+            {
+                return null;
+            }
+
+            if (!Directory.Exists(settingsBackupAndRestoreDir))
             {
                 return null;
             }
@@ -335,6 +360,9 @@ namespace Settings.UI.Library
             }
         }
 
+        /// <summary>
+        /// Method <c>GetLatestSettingsBackupManifest</c> get's the meta data from a backup file.
+        /// </summary>
         public static JsonNode GetLatestSettingsBackupManifest()
         {
             var folder = GetLatestSettingsFolder();
@@ -346,6 +374,9 @@ namespace Settings.UI.Library
             return JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "manifest.json")));
         }
 
+        /// <summary>
+        /// Method <c>IsIncludeFile</c> check's to see if a settings file is to be included during backup and restore.
+        /// </summary>
         private static bool IsIncludeFile(JsonNode settings, string name)
         {
             foreach (var test in (JsonArray)settings["IncludeFiles"])
@@ -359,6 +390,9 @@ namespace Settings.UI.Library
             return false;
         }
 
+        /// <summary>
+        /// Method <c>IsIgnoreFile</c> check's to see if a settings file is to be ignored during backup and restore.
+        /// </summary>
         private static bool IsIgnoreFile(JsonNode settings, string name)
         {
             foreach (var test in (JsonArray)settings["IgnoreFiles"])
@@ -377,6 +411,13 @@ namespace Settings.UI.Library
             return Directory.GetFiles(path, "*.json", SearchOption.AllDirectories).Where(s => IsIncludeFile(settings, s) && !IsIgnoreFile(settings, s)).ToArray();
         }
 
+        /// <summary>
+        /// Method <c>BackupSettings</c> does the backup process.
+        /// </summary>
+        /// <returns>
+        /// A tuple that indicates if the backup was done or not, and a message.
+        /// The message usually is a localized reference key.
+        /// </returns>
         public static (bool success, string message) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir)
         {
             try
@@ -563,11 +604,18 @@ namespace Settings.UI.Library
             }
         }
 
+        /// <summary>
+        /// Method <c>WildCardToRegular</c> is so we can use 'normal' wildcard syntax and instead of regex
+        /// </summary>
         private static string WildCardToRegular(string value)
         {
             return "^" + Regex.Escape(value).Replace("\\*", ".*") + "$";
         }
 
+        /// <summary>
+        /// Method <c>GetExportVersion</c> gets the version of the settings file that we want to backup.
+        /// It will be formatted and all problamatic settings removed from it.
+        /// </summary>
         public static string GetExportVersion(JsonNode backupRetoreSettings, string settingFileKey, string settingsFileName)
         {
             var ignoredSettings = GetIgnoredSettings(backupRetoreSettings, settingFileKey);
@@ -617,6 +665,9 @@ namespace Settings.UI.Library
             }
         }
 
+        /// <summary>
+        /// Method <c>GetPTRunIgnoredSettings</c> gets the 'Run-Plugin-level' settings we should ignore because they are problamatic to backup/restore.
+        /// </summary>
         private static JsonArray GetPTRunIgnoredSettings(JsonNode backupRetoreSettings)
         {
             if (backupRetoreSettings == null)
@@ -632,6 +683,9 @@ namespace Settings.UI.Library
             return new JsonArray();
         }
 
+        /// <summary>
+        /// Method <c>GetIgnoredSettings</c> gets the 'top-level' settings we should ignore because they are problamatic to backup/restore.
+        /// </summary>
         private static string[] GetIgnoredSettings(JsonNode backupRetoreSettings, string settingFileKey)
         {
             if (backupRetoreSettings == null)
@@ -670,33 +724,9 @@ namespace Settings.UI.Library
             return Array.Empty<string>();
         }
 
-        private static class ChecksumUtil
-        {
-            public static string GetFileChecksum(string filename)
-            {
-                using (var hasher = System.Security.Cryptography.HashAlgorithm.Create("SHA256"))
-                {
-                    using (var stream = System.IO.File.OpenRead(filename))
-                    {
-                        var hash = hasher.ComputeHash(stream);
-                        return BitConverter.ToString(hash);
-                    }
-                }
-            }
-
-            public static string GetStringChecksum(string s)
-            {
-                using var hasher = System.Security.Cryptography.HashAlgorithm.Create("SHA256");
-                using var stream = new MemoryStream();
-                using var writer = new StreamWriter(stream);
-                writer.Write(s);
-                writer.Flush();
-                stream.Position = 0;
-                var hash = hasher.ComputeHash(stream);
-                return BitConverter.ToString(hash);
-            }
-        }
-
+        /// <summary>
+        /// Method <c>RemoveOldBackups</c> is a helper that prevents is from having some runaway disk usages.
+        /// </summary>
         private static void RemoveOldBackups(string location, int minNumberToKeep, TimeSpan deleteIfOlderThanTs)
         {
             DateTime deleteIfOlder = DateTime.UtcNow.Subtract(deleteIfOlderThanTs);
@@ -749,6 +779,10 @@ namespace Settings.UI.Library
             }
         }
 
+        /// <summary>
+        /// Class <c>JsonNormalizer</c> is a utility class to 'normalize' a JSON file so that it can be compared to another JSON file.
+        /// This really just means to fully sort it. This does not work for any JSON file where the order of the node is relevant.
+        /// </summary>
         private class JsonNormalizer
         {
             public static string Normalize(string json)
