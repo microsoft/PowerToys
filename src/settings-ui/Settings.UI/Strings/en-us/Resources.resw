@@ -2430,4 +2430,16 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Launch</value>
   </data>
+  <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
+    <value>Additional lines position</value>
+  </data>
+  <data name="Hosts_AdditionalLinesPosition_Bottom.Content" xml:space="preserve">
+    <value>Bottom</value>
+  </data>
+  <data name="Hosts_AdditionalLinesPosition_Top.Content" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="Hosts_File_GroupSettings.Header" xml:space="preserve">
+    <value>File</value>
+  </data>
 </root>

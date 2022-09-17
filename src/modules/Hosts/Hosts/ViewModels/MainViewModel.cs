@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -20,7 +19,6 @@ namespace Hosts.ViewModels
 {
     public partial class MainViewModel : ObservableObject, IDisposable
     {
-        private readonly IFileSystem _fileSystem;
         private readonly IHostsService _hostsService;
         private readonly IUserSettings _userSettings;
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
@@ -97,11 +95,9 @@ namespace Hosts.ViewModels
         public ICommand ClearFiltersCommand => new RelayCommand(ClearFilters);
 
         public MainViewModel(
-            IFileSystem fileSystem,
             IHostsService hostService,
             IUserSettings userSettings)
         {
-            _fileSystem = fileSystem;
             _hostsService = hostService;
             _userSettings = userSettings;
 

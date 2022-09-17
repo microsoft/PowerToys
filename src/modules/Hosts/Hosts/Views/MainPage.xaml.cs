@@ -162,11 +162,11 @@ namespace Hosts.Views
                 dialog.Title = resourceLoader.GetString("Warning");
                 dialog.Content = new TextBlock
                 {
-                    Text = resourceLoader.GetString("WarningMessage"),
+                    Text = resourceLoader.GetString("WarningDialog_Text"),
                     TextWrapping = TextWrapping.Wrap,
                 };
-                dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
-                dialog.CloseButtonText = resourceLoader.GetString("No");
+                dialog.PrimaryButtonText = resourceLoader.GetString("WarningDialog_Accept");
+                dialog.CloseButtonText = resourceLoader.GetString("WarningDialog_Quit");
                 dialog.CloseButtonCommand = ExitCommand;
 
                 await dialog.ShowAsync();

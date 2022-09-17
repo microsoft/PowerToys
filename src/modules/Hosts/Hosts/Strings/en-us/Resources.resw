@@ -192,9 +192,6 @@
   <data name="HostsFilter.Header" xml:space="preserve">
     <value>Hosts</value>
   </data>
-  <data name="No" xml:space="preserve">
-    <value>No</value>
-  </data>
   <data name="Ping.Text" xml:space="preserve">
     <value>Ping</value>
   </data>
@@ -210,10 +207,13 @@
   <data name="Warning" xml:space="preserve">
     <value>Warning</value>
   </data>
-  <data name="WarningMessage" xml:space="preserve">
-    <value>Altering hosts file has direct real world impact of how this computer resolves domain names. Do you want to continue?</value>
+  <data name="WarningDialog_Accept" xml:space="preserve">
+    <value>Accept</value>
   </data>
-  <data name="Yes" xml:space="preserve">
-    <value>Yes</value>
+  <data name="WarningDialog_Quit" xml:space="preserve">
+    <value>Quit</value>
+  </data>
+  <data name="WarningDialog_Text" xml:space="preserve">
+    <value>Altering hosts file has direct real world impact of how this computer resolves domain names.</value>
   </data>
 </root>

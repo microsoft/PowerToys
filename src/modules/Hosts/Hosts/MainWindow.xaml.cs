@@ -4,6 +4,7 @@
 
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using WinUIEx;
 
 namespace Hosts
@@ -15,7 +16,14 @@ namespace Hosts
             InitializeComponent();
             Title = "Hosts File Editor";
 
-            // SetTitleBar();
+            if (AppWindowTitleBar.IsCustomizationSupported())
+            {
+                SetTitleBar();
+            }
+            else
+            {
+                titleBar.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void SetTitleBar()
@@ -23,7 +31,7 @@ namespace Hosts
             AppWindow window = this.GetAppWindow();
             window.TitleBar.ExtendsContentIntoTitleBar = true;
             window.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-            this.SetTitleBar(titleBar);
+            SetTitleBar(titleBar);
         }
     }
 }

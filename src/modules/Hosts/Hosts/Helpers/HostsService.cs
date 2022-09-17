@@ -13,6 +13,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Hosts.Models;
+using Hosts.Settings;
+using Settings.UI.Library.Enumerations;
 
 namespace Hosts.Helpers
 {
@@ -20,6 +22,7 @@ namespace Hosts.Helpers
     {
         private static SemaphoreSlim _asyncLock = new SemaphoreSlim(1, 1);
         private readonly IFileSystem _fileSystem;
+        private readonly IUserSettings _userSettings;
         private readonly IFileSystemWatcher _fileSystemWatcher;
         private bool _backupDone;
         private bool _disposed;
@@ -30,9 +33,12 @@ namespace Hosts.Helpers
 
         public event EventHandler FileChanged;
 
-        public HostsService(IFileSystem fileSystem)
+        public HostsService(
+            IFileSystem fileSystem,
+            IUserSettings userSettings)
         {
             _fileSystem = fileSystem;
+            _userSettings = userSettings;
 
             _fileSystemWatcher = _fileSystem.FileSystemWatcher.CreateNew();
             _fileSystemWatcher.Path = _fileSystem.Path.GetDirectoryName(HostsFilePath);
@@ -88,7 +94,7 @@ namespace Hosts.Helpers
             return (unparsedBuilder.ToString(), entries);
         }
 
-        public async Task<bool> WriteAsync(string header, IEnumerable<Entry> entries)
+        public async Task<bool> WriteAsync(string additionalLines, IEnumerable<Entry> entries)
         {
             var lines = new List<string>();
 
@@ -97,11 +103,6 @@ namespace Hosts.Helpers
                 var addressPadding = entries.Max(e => e.Address.Length) + 1;
                 var hostsPadding = entries.Max(e => e.Hosts.Length) + 1;
                 var anyDisabled = entries.Any(e => !e.Active);
-
-                if (!string.IsNullOrWhiteSpace(header))
-                {
-                    lines.Add(header);
-                }
 
                 foreach (var e in entries)
                 {
@@ -115,11 +116,11 @@ namespace Hosts.Helpers
                     {
                         if (!e.Active)
                         {
-                            lineBuilder.Append("# ");
+                            lineBuilder.Append('#').Append(' ');
                         }
                         else if (anyDisabled)
                         {
-                            lineBuilder.Append("  ");
+                            lineBuilder.Append(' ').Append(' ');
                         }
 
                         lineBuilder.Append(e.Address.PadRight(addressPadding));
@@ -127,11 +128,23 @@ namespace Hosts.Helpers
 
                         if (e.Comment != string.Empty)
                         {
-                            lineBuilder.Append("# ");
+                            lineBuilder.Append('#').Append(' ');
                             lineBuilder.Append(e.Comment);
                         }
 
                         lines.Add(lineBuilder.ToString().TrimEnd());
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(additionalLines))
+                {
+                    if (_userSettings.AdditionalLinesPosition == AdditionalLinesPosition.Top)
+                    {
+                        lines.Insert(0, additionalLines);
+                    }
+                    else if (_userSettings.AdditionalLinesPosition == AdditionalLinesPosition.Bottom)
+                    {
+                        lines.Add(additionalLines);
                     }
                 }
             }

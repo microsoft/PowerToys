@@ -6,7 +6,7 @@
     <IsPackable>false</IsPackable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\Hosts.Tests\</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\Hosts\Hosts.Tests\</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
     <RootNamespace>Hosts.Tests</RootNamespace>
     <AssemblyName>PowerToys.Hosts.Tests</AssemblyName>
@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+    <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />

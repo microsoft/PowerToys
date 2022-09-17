@@ -8,6 +8,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Settings.UI.Library.Enumerations;
 
 namespace Settings.UI.Library.ViewModels
 {
@@ -43,16 +44,25 @@ namespace Settings.UI.Library.ViewModels
 
         public bool ShowStartupWarning
         {
-            get
-            {
-                return Settings.Properties.ShowStartupWarning;
-            }
-
+            get => Settings.Properties.ShowStartupWarning;
             set
             {
                 if (value != Settings.Properties.ShowStartupWarning)
                 {
                     Settings.Properties.ShowStartupWarning = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int AdditionalLinesPosition
+        {
+            get => (int)Settings.Properties.AdditionalLinesPosition;
+            set
+            {
+                if (value != (int)Settings.Properties.AdditionalLinesPosition)
+                {
+                    Settings.Properties.AdditionalLinesPosition = (AdditionalLinesPosition)value;
                     NotifyPropertyChanged();
                 }
             }

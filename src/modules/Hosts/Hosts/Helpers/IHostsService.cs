@@ -19,7 +19,7 @@ namespace Hosts.Helpers
 
         Task<(string Unparsed, List<Entry> Entries)> ReadAsync();
 
-        Task<bool> WriteAsync(string header, IEnumerable<Entry> entries);
+        Task<bool> WriteAsync(string additionalLines, IEnumerable<Entry> entries);
 
         Task<bool> PingAsync(string address);
     }

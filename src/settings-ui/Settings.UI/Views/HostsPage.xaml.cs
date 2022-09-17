@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class HostsPage : Page
     {
-        private HostsViewModel ViewModel { get; set; }
+        private HostsViewModel ViewModel { get; }
 
         public HostsPage()
         {
