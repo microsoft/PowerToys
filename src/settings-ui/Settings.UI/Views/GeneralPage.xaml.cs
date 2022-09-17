@@ -4,7 +4,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
