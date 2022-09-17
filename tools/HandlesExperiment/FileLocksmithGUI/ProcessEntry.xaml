@@ -7,11 +7,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal">
+    <StackPanel Orientation="Horizontal" Width="720">
         <BitmapIcon Name="processIcon"></BitmapIcon>
-        <StackPanel Orientation="Vertical">
-            <TextBlock Margin="4" FontSize="28" Name="processName"/>
-            <Grid Width="400">
+        <StackPanel Orientation="Vertical" Width="600">
+            <TextBlock Margin="4" FontSize="28" Name="processName" MaxWidth="600"/>
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="0.5*"/>
                     <ColumnDefinition Width="0.5*"/>
