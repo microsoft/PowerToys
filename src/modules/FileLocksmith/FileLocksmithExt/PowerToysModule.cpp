@@ -7,6 +7,7 @@
 #include <common/utils/logger_helper.h>
 
 #include "Constants.h"
+#include "dllmain.h"
 
 class FileLocksmithModule : public PowertoyModuleIface
 {
@@ -69,16 +70,14 @@ public:
     {
         Logger::info(L"File Locksmith enabled");
         m_enabled = true;
-        // TODO
-        // save_settings();
+        globals::enabled = true;
     }
 
     virtual void disable() override
     {
         Logger::info(L"File Locksmith disabled");
         m_enabled = false;
-        // TODO
-        // save_settings();
+        globals::enabled = false;
     }
 
     virtual bool is_enabled() override

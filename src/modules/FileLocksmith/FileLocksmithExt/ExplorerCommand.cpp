@@ -60,17 +60,19 @@ IFACEMETHODIMP ExplorerCommand::GetCanonicalName(GUID* pguidCommandName)
 
 IFACEMETHODIMP ExplorerCommand::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
 {
-    // This should depend on the settings
-    // For now we'll just keep it always enabled.
-    *pCmdState = ECS_ENABLED;
+    if (globals::enabled)
+    {
+        *pCmdState = ECS_ENABLED;
+    }
+    else
+    {
+        *pCmdState = ECS_HIDDEN;
+    }
     return S_OK;
 }
 
 IFACEMETHODIMP ExplorerCommand::Invoke(IShellItemArray* psiItemArray, IBindCtx* pbc)
 {
-    // This should call the main exe.
-    // For now we'll just show a message box.
-    MessageBoxW(NULL, L"OK", L"OK", MB_OK);
     return S_OK;
 }
 
