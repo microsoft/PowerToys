@@ -121,6 +121,14 @@
                         </Flyout>
                     </Button.Flyout>
                 </Button>
+
+                <Button x:Uid="SettingsBtn"
+                        Height="36"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        Command="{x:Bind ViewModel.OpenSettingsCommand}">
+                    <TextBlock FontFamily="{StaticResource SymbolThemeFontFamily}" Text="&#xe713;" />
+                </Button>
             </StackPanel>
         </Grid>
 

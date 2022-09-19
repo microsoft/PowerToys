@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
@@ -93,6 +94,8 @@ namespace Hosts.ViewModels
         public ICommand ApplyFiltersCommand => new RelayCommand(ApplyFilters);
 
         public ICommand ClearFiltersCommand => new RelayCommand(ClearFilters);
+
+        public ICommand OpenSettingsCommand => new RelayCommand(OpenSettings);
 
         public MainViewModel(
             IHostsService hostService,
@@ -189,6 +192,11 @@ namespace Hosts.ViewModels
         public async Task PingSelectedAsync()
         {
             _selected.Ping = await _hostsService.PingAsync(_selected.Address);
+        }
+
+        public void OpenSettings()
+        {
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts);
         }
 
         public void Dispose()

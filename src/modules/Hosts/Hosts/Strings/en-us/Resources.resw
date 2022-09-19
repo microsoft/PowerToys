@@ -198,6 +198,9 @@
   <data name="Reload.Content" xml:space="preserve">
     <value>Reload</value>
   </data>
+  <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings</value>
+  </data>
   <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>

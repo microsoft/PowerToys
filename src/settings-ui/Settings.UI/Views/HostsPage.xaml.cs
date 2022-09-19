@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -14,9 +14,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public HostsPage()
         {
+            InitializeComponent();
             var settingsUtils = new SettingsUtils();
             ViewModel = new HostsViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<HostsSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
-            InitializeComponent();
         }
     }
 }

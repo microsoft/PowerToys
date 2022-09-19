@@ -12,6 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         ColorPicker,
         FancyZones,
         FileExplorer,
+        Hosts,
         ImageResizer,
         KBM,
         MouseUtils,
