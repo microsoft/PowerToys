@@ -23,6 +23,7 @@ namespace Hosts.Helpers
         private static SemaphoreSlim _asyncLock = new SemaphoreSlim(1, 1);
         private readonly IFileSystem _fileSystem;
         private readonly IUserSettings _userSettings;
+        private readonly IElevationHelper _elevationHelper;
         private readonly IFileSystemWatcher _fileSystemWatcher;
         private bool _backupDone;
         private bool _disposed;
@@ -35,10 +36,12 @@ namespace Hosts.Helpers
 
         public HostsService(
             IFileSystem fileSystem,
-            IUserSettings userSettings)
+            IUserSettings userSettings,
+            IElevationHelper elevationHelper)
         {
             _fileSystem = fileSystem;
             _userSettings = userSettings;
+            _elevationHelper = elevationHelper;
 
             _fileSystemWatcher = _fileSystem.FileSystemWatcher.CreateNew();
             _fileSystemWatcher.Path = _fileSystem.Path.GetDirectoryName(HostsFilePath);
@@ -96,6 +99,11 @@ namespace Hosts.Helpers
 
         public async Task<bool> WriteAsync(string additionalLines, IEnumerable<Entry> entries)
         {
+            if (!_elevationHelper.IsElevated)
+            {
+                return false;
+            }
+
             var lines = new List<string>();
 
             if (entries.Any())
@@ -162,8 +170,9 @@ namespace Hosts.Helpers
 
                 await _fileSystem.File.WriteAllLinesAsync(HostsFilePath, lines);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError("Failed to write hosts file", ex);
                 return false;
             }
             finally

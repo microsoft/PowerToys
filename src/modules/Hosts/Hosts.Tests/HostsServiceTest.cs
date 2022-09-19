@@ -18,6 +18,15 @@ namespace Hosts.Tests
     [TestClass]
     public class HostsServiceTest
     {
+        private static Mock<IElevationHelper> _elevationHelper;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext context)
+        {
+            _elevationHelper = new Mock<IElevationHelper>();
+            _elevationHelper.Setup(m => m.IsElevated).Returns(true);
+        }
+
         [TestMethod]
         public void Hosts_Exists()
         {
@@ -31,7 +40,7 @@ namespace Hosts.Tests
 
             var userSettings = new Mock<IUserSettings>();
 
-            var service = new HostsService(fileSystem, userSettings.Object);
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
             var result = service.Exists();
 
             Assert.IsTrue(result);
@@ -49,7 +58,7 @@ namespace Hosts.Tests
 
             var userSettings = new Mock<IUserSettings>();
 
-            var service = new HostsService(fileSystem, userSettings.Object);
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
             var result = service.Exists();
 
             Assert.IsFalse(result);
@@ -79,7 +88,7 @@ namespace Hosts.Tests
 
             var userSettings = new Mock<IUserSettings>();
 
-            var service = new HostsService(fileSystem, userSettings.Object);
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
 
             var (_, entries) = await service.ReadAsync();
             entries.Add(new Entry("10.1.1.30", "host30 host30.local", "new entry", false));
@@ -111,7 +120,7 @@ namespace Hosts.Tests
 
             var userSettings = new Mock<IUserSettings>();
 
-            var service = new HostsService(fileSystem, userSettings.Object);
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
 
             var (_, entries) = await service.ReadAsync();
             entries.RemoveAt(0);
@@ -144,7 +153,7 @@ namespace Hosts.Tests
 
             var userSettings = new Mock<IUserSettings>();
 
-            var service = new HostsService(fileSystem, userSettings.Object);
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
 
             var (_, entries) = await service.ReadAsync();
             var entry = entries[0];
@@ -171,7 +180,7 @@ namespace Hosts.Tests
 
             var userSettings = new Mock<IUserSettings>();
 
-            var service = new HostsService(fileSystem, userSettings.Object);
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
             await service.WriteAsync(string.Empty, Enumerable.Empty<Entry>());
 
             var result = fileSystem.GetFile(HostsService.HostsFilePath);
@@ -208,10 +217,10 @@ namespace Hosts.Tests
             var userSettings = new Mock<IUserSettings>();
             userSettings.Setup(m => m.AdditionalLinesPosition).Returns(AdditionalLinesPosition.Top);
 
-            var service = new HostsService(fileSystem, userSettings.Object);
+            var service = new Mock<HostsService>(fileSystem, userSettings.Object, _elevationHelper.Object);
 
-            var (additionalLines, entries) = await service.ReadAsync();
-            await service.WriteAsync(additionalLines, entries);
+            var (additionalLines, entries) = await service.Object.ReadAsync();
+            await service.Object.WriteAsync(additionalLines, entries);
 
             var result = fileSystem.GetFile(HostsService.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
@@ -247,7 +256,7 @@ namespace Hosts.Tests
             var userSettings = new Mock<IUserSettings>();
             userSettings.Setup(m => m.AdditionalLinesPosition).Returns(AdditionalLinesPosition.Bottom);
 
-            var service = new HostsService(fileSystem, userSettings.Object);
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
 
             var (additionalLines, entries) = await service.ReadAsync();
             await service.WriteAsync(additionalLines, entries);

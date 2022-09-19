@@ -52,6 +52,7 @@ namespace Hosts
                     services.AddSingleton<IFileSystem, FileSystem>();
                     services.AddSingleton<IHostsService, HostsService>();
                     services.AddSingleton<IUserSettings, UserSettings>();
+                    services.AddSingleton<IElevationHelper, ElevationHelper>();
 
                     // Views and ViewModels
                     services.AddTransient<MainPage>();
@@ -63,6 +64,12 @@ namespace Hosts
 
             new Thread(() =>
             {
+                // Delete old backups only if running elevated
+                if (!GetService<IElevationHelper>().IsElevated)
+                {
+                    return;
+                }
+
                 try
                 {
                     Directory.GetFiles(Path.GetDirectoryName(HostsService.HostsFilePath), $"*{HostsService.BackupSuffix}*")
@@ -71,8 +78,9 @@ namespace Hosts
                         .ToList()
                         .ForEach(f => f.Delete());
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Logger.LogError("Failed to delete backup", ex);
                 }
             }).Start();
         }
@@ -98,7 +106,7 @@ namespace Hosts
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            // TODO: Log and handle exceptions as appropriate.
+            Logger.LogError("Unhandled exception", e.Exception);
         }
     }
 }
