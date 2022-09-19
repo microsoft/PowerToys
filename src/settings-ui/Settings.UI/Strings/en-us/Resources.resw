@@ -2640,4 +2640,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Launch as administrator</value>
   </data>
+  <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
+    <value>Find out which processes are using the selected files and directories.</value>
+  </data>
+  <data name="FileLocksmith.ModuleTitle" xml:space="preserve">
+    <value>File Locksmith</value>
+  </data>
+  <data name="Shell_FileLocksmith.Content" xml:space="preserve">
+    <value>File Locksmith</value>
+    <comment>Product name: Navigation view item name for FileLocksmith</comment>
+  </data>
 </root>
