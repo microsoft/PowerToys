@@ -73,7 +73,7 @@
 
         <Chain>
             <ExePackage
-                DisplayName="Exiting PowerToys"
+                DisplayName="Closing PowerToys application"
                 Name="terminate_powertoys.cmd"
                 Cache="no"
                 Compressed="yes"
