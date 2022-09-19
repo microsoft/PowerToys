@@ -94,6 +94,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;FILELOCKSMITHEXT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>../../;../../../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -111,6 +112,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;FILELOCKSMITHEXT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>../../;../../../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -128,6 +130,7 @@
       <PreprocessorDefinitions>_DEBUG;FILELOCKSMITHEXT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>../../;../../../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -145,6 +148,7 @@
       <PreprocessorDefinitions>NDEBUG;FILELOCKSMITHLIB_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>../../;../../../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -186,6 +190,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\version\version.vcxproj">
+      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
     </ProjectReference>
     <ProjectReference Include="..\FileLocksmithLib\FileLocksmithLib.vcxproj">
       <Project>{8290cf58-0e97-45c4-ab41-f3c7c3128aec}</Project>

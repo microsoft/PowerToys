@@ -1,14 +1,24 @@
 #include "pch.h"
 
-#include "../../interface/powertoy_module_interface.h"
-#include "../../../common/SettingsAPI/settings_objects.h"
-#include "../../../common/logger/logger.h"
+#include <interface/powertoy_module_interface.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/logger/logger.h>
+#include <common/logger/logger_settings.h>
+#include <common/utils/logger_helper.h>
 
 #include "Constants.h"
 
 class FileLocksmithModule : public PowertoyModuleIface
 {
 public:
+
+    FileLocksmithModule()
+    {
+        m_enabled = true;
+        LoggerHelpers::init_logger(constants::nonlocalizable::PowerToyKey, L"ModuleInterface", LogSettings::fileLocksmithLoggerName);
+    }
+
+
     virtual const wchar_t* get_name() override
     {
         return constants::localizable::PowerToyName;
