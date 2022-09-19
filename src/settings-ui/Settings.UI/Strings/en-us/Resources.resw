@@ -2650,4 +2650,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>File Locksmith</value>
     <comment>Product name: Navigation view item name for FileLocksmith</comment>
   </data>
+  <data name="FileLocksmith_Enable_FileLocksmith.Header" xml:space="preserve">
+    <value>Enable File Locksmith</value>
+    <comment>File Locksmith is the name of the utility</comment>
+  </data>
 </root>
