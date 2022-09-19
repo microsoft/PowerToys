@@ -303,6 +303,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool fileLocksmith = true;
+
+        [JsonPropertyName("File Locksmith")]
+        public bool FileLocksmith
+        {
+            get => fileLocksmith;
+            set
+            {
+                if (fileLocksmith != value)
+                {
+                    LogTelemetryEvent(value);
+                    fileLocksmith = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
