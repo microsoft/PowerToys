@@ -16,11 +16,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
     public sealed partial class OobeHosts : Page
     {
-        public OobePowerToysModule ViewModel { get; set; }
+        public OobePowerToysModule ViewModel { get; }
 
         public OobeHosts()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.Hosts]);
             DataContext = ViewModel;
         }

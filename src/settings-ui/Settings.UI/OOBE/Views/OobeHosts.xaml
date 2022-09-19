@@ -14,9 +14,6 @@
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
-                <TextBlock x:Uid="Oobe_HowToUse"
-                           Style="{ThemeResource OobeSubtitleStyle}" />
-
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                            Style="{ThemeResource OobeSubtitleStyle}"/>
 

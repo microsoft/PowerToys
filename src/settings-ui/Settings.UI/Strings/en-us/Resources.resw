@@ -2443,4 +2443,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_File_GroupSettings.Header" xml:space="preserve">
     <value>File</value>
   </data>
+  <data name="Launch_Hosts.Content" xml:space="preserve">
+    <value>Launch Hosts File Editor</value>
+    <comment>"Hosts" is the name of the utility</comment>
+  </data>
 </root>
