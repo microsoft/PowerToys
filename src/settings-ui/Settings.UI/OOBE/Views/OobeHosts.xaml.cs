@@ -2,10 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -37,15 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Launch_Hosts_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var executablePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\modules\Hosts\PowerToys.Hosts.exe");
-            var id = Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
-            var p = Process.Start(executablePath, id);
-            if (p != null)
-            {
-                p.Close();
-            }
-
-            ViewModel.LogRunningModuleEvent();
+            ShellPage.SendDefaultIPCMessage("{\"action\":{\"Hosts\":{\"action_name\":\"Launch\", \"value\":\"\"}}}");
         }
 
         private void Launch_Settings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
