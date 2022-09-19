@@ -155,7 +155,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/MouseUtils/PowerToys.MousePointerCrosshairs.dll",
             L"modules/PowerAccent/PowerToys.PowerAccentModuleInterface.dll",
             L"modules/PowerOCR/PowerToys.PowerOCRModuleInterface.dll",
-
+            L"modules/FileLocksmith/PowerToys.FileLocksmithExt.dll",
             L"modules/MeasureTool/PowerToys.MeasureToolModuleInterface.dll",
         };
         const auto VCM_PATH = L"modules/VideoConference/PowerToys.VideoConferenceModule.dll";
