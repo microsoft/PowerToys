@@ -86,3 +86,8 @@ public:
 private:
     bool m_enabled;
 };
+
+extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
+{
+    return new FileLocksmithModule();
+}

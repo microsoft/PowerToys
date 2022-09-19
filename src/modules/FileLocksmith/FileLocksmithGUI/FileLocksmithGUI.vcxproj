@@ -14,7 +14,7 @@
       $(TargetName) should be same as $(RootNamespace) so that the produced binaries (.exe/.pri/etc.)
       have a name that matches the .winmd
     -->
-    <TargetName>$(RootNamespace)</TargetName>
+    <TargetName>PowerToys.FileLocksmithGUI</TargetName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
     <AppContainerApplication>false</AppContainerApplication>
