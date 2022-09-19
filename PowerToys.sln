@@ -449,6 +449,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeasureToolUI", "src\module
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerAccentKeyboardService", "src\modules\poweraccent\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj", "{C97D9A5D-206C-454E-997E-009E227D7F02}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FileLocksmith", "FileLocksmith", "{AB82E5DD-C32D-4F28-9746-2C780846188E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithLib", "src\modules\FileLocksmith\FileLocksmithLib\FileLocksmithLib.vcxproj", "{8290CF58-0E97-45C4-AB41-F3C7C3128AEC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -1804,6 +1808,16 @@ Global
 		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|x64.Build.0 = Release|x64
 		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|x86.ActiveCfg = Release|x64
 		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|x86.Build.0 = Release|x64
+		{8290CF58-0E97-45C4-AB41-F3C7C3128AEC}.Debug|ARM64.ActiveCfg = Debug|x64
+		{8290CF58-0E97-45C4-AB41-F3C7C3128AEC}.Debug|ARM64.Build.0 = Debug|x64
+		{8290CF58-0E97-45C4-AB41-F3C7C3128AEC}.Debug|x64.ActiveCfg = Debug|x64
+		{8290CF58-0E97-45C4-AB41-F3C7C3128AEC}.Debug|x64.Build.0 = Debug|x64
+		{8290CF58-0E97-45C4-AB41-F3C7C3128AEC}.Debug|x86.ActiveCfg = Debug|x64
+		{8290CF58-0E97-45C4-AB41-F3C7C3128AEC}.Release|ARM64.ActiveCfg = Release|x64
+		{8290CF58-0E97-45C4-AB41-F3C7C3128AEC}.Release|ARM64.Build.0 = Release|x64
+		{8290CF58-0E97-45C4-AB41-F3C7C3128AEC}.Release|x64.ActiveCfg = Release|x64
+		{8290CF58-0E97-45C4-AB41-F3C7C3128AEC}.Release|x64.Build.0 = Release|x64
+		{8290CF58-0E97-45C4-AB41-F3C7C3128AEC}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1956,6 +1970,8 @@ Global
 		{92C39820-9F84-4529-BC7D-22AAE514D63B} = {7AC943C9-52E8-44CF-9083-744D8049667B}
 		{515554D1-D004-4F7F-A107-2211FC0F6B2C} = {7AC943C9-52E8-44CF-9083-744D8049667B}
 		{C97D9A5D-206C-454E-997E-009E227D7F02} = {0F14491C-6369-4C45-AAA8-135814E66E6B}
+		{AB82E5DD-C32D-4F28-9746-2C780846188E} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{8290CF58-0E97-45C4-AB41-F3C7C3128AEC} = {AB82E5DD-C32D-4F28-9746-2C780846188E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
