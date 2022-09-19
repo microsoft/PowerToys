@@ -7,6 +7,9 @@ namespace constants::localizable
 {
 	// Text shown in the context menu
 	constexpr WCHAR CommandTitle[] = L"What's using this file?";
+
+	// Localized name of this PowerToy
+    constexpr WCHAR PowerToyName[] = L"File Locksmith";
 }
 
 // Non-localizable constants
@@ -20,6 +23,9 @@ namespace constants::nonlocalizable
 
 	// File name of the UI executable
 	constexpr WCHAR FileNameUIExe[] = L"FileLocksmithGUI\\FileLocksmithGUI.exe";
+
+	// String key used by PowerToys
+    constexpr WCHAR PowerToyKey[] = L"FileLocksmith";
 }
 
 // Macros, non-localizable

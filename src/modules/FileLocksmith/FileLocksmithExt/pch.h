@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include <Shlwapi.h>
 #include <ShlObj_core.h>
+#include <atlbase.h>
 
 // C++ Standard library
 #include <atomic>
