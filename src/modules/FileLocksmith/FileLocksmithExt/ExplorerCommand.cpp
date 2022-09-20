@@ -5,6 +5,7 @@
 #include "Settings.h"
 #include "dllmain.h"
 #include "Trace.h"
+#include "../FileLocksmithLib/Generated Files/resource.h"
 
 // Implementations of inherited IUnknown methods
 
@@ -38,7 +39,9 @@ IFACEMETHODIMP_(ULONG) ExplorerCommand::Release()
 
 IFACEMETHODIMP ExplorerCommand::GetTitle(IShellItemArray* psiItemArray, LPWSTR* ppszName)
 {
-    return SHStrDup(constants::localizable::CommandTitle, ppszName);
+    WCHAR buffer[128];
+    LoadStringW(globals::instance, IDS_FILELOCKSMITH_COMMANDTITLE, buffer, ARRAYSIZE(buffer));
+    return SHStrDupW(buffer, ppszName);
 }
 
 IFACEMETHODIMP ExplorerCommand::GetIcon(IShellItemArray* psiItemArray, LPWSTR* ppszIcon)
@@ -118,7 +121,7 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
         mii.wID = idCmdFirst++;
         mii.fType = MFT_STRING;
 
-        hr = SHStrDupW(constants::localizable::CommandTitle, &mii.dwTypeData);
+        hr = GetTitle(NULL, &mii.dwTypeData);
         if (FAILED(hr))
         {
             return hr;

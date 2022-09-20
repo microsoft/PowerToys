@@ -2,16 +2,6 @@
 
 #include "pch.h"
 
-// Localizable constants, these should be converted to resources
-namespace constants::localizable
-{
-	// Text shown in the context menu
-	constexpr WCHAR CommandTitle[] = L"What's using this file?";
-
-	// Localized name of this PowerToy
-    constexpr WCHAR PowerToyName[] = L"File Locksmith";
-}
-
 // Non-localizable constants
 namespace constants::nonlocalizable
 {
