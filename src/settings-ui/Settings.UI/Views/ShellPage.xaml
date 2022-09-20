@@ -76,14 +76,14 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <muxc:NavigationViewItem x:Uid="Shell_Hosts" helpers:NavHelper.NavigateTo="views:HostsPage" >
-                    <muxc:NavigationViewItem.Icon>
+                <NavigationViewItem x:Uid="Shell_Hosts" helpers:NavHelper.NavigateTo="views:HostsPage" >
+                    <NavigationViewItem.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsSettings.png" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-                <muxc:NavigationViewItem x:Uid="Shell_ImageResizer" helpers:NavHelper.NavigateTo="views:ImageResizerPage">
-                    <muxc:NavigationViewItem.Icon>
+                <NavigationViewItem x:Uid="Shell_ImageResizer" helpers:NavHelper.NavigateTo="views:ImageResizerPage">
+                    <NavigationViewItem.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsImageResizer.png" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
@@ -141,10 +141,10 @@
                     IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}">
                     <NavigationViewItem.Icon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-            </muxc:NavigationView.MenuItems>
-            <muxc:NavigationView.PaneFooter>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+            <NavigationView.PaneFooter>
                 <StackPanel Orientation="Vertical">
                     <NavigationViewItem x:Uid="OOBE_NavViewItem" Tapped="OOBEItem_Tapped">
                         <NavigationViewItem.Icon>

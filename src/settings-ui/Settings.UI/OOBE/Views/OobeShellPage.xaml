@@ -73,17 +73,17 @@
                         <BitmapIcon
                                 UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFileExplorerPreview.png"
                                 ShowAsMonochrome="False" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-                <muxc:NavigationViewItem x:Uid="Shell_Hosts" Tag="Hosts">
-                    <muxc:NavigationViewItem.Icon>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_Hosts" Tag="Hosts">
+                    <NavigationViewItem.Icon>
                         <BitmapIcon
                                 UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAlwaysOnTop.png"
                                 ShowAsMonochrome="False" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-                <muxc:NavigationViewItem x:Uid="Shell_ImageResizer" Tag="ImageResizer">
-                    <muxc:NavigationViewItem.Icon>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_ImageResizer" Tag="ImageResizer">
+                    <NavigationViewItem.Icon>
                         <BitmapIcon
                                 UriSource="ms-appx:///Assets/FluentIcons/FluentIconsImageResizer.png"
                                 ShowAsMonochrome="False" />
