@@ -117,6 +117,7 @@
                 "modules\\PowerAccent\\PowerToys.PowerAccent.dll",
                 "modules\\PowerAccent\\PowerToys.PowerAccent.exe",
                 "modules\\PowerAccent\\PowerToys.PowerAccentModuleInterface.dll",
+                "modules\\PowerAccent\\PowerToys.PowerAccentKeyboardService.dll",
 
                 "modules\\PowerRename\\PowerToys.PowerRenameExt.dll",
                 "modules\\PowerRename\\PowerToys.PowerRename.exe",

@@ -25,9 +25,7 @@ namespace ImageResizer.Properties
         }
 
         [ClassInitialize]
-#pragma warning disable CA1801 // Review unused parameters
         public static void ClassInitialize(TestContext context)
-#pragma warning restore CA1801 // Review unused parameters
         {
             // new App() needs to be created since Settings.Reload() uses App.Current to update properties on the UI thread. App() can be created only once otherwise it results in System.InvalidOperationException : Cannot create more than one System.Windows.Application instance in the same AppDomain.
             _imageResizerApp = new App();

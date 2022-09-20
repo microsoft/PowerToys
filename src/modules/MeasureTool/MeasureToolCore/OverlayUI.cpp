@@ -60,6 +60,15 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
                         extraParam)
     };
     winrt::check_bool(window);
+
+    // Exclude overlay window from displaying in WIN+TAB preview, since WS_EX_TOOLWINDOW windows are displayed simultaneously on all virtual desktops.
+    // We can't remove WS_EX_TOOLWINDOW/WS_EX_NOACTIVATE flag, since we want to exclude the window from taskbar
+    BOOL val = TRUE;
+    DwmSetWindowAttribute(window, DWMWA_EXCLUDED_FROM_PEEK, &val, sizeof(val));
+
+    // We want to receive input events as soon as possible to prevent issues with touch input
+    RegisterTouchWindow(window, TWF_WANTPALM);
+
     ShowWindow(window, SW_SHOWNORMAL);
     UpdateWindow(window);
     if (excludeFromCapture)
@@ -100,13 +109,13 @@ HWND CreateOverlayUIWindow(const CommonState& commonState,
 std::vector<D2D1::ColorF> AppendCommonOverlayUIColors(const D2D1::ColorF& lineColor)
 {
     D2D1::ColorF foreground = D2D1::ColorF::Black;
-    D2D1::ColorF background = D2D1::ColorF(0.96f, 0.96f, 0.96f, 1.0f);
+    D2D1::ColorF background = D2D1::ColorF(0.96f, 0.96f, 0.96f, .93f);
     D2D1::ColorF border = D2D1::ColorF(0.44f, 0.44f, 0.44f, 0.4f);
 
     if (WindowsColors::is_dark_mode())
     {
         foreground = D2D1::ColorF::White;
-        background = D2D1::ColorF(0.17f, 0.17f, 0.17f, 1.0f);
+        background = D2D1::ColorF(0.17f, 0.17f, 0.17f, .93f);
         border = D2D1::ColorF(0.44f, 0.44f, 0.44f, 0.4f);
     }
 
@@ -115,7 +124,7 @@ std::vector<D2D1::ColorF> AppendCommonOverlayUIColors(const D2D1::ColorF& lineCo
 
 void OverlayUIState::RunUILoop()
 {
-    bool cursorOnScreen = true;
+    bool cursorOnScreen = false;
 
     while (IsWindow(_window) && !_commonState.closeOnOtherMonitors)
     {

@@ -733,7 +733,6 @@ namespace Microsoft.Plugin.Program.Programs
             return files;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "User facing path needs to be shown in lowercase.")]
         private static string Extension(string path)
         {
             // Using InvariantCulture since this is user facing

@@ -60,7 +60,6 @@ APeriod
 api
 APIENTRY
 APIIs
-Apm
 APPBARDATA
 appdata
 APPICON
@@ -112,7 +111,6 @@ atlstr
 Attribs
 attrs
 Atyrau
-augustkarlstedt
 aumid
 Aut
 Authenticode
@@ -131,7 +129,6 @@ Avanc
 Awaitable
 awakeness
 awakeversion
-AWAYMODE
 AYUV
 backend
 backtracer
@@ -144,7 +141,6 @@ bck
 Belarus
 betadele
 betsegaw
-bezgumption
 BGR
 bgra
 bhid
@@ -500,7 +496,6 @@ dvr
 DVSD
 DVSL
 DVTARGETDEVICE
-dwhkl
 DWINRT
 dwl
 dwm
@@ -540,6 +535,7 @@ eltociear
 emmintrin
 Emoji
 emptyrecyclebin
+ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
 endforeach
 endian
@@ -560,6 +556,7 @@ ERASEBKGND
 EREOF
 EResize
 ERole
+ERRORLEVEL
 ERRORMESSAGE
 ERRORTITLE
 ESettings
@@ -644,6 +641,7 @@ FRAMECHANGED
 franky
 frankychen
 Froml
+FROMTOUCH
 fstream
 FTYPE
 func
@@ -727,8 +725,6 @@ hhk
 HHmmss
 HHOOK
 hhx
-Hiber
-Hiberboot
 HIBYTE
 HICON
 HIDEWINDOW
@@ -742,7 +738,7 @@ HKCC
 HKCR
 HKCU
 hkey
-hkl
+HKL
 HKLM
 HKPD
 HKU
@@ -784,6 +780,7 @@ hsv
 htcfreek
 HTCLIENT
 HTHUMBNAIL
+HTOUCHINPUT
 HTTRANSPARENT
 HValue
 Hvci
@@ -869,6 +866,7 @@ IImage
 Iindex
 IInitialize
 IInspectable
+IInvoke
 IIO
 IItem
 IJson
@@ -904,7 +902,6 @@ inheritdoc
 initguid
 Inkscape
 Inlines
-Inlining
 inorder
 INotification
 INotify
@@ -1034,7 +1031,6 @@ jxr
 jyuwono
 KBDLLHOOKSTRUCT
 kbm
-KCode
 KEYBDINPUT
 keybindings
 keyboardeventhandlers
@@ -1158,7 +1154,6 @@ lpsz
 lpt
 LPTHREAD
 LPTOP
-lptpm
 LPTSTR
 LPVOID
 LPW
@@ -1223,7 +1218,6 @@ Melman
 memcmp
 memcpy
 memset
-MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 Metadatas
@@ -1276,6 +1270,7 @@ monitorinfof
 Monthand
 Moq
 MOUSEACTIVATE
+MOUSEEVENTF
 MOUSEHWHEEL
 MOUSEINPUT
 MOUSELEAVE
@@ -1318,7 +1313,6 @@ multizone
 Mundrabilla
 mutex
 mutexes
-muxc
 MVVM
 myfile
 MYICON
@@ -1352,6 +1346,7 @@ NDEBUG
 Ndombe
 ndp
 NEEDDISPATCH
+NEQ
 NESW
 netcore
 netcoreapp
@@ -1427,7 +1422,6 @@ ntdll
 NTFS
 NTSTATUS
 nuget
-nuint
 nullonfailure
 nullopt
 nullptr
@@ -1470,7 +1464,6 @@ openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
 ORPHANEDDIALOGTITLE
-osfanbuff
 oss
 ostr
 ostream
@@ -1490,7 +1483,6 @@ overlaywindow
 Overridable
 Oversampling
 OWNDC
-OWNERDRAW
 PACL
 pagos
 PAINTSTRUCT
@@ -1532,6 +1524,7 @@ pfo
 pft
 pgp
 pguid
+PHANDLER
 phbm
 phbmp
 phwnd
@@ -1752,7 +1745,6 @@ RNumber
 roadmap
 robmensching
 Roboto
-rohanrdy
 rooler
 roslyn
 Rothera
@@ -1935,6 +1927,7 @@ sse
 ssf
 ssh
 sstream
+stackalloc
 STACKFRAME
 stackoverflow
 stackpanel
@@ -2090,6 +2083,8 @@ Toolset
 toolwindow
 TOPDOWNDIB
 toplevel
+TOUCHEVENTF
+TOUCHINPUT
 touchpad
 toupper
 Towindow
@@ -2109,6 +2104,7 @@ Tshuapa
 TStr
 Tuva
 TValue
+TWF
 TYMED
 typedef
 TYPEKEY
@@ -2231,14 +2227,12 @@ VIDEOINFOHEADER
 viewbox
 viewmodel
 vih
-Virt
 virtualization
 Virtualizing
 visiblecolorformats
 Visibletrue
 visualbrush
 visualstudio
-viter
 VKey
 VKTAB
 vmovl
@@ -2263,6 +2257,7 @@ VSTT
 vswhere
 vtable
 Vtbl
+WANTPALM
 wbem
 wbemuuid
 WBounds

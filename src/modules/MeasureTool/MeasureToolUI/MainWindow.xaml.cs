@@ -6,8 +6,11 @@ using System;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Windows.Graphics;
 using WinUIEx;
 
@@ -64,6 +67,7 @@ namespace MeasureToolUI
                 _initialPosition.X + (int)(dpiScale * WindowWidth),
                 _initialPosition.Y + (int)(dpiScale * WindowHeight));
             OnPositionChanged(_initialPosition);
+            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
@@ -148,6 +152,25 @@ namespace MeasureToolUI
         public void Dispose()
         {
             _coreLogic?.Dispose();
+        }
+
+        private void KeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            if (args.Element is ToggleButton toggle)
+            {
+                var peer = new ToggleButtonAutomationPeer(toggle);
+                peer.Toggle();
+                args.Handled = true;
+            }
+            else if (args.Element is Button button)
+            {
+                var peer = new ButtonAutomationPeer(button);
+                if (peer.GetPattern(PatternInterface.Invoke) is IInvokeProvider provider)
+                {
+                    provider.Invoke();
+                    args.Handled = true;
+                }
+            }
         }
     }
 }
