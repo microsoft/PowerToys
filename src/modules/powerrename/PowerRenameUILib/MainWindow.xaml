@@ -88,7 +88,7 @@
                 BorderThickness="0"
                 HorizontalAlignment="Right"
                 Background="Transparent"
-                Content="&#xE16E;"
+                Content="&#xE71C;"
                 FontFamily="{ThemeResource SymbolThemeFontFamily}">
                 <Button.Flyout>
                     <MenuBarItemFlyout Placement="Bottom">
@@ -376,7 +376,7 @@
                         x:Uid="ToggleButton_IncludeFiles"
                         Height="31"
                         MinHeight="0"
-                        Content="&#xE160;"
+                        Content="&#xE7C3;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         IsChecked="True"
                         Style="{StaticResource CustomToggleButtonStyle}" />
@@ -394,7 +394,7 @@
                         x:Uid="ToggleButton_IncludeSubFolders"
                         Height="31"
                         MinHeight="0"
-                        Content="&#xE12F;"
+                        Content="&#xED41;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         IsChecked="True"
                         Style="{StaticResource CustomToggleButtonStyle}" />

@@ -50,7 +50,7 @@
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting Icon="&#xE790;" Style="{StaticResource ExpanderHeaderSettingStyle}" x:Uid="AlwaysOnTop_FrameEnabled">
+                            <controls:Setting Icon="&#xEB3C;" Style="{StaticResource ExpanderHeaderSettingStyle}" x:Uid="AlwaysOnTop_FrameEnabled">
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FrameEnabled}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>

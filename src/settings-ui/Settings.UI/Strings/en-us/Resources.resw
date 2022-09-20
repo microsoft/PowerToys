@@ -217,7 +217,7 @@
     <value>Selected microphone</value>
   </data>
   <data name="VideoConference_CameraOverlayImagePathHeader.Header" xml:space="preserve">
-    <value>Camera overlay image</value>
+    <value>Image displayed when camera is muted</value>
   </data>
   <data name="VideoConference_ToolbarPosition.Header" xml:space="preserve">
     <value>Toolbar position</value>
@@ -673,7 +673,7 @@
     <value>PowerToys will launch automatically</value>
   </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
-    <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
+    <value>A Windows Shell extension for more advanced bulk renaming using search &amp; replace or regular expressions.</value>
   </data>
   <data name="PowerRename_ShellIntegration.Header" xml:space="preserve">
     <value>Shell integration</value>
@@ -691,9 +691,6 @@
   </data>
   <data name="PowerRename_Toggle_ContextMenu.Header" xml:space="preserve">
     <value>Show PowerRename in</value>
-  </data>
-  <data name="PowerRename_Toggle_ContextMenu.Description" xml:space="preserve">
-    <value>Press shift + right-click on files to open the extended menu</value>
   </data>
   <data name="PowerRename_Toggle_StandardContextMenu.Content" xml:space="preserve">
     <value>Default and extended context menu</value>
@@ -779,7 +776,7 @@
     <value>Open-source notice</value>
   </data>
   <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
-    <value>Enable auto-complete for the search and replace fields</value>
+    <value>Enable auto-complete for the search &amp; replace fields</value>
   </data>
   <data name="FancyZones_BorderColor.Header" xml:space="preserve">
     <value>Border color</value>
@@ -1216,7 +1213,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_Windows.Header" xml:space="preserve">
     <value>Windows</value>
-    <comment>refers to a set of windows, not the product name</comment>
+    <comment>Do translate: refers to a set of application windows, not the product name</comment>
   </data>
   <data name="PowerRename_BehaviorHeader.Header" xml:space="preserve">
     <value>Behavior</value>
@@ -1336,7 +1333,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Additional options</value>
   </data>
   <data name="Run_NotAccessibleWarning.Title" xml:space="preserve">
-    <value>Please define an activation command or allow this plugin for the global results to use it.</value>
+    <value>Please define an activation command or allow this plugin to be used in the global results.</value>
   </data>
   <data name="Run_AllPluginsDisabled.Title" xml:space="preserve">
     <value>PowerToys Run can't provide any results without plugins</value>
@@ -1676,7 +1673,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Downloading...</value>
   </data>
   <data name="General_TryAgainToDownloadAndInstall.Content" xml:space="preserve">
-    <value>Try again to download &amp; install</value>
+    <value>Try again to download and install</value>
   </data>
   <data name="General_CheckingForUpdates.Text" xml:space="preserve">
     <value>Checking for updates...</value>
@@ -1688,7 +1685,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>PowerToys is up to date</value>
   </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
-    <value>Download and install</value>
+    <value>Download &amp; install</value>
   </data>
   <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
     <value>Fills</value>
@@ -2003,11 +2000,11 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Customize the shortcut to turn on or off this mode</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_LeftButtonClickColor.Header" xml:space="preserve">
-    <value>Left button highlight color</value>
+  <data name="MouseUtils_MouseHighlighter_PrimaryButtonClickColor.Header" xml:space="preserve">
+    <value>Primary button highlight color</value>
   </data>
-  <data name="MouseUtils_MouseHighlighter_RightButtonClickColor.Header" xml:space="preserve">
-    <value>Right button highlight color</value>
+  <data name="MouseUtils_MouseHighlighter_SecondaryButtonClickColor.Header" xml:space="preserve">
+    <value>Secondary button highlight color</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_HighlightOpacity.Header" xml:space="preserve">
     <value>Opacity (%)</value>

@@ -61,7 +61,7 @@
                     </controls:SettingExpander>
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xEB3C;" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
@@ -158,20 +158,20 @@
 
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xEB3C;" />
                         </controls:SettingExpander.Header>
                       
 
                         <controls:SettingExpander.Content>
 
                             <StackPanel>
-                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_LeftButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                              
-                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_RightButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
@@ -244,7 +244,7 @@
                     </controls:Setting>
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xEB3C;" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
