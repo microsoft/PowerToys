@@ -12,7 +12,7 @@ The registry plugin allows users to search the Windows registry.
 
 The registry contains all settings for the Windows operating system and many settings of the installed (Windows only) programs.
 
-*Note: Linux and macOS program ports typical store the settings in it's own configuration files and not in the Windows registry.*
+*Note: Linux and macOS program ports typical store the settings in their own configuration files and not in the Windows registry.*
 
 For more information about the Windows registry, see [the official documentation](https://learn.microsoft.com/windows/win32/sysinfo/registry).
 
