@@ -186,9 +186,16 @@ namespace Hosts.Helpers
 
         public async Task<bool> PingAsync(string address)
         {
-            using var ping = new Ping();
-            var reply = await ping.SendPingAsync(address, 4000); // 4000 is the default ping timeout for ping.exe
-            return reply.Status == IPStatus.Success;
+            try
+            {
+                using var ping = new Ping();
+                var reply = await ping.SendPingAsync(address, 4000); // 4000 is the default ping timeout for ping.exe
+                return reply.Status == IPStatus.Success;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public void Dispose()
