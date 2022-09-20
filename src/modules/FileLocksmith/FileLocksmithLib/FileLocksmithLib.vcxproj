@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h FileLocksmithLib.base.rc FileLocksmithLib.rc"/>
+  </Target>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -156,6 +159,15 @@
     <ClInclude Include="NtdllBase.h" />
     <ClInclude Include="NtdllExtensions.h" />
     <ClInclude Include="pch.h" />
+    <None Include="resource.base.h"/>
+    <ClInclude Include="Generated Files/resource.h"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files/FileLocksmithLib.rc"/>
+    <None Include="FileLocksmithLib.base.rc"/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources.resx"/>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileLocksmith.cpp" />
