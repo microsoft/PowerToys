@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h FileLocksmithExt.base.rc FileLocksmithExt.rc"/>
+  </Target>
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220418.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -168,6 +171,15 @@
     <ClInclude Include="Registry.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Trace.h" />
+    <None Include="resource.base.h"/>
+    <ClInclude Include="Generated Files/resource.h"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files/FileLocksmithExt.rc"/>
+    <None Include="FileLocksmithExt.base.rc"/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources.resx"/>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClassFactory.cpp" />

@@ -5,7 +5,7 @@
 #include "Settings.h"
 #include "dllmain.h"
 #include "Trace.h"
-#include "../FileLocksmithLib/Generated Files/resource.h"
+#include "Generated Files/resource.h"
 
 // Implementations of inherited IUnknown methods
 
