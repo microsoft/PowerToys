@@ -6,7 +6,6 @@
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:toolkitconverters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
@@ -104,14 +103,14 @@
                                                     </ComboBox>
 
                                                     <StackPanel Spacing="8" Orientation="Horizontal">
-                                                        <muxc:NumberBox
+                                                        <NumberBox
                                                             x:Uid="ImageResizer_Width"
                                                             Value="{x:Bind Path=Width, Mode=TwoWay}" 
                                                             Minimum="0"
                                                             Width="116"
                                                             SpinButtonPlacementMode="Compact"/>
 
-                                                        <muxc:NumberBox
+                                                        <NumberBox
                                                             x:Uid="ImageResizer_Height"
                                                             Value="{x:Bind Path=Height, Mode=TwoWay}" 
                                                             Width="116"

@@ -5,7 +5,6 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
       mc:Ignorable="d"
       Loaded="Page_Loaded">
@@ -31,7 +30,7 @@
                     TextWrapping="Wrap" />
             </HyperlinkButton>
         </StackPanel>
-        <muxc:InfoBar
+        <InfoBar
                 Severity="Error"
                 x:Name="ErrorInfoBar"
                 Grid.Row="1"
@@ -41,7 +40,7 @@
                 IsClosable="False"
                 IsOpen="True"
                 IsTabStop="True" />
-        <muxc:InfoBar
+        <InfoBar
             x:Name="ProxyWarningInfoBar"
             Severity="Warning"
             Grid.Row="1"
@@ -53,7 +52,7 @@
             IsTabStop="True" />
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid Margin="32,24,32,24">
-                <muxc:ProgressRing
+                <ProgressRing
                 x:Name="LoadingProgressRing"
                 IsIndeterminate="True"
                 VerticalAlignment="Center"
