@@ -166,6 +166,7 @@
     <ClInclude Include="ExplorerCommand.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Registry.h" />
+    <ClInclude Include="Settings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClassFactory.cpp" />
@@ -179,6 +180,7 @@
     </ClCompile>
     <ClCompile Include="PowerToysModule.cpp" />
     <ClCompile Include="Registry.cpp" />
+    <ClCompile Include="Settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dll.def" />

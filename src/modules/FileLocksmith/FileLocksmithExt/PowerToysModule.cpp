@@ -8,17 +8,16 @@
 
 #include "Constants.h"
 #include "dllmain.h"
+#include "Settings.h"
 
 class FileLocksmithModule : public PowertoyModuleIface
 {
 public:
-
     FileLocksmithModule()
     {
-        m_enabled = true;
         LoggerHelpers::init_logger(constants::nonlocalizable::PowerToyName, L"ModuleInterface", LogSettings::fileLocksmithLoggerName);
+        init_settings();
     }
-
 
     virtual const wchar_t* get_name() override
     {
@@ -70,14 +69,14 @@ public:
     {
         Logger::info(L"File Locksmith enabled");
         m_enabled = true;
-        globals::enabled = true;
+        save_settings();
     }
 
     virtual void disable() override
     {
         Logger::info(L"File Locksmith disabled");
         m_enabled = false;
-        globals::enabled = false;
+        save_settings();
     }
 
     virtual bool is_enabled() override
@@ -90,10 +89,24 @@ public:
         delete this;
     }
 
-    // This should be enough to create an instance
-
 private:
     bool m_enabled;
+
+    void init_settings()
+    {
+        m_enabled = FileLocksmithSettingsInstance().GetEnabled();
+        // TODO trace
+        // Trace::EnablePowerRename(m_enabled);
+    }
+
+    void save_settings()
+    {
+        auto& settings = FileLocksmithSettingsInstance();
+        settings.SetEnabled(m_enabled);
+        settings.Save();
+        // TODO trace
+        // Trace::EnablePowerRename(m_enabled);
+    }
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

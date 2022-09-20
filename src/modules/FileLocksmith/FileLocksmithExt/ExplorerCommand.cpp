@@ -2,6 +2,7 @@
 
 #include "ExplorerCommand.h"
 #include "Constants.h"
+#include "Settings.h"
 #include "dllmain.h"
 
 // Implementations of inherited IUnknown methods
@@ -101,6 +102,12 @@ IFACEMETHODIMP ExplorerCommand::Initialize(PCIDLIST_ABSOLUTE pidlFolder, IDataOb
 
 IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags)
 {
+    // Skip if disabled
+    if (!FileLocksmithSettingsInstance().GetEnabled())
+    {
+        return S_OK;
+    }
+
     HRESULT hr = E_UNEXPECTED;
     if (m_data_obj && !(uFlags & (CMF_DEFAULTONLY | CMF_VERBSONLY | CMF_OPTIMIZEFORINVOKE)))
     {

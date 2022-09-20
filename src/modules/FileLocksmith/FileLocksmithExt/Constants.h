@@ -22,10 +22,16 @@ namespace constants::nonlocalizable
 	constexpr WCHAR FileNameUIExe[] = L"PowerToys.FileLocksmithGUI.exe";
 
 	// String key used by PowerToys
-    constexpr WCHAR PowerToyKey[] = L"FileLocksmith";
+    constexpr WCHAR PowerToyKey[] = L"File Locksmith";
 
 	// Nonlocalized name of this PowerToy, for logs, etc
     constexpr WCHAR PowerToyName[] = L"File Locksmith";
+
+	// JSON key used to store whether the module is enabled
+    constexpr WCHAR JsonKeyEnabled[] = L"Enabled";
+
+	// Path of the JSON file used to store settings
+    constexpr WCHAR DataFilePath[] = L"\\file-locksmith-settings.json";
 }
 
 // Macros, non-localizable
