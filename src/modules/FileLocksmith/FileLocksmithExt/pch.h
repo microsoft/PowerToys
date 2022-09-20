@@ -7,7 +7,9 @@
 #include <Shlwapi.h>
 #include <ShlObj_core.h>
 #include <atlbase.h>
+#include <commctrl.h>
 
 // C++ Standard library
 #include <atomic>
 #include <string>
+#include <filesystem>
