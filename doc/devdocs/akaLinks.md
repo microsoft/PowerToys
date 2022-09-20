@@ -11,7 +11,7 @@
 | powerToysColorPickerImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/ColorPicker_small.png |
 | powerToysColorPickerSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/ColorPicker_large.png |
 | powertoysDetectedElevatedHelp | https://learn.microsoft.com/windows/powertoys/administrator |
-| powertoys-docs | https://learn.microsoft.com/windows/powertoys/?WT.mc_id=twitter-0000-docsmsft |
+| powertoys-docs | https://learn.microsoft.com/windows/powertoys |
 | powerToysFancyZoneImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/FancyZones_small.png |
 | powerToysFancyZoneSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/FancyZones_large.png |
 | powerToysGiveFeedback | https://github.com/microsoft/PowerToys/issues |
