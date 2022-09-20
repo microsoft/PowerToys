@@ -179,7 +179,14 @@ public class PowerAccent : IDisposable
         char[] result = new char[array.Length];
         for (int i = 0; i < array.Length; i++)
         {
-            result[i] = char.ToUpper(array[i], System.Globalization.CultureInfo.InvariantCulture);
+            if (array[i] == 'ß')
+            {
+                result[i] = 'ẞ';
+            }
+            else
+            {
+                result[i] = char.ToUpper(array[i], System.Globalization.CultureInfo.InvariantCulture);
+            }
         }
 
         return result;
