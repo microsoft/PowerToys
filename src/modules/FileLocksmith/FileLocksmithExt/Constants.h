@@ -23,6 +23,9 @@ namespace constants::nonlocalizable
 
 	// String key used by PowerToys
     constexpr WCHAR PowerToyKey[] = L"FileLocksmith";
+
+	// Nonlocalized name of this PowerToy, for logs, etc
+    constexpr WCHAR PowerToyName[] = L"File Locksmith";
 }
 
 // Macros, non-localizable
