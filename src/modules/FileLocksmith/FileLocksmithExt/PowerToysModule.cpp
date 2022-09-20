@@ -10,7 +10,7 @@
 #include "dllmain.h"
 #include "Settings.h"
 #include "Trace.h"
-#include "../FileLocksmithLib/Generated Files/resource.h"
+#include "Generated Files/resource.h"
 
 class FileLocksmithModule : public PowertoyModuleIface
 {
