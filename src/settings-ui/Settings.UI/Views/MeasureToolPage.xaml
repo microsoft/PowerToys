@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters" 
     AutomationProperties.LandmarkType="Main">
@@ -43,7 +42,7 @@
                             <ToggleSwitch IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    <muxc:InfoBar
+                    <InfoBar
                         Severity="Warning"
                         x:Uid="MeasureTool_ContinuousCapture_Information"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"

@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters" 
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -28,7 +27,7 @@
                         <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=IsEnabled}" x:Uid="ToggleSwitch"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
-                <muxc:InfoBar
+                <InfoBar
                     Severity="Warning"
                     x:Uid="VideoConference_RunAsAdminRequired"
                     IsOpen="True"
@@ -122,7 +121,7 @@
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="VideoConference_ToolbarPosition" Icon="&#xEC12;">
+                            <controls:Setting x:Uid="VideoConference_ToolbarPosition">
                                 <controls:Setting.ActionContent>
                                     <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarPositionIndex}">
                                         <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopLeftCorner"/>

@@ -5,7 +5,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
@@ -58,7 +57,7 @@
                 <controls:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
                     <controls:Setting x:Uid="QuickAccent_InputTimeMs" Icon="&#xE916;">
                         <controls:Setting.ActionContent>
-                            <muxc:NumberBox Minimum="100"
+                            <NumberBox Minimum="100"
                                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.InputTimeMs}"
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             SpinButtonPlacementMode="Compact"

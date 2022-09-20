@@ -115,7 +115,6 @@ public partial class OCROverlay : Window
             return;
         }
 
-        IsSelecting = true;
         RegionClickCanvas.CaptureMouse();
 
         CursorClipper.ClipCursor(this);
@@ -150,6 +149,8 @@ public partial class OCROverlay : Window
                 break;
             }
         }
+
+        IsSelecting = true;
     }
 
     private void RegionClickCanvas_MouseMove(object sender, MouseEventArgs e)
