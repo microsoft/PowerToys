@@ -168,12 +168,6 @@
   <data name="DeleteDialogAreYouSure.Text" xml:space="preserve">
     <value>Are you sure you want to delete this entry?</value>
   </data>
-  <data name="Disable.Text" xml:space="preserve">
-    <value>Disable</value>
-  </data>
-  <data name="Enable.Text" xml:space="preserve">
-    <value>Enable</value>
-  </data>
   <data name="EntryDialog.CloseButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>

@@ -141,16 +141,6 @@ namespace Hosts.ViewModels
             });
         }
 
-        public void EnableSelected()
-        {
-            Selected.Active = true;
-        }
-
-        public void DisableSelected()
-        {
-            Selected.Active = false;
-        }
-
         public void ReadHosts()
         {
             FileChanged = false;
@@ -191,7 +181,11 @@ namespace Hosts.ViewModels
 
         public async Task PingSelectedAsync()
         {
-            _selected.Ping = await _hostsService.PingAsync(_selected.Address);
+            var selected = _selected;
+            selected.Ping = null;
+            selected.Pinging = true;
+            selected.Ping = await _hostsService.PingAsync(_selected.Address);
+            selected.Pinging = false;
         }
 
         public void OpenSettings()

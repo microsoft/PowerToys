@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="Hosts.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -17,16 +17,9 @@
     </i:Interaction.Behaviors>
 
     <Page.Resources>
-        <converters:StringVisibilityConverter
-            x:Key="StringVisibilityConverter"
-            EmptyValue="Collapsed"
-            NotEmptyValue="Visible" />
+        <converters:StringVisibilityConverter x:Key="StringVisibilityConverter" EmptyValue="Collapsed" NotEmptyValue="Visible" />
         <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
-        <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" />
-        <converters:BoolToVisibilityConverter
-            x:Key="FalseToVisibleConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
     <Grid>
@@ -183,16 +176,6 @@
                         <FlyoutBase.AttachedFlyout>
                             <MenuFlyout>
                                 <MenuFlyoutItem
-                                    x:Uid="Enable"
-                                    Click="Enable_Click"
-                                    Icon="Accept"
-                                    Visibility="{Binding Active, Mode=TwoWay, Converter={StaticResource FalseToVisibleConverter}}" />
-                                <MenuFlyoutItem
-                                    x:Uid="Disable"
-                                    Click="Disable_Click"
-                                    Icon="Clear"
-                                    Visibility="{Binding Active, Mode=TwoWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                                <MenuFlyoutItem
                                     x:Uid="Ping"
                                     Click="Ping_Click"
                                     Icon="TwoBars" />
@@ -203,7 +186,6 @@
                                     Icon="Delete" />
                             </MenuFlyout>
                         </FlyoutBase.AttachedFlyout>
-
                         <TextBlock
                             VerticalAlignment="Center"
                             Text="{Binding Address, Mode=OneWay}"
@@ -225,14 +207,10 @@
                                 <Run Text=" - " /><Run Text="{Binding Comment, Mode=OneWay}" />
                             </TextBlock>
                         </StackPanel>
-                        <ToggleSwitch
-                            Grid.Column="3"
-                            Width="40"
-                            MinWidth="0"
-                            HorizontalAlignment="Right"
-                            IsOn="{Binding Active, Mode=TwoWay}"
-                            OffContent=""
-                            OnContent="" />
+                        <ProgressRing
+                            Grid.Column="2"
+                            Margin="0,0,8,0"
+                            IsActive="{Binding Pinging}" />
                         <SymbolIcon
                             x:Name="PingIcon"
                             Grid.Column="2"
@@ -273,8 +251,25 @@
                                         TargetObject="{Binding ElementName=PingIcon}"
                                         Value="{StaticResource SystemFillColorCriticalBrush}" />
                                 </ic:DataTriggerBehavior>
+                                <ic:DataTriggerBehavior
+                                    Binding="{Binding Ping, Mode=OneWay}"
+                                    ComparisonCondition="Equal"
+                                    Value="{x:Null}">
+                                    <ic:ChangePropertyAction
+                                        PropertyName="Visibility"
+                                        TargetObject="{Binding ElementName=PingIcon}"
+                                        Value="Collapsed" />
+                                </ic:DataTriggerBehavior>
                             </i:Interaction.Behaviors>
                         </SymbolIcon>
+                        <ToggleSwitch
+                            Grid.Column="3"
+                            Width="40"
+                            MinWidth="0"
+                            HorizontalAlignment="Right"
+                            IsOn="{Binding Active, Mode=TwoWay}"
+                            OffContent=""
+                            OnContent="" />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

@@ -116,28 +116,6 @@ namespace Hosts.Views
             }
         }
 
-        private void Enable_Click(object sender, RoutedEventArgs e)
-        {
-            var menuFlyoutItem = sender as MenuFlyoutItem;
-
-            if (menuFlyoutItem != null)
-            {
-                ViewModel.Selected = menuFlyoutItem.DataContext as Entry;
-                ViewModel.EnableSelected();
-            }
-        }
-
-        private void Disable_Click(object sender, RoutedEventArgs e)
-        {
-            var menuFlyoutItem = sender as MenuFlyoutItem;
-
-            if (menuFlyoutItem != null)
-            {
-                ViewModel.Selected = menuFlyoutItem.DataContext as Entry;
-                ViewModel.DisableSelected();
-            }
-        }
-
         private async void Ping_Click(object sender, RoutedEventArgs e)
         {
             var menuFlyoutItem = sender as MenuFlyoutItem;

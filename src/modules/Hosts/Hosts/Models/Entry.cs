@@ -47,6 +47,9 @@ namespace Hosts.Models
         [ObservableProperty]
         private bool? _ping;
 
+        [ObservableProperty]
+        private bool _pinging;
+
         public bool Valid => ValidationHelper.ValidHosts(_hosts) && (ValidationHelper.ValidIPv4(_address) || ValidationHelper.ValidIPv6(_address));
 
         private Entry()
