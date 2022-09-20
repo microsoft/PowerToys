@@ -192,7 +192,7 @@ D2D1_ROUNDED_RECT FrameDrawer::ConvertRect(RECT rect, int thickness, float radiu
         (float)rect.top + halfThickness + 1, 
         (float)rect.right - halfThickness - 1, 
         (float)rect.bottom - halfThickness - 1);
-    return D2D1::RoundedRect(d2d1Rect, radius, radius);
+    return D2D1::RoundedRect(d2d1Rect, radius - halfThickness, radius - halfThickness);
 }
 
 D2D1_RECT_F FrameDrawer::ConvertRect(RECT rect, int thickness)
