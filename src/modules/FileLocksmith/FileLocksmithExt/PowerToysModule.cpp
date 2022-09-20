@@ -16,7 +16,7 @@ public:
     FileLocksmithModule()
     {
         m_enabled = true;
-        LoggerHelpers::init_logger(constants::nonlocalizable::PowerToyKey, L"ModuleInterface", LogSettings::fileLocksmithLoggerName);
+        LoggerHelpers::init_logger(constants::nonlocalizable::PowerToyName, L"ModuleInterface", LogSettings::fileLocksmithLoggerName);
     }
 
 
@@ -41,7 +41,7 @@ public:
         settings.set_description(L"TODO: GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION");
         settings.set_icon_key(L"TODO: pt-file-locksmith");
 
-        // Link to the GitHub PowerRename sub-page
+        // Link to the GitHub FileLocksmith sub-page
         settings.set_overview_link(L"TODO: GET_RESOURCE_STRING(IDS_OVERVIEW_LINK)");
 
         return settings.serialize_to_buffer(buffer, buffer_size);
