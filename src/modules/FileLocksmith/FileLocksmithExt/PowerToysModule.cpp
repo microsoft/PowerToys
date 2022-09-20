@@ -10,6 +10,7 @@
 #include "dllmain.h"
 #include "Settings.h"
 #include "Trace.h"
+#include "../FileLocksmithLib/Generated Files/resource.h"
 
 class FileLocksmithModule : public PowertoyModuleIface
 {
@@ -22,7 +23,9 @@ public:
 
     virtual const wchar_t* get_name() override
     {
-        return constants::localizable::PowerToyName;
+        static WCHAR buffer[128];
+        LoadStringW(globals::instance, IDS_FILELOCKSMITH_POWERTOYNAME, buffer, ARRAYSIZE(buffer));
+        return buffer;
     }
 
     virtual const wchar_t* get_key() override
