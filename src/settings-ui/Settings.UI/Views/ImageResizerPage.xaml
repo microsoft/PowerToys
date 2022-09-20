@@ -18,7 +18,6 @@
         <toolkitconverters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="0" FalseValue="1"/>
     </Page.Resources>
     <controls:SettingsPageControl x:Uid="ImageResizer"
-                                    
                                   ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel>
@@ -34,7 +33,7 @@
 
 
                 <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="ImageResizer_Presets" Icon="&#xE2B2;">
+                    <controls:Setting x:Uid="ImageResizer_Presets" Icon="&#xE792;">
                         <controls:Setting.ActionContent>
                             <Button x:Uid="ImageResizer_AddSizeButton" Click="AddSizeButton_Click" Style="{ThemeResource AccentButtonStyle}" />
                         </controls:Setting.ActionContent>

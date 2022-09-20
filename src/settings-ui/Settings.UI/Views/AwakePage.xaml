@@ -30,7 +30,7 @@
 
                 <controls:SettingsGroup x:Uid="Awake_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                  
-                    <controls:Setting x:Uid="Awake_Mode" Icon="&#xEC4E;" >
+                    <controls:Setting x:Uid="Awake_Mode" Icon="&#xE945;" >
                         <controls:Setting.ActionContent>
                             <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
                                       SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
