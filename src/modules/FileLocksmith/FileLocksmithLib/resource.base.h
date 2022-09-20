@@ -5,5 +5,9 @@
 //////////////////////////////
 // Non-localizable
 
+#define FILE_DESCRIPTION "PowerToys File Locksmith Static Library"
+#define INTERNAL_NAME "PowerToys.FileLocksmithLib.lib"
+#define ORIGINAL_FILENAME "PowerToys.FileLocksmithLib.lib"
+
 // Non-localizable
 //////////////////////////////
