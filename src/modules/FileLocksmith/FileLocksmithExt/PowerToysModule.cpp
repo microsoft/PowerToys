@@ -9,6 +9,7 @@
 #include "Constants.h"
 #include "dllmain.h"
 #include "Settings.h"
+#include "Trace.h"
 
 class FileLocksmithModule : public PowertoyModuleIface
 {
@@ -70,6 +71,7 @@ public:
         Logger::info(L"File Locksmith enabled");
         m_enabled = true;
         save_settings();
+        Trace::EnableFileLocksmith(m_enabled);
     }
 
     virtual void disable() override
@@ -77,6 +79,7 @@ public:
         Logger::info(L"File Locksmith disabled");
         m_enabled = false;
         save_settings();
+        Trace::EnableFileLocksmith(m_enabled);
     }
 
     virtual bool is_enabled() override

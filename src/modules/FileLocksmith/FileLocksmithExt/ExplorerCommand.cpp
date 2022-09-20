@@ -4,6 +4,7 @@
 #include "Constants.h"
 #include "Settings.h"
 #include "dllmain.h"
+#include "Trace.h"
 
 // Implementations of inherited IUnknown methods
 
@@ -130,6 +131,7 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
         if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
         {
             hr = HRESULT_FROM_WIN32(GetLastError());
+            Trace::QueryContextMenuError(hr);
         }
         else
         {
@@ -142,15 +144,18 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
 
 IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
 {
+    Trace::Invoked();
     ipc::Writer writer;
 
     if (HRESULT result = writer.start(); FAILED(result))
     {
+        Trace::InvokedRet(result);
         return result;
     }
 
     if (HRESULT result = LaunchUI(pici, &writer); FAILED(result))
     {
+        Trace::InvokedRet(result);
         return result;
     }
 
@@ -182,6 +187,7 @@ IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
         shell_item_array->Release();
     }
 
+    Trace::InvokedRet(S_OK);
     return S_OK;
 }
 

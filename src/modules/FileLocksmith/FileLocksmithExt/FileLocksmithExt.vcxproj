@@ -167,6 +167,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Registry.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="Trace.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClassFactory.cpp" />
@@ -181,6 +182,7 @@
     <ClCompile Include="PowerToysModule.cpp" />
     <ClCompile Include="Registry.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="Trace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dll.def" />
