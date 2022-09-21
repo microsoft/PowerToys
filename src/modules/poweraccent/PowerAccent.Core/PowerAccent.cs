@@ -24,23 +24,19 @@ public class PowerAccent : IDisposable
     private char[] _characters = Array.Empty<char>();
     private UnicodeCharInfo[] _characterNames = Array.Empty<UnicodeCharInfo>();
     private int _selectedIndex = -1;
+    private bool _showDescription;
 
-    public LetterKey[] SpecialLetterKeys
-    {
-        get { return _specialLetterKeys; }
-    }
+    public LetterKey[] SpecialLetterKeys => _specialLetterKeys;
 
-    public UnicodeCharInfo[] CharacterNames
-    {
-        get { return _characterNames; }
-        set { _characterNames = value; }
-    }
+    public bool ShowDescription => _showDescription;
+
+    public UnicodeCharInfo[] CharacterNames => _characterNames;
 
     public event Action<bool, char[]> OnChangeDisplay;
 
     public event Action<int, char> OnSelectCharacter;
 
-    private KeyboardListener _keyboardListener;
+    private readonly KeyboardListener _keyboardListener;
 
     public PowerAccent()
     {
@@ -84,14 +80,17 @@ public class PowerAccent : IDisposable
         _characters = WindowsFunctions.IsCapitalState() ? ToUpper(SettingsService.GetDefaultLetterKey(letterKey)) : SettingsService.GetDefaultLetterKey(letterKey);
         _characterNames = GetCharacterNames(_characters);
 
+        Core.PowerAccent.ShowCharacterInfoSetting characterInfoSetting = Core.PowerAccent.ShowCharacterInfoSetting.SpecialCharacters;
+        _showDescription = characterInfoSetting == Core.PowerAccent.ShowCharacterInfoSetting.Always || (characterInfoSetting == Core.PowerAccent.ShowCharacterInfoSetting.SpecialCharacters && ((IList<LetterKey>)_specialLetterKeys).Contains(letterKey));
+
         Task.Delay(_settingService.InputTime).ContinueWith(
-            t =>
+        t =>
+        {
+            if (_visible)
             {
-                if (_visible)
-                {
-                    OnChangeDisplay?.Invoke(true, _characters);
-                }
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+                OnChangeDisplay?.Invoke(true, _characters);
+            }
+        }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     private UnicodeCharInfo[] GetCharacterNames(char[] characters)
