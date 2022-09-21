@@ -1,0 +1,333 @@
+<Project>
+  <PropertyGroup>
+    <AssemblyName>PowerToys.ColorPickerUI</AssemblyName>
+    <IntermediateOutputPath>obj\x64\Debug\</IntermediateOutputPath>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\</MSBuildProjectExtensionsPath>
+    <_TargetAssemblyProjectName>ColorPickerUI</_TargetAssemblyProjectName>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="..\..\..\Version.props" />
+  <PropertyGroup>
+    <AssemblyTitle>PowerToys.ColorPickerUI</AssemblyTitle>
+    <AssemblyDescription>PowerToys ColorPicker</AssemblyDescription>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\ColorPicker</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <UseWPF>true</UseWPF>
+    <StartupObject>ColorPicker.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ProjectGuid>{BA58206B-1493-4C75-BFEA-A85768A1E156}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>ColorPicker</RootNamespace>
+    <AssemblyName>PowerToys.ColorPickerUI</AssemblyName>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DefineConstants>TRACE</DefineConstants>
+    <DebugType>pdbonly</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <ApplicationManifest>App.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="ModernWpfUI" Version="0.9.4" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="Resources\colorPicker.cur">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Shaders\GridShader.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\Accessibility.dll" />
+    <ReferencePath Include="C:\Users\jeff\.nuget\packages\controlzex\5.0.1\lib\net5.0-windows7.0\ControlzEx.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\Microsoft.CSharp.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\Microsoft.VisualBasic.Core.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\Microsoft.VisualBasic.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\Microsoft.VisualBasic.Forms.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\Microsoft.Win32.Primitives.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\Microsoft.Win32.Registry.AccessControl.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\Microsoft.Win32.Registry.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\Microsoft.Win32.SystemEvents.dll" />
+    <ReferencePath Include="C:\Users\jeff\.nuget\packages\microsoft.windows.sdk.net.ref\10.0.19041.26\lib\Microsoft.Windows.SDK.NET.dll" />
+    <ReferencePath Include="C:\Users\jeff\.nuget\packages\microsoft.xaml.behaviors.wpf\1.1.39\lib\net5.0-windows7.0\Microsoft.Xaml.Behaviors.dll" />
+    <ReferencePath Include="C:\Users\jeff\.nuget\packages\modernwpfui\0.9.4\lib\net5.0-windows10.0.18362.0\ModernWpf.Controls.dll" />
+    <ReferencePath Include="C:\Users\jeff\.nuget\packages\modernwpfui\0.9.4\lib\net5.0-windows10.0.18362.0\ModernWpf.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\mscorlib.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\netstandard.dll" />
+    <ReferencePath Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\common\Common.UI\bin\x64\Debug\net6.0-windows\PowerToys.Common.UI.dll" />
+    <ReferencePath Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\x64\Debug\PowerToys.Interop.dll" />
+    <ReferencePath Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\common\ManagedCommon\bin\x64\Debug\net6.0-windows\PowerToys.ManagedCommon.dll" />
+    <ReferencePath Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\common\ManagedTelemetry\Telemetry\bin\x64\Debug\net6.0-windows\PowerToys.ManagedTelemetry.dll" />
+    <ReferencePath Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\settings-ui\Settings.UI.Library\bin\x64\Debug\net6.0-windows\PowerToys.Settings.UI.Lib.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\PresentationCore.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\PresentationFramework.Aero.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\PresentationFramework.Aero2.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\PresentationFramework.AeroLite.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\PresentationFramework.Classic.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\PresentationFramework.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\PresentationFramework.Luna.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\PresentationFramework.Royale.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\PresentationUI.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\ReachFramework.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.AppContext.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Buffers.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.CodeDom.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Collections.Concurrent.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Collections.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Collections.Immutable.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Collections.NonGeneric.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Collections.Specialized.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.ComponentModel.Annotations.dll" />
+    <ReferencePath Include="C:\Users\jeff\.nuget\packages\system.componentmodel.composition\6.0.0\lib\net6.0\System.ComponentModel.Composition.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.ComponentModel.DataAnnotations.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.ComponentModel.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.ComponentModel.EventBasedAsync.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.ComponentModel.Primitives.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.ComponentModel.TypeConverter.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Configuration.ConfigurationManager.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Configuration.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Console.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Core.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Data.Common.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Data.DataSetExtensions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Data.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Design.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.Contracts.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.Debug.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.DiagnosticSource.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.EventLog.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.FileVersionInfo.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.PerformanceCounter.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.Process.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.StackTrace.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.TextWriterTraceListener.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.Tools.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.TraceSource.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Diagnostics.Tracing.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.DirectoryServices.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Drawing.Common.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Drawing.Design.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Drawing.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Drawing.Primitives.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Dynamic.Runtime.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Formats.Asn1.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Globalization.Calendars.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Globalization.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Globalization.Extensions.dll" />
+    <ReferencePath Include="C:\Users\jeff\.nuget\packages\system.io.abstractions\12.2.5\lib\netstandard2.1\System.IO.Abstractions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.Compression.Brotli.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.Compression.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.Compression.FileSystem.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.Compression.ZipFile.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.FileSystem.AccessControl.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.FileSystem.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.FileSystem.DriveInfo.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.FileSystem.Primitives.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.FileSystem.Watcher.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.IsolatedStorage.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.MemoryMappedFiles.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.IO.Packaging.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.Pipes.AccessControl.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.Pipes.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.IO.UnmanagedMemoryStream.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Linq.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Linq.Expressions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Linq.Parallel.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Linq.Queryable.dll" />
+    <ReferencePath Include="C:\Users\jeff\.nuget\packages\system.management\6.0.0\lib\net6.0\System.Management.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Memory.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.Http.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.Http.Json.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.HttpListener.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.Mail.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.NameResolution.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.NetworkInformation.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.Ping.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.Primitives.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.Requests.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.Security.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.ServicePoint.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.Sockets.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.WebClient.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.WebHeaderCollection.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.WebProxy.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.WebSockets.Client.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Net.WebSockets.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Numerics.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Numerics.Vectors.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.ObjectModel.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Printing.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Reflection.DispatchProxy.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Reflection.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Reflection.Emit.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Reflection.Emit.ILGeneration.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Reflection.Emit.Lightweight.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Reflection.Extensions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Reflection.Metadata.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Reflection.Primitives.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Reflection.TypeExtensions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Resources.Extensions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Resources.Reader.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Resources.ResourceManager.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Resources.Writer.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.CompilerServices.Unsafe.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.CompilerServices.VisualC.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.Extensions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.Handles.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.InteropServices.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.InteropServices.RuntimeInformation.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.Intrinsics.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.Loader.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.Numerics.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.Serialization.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.Serialization.Formatters.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.Serialization.Json.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.Serialization.Primitives.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Runtime.Serialization.Xml.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.AccessControl.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.Claims.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.Cryptography.Algorithms.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.Cryptography.Cng.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.Cryptography.Csp.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.Cryptography.Encoding.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.Cryptography.OpenSsl.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Security.Cryptography.Pkcs.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.Cryptography.Primitives.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Security.Cryptography.ProtectedData.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.Cryptography.X509Certificates.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Security.Cryptography.Xml.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Security.Permissions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.Principal.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.Principal.Windows.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Security.SecureString.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.ServiceModel.Web.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.ServiceProcess.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Text.Encoding.CodePages.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Text.Encoding.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Text.Encoding.Extensions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Text.Encodings.Web.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Text.Json.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Text.RegularExpressions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Threading.AccessControl.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Threading.Channels.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Threading.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Threading.Overlapped.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Threading.Tasks.Dataflow.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Threading.Tasks.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Threading.Tasks.Extensions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Threading.Tasks.Parallel.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Threading.Thread.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Threading.ThreadPool.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Threading.Timer.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Transactions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Transactions.Local.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.ValueTuple.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Web.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Web.HttpUtility.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Windows.Controls.Ribbon.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Windows.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Windows.Extensions.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Windows.Forms.Design.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Windows.Forms.Design.Editors.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Windows.Forms.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Windows.Forms.Primitives.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Windows.Input.Manipulations.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Windows.Presentation.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\System.Xaml.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Xml.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Xml.Linq.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Xml.ReaderWriter.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Xml.Serialization.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Xml.XDocument.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Xml.XmlDocument.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Xml.XmlSerializer.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Xml.XPath.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\ref\net6.0\System.Xml.XPath.XDocument.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\UIAutomationClient.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\UIAutomationClientSideProviders.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\UIAutomationProvider.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\UIAutomationTypes.dll" />
+    <ReferencePath Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\ref\net6.0\WindowsBase.dll" />
+    <ReferencePath Include="C:\Users\jeff\.nuget\packages\microsoft.windows.sdk.net.ref\10.0.19041.26\lib\WinRT.Runtime.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\x64\Debug\ColorEditorWindow.g.cs" />
+    <Compile Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\x64\Debug\Controls\ColorFormatControl.g.cs" />
+    <Compile Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\x64\Debug\Controls\ColorPickerControl.g.cs" />
+    <Compile Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\x64\Debug\MainWindow.g.cs" />
+    <Compile Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\x64\Debug\Views\ColorEditorView.g.cs" />
+    <Compile Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\x64\Debug\Views\MainView.g.cs" />
+    <Compile Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\x64\Debug\Views\ZoomView.g.cs" />
+    <Compile Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\x64\Debug\ZoomWindow.g.cs" />
+    <Compile Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\x64\Debug\App.g.cs" />
+    <Compile Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\x64\Debug\PowerToys.ColorPickerUI_Content.g.cs" />
+    <Compile Include="C:\Users\jeff\Source\Repos\PowerToys-jefflord\src\modules\colorPicker\ColorPickerUI\obj\x64\Debug\GeneratedInternalTypeHelper.g.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="C:\Users\jeff\.nuget\packages\microsoft.codeanalysis.netanalyzers\6.0.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll" />
+    <Analyzer Include="C:\Users\jeff\.nuget\packages\microsoft.codeanalysis.netanalyzers\6.0.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.NetAnalyzers.dll" />
+    <Analyzer Include="C:\Users\jeff\.nuget\packages\stylecop.analyzers\1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="C:\Users\jeff\.nuget\packages\stylecop.analyzers\1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+    <Analyzer Include="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\6.0.8\analyzers/dotnet/cs/System.Text.Json.SourceGeneration.dll" />
+    <Analyzer Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\analyzers/dotnet/System.Windows.Forms.Analyzers.dll" />
+    <Analyzer Include="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.8\analyzers/dotnet/cs/System.Windows.Forms.Analyzers.CSharp.dll" />
+  </ItemGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

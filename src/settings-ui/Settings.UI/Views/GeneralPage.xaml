@@ -251,7 +251,7 @@
                                         </Grid.RowDefinitions>
 
                                         <Border Grid.Row="0" Grid.Column="0">
-                                            <muxc:TextBox                                                  
+                                            <TextBox                                                  
                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"   
                                         MaxWidth="600"
                                         MinWidth="200"
@@ -504,7 +504,7 @@
                         <controls:Setting.Description>
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <muxc:TextBox                                                  
+                                    <TextBox                                                  
                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"   
                                         MaxWidth="600"
                                         MinWidth="300"
@@ -609,7 +609,7 @@
 
 
                     <!-- SettingsBackupWasSuccessful -->
-                    <muxc:InfoBar x:Uid="General_SettingsBackupMessageResults"
+                    <InfoBar x:Uid="General_SettingsBackupMessageResults"
                                   IsClosable="False"
                                   Severity="Success"
                                   IsTabStop="{Binding SettingsBackupWasSuccessful, Mode=OneWay}"
@@ -617,13 +617,13 @@
                                   Message="{Binding SettingsBackupMessage}"/>
 
                     <!-- SettingsBackupWasUnsuccessful  -->
-                    <muxc:InfoBar x:Uid="General_SettingsBackupMessageResults"
+                    <InfoBar x:Uid="General_SettingsBackupMessageResults"
                                   IsClosable="False"
                                   Severity="Warning"
                                   IsTabStop="{Binding SettingsBackupWasUnsuccessful, Mode=OneWay}"
                                   IsOpen="{Binding SettingsBackupWasUnsuccessful, Mode=OneWay}"
                                   Message="{Binding SettingsBackupMessage}">
-                    </muxc:InfoBar>
+                    </InfoBar>
 
                     <!-- GeneralPage_ToggleSwitch_AutoAutoBackup  -->
                     <controls:Setting x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates"
@@ -662,7 +662,7 @@
                         <controls:Setting.Description>
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Visibility="Collapsed">
-                                    <muxc:TextBox                                                  
+                                    <TextBox                                                  
                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"   
                                         MaxWidth="600"
                                         MinWidth="300"
@@ -1083,7 +1083,7 @@
 
 
                 <!-- SettingsBackupWasSuccessful -->
-                <muxc:InfoBar x:Uid="General_SettingsBackupMessageResults"
+                <InfoBar x:Uid="General_SettingsBackupMessageResults"
                                   IsClosable="False"
                                   Severity="Success"
                                   IsTabStop="{Binding SettingsBackupWasSuccessful, Mode=OneWay}"
@@ -1091,13 +1091,13 @@
                                   Message="{Binding SettingsBackupMessage}"/>
 
                 <!-- SettingsBackupWasUnsuccessful  -->
-                <muxc:InfoBar x:Uid="General_SettingsBackupMessageResults"
+                <InfoBar x:Uid="General_SettingsBackupMessageResults"
                                   IsClosable="False"
                                   Severity="Warning"
                                   IsTabStop="{Binding SettingsBackupWasUnsuccessful, Mode=OneWay}"
                                   IsOpen="{Binding SettingsBackupWasUnsuccessful, Mode=OneWay}"
                                   Message="{Binding SettingsBackupMessage}">
-                </muxc:InfoBar>
+                </InfoBar>
 
             </StackPanel>
 
