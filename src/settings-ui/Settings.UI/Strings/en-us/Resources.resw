@@ -2275,13 +2275,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Attribution</value>
   </data>
   <data name="Oobe_QuickAccent.Description" xml:space="preserve">
-    <value>Quick Accent is an easy way to write letters with accents, like on the phone.</value>
+    <value>Quick Accent is an easy way to write letters with accents, like on a smartphone.</value>
   </data>
   <data name="Oobe_QuickAccent.Title" xml:space="preserve">
     <value>Quick Accent</value>
   </data>
   <data name="Oobe_QuickAccent_HowToUse.Text" xml:space="preserve">
-    <value>Open **PowerToys Settings** and enable Quick Accent. While holding the key for the character you want to add an accent to, press the Activation Key and an overlay to select the accented character will appear.</value>
+    <value>Open **PowerToys Settings** and enable Quick Accent. While holding the key for the character you want to add an accent to, press and hold the Activation Key and an overlay to select the accented character will appear.</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_GroupSettings.Header" xml:space="preserve">
@@ -2289,9 +2289,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_Activation_Shortcut.Header" xml:space="preserve">
     <value>Activation key</value>
+    <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Shortcut.Description" xml:space="preserve">
     <value>This is the extra key needed to activate after you are holding your target letter.</value>
+    <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Arrows.Content" xml:space="preserve">
     <value>Left/Right Arrow</value>
@@ -2301,8 +2303,9 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Space</value>
     <comment>Space is the space keyboard key.</comment>
   </data>
-  <data name="QuickAccent_Activation_Key_Both.Content" xml:space="preserve">
-    <value>Both</value>
+  <data name="QuickAccent_Activation_Key_Either.Content" xml:space="preserve">
+    <value>Left, Right or Space</value>
+    <comment>All are keys on a keyboard</comment>
   </data>
   <data name="QuickAccent_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>

@@ -30,7 +30,7 @@
                                       SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}" >
                                 <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows"/>
                                 <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space"/>
-                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Both"/>
+                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either"/>
                             </ComboBox>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
