@@ -110,6 +110,7 @@ namespace winrt::FileLocksmithGUI::implementation
         // Construct the UI element and display it
         Controls::TextBlock text_block;
         text_block.Text(text);
+        text_block.FontSize(24.0);
         text_block.HorizontalAlignment(HorizontalAlignment::Center);
         text_block.VerticalAlignment(VerticalAlignment::Center);
         stackPanel().Children().Append(text_block);
