@@ -27,8 +27,11 @@ namespace Hosts
                     _ = new App();
                 });
             }
+            else
+            {
+                Logger.LogWarning("Another instance of Hosts running. Exiting Hosts");
+            }
 
-            Logger.LogWarning("Another instance of Hosts running. Exiting Hosts");
             return;
         }
     }
