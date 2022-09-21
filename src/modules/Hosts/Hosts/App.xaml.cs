@@ -92,12 +92,19 @@ namespace Hosts
             {
                 if (int.TryParse(cmdArgs[cmdArgs.Length - 1], out int powerToysRunnerPid))
                 {
+                    Logger.LogInfo($"Hosts started from the PowerToys Runner. Runner pid={powerToysRunnerPid}");
+
                     var dispatcher = DispatcherQueue.GetForCurrentThread();
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {
+                        Logger.LogInfo("PowerToys Runner exited. Exiting Hosts");
                         dispatcher.TryEnqueue(App.Current.Exit);
                     });
                 }
+            }
+            else
+            {
+                Logger.LogInfo($"Hosts started detached from PowerToys Runner.");
             }
 
             _window = new MainWindow();
