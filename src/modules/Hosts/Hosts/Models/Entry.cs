@@ -52,7 +52,7 @@ namespace Hosts.Models
 
         public bool Valid => ValidationHelper.ValidHosts(_hosts) && (ValidationHelper.ValidIPv4(_address) || ValidationHelper.ValidIPv6(_address));
 
-        private Entry()
+        public Entry()
         {
         }
 

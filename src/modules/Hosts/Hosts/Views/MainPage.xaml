@@ -7,6 +7,7 @@
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:local="using:Hosts.Views"
+    xmlns:models="using:Hosts.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
@@ -282,6 +283,9 @@
             x:Uid="EntryDialog"
             IsPrimaryButtonEnabled="{Binding Valid, Mode=TwoWay}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <ContentDialog.DataContext>
+                <models:Entry />
+            </ContentDialog.DataContext>
             <StackPanel
                 MinWidth="480"
                 Margin="0,12,0,0"
