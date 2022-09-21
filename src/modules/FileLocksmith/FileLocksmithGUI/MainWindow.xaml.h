@@ -10,9 +10,9 @@ namespace winrt::FileLocksmithGUI::implementation
         MainWindow();
         void DisplayNoResultsInfo();
     private:
-        std::vector<ProcessResult> m_process_info;
         void find_processes();
         void place_and_resize();
+        void display_text_info(std::wstring text);
     };
 }
 

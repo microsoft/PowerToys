@@ -9,6 +9,8 @@
 
 #pragma comment(lib, "shcore") // GetDpiForMonitor
 
+#include <winrt/Windows.System.Threading.h>
+
 using namespace winrt;
 using namespace Microsoft::UI;
 using namespace Microsoft::UI::Xaml;
@@ -23,27 +25,34 @@ namespace winrt::FileLocksmithGUI::implementation
         Title(L"File Locksmith");
         place_and_resize();
         InitializeComponent();
-        find_processes();
+        
+        std::thread([&] {
+            find_processes();
+        }).detach();
+
+        display_text_info(L"Working...");
     }
 
     void MainWindow::find_processes()
     {
         auto paths = ipc::read_paths_from_stdin();
-        m_process_info = find_processes_recursive(paths);
+        auto process_info = find_processes_recursive(paths);
 
-        // TODO move to another thread
-        stackPanel().Children().Clear();
+        // Show results using the UI thread
+        DispatcherQueue().TryEnqueue([&, process_info = std::move(process_info)] {
+            stackPanel().Children().Clear();
 
-        for (const auto& process : m_process_info)
-        {
-            ProcessEntry entry(process.name, process.pid, process.num_files);
-            stackPanel().Children().Append(entry);
-        }
+            for (const auto& process : process_info)
+            {
+                ProcessEntry entry(process.name, process.pid, process.num_files);
+                stackPanel().Children().Append(entry);
+            }
 
-        if (m_process_info.empty())
-        {
-            DisplayNoResultsInfo();
-        }
+            if (process_info.empty())
+            {
+                DisplayNoResultsInfo();
+            }
+        });
     }
 
     void MainWindow::place_and_resize()
@@ -91,11 +100,18 @@ namespace winrt::FileLocksmithGUI::implementation
 
     void MainWindow::DisplayNoResultsInfo()
     {
+        display_text_info(L"No results.");
+    }
+
+    void MainWindow::display_text_info(std::wstring text)
+    {
+        stackPanel().Children().Clear();
+
         // Construct the UI element and display it
-        Controls::TextBlock text;
-        text.Text(L"No results.");
-        text.HorizontalAlignment(HorizontalAlignment::Center);
-        text.VerticalAlignment(VerticalAlignment::Center);
-        stackPanel().Children().Append(text);
+        Controls::TextBlock text_block;
+        text_block.Text(text);
+        text_block.HorizontalAlignment(HorizontalAlignment::Center);
+        text_block.VerticalAlignment(VerticalAlignment::Center);
+        stackPanel().Children().Append(text_block);
     }
 }
