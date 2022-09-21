@@ -666,7 +666,7 @@
                 </controls:SettingsGroup>
 
                 <!--vTEST End Option D -->
-                <controls:SettingsGroup x:Uid="ShortcutGuide_SettingsBackupAndRestore" Visibility="Visible">
+                <controls:SettingsGroup x:Uid="ShortcutGuide_SettingsBackupAndRestore" Visibility="Collapsed">
                     <controls:Setting x:Uid="ShortcutGuide_SettingsBackupAndRestore" Icon="&#xE777;">
                         <controls:Setting.Description>
                             <StackPanel>
