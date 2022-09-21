@@ -197,13 +197,11 @@ steps:
       **\Microsoft.PowerToys.Run.Plugin.TimeZone.UnitTests.dll
       **\Microsoft.Plugin.WindowsTerminal.UnitTests.dll
       **\Microsoft.Plugin.WindowWalker.UnitTests.dll
+      **\PreviewPaneUnitTests.dll
+      **\UnitTests-SvgThumbnailProvider.dll
+      **\UnitTests-SvgPreviewHandler.dll
       !**\obj\**
       !**\ref\**
-
-# TODO: Enable these tests after figuring out what caused the tests that depend on WebView2 to start timing out in CI.
-#  **\PreviewPaneUnitTests.dll # It's UnitTests-MarkdownPreviewHandler
-#  **\UnitTests-SvgThumbnailProvider.dll
-#  **\UnitTests-SvgPreviewHandler.dll
 
 # Native dlls
 - task: VSTest@2
