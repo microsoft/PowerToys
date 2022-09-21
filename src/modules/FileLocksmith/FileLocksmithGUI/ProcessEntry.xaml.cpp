@@ -42,5 +42,11 @@ namespace winrt::FileLocksmithGUI::implementation
         {
             siblings.RemoveAt(index);
         }
+
+        if (siblings.Size() == 0)
+        {
+            auto main_window = Parent().as<Controls::StackPanel>().Parent().as<MainWindow>();
+            main_window.DisplayNoResultsInfo();
+        }
     }
 }
