@@ -41,11 +41,6 @@ public:
 
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(L"TODO: GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION");
-        settings.set_icon_key(L"TODO: pt-file-locksmith");
-
-        // Link to the GitHub FileLocksmith sub-page
-        settings.set_overview_link(L"TODO: GET_RESOURCE_STRING(IDS_OVERVIEW_LINK)");
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -60,8 +55,7 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            // TODO: Trace
-            // Trace::SettingsChanged();
+            // Currently, there are no settings, so we don't do anything.
         }
         catch (std::exception& e)
         {
