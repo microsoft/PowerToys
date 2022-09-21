@@ -11,7 +11,6 @@ namespace Common.ComInterlop
     /// The COLORREF value is used to specify an RGB color.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Interop")]
     public struct COLORREF
     {
         /// <summary>

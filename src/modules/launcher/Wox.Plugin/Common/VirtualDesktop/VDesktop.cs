@@ -5,11 +5,11 @@ using System;
 
 namespace Wox.Plugin.Common.VirtualDesktop.Helper
 {
- /// <summary>
- /// Class that represents a Virtual Desktop
- /// </summary>
- /// <remarks>This class is named VDesktop to make clear it isn't an instance of the original Desktop class from Virtual Desktop Manager.
- /// We can't use the original one, because therefore we must access private com interfaces. We aren't allowed to do this, because this is an official Microsoft project.</remarks>
+    /// <summary>
+    /// Class that represents a Virtual Desktop
+    /// </summary>
+    /// <remarks>This class is named VDesktop to make clear it isn't an instance of the original Desktop class from Virtual Desktop Manager.
+    /// We can't use the original one, because therefore we must access private com interfaces. We aren't allowed to do this, because this is an official Microsoft project.</remarks>
     public class VDesktop
     {
         /// <summary>

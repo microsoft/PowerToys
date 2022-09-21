@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using UnitsNet;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter

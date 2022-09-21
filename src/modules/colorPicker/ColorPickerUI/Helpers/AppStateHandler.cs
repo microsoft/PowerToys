@@ -212,9 +212,7 @@ namespace ColorPicker.Helpers
             _hwndSource = hwndSource;
         }
 
-#pragma warning disable CA1801 // Review unused parameters
         public IntPtr ProcessWindowMessages(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
-#pragma warning restore CA1801 // Review unused parameters
         {
             switch (msg)
             {

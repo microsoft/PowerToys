@@ -13,12 +13,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// </summary>
     internal static class ResultHelper
     {
-         /// <summary>
-         /// Returns a list of all results for the query.
-         /// </summary>
-         /// <param name="searchControllerResults">List with all search controller matches</param>
-         /// <param name="icon">The path to the result icon</param>
-         /// <returns>List of results</returns>
+        /// <summary>
+        /// Returns a list of all results for the query.
+        /// </summary>
+        /// <param name="searchControllerResults">List with all search controller matches</param>
+        /// <param name="icon">The path to the result icon</param>
+        /// <returns>List of results</returns>
         internal static List<Result> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch, string icon, string infoIcon)
         {
             bool addExplorerInfo = false;
@@ -113,7 +113,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
                 return new ToolTipData(window.Title, text);
             }
-           else
+            else
             {
                 string text = $"hWnd: {window.Hwnd}\n" +
                     $"Window class: {window.ClassName}\n" +
@@ -134,7 +134,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     $"Is AllDesktops view: {window.Desktop.IsAllDesktopsView}";
 
                 return new ToolTipData(window.Title, text);
-           }
+            }
         }
 
         /// <summary>

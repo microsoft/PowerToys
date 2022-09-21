@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -24,7 +23,7 @@ namespace PowerAccent.Core.Tools
             }
 
             // Using InvariantCulture since this is used for a log file name
-            var logFilePath = _fileSystem.Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
+            string logFilePath = _fileSystem.Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
@@ -71,8 +70,8 @@ namespace PowerAccent.Core.Tools
         {
             StackTrace stackTrace = new StackTrace();
 
-            var methodName = stackTrace.GetFrame(3)?.GetMethod();
-            var className = methodName?.DeclaringType?.Name;
+            System.Reflection.MethodBase methodName = stackTrace.GetFrame(3)?.GetMethod();
+            string className = methodName?.DeclaringType?.Name;
             return "[Method]: " + methodName?.Name + " [Class]: " + className;
         }
     }

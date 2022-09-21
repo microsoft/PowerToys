@@ -290,11 +290,11 @@ namespace FancyZonesEditor
 
                 if (IsActualSize)
                 {
-                   rect.Style = (Style)FindResource("CanvasLayoutActualScalePreviewStyle");
+                    rect.Style = (Style)FindResource("CanvasLayoutActualScalePreviewStyle");
                 }
                 else
                 {
-                   rect.Style = (Style)FindResource("CanvasLayoutSmallScalePreviewStyle");
+                    rect.Style = (Style)FindResource("CanvasLayoutSmallScalePreviewStyle");
                 }
 
                 frame.Children.Add(rect);

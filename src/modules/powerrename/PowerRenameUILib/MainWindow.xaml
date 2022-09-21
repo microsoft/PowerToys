@@ -7,7 +7,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:PowerRenameUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
 
     <Grid Padding="12" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -88,7 +87,7 @@
                 BorderThickness="0"
                 HorizontalAlignment="Right"
                 Background="Transparent"
-                Content="&#xE16E;"
+                Content="&#xE71C;"
                 FontFamily="{ThemeResource SymbolThemeFontFamily}">
                 <Button.Flyout>
                     <MenuBarItemFlyout Placement="Bottom">
@@ -376,7 +375,7 @@
                         x:Uid="ToggleButton_IncludeFiles"
                         Height="31"
                         MinHeight="0"
-                        Content="&#xE160;"
+                        Content="&#xE7C3;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         IsChecked="True"
                         Style="{StaticResource CustomToggleButtonStyle}" />
@@ -394,7 +393,7 @@
                         x:Uid="ToggleButton_IncludeSubFolders"
                         Height="31"
                         MinHeight="0"
-                        Content="&#xE12F;"
+                        Content="&#xED41;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         IsChecked="True"
                         Style="{StaticResource CustomToggleButtonStyle}" />
@@ -534,7 +533,7 @@
 
 
 
-        <muxc:SplitButton
+        <SplitButton
             x:Name="button_rename"
             x:Uid="ButtonApply"
             Grid.Row="2"
@@ -544,11 +543,11 @@
             VerticalAlignment="Bottom"
             Click="button_rename_Click"
             Style="{StaticResource SplitAccentButtonStyle}">
-            <muxc:SplitButton.KeyboardAccelerators>
+            <SplitButton.KeyboardAccelerators>
                 <KeyboardAccelerator Key="Enter" />
                 <KeyboardAccelerator Key="Enter" Modifiers="Control" />
-            </muxc:SplitButton.KeyboardAccelerators>
-            <muxc:SplitButton.Content>
+            </SplitButton.KeyboardAccelerators>
+            <SplitButton.Content>
                 <StackPanel Orientation="Horizontal">
                     <FontIcon
                         Margin="0,2,10,0"
@@ -557,13 +556,13 @@
                         Glyph="&#xE8AC;" />
                     <TextBlock x:Uid="TxtBlock_ButtonApply" />
                 </StackPanel>
-            </muxc:SplitButton.Content>
-            <muxc:SplitButton.Flyout>
+            </SplitButton.Content>
+            <SplitButton.Flyout>
                 <MenuFlyout>
                     <MenuFlyoutItem x:Uid="TxtBlock_ButtonApplyAndClose" Click="MenuFlyoutItem_Click" />
                 </MenuFlyout>
-            </muxc:SplitButton.Flyout>
-        </muxc:SplitButton>
+            </SplitButton.Flyout>
+        </SplitButton>
 
         <!--<StackPanel x:Name="TitleBar" Orientation="Horizontal">
             <Image Source="Assets/PowerRename.png" Width="16" Height="16" VerticalAlignment="Top" Margin="20,9,0,0"/>

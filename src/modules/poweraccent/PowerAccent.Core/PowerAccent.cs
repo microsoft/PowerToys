@@ -159,7 +159,7 @@ public class PowerAccent : IDisposable
 
     public Point GetDisplayCoordinates(Size window)
     {
-        var activeDisplay = WindowsFunctions.GetActiveDisplay();
+        (Point Location, Size Size, double Dpi) activeDisplay = WindowsFunctions.GetActiveDisplay();
         Rect screen = new Rect(activeDisplay.Location, activeDisplay.Size) / activeDisplay.Dpi;
         Position position = _settingService.Position;
 
@@ -179,7 +179,14 @@ public class PowerAccent : IDisposable
         char[] result = new char[array.Length];
         for (int i = 0; i < array.Length; i++)
         {
-            result[i] = char.ToUpper(array[i], System.Globalization.CultureInfo.InvariantCulture);
+            if (array[i] == 'ß')
+            {
+                result[i] = 'ẞ';
+            }
+            else
+            {
+                result[i] = char.ToUpper(array[i], System.Globalization.CultureInfo.InvariantCulture);
+            }
         }
 
         return result;
