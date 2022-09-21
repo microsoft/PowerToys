@@ -123,9 +123,12 @@ namespace Microsoft.PowerToys.Settings.UI
                         case "KBM": StartupPage = typeof(Views.KeyboardManagerPage); break;
                         case "MouseUtils": StartupPage = typeof(Views.MouseUtilsPage); break;
                         case "PowerRename": StartupPage = typeof(Views.PowerRenamePage); break;
+                        case "QuickAccent": StartupPage = typeof(Views.PowerAccentPage); break;
                         case "FileExplorer": StartupPage = typeof(Views.PowerPreviewPage); break;
                         case "ShortcutGuide": StartupPage = typeof(Views.ShortcutGuidePage); break;
+                        case "TextExtractor": StartupPage = typeof(Views.PowerOcrPage); break;
                         case "VideoConference": StartupPage = typeof(Views.VideoConferencePage); break;
+                        case "MeasureTool": StartupPage = typeof(Views.MeasureToolPage); break;
                         default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                     }
                 }

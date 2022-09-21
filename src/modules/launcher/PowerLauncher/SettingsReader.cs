@@ -115,6 +115,11 @@ namespace PowerLauncher
                         _settings.SearchInputDelay = overloadSettings.Properties.SearchInputDelay;
                     }
 
+                    if (_settings.SearchInputDelayFast != overloadSettings.Properties.SearchInputDelayFast)
+                    {
+                        _settings.SearchInputDelayFast = overloadSettings.Properties.SearchInputDelayFast;
+                    }
+
                     if (_settings.SearchClickedItemWeight != overloadSettings.Properties.SearchClickedItemWeight)
                     {
                         _settings.SearchClickedItemWeight = overloadSettings.Properties.SearchClickedItemWeight;

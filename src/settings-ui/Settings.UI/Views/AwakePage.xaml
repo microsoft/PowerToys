@@ -5,7 +5,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
@@ -30,7 +29,7 @@
 
                 <controls:SettingsGroup x:Uid="Awake_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                  
-                    <controls:Setting x:Uid="Awake_Mode" Icon="&#xEC4E;" >
+                    <controls:Setting x:Uid="Awake_Mode" Icon="&#xE945;" >
                         <controls:Setting.ActionContent>
                             <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
                                       SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
@@ -45,7 +44,7 @@
                         <controls:Setting.ActionContent>
                             <StackPanel
                                                 Orientation="Horizontal">
-                                <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Hours"
+                                <NumberBox x:Uid="Awake_TemporaryKeepAwake_Hours"
                                                 Value="{x:Bind ViewModel.Hours, Mode=TwoWay}"
                                                 Minimum="0"
                                                 SpinButtonPlacementMode="Compact"
@@ -53,7 +52,7 @@
                                                 Width="96"
                                                 SmallChange="1" 
                                                 LargeChange="5"/>
-                                <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Minutes"
+                                <NumberBox x:Uid="Awake_TemporaryKeepAwake_Minutes"
                                                 Value="{x:Bind ViewModel.Minutes, Mode=TwoWay}"
                                                 Minimum="0"
                                                 SpinButtonPlacementMode="Compact"

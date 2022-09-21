@@ -334,13 +334,14 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
     }
     monitors = MonitorInfo::GetMonitors(true);
     // calculate the rect covering all the screens
-    total_screen = ScreenSize(monitors[0].rect);
+    total_screen = monitors[0].GetScreenSize(true);
     for (auto& monitor : monitors)
     {
-        total_screen.rect.left = std::min(total_screen.rect.left, monitor.rect.left);
-        total_screen.rect.top = std::min(total_screen.rect.top, monitor.rect.top);
-        total_screen.rect.right = std::max(total_screen.rect.right, monitor.rect.right);
-        total_screen.rect.bottom = std::max(total_screen.rect.bottom, monitor.rect.bottom);
+        const auto monitorSize = monitor.GetScreenSize(true);
+        total_screen.rect.left = std::min(total_screen.left(), monitorSize.left());
+        total_screen.rect.top = std::min(total_screen.top(), monitorSize.top());
+        total_screen.rect.right = std::max(total_screen.right(), monitorSize.right());
+        total_screen.rect.bottom = std::max(total_screen.bottom(), monitorSize.bottom());
     }
     // make sure top-right corner of all the monitor rects is (0,0)
     monitor_dx = -total_screen.left();
@@ -356,10 +357,10 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
         DwmRegisterThumbnail(hwnd, active_window, &thumbnail);
     }
     animation.reset();
-    auto primary_screen = MonitorInfo::GetPrimaryMonitor();
+    auto primary_size = MonitorInfo::GetPrimaryMonitor().GetScreenSize(false);
     shown_start_time = std::chrono::steady_clock::now();
     lock.unlock();
-    D2DWindow::show(primary_screen.left(), primary_screen.top(), primary_screen.width(), primary_screen.height());
+    D2DWindow::show(primary_size.left(), primary_size.top(), primary_size.width(), primary_size.height());
     // Check if taskbar is auto-hidden. If so, don't display the number arrows
     APPBARDATA param = {};
     param.cbSize = sizeof(APPBARDATA);
@@ -733,10 +734,11 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         for (auto& monitor : monitors)
         {
             D2D1_RECT_F monitor_rect;
-            monitor_rect.left = (float)((monitor.rect.left + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
-            monitor_rect.top = (float)((monitor.rect.top + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
-            monitor_rect.right = (float)((monitor.rect.right + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
-            monitor_rect.bottom = (float)((monitor.rect.bottom + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
+            const auto monitor_size = monitor.GetScreenSize(true);
+            monitor_rect.left = (float)((monitor_size.left() + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
+            monitor_rect.top = (float)((monitor_size.top() + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
+            monitor_rect.right = (float)((monitor_size.right() + monitor_dx) * rect_and_scale.scale + rect_and_scale.rect.left);
+            monitor_rect.bottom = (float)((monitor_size.bottom() + monitor_dy) * rect_and_scale.scale + rect_and_scale.rect.top);
             d2d_dc->SetTransform(D2D1::Matrix3x2F::Identity());
             d2d_dc->FillRectangle(monitor_rect, brush.get());
         }

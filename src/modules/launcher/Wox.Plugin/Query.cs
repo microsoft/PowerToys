@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Mono.Collections.Generic;
 
@@ -148,6 +149,8 @@ namespace Wox.Plugin
         private string _query;
 
         public override string ToString() => RawQuery;
+
+        public Dictionary<string, UserSelectedRecord.UserSelectedRecordItem> SelectedItems { get; set; }
 
         [Obsolete("Use Search instead, this method will be removed in v1.3.0")]
         public string GetAllRemainingParameter() => Search;

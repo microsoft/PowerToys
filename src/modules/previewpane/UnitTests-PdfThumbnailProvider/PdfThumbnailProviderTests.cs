@@ -3,11 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 using Common.ComInterlop;
 using Microsoft.PowerToys.STATestExtension;
 using Microsoft.PowerToys.ThumbnailHandler.Pdf;

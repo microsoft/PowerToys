@@ -10,7 +10,6 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.Resources;
-using Windows.UI.Core;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {

@@ -37,14 +37,13 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;shlwapi.lib;uxtheme.lib;shcore.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;shlwapi.lib;uxtheme.lib;shcore.lib;wbemuuid.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AppliedLayoutsTests.Spec.cpp" />
     <ClCompile Include="AppZoneHistoryTests.Spec.cpp" />
     <ClCompile Include="CustomLayoutsTests.Spec.cpp" />
-    <ClCompile Include="FancyZones.Spec.cpp" />
     <ClCompile Include="FancyZonesSettings.Spec.cpp" />
     <ClCompile Include="JsonHelpers.Tests.cpp" />
     <ClCompile Include="LayoutHotkeysTests.Spec.cpp" />

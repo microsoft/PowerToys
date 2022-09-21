@@ -55,8 +55,7 @@
     </Link>
   </ItemDefinitionGroup>
   <!-- Global props -->
-  <PropertyGroup Label="Globals" Condition="'$(OverrideWindowsTargetPlatformVersion)'!='True'">
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+  <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{1DC3BE92-CE89-43FB-8110-9C043A2FE7A2}</ProjectGuid>
@@ -144,6 +143,7 @@
     <ClInclude Include="FrameDrawer.h" />
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
@@ -167,6 +167,9 @@
     <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AlwaysOnTop.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />

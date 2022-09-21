@@ -101,7 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             if (
                 e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowNotAccessibleWarning)
-                || e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowNotAllowedKeywordWarning)
+                || e.PropertyName == nameof(PowerLauncherPluginViewModel.ShowBadgeOnPluginSettingError)
                 )
             {
                 // Don't trigger a settings update if the changed property is for visual notification.
@@ -308,6 +308,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (settings.Properties.SearchQueryResultsWithDelay != value)
                 {
                     settings.Properties.SearchQueryResultsWithDelay = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public int SearchInputDelayFast
+        {
+            get
+            {
+                return settings.Properties.SearchInputDelayFast;
+            }
+
+            set
+            {
+                if (settings.Properties.SearchInputDelayFast != value)
+                {
+                    settings.Properties.SearchInputDelayFast = value;
                     UpdateSettings();
                 }
             }

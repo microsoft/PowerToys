@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
@@ -44,13 +43,13 @@
                     <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource FalseToVisibleConverter}}">
                         <controls:Setting.ActionContent>
                             <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}"
-                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"/>
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
                     <controls:Setting x:Uid="ShortcutGuide_PressTime" Icon="&#xE916;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource TrueToVisibleConverter}}">
                         <controls:Setting.ActionContent>
-                            <muxc:NumberBox
+                            <NumberBox
                                 Minimum="100"
                                 Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -62,39 +61,38 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <muxc:InfoBar
+                    <InfoBar
                         x:Uid="ShortcutGuide_PressWinKeyWarning"
                         Severity="Warning"
                         IsTabStop="True"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior}"
                         IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                     />
-
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ShortcutGuide_Appearance_Behavior" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-
                     <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE790;">
-                                <controls:Setting.Description>
-                                    <HyperlinkButton Click="OpenColorsSettings_Click"
-                                                     x:Uid="Windows_Color_Settings"/>
-                                </controls:Setting.Description>
-                                <controls:Setting.ActionContent>
-                                    <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
-                                        <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
-                                        <ComboBoxItem x:Uid="Radio_Theme_Light"/>
-                                        <ComboBoxItem x:Uid="Radio_Theme_Default"/>
-                                    </ComboBox>
-                                </controls:Setting.ActionContent>
-                            </controls:Setting>
+                        <controls:Setting.Description>
+                            <HyperlinkButton Click="OpenColorsSettings_Click"
+                                            x:Uid="Windows_Color_Settings"/>
+                        </controls:Setting.Description>
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
+                                <ComboBoxItem x:Uid="Radio_Theme_Light"/>
+                                <ComboBoxItem x:Uid="Radio_Theme_Default"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
 
                     <controls:Setting x:Uid="ShortcutGuide_OverlayOpacity">
                         <controls:Setting.ActionContent>
                             <Slider Minimum="0"
-                                                Maximum="100"
-                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.OverlayOpacity}"/>
+                                    Maximum="100"
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.OverlayOpacity}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>
@@ -106,15 +104,15 @@
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <TextBox x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
-                                     Margin="{StaticResource ExpanderSettingMargin}"
-                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.DisabledApps, UpdateSourceTrigger=PropertyChanged}"
-                                         ScrollViewer.VerticalScrollBarVisibility ="Visible"
-                                         ScrollViewer.VerticalScrollMode="Enabled"
-                                         ScrollViewer.IsVerticalRailEnabled="True"
-                                         TextWrapping="Wrap"
-                                         AcceptsReturn="True"
-                                         MinWidth="240"
-                                         MinHeight="160" />
+                                    Margin="{StaticResource ExpanderSettingMargin}"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.DisabledApps, UpdateSourceTrigger=PropertyChanged}"
+                                    ScrollViewer.VerticalScrollBarVisibility ="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    TextWrapping="Wrap"
+                                    AcceptsReturn="True"
+                                    MinWidth="240"
+                                    MinHeight="160" />
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
                 </controls:SettingsGroup>

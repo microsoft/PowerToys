@@ -297,14 +297,16 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     }
 
     auto settingsRootPath = PTSettingsHelper::get_root_save_folder_location();
-    settingsRootPath = settingsRootPath + L"\\";
+    settingsRootPath += L"\\";
+
+    auto localLowPath = PTSettingsHelper::get_local_low_folder_location();
+    localLowPath += L"\\logs\\";
 
     const auto tempDir = temp_directory_path();
     auto reportDir = temp_directory_path() / "PowerToys\\";
     if (!DeleteFolder(reportDir))
     {
         printf("Failed to delete temp folder\n");
-        return 1;
     }
 
     try
@@ -314,10 +316,21 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         // Remove updates folder contents
         DeleteFolder(reportDir / "Updates");
     }
+	
     catch (...)
     {
         printf("Failed to copy PowerToys folder\n");
         return 1;
+    }
+
+    try
+    {
+        copy(localLowPath, reportDir, copy_options::recursive);
+    }
+
+    catch (...)
+    {
+        printf("Failed to copy logs saved in LocalLow\n");
     }
 
 #ifndef _DEBUG

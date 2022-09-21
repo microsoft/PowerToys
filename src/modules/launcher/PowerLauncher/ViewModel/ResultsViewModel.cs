@@ -266,6 +266,16 @@ namespace PowerLauncher.ViewModel
                 sorted = Results.OrderByDescending(x => (x.Result.Metadata.WeightBoost + x.Result.Score + (x.Result.SelectedCount * 5))).ToList();
             }
 
+            // remove history items in they are in the list as non-history items
+            foreach (var nonHistoryResult in sorted.Where(x => x.Result.Metadata.Name != "History").ToList())
+            {
+                var historyToRemove = sorted.FirstOrDefault(x => x.Result.Metadata.Name == "History" && x.Result.Title == nonHistoryResult.Result.Title && x.Result.SubTitle == nonHistoryResult.Result.SubTitle);
+                if (historyToRemove != null)
+                {
+                    sorted.Remove(historyToRemove);
+                }
+            }
+
             Clear();
             Results.AddRange(sorted);
         }

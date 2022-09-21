@@ -3,12 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Common;
+using Microsoft.PowerToys.PreviewHandler.Monaco.Formatters;
+using Microsoft.PowerToys.PreviewHandler.Monaco.Helpers;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -22,6 +27,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// Settings class
         /// </summary>
         private readonly Settings _settings = new Settings();
+
+        /// <summary>
+        /// Formatters applied before rendering the preview
+        /// </summary>
+        private readonly IReadOnlyCollection<IFormatter> _formatters = new List<IFormatter>
+        {
+            new JsonFormatter(),
+            new XmlFormatter(),
+        }.AsReadOnly();
 
         /// <summary>
         /// Saves if the user already navigated to the index page
@@ -44,14 +58,46 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private Label _loading;
 
         /// <summary>
+        /// Loading progress bar
+        /// </summary>
+        private ProgressBar _loadingBar;
+
+        /// <summary>
+        /// Grey background
+        /// </summary>
+        private Label _loadingBackground;
+
+        /// <summary>
         /// Name of the virtual host
         /// </summary>
         public const string VirtualHostName = "PowerToysLocalMonaco";
 
+        /// <summary>
+        /// HTML code passed to the file
+        /// </summary>
+#nullable enable
+        private string? _html;
+#nullable disable
+
+        /// <summary>
+        /// Id for monaco language
+        /// </summary>
+        private string _vsCodeLangSet;
+
+        /// <summary>
+        /// The content of the previewing file in base64
+        /// </summary>
+        private string _base64FileCode;
+
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
+            Logger.LogTrace();
+
             base.DoPreview(dataSource);
+
+            // Sets background color
+            SetBackground();
 
             // Starts loading screen
             InitializeLoadingScreen();
@@ -70,10 +116,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
             if (fileSize < _settings.MaxFileSize)
             {
+                Task initializeIndexFileAndSelectedFileTask = new Task(() => { InitializeIndexFileAndSelectedFile(filePath); });
+                initializeIndexFileAndSelectedFileTask.Start();
+
                 try
                 {
                     InvokeOnControlThread(() =>
                     {
+                        Logger.LogInfo("Create WebView2 environment");
                         ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                             webView2EnvironmentAwaiter = CoreWebView2Environment
                                 .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
@@ -81,6 +131,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                 .ConfigureAwait(true).GetAwaiter();
                         webView2EnvironmentAwaiter.OnCompleted(() =>
                         {
+                            _loadingBar.Value = 60;
+                            this.Update();
                             InvokeOnControlThread(async () =>
                             {
                                 try
@@ -91,49 +143,43 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                     }
 
                                     _webView2Environment = webView2EnvironmentAwaiter.GetResult();
-                                    var vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
-                                    string fileContent;
-                                    using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-                                    {
-                                        fileContent = fileReader.ReadToEnd();
-                                        fileReader.Close();
-                                    }
 
-                                    var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
-
-                                    string html;
-
-                                    // prepping index html to load in
-                                    using (StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-                                    {
-                                        html = htmlFileReader.ReadToEnd();
-                                        htmlFileReader.Close();
-                                    }
-
-                                    html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
-                                    html = html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
-                                    html = html.Replace("[[PT_THEME]]", Settings.GetTheme(), StringComparison.InvariantCulture);
-                                    html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
-                                    html = html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
+                                    _loadingBar.Value = 70;
+                                    this.Update();
 
                                     // Initialize WebView
                                     try
                                     {
                                         await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
+
+                                        // Wait until html is loaded
+                                        initializeIndexFileAndSelectedFileTask.Wait();
+
                                         _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
-                                        _webView.NavigateToString(html);
+
+                                        Logger.LogInfo("Navigates to string of HTML file");
+
+                                        _webView.NavigateToString(_html);
                                         _webView.NavigationCompleted += WebView2Init;
                                         _webView.Height = this.Height;
                                         _webView.Width = this.Width;
                                         Controls.Add(_webView);
+                                        _webView.SendToBack();
+                                        _loadingBar.Value = 100;
+                                        this.Update();
                                     }
-                                    catch (NullReferenceException)
+                                    catch (NullReferenceException e)
                                     {
+                                        Logger.LogError("NullReferenceException catched. Skipping exception.", e);
                                     }
                                 }
-                                catch (WebView2RuntimeNotFoundException)
+                                catch (WebView2RuntimeNotFoundException e)
                                 {
+                                    Logger.LogWarning("WebView2 was not found:");
+                                    Logger.LogWarning(e.Message);
                                     Controls.Remove(_loading);
+                                    Controls.Remove(_loadingBar);
+                                    Controls.Remove(_loadingBackground);
 
                                     // WebView2 not installed message
                                     Label errorMessage = new Label();
@@ -160,6 +206,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     InvokeOnControlThread(() =>
                     {
                         Controls.Remove(_loading);
+                        Controls.Remove(_loadingBar);
+                        Controls.Remove(_loadingBackground);
                         Label text = new Label();
                         text.Text = Resources.Exception_Occurred;
                         text.Text += e.Message;
@@ -168,6 +216,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                         text.Width = 500;
                         text.Height = 10000;
                         Controls.Add(text);
+                        Logger.LogError(e.Message);
                     });
                 }
 
@@ -175,11 +224,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             }
             else
             {
+                Logger.LogInfo("File is too big to display. Showing error message");
                 InvokeOnControlThread(() =>
                 {
                     Controls.Remove(_loading);
+                    _loadingBar.Dispose();
+                    Controls.Remove(_loadingBar);
+                    Controls.Remove(_loadingBackground);
                     Label errorMessage = new Label();
-                    errorMessage.Text = Resources.Max_File_Size_Error;
+                    errorMessage.Text = Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture);
                     errorMessage.Width = 500;
                     errorMessage.Height = 50;
                     Controls.Add(errorMessage);
@@ -194,6 +247,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         {
             _webView.Height = this.Height;
             _webView.Width = this.Width;
+            this.Update();
         }
 
         /// <summary>
@@ -205,6 +259,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             // Checks if already navigated
             if (!_hasNavigated)
             {
+                Logger.LogInfo("Setting WebView2 settings");
                 CoreWebView2Settings settings = (sender as WebView2).CoreWebView2.Settings;
 
 #if DEBUG
@@ -234,10 +289,17 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 // Disable status bar
                 settings.IsStatusBarEnabled = false;
 
+                Logger.LogInfo("Remove loading elements");
                 Controls.Remove(_loading);
+                Controls.Remove(_loadingBar);
+                Controls.Remove(_loadingBackground);
 #if DEBUG
                 _webView.CoreWebView2.OpenDevToolsWindow();
+                Logger.LogInfo("Opened Dev Tools window, because solution was built in debug mode");
 #endif
+
+                _loadingBar.Value = 80;
+                this.Update();
             }
         }
 
@@ -251,6 +313,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             if (_hasNavigated)
             {
                 e.Cancel = false;
+                Logger.LogInfo("Stopped navigation from user");
             }
 
             // If it has navigated to index.html it stops further navigations
@@ -260,24 +323,103 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             }
         }
 
-        private void InitializeLoadingScreen()
+        private void SetBackground()
         {
+            Logger.LogTrace();
             InvokeOnControlThread(() =>
             {
+                this.BackColor = Settings.BackgroundColor;
+            });
+        }
+
+        private void InitializeLoadingScreen()
+        {
+            Logger.LogTrace();
+            InvokeOnControlThread(() =>
+            {
+                _loadingBackground = new Label();
+                _loadingBackground.BackColor = Settings.BackgroundColor;
+                _loadingBackground.Width = this.Width;
+                _loadingBackground.Height = this.Height;
+                Controls.Add(_loadingBackground);
+                _loadingBackground.BringToFront();
+
+                _loadingBar = new ProgressBar();
+                _loadingBar.Width = this.Width - 10;
+                _loadingBar.Location = new Point(5, this.Height / 2);
+                _loadingBar.Maximum = 100;
+                _loadingBar.Value = 10;
+                Controls.Add(_loadingBar);
+
                 _loading = new Label();
                 _loading.Text = Resources.Loading_Screen_Message;
                 _loading.Width = this.Width;
-                _loading.Height = this.Height;
+                _loading.Height = 45;
+                _loading.Location = new Point(0, _loadingBar.Location.Y - _loading.Height);
+                _loading.TextAlign = ContentAlignment.TopCenter;
                 _loading.Font = new Font("MS Sans Serif", 16, FontStyle.Bold);
                 _loading.ForeColor = Settings.TextColor;
-                _loading.BackColor = Settings.BackgroundColor;
                 Controls.Add(_loading);
+
+                _loading.BringToFront();
+                _loadingBar.BringToFront();
+
+                this.Update();
             });
+            Logger.LogInfo("Loading screen initialized");
+        }
+
+        private void InitializeIndexFileAndSelectedFile(string filePath)
+        {
+            Logger.LogInfo("Starting getting monaco language id out of filetype");
+            _vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
+
+            using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            {
+                Logger.LogInfo("Starting reading requested file");
+                var fileContent = fileReader.ReadToEnd();
+
+                if (_settings.TryFormat)
+                {
+                    var formatter = _formatters.SingleOrDefault(f => f.LangSet == _vsCodeLangSet);
+                    if (formatter != null)
+                    {
+                        try
+                        {
+                            fileContent = formatter.Format(fileContent);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"Failed to apply formatting to {filePath}", ex);
+                        }
+                    }
+                }
+
+                fileReader.Close();
+                _base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
+                Logger.LogInfo("Reading requested file ended");
+            }
+
+            // prepping index html to load in
+            using (StreamReader htmlFileReader = new StreamReader(new FileStream(Settings.AssemblyDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            {
+                Logger.LogInfo("Starting reading HTML source file");
+                _html = htmlFileReader.ReadToEnd();
+                htmlFileReader.Close();
+                Logger.LogInfo("Reading HTML source file ended");
+            }
+
+            _html = _html.Replace("[[PT_LANG]]", _vsCodeLangSet, StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_THEME]]", Settings.GetTheme(), StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_CODE]]", _base64FileCode, StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_URL]]", VirtualHostName, StringComparison.InvariantCulture);
         }
 
         private async void DownloadLink_Click(object sender, EventArgs e)
         {
             await Launcher.LaunchUriAsync(new Uri("https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"));
+            Logger.LogTrace();
         }
     }
 }

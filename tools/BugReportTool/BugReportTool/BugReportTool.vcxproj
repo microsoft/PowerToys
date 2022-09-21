@@ -73,8 +73,12 @@
     <ClInclude Include="ReportMonitorInfo.h" />
     <ClInclude Include="..\..\..\common\utils\json.h" />
     <ClInclude Include="RegistryUtils.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="XmlDocumentEx.h" />
     <ClInclude Include="ZipTools\ZipFolder.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="BugReportTool.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
