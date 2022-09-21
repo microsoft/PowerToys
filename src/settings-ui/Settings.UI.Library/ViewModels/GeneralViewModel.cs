@@ -180,6 +180,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public string BackupAndRestoreBriefSummary
+        {
+            get
+            {
+                return "Backup and restore settings anytime.";
+            }
+
+            set
+            {
+                OnPropertyChanged("RunningAsAdminText");
+            }
+        }
+
         public string RunningAsText
         {
             get
