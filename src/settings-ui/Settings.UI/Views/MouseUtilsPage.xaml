@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     AutomationProperties.LandmarkType="Main">
@@ -40,7 +39,7 @@
                             <StackPanel>
                                 <controls:Setting x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance"  Style="{StaticResource ExpanderContentSettingStyle}" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationShakeMouseIntToVisibilityConverter}}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox
+                                        <NumberBox
                                             Minimum="0"
                                             Maximum="1000000"
                                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseShakingMinimumDistance}"
@@ -61,7 +60,7 @@
                     </controls:SettingExpander>
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xEB3C;" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
@@ -86,7 +85,7 @@
                                 </controls:Setting>
                                 <controls:Setting x:Uid="MouseUtils_FindMyMouse_SpotlightRadius" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox Minimum="5"
+                                        <NumberBox Minimum="5"
                                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightRadius}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
@@ -106,7 +105,7 @@
                                 </controls:Setting>
                                 <controls:Setting x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox Minimum="0"
+                                        <NumberBox Minimum="0"
                                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseAnimationDurationMs}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
@@ -158,20 +157,20 @@
 
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xEB3C;" />
                         </controls:SettingExpander.Header>
                       
 
                         <controls:SettingExpander.Content>
 
                             <StackPanel>
-                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_LeftButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                              
-                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_RightButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
@@ -189,7 +188,7 @@
                                
                                 <controls:Setting x:Uid="MouseUtils_MouseHighlighter_HighlightRadius" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox Minimum="5"
+                                        <NumberBox Minimum="5"
                                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterRadius}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
@@ -201,7 +200,7 @@
                             
                                 <controls:Setting x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox Minimum="100"
+                                        <NumberBox Minimum="100"
                                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDelayMs}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
@@ -213,7 +212,7 @@
                            
                                 <controls:Setting x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox Minimum="100"
+                                        <NumberBox Minimum="100"
                                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDurationMs}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
@@ -244,7 +243,7 @@
                     </controls:Setting>
                     <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}" IsExpanded="False" >
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xEB3C;" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
@@ -264,7 +263,7 @@
                                 </controls:Setting>
                                 <controls:Setting x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox Minimum="1"
+                                        <NumberBox Minimum="1"
                                                     Maximum="500"
                                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsRadius}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -276,7 +275,7 @@
                                 </controls:Setting>
                                 <controls:Setting x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox Minimum="1"
+                                        <NumberBox Minimum="1"
                                                     Maximum="50"
                                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsThickness}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -293,7 +292,7 @@
                                 </controls:Setting>
                                 <controls:Setting x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox Minimum="0"
+                                        <NumberBox Minimum="0"
                                                     Maximum="50"
                                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsBorderSize}"
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"

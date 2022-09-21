@@ -14,9 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // deserialization with System.Text.Json. This affects the UI display.
         // See: https://github.com/dotnet/runtime/issues/30258
         [JsonPropertyName("inProcess")]
-#pragma warning disable CA2227 // Collection properties should be read only
         public List<KeysDataModel> InProcessRemapKeys { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 
         public RemapKeysDataModel()
         {

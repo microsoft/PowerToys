@@ -49,19 +49,6 @@ namespace Wox
             _mainVM.ChangeQueryText(query, requery);
         }
 
-        public void RestartApp()
-        {
-            _mainVM.MainWindowVisibility = Visibility.Hidden;
-
-            // we must manually save
-            // UpdateManager.RestartApp() will call Environment.Exit(0)
-            // which will cause ungraceful exit
-            SaveAppAllSettings();
-
-            // Todo : Implement logic to restart this app.
-            Environment.Exit(0);
-        }
-
         public void CheckForNewUpdate()
         {
             // _settingsVM.UpdateApp();

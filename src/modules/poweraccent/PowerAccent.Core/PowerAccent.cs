@@ -2,206 +2,189 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
-using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+using System.Windows;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
+using PowerToys.PowerAccentKeyboardService;
 
 namespace PowerAccent.Core;
 
 public class PowerAccent : IDisposable
 {
-    private readonly SettingsService _settingService = new SettingsService();
-    private readonly KeyboardListener _keyboardListener = new KeyboardListener();
+    private readonly SettingsService _settingService;
 
-    private LetterKey? letterPressed;
     private bool _visible;
     private char[] _characters = Array.Empty<char>();
     private int _selectedIndex = -1;
-    private Stopwatch _stopWatch;
-    private bool _triggeredWithSpace;
 
     public event Action<bool, char[]> OnChangeDisplay;
 
     public event Action<int, char> OnSelectCharacter;
 
+    private KeyboardListener _keyboardListener;
+
     public PowerAccent()
     {
-        _keyboardListener.KeyDown += PowerAccent_KeyDown;
-        _keyboardListener.KeyUp += PowerAccent_KeyUp;
+        _keyboardListener = new KeyboardListener();
+        _keyboardListener.InitHook();
+        _settingService = new SettingsService(_keyboardListener);
+
+        SetEvents();
     }
 
-    private bool PowerAccent_KeyDown(object sender, KeyboardListener.RawKeyEventArgs args)
+    private void SetEvents()
     {
-        if (Enum.IsDefined(typeof(LetterKey), (int)args.Key))
+        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
         {
-            _stopWatch = Stopwatch.StartNew();
-            letterPressed = (LetterKey)args.Key;
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ShowToolbar(letterKey);
+            });
+        }));
+
+        _keyboardListener.SetHideToolbarEvent(new PowerToys.PowerAccentKeyboardService.HideToolbar((InputType inputType) =>
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                SendInputAndHideToolbar(inputType);
+            });
+        }));
+
+        _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey) =>
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ProcessNextChar(triggerKey);
+            });
+        }));
+    }
+
+    private void ShowToolbar(LetterKey letterKey)
+    {
+        _visible = true;
+        _characters = (WindowsFunctions.IsCapitalState() && WindowsFunctions.IsShiftState()) ? ToUpper(SettingsService.GetDefaultLetterKey(letterKey)) : SettingsService.GetDefaultLetterKey(letterKey);
+        Task.Delay(_settingService.InputTime).ContinueWith(
+            t =>
+            {
+                if (_visible)
+                {
+                    OnChangeDisplay?.Invoke(true, _characters);
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    private void SendInputAndHideToolbar(InputType inputType)
+    {
+        switch (inputType)
+        {
+            case InputType.Space:
+                {
+                    WindowsFunctions.Insert(' ');
+                    break;
+                }
+
+            case InputType.Char:
+                {
+                    if (_selectedIndex != -1)
+                    {
+                        WindowsFunctions.Insert(_characters[_selectedIndex], true);
+                    }
+
+                    break;
+                }
         }
 
-        TriggerKey? triggerPressed = null;
-        if (letterPressed.HasValue)
+        OnChangeDisplay?.Invoke(false, null);
+        _selectedIndex = -1;
+        _visible = false;
+    }
+
+    private void ProcessNextChar(TriggerKey triggerKey)
+    {
+        if (_visible && _selectedIndex == -1)
         {
-            if (Enum.IsDefined(typeof(TriggerKey), (int)args.Key))
+            if (triggerKey == TriggerKey.Left)
             {
-                triggerPressed = (TriggerKey)args.Key;
-
-                if ((triggerPressed == TriggerKey.Space && _settingService.ActivationKey == PowerAccentActivationKey.LeftRightArrow) ||
-                    ((triggerPressed == TriggerKey.Left || triggerPressed == TriggerKey.Right) && _settingService.ActivationKey == PowerAccentActivationKey.Space))
-                {
-                    triggerPressed = null;
-                }
-            }
-        }
-
-        if (!_visible && letterPressed.HasValue && triggerPressed.HasValue)
-        {
-            // Keep track if it was triggered with space so that it can be typed on false starts.
-            _triggeredWithSpace = triggerPressed.Value == TriggerKey.Space;
-            _visible = true;
-            _characters = (WindowsFunctions.IsCapitalState() && WindowsFunctions.IsShiftState()) ? ToUpper(_settingService.GetLetterKey(letterPressed.Value)) : _settingService.GetLetterKey(letterPressed.Value);
-            Task.Delay(_settingService.InputTime).ContinueWith(
-                t =>
-                {
-                    if (_visible)
-                    {
-                        OnChangeDisplay?.Invoke(true, _characters);
-                    }
-                }, TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
-        if (_visible && triggerPressed.HasValue)
-        {
-            if (_selectedIndex == -1)
-            {
-                if (triggerPressed.Value == TriggerKey.Left)
-                {
-                    _selectedIndex = (_characters.Length / 2) - 1;
-                }
-
-                if (triggerPressed.Value == TriggerKey.Right)
-                {
-                    _selectedIndex = _characters.Length / 2;
-                }
-
-                if (triggerPressed.Value == TriggerKey.Space)
-                {
-                    _selectedIndex = 0;
-                }
-
-                if (_selectedIndex < 0)
-                {
-                    _selectedIndex = 0;
-                }
-
-                if (_selectedIndex > _characters.Length - 1)
-                {
-                    _selectedIndex = _characters.Length - 1;
-                }
-
-                OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
-                return false;
+                _selectedIndex = (_characters.Length / 2) - 1;
             }
 
-            if (triggerPressed.Value == TriggerKey.Space)
+            if (triggerKey == TriggerKey.Right)
             {
-                if (WindowsFunctions.IsShiftState())
-                {
-                    if (_selectedIndex < 0)
-                    {
-                        _selectedIndex = _characters.Length - 1;
-                    }
-                    else
-                    {
-                        --_selectedIndex;
-                    }
-                }
-                else
-                {
-                    if (_selectedIndex < _characters.Length - 1)
-                    {
-                        ++_selectedIndex;
-                    }
-                    else
-                    {
-                        _selectedIndex = 0;
-                    }
-                }
-
-                OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
-                return false;
+                _selectedIndex = _characters.Length / 2;
             }
 
-            if (triggerPressed.Value == TriggerKey.Left)
-            {
-                --_selectedIndex;
-            }
-
-            if (triggerPressed.Value == TriggerKey.Right)
-            {
-                ++_selectedIndex;
-            }
-
-            // Wrap around at beginning and end of _selectedIndex range
-            if (_selectedIndex < 0)
-            {
-                _selectedIndex = _characters.Length - 1;
-            }
-
-            if (_selectedIndex > _characters.Length - 1)
+            if (triggerKey == TriggerKey.Space)
             {
                 _selectedIndex = 0;
             }
 
+            if (_selectedIndex < 0)
+            {
+                _selectedIndex = 0;
+            }
+
+            if (_selectedIndex > _characters.Length - 1)
+            {
+                _selectedIndex = _characters.Length - 1;
+            }
+
             OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
-            return false;
+            return;
         }
 
-        return true;
-    }
-
-    private bool PowerAccent_KeyUp(object sender, KeyboardListener.RawKeyEventArgs args)
-    {
-        if (Enum.IsDefined(typeof(LetterKey), (int)args.Key))
+        if (triggerKey == TriggerKey.Space)
         {
-            letterPressed = null;
-            _stopWatch.Stop();
-            if (_visible)
+            if (WindowsFunctions.IsShiftState())
             {
-                if (_stopWatch.ElapsedMilliseconds < _settingService.InputTime)
+                if (_selectedIndex < 0)
                 {
-                    /* Debug.WriteLine("Insert before inputTime - " + _stopWatch.ElapsedMilliseconds); */
-
-                    // False start, we should output the space if it was the trigger.
-                    if (_triggeredWithSpace)
-                    {
-                        WindowsFunctions.Insert(' ');
-                    }
-
-                    OnChangeDisplay?.Invoke(false, null);
-                    _selectedIndex = -1;
-                    _visible = false;
-                    return false;
+                    _selectedIndex = _characters.Length - 1;
                 }
-
-                /* Debug.WriteLine("Insert after inputTime - " + _stopWatch.ElapsedMilliseconds); */
-                OnChangeDisplay?.Invoke(false, null);
-                if (_selectedIndex != -1)
+                else
                 {
-                    WindowsFunctions.Insert(_characters[_selectedIndex], true);
+                    --_selectedIndex;
                 }
-
-                _selectedIndex = -1;
-                _visible = false;
+            }
+            else
+            {
+                if (_selectedIndex < _characters.Length - 1)
+                {
+                    ++_selectedIndex;
+                }
+                else
+                {
+                    _selectedIndex = 0;
+                }
             }
         }
 
-        return true;
+        if (triggerKey == TriggerKey.Left)
+        {
+            --_selectedIndex;
+        }
+
+        if (triggerKey == TriggerKey.Right)
+        {
+            ++_selectedIndex;
+        }
+
+        // Wrap around at beginning and end of _selectedIndex range
+        if (_selectedIndex < 0)
+        {
+            _selectedIndex = _characters.Length - 1;
+        }
+
+        if (_selectedIndex > _characters.Length - 1)
+        {
+            _selectedIndex = 0;
+        }
+
+        OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
     }
 
     public Point GetDisplayCoordinates(Size window)
     {
-        var activeDisplay = WindowsFunctions.GetActiveDisplay();
+        (Point Location, Size Size, double Dpi) activeDisplay = WindowsFunctions.GetActiveDisplay();
         Rect screen = new Rect(activeDisplay.Location, activeDisplay.Size) / activeDisplay.Dpi;
         Position position = _settingService.Position;
 
@@ -210,14 +193,9 @@ public class PowerAccent : IDisposable
         return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
     }
 
-    public char[] GetLettersFromKey(LetterKey letter)
-    {
-        return _settingService.GetLetterKey(letter);
-    }
-
     public void Dispose()
     {
-        _keyboardListener.Dispose();
+        _keyboardListener.UnInitHook();
         GC.SuppressFinalize(this);
     }
 
@@ -226,7 +204,14 @@ public class PowerAccent : IDisposable
         char[] result = new char[array.Length];
         for (int i = 0; i < array.Length; i++)
         {
-            result[i] = char.ToUpper(array[i], System.Globalization.CultureInfo.InvariantCulture);
+            if (array[i] == 'ß')
+            {
+                result[i] = 'ẞ';
+            }
+            else
+            {
+                result[i] = char.ToUpper(array[i], System.Globalization.CultureInfo.InvariantCulture);
+            }
         }
 
         return result;

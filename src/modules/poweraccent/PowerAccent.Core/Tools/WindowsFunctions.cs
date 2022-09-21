@@ -27,9 +27,10 @@ internal static class WindowsFunctions
             }
 
             // Letter
-            var inputsInsert = new User32.INPUT[1]
+            var inputsInsert = new User32.INPUT[]
             {
                 new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = 0, dwFlags = User32.KEYEVENTF.KEYEVENTF_UNICODE, wScan = c } },
+                new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = 0, dwFlags = User32.KEYEVENTF.KEYEVENTF_UNICODE | User32.KEYEVENTF.KEYEVENTF_KEYUP, wScan = c } },
             };
             var temp2 = User32.SendInput((uint)inputsInsert.Length, inputsInsert, sizeof(User32.INPUT));
         }

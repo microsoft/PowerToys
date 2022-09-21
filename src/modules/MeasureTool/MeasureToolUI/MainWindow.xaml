@@ -261,13 +261,21 @@
                 Click="BoundsTool_Click"
                 Content="&#xEF20;"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
-                ToolTipService.ToolTip="{x:Bind p:Resources.Bounds}" />
+                KeyboardAcceleratorPlacementMode="Auto"
+                ToolTipService.ToolTip="{x:Bind p:Resources.Bounds}">
+                <ToggleButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number1" Modifiers="Control" Invoked="KeyboardAccelerator_Invoked"/>
+                </ToggleButton.KeyboardAccelerators>
+            </ToggleButton>
             <ToggleButton
                 AutomationProperties.Name="{x:Bind p:Resources.Spacing}"
                 Click="MeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
                 ToolTipService.ToolTip="{x:Bind p:Resources.Spacing}">
                 <FontIcon Margin="1,0,0,0" Glyph="&#xE948;" />
+                <ToggleButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number2" Modifiers="Control" Invoked="KeyboardAccelerator_Invoked"/>
+                </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
 
             <ToggleButton
@@ -276,6 +284,9 @@
                 Style="{StaticResource ToggleButtonRadioButtonStyle}"
                 ToolTipService.ToolTip="{x:Bind p:Resources.HorizontalSpacing}">
                 <FontIcon Margin="1,0,0,0" Glyph="&#xE949;" />
+                <ToggleButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number3" Modifiers="Control" Invoked="KeyboardAccelerator_Invoked"/>
+                </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
             <ToggleButton
                 AutomationProperties.Name="{x:Bind p:Resources.VerticalSpacing}"
@@ -287,12 +298,19 @@
                         <RotateTransform Angle="90" />
                     </FontIcon.RenderTransform>
                 </FontIcon>
+                <ToggleButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number4" Modifiers="Control" Invoked="KeyboardAccelerator_Invoked"/>
+                </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
             <AppBarSeparator Height="36" />
             <Button
                 Click="ClosePanelTool_Click"
                 Content="&#xE8BB;"
-                ToolTipService.ToolTip="Close" />
+                ToolTipService.ToolTip="Close">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Escape" Invoked="KeyboardAccelerator_Invoked"/>
+                </Button.KeyboardAccelerators>
+            </Button>
         </StackPanel>
     </Grid>
 </winuiex:WindowEx>

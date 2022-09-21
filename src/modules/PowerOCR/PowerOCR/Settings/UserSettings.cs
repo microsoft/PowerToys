@@ -9,7 +9,6 @@ using System.IO.Abstractions;
 using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-using Microsoft.PowerToys.Telemetry;
 
 namespace PowerOCR.Settings
 {

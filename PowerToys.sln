@@ -447,6 +447,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MeasureToolModuleInterface"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeasureToolUI", "src\modules\MeasureTool\MeasureToolUI\MeasureToolUI.csproj", "{515554D1-D004-4F7F-A107-2211FC0F6B2C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerAccentKeyboardService", "src\modules\poweraccent\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj", "{C97D9A5D-206C-454E-997E-009E227D7F02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -1790,6 +1792,18 @@ Global
 		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|x86.ActiveCfg = Release|x86
 		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|x86.Build.0 = Release|x86
 		{515554D1-D004-4F7F-A107-2211FC0F6B2C}.Release|x86.Deploy.0 = Release|x86
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Debug|x64.ActiveCfg = Debug|x64
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Debug|x64.Build.0 = Debug|x64
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Debug|x86.ActiveCfg = Debug|x64
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Debug|x86.Build.0 = Debug|x64
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|ARM64.Build.0 = Release|ARM64
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|x64.ActiveCfg = Release|x64
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|x64.Build.0 = Release|x64
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|x86.ActiveCfg = Release|x64
+		{C97D9A5D-206C-454E-997E-009E227D7F02}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1941,6 +1955,7 @@ Global
 		{54A93AF7-60C7-4F6C-99D2-FBB1F75F853A} = {7AC943C9-52E8-44CF-9083-744D8049667B}
 		{92C39820-9F84-4529-BC7D-22AAE514D63B} = {7AC943C9-52E8-44CF-9083-744D8049667B}
 		{515554D1-D004-4F7F-A107-2211FC0F6B2C} = {7AC943C9-52E8-44CF-9083-744D8049667B}
+		{C97D9A5D-206C-454E-997E-009E227D7F02} = {0F14491C-6369-4C45-AAA8-135814E66E6B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

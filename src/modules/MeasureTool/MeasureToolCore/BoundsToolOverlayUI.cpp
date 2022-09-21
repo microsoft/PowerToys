@@ -5,6 +5,72 @@
 
 #include <common/utils/window.h>
 
+#define MOUSEEVENTF_FROMTOUCH 0xFF515700
+
+namespace
+{
+    void ToggleCursor(const bool show)
+    {
+        if (show)
+        {
+            for (; ShowCursor(show) < 0;)
+                ;
+        }
+        else
+        {
+            for (; ShowCursor(show) >= 0;)
+                ;
+        }
+    }
+
+    void HandleCursorMove(HWND window, BoundsToolState* toolState, const POINT cursorPos, const DWORD touchID = 0)
+    {
+        if (!toolState->perScreen[window].currentBounds || (toolState->perScreen[window].currentBounds->touchID != touchID))
+            return;
+
+        toolState->perScreen[window].currentBounds->currentPos =
+            D2D_POINT_2F{ .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
+    }
+
+    void HandleCursorDown(HWND window, BoundsToolState* toolState, const POINT cursorPos, const DWORD touchID = 0)
+    {
+        ToggleCursor(false);
+
+        RECT windowRect;
+        if (GetWindowRect(window, &windowRect))
+            ClipCursor(&windowRect);
+
+        const D2D_POINT_2F newBoundsStart = { .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
+        toolState->perScreen[window].currentBounds = CursorDrag{
+            .startPos = newBoundsStart,
+            .currentPos = newBoundsStart,
+            .touchID = touchID
+        };
+    }
+
+    void HandleCursorUp(HWND window, BoundsToolState* toolState, const POINT cursorPos)
+    {
+        ToggleCursor(true);
+        ClipCursor(nullptr);
+
+        toolState->commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
+            SetClipBoardToText(text.buffer);
+        });
+
+        if (const bool shiftPress = GetKeyState(VK_SHIFT) & 0x8000; shiftPress && toolState->perScreen[window].currentBounds)
+        {
+            D2D1_RECT_F rect;
+            std::tie(rect.left, rect.right) =
+                std::minmax(static_cast<float>(cursorPos.x), toolState->perScreen[window].currentBounds->startPos.x);
+            std::tie(rect.top, rect.bottom) =
+                std::minmax(static_cast<float>(cursorPos.y), toolState->perScreen[window].currentBounds->startPos.y);
+            toolState->perScreen[window].measurements.push_back(Measurement{ rect });
+        }
+
+        toolState->perScreen[window].currentBounds = std::nullopt;
+    }
+}
+
 LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
     switch (message)
@@ -25,64 +91,122 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
         break;
     case WM_LBUTTONDOWN:
     {
-        for (; ShowCursor(false) >= 0;)
-            ;
+        const bool touchEvent = (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) == MOUSEEVENTF_FROMTOUCH;
+        if (touchEvent)
+            break;
+
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
-        const POINT cursorPos = convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace);
 
-        D2D_POINT_2F newRegionStart = { .x = static_cast<float>(cursorPos.x), .y = static_cast<float>(cursorPos.y) };
-        toolState->perScreen[window].currentRegionStart = newRegionStart;
+        HandleCursorDown(window,
+                         toolState,
+                         convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace));
         break;
     }
     case WM_CURSOR_LEFT_MONITOR:
     {
-        for (; ShowCursor(true) < 0;)
-            ;
+        ToggleCursor(true);
+
+        ClipCursor(nullptr);
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
-        toolState->perScreen[window].currentRegionStart = std::nullopt;
+        toolState->perScreen[window].currentBounds = std::nullopt;
         break;
     }
-    case WM_LBUTTONUP:
+    case WM_TOUCH:
     {
-        for (; ShowCursor(true) < 0;)
-            ;
-
         auto toolState = GetWindowParam<BoundsToolState*>(window);
-        if (!toolState || !toolState->perScreen[window].currentRegionStart)
+        if (!toolState)
             break;
+        std::array<TOUCHINPUT, 8> inputs;
+        const size_t nInputs = std::min(static_cast<size_t>(LOWORD(wparam)), inputs.size());
+        const auto inputHandle = std::bit_cast<HTOUCHINPUT>(lparam);
+        GetTouchInputInfo(inputHandle, static_cast<UINT>(nInputs), inputs.data(), sizeof(TOUCHINPUT));
 
-        toolState->commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
-            SetClipBoardToText(text.buffer);
-        });
-
-        if (const bool shiftPress = GetKeyState(VK_SHIFT) & 0x8000; shiftPress)
+        for (UINT i = 0; i < nInputs; ++i)
         {
-            const auto cursorPos = convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace);
+            const auto& input = inputs[i];
 
-            D2D1_RECT_F rect;
-            std::tie(rect.left, rect.right) = std::minmax(static_cast<float>(cursorPos.x), toolState->perScreen[window].currentRegionStart->x);
-            std::tie(rect.top, rect.bottom) = std::minmax(static_cast<float>(cursorPos.y), toolState->perScreen[window].currentRegionStart->y);
-            toolState->perScreen[window].measurements.push_back(Measurement{ rect });
+            if (const bool down = (input.dwFlags & TOUCHEVENTF_DOWN) && (input.dwFlags & TOUCHEVENTF_PRIMARY); down)
+            {
+                HandleCursorDown(
+                    window,
+                    toolState,
+                    POINT{ TOUCH_COORD_TO_PIXEL(input.x), TOUCH_COORD_TO_PIXEL(input.y) },
+                    input.dwID);
+                continue;
+            }
+
+            if (const bool up = input.dwFlags & TOUCHEVENTF_UP; up)
+            {
+                HandleCursorUp(
+                    window,
+                    toolState,
+                    POINT{ TOUCH_COORD_TO_PIXEL(input.x), TOUCH_COORD_TO_PIXEL(input.y) });
+                continue;
+            }
+
+            if (const bool move = input.dwFlags & TOUCHEVENTF_MOVE; move)
+            {
+                HandleCursorMove(window,
+                                 toolState,
+                                 POINT{ TOUCH_COORD_TO_PIXEL(input.x), TOUCH_COORD_TO_PIXEL(input.y) },
+                                 input.dwID);
+                continue;
+            }
         }
 
-        toolState->perScreen[window].currentRegionStart = std::nullopt;
+        CloseTouchInputHandle(inputHandle);
+        break;
+    }
+
+    case WM_MOUSEMOVE:
+    {
+        const bool touchEvent = (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) == MOUSEEVENTF_FROMTOUCH;
+        if (touchEvent)
+            break;
+
+        auto toolState = GetWindowParam<BoundsToolState*>(window);
+        if (!toolState)
+            break;
+
+        HandleCursorMove(window,
+                         toolState,
+                         convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace));
+        break;
+    }
+
+    case WM_LBUTTONUP:
+    {
+        const bool touchEvent = (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) == MOUSEEVENTF_FROMTOUCH;
+        if (touchEvent)
+            break;
+
+        auto toolState = GetWindowParam<BoundsToolState*>(window);
+        if (!toolState)
+            break;
+
+        HandleCursorUp(window,
+                       toolState,
+                       convert::FromSystemToWindow(window, toolState->commonState->cursorPosSystemSpace));
         break;
     }
     case WM_RBUTTONUP:
     {
-        for (; ShowCursor(true) < 0;)
-            ;
+        const bool touchEvent = (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) == MOUSEEVENTF_FROMTOUCH;
+        if (touchEvent)
+            break;
+
+        ToggleCursor(true);
 
         auto toolState = GetWindowParam<BoundsToolState*>(window);
         if (!toolState)
             break;
 
-        if (toolState->perScreen[window].currentRegionStart)
-            toolState->perScreen[window].currentRegionStart = std::nullopt;
+        if (toolState->perScreen[window].currentBounds)
+            toolState->perScreen[window].currentBounds = std::nullopt;
         else
         {
             if (toolState->perScreen[window].measurements.empty())
@@ -100,14 +224,12 @@ LRESULT CALLBACK BoundsToolWndProc(HWND window, UINT message, WPARAM wparam, LPA
 namespace
 {
     void DrawMeasurement(const Measurement& measurement,
-                         const bool alignTextBoxToCenter,
                          const CommonState& commonState,
                          HWND window,
                          const D2DState& d2dState,
-                         float mouseX,
-                         float mouseY)
+                         std::optional<D2D_POINT_2F> textBoxCenter)
     {
-        const bool screenQuadrantAware = !alignTextBoxToCenter;
+        const bool screenQuadrantAware = textBoxCenter.has_value();
         d2dState.ToggleAliasedLinesMode(true);
         d2dState.dxgiWindowState.rt->DrawRectangle(measurement.rect, d2dState.solidBrushes[Brush::line].get());
         d2dState.ToggleAliasedLinesMode(false);
@@ -124,17 +246,19 @@ namespace
             v = text;
         });
 
-        if (alignTextBoxToCenter)
+        D2D_POINT_2F textBoxPos;
+        if (textBoxCenter)
+            textBoxPos = *textBoxCenter;
+        else
         {
-            mouseX = measurement.rect.left + measurement.Width(Measurement::Unit::Pixel) / 2;
-            mouseY = measurement.rect.top + measurement.Height(Measurement::Unit::Pixel) / 2;
+            textBoxPos.x = measurement.rect.left + measurement.Width(Measurement::Unit::Pixel) / 2;
+            textBoxPos.y = measurement.rect.top + measurement.Height(Measurement::Unit::Pixel) / 2;
         }
 
         d2dState.DrawTextBox(text.buffer.data(),
                              measureStringBufLen,
                              crossSymbolPos,
-                             mouseX,
-                             mouseY,
+                             textBoxPos,
                              screenQuadrantAware,
                              window);
     }
@@ -153,17 +277,13 @@ void DrawBoundsToolTick(const CommonState& commonState,
 
     const auto& perScreen = it->second;
     for (const auto& measure : perScreen.measurements)
-        DrawMeasurement(measure, true, commonState, window, d2dState, measure.rect.right, measure.rect.bottom);
+        DrawMeasurement(measure, commonState, window, d2dState, {});
 
-    if (!perScreen.currentRegionStart.has_value())
-        return;
-
-    const auto cursorPos = convert::FromSystemToWindow(window, commonState.cursorPosSystemSpace);
-
-    D2D1_RECT_F rect;
-    const float cursorX = static_cast<float>(cursorPos.x);
-    const float cursorY = static_cast<float>(cursorPos.y);
-    std::tie(rect.left, rect.right) = std::minmax(cursorX, perScreen.currentRegionStart->x);
-    std::tie(rect.top, rect.bottom) = std::minmax(cursorY, perScreen.currentRegionStart->y);
-    DrawMeasurement(Measurement{ rect }, false, commonState, window, d2dState, cursorX, cursorY);
+    if (perScreen.currentBounds.has_value())
+    {
+        D2D1_RECT_F rect;
+        std::tie(rect.left, rect.right) = std::minmax(perScreen.currentBounds->startPos.x, perScreen.currentBounds->currentPos.x);
+        std::tie(rect.top, rect.bottom) = std::minmax(perScreen.currentBounds->startPos.y, perScreen.currentBounds->currentPos.y);
+        DrawMeasurement(Measurement{ rect }, commonState, window, d2dState, perScreen.currentBounds->currentPos);
+    }
 }
