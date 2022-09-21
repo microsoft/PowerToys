@@ -18,12 +18,12 @@ namespace MeasureToolUI
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainWindow : WindowEx
+    public sealed partial class MainWindow : WindowEx, IDisposable
     {
         private const int WindowWidth = 216;
         private const int WindowHeight = 50;
 
-        private PowerToys.MeasureToolCore.Core _coreLogic = new PowerToys.MeasureToolCore.Core();
+        private PowerToys.MeasureToolCore.Core _coreLogic;
 
         private AppWindow _appWindow;
         private PointInt32 _initialPosition;
@@ -34,14 +34,14 @@ namespace MeasureToolUI
             this.SetWindowSize(WindowWidth, WindowHeight);
         }
 
-        public MainWindow()
+        public MainWindow(PowerToys.MeasureToolCore.Core core)
         {
             InitializeComponent();
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             _appWindow = AppWindow.GetFromWindowId(windowId);
-
+            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             var presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsAlwaysOnTop = true;
             this.SetIsAlwaysOnTop(true);
@@ -51,6 +51,8 @@ namespace MeasureToolUI
             this.SetIsMaximizable(false);
             IsTitleBarVisible = false;
 
+            _coreLogic = core;
+            Closed += MainWindow_Closed;
             DisplayArea displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
             float dpiScale = _coreLogic.GetDPIScaleForWindow((int)hwnd);
 
@@ -62,6 +64,12 @@ namespace MeasureToolUI
                 _initialPosition.X + (int)(dpiScale * WindowWidth),
                 _initialPosition.Y + (int)(dpiScale * WindowHeight));
             OnPositionChanged(_initialPosition);
+        }
+
+        private void MainWindow_Closed(object sender, WindowEventArgs args)
+        {
+            _coreLogic?.Dispose();
+            _coreLogic = null;
         }
 
         private void UpdateToolUsageCompletionEvent(object sender)
@@ -135,6 +143,11 @@ namespace MeasureToolUI
         {
             _coreLogic.ResetState();
             this.Close();
+        }
+
+        public void Dispose()
+        {
+            _coreLogic?.Dispose();
         }
     }
 }

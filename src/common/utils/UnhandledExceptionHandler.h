@@ -156,7 +156,7 @@ inline void LogStackTrace()
         Logger::error(L"Failed to capture context. {}", get_last_error_or_default(GetLastError()));
         return;
     }
-    
+
     STACKFRAME64 stack;
     memset(&stack, 0, sizeof(STACKFRAME64));
 
@@ -238,14 +238,14 @@ inline LONG WINAPI UnhandledExceptionHandler(PEXCEPTION_POINTERS info)
 }
 
 /* Handler to trap abort() calls */
-inline void AbortHandler(int signal_number)
+inline void AbortHandler(int /*signal_number*/)
 {
     Logger::error("--- ABORT");
     try
     {
         LogStackTrace();
     }
-    catch(...)
+    catch (...)
     {
         Logger::error("Failed to log stack trace on abort");
         Logger::flush();
@@ -271,9 +271,9 @@ inline void InitUnhandledExceptionHandler(void)
         // Global handler for unhandled exceptions
         SetUnhandledExceptionFilter(UnhandledExceptionHandler);
         // Handler for abort()
-        signal(SIGABRT, &AbortHandler);    
+        signal(SIGABRT, &AbortHandler);
     }
-    catch(...)
+    catch (...)
     {
         Logger::error("Failed to init global unhandled exception handler");
     }

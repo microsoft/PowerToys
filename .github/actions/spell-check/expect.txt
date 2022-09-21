@@ -346,7 +346,6 @@ CSIDL
 csignal
 cso
 CSRW
-cstddef
 cstdint
 cstdlib
 cstring
@@ -402,6 +401,7 @@ DBLEPSILON
 DCapture
 DCBA
 DCOM
+dcommon
 dcomp
 dcompi
 DComposition
@@ -490,7 +490,6 @@ dreamsofameaningfullife
 drivedetectionwarning
 dshow
 dst
-DState
 DTo
 dutil
 DVASPECT
@@ -522,6 +521,7 @@ DWORDLONG
 dworigin
 dwrite
 dxgi
+dxgidebug
 dxgiformat
 dxguid
 ecount
@@ -811,6 +811,7 @@ ICapture
 icase
 ICEBLUE
 IClass
+IClosable
 ICollection
 IColor
 ICommand
@@ -881,7 +882,6 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
-TEXTEXTRACTOR
 imagingdevices
 IMain
 IMarkdown
@@ -1278,6 +1278,7 @@ Moq
 MOUSEACTIVATE
 MOUSEHWHEEL
 MOUSEINPUT
+MOUSELEAVE
 MOUSEMOVE
 MOUSEWHEEL
 MOVESIZEEND
@@ -1632,7 +1633,6 @@ ptd
 PTOKEN
 PToy
 ptr
-ptrdiff
 ptstr
 PVOID
 pwa
@@ -1746,6 +1746,7 @@ RIGHTSCROLLBAR
 riid
 riverar
 RKey
+RLO
 RMENU
 RNumber
 roadmap
@@ -2063,6 +2064,7 @@ testhost
 testprocess
 TEXCOORD
 textblock
+TEXTEXTRACTOR
 TEXTINCLUDE
 THH
 THICKFRAME
@@ -2272,7 +2274,6 @@ wchar
 WClass
 wcout
 wcscat
-wcschr
 wcscmp
 wcscpy
 wcslen

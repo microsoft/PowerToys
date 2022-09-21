@@ -13,5 +13,6 @@ internal static class NativeMethods
     internal static readonly IntPtr HWND_TOPMOST = new System.IntPtr(-1);
     internal const uint SWP_NOSIZE = 0x0001;
     internal const uint SWP_NOMOVE = 0x0002;
+    internal const uint SWP_NOACTIVATE = 0x0010;
     internal const uint SWP_SHOWWINDOW = 0x0040;
 }
