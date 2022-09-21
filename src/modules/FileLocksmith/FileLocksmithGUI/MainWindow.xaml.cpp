@@ -20,6 +20,7 @@ namespace winrt::FileLocksmithGUI::implementation
 {
     MainWindow::MainWindow()
     {
+        Title(L"File Locksmith");
         place_and_resize();
         InitializeComponent();
         find_processes();
