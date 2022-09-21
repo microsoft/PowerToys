@@ -54,7 +54,7 @@ namespace
         ClipCursor(nullptr);
 
         toolState->commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
-            SetClipBoardToText(text.buffer);
+            SetClipBoardToText(std::wstring_view(text.buffer));
         });
 
         if (const bool shiftPress = GetKeyState(VK_SHIFT) & 0x8000; shiftPress && toolState->perScreen[window].currentBounds)
