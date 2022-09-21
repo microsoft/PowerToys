@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Plugin.Program.Logger;
+using Microsoft.Plugin.Program.Utils;
 using Microsoft.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.FileSystemHelper;
@@ -916,10 +917,46 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
+        private static bool TryGetIcoPathForRunCommandProgram(Win32Program program, out string icoPath)
+        {
+            if (program.AppType != ApplicationType.RunCommand)
+            {
+                icoPath = null;
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(program.FullPath))
+            {
+                icoPath = null;
+                return false;
+            }
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
+            try
+            {
+                var redirectionPath = ReparsePoint.GetTarget(program.FullPath);
+                icoPath = ExpandEnvironmentVariables(redirectionPath);
+                return true;
+            }
+            catch (IOException e)
+            {
+                ProgramLogger.Warn($"|Error whilst retrieving the redirection path from app execution alias {program.FullPath}", e, MethodBase.GetCurrentMethod().DeclaringType, program.FullPath);
+            }
+
+            icoPath = null;
+            return false;
+        }
+
         private static Win32Program GetRunCommandProgramFromPath(string path)
         {
             var program = GetProgramFromPath(path);
             program.AppType = ApplicationType.RunCommand;
+
+            if (TryGetIcoPathForRunCommandProgram(program, out var icoPath))
+            {
+                program.IcoPath = icoPath;
+            }
+
             return program;
         }
 
