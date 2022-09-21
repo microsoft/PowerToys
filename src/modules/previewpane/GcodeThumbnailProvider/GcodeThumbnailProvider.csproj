@@ -6,7 +6,7 @@
     <AssemblyName>PowerToys.GcodeThumbnailProvider</AssemblyName>
     <AssemblyTitle>PowerToys.GcodeThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys GcodePreviewHandler</AssemblyDescription>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Description>PowerToys GcodePreviewHandler</Description>
