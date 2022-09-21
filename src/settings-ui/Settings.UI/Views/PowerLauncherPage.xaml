@@ -45,8 +45,8 @@
                         <controls:SettingExpander.Content>
                             <StackPanel>
                                 <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook"
-                                                                 IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}"
-                                                                 Margin="56, 0, 40, 16"/>
+                                                                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}"
+                                                                         Margin="{StaticResource ExpanderSettingMargin}"/>
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen"
                                           IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}"
@@ -106,26 +106,26 @@
                                 <controls:Setting x:Uid="PowerLauncher_FastSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <NumberBox Minimum="0"
-                                        Maximum="500"
-                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelayFast}"
-                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                        SpinButtonPlacementMode="Compact"
-                                        HorizontalAlignment="Left"
-                                        SmallChange="10"
-                                        LargeChange="50"/>
+                                            Maximum="500"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelayFast}"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            SpinButtonPlacementMode="Compact"
+                                            HorizontalAlignment="Left"
+                                            SmallChange="10"
+                                            LargeChange="50"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                                 
                                 <controls:Setting x:Uid="PowerLauncher_SlowSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <NumberBox Minimum="0"
-                                        Maximum="1000"
-                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}"
-                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                        SpinButtonPlacementMode="Compact"
-                                        HorizontalAlignment="Left"
-                                        SmallChange="10"
-                                        LargeChange="50"/>
+                                            Maximum="1000"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            SpinButtonPlacementMode="Compact"
+                                            HorizontalAlignment="Left"
+                                            SmallChange="10"
+                                            LargeChange="50"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                             </StackPanel>
@@ -138,9 +138,9 @@
                             <controls:Setting x:Uid="PowerLauncher_MaximumNumberOfResults" Icon="&#xec8f;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
-                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                    SpinButtonPlacementMode="Compact"
-                                                    Minimum="1"/>
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        SpinButtonPlacementMode="Compact"
+                                        Minimum="1"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
@@ -162,13 +162,13 @@
                                 <controls:Setting x:Uid="PowerLauncher_SearchClickedItemWeight" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
                                     <controls:Setting.ActionContent>
                                         <NumberBox Minimum="0"
-                                        Maximum="1000"
-                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchClickedItemWeight}"
-                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                        SpinButtonPlacementMode="Compact"
-                                        HorizontalAlignment="Left"
-                                        SmallChange="5"
-                                        LargeChange="50"/>
+                                            Maximum="1000"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchClickedItemWeight}"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            SpinButtonPlacementMode="Compact"
+                                            HorizontalAlignment="Left"
+                                            SmallChange="5"
+                                            LargeChange="50"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                                 
@@ -181,11 +181,10 @@
                                 </controls:Setting>-->
                                 
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <controls:CheckBoxWithDescriptionControl 
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults"
                                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}"
-                                                                 Margin="56, -2, 40, 14"
-                                                                 x:Uid="PowerLauncher_WaitForSlowResults"/>
+                                    Margin="{StaticResource ExpanderSettingMargin}" />
                                 
                             </StackPanel>
                         </controls:SettingExpander.Content>
@@ -243,13 +242,13 @@
                 <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
 
                     <InfoBar x:Uid="Run_ConflictingKeywordInfo"
-                                          Severity="Informational"
-                                          IsClosable="False"
-                                          IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                                          IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                                  Severity="Informational"
+                                  IsClosable="False"
+                                  IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                                  IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
                         <InfoBar.ActionButton>
                             <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun#direct-activation-commands"
-                                                x:Uid="Run_ConflictingKeywordInfo_Link"/>
+                                             x:Uid="Run_ConflictingKeywordInfo_Link"/>
                         </InfoBar.ActionButton>
                     </InfoBar>
 
@@ -290,8 +289,8 @@
                                             <controls:Setting Header="{x:Bind Path=Name}" Description="{x:Bind Description}" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                                 <controls:Setting.Icon>
                                                     <Image Source="{x:Bind IconPath}"
-                                                        Width="20"
-                                                        Height="20" />
+                                                           Width="20"
+                                                           Height="20" />
                                                 </controls:Setting.Icon>
                                                 <controls:Setting.ActionContent>
                                                     <StackPanel Orientation="Horizontal" Spacing="16" >
@@ -335,21 +334,20 @@
                                                     <CheckBox AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
                                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
                                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}"
-                                                          Margin="56, 0, 40, 16">
+                                                          Margin="{StaticResource ExpanderSettingMargin}">
                                                         <StackPanel Orientation="Vertical">
                                                             <TextBlock x:Name="IncludeInGlobalResultTitle"
-                                                                   Margin="0,10,0,0"
-                                                                   x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
+                                                                      x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
                                                             <controls:IsEnabledTextBlock x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
-                                                                                   FontSize="{StaticResource SecondaryTextFontSize}"
-                                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                                                         FontSize="{StaticResource SecondaryTextFontSize}"
+                                                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
 
                                                         </StackPanel>
                                                     </CheckBox>
 
                                                     <controls:Setting x:Uid="PowerLauncher_PluginWeightBoost" 
-                                                                          Style="{StaticResource ExpanderContentSettingStyleTight}" 
-                                                                          IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
+                                                                      Style="{StaticResource ExpanderContentSettingStyleTight}" 
+                                                                      IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
                                                         <controls:Setting.ActionContent>
                                                             <NumberBox Minimum="-1000"
                                                                 Maximum="1000"
@@ -374,10 +372,8 @@
                                                             <StackPanel Orientation="Vertical">
                                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                                                 <controls:CheckBoxWithDescriptionControl Header="{x:Bind Path=DisplayLabel}" Description="{x:Bind Path=DisplayDescription}"
-                                                                      IsChecked="{x:Bind Path=Value, Mode=TwoWay}"
-                                                                      Margin="56, 0, 40, 16"/>
+                                                                      IsChecked="{x:Bind Path=Value, Mode=TwoWay}" Margin="{StaticResource ExpanderSettingMargin}"/>
                                                             </StackPanel>
-
                                                         </DataTemplate>
                                                     </ListView.ItemTemplate>
                                                 </ListView>

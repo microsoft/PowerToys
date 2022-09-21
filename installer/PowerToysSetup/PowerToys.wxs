@@ -73,6 +73,7 @@
 
         <Chain>
             <ExePackage
+                DisplayName="Closing PowerToys application"
                 Name="terminate_powertoys.cmd"
                 Cache="no"
                 Compressed="yes"
@@ -83,6 +84,7 @@
                 Vital="no">
             </ExePackage>
             <ExePackage
+                DisplayName="Downloading and installing .NET 6 Desktop Runtime"
                 Name="windowsdesktop-runtime-6.0.8-win-$(var.PowerToysPlatform).exe"
                 Compressed="no"
                 Id="DotnetRuntime6"
@@ -102,6 +104,7 @@
                     Hash="$(var.Dotnet6PayloadHash)" />
             </ExePackage>
             <ExePackage
+                DisplayName="Installing Microsoft Edge WebView2"
                 Name="MicrosoftEdgeWebview2Setup.exe"
                 Compressed="yes"
                 Id="WebView2"
@@ -114,6 +117,7 @@
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
             <ExePackage
+                DisplayName="Downloading and installing Microsoft Visual C++ 2015-2022 Redistributable"
                 Name="VCRedist-14.32.31332.exe"
                 DetectCondition="DetectedVCRedistVersion >= 32"
                 Compressed="no"
@@ -131,6 +135,7 @@
                     Hash="$(var.VCRedistPayloadHash)" />
             </ExePackage>
             <MsiPackage
+                DisplayName="Installing PowerToys"
                 SourceFile="$(var.PowerToysPlatform)\Release\PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform).msi"
                 Compressed="yes"
                 DisplayInternalUI="no">
