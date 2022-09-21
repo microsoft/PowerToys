@@ -2265,7 +2265,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="QuickAccent.ModuleDescription" xml:space="preserve">
     <value>Quick Accent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
 
-Activate by holding the key for the character you want to add an accent to, then press the Activation Key (space key or left and right arrow keys). If you continue to hold, an overlay to select the accented between multiple characters will appear!</value>
+Activate by holding the key for the character you want to add an accent to, then press and hold the Activation Key (space, left or right arrow keys) and an overlay to select accented characters will appear!</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent.ModuleTitle" xml:space="preserve">
@@ -2292,7 +2292,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Shortcut.Description" xml:space="preserve">
-    <value>This is the extra key needed to activate after you are holding your target letter.</value>
+    <value>Hold down this key after holding down the target letter to activate.</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Arrows.Content" xml:space="preserve">
