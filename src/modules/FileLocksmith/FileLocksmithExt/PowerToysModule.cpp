@@ -74,7 +74,6 @@ public:
         Logger::info(L"File Locksmith enabled");
         m_enabled = true;
         save_settings();
-        Trace::EnableFileLocksmith(m_enabled);
     }
 
     virtual void disable() override
@@ -82,7 +81,6 @@ public:
         Logger::info(L"File Locksmith disabled");
         m_enabled = false;
         save_settings();
-        Trace::EnableFileLocksmith(m_enabled);
     }
 
     virtual bool is_enabled() override
@@ -101,8 +99,7 @@ private:
     void init_settings()
     {
         m_enabled = FileLocksmithSettingsInstance().GetEnabled();
-        // TODO trace
-        // Trace::EnablePowerRename(m_enabled);
+        Trace::EnableFileLocksmith(m_enabled);
     }
 
     void save_settings()
@@ -110,8 +107,7 @@ private:
         auto& settings = FileLocksmithSettingsInstance();
         settings.SetEnabled(m_enabled);
         settings.Save();
-        // TODO trace
-        // Trace::EnablePowerRename(m_enabled);
+        Trace::EnableFileLocksmith(m_enabled);
     }
 };
 
