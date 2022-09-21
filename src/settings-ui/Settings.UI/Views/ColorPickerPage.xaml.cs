@@ -27,12 +27,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <param name="e">The arguments of this event</param>
         private void ColorPicker_ComboBox_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-           /**
-            * UWP hack
-            * because UWP load the bound ItemSource of the ComboBox asynchronous,
-            * so after InitializeComponent() the ItemSource is still empty and can't automatically select a entry.
-            * Selection via SelectedItem and SelectedValue is still not working too
-            */
+            /**
+             * UWP hack
+             * because UWP load the bound ItemSource of the ComboBox asynchronous,
+             * so after InitializeComponent() the ItemSource is still empty and can't automatically select a entry.
+             * Selection via SelectedItem and SelectedValue is still not working too
+             */
             var index = 0;
 
             foreach (var item in ViewModel.SelectableColorRepresentations)

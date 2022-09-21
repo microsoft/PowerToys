@@ -5,7 +5,6 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     x:Name="LayoutRoot"
     d:DesignHeight="300"
@@ -40,7 +39,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <FontIcon Glyph="&#xE104;"
+                    <FontIcon Glyph="&#xE70F;"
                               FontFamily="{ThemeResource SymbolThemeFontFamily}"
                               FontSize="14"/>
                 </StackPanel>

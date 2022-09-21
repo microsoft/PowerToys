@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
@@ -19,12 +18,13 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
-                    <muxc:InfoBar x:Uid="FileExplorerPreview_PreviewHandlerOutlookIncompatibility"
-                                  Severity="Warning"
-                                  IsOpen="True"
-                                  IsTabStop="True"
-                                  IsClosable="False"
-                                  />
+
+                    <InfoBar Severity="Warning"
+                                   x:Uid="FileExplorerPreview_PreviewHandlerOutlookIncompatibility"
+                                   IsOpen="True"
+                                   IsTabStop="True"
+                                   IsClosable="False"
+                                   />
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}"
@@ -77,13 +77,13 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
-                    <muxc:InfoBar Severity="Informational"
+                    <InfoBar Severity="Informational"
                                    x:Uid="FileExplorerPreview_RebootRequired"
                                    IsOpen="True"
                                    IsTabStop="True"
                                    IsClosable="False"
                                    />
-                    <muxc:InfoBar Severity="Warning"
+                    <InfoBar Severity="Warning"
                                    x:Uid="FileExplorerPreview_ThumbnailsMightNotAppearOnRemoteFolders"
                                    IsOpen="True"
                                    IsTabStop="True"

@@ -120,6 +120,14 @@
   <data name="open_new_tab" xml:space="preserve">
     <value>Open profiles in a new tab</value>
   </data>
+  <data name="open_quake" xml:space="preserve">
+    <value>Open profiles in the quake window</value>
+    <comment>Quake is a well-known computer game. Don't localize. See https://en.wikipedia.org/wiki/Quake_(video_game)</comment>
+  </data>
+  <data name="open_quake_description" xml:space="preserve">
+    <value>Windows Terminal supports a "quake" feature where a terminal window is accessible using a global hotkey. Enable this option to open profiles in a new tab in this window.</value>
+    <comment>Quake is a well-known computer game. Don't localize. See https://en.wikipedia.org/wiki/Quake_(video_game)</comment>
+  </data>
   <data name="plugin_description" xml:space="preserve">
     <value>Open Windows Terminal profiles.</value>
   </data>

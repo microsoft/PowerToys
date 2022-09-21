@@ -25,7 +25,7 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerAccent\</OutDir>
   </PropertyGroup>
-  <PropertyGroup >
+  <PropertyGroup>
     <TargetName>PowerToys.$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>

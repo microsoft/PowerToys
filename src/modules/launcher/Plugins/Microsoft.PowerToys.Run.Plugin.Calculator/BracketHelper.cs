@@ -44,9 +44,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
                         continue;
                     default:
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(direction), direction, "Can't process value");
-                    }
+                        {
+                            throw new ArgumentOutOfRangeException(nameof(direction), direction, "Can't process value");
+                        }
                 }
             }
 
