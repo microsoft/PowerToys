@@ -393,6 +393,29 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public string CurrentSettingMatchText
+        {
+            get
+            {
+                var settingsUtils = new SettingsUtils();
+                var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
+                string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+
+                var results = SettingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);
+
+                if (results.success)
+                {
+                    // if true, it means a backup would have been made
+                    return GetResourceString("BackupAndRestore_CurrentSettingsDiffer"); // "Current Settings Differ";
+                }
+                else
+                {
+                    // if false, it means a backup would not have been needed/made
+                    return GetResourceString("BackupAndRestore_CurrentSettingsMatch"); // "Current Settings Match";
+                }
+            }
+        }
+
         public string LastSettingsBackupSource
         {
             get
@@ -552,9 +575,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
+
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
             SendConfigMSG(outsettings.ToString());
+
+            if (!propertyName.Equals(nameof(CurrentSettingMatchText), StringComparison.Ordinal))
+            {
+                NotifyPropertyChanged(nameof(CurrentSettingMatchText));
+                OnPropertyChanged(nameof(CurrentSettingMatchText));
+            }
         }
 
         /// <summary>
@@ -631,6 +661,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             NotifyPropertyChanged(nameof(LastSettingsBackupDate));
             NotifyPropertyChanged(nameof(LastSettingsBackupSource));
+            NotifyPropertyChanged(nameof(CurrentSettingMatchText));
             NotifyPropertyChanged(nameof(SettingsBackupMessage));
             NotifyPropertyChanged(nameof(SettingsBackupWasSuccessful));
             NotifyPropertyChanged(nameof(SettingsBackupWasUnsuccessful));

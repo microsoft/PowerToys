@@ -1022,15 +1022,16 @@
                             <Grid Padding="0,5,10,10">
                                 <Grid.Resources >
                                     <Style TargetType="Border" >
-                                        <Setter Property="Padding" Value="0,0,5,0" />
+                                        <Setter Property="Padding" Value="5,0,5,0" />
                                     </Style>
                                 </Grid.Resources>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="1*" />
                                     <RowDefinition Height="1*" />
                                     <RowDefinition Height="1*" />
                                 </Grid.RowDefinitions>
@@ -1047,13 +1048,13 @@
                                     </TextBlock>
                                 </Border>
 
-                                <Border Grid.Row="1" Grid.Column="0">
+                                <Border Grid.Row="0" Grid.Column="2" BorderThickness="1,0,0,0" BorderBrush="Black">
                                     <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                                 <Run x:Uid="General_LastSettingsRestoreDate" />
                                     </TextBlock>
                                 </Border>
 
-                                <Border Grid.Row="1" Grid.Column="1">
+                                <Border Grid.Row="0" Grid.Column="3">
                                     <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                                 <Run Text="{Binding LastSettingsRestoreDate, Mode=OneWay}"/>
                                     </TextBlock>
@@ -1069,6 +1070,18 @@
                                 <Border Grid.Row="2" Grid.Column="1">
                                     <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                                 <Run Text="{Binding LastSettingsBackupSource, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </Border>
+
+                                <Border Grid.Row="2" Grid.Column="2" BorderThickness="1, 0, 0, 0" BorderBrush="Black">
+                                    <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run x:Uid="General_CurrentSettingMatchStatus" />
+                                    </TextBlock>
+                                </Border>
+
+                                <Border Grid.Row="2" Grid.Column="3">
+                                    <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding CurrentSettingMatchText, Mode=OneWay}"/>
                                     </TextBlock>
                                 </Border>
 

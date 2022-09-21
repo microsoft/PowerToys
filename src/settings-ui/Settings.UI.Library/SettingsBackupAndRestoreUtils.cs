@@ -469,7 +469,7 @@ namespace Settings.UI.Library
         /// A tuple that indicates if the backup was done or not, and a message.
         /// The message usually is a localized reference key.
         /// </returns>
-        public static (bool success, string message) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir)
+        public static (bool success, string message) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
         {
             try
             {
@@ -559,8 +559,11 @@ namespace Settings.UI.Library
                         TryCreateDirectory(fullBackupDir);
                         TryCreateDirectory(Path.GetDirectoryName(backupFullPath));
 
-                        Logger.LogInfo($"BackupSettings writing, {backupFullPath}.");
-                        File.WriteAllText(backupFullPath, currentSettingsFileToBackup);
+                        Logger.LogInfo($"BackupSettings writing, {backupFullPath}, dryRun:{dryRun}.");
+                        if (!dryRun)
+                        {
+                            File.WriteAllText(backupFullPath, currentSettingsFileToBackup);
+                        }
                     }
                     else
                     {
@@ -583,11 +586,14 @@ namespace Settings.UI.Library
                     var relativePath = currentFile.Value.path.Substring(appBasePath.Length + 1);
                     var backupFullPath = Path.Combine(fullBackupDir, relativePath);
 
-                    TryCreateDirectory(fullBackupDir);
-                    TryCreateDirectory(Path.GetDirectoryName(backupFullPath));
+                    Logger.LogInfo($"BackupSettings writing, {backupFullPath}, dryRun:{dryRun}");
+                    if (!dryRun)
+                    {
+                        TryCreateDirectory(fullBackupDir);
+                        TryCreateDirectory(Path.GetDirectoryName(backupFullPath));
 
-                    Logger.LogInfo($"BackupSettings writing, {backupFullPath}.");
-                    File.WriteAllText(backupFullPath, currentFile.Value.settings);
+                        File.WriteAllText(backupFullPath, currentFile.Value.settings);
+                    }
                 }
 
                 // add manifest
@@ -601,15 +607,19 @@ namespace Settings.UI.Library
                 };
 
                 var manifest = JsonSerializer.Serialize(manifestData, new JsonSerializerOptions() { WriteIndented = true });
-                File.WriteAllText(Path.Combine(fullBackupDir, "manifest.json"), manifest);
 
-                // clean up, to prevent runaway disk usage.
-                RemoveOldBackups(settingsBackupAndRestoreDir, 10, TimeSpan.FromDays(60));
+                if (!dryRun)
+                {
+                    File.WriteAllText(Path.Combine(fullBackupDir, "manifest.json"), manifest);
 
-                // compress the backup
-                var zipName = Path.Combine(settingsBackupAndRestoreDir, Path.GetFileName(fullBackupDir) + ".ptb");
-                ZipFile.CreateFromDirectory(fullBackupDir, zipName);
-                TryDeleteDirectory(fullBackupDir);
+                    // clean up, to prevent runaway disk usage.
+                    RemoveOldBackups(settingsBackupAndRestoreDir, 10, TimeSpan.FromDays(60));
+
+                    // compress the backup
+                    var zipName = Path.Combine(settingsBackupAndRestoreDir, Path.GetFileName(fullBackupDir) + ".ptb");
+                    ZipFile.CreateFromDirectory(fullBackupDir, zipName);
+                    TryDeleteDirectory(fullBackupDir);
+                }
 
                 return (true, $"BackupAndRestore_BackupComplete");
             }
