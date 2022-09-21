@@ -26,6 +26,10 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
 
+  <PropertyGroup>
+	<NoWarn>8981</NoWarn>
+  </PropertyGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Private>false</Private>
