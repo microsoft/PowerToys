@@ -17,10 +17,18 @@ public class PowerAccent : IDisposable
 {
     private readonly SettingsService _settingService;
 
+    // Keys that show a description (like dashes) when ShowCharacterInfoSetting is 1
+    private readonly LetterKey[] _specialLetterKeys = new LetterKey[] { LetterKey.VK_O };
+
     private bool _visible;
     private char[] _characters = Array.Empty<char>();
     private UnicodeCharInfo[] _characterNames = Array.Empty<UnicodeCharInfo>();
     private int _selectedIndex = -1;
+
+    public LetterKey[] SpecialLetterKeys
+    {
+        get { return _specialLetterKeys; }
+    }
 
     public UnicodeCharInfo[] CharacterNames
     {
@@ -207,5 +215,12 @@ public class PowerAccent : IDisposable
         }
 
         return result;
+    }
+
+    public enum ShowCharacterInfoSetting
+    {
+        Always = 0,
+        SpecialCharacters = 1,
+        Never = 2,
     }
 }

@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using PowerToys.PowerAccentKeyboardService;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Unicode;
 using System.Windows;
 using Point = PowerAccent.Core.Point;
@@ -33,6 +35,11 @@ public partial class Selector : Window, IDisposable
     private void PowerAccent_OnSelectionCharacter(int index, char character)
     {
         characters.SelectedIndex = index;
+        Core.PowerAccent.ShowCharacterInfoSetting characterInfoSetting = Core.PowerAccent.ShowCharacterInfoSetting.SpecialCharacters;
+        if (characterInfoSetting == Core.PowerAccent.ShowCharacterInfoSetting.Always || (characterInfoSetting == Core.PowerAccent.ShowCharacterInfoSetting.SpecialCharacters && _powerAccent.SpecialLetterKeys.Contains<LetterKey>(LetterKey.VK_A)))
+        {
+
+        }
         string charUnicodeNumber = _powerAccent.CharacterNames[index].CodePoint.ToString("X4", CultureInfo.InvariantCulture);
         string characterNameInfoBoxText = "(U+" + charUnicodeNumber + ") " + _powerAccent.CharacterNames[index].Name;
         characterName.Text = characterNameInfoBoxText;
