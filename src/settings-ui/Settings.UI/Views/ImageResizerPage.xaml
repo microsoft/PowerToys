@@ -6,7 +6,6 @@
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:toolkitconverters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
@@ -18,7 +17,6 @@
         <toolkitconverters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="0" FalseValue="1"/>
     </Page.Resources>
     <controls:SettingsPageControl x:Uid="ImageResizer"
-                                    
                                   ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel>
@@ -34,7 +32,7 @@
 
 
                 <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="ImageResizer_Presets" Icon="&#xE2B2;">
+                    <controls:Setting x:Uid="ImageResizer_Presets" Icon="&#xE792;">
                         <controls:Setting.ActionContent>
                             <Button x:Uid="ImageResizer_AddSizeButton" Click="AddSizeButton_Click" Style="{ThemeResource AccentButtonStyle}" />
                         </controls:Setting.ActionContent>
@@ -105,14 +103,14 @@
                                                     </ComboBox>
 
                                                     <StackPanel Spacing="8" Orientation="Horizontal">
-                                                        <muxc:NumberBox
+                                                        <NumberBox
                                                             x:Uid="ImageResizer_Width"
                                                             Value="{x:Bind Path=Width, Mode=TwoWay}" 
                                                             Minimum="0"
                                                             Width="116"
                                                             SpinButtonPlacementMode="Compact"/>
 
-                                                        <muxc:NumberBox
+                                                        <NumberBox
                                                             x:Uid="ImageResizer_Height"
                                                             Value="{x:Bind Path=Height, Mode=TwoWay}" 
                                                             Width="116"

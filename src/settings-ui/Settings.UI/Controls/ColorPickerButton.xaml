@@ -5,7 +5,6 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     
     d:DesignHeight="300"
@@ -13,9 +12,9 @@
 
     <Grid>
         <!--TODO(stefan): ToDisplayName is no longer available in ColorHelper
-        <muxc:DropDownButton Padding="4,4,8,4" AutomationProperties.FullDescription="{x:Bind clr:ColorHelper.ToDisplayName(SelectedColor), Mode=OneWay }">
+        <DropDownButton Padding="4,4,8,4" AutomationProperties.FullDescription="{x:Bind clr:ColorHelper.ToDisplayName(SelectedColor), Mode=OneWay }">
         -->
-        <muxc:DropDownButton Padding="4,4,8,4">
+        <DropDownButton Padding="4,4,8,4">
             <Border x:Name="ColorPreviewBorder"
                     Width="48"
                     CornerRadius="2"
@@ -26,9 +25,9 @@
                     <SolidColorBrush Color="{x:Bind SelectedColor, Mode=OneWay}"/>
                 </Border.Background>
             </Border>
-            <muxc:DropDownButton.Flyout>
+            <DropDownButton.Flyout>
                 <Flyout>
-                    <muxc:ColorPicker IsColorSliderVisible="True"
+                    <ColorPicker IsColorSliderVisible="True"
                                       IsColorChannelTextInputVisible="True"
                                       IsHexInputVisible="True"
                                       IsAlphaEnabled="False"
@@ -36,7 +35,7 @@
                                       IsAlphaTextInputVisible="False"
                                       Color="{x:Bind SelectedColor, Mode=TwoWay}" />
                 </Flyout>
-            </muxc:DropDownButton.Flyout>
-        </muxc:DropDownButton>
+            </DropDownButton.Flyout>
+        </DropDownButton>
     </Grid>
 </UserControl>

@@ -63,6 +63,7 @@
     
         <Chain>
             <ExePackage
+                DisplayName="Closing PowerToys application"
                 Name="terminate_powertoys.cmd"
                 Cache="no"
                 Compressed="yes"
@@ -73,6 +74,7 @@
                 Vital="no">
             </ExePackage>
             <ExePackage
+                DisplayName="Downloading and installing .NET 6 Desktop Runtime"
                 Name="windowsdesktop-runtime-6.0.8-win-$(var.PowerToysPlatform).exe"
                 Compressed="no"
                 Id="DotnetRuntime6"
@@ -92,6 +94,7 @@
                     Hash="$(var.Dotnet6PayloadHash)" />
             </ExePackage>
             <ExePackage
+                DisplayName="Installing Microsoft Edge WebView2"
                 Name="MicrosoftEdgeWebview2Setup.exe"
                 Compressed="yes"
                 Id="WebView2"
@@ -104,6 +107,7 @@
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
             <MsiPackage
+                DisplayName="Installing PowerToys"
                 SourceFile="$(var.PowerToysPlatform)\Release\PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform).msi"
                 Compressed="yes"
                 DisplayInternalUI="no">

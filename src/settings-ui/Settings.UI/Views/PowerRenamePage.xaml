@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
@@ -66,7 +65,7 @@
                                                   Style="{StaticResource ExpanderContentSettingStyle}"
                                                   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.GlobalAndMruEnabled}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox SpinButtonPlacementMode="Compact"
+                                        <NumberBox SpinButtonPlacementMode="Compact"
                                             HorizontalAlignment="Left"
                                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaxDispListNum}"
                                             Minimum="0"

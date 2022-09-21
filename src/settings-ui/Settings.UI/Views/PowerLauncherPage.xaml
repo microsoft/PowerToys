@@ -4,7 +4,6 @@
     xmlns:ViewModels="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
@@ -46,8 +45,8 @@
                         <controls:SettingExpander.Content>
                             <StackPanel>
                                 <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook"
-                                                                 IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}"
-                                                                 Margin="56, 0, 40, 16"/>
+                                                                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}"
+                                                                         Margin="{StaticResource ExpanderSettingMargin}"/>
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen"
                                           IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}"
@@ -106,27 +105,27 @@
                             <StackPanel>
                                 <controls:Setting x:Uid="PowerLauncher_FastSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox Minimum="0"
-                                        Maximum="500"
-                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelayFast}"
-                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                        SpinButtonPlacementMode="Compact"
-                                        HorizontalAlignment="Left"
-                                        SmallChange="10"
-                                        LargeChange="50"/>
+                                        <NumberBox Minimum="0"
+                                            Maximum="500"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelayFast}"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            SpinButtonPlacementMode="Compact"
+                                            HorizontalAlignment="Left"
+                                            SmallChange="10"
+                                            LargeChange="50"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                                 
                                 <controls:Setting x:Uid="PowerLauncher_SlowSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox Minimum="0"
-                                        Maximum="1000"
-                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}"
-                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                        SpinButtonPlacementMode="Compact"
-                                        HorizontalAlignment="Left"
-                                        SmallChange="10"
-                                        LargeChange="50"/>
+                                        <NumberBox Minimum="0"
+                                            Maximum="1000"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            SpinButtonPlacementMode="Compact"
+                                            HorizontalAlignment="Left"
+                                            SmallChange="10"
+                                            LargeChange="50"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                             </StackPanel>
@@ -136,12 +135,12 @@
                     </controls:SettingExpander>
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="PowerLauncher_MaximumNumberOfResults" Icon="&#xE721;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                            <controls:Setting x:Uid="PowerLauncher_MaximumNumberOfResults" Icon="&#xec8f;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
-                                    <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
-                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                    SpinButtonPlacementMode="Compact"
-                                                    Minimum="1"/>
+                                    <NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        SpinButtonPlacementMode="Compact"
+                                        Minimum="1"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
@@ -152,7 +151,7 @@
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="PowerLauncher_SearchQueryTuningEnabled" Icon="&#xE8FD;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
+                            <controls:Setting x:Uid="PowerLauncher_SearchQueryTuningEnabled" Icon="&#xE8CB;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryTuningEnabled}"/>
                                 </controls:Setting.ActionContent>
@@ -162,14 +161,14 @@
                             <StackPanel>
                                 <controls:Setting x:Uid="PowerLauncher_SearchClickedItemWeight" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:NumberBox Minimum="0"
-                                        Maximum="1000"
-                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchClickedItemWeight}"
-                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                        SpinButtonPlacementMode="Compact"
-                                        HorizontalAlignment="Left"
-                                        SmallChange="5"
-                                        LargeChange="50"/>
+                                        <NumberBox Minimum="0"
+                                            Maximum="1000"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchClickedItemWeight}"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            SpinButtonPlacementMode="Compact"
+                                            HorizontalAlignment="Left"
+                                            SmallChange="5"
+                                            LargeChange="50"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                                 
@@ -182,11 +181,10 @@
                                 </controls:Setting>-->
                                 
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <controls:CheckBoxWithDescriptionControl 
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults"
                                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}"
-                                                                 Margin="56, -2, 40, 14"
-                                                                 x:Uid="PowerLauncher_WaitForSlowResults"/>
+                                    Margin="{StaticResource ExpanderSettingMargin}" />
                                 
                             </StackPanel>
                         </controls:SettingExpander.Content>
@@ -243,16 +241,16 @@
 
                 <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
 
-                    <muxc:InfoBar x:Uid="Run_ConflictingKeywordInfo"
-                                          Severity="Informational"
-                                          IsClosable="False"
-                                          IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                                          IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                        <muxc:InfoBar.ActionButton>
+                    <InfoBar x:Uid="Run_ConflictingKeywordInfo"
+                                  Severity="Informational"
+                                  IsClosable="False"
+                                  IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                                  IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                        <InfoBar.ActionButton>
                             <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun#direct-activation-commands"
-                                                x:Uid="Run_ConflictingKeywordInfo_Link"/>
-                        </muxc:InfoBar.ActionButton>
-                    </muxc:InfoBar>
+                                             x:Uid="Run_ConflictingKeywordInfo_Link"/>
+                        </InfoBar.ActionButton>
+                    </InfoBar>
 
                     <controls:Setting x:Uid="Run_PluginUseDescription" Icon="&#xEA86;">
                         <controls:Setting.ActionContent>
@@ -268,14 +266,14 @@
                             </AutoSuggestBox>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    <muxc:InfoBar x:Uid="Run_AllPluginsDisabled"
+                    <InfoBar x:Uid="Run_AllPluginsDisabled"
                                   Severity="Error"
                                   IsTabStop="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}"
                                   IsOpen="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}"
                                   IsClosable="False" />
 
                     <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.ShowPluginsLoadingMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <muxc:ProgressRing IsActive="True" Width="20" Height="20" Margin="18,18" />
+                        <ProgressRing IsActive="True" Width="20" Height="20" Margin="18,18" />
                         <TextBlock x:Uid="Run_PluginsLoading" Style="{ThemeResource SecondaryTextStyle}" VerticalAlignment="Center" />
                     </StackPanel>
 
@@ -291,14 +289,14 @@
                                             <controls:Setting Header="{x:Bind Path=Name}" Description="{x:Bind Description}" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                                 <controls:Setting.Icon>
                                                     <Image Source="{x:Bind IconPath}"
-                                                        Width="20"
-                                                        Height="20" />
+                                                           Width="20"
+                                                           Height="20" />
                                                 </controls:Setting.Icon>
                                                 <controls:Setting.ActionContent>
                                                     <StackPanel Orientation="Horizontal" Spacing="16" >
 
                                                         <!-- todo(Stefan): InfoBadge not available
-                                                        <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
+                                                        <InfoBadge AutomationProperties.AccessibilityView="Raw"
                                                                         Visibility="{x:Bind ShowBadgeOnPluginSettingError}"
                                                                         Style="{StaticResource CriticalIconInfoBadgeStyle}" />
                                                         -->
@@ -326,7 +324,7 @@
                                                     </controls:Setting.ActionContent>
                                                 </controls:Setting>
 
-                                                <muxc:InfoBar Severity="Error" x:Uid="Run_NotAccessibleWarning"
+                                                <InfoBar Severity="Error" x:Uid="Run_NotAccessibleWarning"
                                                               IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                               IsOpen="{x:Bind ShowNotAccessibleWarning}"
                                                               IsClosable="False" />
@@ -336,23 +334,22 @@
                                                     <CheckBox AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
                                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
                                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}"
-                                                          Margin="56, 0, 40, 16">
+                                                          Margin="{StaticResource ExpanderSettingMargin}">
                                                         <StackPanel Orientation="Vertical">
                                                             <TextBlock x:Name="IncludeInGlobalResultTitle"
-                                                                   Margin="0,10,0,0"
-                                                                   x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
+                                                                      x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
                                                             <controls:IsEnabledTextBlock x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
-                                                                                   FontSize="{StaticResource SecondaryTextFontSize}"
-                                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                                                         FontSize="{StaticResource SecondaryTextFontSize}"
+                                                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
 
                                                         </StackPanel>
                                                     </CheckBox>
 
                                                     <controls:Setting x:Uid="PowerLauncher_PluginWeightBoost" 
-                                                                          Style="{StaticResource ExpanderContentSettingStyleTight}" 
-                                                                          IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
+                                                                      Style="{StaticResource ExpanderContentSettingStyleTight}" 
+                                                                      IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
                                                         <controls:Setting.ActionContent>
-                                                            <muxc:NumberBox Minimum="-1000"
+                                                            <NumberBox Minimum="-1000"
                                                                 Maximum="1000"
                                                                 Value="{x:Bind Mode=TwoWay, Path=WeightBoost}"
                                                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -375,10 +372,8 @@
                                                             <StackPanel Orientation="Vertical">
                                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                                                 <controls:CheckBoxWithDescriptionControl Header="{x:Bind Path=DisplayLabel}" Description="{x:Bind Path=DisplayDescription}"
-                                                                      IsChecked="{x:Bind Path=Value, Mode=TwoWay}"
-                                                                      Margin="56, 0, 40, 16"/>
+                                                                      IsChecked="{x:Bind Path=Value, Mode=TwoWay}" Margin="{StaticResource ExpanderSettingMargin}"/>
                                                             </StackPanel>
-
                                                         </DataTemplate>
                                                     </ListView.ItemTemplate>
                                                 </ListView>

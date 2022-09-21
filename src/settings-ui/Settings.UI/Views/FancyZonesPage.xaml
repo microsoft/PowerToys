@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"     
     mc:Ignorable="d"
@@ -65,7 +64,7 @@
                 <controls:SettingsGroup x:Uid="FancyZones_Zones" x:Name="ZonesSettingsGroup" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_ZoneBehavior_GroupSettings" Icon="&#xE620;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
+                            <controls:Setting x:Uid="FancyZones_ZoneBehavior_GroupSettings" Style="{StaticResource ExpanderHeaderSettingStyle}" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
@@ -98,7 +97,7 @@
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
 
-                            <controls:Setting x:Uid="FancyZones_Zone_Appearance" Icon="&#xE790;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
+                            <controls:Setting x:Uid="FancyZones_Zone_Appearance" Icon="&#xEB3C;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
                                     <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.SystemTheme, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                         <ComboBoxItem x:Uid="FancyZones_Radio_Custom_Colors"/>
@@ -169,7 +168,7 @@
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_WindowBehavior_GroupSettings" Icon="&#xE737;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
+                            <controls:Setting x:Uid="FancyZones_WindowBehavior_GroupSettings" Style="{StaticResource ExpanderHeaderSettingStyle}" />
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
@@ -199,7 +198,7 @@
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_WindowSwitching_GroupSettings" Icon="&#xE140;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                            <controls:Setting x:Uid="FancyZones_WindowSwitching_GroupSettings" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.WindowSwitching}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>
@@ -269,7 +268,7 @@
                 <controls:SettingsGroup x:Uid="FancyZones_Layouts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_QuickLayoutSwitch" Icon="&#xeda7;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
+                            <controls:Setting x:Uid="FancyZones_QuickLayoutSwitch" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" x:Uid="ToggleSwitch"/>
                                 </controls:Setting.ActionContent>

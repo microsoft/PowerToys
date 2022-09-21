@@ -6,7 +6,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d"
     x:Name="ShortcutContentControl">
@@ -70,7 +69,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!--TODO(stefan) InfoBadge not available
-                        <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
+                        <InfoBadge AutomationProperties.AccessibilityView="Raw"
                                         Margin="2,0,12,0"
                                         Style="{StaticResource CriticalIconInfoBadgeStyle}" />
                     -->
