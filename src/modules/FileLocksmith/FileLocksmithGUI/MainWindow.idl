@@ -4,5 +4,6 @@ namespace FileLocksmithGUI
     runtimeclass MainWindow : Microsoft.UI.Xaml.Window
     {
         MainWindow();
+        void DisplayNoResultsInfo();
     }
 }

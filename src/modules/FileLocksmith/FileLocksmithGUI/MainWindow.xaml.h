@@ -8,7 +8,7 @@ namespace winrt::FileLocksmithGUI::implementation
     struct MainWindow : MainWindowT<MainWindow>
     {
         MainWindow();
-
+        void DisplayNoResultsInfo();
     private:
         std::vector<ProcessResult> m_process_info;
         void find_processes();

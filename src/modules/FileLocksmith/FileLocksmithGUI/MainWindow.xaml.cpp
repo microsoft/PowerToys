@@ -32,10 +32,16 @@ namespace winrt::FileLocksmithGUI::implementation
 
         // TODO move to another thread
         stackPanel().Children().Clear();
+
         for (const auto& process : m_process_info)
         {
             ProcessEntry entry(process.name, process.pid, process.num_files);
             stackPanel().Children().Append(entry);
+        }
+
+        if (m_process_info.empty())
+        {
+            DisplayNoResultsInfo();
         }
     }
 
@@ -80,5 +86,15 @@ namespace winrt::FileLocksmithGUI::implementation
         auto app_window = Windowing::AppWindow::GetFromWindowId(window_id);
         
         app_window.MoveAndResize(rect);
+    }
+
+    void MainWindow::DisplayNoResultsInfo()
+    {
+        // Construct the UI element and display it
+        Controls::TextBlock text;
+        text.Text(L"No results.");
+        text.HorizontalAlignment(HorizontalAlignment::Center);
+        text.VerticalAlignment(VerticalAlignment::Center);
+        stackPanel().Children().Append(text);
     }
 }
