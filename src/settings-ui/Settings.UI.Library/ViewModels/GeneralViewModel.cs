@@ -19,6 +19,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.VisualBasic;
 using Settings.UI.Library;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
@@ -40,8 +41,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public ButtonClickCommand RestoreConfigsEventHandler { get; set; }
 
         public ButtonClickCommand SelectSettingBackupDirEventHandler { get; set; }
-
-        public ButtonClickCommand RestartButtonEventHandler { get; set; }
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
@@ -71,7 +70,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             BackupConfigsEventHandler = new ButtonClickCommand(BackupConfigsClick);
             SelectSettingBackupDirEventHandler = new ButtonClickCommand(SelectSettingBackupDir);
             RestoreConfigsEventHandler = new ButtonClickCommand(RestoreConfigsClick);
-            RestartButtonEventHandler = new ButtonClickCommand(Restart);
             HideBackupAndRestoreMessageAreaAction = hideBackupAndRestoreMessageAreaAction;
 
             ResourceLoader = resourceLoader;
@@ -177,19 +175,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     GeneralSettingsConfig.Startup = value;
                     NotifyPropertyChanged();
                 }
-            }
-        }
-
-        public string BackupAndRestoreBriefSummary
-        {
-            get
-            {
-                return "Backup and restore settings anytime.";
-            }
-
-            set
-            {
-                OnPropertyChanged("RunningAsAdminText");
             }
         }
 
@@ -392,12 +377,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                         }
                         else
                         {
-                            return "Failed to parse time";
+                            Logger.LogError("Failed to parse time from backup");
+                            return GetResourceString("BackupAndRestore_FailedToParseTime");
                         }
                     }
                     else
                     {
-                        return "Unknown";
+                        return GetResourceString("BackupAndRestore_UnknownBackupTime");
                     }
                 }
                 else
@@ -420,7 +406,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     }
                     else
                     {
-                        return "Unknown";
+                        return GetResourceString("BackupAndRestore_UnknownBackupSource");
                     }
                 }
                 else
@@ -443,7 +429,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     }
                     else
                     {
-                        return "Failed to parse time";
+                        Logger.LogError("Failed to parse time from backup");
+                        return GetResourceString("BackupAndRestore_FailedToParseTime");
                     }
                 }
                 else
@@ -575,6 +562,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         /// </summary>
         private void SelectSettingBackupDir()
         {
+            /* possible try to use this from Windows.Storage.Pickers?
+            var folderPicker = new FolderPicker();
+            folderPicker.FileTypeFilter.Add("*");
+            await folderPicker.PickSingleFolderAsync();
+            */
+
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
                 var currentDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");

@@ -1067,13 +1067,38 @@
     <value>Last checked: </value>
   </data>
 	<data name="General_LastSettingsBackupDate.Text" xml:space="preserve">
-    <value>Last backed up at:</value>
+    <value>Last backup at:</value>
   </data>
 	<data name="General_SetupAndRestoreLocationText.Text" xml:space="preserve">
     <value>Backup and restore location</value>
   </data>
+	<data name="General_SetupBackupAndRestoreLocationText.Header" xml:space="preserve">
+    <value>Location</value>
+  </data>
+	<data name="General_SetupBackupAndRestoreLocationText.Description" xml:space="preserve">
+    <value>Select a location to store the backup.</value>
+  </data>
+	<data name="General_DoBackupAndRestoreNow.Header" xml:space="preserve">
+    <value>Backup or restore now</value>
+  </data>
+
+	<data name="General_DoBackupAndRestoreNow.Description" xml:space="preserve">
+    <value>If settings are restored PowerToys will restart automatically.</value>
+  </data>
+
+	<data name="General_BackupAndRestoreDescription.Text" xml:space="preserve">
+    <value>You can backup and restore your settings here at any time. If settings are restored PowerToys will restart automatically.</value>
+  </data>
+
+	<data name="General_BackupAndRestoreStatusInfo.Header" xml:space="preserve">
+    <value>Backup and restore information</value>
+  </data>
+	<data name="General_BackupAndRestoreStatusInfo.Description" xml:space="preserve">
+    <value></value>
+  </data>
+
 	<data name="General_LastSettingsRestoreDate.Text" xml:space="preserve">
-    <value>Last restored at:</value>
+    <value>Last restore at:</value>
   </data>
 	<data name="General_LastSettingsBackupSource.Text" xml:space="preserve">
     <value>Backup source:</value>
@@ -1088,7 +1113,7 @@
     <value>Backup location</value>
   </data>
 	<data name="SettingsBackupLocationTwo.Header" xml:space="preserve">
-    <value>Backup backup &amp; restore</value>
+    <value>Backup &amp; restore</value>
   </data>
 	<data name="General_RunAsAdminRequired.Title" xml:space="preserve">
     <value>You need to run as administrator to use this setting.</value>
@@ -2398,6 +2423,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
 	<data name="BackupAndRestore_NoBackupFound" xml:space="preserve">
     <value>No backup found</value>
+  </data>
+	<data name="BackupAndRestore_FailedToParseTime" xml:space="preserve">
+    <value>Failed to parse time</value>
+  </data>
+	<data name="BackupAndRestore_UnknownBackupSource" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+	<data name="BackupAndRestore_UnknownBackupTime" xml:space="preserve">
+    <value>Unknown</value>
   </data>
 	<data name="BackupAndRestore_NeverRestored" xml:space="preserve">
     <value>Never restored</value>
