@@ -2403,9 +2403,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts.ModuleTitle" xml:space="preserve">
     <value>Hosts File Editor</value>
   </data>
-  <data name="LearnMore_Hosts.Text" xml:space="preserve">
-    <value>Learn more about Hosts File Editor</value>
-  </data>
   <data name="Shell_Hosts.Content" xml:space="preserve">
     <value>Hosts File Editor</value>
     <comment>Products name: Navigation view item name for Hosts File Editor</comment>
@@ -2442,6 +2439,18 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Launch_Hosts.Content" xml:space="preserve">
     <value>Launch Hosts File Editor</value>
-    <comment>"Hosts" is the name of the utility</comment>
+    <comment>"Hosts File Editor" is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_Hosts.Text" xml:space="preserve">
+    <value>Learn more about Hosts File Editor</value>
+    <comment>"Hosts File Editor" is the name of the utility, do not loc</comment>
+  </data>
+  <data name="Oobe_Hosts.Description" xml:space="preserve">
+    <value>Hosts File Editor is a quick and simple utility for managing hosts file.</value>
+    <comment>"Hosts File Editor" is the name of the utility, do not loc</comment>
+  </data>
+  <data name="Oobe_Hosts.Title" xml:space="preserve">
+    <value>Hosts File Editor</value>
+    <comment>Do not localize this string</comment>
   </data>
 </root>

@@ -186,6 +186,12 @@
   <data name="HostsFilter.Header" xml:space="preserve">
     <value>Hosts</value>
   </data>
+  <data name="MoveDown.Text" xml:space="preserve">
+    <value>Move down</value>
+  </data>
+  <data name="MoveUp.Text" xml:space="preserve">
+    <value>Move up</value>
+  </data>
   <data name="Ping.Text" xml:space="preserve">
     <value>Ping</value>
   </data>

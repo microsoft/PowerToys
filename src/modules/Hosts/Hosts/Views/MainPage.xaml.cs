@@ -150,5 +150,35 @@ namespace Hosts.Views
                 await dialog.ShowAsync();
             }
         }
+
+        private void ReorderButtonUp_Click(object sender, RoutedEventArgs e)
+        {
+            var menuFlyoutItem = sender as MenuFlyoutItem;
+
+            if (menuFlyoutItem != null)
+            {
+                var entry = menuFlyoutItem.DataContext as Entry;
+                var index = ViewModel.Entries.IndexOf(entry);
+                if (index > 0)
+                {
+                    ViewModel.Entries.Move(index, index - 1);
+                }
+            }
+        }
+
+        private void ReorderButtonDown_Click(object sender, RoutedEventArgs e)
+        {
+            var menuFlyoutItem = sender as MenuFlyoutItem;
+
+            if (menuFlyoutItem != null)
+            {
+                var entry = menuFlyoutItem.DataContext as Entry;
+                var index = ViewModel.Entries.IndexOf(entry);
+                if (index < ViewModel.Entries.Count - 1)
+                {
+                    ViewModel.Entries.Move(index, index + 1);
+                }
+            }
+        }
     }
 }

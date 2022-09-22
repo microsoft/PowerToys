@@ -9,22 +9,16 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls">
 
-    <controls:OOBEPageControl x:Uid="Oobe_AlwaysOnTop"
+    <controls:OOBEPageControl x:Uid="Oobe_Hosts"
                               HeroImage="ms-appx:///Assets/Modules/OOBE/AlwaysOnTop.png">
-
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
-                <TextBlock x:Uid="Oobe_TipsAndTricks"
-                           Style="{ThemeResource OobeSubtitleStyle}"/>
-
-                <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_AlwaysOnTop_TipsAndTricks" />
-
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                     <Button x:Uid="Launch_Hosts" Style="{StaticResource AccentButtonStyle}" Click="Launch_Hosts_Click" />
                     <Button x:Uid="OOBE_Settings"
                             Click="Launch_Settings_Click" />
-                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_AlwaysOnTop" Style="{StaticResource TextButtonStyle}">
-                        <TextBlock x:Uid="LearnMore_AlwaysOnTop"
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_HostsFileEditor" Style="{StaticResource TextButtonStyle}">
+                        <TextBlock x:Uid="LearnMore_Hosts"
                                    TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
