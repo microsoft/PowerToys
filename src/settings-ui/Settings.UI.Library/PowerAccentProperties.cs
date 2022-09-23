@@ -19,11 +19,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("input_time_ms")]
         public IntProperty InputTime { get; set; }
 
+        [JsonPropertyName("show_description")]
+        public PowerAccentShowDescription ShowDescription { get; set; }
+
         public PowerAccentProperties()
         {
             ActivationKey = PowerAccentActivationKey.Both;
             ToolbarPosition = "Top center";
             InputTime = new IntProperty(200);
+            ShowDescription = PowerAccentShowDescription.SpecialCharacters;
         }
     }
 }

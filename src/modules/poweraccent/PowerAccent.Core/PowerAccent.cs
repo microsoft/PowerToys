@@ -80,8 +80,8 @@ public class PowerAccent : IDisposable
         _characters = WindowsFunctions.IsCapitalState() ? ToUpper(SettingsService.GetDefaultLetterKey(letterKey)) : SettingsService.GetDefaultLetterKey(letterKey);
         _characterNames = GetCharacterNames(_characters);
 
-        Core.PowerAccent.ShowCharacterInfoSetting characterInfoSetting = Core.PowerAccent.ShowCharacterInfoSetting.SpecialCharacters;
-        _showDescription = characterInfoSetting == Core.PowerAccent.ShowCharacterInfoSetting.Always || (characterInfoSetting == Core.PowerAccent.ShowCharacterInfoSetting.SpecialCharacters && ((IList<LetterKey>)_letterKeysShowingDescription).Contains(letterKey));
+        Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentShowDescription characterInfoSetting = _settingService.ShowDescription;
+        _showDescription = characterInfoSetting == Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentShowDescription.Always || (characterInfoSetting == Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentShowDescription.SpecialCharacters && ((IList<LetterKey>)_letterKeysShowingDescription).Contains(letterKey));
 
         Task.Delay(_settingService.InputTime).ContinueWith(
         t =>
@@ -214,12 +214,5 @@ public class PowerAccent : IDisposable
         }
 
         return result;
-    }
-
-    public enum ShowCharacterInfoSetting
-    {
-        Always = 0,
-        SpecialCharacters = 1,
-        Never = 2,
     }
 }

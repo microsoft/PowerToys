@@ -2350,7 +2350,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
     <value>Hold the key for this long to make the accent menu appear (ms)</value>
     <comment>ms = milliseconds</comment>
-  </data>  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
+  </data>
+  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
   </data>
   <data name="TextExtractor.ModuleDescription" xml:space="preserve">
@@ -2398,5 +2399,29 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MeasureTool_ContinuousCapture_Information.Title" xml:space="preserve">
     <value>The continuous capture mode will consume more resources when in use. Also, measurements will be excluded from screenshots and screen capture.</value>
     <comment>pointer as in mouse pointer. Resources refer to things like CPU, GPU, RAM</comment>
+  </data>
+  <data name="QuickAccent_Description.Header" xml:space="preserve">
+    <value>Letter description</value>
+    <comment>Showing a description to a displayed letter</comment>
+  </data>
+  <data name="QuickAccent_Description_Always.Content" xml:space="preserve">
+    <value>Always</value>
+    <comment>Always show a description to a displayed letter</comment>
+  </data>
+  <data name="QuickAccent_Description_Indicator.Description" xml:space="preserve">
+    <value>Show the Unicode code and name of the currently selected character</value>
+    <comment>"Unicode" is a name of a standard; "code" refers to a number; "character" refers to a letter (i.e. "e")</comment>
+  </data>
+  <data name="QuickAccent_Description_Indicator.Header" xml:space="preserve">
+    <value>Letter description</value>
+    <comment>Showing a description to a displayed letter</comment>
+  </data>
+  <data name="QuickAccent_Description_Never.Content" xml:space="preserve">
+    <value>Never</value>
+    <comment>Never show a description to a displayed letter</comment>
+  </data>
+  <data name="QuickAccent_Description_Special_Characters.Content" xml:space="preserve">
+    <value>Only special characters (i.e. dashes)</value>
+    <comment>Only show a description to a letter, when it is a special key. Dashes mean the letters simmilar to "-"</comment>
   </data>
 </root>

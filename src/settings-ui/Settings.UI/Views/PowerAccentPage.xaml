@@ -55,6 +55,20 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="QuickAccent_Description" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:Setting x:Uid="QuickAccent_Description_Indicator" Icon="&#xE946;">
+                        <controls:Setting.ActionContent>
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                      SelectedIndex="{x:Bind Path=ViewModel.ShowDescription, Mode=TwoWay}" >
+                                <ComboBoxItem x:Uid="QuickAccent_Description_Always"/>
+                                <ComboBoxItem x:Uid="QuickAccent_Description_Special_Characters"/>
+                                <ComboBoxItem x:Uid="QuickAccent_Description_Never"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
                     <controls:Setting x:Uid="QuickAccent_InputTimeMs" Icon="&#xE916;">
                         <controls:Setting.ActionContent>

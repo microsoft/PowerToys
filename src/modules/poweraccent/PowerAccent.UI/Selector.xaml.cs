@@ -19,7 +19,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 {
     private Core.PowerAccent _powerAccent = new Core.PowerAccent();
 
-    private Visibility characterNameVisibility = Visibility.Visible;
+    private Visibility _characterNameVisibility = Visibility.Visible;
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -27,18 +27,15 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
     {
         get
         {
-            return characterNameVisibility;
+            return _characterNameVisibility;
         }
 
         set
         {
-            characterNameVisibility = value;
-            string characterNameVisibilityName = nameof(CharacterNameVisibility);
-            var thisElement = this;
-            PropertyChangedEventArgs args = new PropertyChangedEventArgs(characterNameVisibilityName);
+            _characterNameVisibility = value;
             if (PropertyChanged != null)
             {
-               PropertyChanged(thisElement, args);
+               PropertyChanged(this, new PropertyChangedEventArgs(nameof(CharacterNameVisibility)));
             }
         }
     }
@@ -62,6 +59,13 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
     {
         characters.SelectedIndex = index;
 
+        string charUnicodeNumber = _powerAccent.CharacterNames[index].CodePoint.ToString("X4", CultureInfo.InvariantCulture);
+        string characterNameInfoBoxText = "(U+" + charUnicodeNumber + ") " + _powerAccent.CharacterNames[index].Name;
+        characterName.Text = characterNameInfoBoxText;
+    }
+
+    private void PowerAccent_OnChangeDisplay(bool isActive, char[] chars)
+    {
         if (_powerAccent.ShowDescription)
         {
             CharacterNameVisibility = Visibility.Visible;
@@ -71,14 +75,8 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
             CharacterNameVisibility = Visibility.Collapsed;
         }
 
-        string charUnicodeNumber = _powerAccent.CharacterNames[index].CodePoint.ToString("X4", CultureInfo.InvariantCulture);
-        string characterNameInfoBoxText = "(U+" + charUnicodeNumber + ") " + _powerAccent.CharacterNames[index].Name;
-        characterName.Text = characterNameInfoBoxText;
-    }
-
-    private void PowerAccent_OnChangeDisplay(bool isActive, char[] chars)
-    {
         this.Visibility = isActive ? Visibility.Visible : Visibility.Collapsed;
+
         if (isActive)
         {
             characters.ItemsSource = chars;

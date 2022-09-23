@@ -55,6 +55,7 @@ public class SettingsService
 
                         InputTime = settings.Properties.InputTime.Value;
                         _keyboardListener.UpdateInputTime(InputTime);
+
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
                             case "Top center":
@@ -86,7 +87,7 @@ public class SettingsService
                                 break;
                         }
 
-                        _keyboardListener.UpdateInputTime(InputTime);
+                        ShowDescription = settings.Properties.ShowDescription;
                     }
                 }
                 catch (Exception ex)
@@ -140,6 +141,14 @@ public class SettingsService
         {
             _inputTime = value;
         }
+    }
+
+    private PowerAccentShowDescription _showDescription = PowerAccentShowDescription.SpecialCharacters;
+
+    public PowerAccentShowDescription ShowDescription
+    {
+        get { return _showDescription; }
+        set { _showDescription = value; }
     }
 
     public static char[] GetDefaultLetterKey(LetterKey letter)
