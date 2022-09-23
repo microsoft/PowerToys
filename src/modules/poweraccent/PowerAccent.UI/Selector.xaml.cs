@@ -15,21 +15,36 @@ using Size = PowerAccent.Core.Size;
 
 namespace PowerAccent.UI;
 
-public partial class Selector : Window, IDisposable
+public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 {
     private Core.PowerAccent _powerAccent = new Core.PowerAccent();
 
-    public Selector()
+    private Visibility characterNameVisibility = Visibility.Visible;
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public Visibility CharacterNameVisibility
     {
-        if (_powerAccent.ShowDescription)
+        get
         {
-            characterName.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            characterName.Visibility = Visibility.Collapsed;
+            return characterNameVisibility;
         }
 
+        set
+        {
+            characterNameVisibility = value;
+            string characterNameVisibilityName = nameof(CharacterNameVisibility);
+            var thisElement = this;
+            PropertyChangedEventArgs args = new PropertyChangedEventArgs(characterNameVisibilityName);
+            if (PropertyChanged != null)
+            {
+               PropertyChanged(thisElement, args);
+            }
+        }
+    }
+
+    public Selector()
+    {
         InitializeComponent();
         Application.Current.MainWindow.ShowActivated = false;
         Application.Current.MainWindow.Topmost = true;
@@ -46,6 +61,15 @@ public partial class Selector : Window, IDisposable
     private void PowerAccent_OnSelectionCharacter(int index, char character)
     {
         characters.SelectedIndex = index;
+
+        if (_powerAccent.ShowDescription)
+        {
+            CharacterNameVisibility = Visibility.Visible;
+        }
+        else
+        {
+            CharacterNameVisibility = Visibility.Collapsed;
+        }
 
         string charUnicodeNumber = _powerAccent.CharacterNames[index].CodePoint.ToString("X4", CultureInfo.InvariantCulture);
         string characterNameInfoBoxText = "(U+" + charUnicodeNumber + ") " + _powerAccent.CharacterNames[index].Name;
