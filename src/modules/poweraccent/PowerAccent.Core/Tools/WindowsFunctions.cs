@@ -76,4 +76,15 @@ internal static class WindowsFunctions
         var shift = User32.GetKeyState((int)User32.VK.VK_SHIFT);
         return capital != 0 || shift < 0;
     }
+
+    public static bool IsGameMode()
+    {
+        Shell32.QUERY_USER_NOTIFICATION_STATE state;
+        if (Shell32.SHQueryUserNotificationState(out state) != 0)
+        {
+            return false;
+        }
+
+        return state == Shell32.QUERY_USER_NOTIFICATION_STATE.QUNS_BUSY;
+    }
 }

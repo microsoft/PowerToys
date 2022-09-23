@@ -42,6 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             _inputTimeMs = _powerAccentSettings.Properties.InputTime.Value;
+            _disableFullscreen = _powerAccentSettings.Properties.DisableFullscreen.Value;
 
             switch (_powerAccentSettings.Properties.ToolbarPosition.Value)
             {
@@ -71,6 +72,43 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     break;
                 case "Center":
                     _toolbarPositionIndex = 8;
+                    break;
+            }
+
+            switch (_powerAccentSettings.Properties.SelectedLang.Value)
+            {
+                case "ALL":
+                    _selectedLangIndex = 0;
+                    break;
+                case "CUR":
+                    _selectedLangIndex = 1;
+                    break;
+                case "CZ":
+                    _selectedLangIndex = 2;
+                    break;
+                case "DE":
+                    _selectedLangIndex = 3;
+                    break;
+                case "FR":
+                    _selectedLangIndex = 4;
+                    break;
+                case "MI":
+                    _selectedLangIndex = 5;
+                    break;
+                case "PI":
+                    _selectedLangIndex = 6;
+                    break;
+                case "PL":
+                    _selectedLangIndex = 7;
+                    break;
+                case "SK":
+                    _selectedLangIndex = 8;
+                    break;
+                case "SP":
+                    _selectedLangIndex = 9;
+                    break;
+                case "TK":
+                    _selectedLangIndex = 10;
                     break;
             }
 
@@ -188,6 +226,78 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     }
 
                     RaisePropertyChanged(nameof(ToolbarPositionIndex));
+                }
+            }
+        }
+
+        private int _selectedLangIndex;
+
+        public int SelectedLangIndex
+        {
+            get
+            {
+                return _selectedLangIndex;
+            }
+
+            set
+            {
+                if (_selectedLangIndex != value)
+                {
+                    _selectedLangIndex = value;
+                    switch (_selectedLangIndex)
+                    {
+                        case 0:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "ALL";
+                            break;
+                        case 1:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "CUR";
+                            break;
+                        case 2:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "CZ";
+                            break;
+                        case 3:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "DE";
+                            break;
+                        case 4:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "FR";
+                            break;
+                        case 5:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "MI";
+                            break;
+                        case 6:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "PI";
+                            break;
+                        case 7:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "PL";
+                            break;
+                        case 8:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "SK";
+                            break;
+                        case 9:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "SP";
+                            break;
+                        case 10:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "TK";
+                            break;
+                    }
+
+                    RaisePropertyChanged(nameof(SelectedLangIndex));
+                }
+            }
+        }
+
+        private bool _disableFullscreen;
+
+        public bool DisableFullscreen
+        {
+            get => _disableFullscreen;
+            set
+            {
+                if (_disableFullscreen != value)
+                {
+                    _disableFullscreen = value;
+                    _powerAccentSettings.Properties.DisableFullscreen.Value = value;
+                    OnPropertyChanged(nameof(DisableFullscreen));
                 }
             }
         }
