@@ -75,7 +75,15 @@
                     </Style>
                 </ListBox.ItemContainerStyle>
             </ListBox>
-            <TextBlock x:Name="characterName" FontSize="12" Text="(U+0000) A COOL LETTER NAME COMES HERE" Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></TextBlock>
+            <Border Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}"
+                    Margin="0"
+                    Padding="0"
+                    Style="{DynamicResource borderContent}">
+                <TextBlock x:Name="characterName" 
+                           FontSize="12" 
+                           Text="(U+0000) A COOL LETTER NAME COMES HERE" 
+                           TextAlignment="Center" />
+            </Border>
         </StackPanel>
     </Grid>
 </Window>
