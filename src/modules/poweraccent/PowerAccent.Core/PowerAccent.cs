@@ -18,7 +18,7 @@ public class PowerAccent : IDisposable
     private readonly SettingsService _settingService;
 
     // Keys that show a description (like dashes) when ShowCharacterInfoSetting is 1
-    private readonly LetterKey[] _specialLetterKeys = new LetterKey[] { LetterKey.VK_O };
+    private readonly LetterKey[] _letterKeysShowingDescription = new LetterKey[] { LetterKey.VK_O };
 
     private bool _visible;
     private char[] _characters = Array.Empty<char>();
@@ -26,7 +26,7 @@ public class PowerAccent : IDisposable
     private int _selectedIndex = -1;
     private bool _showDescription;
 
-    public LetterKey[] SpecialLetterKeys => _specialLetterKeys;
+    public LetterKey[] LetterKeysShowingDescription => _letterKeysShowingDescription;
 
     public bool ShowDescription => _showDescription;
 
@@ -81,7 +81,7 @@ public class PowerAccent : IDisposable
         _characterNames = GetCharacterNames(_characters);
 
         Core.PowerAccent.ShowCharacterInfoSetting characterInfoSetting = Core.PowerAccent.ShowCharacterInfoSetting.SpecialCharacters;
-        _showDescription = characterInfoSetting == Core.PowerAccent.ShowCharacterInfoSetting.Always || (characterInfoSetting == Core.PowerAccent.ShowCharacterInfoSetting.SpecialCharacters && ((IList<LetterKey>)_specialLetterKeys).Contains(letterKey));
+        _showDescription = characterInfoSetting == Core.PowerAccent.ShowCharacterInfoSetting.Always || (characterInfoSetting == Core.PowerAccent.ShowCharacterInfoSetting.SpecialCharacters && ((IList<LetterKey>)_letterKeysShowingDescription).Contains(letterKey));
 
         Task.Delay(_settingService.InputTime).ContinueWith(
         t =>
