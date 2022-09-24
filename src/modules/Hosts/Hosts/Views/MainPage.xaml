@@ -1,4 +1,5 @@
 <Page
+    x:Name="Page"
     x:Class="Hosts.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,6 +9,7 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:local="using:Hosts.Views"
     xmlns:models="using:Hosts.Models"
+    xmlns:helpers="using:Hosts.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
@@ -164,13 +166,13 @@
             ItemsSource="{Binding Entries, Mode=TwoWay}"
             SelectedItem="{Binding Selected, Mode=TwoWay}">
             <ListView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="models:Entry">
                     <Grid
                         Background="Transparent"
                         IsRightTapEnabled="True"
                         RightTapped="Grid_RightTapped">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="160" />
+                            <ColumnDefinition Width="300" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
@@ -186,12 +188,18 @@
                                     x:Uid="Delete"
                                     Click="Delete_Click"
                                     Icon="Delete" />
-                                <MenuFlyoutItem x:Uid="MoveUp" Click="ReorderButtonUp_Click">
+                                <MenuFlyoutItem
+                                    x:Uid="MoveUp"
+                                    Click="ReorderButtonUp_Click"
+                                    IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                                     <MenuFlyoutItem.Icon>
                                         <FontIcon Glyph="&#xE74A;" />
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem x:Uid="MoveDown" Click="ReorderButtonDown_Click">
+                                <MenuFlyoutItem
+                                    x:Uid="MoveDown"
+                                    Click="ReorderButtonDown_Click"
+                                    IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                                     <MenuFlyoutItem.Icon>
                                         <FontIcon Glyph="&#xE74B;" />
                                     </MenuFlyoutItem.Icon>
@@ -199,30 +207,21 @@
                             </MenuFlyout>
                         </FlyoutBase.AttachedFlyout>
                         <TextBlock
+                            Grid.Column="0"
                             VerticalAlignment="Center"
-                            Text="{Binding Address, Mode=OneWay}"
+                            Text="{x:Bind Address, Mode=OneWay}"
                             TextWrapping="Wrap" />
-                        <StackPanel
-                            Grid.Column="1"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <TextBlock
+                        <TextBlock
+                                Grid.Column="1"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Style="{StaticResource CaptionTextBlockStyle}"
-                                Text="{Binding Hosts, Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                TextWrapping="Wrap"
-                                Visibility="{Binding Comment, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}">
-                                <Run Text=" - " /><Run Text="{Binding Comment, Mode=OneWay}" />
-                            </TextBlock>
-                        </StackPanel>
+                                TextWrapping="WrapWholeWords"
+                                VerticalAlignment="Center"
+                                Text="{x:Bind helpers:StringHelper.GetHostsWithComment(Hosts, Comment), Mode=OneWay}" />
                         <ProgressRing
                             Grid.Column="2"
                             Margin="0,0,8,0"
-                            IsActive="{Binding Pinging}" />
+                            IsActive="{x:Bind Pinging, Mode=OneWay}" />
                         <SymbolIcon
                             x:Name="PingIcon"
                             Grid.Column="2"
@@ -230,7 +229,7 @@
                             Visibility="Collapsed">
                             <i:Interaction.Behaviors>
                                 <ic:DataTriggerBehavior
-                                    Binding="{Binding Ping, Mode=OneWay}"
+                                    Binding="{x:Bind Ping, Mode=OneWay}"
                                     ComparisonCondition="Equal"
                                     Value="True">
                                     <ic:ChangePropertyAction
@@ -247,7 +246,7 @@
                                         Value="{StaticResource SystemFillColorSuccessBrush}" />
                                 </ic:DataTriggerBehavior>
                                 <ic:DataTriggerBehavior
-                                    Binding="{Binding Ping, Mode=OneWay}"
+                                    Binding="{x:Bind Ping, Mode=OneWay}"
                                     ComparisonCondition="Equal"
                                     Value="False">
                                     <ic:ChangePropertyAction
@@ -264,7 +263,7 @@
                                         Value="{StaticResource SystemFillColorCriticalBrush}" />
                                 </ic:DataTriggerBehavior>
                                 <ic:DataTriggerBehavior
-                                    Binding="{Binding Ping, Mode=OneWay}"
+                                    Binding="{x:Bind Ping, Mode=OneWay}"
                                     ComparisonCondition="Equal"
                                     Value="{x:Null}">
                                     <ic:ChangePropertyAction
@@ -279,7 +278,7 @@
                             Width="40"
                             MinWidth="0"
                             HorizontalAlignment="Right"
-                            IsOn="{Binding Active, Mode=TwoWay}"
+                            IsOn="{x:Bind Active, Mode=TwoWay}"
                             OffContent=""
                             OnContent="" />
                     </Grid>
@@ -302,9 +301,9 @@
                 Margin="0,12,0,0"
                 HorizontalAlignment="Stretch"
                 Spacing="24">
-                <TextBox x:Uid="Address" Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBox x:Uid="Hosts" Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBox x:Uid="Comment" Text="{Binding Comment, Mode=TwoWay}" />
+                <TextBox x:Uid="Address" Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsSpellCheckEnabled="False" />
+                <TextBox x:Uid="Hosts" Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsSpellCheckEnabled="False" />
+                <TextBox x:Uid="Comment" Text="{Binding Comment, Mode=TwoWay}" IsSpellCheckEnabled="False" />
                 <ToggleSwitch x:Uid="Active" IsOn="{Binding Active, Mode=TwoWay}" />
             </StackPanel>
         </ContentDialog>

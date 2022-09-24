@@ -128,6 +128,10 @@ namespace Hosts.ViewModels
         public void DeleteSelected()
         {
             _entries.Remove(Selected);
+            if (Filtered)
+            {
+                OnPropertyChanged(nameof(Entries));
+            }
         }
 
         public void UpdateAdditionalLines(string lines)
