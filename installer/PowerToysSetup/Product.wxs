@@ -15,6 +15,7 @@
   <?define MouseUtilsProjectName="MouseUtils"?>
   <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
   <?define MeasureToolProjectName="MeasureTool"?>
+  <?define HostsProjectName="Hosts"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>
@@ -121,9 +122,13 @@
 
   <?define MeasureToolFiles=CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;Microsoft.WinUI.dll;MRM.dll;PowerToys.ManagedCommon.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MeasureToolCore.dll;PowerToys.MeasureToolUI.deps.json;PowerToys.MeasureToolUI.dll;PowerToys.MeasureToolUI.exe;PowerToys.MeasureToolUI.runtimeconfig.json;PushNotificationsLongRunningTask.ProxyStub.dll;resources.pri;System.CodeDom.dll;System.Management.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinRT.Runtime.dll;WinUIEdit.dll;WinUIEx.dll;wuceffectsi.dll?>
 
-	<?define PowerRenameMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+  <?define HostsFiles=ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.Mvvm.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;ControlzEx.dll;CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;Ijwhost.dll;MainWindow.xbf;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.CommandLine.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.Configuration.EnvironmentVariables.dll;Microsoft.Extensions.Configuration.FileExtensions.dll;Microsoft.Extensions.Configuration.Json.dll;Microsoft.Extensions.Configuration.UserSecrets.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.FileProviders.Abstractions.dll;Microsoft.Extensions.FileProviders.Physical.dll;Microsoft.Extensions.FileSystemGlobbing.dll;Microsoft.Extensions.Hosting.Abstractions.dll;Microsoft.Extensions.Hosting.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.Configuration.dll;Microsoft.Extensions.Logging.Console.dll;Microsoft.Extensions.Logging.Debug.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Logging.EventLog.dll;Microsoft.Extensions.Logging.EventSource.dll;Microsoft.Extensions.Options.ConfigurationExtensions.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InputStateManager.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Behaviors.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;MRM.dll;PowerToys.Common.UI.dll;PowerToys.Hosts.deps.json;PowerToys.Hosts.dll;PowerToys.Hosts.exe;PowerToys.Hosts.runtimeconfig.json;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;PushNotificationsLongRunningTask.ProxyStub.dll;resources.pri;System.CodeDom.dll;System.Diagnostics.EventLog.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinRT.Runtime.dll;WinUIEdit.dll;WinUIEx.dll;wuceffectsi.dll?>
+
+  <?define PowerRenameMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
   <?define MeasureToolMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
+  
+  <?define HostsMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
 	<?define PowerAccentFiles=ControlzEx.dll;GongSolutions.WPF.DragDrop.dll;Ijwhost.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerAccent.deps.json;PowerAccent.dll;PowerAccent.exe;PowerAccent.runtimeconfig.json;PowerToys.PowerAccentModuleInterface.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;Vanara.Core.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.User32.dll;PowerToys.PowerAccentKeyboardService.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll?>
 
@@ -472,7 +477,14 @@
                   <Directory Id="MeasureToolMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
                 </Directory>
             </Directory>
-
+            
+            <!-- Hosts -->
+            <Directory Id="HostsInstallFolder" Name="$(var.HostsProjectName)">
+              <Directory Id="HostsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                <Directory Id="HostsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
+            </Directory>
+            
             <!-- Launcher -->
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="LauncherImagesFolder" Name="Images" />
@@ -995,6 +1007,28 @@
       <?endforeach?>			
     </DirectoryRef>
 
+    <!-- Hosts -->
+    <DirectoryRef Id="HostsInstallFolder" FileSource="$(var.BinDir)modules\$(var.HostsProjectName)">
+      <Component Id="Module_HostsInterface" Win64="yes">
+        <File Source="$(var.BinDir)modules\$(var.HostsProjectName)\PowerToys.HostsModuleInterface.dll" />
+      </Component>
+
+      <?foreach File in $(var.HostsFiles)?>
+      <Component Id="H_$(var.File)" Win64="yes">
+        <File Id="H_$(var.File)" Source="$(var.BinDir)modules\$(var.HostsProjectName)\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+    <DirectoryRef Id="HostsMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)modules\$(var.HostsProjectName)\Microsoft.UI.Xaml\Assets">
+      <?foreach File in $(var.HostsMicrosoftUIXamlAssetsInstallFiles)?>
+      <Component Id="HostsMicrosoftUIXamlAssets_$(var.File)" Win64="yes">
+        <File Id="HostsMicrosoftUIXamlAssetsFile_$(var.File)" Source="$(var.BinDir)modules\$(var.HostsProjectName)\Microsoft.UI.Xaml\Assets\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+
     <!-- SettingsV2 components -->
     <DirectoryRef Id="SettingsV2InstallFolder" FileSource="$(var.BinDir)Settings\">
       <?foreach File in $(var.SettingsV2Files)?>
@@ -1143,6 +1177,13 @@
       <?endforeach?>
       <?foreach File in $(var.MeasureToolMicrosoftUIXamlAssetsInstallFiles)?>
         <ComponentRef Id="MeasureToolMicrosoftUIXamlAssets_$(var.File)" />
+      <?endforeach?>
+      <ComponentRef Id="Module_HostsInterface"/>
+      <?foreach File in $(var.HostsFiles)?>
+        <ComponentRef Id="H_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.HostsMicrosoftUIXamlAssetsInstallFiles)?>
+      <ComponentRef Id="HostsMicrosoftUIXamlAssets_$(var.File)" />
       <?endforeach?>
 
       <?foreach File in $(var.SettingsV2Files)?>
@@ -1491,7 +1532,7 @@
     <!-- Localization languages shipped with WinAppSDK. We should ship these as well. -->
     <?define WinAppSDKLocLanguageList = af-ZA;ar-SA;az-Latn-AZ;bg-BG;bs-Latn-BA;ca-ES;cs-CZ;cy-GB;da-DK;de-DE;el-GR;en-GB;en-us;es-ES;es-MX;et-EE;eu-ES;fa-IR;fi-FI;fr-CA;fr-FR;gl-ES;he-IL;hi-IN;hr-HR;hu-HU;id-ID;is-IS;it-IT;ja-JP;ka-GE;kk-KZ;ko-KR;lt-LT;lv-LV;ms-MY;nb-NO;nl-NL;nn-NO;pl-PL;pt-BR;pt-PT;ro-RO;ru-RU;sk-SK;sl-SI;sq-AL;sr-Cyrl-RS;sr-Latn-RS;sv-SE;th-TH;tr-TR;uk-UA;vi-VN;zh-CN;zh-TW?>
   <Fragment>
-        <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder?>
+        <?foreach ParentDirectory in SettingsV2InstallFolder;PowerRenameInstallFolder;MeasureToolInstallFolder;HostsInstallFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
             <?foreach Language in $(var.WinAppSDKLocLanguageList)?>
             <?if $(var.Language) = af-ZA?>
@@ -1810,6 +1851,13 @@
                 <File Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
                 <File Id="MeasureTool_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.MeasureToolProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
             </Component>
+          <Component
+               Id="Hosts_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
+               Directory="WinAppSDKLoc$(var.IdSafeLanguage)HostsInstallFolder"
+               Guid="$(var.CompGUIDPrefix)04">
+            <File Id="Hosts_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)modules\$(var.HostsProjectName)\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
+            <File Id="Hosts_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)modules\$(var.HostsProjectName)\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
+          </Component>
             <?undef IdSafeLanguage?>
             <?undef CompGUIDPrefix?>
             <?endforeach?>

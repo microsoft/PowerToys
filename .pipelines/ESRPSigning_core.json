@@ -65,6 +65,10 @@
                 "modules\\FileExplorerPreview\\PowerToys.SvgThumbnailProvider.dll",
                 "modules\\FileExplorerPreview\\PowerToys.SvgThumbnailProvider.comhost.dll",
 
+                "modules\\Hosts\\PowerToys.HostsModuleInterface.dll",
+                "modules\\Hosts\\PowerToys.Hosts.dll",
+                "modules\\Hosts\\PowerToys.Hosts.exe",
+
                 "modules\\ImageResizer\\PowerToys.ImageResizer.exe",
                 "modules\\ImageResizer\\PowerToys.ImageResizer.dll",
                 "modules\\ImageResizer\\PowerToys.ImageResizerExt.dll",
