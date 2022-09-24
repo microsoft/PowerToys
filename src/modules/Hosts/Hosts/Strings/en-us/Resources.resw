@@ -120,7 +120,7 @@
   <data name="Active.Header" xml:space="preserve">
     <value>Active</value>
   </data>
-  <data name="Add" xml:space="preserve">
+  <data name="AddBtn" xml:space="preserve">
     <value>Add</value>
   </data>
   <data name="AddEntry.Text" xml:space="preserve">
@@ -138,7 +138,7 @@
   <data name="AdditionalLinesDialog.Title" xml:space="preserve">
     <value>Additional lines</value>
   </data>
-  <data name="AddNewEntryTitle" xml:space="preserve">
+  <data name="AddNewEntryDialog_Title" xml:space="preserve">
     <value>Add new entry</value>
   </data>
   <data name="Address.Header" xml:space="preserve">
@@ -147,7 +147,7 @@
   <data name="AddressFilter.Header" xml:space="preserve">
     <value>Address</value>
   </data>
-  <data name="ClearFilters.Content" xml:space="preserve">
+  <data name="ClearFiltersBtn.Content" xml:space="preserve">
     <value>Clear filters</value>
   </data>
   <data name="Comment.Header" xml:space="preserve">
@@ -194,6 +194,7 @@
   </data>
   <data name="Ping.Text" xml:space="preserve">
     <value>Ping</value>
+    <comment>"Ping" is a command-line utility</comment>
   </data>
   <data name="Reload.Content" xml:space="preserve">
     <value>Reload</value>
@@ -201,22 +202,22 @@
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="Update" xml:space="preserve">
+  <data name="UpdateBtn" xml:space="preserve">
     <value>Update</value>
   </data>
-  <data name="UpdateEntryTitle" xml:space="preserve">
+  <data name="UpdateEntry_Title" xml:space="preserve">
     <value>Update the entry</value>
   </data>
-  <data name="Warning" xml:space="preserve">
-    <value>Warning</value>
-  </data>
-  <data name="WarningDialog_Accept" xml:space="preserve">
+  <data name="WarningDialog_AcceptBtn" xml:space="preserve">
     <value>Accept</value>
   </data>
-  <data name="WarningDialog_Quit" xml:space="preserve">
+  <data name="WarningDialog_QuitBtn" xml:space="preserve">
     <value>Quit</value>
   </data>
   <data name="WarningDialog_Text" xml:space="preserve">
     <value>Altering hosts file has direct real world impact of how this computer resolves domain names.</value>
+  </data>
+  <data name="WarningDialog_Title" xml:space="preserve">
+    <value>Warning</value>
   </data>
 </root>

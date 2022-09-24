@@ -108,7 +108,7 @@
                                     </i:Interaction.Behaviors>
                                 </AutoSuggestBox>
                                 <Button
-                                    x:Uid="ClearFilters"
+                                    x:Uid="ClearFiltersBtn"
                                     Margin="0,6,0,0"
                                     HorizontalAlignment="Right"
                                     Command="{x:Bind ViewModel.ClearFiltersCommand}"

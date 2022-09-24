@@ -45,8 +45,8 @@ namespace Hosts.Views
         private async Task OpenNewDialogAsync()
         {
             var resourceLoader = ResourceLoader.GetForViewIndependentUse();
-            EntryDialog.Title = resourceLoader.GetString("AddNewEntryTitle");
-            EntryDialog.PrimaryButtonText = resourceLoader.GetString("Add");
+            EntryDialog.Title = resourceLoader.GetString("AddNewEntryDialog_Title");
+            EntryDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
             EntryDialog.PrimaryButtonCommand = AddCommand;
             EntryDialog.DataContext = new Entry(string.Empty, string.Empty, string.Empty, true);
             await EntryDialog.ShowAsync();
@@ -62,8 +62,8 @@ namespace Hosts.Views
         {
             var resourceLoader = ResourceLoader.GetForViewIndependentUse();
             ViewModel.Selected = e.ClickedItem as Entry;
-            EntryDialog.Title = resourceLoader.GetString("UpdateEntryTitle");
-            EntryDialog.PrimaryButtonText = resourceLoader.GetString("Update");
+            EntryDialog.Title = resourceLoader.GetString("UpdateEntry_Title");
+            EntryDialog.PrimaryButtonText = resourceLoader.GetString("UpdateBtn");
             EntryDialog.PrimaryButtonCommand = UpdateCommand;
             var clone = ViewModel.Selected.Clone();
             EntryDialog.DataContext = clone;
@@ -137,14 +137,14 @@ namespace Hosts.Views
 
                 dialog.XamlRoot = XamlRoot;
                 dialog.Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style;
-                dialog.Title = resourceLoader.GetString("Warning");
+                dialog.Title = resourceLoader.GetString("WarningDialog_WarningTitle");
                 dialog.Content = new TextBlock
                 {
                     Text = resourceLoader.GetString("WarningDialog_Text"),
                     TextWrapping = TextWrapping.Wrap,
                 };
-                dialog.PrimaryButtonText = resourceLoader.GetString("WarningDialog_Accept");
-                dialog.CloseButtonText = resourceLoader.GetString("WarningDialog_Quit");
+                dialog.PrimaryButtonText = resourceLoader.GetString("WarningDialog_AcceptBtn");
+                dialog.CloseButtonText = resourceLoader.GetString("WarningDialog_QuitBtn");
                 dialog.CloseButtonCommand = ExitCommand;
 
                 await dialog.ShowAsync();
