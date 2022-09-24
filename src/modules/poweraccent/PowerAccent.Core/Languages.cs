@@ -5,7 +5,6 @@
 namespace PowerAccent.Core
 {
     using System;
-    using System.Linq;
     using PowerToys.PowerAccentKeyboardService;
 
     public enum Language
@@ -15,6 +14,8 @@ namespace PowerAccent.Core
         CZ,
         DE,
         FR,
+        GR,
+        IS,
         MI,
         PI,
         PL,
@@ -34,6 +35,8 @@ namespace PowerAccent.Core
                 case Language.CZ: return GetDefaultLetterKeyCZ(letter); // Czech
                 case Language.DE: return GetDefaultLetterKeyDE(letter); // German
                 case Language.FR: return GetDefaultLetterKeyFR(letter); // French
+                case Language.GR: return GetDefaultLetterKeyGR(letter); // Greek
+                case Language.IS: return GetDefaultLetterKeyIS(letter); // Iceland
                 case Language.MI: return GetDefaultLetterKeyMI(letter); // Maori
                 case Language.PI: return GetDefaultLetterKeyPI(letter); // Pinyin
                 case Language.PL: return GetDefaultLetterKeyPL(letter); // Polish
@@ -71,55 +74,55 @@ namespace PowerAccent.Core
                 case LetterKey.VK_9:
                     return new char[] { '₉', '⁹' };
                 case LetterKey.VK_A:
-                    return new char[] { 'á', 'à', 'ä', 'â', 'ă', 'å', 'ā', 'ą', 'ȧ', 'ã', 'æ' };
+                    return new char[] { 'á', 'à', 'ä', 'â', 'ă', 'å', 'α', 'ā', 'ą', 'ȧ', 'ã', 'æ' };
                 case LetterKey.VK_B:
-                    return new char[] { 'ḃ' };
+                    return new char[] { 'ḃ', 'ß', 'β' };
                 case LetterKey.VK_C:
-                    return new char[] { 'ç', 'ć', 'ĉ', 'č', 'ċ', '¢' };
+                    return new char[] { 'ç', 'ć', 'ĉ', 'č', 'ċ', '¢', 'χ' };
                 case LetterKey.VK_D:
-                    return new char[] { 'ď', 'ḋ', 'đ' };
+                    return new char[] { 'ď', 'ḋ', 'đ', 'δ', 'ð' };
                 case LetterKey.VK_E:
-                    return new char[] { 'é', 'è', 'ê', 'ë', 'ě', 'ē', 'ę', 'ė' };
+                    return new char[] { 'é', 'è', 'ê', 'ë', 'ě', 'ē', 'ę', 'ė', 'ε', 'η', '€' };
                 case LetterKey.VK_F:
                     return new char[] { 'ƒ', 'ḟ' };
                 case LetterKey.VK_G:
-                    return new char[] { 'ğ', 'ģ', 'ǧ', 'ġ', 'ĝ', 'ǥ' };
+                    return new char[] { 'ğ', 'ģ', 'ǧ', 'ġ', 'ĝ', 'ǥ', 'γ' };
                 case LetterKey.VK_H:
                     return new char[] { 'ḣ', 'ĥ', 'ħ' };
                 case LetterKey.VK_I:
-                    return new char[] { 'ï', 'î', 'í', 'ì', 'ī', 'į', 'i' };
+                    return new char[] { 'ï', 'î', 'í', 'ì', 'ī', 'į', 'i', 'ı', 'İ', 'ι' };
                 case LetterKey.VK_J:
                     return new char[] { 'ĵ' };
                 case LetterKey.VK_K:
-                    return new char[] { 'ķ', 'ǩ' };
+                    return new char[] { 'ķ', 'ǩ', 'κ' };
                 case LetterKey.VK_L:
-                    return new char[] { 'ĺ', 'ľ', 'ļ', 'ł' };
+                    return new char[] { 'ĺ', 'ľ', 'ļ', 'ł', '₺', 'λ' };
                 case LetterKey.VK_M:
                     return new char[] { 'ṁ' };
                 case LetterKey.VK_N:
-                    return new char[] { 'ñ', 'ń', 'ŋ', 'ň', 'ņ', 'ṅ', 'ⁿ' };
+                    return new char[] { 'ñ', 'ń', 'ŋ', 'ň', 'ņ', 'ṅ', 'ⁿ', 'ν' };
                 case LetterKey.VK_O:
-                    return new char[] { 'ô', 'ó', 'ö', 'ő', 'ò', 'ō', 'ȯ', 'ø', 'õ', 'œ' };
+                    return new char[] { 'ô', 'ó', 'ö', 'ő', 'ò', 'ō', 'ȯ', 'ø', 'õ', 'œ', 'ω' };
                 case LetterKey.VK_P:
-                    return new char[] { 'ṗ', '₽' };
+                    return new char[] { 'ṗ', '₽', 'π', 'φ', 'ψ' };
                 case LetterKey.VK_R:
-                    return new char[] { 'ŕ', 'ř', 'ṙ', '₹' };
+                    return new char[] { 'ŕ', 'ř', 'ṙ', '₹', 'ρ' };
                 case LetterKey.VK_S:
-                    return new char[] { 'ś', 'ş', 'š', 'ș', 'ṡ', 'ŝ', '$' };
+                    return new char[] { 'ś', 'ş', 'š', 'ș', 'ṡ', 'ŝ', '$', 'σ' };
                 case LetterKey.VK_T:
-                    return new char[] { 'ţ', 'ť', 'ț', 'ṫ', 'ŧ' };
+                    return new char[] { 'ţ', 'ť', 'ț', 'ṫ', 'ŧ', 'θ', 'τ' };
                 case LetterKey.VK_U:
                     return new char[] { 'û', 'ú', 'ü', 'ŭ', 'ű', 'ù', 'ů', 'ū', 'ų' };
                 case LetterKey.VK_W:
                     return new char[] { 'ẇ', 'ŵ', '₩' };
                 case LetterKey.VK_X:
-                    return new char[] { 'ẋ' };
+                    return new char[] { 'ẋ', 'ξ' };
                 case LetterKey.VK_Y:
                     return new char[] { 'ÿ', 'ŷ', 'ý', 'ẏ' };
                 case LetterKey.VK_Z:
-                    return new char[] { 'ź', 'ž', 'ż', 'ʒ', 'ǯ' };
+                    return new char[] { 'ź', 'ž', 'ż', 'ʒ', 'ǯ', 'ζ' };
                 case LetterKey.VK_COMMA:
-                    return new char[] { '¿', '¡', '∙', '₋', '⁻', '–', '≤', '≥', '≠', '≈', '≙', '±', '₊', '⁺' };
+                    return new char[] { '¿', '¡', '∙', '₋', '⁻', '–', '≤', '≥', '≠', '≈', '≙', '±', '₊', '⁺', 'þ' };
             }
 
             return Array.Empty<char>();
@@ -188,6 +191,74 @@ namespace PowerAccent.Core
                     return new char[] { 'û', 'ù', 'ü', 'ú' };
                 case LetterKey.VK_Y:
                     return new char[] { 'ÿ', 'ý' };
+            }
+
+            return Array.Empty<char>();
+        }
+
+        // Greece
+        private static char[] GetDefaultLetterKeyGR(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.VK_A:
+                    return new[] { 'α' };
+                case LetterKey.VK_B:
+                    return new[] { 'β' };
+                case LetterKey.VK_C:
+                    return new[] { 'χ' };
+                case LetterKey.VK_D:
+                    return new[] { 'δ' };
+                case LetterKey.VK_E:
+                    return new[] { 'ε', 'η', '€' };
+                case LetterKey.VK_G:
+                    return new[] { 'γ' };
+                case LetterKey.VK_I:
+                    return new[] { 'ι' };
+                case LetterKey.VK_K:
+                    return new[] { 'κ' };
+                case LetterKey.VK_L:
+                    return new[] { 'λ' };
+                case LetterKey.VK_N:
+                    return new[] { 'ν' };
+                case LetterKey.VK_O:
+                    return new[] { 'ω' };
+                case LetterKey.VK_P:
+                    return new[] { 'π', 'φ', 'ψ' };
+                case LetterKey.VK_R:
+                    return new[] { 'ρ' };
+                case LetterKey.VK_S:
+                    return new[] { 'σ' };
+                case LetterKey.VK_T:
+                    return new[] { 'θ', 'τ' };
+                case LetterKey.VK_X:
+                    return new[] { 'ξ' };
+                case LetterKey.VK_Z:
+                    return new[] { 'ζ' };
+            }
+
+            return Array.Empty<char>();
+        }
+
+        // Iceland
+        private static char[] GetDefaultLetterKeyIS(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.VK_A:
+                    return new char[] { 'á', 'æ' };
+                case LetterKey.VK_D:
+                    return new char[] { 'ð' };
+                case LetterKey.VK_E:
+                    return new char[] { 'é' };
+                case LetterKey.VK_O:
+                    return new char[] { 'ó', 'ö' };
+                case LetterKey.VK_U:
+                    return new char[] { 'ú' };
+                case LetterKey.VK_Y:
+                    return new char[] { 'ý' };
+                case LetterKey.VK_COMMA:
+                    return new char[] { 'þ' };
             }
 
             return Array.Empty<char>();
