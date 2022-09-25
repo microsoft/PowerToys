@@ -1,4 +1,4 @@
-# Microsoft PowerToys
+# Microsoft PowerToys by Amit Kumar and RAB
 
 ![Hero image for Microsoft PowerToys](doc/images/overview/PT_hero_image.png)
 
