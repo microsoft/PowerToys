@@ -2292,7 +2292,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Shortcut.Description" xml:space="preserve">
-    <value>Press this key after holding down the target letter to activate.</value>
+    <value>Press this key after holding down the target letter.</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Arrows.Content" xml:space="preserve">
