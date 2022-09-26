@@ -76,7 +76,7 @@ namespace PowerAccent.Core
                 case LetterKey.VK_A:
                     return new char[] { 'á', 'à', 'ä', 'â', 'ă', 'å', 'α', 'ā', 'ą', 'ȧ', 'ã', 'æ' };
                 case LetterKey.VK_B:
-                    return new char[] { 'ḃ', 'ß', 'β' };
+                    return new char[] { 'ḃ', 'β' };
                 case LetterKey.VK_C:
                     return new char[] { 'ç', 'ć', 'ĉ', 'č', 'ċ', '¢', 'χ' };
                 case LetterKey.VK_D:
@@ -108,7 +108,7 @@ namespace PowerAccent.Core
                 case LetterKey.VK_R:
                     return new char[] { 'ŕ', 'ř', 'ṙ', '₹', 'ρ' };
                 case LetterKey.VK_S:
-                    return new char[] { 'ś', 'ş', 'š', 'ș', 'ṡ', 'ŝ', '$', 'σ' };
+                    return new char[] { 'ś', 'ş', 'š', 'ș', 'ṡ', 'ŝ', 'ß', 'σ', '$' };
                 case LetterKey.VK_T:
                     return new char[] { 'ţ', 'ť', 'ț', 'ṫ', 'ŧ', 'θ', 'τ' };
                 case LetterKey.VK_U:
