@@ -13,6 +13,7 @@ namespace winrt::FileLocksmithGUI::implementation
         void find_processes();
         void place_and_resize();
         void display_text_info(std::wstring text);
+        void watch_process(DWORD pid);
     };
 }
 
