@@ -92,29 +92,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 case "FR":
                     _selectedLangIndex = 4;
                     break;
-                case "GR":
+                case "IS":
                     _selectedLangIndex = 5;
                     break;
-                case "IS":
+                case "MI":
                     _selectedLangIndex = 6;
                     break;
-                case "MI":
+                case "PI":
                     _selectedLangIndex = 7;
                     break;
-                case "PI":
+                case "PL":
                     _selectedLangIndex = 8;
                     break;
-                case "PL":
+                case "SK":
                     _selectedLangIndex = 9;
                     break;
-                case "SK":
+                case "SP":
                     _selectedLangIndex = 10;
                     break;
-                case "SP":
-                    _selectedLangIndex = 11;
-                    break;
                 case "TK":
-                    _selectedLangIndex = 12;
+                    _selectedLangIndex = 11;
                     break;
             }
 
@@ -268,27 +265,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                             _powerAccentSettings.Properties.SelectedLang.Value = "FR";
                             break;
                         case 5:
-                            _powerAccentSettings.Properties.SelectedLang.Value = "GR";
-                            break;
-                        case 6:
                             _powerAccentSettings.Properties.SelectedLang.Value = "IS";
                             break;
-                        case 7:
+                        case 6:
                             _powerAccentSettings.Properties.SelectedLang.Value = "MI";
                             break;
-                        case 8:
+                        case 7:
                             _powerAccentSettings.Properties.SelectedLang.Value = "PI";
                             break;
-                        case 9:
+                        case 8:
                             _powerAccentSettings.Properties.SelectedLang.Value = "PL";
                             break;
-                        case 10:
+                        case 9:
                             _powerAccentSettings.Properties.SelectedLang.Value = "SK";
                             break;
-                        case 11:
+                        case 10:
                             _powerAccentSettings.Properties.SelectedLang.Value = "SP";
                             break;
-                        case 12:
+                        case 11:
                             _powerAccentSettings.Properties.SelectedLang.Value = "TK";
                             break;
                     }

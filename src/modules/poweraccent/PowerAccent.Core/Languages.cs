@@ -35,7 +35,6 @@ namespace PowerAccent.Core
                 case Language.CZ: return GetDefaultLetterKeyCZ(letter); // Czech
                 case Language.DE: return GetDefaultLetterKeyDE(letter); // German
                 case Language.FR: return GetDefaultLetterKeyFR(letter); // French
-                case Language.GR: return GetDefaultLetterKeyGR(letter); // Greek
                 case Language.IS: return GetDefaultLetterKeyIS(letter); // Iceland
                 case Language.MI: return GetDefaultLetterKeyMI(letter); // Maori
                 case Language.PI: return GetDefaultLetterKeyPI(letter); // Pinyin
@@ -191,50 +190,6 @@ namespace PowerAccent.Core
                     return new char[] { 'û', 'ù', 'ü', 'ú' };
                 case LetterKey.VK_Y:
                     return new char[] { 'ÿ', 'ý' };
-            }
-
-            return Array.Empty<char>();
-        }
-
-        // Greece
-        private static char[] GetDefaultLetterKeyGR(LetterKey letter)
-        {
-            switch (letter)
-            {
-                case LetterKey.VK_A:
-                    return new[] { 'α' };
-                case LetterKey.VK_B:
-                    return new[] { 'β' };
-                case LetterKey.VK_C:
-                    return new[] { 'χ' };
-                case LetterKey.VK_D:
-                    return new[] { 'δ' };
-                case LetterKey.VK_E:
-                    return new[] { 'ε', 'η', '€' };
-                case LetterKey.VK_G:
-                    return new[] { 'γ' };
-                case LetterKey.VK_I:
-                    return new[] { 'ι' };
-                case LetterKey.VK_K:
-                    return new[] { 'κ' };
-                case LetterKey.VK_L:
-                    return new[] { 'λ' };
-                case LetterKey.VK_N:
-                    return new[] { 'ν' };
-                case LetterKey.VK_O:
-                    return new[] { 'ω' };
-                case LetterKey.VK_P:
-                    return new[] { 'π', 'φ', 'ψ' };
-                case LetterKey.VK_R:
-                    return new[] { 'ρ' };
-                case LetterKey.VK_S:
-                    return new[] { 'σ' };
-                case LetterKey.VK_T:
-                    return new[] { 'θ', 'τ' };
-                case LetterKey.VK_X:
-                    return new[] { 'ξ' };
-                case LetterKey.VK_Z:
-                    return new[] { 'ζ' };
             }
 
             return Array.Empty<char>();
