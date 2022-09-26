@@ -14,7 +14,6 @@ namespace PowerAccent.Core
         CZ,
         DE,
         FR,
-        GR,
         IS,
         MI,
         PI,
