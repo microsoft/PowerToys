@@ -36,17 +36,10 @@ namespace winrt::FileLocksmithGUI::implementation
         }
 
         CloseHandle(process);
-
-        auto siblings = Parent().as<Controls::StackPanel>().Children();
-        if (uint32_t index; siblings.IndexOf(*this, index))
-        {
-            siblings.RemoveAt(index);
-        }
-
-        if (siblings.Size() == 0)
-        {
-            auto main_window = Parent().as<Controls::StackPanel>().Parent().as<MainWindow>();
-            main_window.DisplayNoResultsInfo();
-        }
+    }
+    
+    DWORD ProcessEntry::Pid()
+    {
+        return m_pid;
     }
 }

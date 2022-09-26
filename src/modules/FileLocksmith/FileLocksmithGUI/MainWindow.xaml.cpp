@@ -46,6 +46,11 @@ namespace winrt::FileLocksmithGUI::implementation
             {
                 ProcessEntry entry(process.name, process.pid, process.num_files);
                 stackPanel().Children().Append(entry);
+
+                // Launch a thread to erase this entry if the process exits
+                std::thread([&, pid = process.pid] {
+                    watch_process(pid);
+                }).detach();
             }
 
             if (process_info.empty())
@@ -114,5 +119,41 @@ namespace winrt::FileLocksmithGUI::implementation
         text_block.HorizontalAlignment(HorizontalAlignment::Center);
         text_block.VerticalAlignment(VerticalAlignment::Center);
         stackPanel().Children().Append(text_block);
+    }
+
+    void MainWindow::watch_process(DWORD pid)
+    {
+        HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
+
+        if (!process)
+        {
+            return;
+        }
+
+        auto wait_result = WaitForSingleObject(process, INFINITE);
+        CloseHandle(process);
+
+        if (wait_result == WAIT_OBJECT_0)
+        {
+            // Find entry with this PID and erase it
+            DispatcherQueue().TryEnqueue([&, pid] {
+
+                for (uint32_t i = 0; i < stackPanel().Children().Size(); i++)
+                {
+                    auto element = stackPanel().Children().GetAt(i);
+                    auto process_entry = element.try_as<ProcessEntry>();
+                    if (!process_entry)
+                    {
+                        continue;
+                    }
+
+                    if (process_entry.Pid() == pid)
+                    {
+                        stackPanel().Children().RemoveAt(i);
+                        return;
+                    }
+                }
+            });
+        }
     }
 }
