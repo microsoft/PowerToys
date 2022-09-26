@@ -2407,7 +2407,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Choose language</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
-    <value>All</value>
+    <value>All available</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Currency.Content" xml:space="preserve">
     <value>Currency</value>
