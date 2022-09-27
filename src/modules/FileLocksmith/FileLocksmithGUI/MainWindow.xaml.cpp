@@ -44,7 +44,7 @@ namespace winrt::FileLocksmithGUI::implementation
 
             for (const auto& process : process_info)
             {
-                ProcessEntry entry(process.name, process.pid, process.num_files);
+                ProcessEntry entry(process.name, process.pid, process.files.size());
                 stackPanel().Children().Append(entry);
 
                 // Launch a thread to erase this entry if the process exits

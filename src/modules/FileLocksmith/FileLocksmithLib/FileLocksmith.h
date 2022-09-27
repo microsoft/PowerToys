@@ -6,7 +6,7 @@ struct ProcessResult
 {
 	std::wstring name;
 	DWORD pid;
-	uint64_t num_files;
+    std::vector<std::wstring> files;
 };
 
 // Second version, checks handles towards files and all subfiles and folders of given dirs, if any.

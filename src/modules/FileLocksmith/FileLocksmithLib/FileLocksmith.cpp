@@ -14,54 +14,73 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
     NtdllExtensions nt_ext;
 
     // TODO use a trie!
-    std::set<std::wstring> kernel_paths_files;
-    std::set<std::wstring> kernel_paths_dirs;
+
+    // This maps kernel names of files within `paths` to their normal paths.
+    std::map<std::wstring, std::wstring> kernel_names_files;
+
+    // This maps kernel names of directories within `paths` to their normal paths.
+    std::map<std::wstring, std::wstring> kernel_names_dirs;
 
     for (const auto& path : paths)
     {
         auto kernel_path = nt_ext.path_to_kernel_name(path.c_str());
         if (!kernel_path.empty())
         {
-            (is_directory(path) ? kernel_paths_dirs : kernel_paths_files).insert(std::move(kernel_path));
+            (is_directory(path) ? kernel_names_dirs : kernel_names_files)[kernel_path] = path;
         }
     }
 
-    std::map<DWORD, uint64_t> pid_counts;
+    std::map<DWORD, std::vector<std::wstring>> pid_files;
 
-    auto kernel_paths_contain = [&](const std::wstring& path)
+    // Returns a normal path of the file specified by kernel_name, if it matches
+    // the search criteria. Otherwise, return an empty string.
+    auto kernel_paths_contain = [&](const std::wstring& kernel_name) -> std::wstring
     {
         // Normal equivalence
-        if (kernel_paths_files.contains(path) || kernel_paths_dirs.contains(path))
+        if (auto it = kernel_names_files.find(kernel_name); it != kernel_names_files.end())
         {
-            return true;
+            return it->second;
         }
 
-        // Subfolder or file
-        return std::ranges::any_of(kernel_paths_dirs, [&](const std::wstring& dir)
+        if (auto it = kernel_names_dirs.find(kernel_name); it != kernel_names_dirs.end())
+        {
+            return it->second;
+        }
+
+        for (const auto& [dir_kernel_name, dir_path] : kernel_names_dirs)
+        {
+            if (kernel_name.starts_with(dir_kernel_name + L"\\"))
             {
-                return path.starts_with(dir + L"\\");
-            });
+                return dir_path + kernel_name.substr(dir_kernel_name.size());
+            }
+        }
+
+        return {};
     };
 
-    for (auto handle_info : nt_ext.handles())
+    for (const auto& handle_info : nt_ext.handles())
     {
-        if (handle_info.type_name == L"File" && kernel_paths_contain(handle_info.kernel_file_name))
+        if (handle_info.type_name == L"File")
         {
-            pid_counts[handle_info.pid]++;
+            auto path = kernel_paths_contain(handle_info.kernel_file_name);
+            if (!path.empty())
+            {
+                pid_files[handle_info.pid].push_back(std::move(path));
+            }
         }
     }
 
     std::vector<ProcessResult> result;
 
-    for (auto process_info : nt_ext.processes())
+    for (const auto& process_info : nt_ext.processes())
     {
-        if (auto it = pid_counts.find(process_info.pid); it != pid_counts.end())
+        if (auto it = pid_files.find(process_info.pid); it != pid_files.end())
         {
             result.push_back(ProcessResult
                 {
                     .name = process_info.name,
                     .pid = process_info.pid,
-                    .num_files = it->second
+                    .files = it->second
                 });
         }
     }
