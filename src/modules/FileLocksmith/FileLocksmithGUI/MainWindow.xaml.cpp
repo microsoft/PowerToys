@@ -9,10 +9,6 @@
 
 #pragma comment(lib, "shcore") // GetDpiForMonitor
 
-#include <winrt/Windows.System.Threading.h>
-
-#include <winrt/Windows.Foundation.Collections.h>
-
 using namespace winrt;
 using namespace Microsoft::UI;
 using namespace Microsoft::UI::Xaml;
