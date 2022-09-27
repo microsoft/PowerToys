@@ -5,5 +5,6 @@ namespace FileLocksmithGUI
     {
         ProcessEntry(String process, UInt32 pid, UInt64 num_files);
         UInt32 Pid();
+        void AddPath(String file);
     }
 }
