@@ -11,6 +11,8 @@
 
 #include <winrt/Windows.System.Threading.h>
 
+#include <winrt/Windows.Foundation.Collections.h>
+
 using namespace winrt;
 using namespace Microsoft::UI;
 using namespace Microsoft::UI::Xaml;
@@ -45,6 +47,12 @@ namespace winrt::FileLocksmithGUI::implementation
             for (const auto& process : process_info)
             {
                 ProcessEntry entry(process.name, process.pid, process.files.size());
+
+                for (auto path : process.files)
+                {
+                    entry.AddPath(path);
+                }
+
                 stackPanel().Children().Append(entry);
 
                 // Launch a thread to erase this entry if the process exits
@@ -83,7 +91,7 @@ namespace winrt::FileLocksmithGUI::implementation
         GetDpiForMonitor(monitor, MONITOR_DPI_TYPE::MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y);
         UINT window_dpi = GetDpiForWindow(hwnd);
 
-        int width = 720;
+        int width = 728;
         int height = 405;
 
         winrt::Windows::Graphics::RectInt32 rect;

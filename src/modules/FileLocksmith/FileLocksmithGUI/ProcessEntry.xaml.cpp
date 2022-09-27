@@ -29,6 +29,16 @@ namespace winrt::FileLocksmithGUI::implementation
 
         m_pid = pid;
     }
+    
+    DWORD ProcessEntry::Pid()
+    {
+        return m_pid;
+    }
+
+    void ProcessEntry::AddPath(const winrt::hstring& path)
+    {
+        m_paths.push_back(path);
+    }
 
     void ProcessEntry::killProcessClick(Windows::Foundation::IInspectable const&, RoutedEventArgs const&)
     {
@@ -41,9 +51,26 @@ namespace winrt::FileLocksmithGUI::implementation
 
         CloseHandle(process);
     }
-    
-    DWORD ProcessEntry::Pid()
+
+    void ProcessEntry::showFilesClick(Windows::Foundation::IInspectable const&, RoutedEventArgs const&)
     {
-        return m_pid;
+        if (!m_files_shown)
+        {
+            for (const auto& path : m_paths)
+            {
+                Controls::TextBlock row;
+                row.Text(path);
+                filesContainer().Children().Append(row);
+            }
+
+            showFilesButton().Content(box_value(L"Hide files"));
+        }
+        else
+        {
+            filesContainer().Children().Clear();
+            showFilesButton().Content(box_value(L"Show files"));
+        }
+
+        m_files_shown ^= true;
     }
 }
