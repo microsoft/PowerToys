@@ -97,7 +97,7 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Context menu items available.
+        ///   Looks up a localized string similar to Appended controls available.
         /// </summary>
         public static string ContextMenuItemsAvailable {
             get {
