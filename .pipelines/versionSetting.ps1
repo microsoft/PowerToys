@@ -46,7 +46,7 @@ $powerRenameContextMenuAppManifestWriteFileLocation = $PSScriptRoot + '/../src/m
 $powerRenameContextMenuAppManifestReadFileLocation = $powerRenameContextMenuAppManifestWriteFileLocation;
 
 [XML]$powerRenameContextMenuAppManifest = Get-Content $powerRenameContextMenuAppManifestReadFileLocation
-$powerRenameContextMenuAppManifest.Package.Identity.Version = $versionNumber
+$powerRenameContextMenuAppManifest.Package.Identity.Version = $versionNumber + '.0'
 Write-Host "PowerRenameContextMenu version" $powerRenameContextMenuAppManifest.Package.Identity.Version
 $powerRenameContextMenuAppManifest.Save($powerRenameContextMenuAppManifestWriteFileLocation);
 
@@ -55,6 +55,6 @@ $imageResizerContextMenuAppManifestWriteFileLocation = $PSScriptRoot + '/../src/
 $imageResizerContextMenuAppManifestReadFileLocation = $imageResizerContextMenuAppManifestWriteFileLocation;
 
 [XML]$imageResizerContextMenuAppManifest = Get-Content $imageResizerContextMenuAppManifestReadFileLocation
-$imageResizerContextMenuAppManifest.Package.Identity.Version = $versionNumber
+$imageResizerContextMenuAppManifest.Package.Identity.Version = $versionNumber + '.0'
 Write-Host "ImageResizerContextMenu version" $imageResizerContextMenuAppManifest.Package.Identity.Version
 $imageResizerContextMenuAppManifest.Save($imageResizerContextMenuAppManifestWriteFileLocation);
