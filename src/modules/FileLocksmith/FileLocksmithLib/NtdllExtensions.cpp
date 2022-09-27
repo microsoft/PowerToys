@@ -6,6 +6,19 @@
 
 // Calls NtQuerySystemInformation and returns a buffer containing the result.
 
+namespace
+{
+    std::wstring_view unicode_to_view(UNICODE_STRING unicode_str)
+    {
+        return std::wstring_view(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
+    }
+
+    std::wstring unicode_to_str(UNICODE_STRING unicode_str)
+    {
+        return std::wstring(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
+    }
+}
+
 NtdllExtensions::MemoryLoopResult NtdllExtensions::NtQuerySystemInformationMemoryLoop(ULONG SystemInformationClass)
 {
     MemoryLoopResult result;
@@ -70,16 +83,6 @@ std::wstring NtdllExtensions::path_to_kernel_name(LPCWSTR path)
     auto kernel_name = file_handle_to_kernel_name(file_handle);
     CloseHandle(file_handle);
     return kernel_name;
-}
-
-std::wstring_view NtdllExtensions::unicode_to_view(UNICODE_STRING unicode_str)
-{
-    return std::wstring_view(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
-}
-
-std::wstring NtdllExtensions::unicode_to_str(UNICODE_STRING unicode_str)
-{
-    return std::wstring(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
 }
 
 std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept

@@ -13,10 +13,6 @@ private:
     constexpr static int ObjectNameInformation = 1;
     constexpr static int SystemHandleInformation = 16;
 
-    std::wstring_view unicode_to_view(UNICODE_STRING unicode_str);
-
-    std::wstring unicode_to_str(UNICODE_STRING unicode_str);
-
     struct MemoryLoopResult
     {
         NTSTATUS status = 0;

@@ -4,6 +4,8 @@
 #include "ProcessEntry.g.cpp"
 #endif
 
+#include "../FileLocksmithLib/FileLocksmith.h"
+
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 
@@ -19,9 +21,11 @@ namespace winrt::FileLocksmithGUI::implementation
 
         auto processPidStr = L"Process ID: " + std::to_wstring(pid);
         auto processFileCountStr = L"Files used: " + std::to_wstring(num_files);
+        auto processUserStr = L"User: " + pid_to_user(pid);
 
         processPid().Text(processPidStr);
         processFileCount().Text(processFileCountStr);
+        processUser().Text(processUserStr);
 
         m_pid = pid;
     }
