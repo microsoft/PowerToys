@@ -43,13 +43,13 @@
            -->
   <?define ShortcutGuideSvgsFiles=0.svg;1.svg;2.svg;3.svg;4.svg;5.svg;6.svg;7.svg;8.svg;9.svg;no_active_window.svg;overlay.svg;overlay_portrait.svg?>
 
-  <?define FancyZonesFiles=PowerToys.FancyZonesModuleInterface.dll;PowerToys.FancyZonesEditor.dll;PowerToys.FancyZonesEditor.runtimeconfig.json;PowerToys.FancyZonesEditor.deps.json;PowerToys.FancyZonesEditor.exe;PowerToys.FancyZones.exe;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.dll;ModernWpf.Controls.dll;System.Text.Json.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.Common.UI.dll;PowerToys.ManagedTelemetry.dll;System.IO.Abstractions.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;Ijwhost.dll?>
+  <?define FancyZonesFiles=PowerToys.FancyZonesModuleInterface.dll;PowerToys.FancyZonesEditor.dll;PowerToys.FancyZonesEditor.runtimeconfig.json;PowerToys.FancyZonesEditor.deps.json;PowerToys.FancyZonesEditor.exe;PowerToys.FancyZones.exe;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.dll;ModernWpf.Controls.dll;System.Text.Json.dll;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.Common.UI.dll;PowerToys.ManagedTelemetry.dll;System.IO.Abstractions.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;Ijwhost.dll?>
 
-  <?define ImageResizerFiles=ImageResizer.ico;PowerToys.ImageResizer.exe;PowerToys.ImageResizerExt.dll;PowerToys.ImageResizer.dll;PowerToys.ImageResizer.deps.json;PowerToys.ImageResizer.runtimeconfig.json;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Common.UI.dll;ControlzEx.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Text.Json.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Interop.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;Ijwhost.dll;ImageResizerContextMenuPackage.msix;PowerToys.ImageResizerContextMenu.dll ?>
+  <?define ImageResizerFiles=ImageResizer.ico;PowerToys.ImageResizer.exe;PowerToys.ImageResizerExt.dll;PowerToys.ImageResizer.dll;PowerToys.ImageResizer.deps.json;PowerToys.ImageResizer.runtimeconfig.json;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Common.UI.dll;ControlzEx.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Text.Json.dll;Microsoft.Xaml.Behaviors.dll;System.IO.Abstractions.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;Ijwhost.dll;ImageResizerContextMenuPackage.msix;PowerToys.ImageResizerContextMenu.dll ?>
 
   <?define PowerPreviewFiles=PowerToys.powerpreview.dll;PowerToys.PreviewHandlerCommon.dll;PowerToys.PreviewHandlerCommon.deps.json;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.SvgPreviewHandler.dll;PowerToys.SvgPreviewHandler.comhost.dll;PowerToys.SvgPreviewHandler.runtimeconfig.json;PowerToys.SvgPreviewHandler.deps.json;PowerToys.SvgThumbnailProvider.dll;PowerToys.SvgThumbnailProvider.comhost.dll;PowerToys.SvgThumbnailProvider.runtimeconfig.json;PowerToys.SvgThumbnailProvider.deps.json;PowerToys.MarkdownPreviewHandler.dll;PowerToys.MarkdownPreviewHandler.comhost.dll;PowerToys.MarkdownPreviewHandler.runtimeconfig.json;PowerToys.MarkdownPreviewHandler.deps.json;Markdig.Signed.dll;HtmlAgilityPack.dll;System.IO.Abstractions.dll;monaco_languages.json;monacoSpecialLanguages.js;PowerToys.Common.UI.dll;PowerToys.Settings.UI.Lib.dll;PowerToys.MonacoPreviewHandler.dll;PowerToys.MonacoPreviewHandler.comhost.dll;PowerToys.MonacoPreviewHandler.runtimeconfig.json;PowerToys.MonacoPreviewHandler.deps.json;ControlzEx.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Web.WebView2.WinForms.dll;Microsoft.Web.WebView2.Wpf.dll;WebView2Loader.dll;System.Runtime.WindowsRuntime.dll;index.html;PowerToys.PdfPreviewHandler.dll;PowerToys.PdfPreviewHandler.comhost.dll;PowerToys.PdfPreviewHandler.runtimeconfig.json;PowerToys.PdfPreviewHandler.deps.json;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll;PowerToys.PdfThumbnailProvider.dll;PowerToys.PdfThumbnailProvider.comhost.dll;PowerToys.PdfThumbnailProvider.runtimeconfig.json;PowerToys.PdfThumbnailProvider.deps.json;PowerToys.GcodePreviewHandler.dll;PowerToys.GcodePreviewHandler.comhost.dll;PowerToys.GcodePreviewHandler.runtimeconfig.json;PowerToys.GcodePreviewHandler.deps.json;PowerToys.GcodeThumbnailProvider.dll;PowerToys.GcodeThumbnailProvider.comhost.dll;PowerToys.GcodeThumbnailProvider.runtimeconfig.json;PowerToys.GcodeThumbnailProvider.deps.json;PowerToys.StlThumbnailProvider.dll;PowerToys.StlThumbnailProvider.comhost.dll;PowerToys.StlThumbnailProvider.runtimeconfig.json;PowerToys.StlThumbnailProvider.deps.json;HelixToolkit.dll;HelixToolkit.Core.Wpf.dll;Ijwhost.dll;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll?>
 
-  <?define SettingsV2Files=Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.IO.Abstractions.dll;System.Text.Json.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;MRM.dll;PushNotificationsLongRunningTask.ProxyStub.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinUIEdit.dll;wuceffectsi.dll?>
+  <?define SettingsV2Files=Ijwhost.dll;ColorCode.Core.dll;ColorCode.WinUI.dll;CommunityToolkit.Common.dll;CommunityToolkit.WinUI.dll;CommunityToolkit.WinUI.UI.Controls.Core.dll;CommunityToolkit.WinUI.UI.Controls.DataGrid.dll;CommunityToolkit.WinUI.UI.Controls.Input.dll;CommunityToolkit.WinUI.UI.Controls.Layout.dll;CommunityToolkit.WinUI.UI.Controls.Markdown.dll;CommunityToolkit.WinUI.UI.Controls.Media.dll;CommunityToolkit.WinUI.UI.Controls.Primitives.dll;CommunityToolkit.WinUI.UI.dll;icon.ico;Microsoft.Graphics.Canvas.Interop.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.Projection.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Power.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WinUI.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.deps.json;PowerToys.Settings.dll;PowerToys.Settings.exe;PowerToys.Settings.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;resources.pri;System.IO.Abstractions.dll;System.Text.Json.dll;WinRT.Runtime.dll;Microsoft.Graphics.Canvas.dll?>
 
   <?define SettingsV2AssetsModulesFiles=ColorPicker.png;FancyZones.png;AlwaysOnTop.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerAccent.png;PowerOCR.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ScreenRuler.png;ShortcutGuide.png;VideoConference.png?>
 
@@ -113,19 +113,23 @@
 
   <?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
 
-  <?define PowerRenameFiles=PowerRenameUI.ico;Microsoft.WindowsAppRuntime.Bootstrap.dll;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll;CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;MRM.dll;PushNotificationsLongRunningTask.ProxyStub.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinUIEdit.dll;wuceffectsi.dll;PowerRenameContextMenuPackage.msix;PowerToys.PowerRenameContextMenu.dll?>
+  <?define PowerRenameFiles=PowerRenameUI.ico;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll?>
 
   <?define PowerRenameSparsePackageAssets=LargeTile.png;SmallTile.png;SplashScreen.png;Square150x150Logo.png;Square44x44Logo.png;storelogo.png;Wide310x150Logo.png?>
 
   <?define ImageResizerSparsePackageAssets=LargeTile.png;SmallTile.png;SplashScreen.png;Square150x150Logo.png;Square44x44Logo.png;storelogo.png;Wide310x150Logo.png?>
 
-  <?define MeasureToolFiles=CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;Microsoft.WinUI.dll;MRM.dll;PowerToys.ManagedCommon.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MeasureToolCore.dll;PowerToys.MeasureToolUI.deps.json;PowerToys.MeasureToolUI.dll;PowerToys.MeasureToolUI.exe;PowerToys.MeasureToolUI.runtimeconfig.json;PushNotificationsLongRunningTask.ProxyStub.dll;resources.pri;System.CodeDom.dll;System.Management.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinRT.Runtime.dll;WinUIEdit.dll;WinUIEx.dll;wuceffectsi.dll?>
+  <?define MeasureToolFiles=CoreMessagingXP.dll;dcompi.dll;dwmcorei.dll;DwmSceneI.dll;DWriteCore.dll;marshal.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.InteractiveExperiences.Projection.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.ui.xaml.dll;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll;Microsoft.Windows.AppLifecycle.Projection.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;Microsoft.WindowsAppRuntime.Bootstrap.Net.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;Microsoft.WinUI.dll;MRM.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MeasureToolCore.dll;PowerToys.MeasureToolUI.deps.json;PowerToys.MeasureToolUI.dll;PowerToys.MeasureToolUI.exe;PowerToys.MeasureToolUI.runtimeconfig.json;PushNotificationsLongRunningTask.ProxyStub.dll;resources.pri;System.CodeDom.dll;System.Management.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;WinRT.Runtime.dll;WinUIEdit.dll;WinUIEx.dll;wuceffectsi.dll?>
 
 	<?define PowerRenameMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
+  <?define WinAppSDKFiles=CoreMessagingXP.dll;DWriteCore.dll;DwmSceneI.dll;MRM.dll;Microsoft.DirectManipulation.dll;Microsoft.InputStateManager.dll;Microsoft.Internal.FrameworkUdk.dll;Microsoft.UI.Composition.OSSupport.dll;Microsoft.UI.Input.dll;Microsoft.UI.Windowing.Core.dll;Microsoft.UI.Xaml.Controls.dll;Microsoft.UI.Xaml.Controls.pri;Microsoft.UI.Xaml.Internal.dll;Microsoft.UI.Xaml.Phone.dll;Microsoft.Web.WebView2.Core.dll;Microsoft.Windows.AppNotifications.Projection.dll;Microsoft.Windows.ApplicationModel.Resources.dll;Microsoft.WindowsAppRuntime.Bootstrap.dll;Microsoft.Windows.PushNotifications.Projection.dll;Microsoft.Windows.System.Projection.dll;Microsoft.WindowsAppRuntime.Insights.Resource.dll;Microsoft.WindowsAppRuntime.Release.Net.dll;Microsoft.WindowsAppRuntime.dll;Microsoft.ui.xaml.dll;Microsoft.ui.xaml.resources.19h1.dll;Microsoft.ui.xaml.resources.common.dll;PushNotificationsLongRunningTask.ProxyStub.dll;WinUIEdit.dll;WindowsAppRuntime.png;WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll;dcompi.dll;dwmcorei.dll;marshal.dll;wuceffectsi.dll?>
+
+  <?define PowerToysInteropFiles=concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_atomic_wait.dll;msvcp140_codecvt_ids.dll;PowerToys.Interop.dll;vcamp140.dll;vccorlib140.dll;vcomp140.dll;vcruntime140.dll;vcruntime140_1.dll?>
+
   <?define MeasureToolMicrosoftUIXamlAssetsInstallFiles=NoiseAsset_256x256_PNG.png?>
 
-	<?define PowerAccentFiles=ControlzEx.dll;GongSolutions.WPF.DragDrop.dll;Ijwhost.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerAccent.deps.json;PowerAccent.dll;PowerAccent.exe;PowerAccent.runtimeconfig.json;PowerToys.PowerAccentModuleInterface.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;Vanara.Core.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.User32.dll;PowerToys.PowerAccentKeyboardService.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll?>
+	<?define PowerAccentFiles=ControlzEx.dll;GongSolutions.WPF.DragDrop.dll;Ijwhost.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;PowerAccent.Core.dll;PowerAccent.deps.json;PowerAccent.dll;PowerAccent.exe;PowerAccent.runtimeconfig.json;PowerToys.PowerAccentModuleInterface.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerAccent.deps.json;PowerToys.PowerAccent.dll;PowerToys.PowerAccent.exe;PowerToys.PowerAccent.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;Vanara.Core.dll;Vanara.PInvoke.Gdi32.dll;Vanara.PInvoke.Kernel32.dll;Vanara.PInvoke.Shared.dll;Vanara.PInvoke.User32.dll;PowerToys.PowerAccentKeyboardService.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll?>
 
   <Product Id="*"
        Name="PowerToys (Preview)"
@@ -220,10 +224,20 @@
       <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
+      <Custom Action="SetCreateWinAppSDKHardlinksParam" Before="CreateWinAppSDKHardlinks" />
+      <Custom Action="SetDeleteWinAppSDKHardlinksParam" Before="DeleteWinAppSDKHardlinks" />
+      <Custom Action="SetCreatePTInteropHardlinksParam" Before="CreatePTInteropHardlinks" />
+      <Custom Action="SetDeletePTInteropHardlinksParam" Before="DeletePTInteropHardlinks" />
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
         NOT Installed and CREATESCHEDULEDTASK = 1
       </Custom>
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles">
+        NOT Installed
+      </Custom>
+      <Custom Action="CreateWinAppSDKHardlinks" After="InstallFiles">
+        NOT Installed
+      </Custom>
+      <Custom Action="CreatePTInteropHardlinks" After="InstallFiles">
         NOT Installed
       </Custom>
       <Custom Action="WixCloseApplications" Before="RemoveFiles" />
@@ -242,6 +256,12 @@
         Installed AND (REMOVE="ALL")
       </Custom>
       <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
+      <Custom Action="DeleteWinAppSDKHardlinks" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
+      <Custom Action="DeletePTInteropHardlinks" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
 
@@ -282,6 +302,22 @@
                     Property="UnApplyModulesRegistryChangeSets"
                     Value="[INSTALLFOLDER]" />
 
+    <CustomAction Id="SetCreateWinAppSDKHardlinksParam"
+                    Property="CreateWinAppSDKHardlinks"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetDeleteWinAppSDKHardlinksParam"
+                    Property="DeleteWinAppSDKHardlinks"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetCreatePTInteropHardlinksParam"
+                    Property="CreatePTInteropHardlinks"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetDeletePTInteropHardlinksParam"
+                    Property="DeletePTInteropHardlinks"
+                    Value="[INSTALLFOLDER]" />
+
     <!-- Needs to Impersonate="no" and Execute="deferred" in order to run elevated. -->
     <CustomAction Id="RegisterPowerToysSchTask"
                   Return="ignore"
@@ -290,6 +326,38 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="CreateScheduledTaskCA"
                    />
+
+    <CustomAction Id="DeleteWinAppSDKHardlinks"
+                      Return="ignore"
+                Impersonate="no"
+                Execute="deferred"
+                BinaryKey="PTCustomActions"
+                DllEntry="DeleteWinAppSDKHardlinksCA"
+                  />
+
+    <CustomAction Id="CreateWinAppSDKHardlinks"
+                      Return="ignore"
+                Impersonate="no"
+                Execute="deferred"
+                BinaryKey="PTCustomActions"
+                DllEntry="CreateWinAppSDKHardlinksCA"
+                  />
+
+    <CustomAction Id="DeletePTInteropHardlinks"
+                      Return="ignore"
+                Impersonate="no"
+                Execute="deferred"
+                BinaryKey="PTCustomActions"
+                DllEntry="DeletePTInteropHardlinksCA"
+                  />
+
+    <CustomAction Id="CreatePTInteropHardlinks"
+                      Return="ignore"
+                Impersonate="no"
+                Execute="deferred"
+                BinaryKey="PTCustomActions"
+                DllEntry="CreatePTInteropHardlinksCA"
+                  />
 
     <CustomAction Id="RemovePowerToysSchTasks"
                   Return="ignore"
@@ -400,7 +468,6 @@
                 DllEntry="UnRegisterContextMenuPackagesCA"
                   />
 
-
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />
     <Property Id="MSIFASTINSTALL" Value="DisableShutdown" />
@@ -415,6 +482,10 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
+          <Directory Id="DllsFolder" Name="dll">
+            <Directory Id="WinAppSDKDlls" Name="WinAppSDK" />
+            <Directory Id="PowerToysInteropDlls" Name="Interop" />
+          </Directory>
           <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
@@ -617,9 +688,6 @@
       <Component Id="Notice_md" Win64="yes">
         <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" KeyPath="yes" />
       </Component>
-      <Component Id="powertoysinterop_dll" Win64="yes">
-        <File Id="PowerToys.Interop.dll" KeyPath="yes" Checksum="yes" />
-      </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="ApplicationProgramsFolder">
@@ -667,6 +735,22 @@
       <Component Id="StylesReportTool_exe" Win64="yes">
         <File Source="$(var.BinDir)StylesReportTool\PowerToys.StylesReportTool.exe" Id="StylesReportTool.exe" Checksum="yes" />
       </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="WinAppSDKDlls">
+      <?foreach File in $(var.WinAppSDKFiles)?>
+      <Component Id="Dlls_WinAppSdkFiles_$(var.File)" Win64="yes">
+        <File Id="Dlls_WinAppSdk_File_$(var.File)" Source="$(var.BinDir)Settings\$(var.File)" />
+      </Component>
+      <?endforeach?>
+    </DirectoryRef>
+
+    <DirectoryRef Id="PowerToysInteropDlls">
+      <?foreach File in $(var.PowerToysInteropFiles)?>
+      <Component Id="Dlls_PowerToysInteropFiles_$(var.File)" Win64="yes">
+        <File Id="Dlls_PowerToysInterop_File_$(var.File)" Source="$(var.BinDir)\$(var.File)" />
+      </Component>
+      <?endforeach?>
     </DirectoryRef>
 
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinDir)modules\">
@@ -906,7 +990,7 @@
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinDir)modules\$(var.ColorPickerProjectName)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
       <Component Id="Module_ColorPicker" Guid="C15076EC-70EE-4CE9-BEA0-665B1EECCAAF" Win64="yes">
-        <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;System.Management.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Text.Json.dll;Ijwhost.dll?>
+        <?foreach File in PowerToys.ColorPicker.dll;System.IO.Abstractions.dll;PowerToys.ColorPickerUI.exe;PowerToys.ColorPickerUI.dll;PowerToys.ColorPickerUI.deps.json;PowerToys.ColorPickerUI.runtimeconfig.json;PowerToys.Settings.UI.Lib.dll;PowerToys.ManagedTelemetry.dll;PowerToys.ManagedCommon.dll;System.Management.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;PowerToys.Common.UI.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Text.Json.dll;Ijwhost.dll?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinDir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -926,7 +1010,7 @@
     <DirectoryRef Id="PowerOCRInstallFolder" FileSource="$(var.BinDir)modules\$(var.PowerOCRProjectName)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
       <Component Id="Module_PowerOCR" Guid="5640A7E8-E165-4368-8F08-F8E1E9242BDD" Win64="yes">
-        <?foreach File in PowerToys.PowerOCR.dll;ControlzEx.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Common.UI.dll;PowerToys.Interop.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerOCR.deps.json;PowerToys.PowerOCR.exe;PowerToys.PowerOCR.runtimeconfig.json;PowerToys.PowerOCRModuleInterface.dll;PowerToys.Settings.UI.Lib.dll;System.ComponentModel.Composition.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;WinRT.Runtime.dll?>
+        <?foreach File in PowerToys.PowerOCR.dll;ControlzEx.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;Microsoft.Xaml.Behaviors.dll;PowerToys.Common.UI.dll;PowerToys.ManagedCommon.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerOCR.deps.json;PowerToys.PowerOCR.exe;PowerToys.PowerOCR.runtimeconfig.json;PowerToys.PowerOCRModuleInterface.dll;PowerToys.Settings.UI.Lib.dll;System.ComponentModel.Composition.dll;System.IO.Abstractions.dll;System.Management.dll;System.Text.Json.dll;WinRT.Runtime.dll?>
         <File Id="PowerOCRFile_$(var.File)" Source="$(var.BinDir)modules\$(var.PowerOCRProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -936,7 +1020,7 @@
     <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinDir)modules\$(var.AwakeProjectName)">
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
       <Component Id="Module_Awake" Guid="0D571D9A-743B-4CC5-9297-F0289FBE3398" Win64="yes">
-        <?foreach File in PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToys.Interop.dll;System.CommandLine.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Text.Json.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll?>
+        <?foreach File in PowerToys.AwakeModuleInterface.dll;PowerToys.ManagedCommon.dll;System.Management.dll;PowerToys.ManagedTelemetry.dll;PowerToys.Settings.UI.Lib.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;System.CommandLine.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Text.Json.dll;Ijwhost.dll;Microsoft.Windows.SDK.NET.dll;WinRT.Runtime.dll?>
         <File Id="AwakeFile_$(var.File)" Source="$(var.BinDir)modules\$(var.AwakeProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -1089,7 +1173,6 @@
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
-      <ComponentRef Id="powertoysinterop_dll" />
       <?foreach File in $(var.ShortcutGuideSvgsFiles)?>
       <ComponentRef Id="ShortcutGuideSvgs_$(var.File)" />
       <?endforeach?>
@@ -1168,6 +1251,12 @@
 			<?foreach File in $(var.SettingsV2MicrosoftUIXamlAssetsInstallFiles)?>
                 <ComponentRef Id="SettingsV2MicrosoftUIXamlAssets_$(var.File)" />
             <?endforeach?>
+      <?foreach File in $(var.WinAppSDKFiles)?>
+      <ComponentRef Id="Dlls_WinAppSdkFiles_$(var.File)" />
+      <?endforeach?>
+      <?foreach File in $(var.PowerToysInteropFiles)?>
+      <ComponentRef Id="Dlls_PowerToysInteropFiles_$(var.File)" />
+      <?endforeach?>
     </ComponentGroup>
     <ComponentGroup Id="ToolComponents" Directory="ToolsFolder">
       <ComponentRef Id="BugReportTool_exe" />
@@ -1828,7 +1917,7 @@
       <!-- !Warning! Make sure to change Component Guid if you update the file list -->
       <Component Id="launcherInstallComponent" Guid="ab0d0567-1e41-4da4-9934-dcb74b7048a4" Directory="LauncherInstallFolder" >
         <File Source="$(var.BinDir)modules\Launcher\PowerToys.Launcher.dll" />
-        <?foreach File in e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.Management.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;System.Text.Json.dll;Ijwhost.dll;ScipBe.Common.Office.OneNote.dll;Interop.Microsoft.Office.Interop.OneNote.dll;LazyCache.dll;Microsoft.Extensions.Caching.Abstractions.dll;Microsoft.Extensions.Caching.Memory.dll?>
+        <?foreach File in e_sqlite3.dll;JetBrains.Annotations.dll;Mages.Core.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerToys.PowerLauncher.deps.json;PowerToys.PowerLauncher.dll;PowerToys.PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;PowerToys.PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToys.ManagedTelemetry.dll;PowerToys.PowerLauncher.Telemetry.dll;Microsoft.Data.Sqlite.dll;SQLitePCLRaw.batteries_v2.dll;SQLitePCLRaw.core.dll;SQLitePCLRaw.provider.e_sqlite3.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;PowerToys.ManagedCommon.dll;System.Management.dll;System.IO.Abstractions.dll;PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;WinRT.Runtime.dll;Microsoft.Windows.SDK.NET.dll;System.Reactive.dll;System.Text.Json.dll;Ijwhost.dll;ScipBe.Common.Office.OneNote.dll;Interop.Microsoft.Office.Interop.OneNote.dll;LazyCache.dll;Microsoft.Extensions.Caching.Abstractions.dll;Microsoft.Extensions.Caching.Memory.dll?>
         <File Id="File_$(var.File)" Source="$(var.BinDir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinDir)Settings\PowerToys.Settings.UI.Lib.dll" />

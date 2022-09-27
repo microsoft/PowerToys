@@ -10,10 +10,6 @@
     <?define Dotnet6PayloadSize="57909296"?>
     <?define Dotnet6PayloadHash="ABA98AAA3DB700D41EB067280F86F35B7DDEA550"?>
 
-    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/ed95ef9e-da02-4735-9064-bd1f7f69b6ed/CE6593A1520591E7DEA2B93FD03116E3FC3B3821A0525322B0A430FAA6B3C0B4/VC_redist.x64.exe"?>
-    <?define VCRedistPayloadSize="25234792"?>
-    <?define VCRedistPayloadHash="D4F9181E70E3F1AA6C8EDFFCC15B3C3D4BABE36B"?>
-
     <?define PlatformProgramFiles="[ProgramFiles64Folder]"?>
 <?else?>
     <!-- stable WIX 3 doesn't support ARM64, so we build installers as x86 -->
@@ -24,10 +20,6 @@
     <?define Dotnet6PayloadSize="51735240"?>
     <?define Dotnet6PayloadHash="AE097FD933EEF88A1F8D800961A1584CAF9DA37F"?>
     
-    <?define VCRedistDownloadUrl="https://download.visualstudio.microsoft.com/download/pr/ed95ef9e-da02-4735-9064-bd1f7f69b6ed/8E126191012691AE22A0D5A89FAC01B59BABC7B680E5D9B65828935FD366E375/VC_redist.arm64.exe"?>
-    <?define VCRedistPayloadSize="11500416"?>
-    <?define VCRedistPayloadHash="FEECAC80EF04125B058381487332872896F38477"?>
-
 <!--TODO: define to ARM64 Program files once it's available-->
     <?define PlatformProgramFiles="[ProgramFiles6432Folder]"?> 
 
@@ -69,8 +61,6 @@
       <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Format="raw" Variable="DetectedWindowsBuildNumber" />
       <bal:Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher.">DetectedWindowsBuildNumber &gt;= 19041 OR WixBundleInstalled</bal:Condition>
     
-      <util:RegistrySearch Variable="DetectedVCRedistVersion" Root="HKLM" Key="Software\Microsoft\VisualStudio\14.0\VC\Runtimes\$(var.PowerToysPlatform)" Value="Minor" Result="value" Format="raw" />
-
         <Chain>
             <ExePackage
                 DisplayName="Closing PowerToys application"
@@ -115,24 +105,6 @@
                 Permanent="yes"
                 PerMachine="yes"
                 UninstallCommand="/silent /uninstall">
-            </ExePackage>
-            <ExePackage
-                DisplayName="Downloading and installing Microsoft Visual C++ 2015-2022 Redistributable"
-                Name="VCRedist-14.32.31332.exe"
-                DetectCondition="DetectedVCRedistVersion >= 32"
-                Compressed="no"
-                Id="VCRedist"
-                DownloadUrl="$(var.VCRedistDownloadUrl)"
-                InstallCommand="/install /quiet /norestart"
-                RepairCommand="/repair /quiet /norestart"
-                Permanent="yes">
-                <ExitCode Value="1638" Behavior="success"/>
-                <RemotePayload
-                    Description="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31332"
-                    ProductName="Microsoft Visual C++ 2015-2022 Redistributable ($(var.PowerToysPlatform)) - 14.32.31332"
-                    Size="$(var.VCRedistPayloadSize)"
-                    Version="14.32.31332.0"
-                    Hash="$(var.VCRedistPayloadHash)" />
             </ExePackage>
             <MsiPackage
                 DisplayName="Installing PowerToys"
