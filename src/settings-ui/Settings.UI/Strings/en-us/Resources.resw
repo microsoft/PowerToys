@@ -2265,7 +2265,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="QuickAccent.ModuleDescription" xml:space="preserve">
     <value>Quick Accent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
 
-Activate by holding the key for the character you want to add an accent to, then press the Activation Key (space key or left and right arrow keys). If you continue to hold, an overlay to select the accented between multiple characters will appear!</value>
+Activate by holding the key for the character you want to add an accent to, then press the activation key (space, left or right arrow keys) and an overlay to select accented characters will appear!</value>
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent.ModuleTitle" xml:space="preserve">
@@ -2275,7 +2275,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Attribution</value>
   </data>
   <data name="Oobe_QuickAccent.Description" xml:space="preserve">
-    <value>Quick Accent is an easy way to write letters with accents, like on the phone.</value>
+    <value>Quick Accent is an easy way to write letters with accents, like on a smartphone.</value>
   </data>
   <data name="Oobe_QuickAccent.Title" xml:space="preserve">
     <value>Quick Accent</value>
@@ -2289,9 +2289,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_Activation_Shortcut.Header" xml:space="preserve">
     <value>Activation key</value>
+    <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Shortcut.Description" xml:space="preserve">
-    <value>This is the extra key needed to activate after you are holding your target letter.</value>
+    <value>Press this key after holding down the target letter.</value>
+    <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Arrows.Content" xml:space="preserve">
     <value>Left/Right Arrow</value>
@@ -2301,8 +2303,9 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Space</value>
     <comment>Space is the space keyboard key.</comment>
   </data>
-  <data name="QuickAccent_Activation_Key_Both.Content" xml:space="preserve">
-    <value>Both</value>
+  <data name="QuickAccent_Activation_Key_Either.Content" xml:space="preserve">
+    <value>Left, Right or Space</value>
+    <comment>All are keys on a keyboard</comment>
   </data>
   <data name="QuickAccent_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
@@ -2345,7 +2348,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>ms = milliseconds</comment>
   </data>
   <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
-    <value>Hold the key for this long to make the accent menu appear (ms)</value>
+    <value>Hold the key down for this much time to make the accent menu appear (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
