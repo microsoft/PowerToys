@@ -134,27 +134,13 @@ public class PowerAccent : IDisposable
 
         if (triggerKey == TriggerKey.Space)
         {
-            if (WindowsFunctions.IsShiftState())
+            if (_selectedIndex < _characters.Length - 1)
             {
-                if (_selectedIndex < 0)
-                {
-                    _selectedIndex = _characters.Length - 1;
-                }
-                else
-                {
-                    --_selectedIndex;
-                }
+                ++_selectedIndex;
             }
             else
             {
-                if (_selectedIndex < _characters.Length - 1)
-                {
-                    ++_selectedIndex;
-                }
-                else
-                {
-                    _selectedIndex = 0;
-                }
+                _selectedIndex = 0;
             }
         }
 
