@@ -14,10 +14,12 @@ namespace PowerAccent.Core
         CZ,
         DE,
         FR,
+        HU,
         IS,
         MI,
         PI,
         PL,
+        RO,
         SK,
         SP,
         TK,
@@ -34,10 +36,12 @@ namespace PowerAccent.Core
                 case Language.CZ: return GetDefaultLetterKeyCZ(letter); // Czech
                 case Language.DE: return GetDefaultLetterKeyDE(letter); // German
                 case Language.FR: return GetDefaultLetterKeyFR(letter); // French
+                case Language.HU: return GetDefaultLetterKeyHU(letter); // Hungarian
                 case Language.IS: return GetDefaultLetterKeyIS(letter); // Iceland
                 case Language.MI: return GetDefaultLetterKeyMI(letter); // Maori
                 case Language.PI: return GetDefaultLetterKeyPI(letter); // Pinyin
                 case Language.PL: return GetDefaultLetterKeyPL(letter); // Polish
+                case Language.RO: return GetDefaultLetterKeyRO(letter); // Romanian
                 case Language.SK: return GetDefaultLetterKeySK(letter); // Slovak
                 case Language.SP: return GetDefaultLetterKeySP(letter); // Spain
                 case Language.TK: return GetDefaultLetterKeyTK(letter); // Turkish
@@ -429,6 +433,42 @@ namespace PowerAccent.Core
                     return new char[] { 'ß' };
                 case LetterKey.VK_U:
                     return new char[] { 'ü' };
+            }
+
+            return Array.Empty<char>();
+        }
+        
+        // Hungarian
+        private static char[] GetDefaultLetterKeyHU(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.A:
+                    return new char[] { 'á' };
+                case LetterKey.E:
+                    return new char[] { 'é' };
+                case LetterKey.O:
+                    return new char[] { 'ő', 'ó' };
+                case LetterKey.U:
+                    return new char[] { 'ű' };
+            }
+
+            return Array.Empty<char>();
+        }
+
+        // Romanian
+        private static char[] GetDefaultLetterKeyRO(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.A:
+                    return new char[] { 'ă', 'â' };
+                case LetterKey.I:
+                    return new char[] { 'î' };
+                case LetterKey.S:
+                    return new char[] { 'ș' };
+                case LetterKey.T:
+                    return new char[] { 'ț' };
             }
 
             return Array.Empty<char>();

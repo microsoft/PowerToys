@@ -33,10 +33,12 @@
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Czech"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Dutch"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_French"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hungarian"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Icelandic"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Maori"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Pinyin"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Polish"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanian"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovakian"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Spain"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Turkish"/>
