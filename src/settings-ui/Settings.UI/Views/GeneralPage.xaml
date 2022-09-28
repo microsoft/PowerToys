@@ -342,7 +342,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="General_BackupAndRestoreStatusInfo">
+                    <controls:Setting x:Uid="General_BackupAndRestoreStatusInfo" Visibility="Collapsed">
 
                         <controls:Setting.ActionContent>
 
@@ -428,6 +428,94 @@
                                   IsTabStop="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
                                   IsOpen="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"                                  
                                   Message="{Binding SettingsBackupMessage}"/>
+
+
+                <controls:SettingsGroup x:Uid="General_BackupAndRestoreStatusInfo">
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="General_BackupAndRestoreStatusInfoDetails" Icon="&#xE946;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                                <controls:Setting.Description>
+                                    <TextBlock Visibility="Collapsed" Text="" />
+                                </controls:Setting.Description>
+                                <controls:Setting.ActionContent>
+                                    <TextBlock Visibility="Collapsed" />
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel Orientation="Vertical">
+                                <Grid Padding="10,5,10,10">
+                                    <Grid.Resources >
+                                        <Style TargetType="Border" >
+                                            <Setter Property="Padding" Value="15,0,5,0" />
+                                        </Style>
+                                    </Grid.Resources>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="1*" />
+                                        <RowDefinition Height="1*" />
+                                    </Grid.RowDefinitions>
+
+                                    <Border Grid.Row="0" Grid.Column="0">
+                                        <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run x:Uid="General_LastSettingsBackupDate" />
+                                        </TextBlock>
+                                    </Border>
+
+                                    <Border Grid.Row="0" Grid.Column="1">
+                                        <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsBackupDate, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </Border>
+
+                                    <Border Grid.Row="0" Grid.Column="2" BorderThickness="1,0,0,0" BorderBrush="#616161">
+                                        <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run x:Uid="General_LastSettingsRestoreDate" />
+                                        </TextBlock>
+                                    </Border>
+
+                                    <Border Grid.Row="0" Grid.Column="3">
+                                        <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsRestoreDate, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </Border>
+
+
+                                    <Border Grid.Row="2" Grid.Column="0">
+                                        <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run x:Uid="General_LastSettingsBackupSource" />
+                                        </TextBlock>
+                                    </Border>
+
+                                    <Border Grid.Row="2" Grid.Column="1">
+                                        <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsBackupSource, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </Border>
+
+                                    <Border Grid.Row="2" Grid.Column="2" BorderThickness="1, 0, 0, 0" BorderBrush="#616161">
+                                        <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run x:Uid="General_CurrentSettingMatchStatus" />
+                                        </TextBlock>
+                                    </Border>
+
+                                    <Border Grid.Row="2" Grid.Column="3">
+                                        <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding CurrentSettingMatchText, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </Border>
+
+                                </Grid>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                </controls:SettingsGroup>
+
 
             </StackPanel>
 

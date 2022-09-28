@@ -1079,10 +1079,16 @@
     <value>You can backup and restore your settings here at any time. If settings are restored PowerToys will restart automatically.</value>
   </data>
   <data name="General_BackupAndRestoreStatusInfo.Header" xml:space="preserve">
-    <value>Backup and restore information</value>
+    <value>Backup &amp; restore information</value>
   </data>
   <data name="General_BackupAndRestoreStatusInfo.Description" xml:space="preserve">
     <value />
+  </data>
+  <data name="General_BackupAndRestoreStatusInfoDetails.Header" xml:space="preserve">
+    <value>Backup &amp; restore information</value>
+  </data>
+  <data name="General_BackupAndRestoreStatusInfoDetails.Description" xml:space="preserve">
+    <value>You can find specific details about the backup and restore, and current settings state here.</value>
   </data>
   <data name="General_LastSettingsRestoreDate.Text" xml:space="preserve">
     <value>Last restore at:</value>
