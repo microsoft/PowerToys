@@ -16,7 +16,7 @@ namespace CommonLibTest
     public class BasePTModuleSettingsTest
     {
         // Work around for System.JSON required properties:
-        // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-migrate-from-newtonsoft-how-to.
+        // https://learn.microsoft.com/dotnet/standard/serialization/system-text-json-migrate-from-newtonsoft-how-to.
         // Test also fails when the attributes are not initialized i.e they have null values.
         [TestMethod]
         [ObsoleteAttribute("This test method is obsolete.", true)]

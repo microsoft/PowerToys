@@ -99,7 +99,7 @@ namespace Common
         public uint TranslateAccelerator(ref MSG pmsg)
         {
             // Current implementation simply directs all Keystrokes to IPreviewHandlerFrame. This is the recommended approach to handle keystokes for all low-integrity preview handlers.
-            // Source: https://docs.microsoft.com/en-us/windows/win32/shell/building-preview-handlers#ipreviewhandlertranslateaccelerator
+            // Source: https://learn.microsoft.com/windows/win32/shell/building-preview-handlers#ipreviewhandlertranslateaccelerator
             if (this.frame != null)
             {
                 return this.frame.TranslateAccelerator(ref pmsg);
@@ -118,14 +118,14 @@ namespace Common
         /// <inheritdoc />
         public void ContextSensitiveHelp(bool fEnterMode)
         {
-            // Should always return NotImplementedException. Source: https://docs.microsoft.com/en-us/windows/win32/shell/building-preview-handlers#iolewindowcontextsensitivehelp
+            // Should always return NotImplementedException. Source: https://learn.microsoft.com/windows/win32/shell/building-preview-handlers#iolewindowcontextsensitivehelp
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
         public void SetSite(object pUnkSite)
         {
-            // Implementation logic details: https://docs.microsoft.com/en-us/windows/win32/shell/building-preview-handlers#iobjectwithsitesetsite
+            // Implementation logic details: https://learn.microsoft.com/windows/win32/shell/building-preview-handlers#iobjectwithsitesetsite
             this.unkSite = pUnkSite;
             this.frame = this.unkSite as IPreviewHandlerFrame;
         }

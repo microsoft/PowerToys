@@ -11,7 +11,7 @@ using System.Windows.Interop;
 
 namespace ColorPicker
 {
-    // https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1060?view=vs-2019
+    // https://learn.microsoft.com/visualstudio/code-quality/ca1060?view=vs-2019
     // will have to rename
     public static class NativeMethods
     {
