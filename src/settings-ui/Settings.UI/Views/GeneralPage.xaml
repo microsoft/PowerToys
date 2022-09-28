@@ -425,11 +425,10 @@
                 <InfoBar x:Uid="General_SettingsBackupMessageResults"
                                   IsClosable="False"
                                   Severity="{Binding BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}"                         
-                                  IsTabStop="False"
-                                  IsOpen="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
-                                  Visibility="Visible"
+                                  IsTabStop="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
+                                  IsOpen="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"                                  
                                   Message="{Binding SettingsBackupMessage}"/>
-                
+
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>

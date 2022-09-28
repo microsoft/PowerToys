@@ -665,6 +665,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                 _settingsBackupMessage = GetResourceString(results.message);
                 NotifyPropertyChanged(nameof(SettingsBackupMessage));
+                NotifyPropertyChanged(nameof(BackupRestoreMessageSeverity));
                 NotifyPropertyChanged(nameof(SettingsBackupRestoreMessageVisible));
 
                 HideBackupAndRestoreMessageAreaAction();
