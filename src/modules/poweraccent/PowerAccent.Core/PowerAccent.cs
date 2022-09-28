@@ -62,7 +62,7 @@ public class PowerAccent : IDisposable
     private void ShowToolbar(LetterKey letterKey)
     {
         _visible = true; // Fullscreen mode: _settingService.IsDisableFullscreen && WindowsFunctions.IsGameMode();
-        _characters = WindowsFunctions.IsCapitalState() ? ToUpper(Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang)) : Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
+        _characters = (WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState()) ? ToUpper(Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang)) : Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
         Task.Delay(_settingService.InputTime).ContinueWith(
             t =>
             {
@@ -144,14 +144,25 @@ public class PowerAccent : IDisposable
             }
         }
 
-        if (triggerKey == TriggerKey.Left && _selectedIndex > 0)
+        if (triggerKey == TriggerKey.Left)
         {
             --_selectedIndex;
         }
 
-        if (triggerKey == TriggerKey.Right && _selectedIndex < _characters.Length - 1)
+        if (triggerKey == TriggerKey.Right)
         {
             ++_selectedIndex;
+        }
+
+        // Wrap around at beginning and end of _selectedIndex range
+        if (_selectedIndex < 0)
+        {
+            _selectedIndex = _characters.Length - 1;
+        }
+
+        if (_selectedIndex > _characters.Length - 1)
+        {
+            _selectedIndex = 0;
         }
 
         OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
