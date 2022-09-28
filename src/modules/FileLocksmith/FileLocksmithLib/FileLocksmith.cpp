@@ -131,3 +131,19 @@ std::wstring pid_to_user(DWORD pid)
 
     return user;
 }
+
+constexpr size_t LongMaxPathSize = 65536;
+
+std::wstring pid_to_full_path(DWORD pid)
+{
+    HANDLE process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
+
+    std::wstring result(LongMaxPathSize, L'\0');
+
+    // Returns zero on failure, so it's okay to resize to zero.
+    auto length = GetModuleFileNameExW(process, NULL, result.data(), (DWORD)result.size());
+    result.resize(length);
+
+    CloseHandle(process);
+    return result;
+}
