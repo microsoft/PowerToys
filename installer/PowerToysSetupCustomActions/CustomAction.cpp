@@ -1049,7 +1049,7 @@ UINT __stdcall CreateWinAppSDKHardlinksCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
-    std::wstring installationFolder, winAppSDKFilesSrcDir, settingsDir, powerRenameDir;
+    std::wstring installationFolder, winAppSDKFilesSrcDir, settingsDir, powerRenameDir, measureToolDir;
 
     hr = WcaInitialize(hInstall, "CreateWinAppSDKHardlinksCA");
     ExitOnFailure(hr, "Failed to initialize");
@@ -1060,12 +1060,14 @@ UINT __stdcall CreateWinAppSDKHardlinksCA(MSIHANDLE hInstall)
     winAppSDKFilesSrcDir = installationFolder + L"dll\\WinAppSDK\\";
     settingsDir = installationFolder + L"Settings\\";
     powerRenameDir = installationFolder + L"modules\\PowerRename\\";
+    measureToolDir = installationFolder + L"modules\\MeasureTool\\";
 
     for (auto file : winAppSdkFiles)
     {
         std::error_code ec;
         std::filesystem::create_hard_link((winAppSDKFilesSrcDir + file).c_str(), (settingsDir + file).c_str(), ec);
         std::filesystem::create_hard_link((winAppSDKFilesSrcDir + file).c_str(), (powerRenameDir + file).c_str(), ec);
+        std::filesystem::create_hard_link((winAppSDKFilesSrcDir + file).c_str(), (measureToolDir + file).c_str(), ec);
 
         if (ec.value() != S_OK)
         {
@@ -1136,7 +1138,7 @@ UINT __stdcall DeleteWinAppSDKHardlinksCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
-    std::wstring installationFolder, settingsDir, powerRenameDir;
+    std::wstring installationFolder, settingsDir, powerRenameDir, measureToolDir;
 
     hr = WcaInitialize(hInstall, "DeleteWinAppSDKHardlinksCA");
     ExitOnFailure(hr, "Failed to initialize");
@@ -1146,6 +1148,7 @@ UINT __stdcall DeleteWinAppSDKHardlinksCA(MSIHANDLE hInstall)
 
     settingsDir = installationFolder + L"Settings\\";
     powerRenameDir = installationFolder + L"modules\\PowerRename\\";
+    measureToolDir = installationFolder + L"modules\\MeasureTool\\";
 
     try
     {
@@ -1153,6 +1156,7 @@ UINT __stdcall DeleteWinAppSDKHardlinksCA(MSIHANDLE hInstall)
         {
             DeleteFile((settingsDir + file).c_str());
             DeleteFile((powerRenameDir + file).c_str());
+            DeleteFile((measureToolDir + file).c_str());
         }
     }
     catch (std::exception e)
