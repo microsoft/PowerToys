@@ -232,32 +232,32 @@ namespace Settings.UI.Library
         /// A tuple that indicates if the backup was done or not, and a message.
         /// The message usually is a localized reference key.
         /// </returns>
-        public static (bool success, string message) RestoreSettings(string appBasePath, string settingsBackupAndRestoreDir)
+        public static (bool success, string message, string severity) RestoreSettings(string appBasePath, string settingsBackupAndRestoreDir)
         {
             try
             {
                 // verify inputs
                 if (!Directory.Exists(appBasePath))
                 {
-                    return (false, $"Invalid appBasePath {appBasePath}");
+                    return (false, $"Invalid appBasePath {appBasePath}", "Error");
                 }
 
                 if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
                 {
-                    return (false, $"BackupAndRestore_NoBackupSyncPath");
+                    return (false, $"BackupAndRestore_NoBackupSyncPath", "Error");
                 }
 
                 if (!Directory.Exists(settingsBackupAndRestoreDir))
                 {
                     Logger.LogError($"Invalid settingsBackupAndRestoreDir {settingsBackupAndRestoreDir}");
-                    return (false, "BackupAndRestore_InvalidBackupLocation");
+                    return (false, "BackupAndRestore_InvalidBackupLocation", "Error");
                 }
 
                 var latestSettingsFolder = GetLatestSettingsFolder();
 
                 if (latestSettingsFolder == null)
                 {
-                    return (false, $"BackupAndRestore_NoBackupsFound");
+                    return (false, $"BackupAndRestore_NoBackupsFound", "Warning");
                 }
 
                 // get data needed for process
@@ -267,7 +267,7 @@ namespace Settings.UI.Library
 
                 if (backupSettingsFiles.Count == 0)
                 {
-                    return (false, $"BackupAndRestore_NoBackupsFound");
+                    return (false, $"BackupAndRestore_NoBackupsFound", "Warning");
                 }
 
                 var anyFilesUpdated = false;
@@ -311,21 +311,21 @@ namespace Settings.UI.Library
                     var restartAfterRestore = (bool?)backupRetoreSettings!["RestartAfterRestore"];
                     if (!restartAfterRestore.HasValue || restartAfterRestore.Value)
                     {
-                        return (true, $"RESTART APP");
+                        return (true, $"RESTART APP", "Success");
                     }
                     else
                     {
-                        return (false, $"RESTART APP");
+                        return (false, $"RESTART APP", "Success");
                     }
                 }
                 else
                 {
-                    return (false, $"BackupAndRestore_NothingToRestore");
+                    return (false, $"BackupAndRestore_NothingToRestore", "Informational");
                 }
             }
             catch (Exception ex2)
             {
-                return (false, $"There was an error: {ex2.Message}");
+                return (false, $"There was an error: {ex2.Message}", "Error");
             }
         }
 
@@ -469,38 +469,38 @@ namespace Settings.UI.Library
         /// A tuple that indicates if the backup was done or not, and a message.
         /// The message usually is a localized reference key.
         /// </returns>
-        public static (bool success, string message) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
+        public static (bool success, string message, string severity) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
         {
             try
             {
                 // verify inputs
                 if (!Directory.Exists(appBasePath))
                 {
-                    return (false, $"Invalid appBasePath {appBasePath}");
+                    return (false, $"Invalid appBasePath {appBasePath}", "Error");
                 }
 
                 if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
                 {
-                    return (false, $"BackupAndRestore_NoBackupSyncPath");
+                    return (false, $"BackupAndRestore_NoBackupSyncPath", "Error");
                 }
 
                 if (!Path.IsPathRooted(settingsBackupAndRestoreDir))
                 {
-                    return (false, $"Invalid settingsBackupAndRestoreDir, not rooted");
+                    return (false, $"Invalid settingsBackupAndRestoreDir, not rooted", "Error");
                 }
 
                 if (settingsBackupAndRestoreDir.StartsWith(appBasePath, StringComparison.InvariantCultureIgnoreCase))
                 {
                     // backup cannot be under app
                     Logger.LogError($"BackupSettings, backup cannot be under app");
-                    return (false, "BackupAndRestore_InvalidBackupLocation");
+                    return (false, "BackupAndRestore_InvalidBackupLocation", "Error");
                 }
 
                 var dirExists = TryCreateDirectory(settingsBackupAndRestoreDir);
                 if (!dirExists)
                 {
                     Logger.LogError($"Failed to create dir {settingsBackupAndRestoreDir}");
-                    return (false, $"BackupAndRestore_BackupError");
+                    return (false, $"BackupAndRestore_BackupError", "Error");
                 }
 
                 // get data needed for process
@@ -512,7 +512,7 @@ namespace Settings.UI.Library
 
                 if (currentSettingsFiles.Count == 0)
                 {
-                    return (false, "BackupAndRestore_NoSettingsFilesFound");
+                    return (false, "BackupAndRestore_NoSettingsFilesFound", "Error");
                 }
 
                 var anyFileBackedUp = false;
@@ -575,7 +575,7 @@ namespace Settings.UI.Library
                 if (!anyFileBackedUp)
                 {
                     // nothing was done!
-                    return (false, $"BackupAndRestore_NothingToBackup");
+                    return (false, $"BackupAndRestore_NothingToBackup", "Informational");
                 }
 
                 // add skipped.
@@ -621,12 +621,12 @@ namespace Settings.UI.Library
                     TryDeleteDirectory(fullBackupDir);
                 }
 
-                return (true, $"BackupAndRestore_BackupComplete");
+                return (true, $"BackupAndRestore_BackupComplete", "Success");
             }
             catch (Exception ex2)
             {
                 Logger.LogError($"There was an error: {ex2.Message}", ex2);
-                return (false, $"BackupAndRestore_BackupError");
+                return (false, $"BackupAndRestore_BackupError", "Error");
             }
         }
 
