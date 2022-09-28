@@ -6,6 +6,7 @@
 
 #include <FancyZonesLib/GuidUtils.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include <FancyZonesLib/FancyZonesData/DefaultLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/JsonHelpers.h>
@@ -456,16 +457,8 @@ bool AppliedLayouts::ApplyDefaultLayout(const FancyZonesDataTypes::WorkAreaId& d
         return false;
     }
 
-    Layout layout{
-        .uuid = guid,
-        .type = FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid,
-        .showSpacing = DefaultValues::ShowSpacing,
-        .spacing = DefaultValues::Spacing,
-        .zoneCount = DefaultValues::ZoneCount,
-        .sensitivityRadius = DefaultValues::SensitivityRadius
-    };
-
-    m_layouts[deviceId] = std::move(layout);
+    // TODO: vertical or horizontal
+    m_layouts[deviceId] = DefaultLayouts::instance().GetDefaultLayout();
     
     // Saving default layout data doesn't make sense, since it's ignored on parsing.
     // Given that default layouts are ignored when parsing, 
