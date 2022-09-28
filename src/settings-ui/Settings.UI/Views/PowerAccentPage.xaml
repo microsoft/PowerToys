@@ -23,6 +23,19 @@
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
+                <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:Setting x:Uid="QuickAccent_Activation_Shortcut" Icon="&#xEDA7;">
+                        <controls:Setting.ActionContent>
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                      SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}" >
+                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows"/>
+                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space"/>
+                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Both"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="QuickAccent_Language" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
                     <controls:Setting x:Uid="QuickAccent_SelectedLanguage" Icon="&#xF2B7;">
                         <controls:Setting.ActionContent>
@@ -41,21 +54,8 @@
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Polish"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanian"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovakian"/>
-                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Spain"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Spanish"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Turkish"/>
-                            </ComboBox>
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>
-                </controls:SettingsGroup>
-                
-                <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="QuickAccent_Activation_Shortcut" Icon="&#xEDA7;">
-                        <controls:Setting.ActionContent>
-                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                      SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}" >
-                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows"/>
-                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space"/>
-                                <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either"/>
                             </ComboBox>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
@@ -92,11 +92,6 @@
                                             LargeChange="100"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    <!--<controls:Setting x:Uid="QuickAccent_DisableFullscreen" Icon="&#xE916;">
-                        <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.DisableFullscreen, Mode=TwoWay}" x:Uid="DisableFullscreen" HorizontalAlignment="Right"/>
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>-->
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

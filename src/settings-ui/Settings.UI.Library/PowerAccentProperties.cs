@@ -21,16 +21,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("selected_lang")]
         public StringProperty SelectedLang { get; set; }
 
-        [JsonPropertyName("disable_fullscreen")]
-        public BoolProperty DisableFullscreen { get; set; }
-
         public PowerAccentProperties()
         {
             ActivationKey = PowerAccentActivationKey.Both;
             ToolbarPosition = "Top center";
             InputTime = new IntProperty(200);
             SelectedLang = "ALL";
-            DisableFullscreen = new BoolProperty(false);
         }
     }
 }

@@ -58,8 +58,6 @@ public class SettingsService
 
                         SelectedLang = Enum.TryParse(settings.Properties.SelectedLang.Value, out Language selectedLangValue) ? selectedLangValue : Language.ALL;
 
-                        IsDisableFullscreen = settings.Properties.DisableFullscreen.Value;
-
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
                             case "Top center":
@@ -157,21 +155,6 @@ public class SettingsService
         set
         {
             _selectedLang = value;
-        }
-    }
-
-    private bool _isDisableFullscreen;
-
-    public bool IsDisableFullscreen
-    {
-        get
-        {
-            return _isDisableFullscreen;
-        }
-
-        set
-        {
-            _isDisableFullscreen = value;
         }
     }
 }

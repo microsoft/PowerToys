@@ -42,7 +42,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             _inputTimeMs = _powerAccentSettings.Properties.InputTime.Value;
-            _disableFullscreen = _powerAccentSettings.Properties.DisableFullscreen.Value;
 
             switch (_powerAccentSettings.Properties.ToolbarPosition.Value)
             {
@@ -306,22 +305,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     }
 
                     RaisePropertyChanged(nameof(SelectedLangIndex));
-                }
-            }
-        }
-
-        private bool _disableFullscreen;
-
-        public bool DisableFullscreen
-        {
-            get => _disableFullscreen;
-            set
-            {
-                if (_disableFullscreen != value)
-                {
-                    _disableFullscreen = value;
-                    _powerAccentSettings.Properties.DisableFullscreen.Value = value;
-                    OnPropertyChanged(nameof(DisableFullscreen));
                 }
             }
         }
