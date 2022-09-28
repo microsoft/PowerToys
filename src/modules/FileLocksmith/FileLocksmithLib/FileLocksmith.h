@@ -14,3 +14,6 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
 
 // Gives the user name of the account running this process
 std::wstring pid_to_user(DWORD pid);
+
+// Gives the full path of the executable, given the process id
+std::wstring pid_to_full_path(DWORD pid);
