@@ -42,6 +42,8 @@ namespace ColorPicker.Mouse
             _mouseHook = new MouseHook();
             _userSettings = userSettings;
             _userSettings.CopiedColorRepresentation.PropertyChanged += CopiedColorRepresentation_PropertyChanged;
+            _previousMousePosition = GetCursorPosition();
+            _previousColor = GetPixelColor(_previousMousePosition);
         }
 
         public event EventHandler<Color> MouseColorChanged;
@@ -57,6 +59,14 @@ namespace ColorPicker.Mouse
             get
             {
                 return _previousMousePosition;
+            }
+        }
+
+        public Color CurrentColor
+        {
+            get
+            {
+                return _previousColor;
             }
         }
 
