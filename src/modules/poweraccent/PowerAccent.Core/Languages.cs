@@ -180,7 +180,7 @@ namespace PowerAccent.Core
             switch (letter)
             {
                 case LetterKey.VK_A:
-                    return new char[] { 'à', 'â', 'á', 'ä', 'ã' };
+                    return new char[] { 'à', 'â', 'á', 'ä', 'ã', 'æ' };
                 case LetterKey.VK_C:
                     return new char[] { 'ç' };
                 case LetterKey.VK_E:
@@ -188,7 +188,7 @@ namespace PowerAccent.Core
                 case LetterKey.VK_I:
                     return new char[] { 'î', 'ï', 'í', 'ì' };
                 case LetterKey.VK_O:
-                    return new char[] { 'ô', 'ö', 'ó', 'ò', 'õ' };
+                    return new char[] { 'ô', 'ö', 'ó', 'ò', 'õ', 'œ' };
                 case LetterKey.VK_U:
                     return new char[] { 'û', 'ù', 'ü', 'ú' };
                 case LetterKey.VK_Y:
@@ -437,20 +437,22 @@ namespace PowerAccent.Core
 
             return Array.Empty<char>();
         }
-        
+
         // Hungarian
         private static char[] GetDefaultLetterKeyHU(LetterKey letter)
         {
             switch (letter)
             {
-                case LetterKey.A:
+                case LetterKey.VK_A:
                     return new char[] { 'á' };
-                case LetterKey.E:
+                case LetterKey.VK_E:
                     return new char[] { 'é' };
-                case LetterKey.O:
-                    return new char[] { 'ő', 'ó' };
-                case LetterKey.U:
-                    return new char[] { 'ű' };
+                case LetterKey.VK_I:
+                    return new char[] { 'í' };
+                case LetterKey.VK_O:
+                    return new char[] { 'ó', 'ő', 'ö' };
+                case LetterKey.VK_U:
+                    return new char[] { 'ú', 'ű', 'ü' };
             }
 
             return Array.Empty<char>();
@@ -461,13 +463,13 @@ namespace PowerAccent.Core
         {
             switch (letter)
             {
-                case LetterKey.A:
+                case LetterKey.VK_A:
                     return new char[] { 'ă', 'â' };
-                case LetterKey.I:
+                case LetterKey.VK_I:
                     return new char[] { 'î' };
-                case LetterKey.S:
+                case LetterKey.VK_S:
                     return new char[] { 'ș' };
-                case LetterKey.T:
+                case LetterKey.VK_T:
                     return new char[] { 'ț' };
             }
 
