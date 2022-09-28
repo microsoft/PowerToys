@@ -35,6 +35,7 @@
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_French"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hungarian"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Icelandic"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Italian"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Maori"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Pinyin"/>
                                 <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Polish"/>

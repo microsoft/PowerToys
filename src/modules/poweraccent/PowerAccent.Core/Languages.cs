@@ -16,6 +16,7 @@ namespace PowerAccent.Core
         FR,
         HU,
         IS,
+        IT,
         MI,
         PI,
         PL,
@@ -38,6 +39,7 @@ namespace PowerAccent.Core
                 case Language.FR: return GetDefaultLetterKeyFR(letter); // French
                 case Language.HU: return GetDefaultLetterKeyHU(letter); // Hungarian
                 case Language.IS: return GetDefaultLetterKeyIS(letter); // Iceland
+                case Language.IT: return GetDefaultLetterKeyIT(letter); // Italian
                 case Language.MI: return GetDefaultLetterKeyMI(letter); // Maori
                 case Language.PI: return GetDefaultLetterKeyPI(letter); // Pinyin
                 case Language.PL: return GetDefaultLetterKeyPL(letter); // Polish
@@ -471,6 +473,26 @@ namespace PowerAccent.Core
                     return new char[] { 'ș' };
                 case LetterKey.VK_T:
                     return new char[] { 'ț' };
+            }
+
+            return Array.Empty<char>();
+        }
+
+        // Italian
+        private static char[] GetDefaultLetterKeyIT(LetterKey letter)
+        {
+            switch (letter)
+            {
+                case LetterKey.VK_A:
+                    return new char[] { 'à' };
+                case LetterKey.VK_E:
+                    return new char[] { 'è', 'é', '€' };
+                case LetterKey.VK_I:
+                    return new char[] { 'ì', 'í' };
+                case LetterKey.VK_O:
+                    return new char[] { 'ò', 'ó' };
+                case LetterKey.VK_U:
+                    return new char[] { 'ù', 'ú' };
             }
 
             return Array.Empty<char>();
