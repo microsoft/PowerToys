@@ -16,6 +16,7 @@
 #include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
+#include <FancyZonesLib/FancyZonesData/DefaultLayouts.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 #include <FancyZonesLib/FancyZonesWindowProcessing.h>
@@ -73,6 +74,7 @@ public:
         LayoutHotkeys::instance().LoadData();
         AppliedLayouts::instance().LoadData();
         AppZoneHistory::instance().LoadData();
+        DefaultLayouts::instance().LoadData();
     }
 
     // IFancyZones
@@ -661,6 +663,10 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             AppliedLayouts::instance().LoadData();
             UpdateZoneSets();
+        }
+        else if (message == WM_PRIV_DEFAULT_LAYOUTS_FILE_UPDATE)
+        {
+            DefaultLayouts::instance().LoadData();
         }
         else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
         {
