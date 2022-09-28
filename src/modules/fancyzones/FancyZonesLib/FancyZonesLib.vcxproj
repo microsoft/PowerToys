@@ -41,6 +41,7 @@
     <ClInclude Include="FancyZonesData\AppZoneHistory.h" />
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesDataTypes.h" />
+    <ClInclude Include="FancyZonesData\DefaultLayouts.h" />
     <ClInclude Include="FancyZonesData\Layout.h" />
     <ClInclude Include="FancyZonesData\LayoutDefaults.h" />
     <ClInclude Include="FancyZonesData\LayoutTemplates.h" />
@@ -88,6 +89,9 @@
     <ClCompile Include="FancyZones.cpp" />
     <ClCompile Include="FancyZonesDataTypes.cpp" />
     <ClCompile Include="FancyZonesData\AppliedLayouts.cpp">
+      <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="FancyZonesData\DefaultLayouts.cpp">
       <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="FancyZonesData\LayoutTemplates.cpp">
