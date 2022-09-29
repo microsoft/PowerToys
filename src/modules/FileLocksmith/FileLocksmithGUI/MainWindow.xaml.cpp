@@ -52,7 +52,7 @@ namespace winrt::FileLocksmithGUI::implementation
             find_processes();
         }).detach();
 
-        display_text_info(L"Working...");
+        display_progress_ring();
     }
 
     void MainWindow::find_processes()
@@ -138,21 +138,26 @@ namespace winrt::FileLocksmithGUI::implementation
     {
         if (stackPanel().Children().Size() == 0)
         {
-            display_text_info(L"No results.");
+            // Construct the UI element and display it
+            Controls::TextBlock text_block;
+            
+            text_block.Text(L"No results.");
+            text_block.FontSize(24.0);
+            text_block.HorizontalAlignment(HorizontalAlignment::Center);
+            text_block.VerticalAlignment(VerticalAlignment::Center);
+            
+            stackPanel().Children().Append(text_block);
         }
     }
 
-    void MainWindow::display_text_info(std::wstring text)
+    void MainWindow::display_progress_ring()
     {
-        stackPanel().Children().Clear();
+        Controls::ProgressRing ring;
+        ring.Width(64);
+        ring.Height(64);
+        ring.IsIndeterminate(true);
 
-        // Construct the UI element and display it
-        Controls::TextBlock text_block;
-        text_block.Text(text);
-        text_block.FontSize(24.0);
-        text_block.HorizontalAlignment(HorizontalAlignment::Center);
-        text_block.VerticalAlignment(VerticalAlignment::Center);
-        stackPanel().Children().Append(text_block);
+        stackPanel().Children().Append(ring);
     }
 
     void MainWindow::watch_process(DWORD pid)
