@@ -413,6 +413,7 @@ Mouse Pointer Crosshairs:
    - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
  * Test the different settings and verify they are applied:
    - [ ] Activation key
+   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
    - [ ] Toolbar position (test every option, some had issues before)
    - [ ] Input delay
 
