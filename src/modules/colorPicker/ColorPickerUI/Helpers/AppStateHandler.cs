@@ -225,7 +225,7 @@ namespace ColorPicker.Helpers
                     {
                         // If escape key is blocked it means a submenu is open.
                         // Send the escape key to the Window to close that submenu.
-                        // Description for LPARAM in https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-keyup#parameters
+                        // Description for LPARAM in https://learn.microsoft.com/windows/win32/inputdev/wm-keyup#parameters
                         // It's basically some modifiers + scancode for escape (1) + number of repetitions (1)
                         handled = true;
                         handled &= NativeMethods.PostMessage(_hwndSource.Handle, NativeMethods.WM_KEYDOWN, (IntPtr)NativeMethods.VK_ESCAPE, (IntPtr)0x00010001);

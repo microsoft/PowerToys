@@ -74,6 +74,55 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     break;
             }
 
+            switch (_powerAccentSettings.Properties.SelectedLang.Value)
+            {
+                case "ALL":
+                    _selectedLangIndex = 0;
+                    break;
+                case "CUR":
+                    _selectedLangIndex = 1;
+                    break;
+                case "CZ":
+                    _selectedLangIndex = 2;
+                    break;
+                case "DE":
+                    _selectedLangIndex = 3;
+                    break;
+                case "FR":
+                    _selectedLangIndex = 4;
+                    break;
+                case "HU":
+                    _selectedLangIndex = 5;
+                    break;
+                case "IS":
+                    _selectedLangIndex = 6;
+                    break;
+                case "IT":
+                    _selectedLangIndex = 7;
+                    break;
+                case "MI":
+                    _selectedLangIndex = 8;
+                    break;
+                case "PI":
+                    _selectedLangIndex = 9;
+                    break;
+                case "PL":
+                    _selectedLangIndex = 10;
+                    break;
+                case "RO":
+                    _selectedLangIndex = 11;
+                    break;
+                case "SK":
+                    _selectedLangIndex = 12;
+                    break;
+                case "SP":
+                    _selectedLangIndex = 13;
+                    break;
+                case "TK":
+                    _selectedLangIndex = 14;
+                    break;
+            }
+
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
         }
@@ -188,6 +237,74 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     }
 
                     RaisePropertyChanged(nameof(ToolbarPositionIndex));
+                }
+            }
+        }
+
+        private int _selectedLangIndex;
+
+        public int SelectedLangIndex
+        {
+            get
+            {
+                return _selectedLangIndex;
+            }
+
+            set
+            {
+                if (_selectedLangIndex != value)
+                {
+                    _selectedLangIndex = value;
+                    switch (_selectedLangIndex)
+                    {
+                        case 0:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "ALL";
+                            break;
+                        case 1:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "CUR";
+                            break;
+                        case 2:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "CZ";
+                            break;
+                        case 3:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "DE";
+                            break;
+                        case 4:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "FR";
+                            break;
+                        case 5:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "HU";
+                            break;
+                        case 6:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "IS";
+                            break;
+                        case 7:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "IT";
+                            break;
+                        case 8:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "MI";
+                            break;
+                        case 9:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "PI";
+                            break;
+                        case 10:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "PL";
+                            break;
+                        case 11:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "RO";
+                            break;
+                        case 12:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "SK";
+                            break;
+                        case 13:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "SP";
+                            break;
+                        case 14:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "TK";
+                            break;
+                    }
+
+                    RaisePropertyChanged(nameof(SelectedLangIndex));
                 }
             }
         }
