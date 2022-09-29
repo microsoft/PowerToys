@@ -117,8 +117,8 @@ namespace winrt::FileLocksmithGUI::implementation
         GetDpiForMonitor(monitor, MONITOR_DPI_TYPE::MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y);
         UINT window_dpi = GetDpiForWindow(m_native_handle);
 
-        int width = 728;
-        int height = 405;
+        int width = 758;
+        int height = 480;
 
         winrt::Windows::Graphics::RectInt32 rect;
 

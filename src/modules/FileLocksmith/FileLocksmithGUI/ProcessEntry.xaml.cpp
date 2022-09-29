@@ -37,7 +37,12 @@ namespace winrt::FileLocksmithGUI::implementation
 
     void ProcessEntry::AddPath(const winrt::hstring& path)
     {
-        m_paths.push_back(path);
+        Controls::TextBlock entry;
+        entry.IsTextSelectionEnabled(true);
+        entry.Text(path);
+        entry.HorizontalAlignment(HorizontalAlignment::Left);
+
+        filesContainer().Children().Append(entry);
     }
 
     void ProcessEntry::killProcessClick(Windows::Foundation::IInspectable const&, RoutedEventArgs const&)
@@ -50,27 +55,5 @@ namespace winrt::FileLocksmithGUI::implementation
         }
 
         CloseHandle(process);
-    }
-
-    void ProcessEntry::showFilesClick(Windows::Foundation::IInspectable const&, RoutedEventArgs const&)
-    {
-        if (!m_files_shown)
-        {
-            for (const auto& path : m_paths)
-            {
-                Controls::TextBlock row;
-                row.Text(path);
-                filesContainer().Children().Append(row);
-            }
-
-            showFilesButton().Content(box_value(L"Hide files"));
-        }
-        else
-        {
-            filesContainer().Children().Clear();
-            showFilesButton().Content(box_value(L"Show files"));
-        }
-
-        m_files_shown ^= true;
     }
 }
