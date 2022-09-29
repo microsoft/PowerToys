@@ -62,7 +62,7 @@ public class PowerAccent : IDisposable
     private void ShowToolbar(LetterKey letterKey)
     {
         _visible = true;
-        _characters = WindowsFunctions.IsCapitalState() ? ToUpper(Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang)) : Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
+        _characters = (WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState()) ? ToUpper(Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang)) : Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
         Task.Delay(_settingService.InputTime).ContinueWith(
             t =>
             {
