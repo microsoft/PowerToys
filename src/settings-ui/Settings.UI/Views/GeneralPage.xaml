@@ -268,11 +268,11 @@
 
                             <StackPanel Orientation="Vertical">
 
-                                <controls:Setting x:Uid="General_SetupBackupAndRestoreLocationText" Visibility="Visible">
+                                <controls:Setting x:Uid="General_SetupBackupAndRestoreLocationText" Visibility="Visible" Style="{StaticResource ExpanderContentSettingStyle}">
 
                                     <controls:Setting.ActionContent>
 
-                                        <Grid Padding="10,5,22,0">
+                                        <Grid Padding="10,5,0,0">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
@@ -295,7 +295,7 @@
                                 </controls:Setting>
 
 
-                                <controls:Setting x:Uid="General_BackupAndRestoreStatusInfo" Visibility="Visible">
+                                <controls:Setting x:Uid="General_BackupAndRestoreStatusInfo" Visibility="Visible" Style="{StaticResource ExpanderContentSettingStyle}">
 
                                     <controls:Setting.ActionContent>
                                         <Grid Padding="10,5,10,10">
