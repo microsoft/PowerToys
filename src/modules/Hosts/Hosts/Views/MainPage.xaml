@@ -304,7 +304,7 @@
                 <TextBox x:Uid="Address" Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsSpellCheckEnabled="False" />
                 <TextBox x:Uid="Hosts" Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsSpellCheckEnabled="False" />
                 <TextBox x:Uid="Comment" Text="{Binding Comment, Mode=TwoWay}" IsSpellCheckEnabled="False" />
-                <ToggleSwitch x:Uid="Active" IsOn="{Binding Active, Mode=TwoWay}" />
+                <ToggleSwitch x:Uid="Active" IsOn="{Binding Active, Mode=TwoWay}" OffContent="" OnContent="" />
             </StackPanel>
         </ContentDialog>
 

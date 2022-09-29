@@ -183,6 +183,10 @@
   <data name="Hosts.Header" xml:space="preserve">
     <value>Hosts</value>
   </data>
+  <data name="Hosts.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Seperate multiple hosts by space (e.g. server server.local).</value>
+    <comment>Do not localize "server" and "server.local"</comment>
+  </data>
   <data name="HostsFilter.Header" xml:space="preserve">
     <value>Hosts</value>
   </data>
