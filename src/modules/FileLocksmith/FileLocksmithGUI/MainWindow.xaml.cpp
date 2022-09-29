@@ -7,7 +7,11 @@
 #include "../FileLocksmithLib/IPC.h"
 #include "../FileLocksmithLib/FileLocksmith.h"
 
+#include "../../../common/Themes/theme_helpers.h"
+#include "../../../common/Themes/theme_listener.h"
+
 #pragma comment(lib, "shcore") // GetDpiForMonitor
+#pragma comment(lib, "dwmapi") // Themes
 
 using namespace winrt;
 using namespace Microsoft::UI;
@@ -16,11 +20,31 @@ using namespace Microsoft::UI::Xaml;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
+namespace
+{
+    ThemeListener theme_listener{};
+    HWND native_handle;
+
+    void handle_theme()
+    {
+        auto theme = theme_listener.AppTheme;
+        auto isDark = theme == AppTheme::Dark;
+        ThemeHelpers::SetImmersiveDarkMode(native_handle, isDark);
+    }
+}
+
 namespace winrt::FileLocksmithGUI::implementation
 {
     MainWindow::MainWindow()
     {
         Title(L"File Locksmith");
+
+        // Set up theme
+        find_native_handle();
+        native_handle = m_native_handle;
+        theme_listener.AddChangedHandler(handle_theme);
+        handle_theme();
+        
         place_and_resize();
         InitializeComponent();
         
@@ -64,13 +88,19 @@ namespace winrt::FileLocksmithGUI::implementation
         });
     }
 
-    void MainWindow::place_and_resize()
+    void MainWindow::find_native_handle()
     {
-        // Get native handle
         auto windowNative{ this->try_as<::IWindowNative>() };
         winrt::check_bool(windowNative);
-        HWND hwnd{ 0 };
-        windowNative->get_WindowHandle(&hwnd);
+        windowNative->get_WindowHandle(&m_native_handle);
+    }
+
+    void MainWindow::place_and_resize()
+    {
+        if (!m_native_handle)
+        {
+            find_native_handle();
+        }
 
         // Get mouse cursor position
         POINT cursorPosition{0, 0};
@@ -85,7 +115,7 @@ namespace winrt::FileLocksmithGUI::implementation
         GetMonitorInfoW(monitor, &monitor_info);
         UINT dpi_x, dpi_y;
         GetDpiForMonitor(monitor, MONITOR_DPI_TYPE::MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y);
-        UINT window_dpi = GetDpiForWindow(hwnd);
+        UINT window_dpi = GetDpiForWindow(m_native_handle);
 
         int width = 728;
         int height = 405;
@@ -101,7 +131,7 @@ namespace winrt::FileLocksmithGUI::implementation
         rect.Y = display_area.WorkArea().Y + display_area.WorkArea().Height / 2 - height / 2;
 
         // Get app window
-        auto window_id = GetWindowIdFromWindow(hwnd);
+        auto window_id = GetWindowIdFromWindow(m_native_handle);
         auto app_window = Windowing::AppWindow::GetFromWindowId(window_id);
         
         app_window.MoveAndResize(rect);
