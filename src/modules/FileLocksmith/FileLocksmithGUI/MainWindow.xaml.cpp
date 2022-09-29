@@ -81,10 +81,7 @@ namespace winrt::FileLocksmithGUI::implementation
                 }).detach();
             }
 
-            if (process_info.empty())
-            {
-                DisplayNoResultsInfo();
-            }
+            display_no_results_if_empty();
         });
     }
 
@@ -137,9 +134,12 @@ namespace winrt::FileLocksmithGUI::implementation
         app_window.MoveAndResize(rect);
     }
 
-    void MainWindow::DisplayNoResultsInfo()
+    void MainWindow::display_no_results_if_empty()
     {
-        display_text_info(L"No results.");
+        if (stackPanel().Children().Size() == 0)
+        {
+            display_text_info(L"No results.");
+        }
     }
 
     void MainWindow::display_text_info(std::wstring text)
@@ -184,6 +184,7 @@ namespace winrt::FileLocksmithGUI::implementation
                     if (process_entry.Pid() == pid)
                     {
                         stackPanel().Children().RemoveAt(i);
+                        display_no_results_if_empty();
                         return;
                     }
                 }
