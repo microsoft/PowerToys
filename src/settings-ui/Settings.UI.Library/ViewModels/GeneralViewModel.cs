@@ -289,12 +289,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+                return SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
             }
 
             set
             {
-                if (SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir") != value)
+                if (SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir() != value)
                 {
                     SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreItem("SettingsBackupAndRestoreDir", value);
                     NotifyPropertyChanged();
@@ -409,7 +409,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     var settingsUtils = new SettingsUtils();
                     var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
-                    string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+                    string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
                     var results = SettingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);
 
@@ -639,7 +639,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                var currentDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+                var currentDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
                 if (!string.IsNullOrEmpty(currentDir) && Directory.Exists(currentDir))
                 {
@@ -663,7 +663,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         /// </summary>
         private void RestoreConfigsClick()
         {
-            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
             if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
             {
@@ -699,7 +699,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         /// </summary>
         private void BackupConfigsClick()
         {
-            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
             if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
             {

@@ -148,7 +148,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             var settingsUtils = new SettingsUtils();
             var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
-            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
             return SettingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir, false);
         }
@@ -160,7 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             var settingsUtils = new SettingsUtils();
             var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
-            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
             return SettingsBackupAndRestoreUtils.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
         }

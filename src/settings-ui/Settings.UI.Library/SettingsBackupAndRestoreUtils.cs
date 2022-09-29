@@ -330,6 +330,23 @@ namespace Settings.UI.Library
         }
 
         /// <summary>
+        /// Method <c>GetSettingsBackupAndRestoreDir</c> returns the path the backup and restore location.
+        /// </summary>
+        /// <remarks>
+        /// This will return a default location based on Environment Variables if non is set.
+        /// </remarks>
+        public static string GetSettingsBackupAndRestoreDir()
+        {
+            string settingsBackupAndRestoreDir = GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+            if (settingsBackupAndRestoreDir == null)
+            {
+                settingsBackupAndRestoreDir = Environment.ExpandEnvironmentVariables("%USERPROFILE%\\Documents\\PowerToys\\Backup");
+            }
+
+            return settingsBackupAndRestoreDir;
+        }
+
+        /// <summary>
         /// Method <c>GetLatestSettingsFolder</c> returns a folder that has the latest backup in it.
         /// </summary>
         /// <remarks>
@@ -337,7 +354,7 @@ namespace Settings.UI.Library
         /// </remarks>
         private static string GetLatestSettingsFolder()
         {
-            string settingsBackupAndRestoreDir = GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+            string settingsBackupAndRestoreDir = GetSettingsBackupAndRestoreDir();
 
             if (settingsBackupAndRestoreDir == null)
             {
