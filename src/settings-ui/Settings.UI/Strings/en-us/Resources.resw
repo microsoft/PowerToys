@@ -2452,6 +2452,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Hungarian</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Italian.Content" xml:space="preserve">
-    <value>Italien</value>
+    <value>Italian</value>
   </data>
 </root>
