@@ -451,7 +451,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     {
                         if (manifest["BackupSource"] != null)
                         {
-                            return manifest["BackupSource"].ToString();
+                            if (manifest["BackupSource"].ToString().Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return GetResourceString("BackupAndRestore_ThisMachine");
+                            }
+                            else
+                            {
+                                return manifest["BackupSource"].ToString();
+                            }
                         }
                         else
                         {
@@ -656,6 +663,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         /// </summary>
         private void RestoreConfigsClick()
         {
+            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+
+            if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
+            {
+                SelectSettingBackupDir();
+            }
+
             var results = SettingsUtils.RestoreSettings();
             _backupRestoreMessageSeverity = results.severity;
 
@@ -685,6 +699,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         /// </summary>
         private void BackupConfigsClick()
         {
+            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
+
+            if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
+            {
+                SelectSettingBackupDir();
+            }
+
             var results = SettingsUtils.BackupSettings();
 
             _settingsBackupRestoreMessageVisible = true;
