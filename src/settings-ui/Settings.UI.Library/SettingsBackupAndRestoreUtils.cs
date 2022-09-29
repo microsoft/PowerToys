@@ -261,7 +261,7 @@ namespace Settings.UI.Library
                 }
 
                 // get data needed for process
-                var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("backup_restore_settings.json"));
+                var backupRetoreSettings = JsonNode.Parse(GetBackupRestoreSettingsJson());
                 var currentSettingsFiles = GetSettingsFiles(backupRetoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
                 var backupSettingsFiles = GetSettingsFiles(backupRetoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
 
@@ -521,7 +521,7 @@ namespace Settings.UI.Library
                 }
 
                 // get data needed for process
-                var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("backup_restore_settings.json"));
+                var backupRetoreSettings = JsonNode.Parse(GetBackupRestoreSettingsJson());
                 var currentSettingsFiles = GetSettingsFiles(backupRetoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
                 var fullBackupDir = Path.Combine(Path.GetTempPath(), $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
                 var latestSettingsFolder = GetLatestSettingsFolder();
@@ -644,6 +644,22 @@ namespace Settings.UI.Library
             {
                 Logger.LogError($"There was an error: {ex2.Message}", ex2);
                 return (false, $"BackupAndRestore_BackupError", "Error");
+            }
+        }
+
+        private static string GetBackupRestoreSettingsJson()
+        {
+            if (File.Exists("backup_restore_settings.json"))
+            {
+                return File.ReadAllText("backup_restore_settings.json");
+            }
+            else if (File.Exists("Settings\\backup_restore_settings.json"))
+            {
+                return File.ReadAllText("Settings\\backup_restore_settings.json");
+            }
+            else
+            {
+                throw new FileNotFoundException($"The backup_restore_settings.json could not be found at {Environment.CurrentDirectory}");
             }
         }
 
