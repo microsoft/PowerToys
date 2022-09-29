@@ -1058,7 +1058,7 @@
     <value>Last checked: </value>
   </data>
   <data name="General_LastSettingsBackupDate.Text" xml:space="preserve">
-    <value>Last backup at:</value>
+    <value>Backup created at:</value>
   </data>
   <data name="General_SetupAndRestoreLocationText.Text" xml:space="preserve">
     <value>Backup and restore location</value>
@@ -1091,13 +1091,13 @@
     <value>You can find specific details about the backup and restore, and current settings state here.</value>
   </data>
   <data name="General_LastSettingsRestoreDate.Text" xml:space="preserve">
-    <value>Last restore at:</value>
+    <value>Last restore time:</value>
   </data>
   <data name="General_LastSettingsBackupSource.Text" xml:space="preserve">
-    <value>Backup source:</value>
+    <value>Last backup source machine:</value>
   </data>
   <data name="General_CurrentSettingMatchStatus.Text" xml:space="preserve">
-    <value>Backup status:</value>
+    <value>Settings backup status:</value>
   </data>
   <data name="General_Version.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>

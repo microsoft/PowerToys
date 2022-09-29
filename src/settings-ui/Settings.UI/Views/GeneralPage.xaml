@@ -307,64 +307,63 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="1*" />
                                                 <RowDefinition Height="1*" />
+                                                <RowDefinition Height="1*" />
+                                                <!--<RowDefinition Height="1*" />-->
                                             </Grid.RowDefinitions>
 
-                                            <Border Grid.Row="0" Grid.Column="0">
+                                            <Border Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right">
                                                 <TextBlock Style="{StaticResource HeaderTextStyle}">
                                                 <Run x:Uid="General_CurrentSettingMatchStatus" />
                                                 </TextBlock>
                                             </Border>
 
-                                            <Border Grid.Row="0" Grid.Column="1" Padding="0,0,10,0">
+                                            <Border Grid.Row="0" Grid.Column="1">
 
                                                 <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                                 <Run Text="{Binding CurrentSettingMatchText, Mode=OneWay}"/>
                                                 </TextBlock>
                                             </Border>
 
-                                            <Border Grid.Row="0" Grid.Column="2" BorderThickness="1,0,0,0" BorderBrush="#8a8888" Padding="10,0,2,0">
-                                                <TextBlock Style="{StaticResource HeaderTextStyle}">
-                                                <Run x:Uid="General_LastSettingsBackupDate" />
-                                                </TextBlock>
-
-                                            </Border>
-
-                                            <Border Grid.Row="0" Grid.Column="3">
-                                                <TextBlock Style="{StaticResource SecondaryTextStyle}">
-                                                <Run Text="{Binding LastSettingsBackupDate, Mode=OneWay}"/>
-                                                </TextBlock>
-                                            </Border>
-
-
                                             <Border Grid.Row="1" Grid.Column="0">
-                                                <TextBlock Style="{StaticResource HeaderTextStyle}">
+                                                <TextBlock Style="{StaticResource HeaderTextStyle}" HorizontalAlignment="Right">
                                                 <Run x:Uid="General_LastSettingsBackupSource" />
                                                 </TextBlock>
                                             </Border>
 
-                                            <Border Grid.Row="1" Grid.Column="1" Padding="0,0,10,0">
+                                            <Border Grid.Row="1" Grid.Column="1">
                                                 <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                                 <Run Text="{Binding LastSettingsBackupSource, Mode=OneWay}"/>
                                                 </TextBlock>
                                             </Border>
 
-                                            <Border Grid.Row="1" Grid.Column="2" BorderThickness="1, 0, 0, 0" BorderBrush="#8a8888" Padding="10,0,2,0">
-                                                <TextBlock Style="{StaticResource HeaderTextStyle}">
+                                            <Border Grid.Row="2" Grid.Column="0">
+                                                <TextBlock Style="{StaticResource HeaderTextStyle}" HorizontalAlignment="Right">
+                                                <Run x:Uid="General_LastSettingsBackupDate" />
+                                                </TextBlock>
+
+                                            </Border>
+
+                                            <Border Grid.Row="2" Grid.Column="1">
+                                                <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                                <Run Text="{Binding LastSettingsBackupDate, Mode=OneWay}"/>
+                                                </TextBlock>
+                                            </Border>
+
+                                            <!--<Border Grid.Row="3" Grid.Column="0">
+                                                <TextBlock Style="{StaticResource HeaderTextStyle}" HorizontalAlignment="Right">
                                                 <Run x:Uid="General_LastSettingsRestoreDate" />
                                                 </TextBlock>
                                             </Border>
 
-                                            <Border Grid.Row="1" Grid.Column="3">
+                                            <Border Grid.Row="3" Grid.Column="1">
                                                 <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                                 <Run Text="{Binding LastSettingsRestoreDate, Mode=OneWay}"/>
                                                 </TextBlock>
-                                            </Border>
+                                            </Border>-->
 
                                         </Grid>
 
