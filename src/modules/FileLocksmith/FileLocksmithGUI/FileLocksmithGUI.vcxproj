@@ -185,6 +185,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
+      <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\FileLocksmithLib\FileLocksmithLib.vcxproj">
       <Project>{8290cf58-0e97-45c4-ab41-f3c7c3128aec}</Project>
     </ProjectReference>
