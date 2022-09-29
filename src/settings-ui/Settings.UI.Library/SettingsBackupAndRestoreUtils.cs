@@ -261,7 +261,7 @@ namespace Settings.UI.Library
                 }
 
                 // get data needed for process
-                var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("Settings\\backup_restore_settings.json"));
+                var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("backup_restore_settings.json"));
                 var currentSettingsFiles = GetSettingsFiles(backupRetoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
                 var backupSettingsFiles = GetSettingsFiles(backupRetoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
 
@@ -521,7 +521,7 @@ namespace Settings.UI.Library
                 }
 
                 // get data needed for process
-                var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("Settings\\backup_restore_settings.json"));
+                var backupRetoreSettings = JsonNode.Parse(File.ReadAllText("backup_restore_settings.json"));
                 var currentSettingsFiles = GetSettingsFiles(backupRetoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
                 var fullBackupDir = Path.Combine(Path.GetTempPath(), $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
                 var latestSettingsFolder = GetLatestSettingsFolder();
