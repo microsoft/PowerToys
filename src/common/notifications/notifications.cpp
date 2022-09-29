@@ -244,7 +244,7 @@ void notifications::show_toast_with_activations(std::wstring message,
                                                 toast_params params)
 {
     // DO NOT LOCALIZE any string in this function, because they're XML tags and a subject to
-    // https://docs.microsoft.com/en-us/windows/uwp/design/shell/tiles-and-notifications/toast-xml-schema
+    // https://learn.microsoft.com/windows/uwp/design/shell/tiles-and-notifications/toast-xml-schema
 
     std::wstring toast_xml;
     toast_xml.reserve(2048);

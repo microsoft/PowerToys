@@ -245,7 +245,7 @@ LExit:
 // Creates a Scheduled Task to run at logon for the current user.
 // The path of the executable to run should be passed as the CustomActionData (Value).
 // Based on the Task Scheduler Logon Trigger Example:
-// https://docs.microsoft.com/en-us/windows/win32/taskschd/logon-trigger-example--c---/
+// https://learn.microsoft.com/windows/win32/taskschd/logon-trigger-example--c---/
 UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -513,7 +513,7 @@ LExit:
 
 // Removes all Scheduled Tasks in the PowerToys folder and deletes the folder afterwards.
 // Based on the Task Scheduler Displaying Task Names and State example:
-// https://docs.microsoft.com/en-us/windows/desktop/TaskSchd/displaying-task-names-and-state--c---/
+// https://learn.microsoft.com/windows/desktop/TaskSchd/displaying-task-names-and-state--c---/
 UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;

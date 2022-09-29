@@ -20,7 +20,7 @@ namespace PowerLauncher
 
         private ToolTip _previouslyOpenedToolTip;
 
-        // From https://docs.microsoft.com/en-us/dotnet/desktop/wpf/data/how-to-find-datatemplate-generated-elements
+        // From https://learn.microsoft.com/dotnet/desktop/wpf/data/how-to-find-datatemplate-generated-elements
         private TypeChildItem FindVisualChild<TypeChildItem>(DependencyObject obj)
     where TypeChildItem : DependencyObject
         {

@@ -7,7 +7,7 @@ const CLSID CLSID_SHIMActivateSvgPreviewHandler = { 0x74619BDA, 0xA66B, 0x451D, 
 
 // ddee2b8a-6807-48a6-bb20-2338174ff779
 // CLSID of the .Net Com Class for Preview Handler. Should be included in the registry.dat file under \Classes\CLSID\{guid}.
-// More details here: https://docs.microsoft.com/en-us/dotnet/framework/interop/registering-assemblies-with-com
+// More details here: https://learn.microsoft.com/dotnet/framework/interop/registering-assemblies-with-com
 const CLSID CLSID_SvgPreviewHandler = { 0xddee2b8a, 0x6807, 0x48a6, { 0xbb, 0x20, 0x23, 0x38, 0x17, 0x4f, 0xf7, 0x79 } };
 
 // E0907A95-6F9A-4D1B-A97A-7D9D2648881E
