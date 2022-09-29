@@ -70,8 +70,8 @@ Group 5:
 - Image Resizer
 - PowerRename
 - PowerToys Run
+- AlwaysOnTop
 - Quick Accent
-- Text Extractor
 ```
 ```
 Group 6:
@@ -81,5 +81,5 @@ Group 6:
 - File Explorer Add-ons
 - Shortcut Guide
 - VCM
-- AlwaysOnTop
+- Text Extractor
 ```
