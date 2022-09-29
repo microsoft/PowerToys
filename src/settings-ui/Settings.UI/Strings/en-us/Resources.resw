@@ -2350,7 +2350,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
     <value>Hold the key down for this much time to make the accent menu appear (ms)</value>
     <comment>ms = milliseconds</comment>
-  </data>  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
+  </data>
+  <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
   </data>
   <data name="TextExtractor.ModuleDescription" xml:space="preserve">
@@ -2398,5 +2399,62 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MeasureTool_ContinuousCapture_Information.Title" xml:space="preserve">
     <value>The continuous capture mode will consume more resources when in use. Also, measurements will be excluded from screenshots and screen capture.</value>
     <comment>pointer as in mouse pointer. Resources refer to things like CPU, GPU, RAM</comment>
+  </data>
+  <data name="QuickAccent_DisableFullscreen.Header" xml:space="preserve">
+    <value>Disable when Game Mode is On</value>
+  </data>
+  <data name="QuickAccent_Language.Header" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage.Header" xml:space="preserve">
+    <value>Choose language</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
+    <value>Show only accented characters common to the selected language</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
+    <value>All available</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Currency.Content" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Czech.Content" xml:space="preserve">
+    <value>Czech</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
+    <value>Dutch</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_French.Content" xml:space="preserve">
+    <value>French</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Maori.Content" xml:space="preserve">
+    <value>Maori</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Pinyin.Content" xml:space="preserve">
+    <value>Pinyin</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Polish.Content" xml:space="preserve">
+    <value>Polish</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Slovakian.Content" xml:space="preserve">
+    <value>Slovakian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
+    <value>Spanish</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Turkish.Content" xml:space="preserve">
+    <value>Turkish</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Icelandic.Content" xml:space="preserve">
+    <value>Icelandic</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Romanian.Content" xml:space="preserve">
+    <value>Romanian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Hungarian.Content" xml:space="preserve">
+    <value>Hungarian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Italian.Content" xml:space="preserve">
+    <value>Italian</value>
   </data>
 </root>

@@ -36,6 +36,31 @@
                     </controls:Setting>
                 </controls:SettingsGroup>
 
+                <controls:SettingsGroup x:Uid="QuickAccent_Language" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
+                    <controls:Setting x:Uid="QuickAccent_SelectedLanguage" Icon="&#xF2B7;">
+                        <controls:Setting.ActionContent>
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                      SelectedIndex="{x:Bind Path=ViewModel.SelectedLangIndex, Mode=TwoWay}" >
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_All"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Currency"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Czech"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Dutch"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_French"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hungarian"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Icelandic"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Italian"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Maori"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Pinyin"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Polish"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanian"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovakian"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Spanish"/>
+                                <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Turkish"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
                     <controls:Setting x:Uid="QuickAccent_ToolbarPosition" Icon="&#xEC12;">
                         <controls:Setting.ActionContent>
@@ -54,6 +79,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>
+                
                 <controls:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
                     <controls:Setting x:Uid="QuickAccent_InputTimeMs" Icon="&#xE916;">
                         <controls:Setting.ActionContent>
