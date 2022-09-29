@@ -68,6 +68,15 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         };
     }
 
+    void KeyboardListener::SetIsLanguageLetterDelegate(IsLanguageLetter isLanguageLetterDelegate)
+    {
+        m_isLanguageLetterCb = [trigger = std::move(isLanguageLetterDelegate)](LetterKey key) {
+            bool result;
+            trigger(key, result);
+            return result;
+        };
+    }
+
     void KeyboardListener::UpdateActivationKey(int32_t activationKey)
     {
         m_settings.activationKey = static_cast<PowerAccentActivationKey>(activationKey);
@@ -80,7 +89,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     bool KeyboardListener::OnKeyDown(KBDLLHOOKSTRUCT info) noexcept
     {
-        if (std::find(std::begin(letters), end(letters), static_cast<LetterKey>(info.vkCode)) != end(letters))
+        if (std::find(std::begin(letters), end(letters), static_cast<LetterKey>(info.vkCode)) != end(letters) && m_isLanguageLetterCb(static_cast<LetterKey>(info.vkCode)))
         {
             m_stopwatch.reset();
             letterPressed = static_cast<LetterKey>(info.vkCode);
@@ -139,7 +148,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     bool KeyboardListener::OnKeyUp(KBDLLHOOKSTRUCT info) noexcept
     {
-        if (std::find(std::begin(letters), end(letters), static_cast<LetterKey>(info.vkCode)) != end(letters))
+        if (std::find(std::begin(letters), end(letters), static_cast<LetterKey>(info.vkCode)) != end(letters) && m_isLanguageLetterCb(static_cast<LetterKey>(info.vkCode)))
         {
             letterPressed = LetterKey::None;
 

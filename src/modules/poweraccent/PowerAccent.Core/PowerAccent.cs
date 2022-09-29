@@ -57,6 +57,11 @@ public class PowerAccent : IDisposable
                 ProcessNextChar(triggerKey);
             });
         }));
+
+        _keyboardListener.SetIsLanguageLetterDelegate(new PowerToys.PowerAccentKeyboardService.IsLanguageLetter((LetterKey letterKey, out bool result) =>
+        {
+            result = Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang).Length > 0;
+        }));
     }
 
     private void ShowToolbar(LetterKey letterKey)
