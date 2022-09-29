@@ -14,11 +14,8 @@ namespace winrt::FileLocksmithGUI::implementation
         void AddPath(const winrt::hstring& path);
 
         void killProcessClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void showFilesClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
     private:
         DWORD m_pid;
-        std::vector<winrt::hstring> m_paths;
-        bool m_files_shown = false;
     };
 }
 
