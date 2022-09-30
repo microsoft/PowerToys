@@ -648,13 +648,10 @@
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
   </data>
-  <data name="GeneralPage_BackupConfigs.Content" xml:space="preserve">
-    <value>Backup</value>
-  </data>
-  <data name="GeneralPage_RestoreConfigs.Content" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_ButtonRestore.Content" xml:space="preserve">
     <value>Restore</value>
   </data>
-  <data name="GeneralPage_SettingsBackupLocationSelect.Content" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Content" xml:space="preserve">
     <value>Browse</value>
   </data>
   <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
@@ -1057,47 +1054,20 @@
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
   </data>
-  <data name="General_LastSettingsBackupDate.Text" xml:space="preserve">
-    <value>Backup created at:</value>
+  <data name="General_SettingsBackupInfo_DateHeader.Text" xml:space="preserve">
+    <value>Created at:</value>
   </data>
-  <data name="General_SetupAndRestoreLocationText.Text" xml:space="preserve">
-    <value>Backup and restore location</value>
+  <data name="General_SettingsBackupAndRestoreDescription.Text" xml:space="preserve">
+    <value>Backup and restore your settings at any time. (PowerToys will restart automatically if needed.)</value>
   </data>
-  <data name="General_SetupBackupAndRestoreLocationText.Header" xml:space="preserve">
-    <value>Location</value>
+  <data name="General_SettingsBackupAndRestoreStatusInfo.Header" xml:space="preserve">
+    <value>Backup information</value>
   </data>
-  <data name="General_SetupBackupAndRestoreLocationText.Description" xml:space="preserve">
-    <value>Select a location to store the backup.</value>
+  <data name="General_SettingsBackupInfo_SourceHeader.Text" xml:space="preserve">
+    <value>Source machine:</value>
   </data>
-  <data name="General_DoBackupAndRestoreNow.Header" xml:space="preserve">
-    <value>Backup or restore now</value>
-  </data>
-  <data name="General_DoBackupAndRestoreNow.Description" xml:space="preserve">
-    <value>If settings are restored PowerToys will restart automatically.</value>
-  </data>
-  <data name="General_BackupAndRestoreDescription.Text" xml:space="preserve">
-    <value>Backup and restore your settings at any time. PowerToys will restart only if needed.</value>
-  </data>
-  <data name="General_BackupAndRestoreStatusInfo.Header" xml:space="preserve">
-    <value>Backup &amp; restore information</value>
-  </data>
-  <data name="General_BackupAndRestoreStatusInfo.Description" xml:space="preserve">
-    <value>You can find specific details about the backup and restore, and current settings state here.</value>
-  </data>
-  <data name="General_BackupAndRestoreStatusInfoDetails.Header" xml:space="preserve">
-    <value>Backup &amp; restore information</value>
-  </data>
-  <data name="General_BackupAndRestoreStatusInfoDetails.Description" xml:space="preserve">
-    <value>You can find specific details about the backup and restore, and current settings state here.</value>
-  </data>
-  <data name="General_LastSettingsRestoreDate.Text" xml:space="preserve">
-    <value>Last restore time:</value>
-  </data>
-  <data name="General_LastSettingsBackupSource.Text" xml:space="preserve">
-    <value>Last backup source machine:</value>
-  </data>
-  <data name="General_CurrentSettingMatchStatus.Text" xml:space="preserve">
-    <value>Settings backup status:</value>
+  <data name="General_SettingsBackupInfo_StatusHeader.Text" xml:space="preserve">
+    <value>Status:</value>
   </data>
   <data name="General_Version.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>
@@ -1746,9 +1716,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download &amp; install</value>
-  </data>
-  <data name="General_SettingsBackupMessageResults.Title" xml:space="preserve">
-    <value />
   </data>
   <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
     <value>Fills</value>
@@ -2513,5 +2480,20 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MeasureTool_ContinuousCapture_Information.Title" xml:space="preserve">
     <value>The continuous capture mode will consume more resources when in use. Also, measurements will be excluded from screenshots and screen capture.</value>
     <comment>pointer as in mouse pointer. Resources refer to things like CPU, GPU, RAM</comment>
+  </data>
+  <data name="General_SettingsBackupAndRestoreLocationText.Description" xml:space="preserve">
+    <value>Select a location to store the backup.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestoreLocationText.Header" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="General_SettingsBackupAndRestoreStatusInfo.Description" xml:space="preserve">
+    <value>Here you can find information about the backup last created or currently selected for restore.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_ButtonBackup.Content" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="General_SettingsBackupInfo_FileNameHeader.Text" xml:space="preserve">
+    <value>File name:</value>
   </data>
 </root>
