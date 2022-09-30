@@ -653,7 +653,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
                     SettingsBackupAndRestoreDir = dialog.SelectedPath;
-                    _ = SettingsBackupAndRestoreDir;
+                    NotifyPropertyChanged(nameof(LastSettingsBackupDate));
+                    NotifyPropertyChanged(nameof(LastSettingsBackupSource));
+                    NotifyPropertyChanged(nameof(LastSettingsBackupFileName));
                 }
             }
         }
