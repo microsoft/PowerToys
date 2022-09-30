@@ -478,6 +478,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public string LastSettingsBackupFileName
+        {
+            get
+            {
+                var fileName = SettingsBackupAndRestoreUtils.GetLatestBackupFileName();
+                return !string.IsNullOrEmpty(fileName) ? fileName : GetResourceString("BackupAndRestore_NoBackupFound");
+            }
+        }
+
         public string LastSettingsRestoreDate
         {
             get
@@ -653,7 +662,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreItem("SettingsBackupAndRestoreDir", dialog.SelectedPath);
                     NotifyPropertyChanged(nameof(SettingsBackupAndRestoreDir));
                     NotifyPropertyChanged(nameof(LastSettingsBackupDate));
+                    NotifyPropertyChanged(nameof(CurrentSettingMatchText));
                     NotifyPropertyChanged(nameof(LastSettingsBackupSource));
+                    NotifyPropertyChanged(nameof(LastSettingsBackupFileName));
                 }
             }
         }

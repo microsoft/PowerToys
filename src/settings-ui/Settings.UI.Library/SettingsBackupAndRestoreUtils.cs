@@ -418,6 +418,35 @@ namespace Settings.UI.Library
         }
 
         /// <summary>
+        /// Method <c>GetLatestSettingsFileName</c> returns the name of the newest backup file.
+        /// </summary>
+        public static string GetLatestBackupFileName()
+        {
+            string settingsBackupAndRestoreDir = GetSettingsBackupAndRestoreDir();
+
+            if (string.IsNullOrEmpty(settingsBackupAndRestoreDir) || !Directory.Exists(settingsBackupAndRestoreDir))
+            {
+                return string.Empty;
+            }
+
+            var settingsBackupFolders = Directory.EnumerateDirectories(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList();
+            var settingsBackupFiles = Directory.EnumerateFiles(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList();
+
+            if (settingsBackupFolders.Count > 0)
+            {
+                return Path.GetFileName(settingsBackupFolders.OrderByDescending(x => x).First());
+            }
+            else if (settingsBackupFiles.Count > 0)
+            {
+                return Path.GetFileName(settingsBackupFiles.OrderByDescending(x => x).First());
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Method <c>GetLatestSettingsBackupManifest</c> get's the meta data from a backup file.
         /// </summary>
         public static JsonNode GetLatestSettingsBackupManifest()
