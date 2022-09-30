@@ -10,7 +10,7 @@
 // users got used to current default layout - issues that default is changed?
 // several layouts set - which one to default?
 
-namespace JsonUtils
+namespace DefaultLayoutsJsonUtils
 {
     MonitorConfiguraionType TypeFromString(const std::wstring& data)
     {
@@ -42,18 +42,22 @@ namespace JsonUtils
             try
             {
                 Layout data{};
-                auto idStr = json.GetNamedString(NonLocalizable::DefaultLayoutsIds::UuidID);
-                auto id = FancyZonesUtils::GuidFromString(idStr.c_str());
-                if (!id.has_value())
+                auto idStr = json.GetNamedString(NonLocalizable::DefaultLayoutsIds::UuidID, L"");
+                if (!idStr.empty())
                 {
-                    return std::nullopt;
-                }
+                    auto id = FancyZonesUtils::GuidFromString(idStr.c_str());
+                    if (!id.has_value())
+                    {
+                        return std::nullopt;
+                    }
 
-                data.uuid = id.value();
+                    data.uuid = id.value();
+                }
+                
                 data.type = FancyZonesDataTypes::TypeFromString(std::wstring{ json.GetNamedString(NonLocalizable::DefaultLayoutsIds::TypeID) });
-                data.showSpacing = json.GetNamedBoolean(NonLocalizable::DefaultLayoutsIds::ShowSpacingID);
-                data.spacing = static_cast<int>(json.GetNamedNumber(NonLocalizable::DefaultLayoutsIds::SpacingID));
-                data.zoneCount = static_cast<int>(json.GetNamedNumber(NonLocalizable::DefaultLayoutsIds::ZoneCountID));
+                data.showSpacing = json.GetNamedBoolean(NonLocalizable::DefaultLayoutsIds::ShowSpacingID, DefaultValues::ShowSpacing);
+                data.spacing = static_cast<int>(json.GetNamedNumber(NonLocalizable::DefaultLayoutsIds::SpacingID, DefaultValues::Spacing));
+                data.zoneCount = static_cast<int>(json.GetNamedNumber(NonLocalizable::DefaultLayoutsIds::ZoneCountID, DefaultValues::ZoneCount));
                 data.sensitivityRadius = static_cast<int>(json.GetNamedNumber(NonLocalizable::DefaultLayoutsIds::SensitivityRadiusID, DefaultValues::SensitivityRadius));
 
                 return data;
@@ -89,7 +93,7 @@ namespace JsonUtils
                 DefaultLayoutJSON result;
 
                 auto type = TypeFromString(std::wstring{ json.GetNamedString(NonLocalizable::DefaultLayoutsIds::MonitorConfigurationTypeID) });
-                auto layout = JsonUtils::LayoutJSON::FromJson(json.GetNamedObject(NonLocalizable::DefaultLayoutsIds::LayoutID));
+                auto layout = DefaultLayoutsJsonUtils::LayoutJSON::FromJson(json.GetNamedObject(NonLocalizable::DefaultLayoutsIds::LayoutID));
                 if (!layout.has_value())
                 {
                     return std::nullopt;
@@ -148,7 +152,7 @@ void DefaultLayouts::LoadData()
     {
         if (data)
         {
-            m_layouts = JsonUtils::ParseJson(data.value());
+            m_layouts = DefaultLayoutsJsonUtils::ParseJson(data.value());
         }
         else
         {
