@@ -418,7 +418,7 @@ namespace Settings.UI.Library
         }
 
         /// <summary>
-        /// Method <c>GetLatestSettingsFileName</c> returns the name of the newest backup file.
+        /// Method <c>GetLatestBackupFileName</c> returns the name of the newest backup file.
         /// </summary>
         public static string GetLatestBackupFileName()
         {
@@ -676,6 +676,12 @@ namespace Settings.UI.Library
             }
         }
 
+        /// <summary>
+        /// Searches for the config file (Json) in two possible paths and returns its content.
+        /// </summary>
+        /// <returns>Returns the content of the config file (Json) as string.</returns>
+        /// <exception cref="FileNotFoundException">Thrown if file is not found.</exception>
+        /// <remarks>If the settings window is launched from an installed instance of PT we need the path "...\Settings\\backup_restore_settings.json" and if the settings window is launched from a local VS build of PT we need the path "...\backup_restore_settings.json".</remarks>
         private static string GetBackupRestoreSettingsJson()
         {
             if (File.Exists("backup_restore_settings.json"))
