@@ -14,3 +14,13 @@ struct Layout
     int zoneCount = DefaultValues::ZoneCount;
     int sensitivityRadius = DefaultValues::SensitivityRadius;
 };
+
+inline bool operator==(const Layout& lhs, const Layout& rhs) 
+{
+    return lhs.uuid == rhs.uuid &&
+           lhs.type == rhs.type &&
+           lhs.showSpacing == rhs.showSpacing &&
+           lhs.spacing == rhs.spacing &&
+           lhs.zoneCount == rhs.zoneCount &&
+           lhs.sensitivityRadius == rhs.sensitivityRadius;
+}
