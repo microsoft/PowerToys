@@ -280,7 +280,7 @@
                                                 <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
 
-                                            <TextBox Grid.Row="0" Grid.Column="1" Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}" IsEnabled="True" IsReadOnly="True" />
+                                            <TextBox Grid.Row="0" Grid.Column="1" Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}" IsEnabled="True" IsReadOnly="True" MinWidth="350" />
                                             <Button Grid.Row="0" Grid.Column="2" x:Uid="General_SettingsBackupAndRestore_ButtonSelectLocation"
                                         Command="{Binding SelectSettingBackupDirEventHandler}"
                                         IsEnabled="True"
