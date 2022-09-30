@@ -362,14 +362,15 @@
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
                 </controls:SettingsGroup>
-                <!-- End General_SettingsBackupAndRestore -->
-                
+
                 <InfoBar x:Uid="General_SettingsBackupMessageResults"
                                   IsClosable="False"
                                   Severity="{Binding BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}"                         
                                   IsTabStop="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
                                   IsOpen="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"                                  
                                   Title="{Binding SettingsBackupMessage}"/>
+                <!-- End General_SettingsBackupAndRestore -->
+                
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>

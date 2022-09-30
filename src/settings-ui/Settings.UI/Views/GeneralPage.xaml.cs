@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 this.DispatcherQueue.TryEnqueue(async () =>
                 {
-                    const int messageShowTimeIs = 5000;
+                    const int messageShowTimeIs = 10000;
 
                     // in order to keep the message for about 5 seconds after the last call
                     // and not need any lock/thread-synch, use an OK-To-Hide time, and wait just a little longer than that.

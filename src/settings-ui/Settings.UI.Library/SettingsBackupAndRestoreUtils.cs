@@ -5,7 +5,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -15,7 +14,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows.Forms;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Settings.UI.Library
