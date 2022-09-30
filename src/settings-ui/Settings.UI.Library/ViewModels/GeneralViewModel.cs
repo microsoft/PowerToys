@@ -481,30 +481,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public string LastSettingsRestoreDate
-        {
-            get
-            {
-                var date = SettingsBackupAndRestoreUtils.GetRegSettingsBackupAndRestoreRegItem("LastSettingsRestoreDate");
-                if (date != null)
-                {
-                    if (DateTime.TryParse(date, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var theDateTime))
-                    {
-                        return theDateTime.ToString("G", CultureInfo.CurrentCulture);
-                    }
-                    else
-                    {
-                        Logger.LogError("Failed to parse time from backup");
-                        return GetResourceString("BackupAndRestore_FailedToParseTime");
-                    }
-                }
-                else
-                {
-                    return GetResourceString("BackupAndRestore_NeverRestored");
-                }
-            }
-        }
-
         public UpdatingSettings.UpdatingState PowerToysUpdatingState
         {
             get
