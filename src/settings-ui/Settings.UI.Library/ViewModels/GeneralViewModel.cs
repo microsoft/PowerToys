@@ -653,12 +653,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
                     SettingsBackupAndRestoreDir = dialog.SelectedPath;
-                    SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreItem("SettingsBackupAndRestoreDir", dialog.SelectedPath);
-                    NotifyPropertyChanged(nameof(SettingsBackupAndRestoreDir));
-                    NotifyPropertyChanged(nameof(LastSettingsBackupDate));
-                    NotifyPropertyChanged(nameof(CurrentSettingMatchText));
-                    NotifyPropertyChanged(nameof(LastSettingsBackupSource));
-                    NotifyPropertyChanged(nameof(LastSettingsBackupFileName));
+                    _ = SettingsBackupAndRestoreDir;
                 }
             }
         }
@@ -686,6 +681,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 NotifyPropertyChanged(nameof(SettingsBackupMessage));
                 NotifyPropertyChanged(nameof(BackupRestoreMessageSeverity));
                 NotifyPropertyChanged(nameof(SettingsBackupRestoreMessageVisible));
+                NotifyPropertyChanged(nameof(CurrentSettingMatchText));
 
                 HideBackupAndRestoreMessageAreaAction();
             }
@@ -719,6 +715,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             NotifyPropertyChanged(nameof(LastSettingsBackupDate));
             NotifyPropertyChanged(nameof(LastSettingsBackupSource));
+            NotifyPropertyChanged(nameof(LastSettingsBackupFileName));
             NotifyPropertyChanged(nameof(CurrentSettingMatchText));
             NotifyPropertyChanged(nameof(SettingsBackupMessage));
             NotifyPropertyChanged(nameof(BackupRestoreMessageSeverity));

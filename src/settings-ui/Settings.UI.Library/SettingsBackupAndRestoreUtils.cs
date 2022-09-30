@@ -194,11 +194,17 @@ namespace Settings.UI.Library
         /// </summary>
         public static void SetRegSettingsBackupAndRestoreItem(string itemName, string itemValue)
         {
-            using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\PowerToys", true))
+            using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Microsoft", true))
             {
-                if (key != null)
+                var ptKey = key.OpenSubKey("PowerToys", true);
+                if (ptKey != null)
                 {
-                    key.SetValue(itemName, itemValue);
+                    ptKey.SetValue(itemName, itemValue);
+                }
+                else
+                {
+                    var newPtKey = key.CreateSubKey("PowerToys");
+                    newPtKey.SetValue(itemName, itemValue);
                 }
             }
         }
