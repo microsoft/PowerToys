@@ -7,8 +7,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <StackPanel x:Name="stackPanel" Orientation="Vertical" VerticalAlignment="Center"/>
-    </ScrollViewer>
-
+    <StackPanel Orientation="Vertical">
+        <Grid>
+            <Button Margin="8,8,8,0" Click="onRefreshClick" HorizontalAlignment="Right">Refresh</Button>
+        </Grid>
+        
+        <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StackPanel x:Name="stackPanel" Orientation="Vertical"/>
+        </ScrollViewer>
+    </StackPanel>
+    
 </Window>
