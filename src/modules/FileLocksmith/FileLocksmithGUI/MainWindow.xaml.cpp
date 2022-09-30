@@ -37,6 +37,8 @@ namespace winrt::FileLocksmithGUI::implementation
 {
     MainWindow::MainWindow()
     {
+        m_paths = ipc::read_paths_from_stdin();
+        
         Title(L"File Locksmith");
 
         // Set up theme
@@ -48,6 +50,11 @@ namespace winrt::FileLocksmithGUI::implementation
         place_and_resize();
         InitializeComponent();
         
+        start_finding_processes();
+    }
+
+    void MainWindow::start_finding_processes()
+    {
         std::thread([&] {
             find_processes();
         }).detach();
@@ -57,8 +64,7 @@ namespace winrt::FileLocksmithGUI::implementation
 
     void MainWindow::find_processes()
     {
-        auto paths = ipc::read_paths_from_stdin();
-        auto process_info = find_processes_recursive(paths);
+        auto process_info = find_processes_recursive(m_paths);
 
         // Show results using the UI thread
         DispatcherQueue().TryEnqueue([&, process_info = std::move(process_info)] {
@@ -152,9 +158,12 @@ namespace winrt::FileLocksmithGUI::implementation
 
     void MainWindow::display_progress_ring()
     {
+        stackPanel().Children().Clear();
+
         Controls::ProgressRing ring;
         ring.Width(64);
         ring.Height(64);
+        ring.Margin(Thickness{ .Top = 16 });
         ring.IsIndeterminate(true);
 
         stackPanel().Children().Append(ring);
@@ -195,5 +204,10 @@ namespace winrt::FileLocksmithGUI::implementation
                 }
             });
         }
+    }
+    
+    void MainWindow::onRefreshClick(Windows::Foundation::IInspectable const&, RoutedEventArgs const&)
+    {
+        start_finding_processes();
     }
 }

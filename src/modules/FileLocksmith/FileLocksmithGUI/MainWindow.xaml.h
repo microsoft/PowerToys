@@ -8,7 +8,9 @@ namespace winrt::FileLocksmithGUI::implementation
     struct MainWindow : MainWindowT<MainWindow>
     {
         MainWindow();
+        void onRefreshClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
     private:
+        void start_finding_processes();
         void find_processes();
         void find_native_handle();
         void place_and_resize();
@@ -17,6 +19,7 @@ namespace winrt::FileLocksmithGUI::implementation
         void watch_process(DWORD pid);
 
         HWND m_native_handle = NULL;
+        std::vector<std::wstring> m_paths;
     };
 }
 
