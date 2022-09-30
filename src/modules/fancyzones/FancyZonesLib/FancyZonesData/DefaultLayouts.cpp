@@ -170,13 +170,5 @@ Layout DefaultLayouts::GetDefaultLayout(MonitorConfiguraionType type) const noex
         return iter->second;
     }
 
-    // fallback
-    return Layout{
-        .uuid = GUID_NULL,
-        .type = FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid,
-        .showSpacing = DefaultValues::ShowSpacing,
-        .spacing = DefaultValues::Spacing,
-        .zoneCount = DefaultValues::ZoneCount,
-        .sensitivityRadius = DefaultValues::SensitivityRadius
-    };
+    return Layout{};
 }
