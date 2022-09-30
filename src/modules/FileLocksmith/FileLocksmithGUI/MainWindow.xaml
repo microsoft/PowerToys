@@ -7,7 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <ScrollViewer>
-        <StackPanel x:Name="stackPanel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <StackPanel x:Name="stackPanel" Orientation="Vertical" VerticalAlignment="Center"/>
     </ScrollViewer>
+
 </Window>
