@@ -409,8 +409,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                     if (results.success)
                     {
-                        // if true, it means a backup would have been made
-                        return GetResourceString("BackupAndRestore_CurrentSettingsDiffer"); // "Current Settings Differ";
+                        if (results.lastBackupExists)
+                        {
+                            // if true, it means a backup would have been made
+                            return GetResourceString("BackupAndRestore_CurrentSettingsDiffer"); // "Current Settings Differ";
+                        }
+                        else
+                        {
+                            // would have done the backup, but there also was not an existing one there.
+                            return GetResourceString("BackupAndRestore_NoBackupFound");
+                        }
                     }
                     else
                     {
@@ -476,8 +484,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                var fileName = SettingsBackupAndRestoreUtils.GetLatestBackupFileName();
-                return !string.IsNullOrEmpty(fileName) ? fileName : GetResourceString("BackupAndRestore_NoBackupFound");
+                try
+                {
+                    var fileName = SettingsBackupAndRestoreUtils.GetLatestBackupFileName();
+                    return !string.IsNullOrEmpty(fileName) ? fileName : GetResourceString("BackupAndRestore_NoBackupFound");
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError("Error getting LastSettingsBackupFileName", e);
+                    return string.Empty;
+                }
             }
         }
 

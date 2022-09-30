@@ -144,7 +144,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Method <c>BackupSettings</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.BackupSettings
         /// </summary>
-        public static (bool success, string message, string severity) BackupSettings()
+        public static (bool success, string message, string severity, bool lastBackupExists) BackupSettings()
         {
             var settingsUtils = new SettingsUtils();
             var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
