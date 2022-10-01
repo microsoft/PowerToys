@@ -51,6 +51,7 @@
 
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.Template.xaml</DefaultItemExcludes>
+    <Authors>Microsoft Corporation</Authors>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="**/*.Template.xaml" />

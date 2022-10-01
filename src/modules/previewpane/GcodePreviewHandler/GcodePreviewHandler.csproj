@@ -27,6 +27,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <EnableComHosting>true</EnableComHosting>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
+    <Authors>Microsoft Corporation</Authors>
   </PropertyGroup>
   
   <Import Project="..\..\..\Version.props" />

@@ -27,6 +27,7 @@
     <EnableComHosting>true</EnableComHosting>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
     <AssemblyName>PowerToys.MarkdownPreviewHandler</AssemblyName>
+    <Authors>Microsoft Corporation</Authors>
   </PropertyGroup>
   
   <Import Project="..\..\..\Version.props" />

@@ -15,6 +15,7 @@
     <Company>Microsoft Corporation</Company>
     <Version>$(Version).0</Version>
     <ApplicationIcon>Images\Awake.ico</ApplicationIcon>
+    <Authors>Microsoft Corporation</Authors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

@@ -48,6 +48,7 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>PowerToys.FancyZonesEditor</AssemblyName>
+    <Authors>Microsoft Corporation</Authors>
   </PropertyGroup>
  
   <ItemGroup>

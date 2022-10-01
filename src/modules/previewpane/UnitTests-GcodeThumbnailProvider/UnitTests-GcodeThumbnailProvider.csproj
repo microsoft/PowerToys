@@ -23,6 +23,7 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
+    <Authors>Microsoft Corporation</Authors>
   </PropertyGroup>
 
   <Import Project="..\..\..\Version.props" />

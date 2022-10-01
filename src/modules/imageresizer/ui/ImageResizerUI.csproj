@@ -28,6 +28,7 @@
   <PropertyGroup>
     <ApplicationIcon>Resources\ImageResizer.ico</ApplicationIcon>
     <NeutralLanguage>en-US</NeutralLanguage>
+    <Authors>Microsoft Corporation</Authors>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

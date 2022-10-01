@@ -45,6 +45,7 @@
     <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
     <NeutralLanguage>en-US</NeutralLanguage>
     <ApplicationManifest>App.manifest</ApplicationManifest>
+    <Authors>Microsoft Corporation</Authors>
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="Shaders\GridShader.cso" />
