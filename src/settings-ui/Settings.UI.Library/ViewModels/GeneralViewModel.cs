@@ -404,7 +404,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     var settingsUtils = new SettingsUtils();
                     var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
                     string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
-
                     var results = SettingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);
 
                     if (results.success)

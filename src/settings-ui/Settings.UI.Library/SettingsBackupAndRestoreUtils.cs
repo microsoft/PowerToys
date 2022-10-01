@@ -351,6 +351,11 @@ namespace Settings.UI.Library
             return settingsBackupAndRestoreDir;
         }
 
+        private static IList<string> GetBackupSettingsFiles(string settingsBackupAndRestoreDir)
+        {
+            return Directory.GetFiles(settingsBackupAndRestoreDir, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19}).ptb")).ToList();
+        }
+
         /// <summary>
         /// Method <c>GetLatestSettingsFolder</c> returns a folder that has the latest backup in it.
         /// </summary>
@@ -371,9 +376,10 @@ namespace Settings.UI.Library
                 return null;
             }
 
-            var settingsBackupFolders = Directory.GetDirectories(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture));
+            // var settingsBackupFolders = Directory.GetDirectories(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture));
+            var settingsBackupFolders = new Dictionary<long, string>();
 
-            var settingsBackupFiles = Directory.GetFiles(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
+            var settingsBackupFiles = GetBackupSettingsFiles(settingsBackupAndRestoreDir).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
 
             var latestFolder = 0L;
             var latestFile = 0L;
@@ -434,14 +440,9 @@ namespace Settings.UI.Library
                 return string.Empty;
             }
 
-            var settingsBackupFolders = Directory.EnumerateDirectories(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList();
-            var settingsBackupFiles = Directory.EnumerateFiles(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList();
+            var settingsBackupFiles = GetBackupSettingsFiles(settingsBackupAndRestoreDir);
 
-            if (settingsBackupFolders.Count > 0)
-            {
-                return Path.GetFileName(settingsBackupFolders.OrderByDescending(x => x).First());
-            }
-            else if (settingsBackupFiles.Count > 0)
+            if (settingsBackupFiles.Count > 0)
             {
                 return Path.GetFileName(settingsBackupFiles.OrderByDescending(x => x).First());
             }
@@ -528,7 +529,6 @@ namespace Settings.UI.Library
             var sw = Stopwatch.StartNew();
             var results = BackupSettingsInternal(appBasePath, settingsBackupAndRestoreDir, dryRun);
             sw.Stop();
-
             Logger.LogInfo($"BackupSettings took {sw.ElapsedMilliseconds}");
             return results;
         }
@@ -854,11 +854,11 @@ namespace Settings.UI.Library
         {
             DateTime deleteIfOlder = DateTime.UtcNow.Subtract(deleteIfOlderThanTs);
 
-            var settingsBackupFolders = Directory.GetDirectories(location, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture)).ToList();
+            var settingsBackupFolders = Directory.GetDirectories(location, "settings_*", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19})")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture)).ToList();
 
-            settingsBackupFolders.AddRange(Directory.GetDirectories(location, "PowerToys_settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("PowerToys_settings_", string.Empty), CultureInfo.InvariantCulture)));
+            settingsBackupFolders.AddRange(Directory.GetDirectories(location, "PowerToys_settings_*", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "PowerToys_settings_(\\d{1,19})")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("PowerToys_settings_", string.Empty), CultureInfo.InvariantCulture)));
 
-            var settingsBackupFiles = Directory.GetFiles(location, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
+            var settingsBackupFiles = Directory.GetFiles(location, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19}).ptb")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
 
             if (settingsBackupFolders.Count + settingsBackupFiles.Count <= minNumberToKeep)
             {
