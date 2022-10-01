@@ -146,11 +146,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         public static (bool success, string message, string severity, bool lastBackupExists) BackupSettings()
         {
+            var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
             var settingsUtils = new SettingsUtils();
             var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
-            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
+            string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtilsX.GetSettingsBackupAndRestoreDir();
 
-            return SettingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir, false);
+            return settingsBackupAndRestoreUtilsX.BackupSettings(appBasePath, settingsBackupAndRestoreDir, false);
         }
 
         /// <summary>
@@ -158,11 +159,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         public static (bool success, string message, string severity) RestoreSettings()
         {
+            var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
             var settingsUtils = new SettingsUtils();
             var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
-            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
-
-            return SettingsBackupAndRestoreUtils.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
+            string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtilsX.GetSettingsBackupAndRestoreDir();
+            return settingsBackupAndRestoreUtilsX.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
         }
     }
 }

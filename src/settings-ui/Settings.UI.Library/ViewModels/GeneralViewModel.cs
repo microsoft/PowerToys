@@ -56,6 +56,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private IFileSystemWatcher _fileWatcher;
 
+        private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
+
         public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, object resourceLoader = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
@@ -283,12 +285,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
+                return settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
             }
 
             set
             {
-                if (SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir() != value)
+                if (settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir() != value)
                 {
                     SettingsBackupAndRestoreUtils.SetRegSettingsBackupAndRestoreItem("SettingsBackupAndRestoreDir", value);
                     NotifyPropertyChanged();
@@ -362,7 +364,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 try
                 {
-                    var manifest = SettingsBackupAndRestoreUtils.GetLatestSettingsBackupManifest();
+                    var manifest = settingsBackupAndRestoreUtils.GetLatestSettingsBackupManifest();
                     if (manifest != null)
                     {
                         if (manifest["CreateDateTime"] != null)
@@ -403,8 +405,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     var settingsUtils = new SettingsUtils();
                     var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
-                    string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
-                    var results = SettingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);
+                    string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
+                    var results = settingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);
 
                     if (results.success)
                     {
@@ -447,7 +449,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 try
                 {
-                    var manifest = SettingsBackupAndRestoreUtils.GetLatestSettingsBackupManifest();
+                    var manifest = settingsBackupAndRestoreUtils.GetLatestSettingsBackupManifest();
                     if (manifest != null)
                     {
                         if (manifest["BackupSource"] != null)
@@ -485,7 +487,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 try
                 {
-                    var fileName = SettingsBackupAndRestoreUtils.GetLatestBackupFileName();
+                    var fileName = settingsBackupAndRestoreUtils.GetLatestBackupFileName();
                     return !string.IsNullOrEmpty(fileName) ? fileName : GetResourceString("BackupAndRestore_NoBackupFound");
                 }
                 catch (Exception e)
@@ -633,7 +635,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                var currentDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
+                var currentDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
                 if (!string.IsNullOrEmpty(currentDir) && Directory.Exists(currentDir))
                 {
@@ -656,7 +658,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         /// </summary>
         private void RestoreConfigsClick()
         {
-            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
+            string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
             if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
             {
@@ -693,7 +695,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         /// </summary>
         private void BackupConfigsClick()
         {
-            string settingsBackupAndRestoreDir = SettingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
+            string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
             if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
             {

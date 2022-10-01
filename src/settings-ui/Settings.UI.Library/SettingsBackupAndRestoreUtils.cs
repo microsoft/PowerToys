@@ -21,6 +21,28 @@ namespace Settings.UI.Library
 {
     public class SettingsBackupAndRestoreUtils
     {
+        private static SettingsBackupAndRestoreUtils instance;
+
+        public DateTime LastBackupStartTime { get; set; }
+
+        private SettingsBackupAndRestoreUtils()
+        {
+            LastBackupStartTime = DateTime.MinValue;
+        }
+
+        public static SettingsBackupAndRestoreUtils Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new SettingsBackupAndRestoreUtils();
+                }
+
+                return instance;
+            }
+        }
+
         private class JsonMergeHelper
         {
             // mostly from https://stackoverflow.com/questions/58694837/system-text-json-merge-two-objects
@@ -237,7 +259,7 @@ namespace Settings.UI.Library
         /// A tuple that indicates if the backup was done or not, and a message.
         /// The message usually is a localized reference key.
         /// </returns>
-        public static (bool success, string message, string severity) RestoreSettings(string appBasePath, string settingsBackupAndRestoreDir)
+        public (bool success, string message, string severity) RestoreSettings(string appBasePath, string settingsBackupAndRestoreDir)
         {
             try
             {
@@ -340,7 +362,7 @@ namespace Settings.UI.Library
         /// <remarks>
         /// This will return a default location based on Environment Variables if non is set.
         /// </remarks>
-        public static string GetSettingsBackupAndRestoreDir()
+        public string GetSettingsBackupAndRestoreDir()
         {
             string settingsBackupAndRestoreDir = GetRegSettingsBackupAndRestoreRegItem("SettingsBackupAndRestoreDir");
             if (settingsBackupAndRestoreDir == null)
@@ -351,7 +373,7 @@ namespace Settings.UI.Library
             return settingsBackupAndRestoreDir;
         }
 
-        private static IList<string> GetBackupSettingsFiles(string settingsBackupAndRestoreDir)
+        private IList<string> GetBackupSettingsFiles(string settingsBackupAndRestoreDir)
         {
             return Directory.GetFiles(settingsBackupAndRestoreDir, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19}).ptb")).ToList();
         }
@@ -362,7 +384,7 @@ namespace Settings.UI.Library
         /// <remarks>
         /// The backup will usually be a backup file that has to be extracted to a temp folder. This will do that for us.
         /// </remarks>
-        private static string GetLatestSettingsFolder()
+        private string GetLatestSettingsFolder()
         {
             string settingsBackupAndRestoreDir = GetSettingsBackupAndRestoreDir();
 
@@ -431,7 +453,7 @@ namespace Settings.UI.Library
         /// <summary>
         /// Method <c>GetLatestBackupFileName</c> returns the name of the newest backup file.
         /// </summary>
-        public static string GetLatestBackupFileName()
+        public string GetLatestBackupFileName()
         {
             string settingsBackupAndRestoreDir = GetSettingsBackupAndRestoreDir();
 
@@ -455,7 +477,7 @@ namespace Settings.UI.Library
         /// <summary>
         /// Method <c>GetLatestSettingsBackupManifest</c> get's the meta data from a backup file.
         /// </summary>
-        public static JsonNode GetLatestSettingsBackupManifest()
+        public JsonNode GetLatestSettingsBackupManifest()
         {
             var folder = GetLatestSettingsFolder();
             if (folder == null)
@@ -524,7 +546,7 @@ namespace Settings.UI.Library
         /// <remarks>
         /// This is a wrapper for BackupSettingsInternal, so we can check the time to run.
         /// </remarks>
-        public static (bool success, string message, string severity, bool lastBackupExists) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
+        public (bool success, string message, string severity, bool lastBackupExists) BackupSettings(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
         {
             var sw = Stopwatch.StartNew();
             var results = BackupSettingsInternal(appBasePath, settingsBackupAndRestoreDir, dryRun);
@@ -540,7 +562,7 @@ namespace Settings.UI.Library
         /// A tuple that indicates if the backup was done or not, and a message.
         /// The message usually is a localized reference key.
         /// </returns>
-        private static (bool success, string message, string severity, bool lastBackupExists) BackupSettingsInternal(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
+        private (bool success, string message, string severity, bool lastBackupExists) BackupSettingsInternal(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
         {
             var lastBackupExists = false;
 
