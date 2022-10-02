@@ -9,7 +9,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Interop
 {
     /// <summary>
     /// Interface for accessing Virtual Desktop Manager.
-    /// Code used from <see href="https://docs.microsoft.com/en-us/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10"./>
+    /// Code used from <see href="https://learn.microsoft.com/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10"./>
     /// </summary>
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]

@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
     {
         /// <summary>
         /// Return a list with all context menu entries for the given <see cref="Result"/>
-        /// <para>Symbols taken from <see href="https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font"/></para>
+        /// <para>Symbols taken from <see href="https://learn.microsoft.com/windows/uwp/design/style/segoe-ui-symbol-font"/></para>
         /// </summary>
         /// <param name="result">The result for the context menu entires</param>
         /// <param name="assemblyName">The name of the this assembly</param>

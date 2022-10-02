@@ -617,7 +617,7 @@ bool IgnoreKeyCode(DWORD key)
         return true;
     }
 
-    // As per docs: https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+    // As per docs: https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes
     // Undefined keys
     bool isUndefined = equals(key, 0x07) || in_range(key, 0x0E, 0x0F) || in_range(key, 0x3A, 0x40);
 

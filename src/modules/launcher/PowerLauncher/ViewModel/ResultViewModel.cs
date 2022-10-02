@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows.Input;
 using System.Windows.Media;
 using PowerLauncher.Helper;
@@ -282,7 +283,9 @@ namespace PowerLauncher.ViewModel
 
         public override string ToString()
         {
-            return Result.ToString();
+            // Using CurrentCulture since this is user facing
+            var contextMenuInfo = ContextMenuItems.Count > 0 ? string.Format(CultureInfo.CurrentCulture, "{0} {1}", ContextMenuItems.Count, Properties.Resources.ContextMenuItemsAvailable) : string.Empty;
+            return string.Format(CultureInfo.CurrentCulture, "{0}, {1}", Result.ToString(), contextMenuInfo);
         }
     }
 }

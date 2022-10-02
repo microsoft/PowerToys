@@ -67,6 +67,7 @@ namespace ColorPicker.ViewModels
 
             if (mouseInfoProvider != null)
             {
+                SetColorDetails(mouseInfoProvider.CurrentColor);
                 mouseInfoProvider.MouseColorChanged += Mouse_ColorChanged;
                 mouseInfoProvider.OnMouseDown += MouseInfoProvider_OnMouseDown;
                 mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
@@ -132,9 +133,7 @@ namespace ColorPicker.ViewModels
         /// <param name="color">The new <see cref="Color"/> under the mouse cursor</param>
         private void Mouse_ColorChanged(object sender, System.Drawing.Color color)
         {
-            ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
-            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value);
-            ColorName = ColorNameHelper.GetColorName(color);
+            SetColorDetails(color);
         }
 
         /// <summary>
@@ -170,6 +169,13 @@ namespace ColorPicker.ViewModels
         {
             var color = ((SolidColorBrush)ColorBrush).Color;
             return color.A + "|" + color.R + "|" + color.G + "|" + color.B;
+        }
+
+        private void SetColorDetails(System.Drawing.Color color)
+        {
+            ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
+            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value);
+            ColorName = ColorNameHelper.GetColorName(color);
         }
 
         /// <summary>
