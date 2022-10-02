@@ -137,7 +137,7 @@ namespace Hosts.Views
 
                 dialog.XamlRoot = XamlRoot;
                 dialog.Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style;
-                dialog.Title = resourceLoader.GetString("WarningDialog_WarningTitle");
+                dialog.Title = resourceLoader.GetString("WarningDialog_Title");
                 dialog.Content = new TextBlock
                 {
                     Text = resourceLoader.GetString("WarningDialog_Text"),

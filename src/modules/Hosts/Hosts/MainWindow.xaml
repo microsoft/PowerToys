@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:views="using:Hosts.Views"
     xmlns:winuiex="using:WinUIEx"
-    Width="640"
+    Width="680"
     MinWidth="480"
     MinHeight="320"
     mc:Ignorable="d">

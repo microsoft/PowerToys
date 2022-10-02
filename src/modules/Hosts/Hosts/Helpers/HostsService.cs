@@ -143,17 +143,17 @@ namespace Hosts.Helpers
                         lines.Add(lineBuilder.ToString().TrimEnd());
                     }
                 }
+            }
 
-                if (!string.IsNullOrWhiteSpace(additionalLines))
+            if (!string.IsNullOrWhiteSpace(additionalLines))
+            {
+                if (_userSettings.AdditionalLinesPosition == AdditionalLinesPosition.Top)
                 {
-                    if (_userSettings.AdditionalLinesPosition == AdditionalLinesPosition.Top)
-                    {
-                        lines.Insert(0, additionalLines);
-                    }
-                    else if (_userSettings.AdditionalLinesPosition == AdditionalLinesPosition.Bottom)
-                    {
-                        lines.Add(additionalLines);
-                    }
+                    lines.Insert(0, additionalLines);
+                }
+                else if (_userSettings.AdditionalLinesPosition == AdditionalLinesPosition.Bottom)
+                {
+                    lines.Add(additionalLines);
                 }
             }
 
@@ -162,7 +162,7 @@ namespace Hosts.Helpers
                 await _asyncLock.WaitAsync();
                 _fileSystemWatcher.EnableRaisingEvents = false;
 
-                if (!_backupDone)
+                if (!_backupDone && Exists())
                 {
                     _fileSystem.File.Copy(HostsFilePath, HostsFilePath + BackupSuffix + DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture));
                     _backupDone = true;
