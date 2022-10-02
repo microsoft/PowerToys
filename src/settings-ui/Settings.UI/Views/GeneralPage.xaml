@@ -294,6 +294,9 @@
 
                                 <controls:Setting x:Uid="General_SettingsBackupAndRestoreStatusInfo" Visibility="Visible" Style="{StaticResource ExpanderContentSettingStyle}"/>
                                 <StackPanel>
+
+
+
                                     <Grid Padding="55,0,10,10">
                                         <Grid.Resources >
                                             <Style TargetType="Border" >
@@ -329,10 +332,17 @@
                                             </TextBlock>
                                         </Border>
                                         <Border Grid.Row="1" Grid.Column="1">
-
-                                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Style="{StaticResource SecondaryTextStyle}">                                                
                                                 <Run Text="{Binding CurrentSettingMatchText, Mode=OneWay}"/>
-                                            </TextBlock>
+                                                </TextBlock>
+
+
+                                                <TextBlock Padding="10,0,0,0" Style="{StaticResource SecondaryTextStyle}"><Hyperlink Click="UpdateBackupAndRestoreStatusText2" TextDecorations="Underline">
+                                                    <Run x:Uid="General_SettingsBackupAndRestore_LinkRefresh" />
+                                                </Hyperlink></TextBlock>
+                     
+                                            </StackPanel>
                                         </Border>
 
                                         <Border Grid.Row="2" Grid.Column="0">
@@ -370,7 +380,7 @@
                                   IsOpen="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"                                  
                                   Title="{Binding SettingsBackupMessage}"/>
                 <!-- End General_SettingsBackupAndRestore -->
-                
+
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>

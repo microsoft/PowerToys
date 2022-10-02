@@ -3,11 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Settings.UI.Library;
 using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -61,6 +65,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 });
             };
 
+            Action doBackupAndRestoreDryrun = () =>
+            {
+                Task.Run(() =>
+                {
+                    var settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
+                    var results = settingsBackupAndRestoreUtils.DryRunBackup();
+                    this.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        ViewModel.NotifyAllBackupAndRestoreProperties();
+                    });
+                });
+            };
+
             ViewModel = new GeneralViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 loader.GetString("GeneralSettings_RunningAsAdminText"),
@@ -74,9 +91,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 string.Empty,
                 stateUpdatingAction,
                 hideBackupAndRestoreMessageArea,
+                doBackupAndRestoreDryrun,
                 loader);
 
             DataContext = ViewModel;
+
+            doBackupAndRestoreDryrun();
         }
 
         public static int UpdateUIThemeMethod(string themeName)
@@ -104,6 +124,45 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void OpenColorsSettings_Click(object sender, RoutedEventArgs e)
         {
             Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
+        }
+
+        private void Hyperlink_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            Task.Run(() =>
+            {
+                var settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
+                var results = settingsBackupAndRestoreUtils.DryRunBackup();
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ViewModel.NotifyAllBackupAndRestoreProperties();
+                });
+            });
+        }
+
+        private void UpdateBackupAndRestoreStatusText(object sender, RoutedEventArgs e)
+        {
+            Task.Run(() =>
+            {
+                var settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
+                var results = settingsBackupAndRestoreUtils.DryRunBackup();
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ViewModel.NotifyAllBackupAndRestoreProperties();
+                });
+            });
+        }
+
+        private void UpdateBackupAndRestoreStatusText2(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            Task.Run(() =>
+            {
+                var settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
+                var results = settingsBackupAndRestoreUtils.DryRunBackup();
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ViewModel.NotifyAllBackupAndRestoreProperties();
+                });
+            });
         }
     }
 }

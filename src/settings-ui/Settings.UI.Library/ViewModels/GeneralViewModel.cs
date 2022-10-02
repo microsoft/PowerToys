@@ -10,6 +10,7 @@ using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -30,9 +31,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private Action HideBackupAndRestoreMessageAreaAction { get; set; }
 
+        private Action DoBackupAndRestoreDryRun { get; set; }
+
         public ButtonClickCommand BackupConfigsEventHandler { get; set; }
 
         public ButtonClickCommand RestoreConfigsEventHandler { get; set; }
+
+        public ButtonClickCommand RefreshBackupStatusEventHandler { get; set; }
 
         public ButtonClickCommand SelectSettingBackupDirEventHandler { get; set; }
 
@@ -58,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, object resourceLoader = null)
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action doBackupAndRestoreDryRun = null, object resourceLoader = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
@@ -66,7 +71,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             BackupConfigsEventHandler = new ButtonClickCommand(BackupConfigsClick);
             SelectSettingBackupDirEventHandler = new ButtonClickCommand(SelectSettingBackupDir);
             RestoreConfigsEventHandler = new ButtonClickCommand(RestoreConfigsClick);
+            RefreshBackupStatusEventHandler = new ButtonClickCommand(RefreshBackupStatusEventHandlerClick);
             HideBackupAndRestoreMessageAreaAction = hideBackupAndRestoreMessageAreaAction;
+            DoBackupAndRestoreDryRun = doBackupAndRestoreDryRun;
 
             ResourceLoader = resourceLoader;
 
@@ -403,36 +410,45 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 try
                 {
-                    var settingsUtils = new SettingsUtils();
-                    var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
-                    string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
-                    var results = settingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);
+                    var results = settingsBackupAndRestoreUtils.GetLastBackupSettingsResults();
 
-                    if (results.success)
+                    var resultText = string.Empty;
+
+                    if (!results.lastRan.HasValue)
                     {
-                        if (results.lastBackupExists)
-                        {
-                            // if true, it means a backup would have been made
-                            return GetResourceString("BackupAndRestore_CurrentSettingsDiffer"); // "Current Settings Differ";
-                        }
-                        else
-                        {
-                            // would have done the backup, but there also was not an existing one there.
-                            return GetResourceString("BackupAndRestore_NoBackupFound");
-                        }
+                        // not ran since started.
+                        return GetResourceString("BackupAndRestore_CurrentSettingsNoChecked"); // "Current Settings Unknown";
                     }
                     else
                     {
-                        if (results.severity.Equals("Error", StringComparison.OrdinalIgnoreCase))
+                        if (results.success)
                         {
-                            // if false and error we don't really know
-                            return GetResourceString("BackupAndRestore_CurrentSettingsUnknown"); // "Current Settings Unknown";
+                            if (results.lastBackupExists)
+                            {
+                                // if true, it means a backup would have been made
+                                resultText = GetResourceString("BackupAndRestore_CurrentSettingsDiffer"); // "Current Settings Differ";
+                            }
+                            else
+                            {
+                                // would have done the backup, but there also was not an existing one there.
+                                resultText = GetResourceString("BackupAndRestore_NoBackupFound");
+                            }
                         }
                         else
                         {
-                            // if false, it means a backup would not have been needed/made
-                            return GetResourceString("BackupAndRestore_CurrentSettingsMatch"); // "Current Settings Match";
+                            if (results.hadError)
+                            {
+                                // if false and error we don't really know
+                                resultText = GetResourceString("BackupAndRestore_CurrentSettingsUnknown"); // "Current Settings Unknown";
+                            }
+                            else
+                            {
+                                // if false, it means a backup would not have been needed/made
+                                resultText = GetResourceString("BackupAndRestore_CurrentSettingsMatch"); // "Current Settings Match";
+                            }
                         }
+
+                        return $"{resultText} {GetResourceString("BackupAndRestore_CurrentSettingsStatusAt")} {results.lastRan.Value.ToString("G", CultureInfo.CurrentCulture)}";
                     }
                 }
                 catch (Exception e)
@@ -615,11 +631,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             SendConfigMSG(outsettings.ToString());
 
+            /*
             if (!propertyName.Equals(nameof(CurrentSettingMatchText), StringComparison.Ordinal))
             {
                 NotifyPropertyChanged(nameof(CurrentSettingMatchText));
                 OnPropertyChanged(nameof(CurrentSettingMatchText));
             }
+            */
         }
 
         /// <summary>
@@ -653,8 +671,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        private void RefreshBackupStatusEventHandlerClick()
+        {
+            DoBackupAndRestoreDryRun();
+        }
+
         /// <summary>
-        /// Class <c>RestoreConfigsClick</c> starts the restore.
+        /// Method <c>RestoreConfigsClick</c> starts the restore.
         /// </summary>
         private void RestoreConfigsClick()
         {
@@ -691,7 +714,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         }
 
         /// <summary>
-        /// Class <c>BackupConfigsClick</c> starts the backup.
+        /// Method <c>BackupConfigsClick</c> starts the backup.
         /// </summary>
         private void BackupConfigsClick()
         {
@@ -708,6 +731,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _backupRestoreMessageSeverity = results.severity;
             _settingsBackupMessage = GetResourceString(results.message);
 
+            // now we do a dry run to get the results for "setting match"
+            var settingsUtils = new SettingsUtils();
+            var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
+            settingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);
+
+            NotifyAllBackupAndRestoreProperties();
+
+            HideBackupAndRestoreMessageAreaAction();
+        }
+
+        public void NotifyAllBackupAndRestoreProperties()
+        {
             NotifyPropertyChanged(nameof(LastSettingsBackupDate));
             NotifyPropertyChanged(nameof(LastSettingsBackupSource));
             NotifyPropertyChanged(nameof(LastSettingsBackupFileName));
@@ -715,7 +750,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             NotifyPropertyChanged(nameof(SettingsBackupMessage));
             NotifyPropertyChanged(nameof(BackupRestoreMessageSeverity));
             NotifyPropertyChanged(nameof(SettingsBackupRestoreMessageVisible));
-            HideBackupAndRestoreMessageAreaAction();
         }
 
         // callback function to launch the URL to check for updates.
