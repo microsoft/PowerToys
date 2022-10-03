@@ -166,7 +166,7 @@ In this release, we focused on stability and improvement.
 ### Development
 
 - Fixed a build error that was restricting developers to switch between configuration without first cleaning local build files.
-- C++ exception catches were corrected to be caught by reference to avoind unneccessary copy operations. Thanks [@NN---](https://github.com/NN---)!
+- C++ exception catches were corrected to be caught by reference to avoid unneccessary copy operations. Thanks [@NN---](https://github.com/NN---)!
 - General C# code clean up, format fixing and removal of unused code analysis suppressions.
 - Removed unneccessary `muxc` prefix from XAML files. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
 - Re-enabled tests on our pipeline that depend on WebView2.
