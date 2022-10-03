@@ -29,18 +29,16 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 - Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
 - Our installer will install the following items:
-   - [.NET 6.0.8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.8) or a newer 6.0.x runtime.
+   - [.NET 6.0.8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.8).
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
    - [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022) installer. This will install one of the latest versions available.
 
-### Via GitHub with EXE [Recommended]
+### Via GitHub with EXE (Recommended)
 
- [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture.  For most people, it is `x64`.
- 
- - **For x64 processors (most common):** [PowerToysSetup-0.62.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.62.0/PowerToysSetup-0.62.0-x64.exe)
- - **For ARM64 processors:** [PowerToysSetup-0.62.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.62.0/PowerToysSetup-0.62.0-arm64.exe)
+This is our preferred method. Click the appropriate link to download the installer that matches your machine's architecture. For most, it is `x64`.
 
-This is our preferred method.
+ - **For x64 processors (most common):** [PowerToysSetup-0.62.1-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.62.1/PowerToysSetup-0.62.1-x64.exe)
+ - **For ARM64 processors:** [PowerToysSetup-0.62.1-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.62.1/PowerToysSetup-0.62.1-arm64.exe)
 
 ### Via Microsoft Store
 
@@ -77,7 +75,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 In this release, we focused on releasing three new PowerToys.
 
-**Highlights**
+### Highlights
 
 - New utility: Screen Ruler is a quick and easy way to measure pixels on your screen.
 - New utility: Quick Accent is an easy way to write letters with accents. Thanks [@damienleroy](https://github.com/damienleroy)!
@@ -85,6 +83,7 @@ In this release, we focused on releasing three new PowerToys.
 - PowerToy Run ships with a new Plugin letting you search in past query results. Thanks [@jefflord](https://github.com/jefflord)!
 
 ### Known issues
+
 - The Text Extractor utility [fails to recognize text in some cases on ARM64 devices running Windows 10](https://github.com/microsoft/PowerToys/issues/20278).
 - After installing PowerToys, [the new Windows 11 context menu entries for PowerRename and Image Resizer might not appear before a system restart](https://github.com/microsoft/PowerToys/issues/19124).
 - There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
