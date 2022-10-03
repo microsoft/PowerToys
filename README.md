@@ -79,7 +79,7 @@ In this release, we focused on stability and improvement.
 **Highlights**
 
 - QuickAccent contains a new setting to select a language. This should reduce the number of accented characters a user needs to pick from. Thanks [@damienleroy](https://github.com/damienleroy)!
-- Reduced installer (125 MB in 0.62.1 compared to 83 MB in 0.63.0) and installed (817 MB in 0.62.1 compared to 587 MB in 0.63.0) sizes by sharing the Windows App SDK, VC++ redistributable and PowerToys Interop runtime files between utilities. This is a step towards removing the UAC requirement on install. The next step is shipping .NET self-contained and shared between utilities.
+- Reduced installer file size (83 MB for 0.63.0 compared to 125 MB for 0.62.1) and drive storage use (587 MB for 0.63.0 compared to 817 MB for 0.62.1) by sharing the Windows App SDK, VC++ redistributable and PowerToys Interop runtime files between utilities. This is a step towards removing the UAC requirement on install. The next step is shipping .NET self-contained and shared between utilities.
 
 ### Known issues
 
