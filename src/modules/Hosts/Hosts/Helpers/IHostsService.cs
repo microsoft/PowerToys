@@ -11,9 +11,7 @@ namespace Hosts.Helpers
 {
     public interface IHostsService : IDisposable
     {
-        static string HostsFilePath { get; }
-
-        static string BackupSuffix { get; }
+        string HostsFilePath { get; }
 
         event EventHandler FileChanged;
 
@@ -22,5 +20,7 @@ namespace Hosts.Helpers
         Task<bool> WriteAsync(string additionalLines, IEnumerable<Entry> entries);
 
         Task<bool> PingAsync(string address);
+
+        void CleanupBackup();
     }
 }

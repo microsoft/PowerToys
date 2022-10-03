@@ -30,10 +30,7 @@ namespace Hosts.Tests
         [TestMethod]
         public void Hosts_Exists()
         {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { HostsService.HostsFilePath, new MockFileData(string.Empty) },
-            })
+            var fileSystem = new MockFileSystem
             {
                 FileSystemWatcher = new TestFileSystemWatcherFactory(),
             };
@@ -41,6 +38,7 @@ namespace Hosts.Tests
             var userSettings = new Mock<IUserSettings>();
 
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(string.Empty));
             var result = service.Exists();
 
             Assert.IsTrue(result);
@@ -78,10 +76,7 @@ namespace Hosts.Tests
 # 10.1.1.30 host30 host30.local # new entry
 ";
 
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { HostsService.HostsFilePath, new MockFileData(content) },
-            })
+            var fileSystem = new MockFileSystem
             {
                 FileSystemWatcher = new TestFileSystemWatcherFactory(),
             };
@@ -89,12 +84,13 @@ namespace Hosts.Tests
             var userSettings = new Mock<IUserSettings>();
 
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
             var (_, entries) = await service.ReadAsync();
             entries.Add(new Entry("10.1.1.30", "host30 host30.local", "new entry", false));
             await service.WriteAsync(string.Empty, entries);
 
-            var result = fileSystem.GetFile(HostsService.HostsFilePath);
+            var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
         }
 
@@ -110,10 +106,7 @@ namespace Hosts.Tests
 @"10.1.1.2 host2 host2.local # another comment
 ";
 
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { HostsService.HostsFilePath, new MockFileData(content) },
-            })
+            var fileSystem = new MockFileSystem
             {
                 FileSystemWatcher = new TestFileSystemWatcherFactory(),
             };
@@ -121,12 +114,13 @@ namespace Hosts.Tests
             var userSettings = new Mock<IUserSettings>();
 
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
             var (_, entries) = await service.ReadAsync();
             entries.RemoveAt(0);
             await service.WriteAsync(string.Empty, entries);
 
-            var result = fileSystem.GetFile(HostsService.HostsFilePath);
+            var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
         }
 
@@ -143,10 +137,7 @@ namespace Hosts.Tests
   10.1.1.2  host2 host2.local           # another comment
 ";
 
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { HostsService.HostsFilePath, new MockFileData(content) },
-            })
+            var fileSystem = new MockFileSystem
             {
                 FileSystemWatcher = new TestFileSystemWatcherFactory(),
             };
@@ -154,6 +145,7 @@ namespace Hosts.Tests
             var userSettings = new Mock<IUserSettings>();
 
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
             var (_, entries) = await service.ReadAsync();
             var entry = entries[0];
@@ -163,17 +155,14 @@ namespace Hosts.Tests
             entry.Active = false;
             await service.WriteAsync(string.Empty, entries);
 
-            var result = fileSystem.GetFile(HostsService.HostsFilePath);
+            var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
         }
 
         [TestMethod]
         public async Task Empty_Hosts()
         {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { HostsService.HostsFilePath, new MockFileData(string.Empty) },
-            })
+            var fileSystem = new MockFileSystem
             {
                 FileSystemWatcher = new TestFileSystemWatcherFactory(),
             };
@@ -181,9 +170,11 @@ namespace Hosts.Tests
             var userSettings = new Mock<IUserSettings>();
 
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(string.Empty));
+
             await service.WriteAsync(string.Empty, Enumerable.Empty<Entry>());
 
-            var result = fileSystem.GetFile(HostsService.HostsFilePath);
+            var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, string.Empty);
         }
 
@@ -206,10 +197,7 @@ namespace Hosts.Tests
 10.1.1.2 host2 host2.local # another comment
 ";
 
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { HostsService.HostsFilePath, new MockFileData(content) },
-            })
+            var fileSystem = new MockFileSystem
             {
                 FileSystemWatcher = new TestFileSystemWatcherFactory(),
             };
@@ -217,12 +205,13 @@ namespace Hosts.Tests
             var userSettings = new Mock<IUserSettings>();
             userSettings.Setup(m => m.AdditionalLinesPosition).Returns(AdditionalLinesPosition.Top);
 
-            var service = new Mock<HostsService>(fileSystem, userSettings.Object, _elevationHelper.Object);
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
-            var (additionalLines, entries) = await service.Object.ReadAsync();
-            await service.Object.WriteAsync(additionalLines, entries);
+            var (additionalLines, entries) = await service.ReadAsync();
+            await service.WriteAsync(additionalLines, entries);
 
-            var result = fileSystem.GetFile(HostsService.HostsFilePath);
+            var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
         }
 
@@ -245,10 +234,7 @@ namespace Hosts.Tests
 # footer
 ";
 
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { HostsService.HostsFilePath, new MockFileData(content) },
-            })
+            var fileSystem = new MockFileSystem
             {
                 FileSystemWatcher = new TestFileSystemWatcherFactory(),
             };
@@ -257,11 +243,12 @@ namespace Hosts.Tests
             userSettings.Setup(m => m.AdditionalLinesPosition).Returns(AdditionalLinesPosition.Bottom);
 
             var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
             var (additionalLines, entries) = await service.ReadAsync();
             await service.WriteAsync(additionalLines, entries);
 
-            var result = fileSystem.GetFile(HostsService.HostsFilePath);
+            var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
         }
     }

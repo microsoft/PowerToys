@@ -20,17 +20,18 @@ namespace Hosts.Helpers
 {
     public class HostsService : IHostsService, IDisposable
     {
-        private static SemaphoreSlim _asyncLock = new SemaphoreSlim(1, 1);
+        private const string _backupSuffix = $"_PowerToysBackup_";
+
+        private readonly SemaphoreSlim _asyncLock = new SemaphoreSlim(1, 1);
         private readonly IFileSystem _fileSystem;
         private readonly IUserSettings _userSettings;
         private readonly IElevationHelper _elevationHelper;
         private readonly IFileSystemWatcher _fileSystemWatcher;
+        private readonly string _hostsFilePath;
         private bool _backupDone;
         private bool _disposed;
 
-        public static string HostsFilePath { get; } = @"C:\Windows\System32\drivers\etc\hosts";
-
-        public static string BackupSuffix { get; } = $"_PowerToysBackup_";
+        public string HostsFilePath => _hostsFilePath;
 
         public event EventHandler FileChanged;
 
@@ -42,6 +43,8 @@ namespace Hosts.Helpers
             _fileSystem = fileSystem;
             _userSettings = userSettings;
             _elevationHelper = elevationHelper;
+
+            _hostsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\drivers\etc\hosts");
 
             _fileSystemWatcher = _fileSystem.FileSystemWatcher.CreateNew();
             _fileSystemWatcher.Path = _fileSystem.Path.GetDirectoryName(HostsFilePath);
@@ -164,7 +167,7 @@ namespace Hosts.Helpers
 
                 if (!_backupDone && Exists())
                 {
-                    _fileSystem.File.Copy(HostsFilePath, HostsFilePath + BackupSuffix + DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture));
+                    _fileSystem.File.Copy(HostsFilePath, HostsFilePath + _backupSuffix + DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture));
                     _backupDone = true;
                 }
 
@@ -196,6 +199,15 @@ namespace Hosts.Helpers
             {
                 return false;
             }
+        }
+
+        public void CleanupBackup()
+        {
+            Directory.GetFiles(Path.GetDirectoryName(HostsFilePath), $"*{_backupSuffix}*")
+                .Select(f => new FileInfo(f))
+                .Where(f => f.CreationTime < DateTime.Now.AddDays(-15))
+                .ToList()
+                .ForEach(f => f.Delete());
         }
 
         public void Dispose()

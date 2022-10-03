@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Threading;
 using Hosts.Helpers;
 using Hosts.Settings;
@@ -72,11 +70,7 @@ namespace Hosts
 
                 try
                 {
-                    Directory.GetFiles(Path.GetDirectoryName(HostsService.HostsFilePath), $"*{HostsService.BackupSuffix}*")
-                        .Select(f => new FileInfo(f))
-                        .Where(f => f.CreationTime < DateTime.Now.AddDays(-15))
-                        .ToList()
-                        .ForEach(f => f.Delete());
+                    GetService<IHostsService>().CleanupBackup();
                 }
                 catch (Exception ex)
                 {

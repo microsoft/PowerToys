@@ -119,5 +119,6 @@
   </resheader>
   <data name="Hosts_Name" xml:space="preserve">
     <value>Hosts File Editor</value>
+    <comment>"Hosts" refer to the system hosts file, do not loc</comment>
   </data>
 </root>

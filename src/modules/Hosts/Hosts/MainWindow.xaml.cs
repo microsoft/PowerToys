@@ -14,7 +14,6 @@ namespace Hosts
         public MainWindow()
         {
             InitializeComponent();
-            Title = "Hosts File Editor";
 
             if (AppWindowTitleBar.IsCustomizationSupported())
             {

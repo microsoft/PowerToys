@@ -143,18 +143,22 @@
   </data>
   <data name="Address.Header" xml:space="preserve">
     <value>Address</value>
+    <comment>"Address" refers to the IP address of the entry</comment>
   </data>
   <data name="AddressFilter.Header" xml:space="preserve">
     <value>Address</value>
+    <comment>"Address" refers to the IP address of the entry</comment>
   </data>
   <data name="ClearFiltersBtn.Content" xml:space="preserve">
     <value>Clear filters</value>
   </data>
   <data name="Comment.Header" xml:space="preserve">
     <value>Comment</value>
+    <comment>"Comment" refers to the comment of the entry</comment>
   </data>
   <data name="CommentFilter.Header" xml:space="preserve">
     <value>Comment</value>
+    <comment>"Comment" refers to the comment of the entry</comment>
   </data>
   <data name="Delete.Text" xml:space="preserve">
     <value>Delete</value>
@@ -173,15 +177,18 @@
   </data>
   <data name="FileChanged.Message" xml:space="preserve">
     <value>Hosts file has changed by another application. Do you want to reload it?</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="FileSaveError.Message" xml:space="preserve">
     <value>Failed to save hosts file.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="FilterBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Filters</value>
   </data>
   <data name="Hosts.Header" xml:space="preserve">
     <value>Hosts</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Seperate multiple hosts by space (e.g. server server.local).</value>
@@ -189,6 +196,7 @@
   </data>
   <data name="HostsFilter.Header" xml:space="preserve">
     <value>Hosts</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="MoveDown.Text" xml:space="preserve">
     <value>Move down</value>
@@ -198,7 +206,7 @@
   </data>
   <data name="Ping.Text" xml:space="preserve">
     <value>Ping</value>
-    <comment>"Ping" is a command-line utility</comment>
+    <comment>"Ping" refers to the command-line utility, do not loc</comment>
   </data>
   <data name="Reload.Content" xml:space="preserve">
     <value>Reload</value>
@@ -220,8 +228,13 @@
   </data>
   <data name="WarningDialog_Text" xml:space="preserve">
     <value>Altering hosts file has direct real world impact of how this computer resolves domain names.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="WarningDialog_Title" xml:space="preserve">
     <value>Warning</value>
+  </data>
+  <data name="Window.Title" xml:space="preserve">
+    <value>Hosts File Editor</value>
+    <comment>"Hosts File Editor" is the name of the utility. "Hosts" refers to the system hosts file, do not loc</comment>
   </data>
 </root>
