@@ -18,7 +18,8 @@
         <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
         <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
         <PackageReference Include="Vanara.PInvoke.User32" Version="3.3.15" />
-    </ItemGroup>
+	<PackageReference Include="Vanara.PInvoke.Shell32" Version="3.3.15" />
+</ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />

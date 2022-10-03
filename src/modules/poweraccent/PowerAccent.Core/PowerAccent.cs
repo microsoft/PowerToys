@@ -57,12 +57,17 @@ public class PowerAccent : IDisposable
                 ProcessNextChar(triggerKey);
             });
         }));
+
+        _keyboardListener.SetIsLanguageLetterDelegate(new PowerToys.PowerAccentKeyboardService.IsLanguageLetter((LetterKey letterKey, out bool result) =>
+        {
+            result = Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang).Length > 0;
+        }));
     }
 
     private void ShowToolbar(LetterKey letterKey)
     {
         _visible = true;
-        _characters = (WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState()) ? ToUpper(SettingsService.GetDefaultLetterKey(letterKey)) : SettingsService.GetDefaultLetterKey(letterKey);
+        _characters = (WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState()) ? ToUpper(Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang)) : Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
         Task.Delay(_settingService.InputTime).ContinueWith(
             t =>
             {
