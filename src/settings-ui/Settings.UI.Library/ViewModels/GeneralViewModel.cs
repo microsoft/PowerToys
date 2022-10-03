@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private Action HideBackupAndRestoreMessageAreaAction { get; set; }
 
-        private Action DoBackupAndRestoreDryRun { get; set; }
+        private Action<int> DoBackupAndRestoreDryRun { get; set; }
 
         public ButtonClickCommand BackupConfigsEventHandler { get; set; }
 
@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action doBackupAndRestoreDryRun = null, object resourceLoader = null)
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, object resourceLoader = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
@@ -622,7 +622,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null, bool reDoBackupDryRun = true)
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
@@ -630,6 +630,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
             SendConfigMSG(outsettings.ToString());
+
+            if (reDoBackupDryRun)
+            {
+                DoBackupAndRestoreDryRun(500);
+            }
 
             /*
             if (!propertyName.Equals(nameof(CurrentSettingMatchText), StringComparison.Ordinal))
@@ -664,16 +669,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
                     SettingsBackupAndRestoreDir = dialog.SelectedPath;
+
+                    /*
                     NotifyPropertyChanged(nameof(LastSettingsBackupDate));
                     NotifyPropertyChanged(nameof(LastSettingsBackupSource));
                     NotifyPropertyChanged(nameof(LastSettingsBackupFileName));
+                    */
+
+                    NotifyAllBackupAndRestoreProperties();
                 }
             }
         }
 
         private void RefreshBackupStatusEventHandlerClick()
         {
-            DoBackupAndRestoreDryRun();
+            DoBackupAndRestoreDryRun(0);
         }
 
         /// <summary>
@@ -696,10 +706,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 _settingsBackupRestoreMessageVisible = true;
 
                 _settingsBackupMessage = GetResourceString(results.message);
+
+                /*
                 NotifyPropertyChanged(nameof(SettingsBackupMessage));
                 NotifyPropertyChanged(nameof(BackupRestoreMessageSeverity));
                 NotifyPropertyChanged(nameof(SettingsBackupRestoreMessageVisible));
                 NotifyPropertyChanged(nameof(CurrentSettingMatchText));
+                */
+
+                NotifyAllBackupAndRestoreProperties();
 
                 HideBackupAndRestoreMessageAreaAction();
             }
@@ -743,13 +758,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public void NotifyAllBackupAndRestoreProperties()
         {
-            NotifyPropertyChanged(nameof(LastSettingsBackupDate));
-            NotifyPropertyChanged(nameof(LastSettingsBackupSource));
-            NotifyPropertyChanged(nameof(LastSettingsBackupFileName));
-            NotifyPropertyChanged(nameof(CurrentSettingMatchText));
-            NotifyPropertyChanged(nameof(SettingsBackupMessage));
-            NotifyPropertyChanged(nameof(BackupRestoreMessageSeverity));
-            NotifyPropertyChanged(nameof(SettingsBackupRestoreMessageVisible));
+            NotifyPropertyChanged(nameof(LastSettingsBackupDate), false);
+            NotifyPropertyChanged(nameof(LastSettingsBackupSource), false);
+            NotifyPropertyChanged(nameof(LastSettingsBackupFileName), false);
+            NotifyPropertyChanged(nameof(CurrentSettingMatchText), false);
+            NotifyPropertyChanged(nameof(SettingsBackupMessage), false);
+            NotifyPropertyChanged(nameof(BackupRestoreMessageSeverity), false);
+            NotifyPropertyChanged(nameof(SettingsBackupRestoreMessageVisible), false);
         }
 
         // callback function to launch the URL to check for updates.
@@ -858,7 +873,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public void HideBackupAndRestoreMessageArea()
         {
             _settingsBackupRestoreMessageVisible = false;
-            NotifyPropertyChanged(nameof(SettingsBackupRestoreMessageVisible));
+            NotifyAllBackupAndRestoreProperties();
         }
 
         public void RefreshUpdatingState()

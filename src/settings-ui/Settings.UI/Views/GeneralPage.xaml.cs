@@ -65,18 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 });
             };
 
-            Action doBackupAndRestoreDryrun = () =>
-            {
-                Task.Run(() =>
-                {
-                    var settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
-                    var results = settingsBackupAndRestoreUtils.DryRunBackup();
-                    this.DispatcherQueue.TryEnqueue(() =>
-                    {
-                        ViewModel.NotifyAllBackupAndRestoreProperties();
-                    });
-                });
-            };
+            var doBackupAndRestoreDryrun = new Action<int>(DryRunBackup);
 
             ViewModel = new GeneralViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
@@ -96,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             DataContext = ViewModel;
 
-            doBackupAndRestoreDryrun();
+            doBackupAndRestoreDryrun(100);
         }
 
         public static int UpdateUIThemeMethod(string themeName)
@@ -126,10 +115,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
         }
 
-        private void Hyperlink_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        private void DryRunBackup(int delayMs = 0)
         {
             Task.Run(() =>
             {
+                if (delayMs > 0)
+                {
+                    Thread.Sleep(delayMs);
+                }
+
                 var settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
                 var results = settingsBackupAndRestoreUtils.DryRunBackup();
                 this.DispatcherQueue.TryEnqueue(() =>
@@ -137,32 +131,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     ViewModel.NotifyAllBackupAndRestoreProperties();
                 });
             });
+        }
+
+        private void Hyperlink_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            DryRunBackup();
         }
 
         private void UpdateBackupAndRestoreStatusText(object sender, RoutedEventArgs e)
         {
-            Task.Run(() =>
-            {
-                var settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
-                var results = settingsBackupAndRestoreUtils.DryRunBackup();
-                this.DispatcherQueue.TryEnqueue(() =>
-                {
-                    ViewModel.NotifyAllBackupAndRestoreProperties();
-                });
-            });
+            DryRunBackup();
         }
 
         private void UpdateBackupAndRestoreStatusText2(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
-            Task.Run(() =>
-            {
-                var settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
-                var results = settingsBackupAndRestoreUtils.DryRunBackup();
-                this.DispatcherQueue.TryEnqueue(() =>
-                {
-                    ViewModel.NotifyAllBackupAndRestoreProperties();
-                });
-            });
+            DryRunBackup();
         }
     }
 }
