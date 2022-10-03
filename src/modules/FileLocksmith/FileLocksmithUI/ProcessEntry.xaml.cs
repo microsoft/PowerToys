@@ -22,35 +22,21 @@ namespace FileLocksmithUI
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainWindow : WindowEx, IDisposable
+    public sealed partial class ProcessEntry : UserControl
     {
-        public MainWindow()
+        public ProcessEntry(string process, uint pid, ulong numFiles)
         {
             InitializeComponent();
+            processName.Text = process;
+
+            processPid.Text = PowerToys.FileLocksmithUI.Properties.Resources.ProcessId + ": " + pid;
+            processFileCount.Text = PowerToys.FileLocksmithUI.Properties.Resources.FilesUsed + ": " + numFiles;
+            processUser.Text = PowerToys.FileLocksmithUI.Properties.Resources.User + ": " + "<TODO PID TO USER>";
         }
 
-        private void OnRefreshClick(object sender, RoutedEventArgs e)
+        private void KillProcessClick(object sender, RoutedEventArgs e)
         {
-            StartFindingProcesses();
-        }
-
-        private void StartFindingProcesses()
-        {
-            Thread thread = new Thread(FindProcesses);
-            thread.Start();
-        }
-
-        private void FindProcesses()
-        {
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                // Mock
-                stackPanel.Children.Add(new ProcessEntry("WindowsTerminal.exe", 123456, 1));
-            });
-        }
-
-        public void Dispose()
-        {
+            // TODO
         }
     }
 }

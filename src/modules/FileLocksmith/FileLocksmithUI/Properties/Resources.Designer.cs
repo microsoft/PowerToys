@@ -61,38 +61,38 @@ namespace PowerToys.FileLocksmithUI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bounds.
+        ///   Looks up a localized string similar to File Locksmith.
         /// </summary>
-        public static string Bounds {
+        public static string FileLocksmithTitle {
             get {
-                return ResourceManager.GetString("Bounds", resourceCulture);
+                return ResourceManager.GetString("FileLocksmithTitle", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Horizontal spacing.
+        ///   Looks up a localized string similar to Files used.
         /// </summary>
-        public static string HorizontalSpacing {
+        public static string FilesUsed {
             get {
-                return ResourceManager.GetString("HorizontalSpacing", resourceCulture);
+                return ResourceManager.GetString("FilesUsed", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Spacing.
+        ///   Looks up a localized string similar to Process ID.
         /// </summary>
-        public static string Spacing {
+        public static string ProcessId {
             get {
-                return ResourceManager.GetString("Spacing", resourceCulture);
+                return ResourceManager.GetString("ProcessId", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Vertical spacing.
+        ///   Looks up a localized string similar to User.
         /// </summary>
-        public static string VerticalSpacing {
+        public static string User {
             get {
-                return ResourceManager.GetString("VerticalSpacing", resourceCulture);
+                return ResourceManager.GetString("User", resourceCulture);
             }
         }
     }

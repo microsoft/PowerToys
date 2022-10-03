@@ -117,16 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Bounds" xml:space="preserve">
-    <value>Bounds</value>
+  <data name="FileLocksmithTitle" xml:space="preserve">
+    <value>File Locksmith</value>
+    <comment>Name of this PowerToy</comment>
   </data>
-  <data name="Spacing" xml:space="preserve">
-    <value>Spacing</value>
+  <data name="FilesUsed" xml:space="preserve">
+    <value>Files used</value>
+    <comment>Number of files used, this is followed by a colon and a number</comment>
   </data>
-  <data name="HorizontalSpacing" xml:space="preserve">
-    <value>Horizontal spacing</value>
+  <data name="ProcessId" xml:space="preserve">
+    <value>Process ID</value>
+    <comment>An operating system wide numerical identifier of the process, also known as PID</comment>
   </data>
-  <data name="VerticalSpacing" xml:space="preserve">
-    <value>Vertical spacing</value>
+  <data name="User" xml:space="preserve">
+    <value>User</value>
+    <comment>Username of the Windows user running this process</comment>
   </data>
 </root>
