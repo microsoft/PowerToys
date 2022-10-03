@@ -136,7 +136,7 @@ In this release, we focused on stability and improvement.
 - Fixed a bug that was causing Quick Accent to interfere with Keyboard Manager. (This was a hotfix for 0.62)
 - Added the correct ß uppercase character. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - Accent character selection should now wrap around. Thanks [@wmentha](https://github.com/wmentha)!
-- Added language selection setting to reduce the number of accented characters shown. The available languages are Currency, Czech, Dutch, French, Hungarian, Icelandic, Italian, Maori, Pinyin, Polish, Romanian, Slovakian, Spanish and Turkish. Thanks [@damienleroy](https://github.com/damienleroy)!
+- Added language selection setting to reduce the number of accented characters shown. The available accented character sets are Currency, Czech, Dutch, French, Hungarian, Icelandic, Italian, Maori, Pinyin, Polish, Romanian, Slovakian, Spanish and Turkish. Thanks [@damienleroy](https://github.com/damienleroy)!
 
 ### Screen Ruler
 
