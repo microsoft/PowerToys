@@ -1,0 +1,28 @@
+﻿<winuiex:WindowEx
+    x:Class="FileLocksmithUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:p="using:PowerToys.FileLocksmithUI.Properties"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winuiex="using:WinUIEx"
+    IsMaximizable="False"
+    IsMinimizable="True"
+    IsResizable="True"
+    IsShownInSwitchers="True"
+    IsTitleBarVisible="True"
+    mc:Ignorable="d">
+    <winuiex:WindowEx.Backdrop>
+        <winuiex:AcrylicSystemBackdrop
+            DarkFallbackColor="#1c1c1c"
+            DarkLuminosityOpacity="0.96"
+            DarkTintColor="#202020"
+            DarkTintOpacity="0.5"
+            LightFallbackColor="#EEEEEE"
+            LightLuminosityOpacity="0.85"
+            LightTintColor="#FCFCFC"
+            LightTintOpacity="0" />
+    </winuiex:WindowEx.Backdrop>
+</winuiex:WindowEx>
