@@ -117,6 +117,10 @@ In this release, we focused on stability and improvement.
 - Updated the WebView 2 dependency to 1.0.1343.22. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - Fixed preview of .reg files.
 
+### Image Resizer
+
+- Fixed a bug causing File Explorer to crash under some conditions when accessing the context menu.
+
 ### PowerToys Run
 
 - Added support to opening Terminal windows in quake mode. Thanks [@FWest98](https://github.com/FWest98)!
