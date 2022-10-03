@@ -79,7 +79,7 @@ In this release, we focused on stability and improvement.
 **Highlights**
 
 - QuickAccent contains a new setting to select a language. This should reduce the number of accented characters a user needs to pick from. Thanks [@damienleroy](https://github.com/damienleroy)!
-- Reduced installer and installed sizes by sharing the Windows App SDK, VC++ redistributable and PowerToys Interop runtime files between utilities.
+- Reduced installer (125 MB in 0.62.1 compared to 83 MB in 0.63.0) and installed (817 MB in 0.62.1 compared to 587 MB in 0.63.0) sizes by sharing the Windows App SDK, VC++ redistributable and PowerToys Interop runtime files between utilities. This is a step towards removing the UAC requirement on install. The next step is shipping .NET self-contained and shared between utilities.
 
 ### Known issues
 
@@ -132,7 +132,7 @@ In this release, we focused on stability and improvement.
 - Fixed a bug that was causing Quick Accent to interfere with Keyboard Manager. (This was a hotfix for 0.62)
 - Added the correct ß uppercase character. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 - Accent character selection should now wrap around. Thanks [@wmentha](https://github.com/wmentha)!
-- Added language selection setting to reduce the number of accented characters shown. Thanks [@damienleroy](https://github.com/damienleroy)!
+- Added language selection setting to reduce the number of accented characters shown. The available languages are Currency, Czech, Dutch, French, Hungarian, Icelandic, Italian, Maori, Pinyin, Polish, Romanian, Slovakian, Spanish and Turkish. Thanks [@damienleroy](https://github.com/damienleroy)!
 
 ### Screen Ruler
 
@@ -155,7 +155,7 @@ In this release, we focused on stability and improvement.
 
 - Added logic to exit PowerToys on upgrade before trying to update .NET.
 - Updated the .NET dependency to 6.0.9.
-- Added clearer installation step names for the boostrapper.
+- Added clearer installation step names for the boostrapper. Thanks [@htcfreek](https://github.com/htcfreek) and [@Jay-o-Way](https://github.com/Jay-o-Way)!
 - Windows App SDK, VC++ redistributable and PowerToys Interop runtime files are now shared between utilites through hardlinks, reducing installation size.
 
 ### Documentation
@@ -179,6 +179,9 @@ For [v0.64][github-next-release-work], we'll work on below:
 - Environment Variables Editor PowerToy
 - GPO policies for PowerToys
 - Utility to list which processes are using a file
+- Ship .NET self contained and shared between utilities
+- Hosts file editor, contributed by [@davidegiacometti](https://github.com/davidegiacometti). Thank you!
+- Settings backup and restore, contributed by [@jefflord](https://github.com/jefflord). Thank you!
 - Stability / bug fixes
 
 ## PowerToys Community
