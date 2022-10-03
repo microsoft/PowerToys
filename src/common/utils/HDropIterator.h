@@ -7,6 +7,7 @@ public:
     HDropIterator(IDataObject* pDataObject)
     {
         _current = 0;
+        _listCount = 0;
 
         FORMATETC formatetc = {
             CF_HDROP,
@@ -16,14 +17,22 @@ public:
             TYMED_HGLOBAL
         };
 
-        pDataObject->GetData(&formatetc, &m_medium);
-
-        _listCount = DragQueryFile((HDROP)m_medium.hGlobal, 0xFFFFFFFF, NULL, 0);
+        if (SUCCEEDED(pDataObject->GetData(&formatetc, &m_medium)))
+        {
+            _listCount = DragQueryFile((HDROP)m_medium.hGlobal, 0xFFFFFFFF, NULL, 0);
+        }
+        else
+        {
+            m_medium = {};
+        }
     }
 
     ~HDropIterator()
     {
-        ReleaseStgMedium(&m_medium);
+        if (m_medium.tymed)
+        {
+            ReleaseStgMedium(&m_medium);
+        }
     }
 
     void First()
