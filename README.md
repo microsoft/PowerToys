@@ -94,7 +94,7 @@ In this release, we focused on stability and improvement.
 
 ### Always on Top
 
-- Fixed an issue causing the border do linger when moving a window between virtual desktops.
+- Fixed an issue causing the border to linger when moving a window between virtual desktops.
 - The minimum thickness for the borders is now 1. Thanks [@unuing](https://github.com/unuing)!
 - Borders were showing in Virtual Desktop thumbnails. These were removed.
 - Corrected the borders visuals to more closely follow the application borders.
