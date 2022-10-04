@@ -503,18 +503,18 @@ jobs:
       flattenFolders: True
       targetFolder: $(Build.ArtifactStagingDirectory)
 
-  - task: PowerShell@2
-    displayName: 'Calculating SHA256 hash'
-    inputs:
-      targetType: 'inline'
-      script: |
-        $p = "$(Build.ArtifactStagingDirectory)\setup-$(BuildPlatform)\";
-        $r = $p + "hash-" + ((get-item $p\*.exe | Get-FileHash).Hash)
-        out-file -filepath $r
-        
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: PowerToySetup'
     inputs:
       PathtoPublish: $(System.ArtifactsDirectory)
       ArtifactName: setup-$(BuildPlatform)
+
+  - task: PowerShell@2
+    displayName: 'Calculating SHA256 hash'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $p = "$(Build.ArtifactsDirectory)\setup-$(BuildPlatform)\";
+        $r = $p + "hash-" + ((get-item $p\*.exe | Get-FileHash).Hash)
+        out-file -filepath $r
 ...
