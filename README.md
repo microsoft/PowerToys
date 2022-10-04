@@ -151,7 +151,7 @@ In this release, we focused on stability and improvement.
 
 ### Text Extractor
 
-- Removed extra spaces when recognizing Chinese, Japanase or Korean languages. Thanks [@TheJoeFin](https://github.com/TheJoeFin)!
+- Removed extra spaces when recognizing Chinese, Japanese or Korean languages. Thanks [@TheJoeFin](https://github.com/TheJoeFin)!
 - Fixed utility exit logic to close all threads and avoid crashes. (This was a hotfix for 0.62)
 - Fixed an issue where a selection would start on right-click.
 
@@ -159,8 +159,8 @@ In this release, we focused on stability and improvement.
 
 - Added logic to exit PowerToys on upgrade before trying to update .NET.
 - Updated the .NET dependency to 6.0.9.
-- Added clearer installation step names for the boostrapper. Thanks [@htcfreek](https://github.com/htcfreek) and [@Jay-o-Way](https://github.com/Jay-o-Way)!
-- Windows App SDK, VC++ redistributable and PowerToys Interop runtime files are now shared between utilites through hardlinks, reducing installation size.
+- Added clearer installation step names for the bootstrapper. Thanks [@htcfreek](https://github.com/htcfreek) and [@Jay-o-Way](https://github.com/Jay-o-Way)!
+- Windows App SDK, VC++ redistributable and PowerToys Interop runtime files are now shared between utilities through hardlinks, reducing installation size.
 
 ### Documentation
 
@@ -170,9 +170,9 @@ In this release, we focused on stability and improvement.
 ### Development
 
 - Fixed a build error that was restricting developers to switch between configuration without first cleaning local build files.
-- C++ exception catches were corrected to be caught by reference to avoid unneccessary copy operations. Thanks [@NN---](https://github.com/NN---)!
+- C++ exception catches were corrected to be caught by reference to avoid unnecessary copy operations. Thanks [@NN---](https://github.com/NN---)!
 - General C# code clean up, format fixing and removal of unused code analysis suppressions.
-- Removed unneccessary `muxc` prefix from XAML files. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+- Removed unnecessary `muxc` prefix from XAML files. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
 - Re-enabled tests on our pipeline that depend on WebView2.
 - Windows 11 tier 1 context menu packages now contain the "Microsoft.PowerToys" prefix.
 
