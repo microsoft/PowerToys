@@ -467,6 +467,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithGUI", "src\mod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileLocksmithUI", "src\modules\FileLocksmith\FileLocksmithUI\FileLocksmithUI.csproj", "{E69B044A-2F8A-45AA-AD0B-256C59421807}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithLibInterop", "src\modules\FileLocksmith\FileLocksmithLibInterop\FileLocksmithLibInterop.vcxproj", "{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -1898,6 +1900,16 @@ Global
 		{E69B044A-2F8A-45AA-AD0B-256C59421807}.Release|x64.ActiveCfg = Release|x64
 		{E69B044A-2F8A-45AA-AD0B-256C59421807}.Release|x64.Build.0 = Release|x64
 		{E69B044A-2F8A-45AA-AD0B-256C59421807}.Release|x86.ActiveCfg = Release|x64
+		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}.Debug|x64.ActiveCfg = Debug|x64
+		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}.Debug|x64.Build.0 = Debug|x64
+		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}.Debug|x86.ActiveCfg = Debug|x64
+		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}.Release|ARM64.Build.0 = Release|ARM64
+		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}.Release|x64.ActiveCfg = Release|x64
+		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}.Release|x64.Build.0 = Release|x64
+		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2059,6 +2071,7 @@ Global
 		{57175EC7-92A5-4C1E-8244-E3FBCA2A81DE} = {AB82E5DD-C32D-4F28-9746-2C780846188E}
 		{BBD45704-F220-4774-9C92-D55D822C9E75} = {AB82E5DD-C32D-4F28-9746-2C780846188E}
 		{E69B044A-2F8A-45AA-AD0B-256C59421807} = {AB82E5DD-C32D-4F28-9746-2C780846188E}
+		{C604B37E-9D0E-4484-8778-E8B31B0E1B3A} = {AB82E5DD-C32D-4F28-9746-2C780846188E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
