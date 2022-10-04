@@ -508,10 +508,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        $p = "setup-x64\";
-        $r = $p + "hash-" + ((get-item $p\*.exe | Get-FileHash).Hash)
-        out-file -filepath $r
-        $p = "setup-arm64\";
+        $p = "setup-$(BuildPlatform)\";
         $r = $p + "hash-" + ((get-item $p\*.exe | Get-FileHash).Hash)
         out-file -filepath $r
         
