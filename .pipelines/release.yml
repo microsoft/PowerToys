@@ -502,7 +502,19 @@ jobs:
       contents: '**/PowerToysSetup-*.exe'
       flattenFolders: True
       targetFolder: $(Build.ArtifactStagingDirectory)
-      
+
+  - task: PowerShell@2
+    displayName: 'Calculating SHA256 hash'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $p = "setup-x64\";
+        $r = $p + "hash-" + ((get-item $p\*.exe | Get-FileHash).Hash)
+        out-file -filepath $r
+        $p = "setup-arm64\";
+        $r = $p + "hash-" + ((get-item $p\*.exe | Get-FileHash).Hash)
+        out-file -filepath $r
+        
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: PowerToySetup'
     inputs:
