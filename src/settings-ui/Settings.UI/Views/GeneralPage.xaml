@@ -229,7 +229,7 @@
 
                 <!-- Start General_SettingsBackupAndRestore -->
 
-                <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestore" Visibility="Visible">
+                <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="General_SettingsBackupAndRestore" Icon="&#xE777;" Style="{StaticResource ExpanderHeaderSettingStyle}">
@@ -279,8 +279,7 @@
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
-
-                                            <TextBox Grid.Row="0" Grid.Column="1" Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}" IsEnabled="True" IsReadOnly="True" MinWidth="350" />
+                                            <TextBlock MaxWidth="350" Grid.Row="0" Grid.Column="1" Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}" IsTextSelectionEnabled="True" MinWidth="350" />
                                             <Button Grid.Row="0" Grid.Column="2" x:Uid="General_SettingsBackupAndRestore_ButtonSelectLocation"
                                         Command="{Binding SelectSettingBackupDirEventHandler}"
                                         IsEnabled="True"
@@ -340,7 +339,7 @@
                                                 <TextBlock Padding="5,0,0,0" Style="{StaticResource SecondaryTextStyle}"><Hyperlink Click="UpdateBackupAndRestoreStatusText2" TextDecorations="Underline">
                                                     <Run x:Uid="General_SettingsBackupAndRestore_LinkRefresh" />
                                                 </Hyperlink></TextBlock>
-                     
+
                                             </StackPanel>
                                         </Border>
 

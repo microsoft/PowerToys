@@ -649,13 +649,13 @@
     <value>Check for updates</value>
   </data>
   <data name="General_SettingsBackupAndRestoreLocationText.Description" xml:space="preserve">
-    <value>Select a location to store the backup.</value>
+    <value />
   </data>
   <data name="General_SettingsBackupAndRestoreLocationText.Header" xml:space="preserve">
     <value>Location</value>
   </data>
   <data name="General_SettingsBackupAndRestoreStatusInfo.Description" xml:space="preserve">
-    <value>Here you can find information about the backup last created or currently selected for restore.</value>
+    <value />
   </data>
   <data name="General_SettingsBackupAndRestore_ButtonBackup.Content" xml:space="preserve">
     <value>Backup</value>
@@ -839,8 +839,11 @@
   <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
+  <data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
+    <value>Backup &amp; restore</value>
+  </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
-    <value>Settings backup &amp; restore</value>
+    <value>Backup and restore your settings at any time</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
@@ -1079,7 +1082,7 @@
     <value>Created at:</value>
   </data>
   <data name="General_SettingsBackupAndRestoreDescription.Text" xml:space="preserve">
-    <value>Backup and restore your settings at any time. (PowerToys will restart automatically if needed.)</value>
+    <value>PowerToys will restart automatically if needed.</value>
   </data>
   <data name="General_SettingsBackupAndRestoreStatusInfo.Header" xml:space="preserve">
     <value>Backup information</value>
@@ -2406,7 +2409,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Learn more about Text Extractor</value>
   </data>
   <data name="BackupAndRestore_NothingToBackup" xml:space="preserve">
-    <value>Nothing to backup, no settings have been changed since last backup.</value>
+    <value>A new backup was not created because no settings have been changed since last backup.</value>
   </data>
   <data name="BackupAndRestore_NoBackupFound" xml:space="preserve">
     <value>No backup found</value>
@@ -2448,7 +2451,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>No settings files found.</value>
   </data>
   <data name="BackupAndRestore_BackupError" xml:space="preserve">
-    <value>Sorry, there was an error. Try another backup location.</value>
+    <value>There was an error. Try another backup location.</value>
   </data>
   <data name="BackupAndRestore_BackupComplete" xml:space="preserve">
     <value>Backup completed.</value>
