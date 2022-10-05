@@ -28,7 +28,9 @@ namespace FileLocksmithUI
     {
         public MainWindow()
         {
+            // TODO Read paths from stdin
             InitializeComponent();
+            StartFindingProcesses();
         }
 
         private void OnRefreshClick(object sender, RoutedEventArgs e)
@@ -40,6 +42,7 @@ namespace FileLocksmithUI
         {
             Thread thread = new Thread(FindProcesses);
             thread.Start();
+            DisplayProgressRing();
         }
 
         private void FindProcesses()
@@ -48,11 +51,43 @@ namespace FileLocksmithUI
 
             DispatcherQueue.TryEnqueue(() =>
             {
+                stackPanel.Children.Clear();
                 foreach (var item in result)
                 {
                     stackPanel.Children.Add(new ProcessEntry(item.name, item.pid, (ulong)item.files.Length));
+
+                    // Add files to item
+                    // Launch a thread to erase this entry if the process exits
                 }
             });
+        }
+
+        private void DisplayNoResultsIfEmpty()
+        {
+            if (stackPanel.Children.Count == 0)
+            {
+                var textBlock = new TextBlock();
+
+                textBlock.Text = PowerToys.FileLocksmithUI.Properties.Resources.NoResults;
+                textBlock.FontSize = 24;
+                textBlock.HorizontalAlignment = HorizontalAlignment.Center;
+                textBlock.VerticalAlignment = VerticalAlignment.Center;
+
+                stackPanel.Children.Add(textBlock);
+            }
+        }
+
+        private void DisplayProgressRing()
+        {
+            stackPanel.Children.Clear();
+
+            var ring = new ProgressRing();
+            ring.Width = 64;
+            ring.Height = 64;
+            ring.Margin = new Thickness(0, 16, 0, 0);
+            ring.IsIndeterminate = true;
+
+            stackPanel.Children.Add(ring);
         }
 
         public void Dispose()

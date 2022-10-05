@@ -125,6 +125,10 @@
     <value>Files used</value>
     <comment>Number of files used, this is followed by a colon and a number</comment>
   </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>No results.</value>
+    <comment>Shown when the list of results is empty.</comment>
+  </data>
   <data name="ProcessId" xml:space="preserve">
     <value>Process ID</value>
     <comment>An operating system wide numerical identifier of the process, also known as PID</comment>

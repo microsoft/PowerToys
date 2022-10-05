@@ -79,6 +79,15 @@ namespace PowerToys.FileLocksmithUI.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No results..
+        /// </summary>
+        public static string NoResults {
+            get {
+                return ResourceManager.GetString("NoResults", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Process ID.
         /// </summary>
         public static string ProcessId {
