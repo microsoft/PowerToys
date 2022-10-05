@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 });
             };
 
-            var doBackupAndRestoreDryrun = new Action<int>(DryRunBackup);
+            var doRefreshBackupRestoreStatus = new Action<int>(RefreshBackupRestoreStatus);
 
             ViewModel = new GeneralViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
@@ -80,12 +80,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 string.Empty,
                 stateUpdatingAction,
                 hideBackupAndRestoreMessageArea,
-                doBackupAndRestoreDryrun,
+                doRefreshBackupRestoreStatus,
                 loader);
 
             DataContext = ViewModel;
 
-            doBackupAndRestoreDryrun(100);
+            doRefreshBackupRestoreStatus(100);
         }
 
         public static int UpdateUIThemeMethod(string themeName)
@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
         }
 
-        private void DryRunBackup(int delayMs = 0)
+        private void RefreshBackupRestoreStatus(int delayMs = 0)
         {
             Task.Run(() =>
             {
@@ -133,19 +133,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             });
         }
 
-        private void Hyperlink_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        private void UpdateBackupAndRestoreStatusText(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
-            DryRunBackup();
-        }
-
-        private void UpdateBackupAndRestoreStatusText(object sender, RoutedEventArgs e)
-        {
-            DryRunBackup();
-        }
-
-        private void UpdateBackupAndRestoreStatusText2(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
-        {
-            DryRunBackup();
+            RefreshBackupRestoreStatus();
         }
     }
 }

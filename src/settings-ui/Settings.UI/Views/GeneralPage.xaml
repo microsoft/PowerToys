@@ -336,7 +336,7 @@
                                                 <Run Text="{Binding CurrentSettingMatchText, Mode=OneWay}"/>
                                                 </TextBlock>
 
-                                                <TextBlock Padding="5,0,0,0" Style="{StaticResource SecondaryTextStyle}"><Hyperlink Click="UpdateBackupAndRestoreStatusText2" TextDecorations="Underline">
+                                                <TextBlock Padding="5,0,0,0" Style="{StaticResource SecondaryTextStyle}"><Hyperlink Click="UpdateBackupAndRestoreStatusText" TextDecorations="Underline">
                                                     <Run x:Uid="General_SettingsBackupAndRestore_LinkRefresh" />
                                                 </Hyperlink></TextBlock>
 

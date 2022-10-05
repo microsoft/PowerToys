@@ -24,6 +24,7 @@ namespace Settings.UI.Library
     {
         private static SettingsBackupAndRestoreUtils instance;
         private (bool success, string severity, bool lastBackupExists, DateTime? lastRan) lastBackupSettingsResults;
+        private static object backupSettingsInternalLock = new object();
 
         public DateTime LastBackupStartTime { get; set; }
 
@@ -558,6 +559,9 @@ namespace Settings.UI.Library
             return results;
         }
 
+        /// <summary>
+        /// Method <c>DryRunBackup</c> wrapper function to do a dry-run backup
+        /// </summary>
         public (bool success, string message, string severity, bool lastBackupExists) DryRunBackup()
         {
             var settingsUtils = new SettingsUtils();
@@ -568,17 +572,16 @@ namespace Settings.UI.Library
             return results;
         }
 
+        /// <summary>
+        /// Method <c>GetLastBackupSettingsResults</c> gets the results from the last backup process
+        /// </summary>
+        /// <returns>
+        /// A tuple that indicates if the backup was done or not, and other information
+        /// </returns>
         public (bool success, bool hadError, bool lastBackupExists, DateTime? lastRan) GetLastBackupSettingsResults()
         {
             return (lastBackupSettingsResults.success, lastBackupSettingsResults.severity == "Error", lastBackupSettingsResults.lastBackupExists, lastBackupSettingsResults.lastRan);
         }
-
-        public void ClearLastBackupSettingsResults()
-        {
-            lastBackupSettingsResults.lastRan = null;
-        }
-
-        private static object backupSettingsInternalLock = new object();
 
         /// <summary>
         /// Method <c>BackupSettingsInternal</c> does the backup process.
