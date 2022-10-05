@@ -98,5 +98,47 @@ namespace FileLocksmith::Interop
             auto user_cpp = pid_to_user(pid);
             return from_wstring_view(user_cpp);
         }
+
+        static array<System::String^>^ ReadPathsFromStdin()
+        {
+            std::vector<std::wstring> result_cpp;
+            std::wstring line;
+
+            bool finished = false;
+
+            while (!finished)
+            {
+                WCHAR ch;
+                // We have to read data like this
+                if (!std::cin.read(reinterpret_cast<char*>(&ch), 2))
+                {
+                    finished = true;
+                }
+                else if (ch == L'\n')
+                {
+                    if (line.empty())
+                    {
+                        finished = true;
+                    }
+                    else
+                    {
+                        result_cpp.push_back(line);
+                        line = {};
+                    }
+                }
+                else
+                {
+                    line += ch;
+                }
+            }
+
+            auto result = gcnew array<System::String ^>(static_cast<int>(result_cpp.size()));
+            for (int i = 0; i < result->Length; i++)
+            {
+                result[i] = from_wstring_view(result_cpp[i]);
+            }
+
+            return result;
+        }
     };
 }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -26,9 +27,11 @@ namespace FileLocksmithUI
     /// </summary>
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
+        private string[] paths;
+
         public MainWindow()
         {
-            // TODO Read paths from stdin
+            paths = FileLocksmith.Interop.NativeMethods.ReadPathsFromStdin();
             InitializeComponent();
             StartFindingProcesses();
         }
@@ -46,7 +49,7 @@ namespace FileLocksmithUI
 
         private void FindProcesses()
         {
-            var result = FileLocksmith.Interop.NativeMethods.FindProcessesRecursive(new string[1] { "C:\\Users" });
+            var result = FileLocksmith.Interop.NativeMethods.FindProcessesRecursive(paths);
 
             DispatcherQueue.TryEnqueue(() =>
             {
