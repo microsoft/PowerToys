@@ -24,8 +24,11 @@ namespace FileLocksmithUI
     /// </summary>
     public sealed partial class ProcessEntry : UserControl
     {
+        private uint pid;
+
         public ProcessEntry(string process, uint pid, ulong numFiles)
         {
+            this.pid = pid;
             InitializeComponent();
             processName.Text = process;
 
@@ -46,7 +49,10 @@ namespace FileLocksmithUI
 
         private void KillProcessClick(object sender, RoutedEventArgs e)
         {
-            // TODO
+            if (!FileLocksmith.Interop.NativeMethods.KillProcess(pid))
+            {
+                // TODO show something on failure.
+            }
         }
     }
 }

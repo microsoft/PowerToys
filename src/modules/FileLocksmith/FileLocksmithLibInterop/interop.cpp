@@ -65,5 +65,17 @@ namespace FileLocksmith::Interop
 
             return result;
         }
+
+        static System::Boolean KillProcess(System::UInt32 pid)
+        {
+            HANDLE process = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+            if (!process || !TerminateProcess(process, 1))
+            {
+                return false;
+            }
+
+            CloseHandle(process);
+            return true;
+        }
     };
 }
