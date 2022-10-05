@@ -5,6 +5,7 @@
     xmlns:local="using:FileLocksmithUI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:p="using:PowerToys.FileLocksmithUI.Properties"
     mc:Ignorable="d">
 
     <Expander Margin="8,8,8,0" HorizontalAlignment="Stretch">
@@ -25,7 +26,7 @@
                         <TextBlock Grid.Column="2" Margin="4" FontSize="12" Name="processUser" HorizontalAlignment="Left"/>
                     </Grid>
                 </StackPanel>
-                <Button Margin="4" Click="KillProcessClick" HorizontalAlignment="Right">End Task</Button>
+                <Button Margin="4" Click="KillProcessClick" HorizontalAlignment="Right" Content="{x:Bind p:Resources.EndTask}"/>
             </Grid>
         </Expander.Header>
         <Expander.Content>

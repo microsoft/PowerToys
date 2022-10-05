@@ -61,6 +61,15 @@ namespace PowerToys.FileLocksmithUI.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to End Task.
+        /// </summary>
+        public static string EndTask {
+            get {
+                return ResourceManager.GetString("EndTask", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to File Locksmith.
         /// </summary>
         public static string FileLocksmithTitle {

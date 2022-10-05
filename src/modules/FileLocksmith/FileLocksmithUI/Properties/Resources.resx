@@ -117,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="EndTask" xml:space="preserve">
+    <value>End Task</value>
+    <comment>Shown on a button which terminates the chosen process.</comment>
+  </data>
   <data name="FileLocksmithTitle" xml:space="preserve">
     <value>File Locksmith</value>
     <comment>Name of this PowerToy</comment>
