@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include "FileLocksmith.h"
+
 namespace FileLocksmith::Interop
 {
     ref struct ProcessResult
