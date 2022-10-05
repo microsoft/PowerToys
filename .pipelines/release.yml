@@ -514,7 +514,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        $p = "$(System.ArtifactsDirectory)\setup-$(BuildPlatform)\";
-        $r = $p + "hash-" + ((get-item $p\*.exe | Get-FileHash).Hash)
+        $p = "$(System.ArtifactsDirectory)\";
+        $r = $p + "hash-$(BuildPlatform)-" + ((get-item $p\*.exe | Get-FileHash).Hash)
         out-file -filepath $r
 ...
