@@ -8,13 +8,17 @@
     xmlns:p="using:PowerToys.FileLocksmithUI.Properties"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
-    IsMaximizable="False"
+    IsMaximizable="True"
     IsMinimizable="True"
     IsResizable="True"
     IsShownInSwitchers="True"
     IsTitleBarVisible="True"
     Title="{x:Bind p:Resources.FileLocksmithTitle}"
     mc:Ignorable="d">
+    <!--
+    
+    Ignore for now.
+    
     <winuiex:WindowEx.Backdrop>
         <winuiex:AcrylicSystemBackdrop
             DarkFallbackColor="#1c1c1c"
@@ -26,14 +30,21 @@
             LightTintColor="#FCFCFC"
             LightTintOpacity="0" />
     </winuiex:WindowEx.Backdrop>
+    
+    -->
 
-    <StackPanel Orientation="Vertical">
-        <Grid>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        
+        <Grid Grid.Row="0">
             <Button Margin="8,8,8,0" Click="OnRefreshClick" HorizontalAlignment="Right">Refresh</Button>
         </Grid>
-        <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel x:Name="stackPanel" Orientation="Vertical"/>
         </ScrollViewer>
-    </StackPanel>
+    </Grid>
     
 </winuiex:WindowEx>

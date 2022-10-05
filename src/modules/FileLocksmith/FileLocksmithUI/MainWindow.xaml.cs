@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 using System.Threading;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -42,10 +44,14 @@ namespace FileLocksmithUI
 
         private void FindProcesses()
         {
+            var result = FileLocksmith.Interop.NativeMethods.FindProcessesRecursive(new string[1] { "C:\\Users" });
+
             DispatcherQueue.TryEnqueue(() =>
             {
-                // Mock
-                stackPanel.Children.Add(new ProcessEntry("WindowsTerminal.exe", 123456, 1));
+                foreach (var item in result)
+                {
+                    stackPanel.Children.Add(new ProcessEntry(item.name, item.pid, (ulong)item.files.Length));
+                }
             });
         }
 

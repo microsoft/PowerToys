@@ -4,7 +4,7 @@
 
 namespace FileLocksmith::Interop
 {
-    ref struct ProcessResult
+    public ref struct ProcessResult
     {
         System::String^ name;
         System::UInt32 pid;
@@ -30,7 +30,7 @@ namespace FileLocksmith::Interop
         return result;
     }
 
-    ref struct NativeMethods
+    public ref struct NativeMethods
     {
         static array<ProcessResult ^> ^ FindProcessesRecursive(array<System::String^>^ paths)
         {
@@ -43,9 +43,10 @@ namespace FileLocksmith::Interop
             }
 
             auto result_cpp = find_processes_recursive(paths_cpp);
+            const auto result_size = static_cast<int>(result_cpp.size());
 
-            auto result = gcnew array<ProcessResult ^>(n);
-            for (int i = 0; i < n; i++)
+            auto result = gcnew array<ProcessResult ^>(result_size);
+            for (int i = 0; i < result_size; i++)
             {
                 auto item = gcnew ProcessResult;
 
