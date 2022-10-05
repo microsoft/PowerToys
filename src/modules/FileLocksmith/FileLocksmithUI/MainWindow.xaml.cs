@@ -54,9 +54,15 @@ namespace FileLocksmithUI
                 stackPanel.Children.Clear();
                 foreach (var item in result)
                 {
-                    stackPanel.Children.Add(new ProcessEntry(item.name, item.pid, (ulong)item.files.Length));
+                    var entry = new ProcessEntry(item.name, item.pid, (ulong)item.files.Length);
 
-                    // Add files to item
+                    foreach (var path in item.files)
+                    {
+                        entry.AddPath(path);
+                    }
+
+                    stackPanel.Children.Add(entry);
+
                     // Launch a thread to erase this entry if the process exits
                 }
             });

@@ -34,6 +34,16 @@ namespace FileLocksmithUI
             processUser.Text = PowerToys.FileLocksmithUI.Properties.Resources.User + ": " + "<TODO PID TO USER>";
         }
 
+        public void AddPath(string path)
+        {
+            var entry = new TextBlock();
+            entry.IsTextSelectionEnabled = true;
+            entry.Text = path;
+            entry.HorizontalAlignment = HorizontalAlignment.Left;
+
+            filesContainer.Children.Add(entry);
+        }
+
         private void KillProcessClick(object sender, RoutedEventArgs e)
         {
             // TODO
