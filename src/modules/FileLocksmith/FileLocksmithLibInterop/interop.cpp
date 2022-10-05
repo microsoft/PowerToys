@@ -77,5 +77,20 @@ namespace FileLocksmith::Interop
             CloseHandle(process);
             return true;
         }
+
+        static System::Boolean WaitForProcess(System::UInt32 pid)
+        {
+            HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
+
+            if (!process)
+            {
+                return false;
+            }
+
+            auto wait_result = WaitForSingleObject(process, INFINITE);
+            CloseHandle(process);
+
+            return wait_result == WAIT_OBJECT_0;
+        }
     };
 }

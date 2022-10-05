@@ -40,8 +40,7 @@ namespace FileLocksmithUI
 
         private void StartFindingProcesses()
         {
-            Thread thread = new Thread(FindProcesses);
-            thread.Start();
+            new Thread(FindProcesses).Start();
             DisplayProgressRing();
         }
 
@@ -64,8 +63,35 @@ namespace FileLocksmithUI
                     stackPanel.Children.Add(entry);
 
                     // Launch a thread to erase this entry if the process exits
+                    new Thread(() => WatchProcess(item.pid)).Start();
                 }
             });
+        }
+
+        private void WatchProcess(uint pid)
+        {
+            if (FileLocksmith.Interop.NativeMethods.WaitForProcess(pid))
+            {
+                // This process has exited.
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    for (int i = 0; i < stackPanel.Children.Count; i++)
+                    {
+                        var element = stackPanel.Children[i] as ProcessEntry;
+                        if (element == null)
+                        {
+                            continue;
+                        }
+
+                        if (element.Pid == pid)
+                        {
+                            stackPanel.Children.RemoveAt(i);
+                            DisplayNoResultsIfEmpty();
+                            return;
+                        }
+                    }
+                });
+            }
         }
 
         private void DisplayNoResultsIfEmpty()
