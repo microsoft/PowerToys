@@ -68,6 +68,8 @@ namespace FileLocksmithUI
                     // Launch a thread to erase this entry if the process exits
                     new Thread(() => WatchProcess(item.pid)).Start();
                 }
+
+                DisplayNoResultsIfEmpty();
             });
         }
 
