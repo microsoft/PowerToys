@@ -9,7 +9,7 @@ namespace constants::nonlocalizable
 	constexpr WCHAR RegistryKeyDescription[] = L"File Locksmith Shell Extension";
 
 	// File name of the UI executable
-	constexpr WCHAR FileNameUIExe[] = L"PowerToys.FileLocksmithGUI.exe";
+	constexpr WCHAR FileNameUIExe[] = L"PowerToys.FileLocksmithUI.exe";
 
 	// String key used by PowerToys
     constexpr WCHAR PowerToyKey[] = L"File Locksmith";
