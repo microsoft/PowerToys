@@ -92,5 +92,11 @@ namespace FileLocksmith::Interop
 
             return wait_result == WAIT_OBJECT_0;
         }
+
+        static System::String^ PidToUser(System::UInt32 pid)
+        {
+            auto user_cpp = pid_to_user(pid);
+            return from_wstring_view(user_cpp);
+        }
     };
 }

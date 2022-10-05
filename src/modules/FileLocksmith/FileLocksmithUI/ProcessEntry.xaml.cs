@@ -34,7 +34,8 @@ namespace FileLocksmithUI
 
             processPid.Text = PowerToys.FileLocksmithUI.Properties.Resources.ProcessId + ": " + pid;
             processFileCount.Text = PowerToys.FileLocksmithUI.Properties.Resources.FilesUsed + ": " + numFiles;
-            processUser.Text = PowerToys.FileLocksmithUI.Properties.Resources.User + ": " + "<TODO PID TO USER>";
+            processUser.Text = PowerToys.FileLocksmithUI.Properties.Resources.User + ": " +
+                FileLocksmith.Interop.NativeMethods.PidToUser(pid);
         }
 
         public void AddPath(string path)
