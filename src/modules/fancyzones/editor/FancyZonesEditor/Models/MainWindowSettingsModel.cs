@@ -166,6 +166,21 @@ namespace FancyZonesEditor
             }
         }
 
+        public static ObservableCollection<LayoutModel> DefaultModels
+        {
+            get
+            {
+                return _defaultModels;
+            }
+
+            set
+            {
+                _defaultModels = value;
+            }
+        }
+
+        private static ObservableCollection<LayoutModel> _defaultModels = new ObservableCollection<LayoutModel>();
+
         public static LayoutHotkeysModel LayoutHotkeys { get; } = new LayoutHotkeysModel();
 
         public LayoutModel SelectedModel
