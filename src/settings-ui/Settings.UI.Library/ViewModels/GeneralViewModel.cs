@@ -383,23 +383,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                             else
                             {
                                 Logger.LogError("Failed to parse time from backup");
-                                return GetResourceString("BackupAndRestore_FailedToParseTime");
+                                return GetResourceString("General_SettingsBackupAndRestore_FailedToParseTime");
                             }
                         }
                         else
                         {
-                            return GetResourceString("BackupAndRestore_UnknownBackupTime");
+                            return GetResourceString("General_SettingsBackupAndRestore_UnknownBackupTime");
                         }
                     }
                     else
                     {
-                        return GetResourceString("BackupAndRestore_NoBackupFound");
+                        return GetResourceString("General_SettingsBackupAndRestore_NoBackupFound");
                     }
                 }
                 catch (Exception e)
                 {
                     Logger.LogError("Error getting LastSettingsBackupDate", e);
-                    return GetResourceString("BackupAndRestore_UnknownBackupTime");
+                    return GetResourceString("General_SettingsBackupAndRestore_UnknownBackupTime");
                 }
             }
         }
@@ -417,7 +417,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     if (!results.lastRan.HasValue)
                     {
                         // not ran since started.
-                        return GetResourceString("BackupAndRestore_CurrentSettingsNoChecked"); // "Current Settings Unknown";
+                        return GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsNoChecked"); // "Current Settings Unknown";
                     }
                     else
                     {
@@ -426,12 +426,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                             if (results.lastBackupExists)
                             {
                                 // if true, it means a backup would have been made
-                                resultText = GetResourceString("BackupAndRestore_CurrentSettingsDiffer"); // "Current Settings Differ";
+                                resultText = GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsDiffer"); // "Current Settings Differ";
                             }
                             else
                             {
                                 // would have done the backup, but there also was not an existing one there.
-                                resultText = GetResourceString("BackupAndRestore_NoBackupFound");
+                                resultText = GetResourceString("General_SettingsBackupAndRestore_NoBackupFound");
                             }
                         }
                         else
@@ -439,16 +439,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                             if (results.hadError)
                             {
                                 // if false and error we don't really know
-                                resultText = GetResourceString("BackupAndRestore_CurrentSettingsUnknown"); // "Current Settings Unknown";
+                                resultText = GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsUnknown"); // "Current Settings Unknown";
                             }
                             else
                             {
                                 // if false, it means a backup would not have been needed/made
-                                resultText = GetResourceString("BackupAndRestore_CurrentSettingsMatch"); // "Current Settings Match";
+                                resultText = GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsMatch"); // "Current Settings Match";
                             }
                         }
 
-                        return $"{resultText} {GetResourceString("BackupAndRestore_CurrentSettingsStatusAt")} {results.lastRan.Value.ToString("G", CultureInfo.CurrentCulture)}";
+                        return $"{resultText} {GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsStatusAt")} {results.lastRan.Value.ToString("G", CultureInfo.CurrentCulture)}";
                     }
                 }
                 catch (Exception e)
@@ -472,7 +472,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                         {
                             if (manifest["BackupSource"].ToString().Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase))
                             {
-                                return GetResourceString("BackupAndRestore_ThisMachine");
+                                return GetResourceString("General_SettingsBackupAndRestore_ThisMachine");
                             }
                             else
                             {
@@ -481,18 +481,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                         }
                         else
                         {
-                            return GetResourceString("BackupAndRestore_UnknownBackupSource");
+                            return GetResourceString("General_SettingsBackupAndRestore_UnknownBackupSource");
                         }
                     }
                     else
                     {
-                        return GetResourceString("BackupAndRestore_NoBackupFound");
+                        return GetResourceString("General_SettingsBackupAndRestore_NoBackupFound");
                     }
                 }
                 catch (Exception e)
                 {
                     Logger.LogError("Error getting LastSettingsBackupSource", e);
-                    return GetResourceString("BackupAndRestore_UnknownBackupSource");
+                    return GetResourceString("General_SettingsBackupAndRestore_UnknownBackupSource");
                 }
             }
         }
@@ -504,7 +504,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 try
                 {
                     var fileName = settingsBackupAndRestoreUtils.GetLatestBackupFileName();
-                    return !string.IsNullOrEmpty(fileName) ? fileName : GetResourceString("BackupAndRestore_NoBackupFound");
+                    return !string.IsNullOrEmpty(fileName) ? fileName : GetResourceString("General_SettingsBackupAndRestore_NoBackupFound");
                 }
                 catch (Exception e)
                 {

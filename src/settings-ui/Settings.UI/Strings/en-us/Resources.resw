@@ -2393,61 +2393,61 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
   </data>
-  <data name="BackupAndRestore_NothingToBackup" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_NothingToBackup" xml:space="preserve">
     <value>A new backup was not created because no settings have been changed since last backup.</value>
   </data>
-  <data name="BackupAndRestore_NoBackupFound" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_NoBackupFound" xml:space="preserve">
     <value>No backup found</value>
   </data>
-  <data name="BackupAndRestore_FailedToParseTime" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_FailedToParseTime" xml:space="preserve">
     <value>Failed to parse time</value>
   </data>
-  <data name="BackupAndRestore_UnknownBackupTime" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_UnknownBackupTime" xml:space="preserve">
     <value>Unknown</value>
   </data>
-  <data name="BackupAndRestore_UnknownBackupSource" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_UnknownBackupSource" xml:space="preserve">
     <value>Unknown</value>
   </data>
-  <data name="BackupAndRestore_ThisMachine" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_ThisMachine" xml:space="preserve">
     <value>This computer</value>
   </data>
-  <data name="BackupAndRestore_CurrentSettingsMatch" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_CurrentSettingsMatch" xml:space="preserve">
     <value>Current settings match</value>
   </data>
-  <data name="BackupAndRestore_CurrentSettingsStatusAt" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_CurrentSettingsStatusAt" xml:space="preserve">
     <value>at</value>
   </data>
-  <data name="BackupAndRestore_CurrentSettingsDiffer" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_CurrentSettingsDiffer" xml:space="preserve">
     <value>Current settings differ</value>
   </data>
-  <data name="BackupAndRestore_CurrentSettingsNoChecked" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_CurrentSettingsNoChecked" xml:space="preserve">
     <value>Checking...</value>
   </data>
-  <data name="BackupAndRestore_CurrentSettingsUnknown" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_CurrentSettingsUnknown" xml:space="preserve">
     <value>Unknown</value>
   </data>
-  <data name="BackupAndRestore_NeverRestored" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_NeverRestored" xml:space="preserve">
     <value>Never restored</value>
   </data>
-  <data name="BackupAndRestore_NothingToRestore" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_NothingToRestore" xml:space="preserve">
     <value>Nothing to restore.</value>
   </data>
-  <data name="BackupAndRestore_NoSettingsFilesFound" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_NoSettingsFilesFound" xml:space="preserve">
     <value>No settings files found.</value>
   </data>
-  <data name="BackupAndRestore_BackupError" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_BackupError" xml:space="preserve">
     <value>There was an error. Try another backup location.</value>
   </data>
-  <data name="BackupAndRestore_BackupComplete" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_BackupComplete" xml:space="preserve">
     <value>Backup completed.</value>
   </data>
-  <data name="BackupAndRestore_NoBackupSyncPath" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_NoBackupSyncPath" xml:space="preserve">
     <value>No backup location selected.</value>
   </data>
-  <data name="BackupAndRestore_NoBackupsFound" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_NoBackupsFound" xml:space="preserve">
     <value>No backups found to restore.</value>
   </data>
-  <data name="BackupAndRestore_InvalidBackupLocation" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestore_InvalidBackupLocation" xml:space="preserve">
     <value>Invalid backup location.</value>
   </data>
   <data name="TextExtractor.ModuleDescription" xml:space="preserve">
