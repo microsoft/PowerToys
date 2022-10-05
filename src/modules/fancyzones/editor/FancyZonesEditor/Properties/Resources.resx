@@ -414,4 +414,13 @@
   <data name="Slider_Value" xml:space="preserve">
     <value>{0} pixels</value>
   </data>
+  <data name="Default_Layout" xml:space="preserve">
+    <value>Default layout</value>
+  </data>
+  <data name="Set_Layout_As_Default" xml:space="preserve">
+    <value>Set layout as a default</value>
+  </data>
+  <data name="Error_Parsing_Default_Layouts_Message" xml:space="preserve">
+    <value>An error occurred while parsing default layouts.</value>
+  </data>
 </root>
