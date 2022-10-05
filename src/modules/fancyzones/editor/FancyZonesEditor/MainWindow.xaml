@@ -202,7 +202,7 @@
                                FontWeight="SemiBold"
                                FontSize="24" />
 
-                    <ui:GridView ItemsSource="{Binding DefaultModels}"
+                    <ui:GridView ItemsSource="{Binding TemplateModels}"
                                  Grid.Row="1"
                                  ItemTemplate="{StaticResource LayoutItemTemplate}"
                                  AutomationProperties.LabeledBy="{Binding ElementName=TemplatesHeaderBlock}"

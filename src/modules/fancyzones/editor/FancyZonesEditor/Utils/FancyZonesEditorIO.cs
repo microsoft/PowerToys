@@ -658,7 +658,7 @@ namespace FancyZonesEditor.Utils
             TemplateLayoutsListWrapper templates = new TemplateLayoutsListWrapper { };
             templates.LayoutTemplates = new List<TemplateLayoutWrapper>();
 
-            foreach (LayoutModel layout in MainWindowSettingsModel.DefaultModels)
+            foreach (LayoutModel layout in MainWindowSettingsModel.TemplateModels)
             {
                 TemplateLayoutWrapper wrapper = new TemplateLayoutWrapper
                 {
@@ -942,7 +942,7 @@ namespace FancyZonesEditor.Utils
             foreach (var wrapper in templateLayouts)
             {
                 LayoutType type = JsonTagToLayoutType(wrapper.Type);
-                LayoutModel layout = MainWindowSettingsModel.DefaultModels[(int)type];
+                LayoutModel layout = MainWindowSettingsModel.TemplateModels[(int)type];
 
                 layout.SensitivityRadius = wrapper.SensitivityRadius;
                 layout.TemplateZoneCount = wrapper.ZoneCount;
