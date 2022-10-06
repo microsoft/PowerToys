@@ -29,16 +29,15 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 - Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
 - Our installer will install the following items:
-   - [.NET 6.0.8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.8) or a newer 6.0.x runtime.
+   - [.NET 6.0.9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0#runtime-desktop-6.0.9) or a newer 6.0.x runtime.
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
-   - [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022) installer. This will install one of the latest versions available.
 
 ### Via GitHub with EXE [Recommended]
 
  [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate the PowerToys installer that matches your machine's architecture.  For most people, it is `x64`.
  
- - **For x64 processors (most common):** [PowerToysSetup-0.62.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.62.0/PowerToysSetup-0.62.0-x64.exe)
- - **For ARM64 processors:** [PowerToysSetup-0.62.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.62.0/PowerToysSetup-0.62.0-arm64.exe)
+ - **For x64 processors (most common):** [PowerToysSetup-0.63.0-x64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.63.0/PowerToysSetup-0.63.0-x64.exe)
+ - **For ARM64 processors:** [PowerToysSetup-0.63.0-arm64.exe](https://github.com/microsoft/PowerToys/releases/download/v0.63.0/PowerToysSetup-0.63.0-arm64.exe)
 
 This is our preferred method.
 
@@ -73,112 +72,120 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.62 - August 2022 Update
+### 0.63 - September 2022 Update
 
-In this release, we focused on releasing three new PowerToys.
+In this release, we focused on stability and improvement.
 
 **Highlights**
 
-- New utility: Screen Ruler is a quick and easy way to measure pixels on your screen.
-- New utility: Quick Accent is an easy way to write letters with accents. Thanks [@damienleroy](https://github.com/damienleroy)!
-- New utility: Text Extractor works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard. Thanks [@TheJoeFin](https://github.com/TheJoeFin)!
-- PowerToy Run ships with a new Plugin letting you search in past query results. Thanks [@jefflord](https://github.com/jefflord)!
+- QuickAccent contains a new setting to select a language. This should reduce the number of accented characters a user needs to pick from. Thanks [@damienleroy](https://github.com/damienleroy)!
+- Reduced installer file size (83 MB for 0.63.0 compared to 125 MB for 0.62.1) and drive storage use (587 MB for 0.63.0 compared to 817 MB for 0.62.1) by sharing the Windows App SDK, VC++ redistributable and PowerToys Interop runtime files between utilities. This is a step towards removing the UAC requirement on install. The next step is shipping .NET self-contained and shared between utilities.
 
 ### Known issues
+
 - The Text Extractor utility [fails to recognize text in some cases on ARM64 devices running Windows 10](https://github.com/microsoft/PowerToys/issues/20278).
 - After installing PowerToys, [the new Windows 11 context menu entries for PowerRename and Image Resizer might not appear before a system restart](https://github.com/microsoft/PowerToys/issues/19124).
 - There are reports of users who are [unable to open the Settings window](https://github.com/microsoft/PowerToys/issues/18015). This is being caused by incompatibilities with some applications (RTSS RivaTuner Statistics Server and MSI AfterBurner are known examples of this). If you're affected by this, please check the  linked issue to verify if any of the presented solutions works for you.
 
 ### General
 
-- Added a new utility: Screen Ruler.
-- Added a new utility: Quick Accent. Thanks [@damienleroy](https://github.com/damienleroy)!
-- Added a new utility: Text Extractor. Thanks [@TheJoeFin](https://github.com/TheJoeFin)!
-- Upgraded the Windows App SDK runtimes to 1.1.4.
+- Fixed an issue that caused bug report generation to fail. (This was a hotfix for 0.62)
+- Updated the Windows App SDK runtimes to 1.1.5.
 
 ### Always on Top
 
-- Fixed a bug causing the border to linger when closing an Outlook popup window.
+- Fixed an issue causing the border to linger when moving a window between virtual desktops.
+- The minimum thickness for the borders is now 1. Thanks [@unuing](https://github.com/unuing)!
+- Borders were showing in Virtual Desktop thumbnails. These were removed.
+- Corrected the borders visuals to more closely follow the application borders.
+
+### Awake
+
+- Fixed utility exit logic to close all threads and avoid crashes. (This was a hotfix for 0.62)
 
 ### Color Picker
 
-- Fixed the HSB color format to correctly track HSV instead of HSL.
-- Fixed an issue where the zoom factor wasn't reset when reopening the zoom window. Thanks [@FWest98](https://github.com/FWest98)!
+- Fixed utility exit logic to close all threads and avoid crashes. (This was a hotfix for 0.62)
+- Fixed initialization error that caused the mouse position to be incorrectly set.
 
 ### FancyZones
 
-- Removed the button to open Settings from the FancyZones Editor, as it was opening behind the overlay.
-- Changed the Highlight distance control to a slider in the FancyZones Editor, to address accessibility issues with screen readers.
-- Fixed an issue where the FancyZones Editor would duplicate or edit the wrong layout.
-- Fixed an issue that caused canvas layout width/height to be changed without even opening the layout in FancyZones Editor.
+- Fixed FancyZones Editor exit logic to close all threads and avoid crashes. (This was a hotfix for 0.62)
 
 ### File explorer add-ons
 
-- Quality of life improvements to Developer Files preview, including a progress bar while loading, performance improvements, an improved dark mode, and logs. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
-- Fixed possible WebView related vulnerabilities in the SVG and Markdown handlers.
-- Fixed some race conditions in Developer Files preview causing the loading bar to hang.
-- Added localization support to the Developer Files preview messages.
-- It's now possible to configure default color for Stl Thumbnails. Thanks [@pedrolamas](https://github.com/pedrolamas)!
-- Added an option to format JSON and XML files before rendering. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Updated the WebView 2 dependency to 1.0.1343.22. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Fixed preview of .reg files.
 
-### PowerRename
+### Image Resizer
 
-- Fixed an issue that was generating a silent crash when the context menu was triggered when not selecting any file or folder. (This was a hotfix for 0.61)
-- Improved performance when loading a big number of files.
-- Fixed a specific case in which PowerRename tried to rename a file to an empty string.
-- The UI now shows when a file can't be renamed due to its name being too long or containing invalid characters.
+- Fixed a bug causing File Explorer to crash under some conditions when accessing the context menu.
 
 ### PowerToys Run
 
-- Added a fix to the VSCodeWorkspaces plugin to better support portable installations. Thanks [@bkmeneguello](https://github.com/bkmeneguello)!
-- The Folder plugin now expands `%HOMEPATH%` correctly.
-- Fixed a case where a previous result was being activated when searching for new results. Added a setting to better control input throttling. Thanks [@jefflord](https://github.com/jefflord)!
-- Added support for port numbers in the URI plugin. Thanks [@KohGeek](https://github.com/KohGeek)!
-- Fixed query errors when the search delay option was turned off.
-- New History plugin to search for old search results. Thanks [@jefflord](https://github.com/jefflord)!
-- Changed the default TimeDate activation keyword to `)`, as queries starting by `(` are expected as Calculator global queries, and added information in Settings so users know that some activation keywords may conflict with normal usage of some plugins when trying to do a global query. Thanks [@htcfreek](https://github.com/htcfreek)!
-- The Unit Converter plugin updated its UnitsNet dependency and now supports plural units. Thanks [@FWest98](https://github.com/FWest98)!
-- Improved the validation logic in the Calculator plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Added support to opening Terminal windows in quake mode. Thanks [@FWest98](https://github.com/FWest98)!
+- Fixed utility exit logic to close all threads and avoid crashes. (This was a hotfix for 0.62)
+- Improve the icon shown in the Program plugin for application execution aliases. Thanks [@MikeBarker-MSFT](https://github.com/MikeBarker-MSFT)!
+- Fix calls to the default browser when Firefox is installed from the Microsoft Store.
+- Fixed accessibility issue in which controls appended to the result entries weren't announced.
+- Search was improved and should now return results where the terms in the query appear at the end of the result.
 
-### Runner
+### Quick Accent
 
-- Improved: Clean up old install folders and logs at startup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Improved the keyboard hooks performance. (This was a hotfix for 0.62)
+- Fixed a bug that was causing Quick Accent to interfere with Keyboard Manager. (This was a hotfix for 0.62)
+- Added the correct ß uppercase character. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+- Accent character selection should now wrap around. Thanks [@wmentha](https://github.com/wmentha)!
+- Added language selection setting to reduce the number of accented characters shown. The available accented character sets are Currency, Czech, Dutch, French, Hungarian, Icelandic, Italian, Maori, Pinyin, Polish, Romanian, Slovakian, Spanish and Turkish. Thanks [@damienleroy](https://github.com/damienleroy)!
+
+### Screen Ruler
+
+- Improved UI/UX and settings descriptions.
+- Fixed utility exit logic to close all threads and avoid crashes. (This was a hotfix for 0.62)
 
 ### Settings
 
-- Image and phrasing adjustments.
-- Icon and image updates for the new utilities. Thanks [@niels9001](https://github.com/niels9001)!
+- UI icons updated. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+- Descriptions improvement and disambiguation. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+- Fixed checkbox margins and other design tweaks. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
 
-### Shortcut Guide
+### Text Extractor
 
-- Fixed the Narrator shortcut to include the newly added Control key.
+- Removed extra spaces when recognizing Chinese, Japanese or Korean languages. Thanks [@TheJoeFin](https://github.com/TheJoeFin)!
+- Fixed utility exit logic to close all threads and avoid crashes. (This was a hotfix for 0.62)
+- Fixed an issue where a selection would start on right-click.
 
 ### Installer
 
-- Fixed a regression that was causing the PowerToys shortcut to be deleted on update. (This was a hotfix for 0.61)
-- Updated the .NET dependency to 6.0.8.
+- Added logic to exit PowerToys on upgrade before trying to update .NET.
+- Updated the .NET dependency to 6.0.9.
+- Added clearer installation step names for the bootstrapper. Thanks [@htcfreek](https://github.com/htcfreek) and [@Jay-o-Way](https://github.com/Jay-o-Way)!
+- Windows App SDK, VC++ redistributable and PowerToys Interop runtime files are now shared between utilities through hardlinks, reducing installation size.
 
 ### Documentation
 
-- Fixed wrong links to installers in README. Thanks [@unuing](https://github.com/unuing)!
+- Fixed typos in Keyboard Manager documentation. Thanks [@eltociear](https://github.com/eltociear)!
+- Replaced docs.microsoft.com links with learn.microsoft.com. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 
 ### Development
 
-- Removed FXCop leftovers. Thanks [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)!
-- Added version number to missing binaries and added a CI script to verify that all binaries have their version numbers set correctly.
-- Updated a dependency to fix building on Visual Studio 17.3 C++ tools.
-- Fixed and reactivated the CI unit tests for FancyZones.
-- Cleaned up and removed dead code from PowerRename code base.
-- Added a script for verifying the solution targets match the expected CPU architectures. Thanks [@snickler](https://github.com/snickler)!
-- Obsolete package Castle.Core was removed. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Language typos were corrected across the PowerToys assets. Thanks [@pea-sys](https://github.com/pea-sys), [@eltociear](https://github.com/eltociear) and [@obairka](https://github.com/obairka)!
+- Fixed a build error that was restricting developers to switch between configuration without first cleaning local build files.
+- C++ exception catches were corrected to be caught by reference to avoid unnecessary copy operations. Thanks [@NN---](https://github.com/NN---)!
+- General C# code clean up, format fixing and removal of unused code analysis suppressions.
+- Removed unnecessary `muxc` prefix from XAML files. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+- Re-enabled tests on our pipeline that depend on WebView2.
+- Windows 11 tier 1 context menu packages now contain the "Microsoft.PowerToys" prefix.
 
-#### What is being planned for v0.63
+#### What is being planned for v0.64
 
-For [v0.63][github-next-release-work], we'll work on below:
+For [v0.64][github-next-release-work], we'll work on below:
 
 - Environment Variables Editor PowerToy
 - GPO policies for PowerToys
+- Utility to list which processes are using a file
+- Ship .NET self contained and shared between utilities
+- Hosts file editor, contributed by [@davidegiacometti](https://github.com/davidegiacometti). Thank you!
+- Settings backup and restore, contributed by [@jefflord](https://github.com/jefflord). Thank you!
 - Stability / bug fixes
 
 ## PowerToys Community
@@ -206,5 +213,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F36
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F35
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F37
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F36
