@@ -8,7 +8,6 @@ using System.IO.Abstractions;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {

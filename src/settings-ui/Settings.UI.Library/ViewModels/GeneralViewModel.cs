@@ -15,7 +15,6 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
-using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {

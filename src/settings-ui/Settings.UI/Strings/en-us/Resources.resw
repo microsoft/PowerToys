@@ -2416,6 +2416,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="General_SettingsBackupAndRestore_CurrentSettingsStatusAt" xml:space="preserve">
     <value>at</value>
+    <comment>E.g., Food was served 'at' noon.</comment>
   </data>
   <data name="General_SettingsBackupAndRestore_CurrentSettingsDiffer" xml:space="preserve">
     <value>Current settings differ</value>

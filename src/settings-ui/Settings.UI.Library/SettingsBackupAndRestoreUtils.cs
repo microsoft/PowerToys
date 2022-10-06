@@ -15,10 +15,9 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
-namespace Settings.UI.Library
+namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class SettingsBackupAndRestoreUtils
     {
@@ -355,7 +354,8 @@ namespace Settings.UI.Library
             }
             catch (Exception ex2)
             {
-                return (false, $"There was an error: {ex2.Message}", "Error");
+                Logger.LogError("Error in RestoreSettings, " + ex2.ToString());
+                return (false, $"General_SettingsBackupAndRestore_BackupError", "Error");
             }
         }
 
