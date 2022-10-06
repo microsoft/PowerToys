@@ -113,7 +113,7 @@
 
   <?define WinTermCmpFiles=plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;PowerToys.ManagedTelemetry.dll?>
 
-  <?define PowerRenameFiles=PowerRenameUI.ico;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll?>
+  <?define PowerRenameFiles=PowerRenameUI.ico;PowerToys.PowerRename.exe;resources.pri;PowerToys.PowerRenameExt.dll;PowerRenameContextMenuPackage.msix;PowerToys.PowerRenameContextMenu.dll?>
 
   <?define PowerRenameSparsePackageAssets=LargeTile.png;SmallTile.png;SplashScreen.png;Square150x150Logo.png;Square44x44Logo.png;storelogo.png;Wide310x150Logo.png?>
 
