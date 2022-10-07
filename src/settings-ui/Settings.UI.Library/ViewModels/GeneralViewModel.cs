@@ -60,9 +60,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private IFileSystemWatcher _fileWatcher;
 
+        private Func<Task<string>> PickSingleFolderDialog { get; }
+
         private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, object resourceLoader = null)
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null, object resourceLoader = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
@@ -73,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             RefreshBackupStatusEventHandler = new ButtonClickCommand(RefreshBackupStatusEventHandlerClick);
             HideBackupAndRestoreMessageAreaAction = hideBackupAndRestoreMessageAreaAction;
             DoBackupAndRestoreDryRun = doBackupAndRestoreDryRun;
-
+            PickSingleFolderDialog = pickSingleFolderDialog;
             ResourceLoader = resourceLoader;
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
@@ -645,16 +647,33 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         }
 
         /// <summary>
-        /// Class <c>SelectSettingBackupDir</c> opens folder browser to select a backup and retore location.
+        /// Method <c>SelectSettingBackupDir</c> opens folder browser to select a backup and retore location.
         /// </summary>
         private void SelectSettingBackupDir()
         {
-            /* possible try to use this from Windows.Storage.Pickers?
-            var folderPicker = new FolderPicker();
-            folderPicker.FileTypeFilter.Add("*");
-            await folderPicker.PickSingleFolderAsync();
-            */
+            SelectSettingBackupDirOldMode();
+        }
 
+        /// <summary>
+        /// Method <c>SelectSettingBackupDirNewMode</c> opens folder browser to select a backup and retore location.
+        /// </summary>
+        private async void SelectSettingBackupDirNewMode()
+        {
+            var currentDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
+
+            var newPath = await PickSingleFolderDialog();
+            if (!string.IsNullOrEmpty(newPath))
+            {
+                SettingsBackupAndRestoreDir = newPath;
+                NotifyAllBackupAndRestoreProperties();
+            }
+        }
+
+        /// <summary>
+        /// Method <c>SelectSettingBackupDirOldMode</c> opens folder browser to select a backup and retore location.
+        /// </summary>
+        private void SelectSettingBackupDirOldMode()
+        {
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
                 var currentDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
@@ -668,12 +687,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
                     SettingsBackupAndRestoreDir = dialog.SelectedPath;
-
-                    /*
-                    NotifyPropertyChanged(nameof(LastSettingsBackupDate));
-                    NotifyPropertyChanged(nameof(LastSettingsBackupSource));
-                    NotifyPropertyChanged(nameof(LastSettingsBackupFileName));
-                    */
 
                     NotifyAllBackupAndRestoreProperties();
                 }
@@ -705,13 +718,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 _settingsBackupRestoreMessageVisible = true;
 
                 _settingsBackupMessage = GetResourceString(results.message);
-
-                /*
-                NotifyPropertyChanged(nameof(SettingsBackupMessage));
-                NotifyPropertyChanged(nameof(BackupRestoreMessageSeverity));
-                NotifyPropertyChanged(nameof(SettingsBackupRestoreMessageVisible));
-                NotifyPropertyChanged(nameof(CurrentSettingMatchText));
-                */
 
                 NotifyAllBackupAndRestoreProperties();
 

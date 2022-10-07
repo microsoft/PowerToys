@@ -401,10 +401,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 return null;
             }
 
-            // var settingsBackupFolders = Directory.GetDirectories(settingsBackupAndRestoreDir, "settings_*", SearchOption.TopDirectoryOnly).ToList().ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture));
             var settingsBackupFolders = new Dictionary<long, string>();
 
-            var settingsBackupFiles = GetBackupSettingsFiles(settingsBackupAndRestoreDir).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
+            var settingsBackupFiles = GetBackupSettingsFiles(settingsBackupAndRestoreDir).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
 
             var latestFolder = 0L;
             var latestFile = 0L;

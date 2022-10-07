@@ -12,6 +12,8 @@ using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.Resources;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -80,6 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 stateUpdatingAction,
                 hideBackupAndRestoreMessageArea,
                 doRefreshBackupRestoreStatus,
+                PickSingleFolderDialog,
                 loader);
 
             DataContext = ViewModel;
@@ -135,6 +138,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void UpdateBackupAndRestoreStatusText(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
             RefreshBackupRestoreStatus();
+        }
+
+        private static async Task<string> PickSingleFolderDialog()
+        {
+            var openPicker = new FolderPicker();
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
+            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
+
+            var folder = await openPicker.PickSingleFolderAsync();
+            return folder?.Path;
         }
     }
 }
