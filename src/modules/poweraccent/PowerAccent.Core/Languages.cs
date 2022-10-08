@@ -550,4 +550,4 @@ namespace PowerAccent.Core
             return Array.Empty<char>();
         }
     }
-}
+
