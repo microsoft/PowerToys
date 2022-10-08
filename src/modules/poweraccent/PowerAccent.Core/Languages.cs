@@ -396,8 +396,6 @@ namespace PowerAccent.Core
             return Array.Empty<char>();
         }
 
-    }
-
         // Slovak
         private static char[] GetDefaultLetterKeySK(LetterKey letter)
         {
@@ -550,4 +548,4 @@ namespace PowerAccent.Core
             return Array.Empty<char>();
         }
     }
-
+}
