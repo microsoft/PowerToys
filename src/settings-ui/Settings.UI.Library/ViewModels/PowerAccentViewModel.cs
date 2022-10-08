@@ -109,17 +109,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 case "PL":
                     _selectedLangIndex = 10;
                     break;
-                case "RO":
+                case "PT":
                     _selectedLangIndex = 11;
                     break;
-                case "SK":
+                case "RO":
                     _selectedLangIndex = 12;
                     break;
-                case "SP":
+                case "SK":
                     _selectedLangIndex = 13;
                     break;
-                case "TK":
+                case "SP":
                     _selectedLangIndex = 14;
+                    break;
+                case "TK":
+                    _selectedLangIndex = 15;
                     break;
             }
 
@@ -291,15 +294,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                             _powerAccentSettings.Properties.SelectedLang.Value = "PL";
                             break;
                         case 11:
-                            _powerAccentSettings.Properties.SelectedLang.Value = "RO";
+                            _powerAccentSettings.Properties.SelectedLang.Value = "PT";
                             break;
                         case 12:
-                            _powerAccentSettings.Properties.SelectedLang.Value = "SK";
+                            _powerAccentSettings.Properties.SelectedLang.Value = "RO";
                             break;
                         case 13:
-                            _powerAccentSettings.Properties.SelectedLang.Value = "SP";
+                            _powerAccentSettings.Properties.SelectedLang.Value = "SK";
                             break;
                         case 14:
+                            _powerAccentSettings.Properties.SelectedLang.Value = "SP";
+                            break;
+                        case 15:
                             _powerAccentSettings.Properties.SelectedLang.Value = "TK";
                             break;
                     }
