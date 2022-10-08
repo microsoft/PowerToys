@@ -1,8 +1,29 @@
 # Microsoft PowerToys
 
-![Hero image for Microsoft PowerToys](doc/images/overview/PT_hero_image.png)
+<div align="center">
+   
+<img width="800" alt="Hero image for Microsoft PowerToys" src="doc/images/overview/PT_hero_image.png">
 
-[How to use PowerToys][usingPowerToys-docs-link] | [Downloads & Release notes][github-release-link] | [Contributing to PowerToys](#contributing) | [What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap)
+| [How to use PowerToys][usingPowerToys-docs-link] | [Downloads & Release notes][github-release-link] | [Contributing to PowerToys](#contributing) | [What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap) |
+| -- | -- | -- | -- | -- |
+   
+</div>
+
+## Summary
+
+- [Build status](#build-status)
+- [About](#about)
+- [Installing and running](#installing-and-running-microsoft-powertoys)
+   - [Requirements](#requirements)
+   - [Via GitHub with EXE](#via-github-with-exe-recommended)
+   - [Via Microsoft Store](#via-microsoft-store)
+   - [Via WinGet (Preview)](#via-winget-preview)
+   - [Other install methods](#other-install-methods)
+- [Contributing](#contributing) 
+- [What's Happening](#whats-happening)
+- [PowerToys Community](#powertoys-community)
+- [Code of Conduct](#code-of-conduct)
+- [Privacy Statement](#privacy-statement)
 
 ## Build status
 
