@@ -36,17 +36,17 @@ internal static class WindowsFunctions
         }
     }
 
-    public static Point GetCaretPosition()
+    public static POINT GetCaretPosition()
     {
         User32.GUITHREADINFO guiInfo = new ();
         guiInfo.cbSize = (uint)Marshal.SizeOf(guiInfo);
         User32.GetGUIThreadInfo(0, ref guiInfo);
-        System.Drawing.Point caretPosition = new System.Drawing.Point(guiInfo.rcCaret.left, guiInfo.rcCaret.top);
+        Vanara.PInvoke.POINT caretPosition = new Vanara.PInvoke.POINT(guiInfo.rcCaret.left, guiInfo.rcCaret.top);
         User32.ClientToScreen(guiInfo.hwndCaret, ref caretPosition);
 
         if (caretPosition.X == 0)
         {
-            System.Drawing.Point testPoint;
+            Vanara.PInvoke.POINT testPoint;
             User32.GetCaretPos(out testPoint);
             return testPoint;
         }
@@ -67,7 +67,9 @@ internal static class WindowsFunctions
 
         double dpi = User32.GetDpiForWindow(guiInfo.hwndActive) / 96d;
 
-        return (monitorInfo.rcWork.Location, monitorInfo.rcWork.Size, dpi);
+        Vanara.PInvoke.POINT location = monitorInfo.rcWork.Location;
+
+        return (new Point(location.X, location.Y), monitorInfo.rcWork.Size, dpi);
     }
 
     public static bool IsCapsLockState()
