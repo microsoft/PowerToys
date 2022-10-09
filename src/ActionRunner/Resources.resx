@@ -58,10 +58,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DOTNET_CORE_DOWNLOAD_FAILURE" xml:space="preserve">
-    <value>Couldn't download .NET Core Desktop Runtime 3.1, please install it manually.</value>
+  <data name="DOTNET_DOWNLOAD_FAILURE" xml:space="preserve">
+    <value>Couldn't download .NET 6 Desktop Runtime, please install it manually.</value>
   </data>
-  <data name="DOTNET_CORE_DOWNLOAD_FAILURE_TITLE" xml:space="preserve">
+  <data name="DOTNET_DOWNLOAD_FAILURE_TITLE" xml:space="preserve">
     <value>PowerToys installation error</value>
   </data>
   <data name="GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT" xml:space="preserve">
