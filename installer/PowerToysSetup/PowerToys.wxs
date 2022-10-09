@@ -93,19 +93,6 @@
                     Version="6.0.9.31620"
                     Hash="$(var.Dotnet6PayloadHash)" />
             </ExePackage>
-            <ExePackage
-                DisplayName="Installing Microsoft Edge WebView2"
-                Name="MicrosoftEdgeWebview2Setup.exe"
-                Compressed="yes"
-                Id="WebView2"
-                DetectCondition="HasWebView2PerMachine OR HasWebView2PerUser"
-                SourceFile="WebView2\MicrosoftEdgeWebview2Setup.exe"
-                InstallCommand="/silent /install"
-                RepairCommand="/repair /passive"
-                Permanent="yes"
-                PerMachine="yes"
-                UninstallCommand="/silent /uninstall">
-            </ExePackage>
             <MsiPackage
                 DisplayName="Installing PowerToys"
                 SourceFile="$(var.PowerToysPlatform)\Release\PowerToysSetup-$(var.Version)-$(var.PowerToysPlatform).msi"
