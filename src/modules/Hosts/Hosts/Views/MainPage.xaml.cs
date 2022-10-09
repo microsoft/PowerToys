@@ -147,7 +147,7 @@ namespace Hosts.Views
                 dialog.PrimaryButtonStyle = Application.Current.Resources["AccentButtonStyle"] as Style;
                 dialog.CloseButtonText = resourceLoader.GetString("WarningDialog_QuitBtn");
                 dialog.CloseButtonCommand = ExitCommand;
-              
+
                 await dialog.ShowAsync();
             }
         }
