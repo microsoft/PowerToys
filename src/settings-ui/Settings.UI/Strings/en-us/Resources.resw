@@ -2437,7 +2437,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Polish</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Portuguese.Content" xml:space="preserve">
-    <value>Portuguese (BR)</value>
+    <value>Portuguese</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Slovakian.Content" xml:space="preserve">
     <value>Slovakian</value>

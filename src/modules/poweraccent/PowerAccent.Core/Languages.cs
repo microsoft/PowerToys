@@ -44,7 +44,7 @@ namespace PowerAccent.Core
                 case Language.MI: return GetDefaultLetterKeyMI(letter); // Maori
                 case Language.PI: return GetDefaultLetterKeyPI(letter); // Pinyin
                 case Language.PL: return GetDefaultLetterKeyPL(letter); // Polish
-                case Language.PT: return GetDefaultLetterKeyPT(letter); // Portuguese (BR)
+                case Language.PT: return GetDefaultLetterKeyPT(letter); // Portuguese
                 case Language.RO: return GetDefaultLetterKeyRO(letter); // Romanian
                 case Language.SK: return GetDefaultLetterKeySK(letter); // Slovak
                 case Language.SP: return GetDefaultLetterKeySP(letter); // Spain
@@ -348,7 +348,7 @@ namespace PowerAccent.Core
             return Array.Empty<char>();
         }
 
-        // Portuguese (BR)
+        // Portuguese
         private static char[] GetDefaultLetterKeyPT(LetterKey letter)
         {
             switch (letter)
