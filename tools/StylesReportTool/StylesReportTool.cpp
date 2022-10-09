@@ -123,8 +123,8 @@ public:
         logger.open(logsPath.string(), std::ios_base::out | std::ios_base::app);
     }
 
-    template<typename format_string_t, typename... Args>
-    static void log(format_string_t fmt, Args&&... args)
+    template<typename FormatString, typename... Args>
+    static void log(FormatString fmt, Args&&... args)
     {
         logger << std::vformat(fmt, std::make_wformat_args(args...)) << std::endl;
     }

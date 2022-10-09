@@ -16,43 +16,43 @@ public:
     static void init(std::vector<spdlog::sink_ptr> sinks);
 
     // log message should not be localized
-    template<typename format_string_t, typename... Args>
-    static void trace(const format_string_t& fmt, const Args&... args)
+    template<typename FormatString, typename... Args>
+    static void trace(const FormatString& fmt, const Args&... args)
     {
         logger->trace(fmt, args...);
     }
 
     // log message should not be localized
-    template<typename format_string_t, typename... Args>
-    static void debug(const format_string_t& fmt, const Args&... args)
+    template<typename FormatString, typename... Args>
+    static void debug(const FormatString& fmt, const Args&... args)
     {
         logger->debug(fmt, args...);
     }
 
     // log message should not be localized
-    template<typename format_string_t, typename... Args>
-    static void info(const format_string_t& fmt, const Args&... args)
+    template<typename FormatString, typename... Args>
+    static void info(const FormatString& fmt, const Args&... args)
     {
         logger->info(fmt, args...);
     }
 
     // log message should not be localized
-    template<typename format_string_t, typename... Args>
-    static void warn(const format_string_t& fmt, const Args&... args)
+    template<typename FormatString, typename... Args>
+    static void warn(const FormatString& fmt, const Args&... args)
     {
         logger->warn(fmt, args...);
     }
 
     // log message should not be localized
-    template<typename format_string_t, typename... Args>
-    static void error(const format_string_t& fmt, const Args&... args)
+    template<typename FormatString, typename... Args>
+    static void error(const FormatString& fmt, const Args&... args)
     {
         logger->error(fmt, args...);
     }
 
     // log message should not be localized
-    template<typename format_string_t, typename... Args>
-    static void critical(const format_string_t& fmt, const Args&... args)
+    template<typename FormatString, typename... Args>
+    static void critical(const FormatString& fmt, const Args&... args)
     {
         logger->critical(fmt, args...);
     }
