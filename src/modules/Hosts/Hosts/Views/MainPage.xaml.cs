@@ -144,9 +144,10 @@ namespace Hosts.Views
                     TextWrapping = TextWrapping.Wrap,
                 };
                 dialog.PrimaryButtonText = resourceLoader.GetString("WarningDialog_AcceptBtn");
+                dialog.PrimaryButtonStyle = Application.Current.Resources["AccentButtonStyle"] as Style;
                 dialog.CloseButtonText = resourceLoader.GetString("WarningDialog_QuitBtn");
                 dialog.CloseButtonCommand = ExitCommand;
-
+              
                 await dialog.ShowAsync();
             }
         }
