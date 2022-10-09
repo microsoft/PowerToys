@@ -9,6 +9,7 @@
 #include <shellapi.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
+#include <common/SettingsAPI/settings_objects.h>
 #include <string>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -71,7 +72,7 @@ private:
         EnumWindows(enum_windows, (LPARAM)m_hProcess);
     }
 
-    void launch_process()
+    void launch_process(bool runas)
     {
         Logger::trace(L"Starting Hosts process");
         unsigned long powertoys_pid = GetCurrentProcessId();
@@ -84,6 +85,12 @@ private:
         sei.lpFile = L"modules\\Hosts\\PowerToys.Hosts.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
+
+        if (runas)
+        {
+            sei.lpVerb = L"runas";
+        }
+
         if (ShellExecuteExW(&sei))
         {
             Logger::trace("Successfully started the Hosts process");
@@ -135,13 +142,27 @@ public:
 
     virtual void call_custom_action(const wchar_t* action) override
     {
-        if (is_process_running())
+        try
         {
-            bring_process_to_front();
+            PowerToysSettings::CustomActionObject action_object =
+                PowerToysSettings::CustomActionObject::from_json_string(action);
+
+            if (is_process_running())
+            {
+                bring_process_to_front();
+            }
+            else if (action_object.get_name() == L"Launch")
+            {
+                launch_process(false);
+            }
+            else if (action_object.get_name() == L"LaunchAdministrator")
+            {
+                launch_process(true);
+            }
         }
-        else
+        catch (std::exception&)
         {
-            launch_process();
+            Logger::error(L"Failed to parse action. {}", action);
         }
     }
 

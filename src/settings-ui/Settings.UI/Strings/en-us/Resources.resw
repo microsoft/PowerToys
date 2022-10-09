@@ -2517,4 +2517,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Hosts File Editor</value>
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
+  <data name="Hosts_Toggle_LaunchAdministrator.Description" xml:space="preserve">
+    <value>Needs to be launched as administrator in order to make changes to the hosts file</value>
+  </data>
+  <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
+    <value>Launch as administrator</value>
+  </data>
 </root>

@@ -12,11 +12,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowStartupWarning { get; set; }
 
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool LaunchAdministrator { get; set; }
+
         public AdditionalLinesPosition AdditionalLinesPosition { get; set; }
 
         public HostsProperties()
         {
             ShowStartupWarning = true;
+            LaunchAdministrator = false;
             AdditionalLinesPosition = AdditionalLinesPosition.Top;
         }
     }
