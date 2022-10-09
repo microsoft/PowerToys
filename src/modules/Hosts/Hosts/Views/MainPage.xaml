@@ -231,12 +231,16 @@
                             TextWrapping="WrapWholeWords" />
                         <ProgressRing
                             Grid.Column="2"
+                            Width="20"
+                            Height="20"
                             Margin="0,0,8,0"
                             IsActive="{x:Bind Pinging, Mode=OneWay}" />
-                        <SymbolIcon
+                        <FontIcon
                             x:Name="PingIcon"
                             Grid.Column="2"
                             Margin="0,0,8,0"
+                            FontSize="18"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             Visibility="Collapsed">
                             <i:Interaction.Behaviors>
                                 <ic:DataTriggerBehavior
@@ -244,9 +248,9 @@
                                     ComparisonCondition="Equal"
                                     Value="True">
                                     <ic:ChangePropertyAction
-                                        PropertyName="Symbol"
+                                        PropertyName="Glyph"
                                         TargetObject="{Binding ElementName=PingIcon}"
-                                        Value="Accept" />
+                                        Value="&#xe8fb;" />
                                     <ic:ChangePropertyAction
                                         PropertyName="Visibility"
                                         TargetObject="{Binding ElementName=PingIcon}"
@@ -261,9 +265,9 @@
                                     ComparisonCondition="Equal"
                                     Value="False">
                                     <ic:ChangePropertyAction
-                                        PropertyName="Symbol"
+                                        PropertyName="Glyph"
                                         TargetObject="{Binding ElementName=PingIcon}"
-                                        Value="Clear" />
+                                        Value="&#xe894;" />
                                     <ic:ChangePropertyAction
                                         PropertyName="Visibility"
                                         TargetObject="{Binding ElementName=PingIcon}"
@@ -283,7 +287,7 @@
                                         Value="Collapsed" />
                                 </ic:DataTriggerBehavior>
                             </i:Interaction.Behaviors>
-                        </SymbolIcon>
+                        </FontIcon>
                         <ToggleSwitch
                             Grid.Column="3"
                             Width="40"
