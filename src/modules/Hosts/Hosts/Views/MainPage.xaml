@@ -37,6 +37,7 @@
 
         <Grid>
             <Button
+                x:Uid="AddEntryBtn"
                 Height="36"
                 Margin="16,0,0,0"
                 Command="{x:Bind NewDialogCommand}">
@@ -165,6 +166,7 @@
             CanReorderItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
         -->
         <ListView
+            x:Uid="Entries"
             x:Name="Entries"
             Grid.Row="1"
             Margin="16,8,16,16"
@@ -179,6 +181,7 @@
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="models:Entry">
                     <Grid
+                        AutomationProperties.Name="{x:Bind Address, Mode=OneWay}"
                         Background="Transparent"
                         IsRightTapEnabled="True"
                         RightTapped="Grid_RightTapped">
@@ -289,6 +292,7 @@
                             </i:Interaction.Behaviors>
                         </FontIcon>
                         <ToggleSwitch
+                            x:Uid="ActiveToggle"
                             Grid.Column="3"
                             Width="40"
                             MinWidth="0"
@@ -300,8 +304,6 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-
-
 
         <ContentDialog
             x:Name="EntryDialog"

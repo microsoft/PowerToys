@@ -205,8 +205,8 @@ namespace Hosts.ViewModels
 
         private void Entry_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            // Ping changed should't trigger a file save
-            if (e.PropertyName == nameof(Entry.Ping))
+            // Ping should't trigger a file save
+            if (e.PropertyName == nameof(Entry.Ping) || e.PropertyName == nameof(Entry.Pinging))
             {
                 return;
             }

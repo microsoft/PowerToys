@@ -180,6 +180,8 @@ namespace Hosts.Views
                     ViewModel.Entries.Move(index, index + 1);
                 }
             }
+
+            pingIco
         }
     }
 }
