@@ -1,9 +1,6 @@
 [submodule "deps/spdlog"]
 	path = deps/spdlog
 	url = https://github.com/gabime/spdlog.git
-[submodule "deps/cxxopts"]
-	path = deps/cxxopts
-	url = https://github.com/jarro2783/cxxopts.git
 [submodule "deps/expected-lite"]
 	path = deps/expected-lite
 	url = https://github.com/martinmoene/expected-lite.git
