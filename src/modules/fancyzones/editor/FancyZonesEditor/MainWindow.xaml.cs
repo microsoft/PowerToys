@@ -29,6 +29,7 @@ namespace FancyZonesEditor
 
         private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
         private LayoutModel _backup;
+        private List<LayoutModel> _defaultLayoutsBackup;
 
         private ContentDialog _openedDialog;
         private TextBlock _createLayoutAnnounce;
@@ -322,6 +323,8 @@ namespace FancyZonesEditor
                 _backup = new CanvasLayoutModel(canvas);
             }
 
+            _defaultLayoutsBackup = new List<LayoutModel>(MainWindowSettingsModel.DefaultLayouts.DefaultLayouts);
+
             Keyboard.ClearFocus();
             EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Edit_Template, ((LayoutModel)dataContext).Name);
             await EditLayoutDialog.ShowAsync();
@@ -424,6 +427,7 @@ namespace FancyZonesEditor
             }
 
             _backup = null;
+            _defaultLayoutsBackup = null;
 
             // update current settings
             if (model == _settings.AppliedModel)
@@ -463,6 +467,8 @@ namespace FancyZonesEditor
                 {
                     _backup = null;
                 }
+
+                MainWindowSettingsModel.DefaultLayouts.Reset(model.Uuid);
 
                 if (model == _settings.AppliedModel)
                 {
@@ -542,6 +548,12 @@ namespace FancyZonesEditor
             {
                 _settings.RestoreSelectedModel(_backup);
                 _backup = null;
+            }
+
+            if (_defaultLayoutsBackup != null)
+            {
+                MainWindowSettingsModel.DefaultLayouts.Restore(_defaultLayoutsBackup);
+                _defaultLayoutsBackup = null;
             }
         }
 
