@@ -486,6 +486,7 @@ namespace FancyZonesEditor
 
                 App.FancyZonesEditorIO.SerializeAppliedLayouts();
                 App.FancyZonesEditorIO.SerializeCustomLayouts();
+                App.FancyZonesEditorIO.SerializeDefaultLayouts();
                 model.Delete();
             }
         }
@@ -605,6 +606,7 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Vertical);
+                App.FancyZonesEditorIO.SerializeDefaultLayouts();
             }
         }
 
@@ -614,6 +616,7 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Horizontal);
+                App.FancyZonesEditorIO.SerializeDefaultLayouts();
             }
         }
 
@@ -623,6 +626,7 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Horizontal);
+                App.FancyZonesEditorIO.SerializeDefaultLayouts();
             }
         }
 
@@ -632,6 +636,7 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Vertical);
+                App.FancyZonesEditorIO.SerializeDefaultLayouts();
             }
         }
     }

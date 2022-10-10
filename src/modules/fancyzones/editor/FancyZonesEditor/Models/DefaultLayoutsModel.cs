@@ -50,10 +50,6 @@ namespace FancyZonesEditor.Models
             }
 
             FirePropertyChanged();
-            if (DefaultLayouts.Count == Count)
-            {
-                App.FancyZonesEditorIO.SerializeDefaultLayouts();
-            }
         }
 
         public void Restore(List<LayoutModel> layouts)
