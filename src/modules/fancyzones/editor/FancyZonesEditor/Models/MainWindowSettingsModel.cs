@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -43,6 +44,8 @@ namespace FancyZonesEditor
             }
         }
 
+        public static DefaultLayoutsModel DefaultLayouts { get; } = new DefaultLayoutsModel();
+
         public MainWindowSettingsModel()
         {
             // Initialize default layout models: Blank, Focus, Columns, Rows, Grid, and PriorityGrid
@@ -80,6 +83,10 @@ namespace FancyZonesEditor
             var priorityGridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Priority_Grid, LayoutType.PriorityGrid);
             priorityGridModel.InitTemplateZones();
             TemplateModels.Insert((int)LayoutType.PriorityGrid, priorityGridModel);
+
+            // set default layouts
+            DefaultLayouts.Set(priorityGridModel, MonitorConfigurationType.Horizontal);
+            DefaultLayouts.Set(priorityGridModel, MonitorConfigurationType.Vertical);
         }
 
         // IsShiftKeyPressed - is the shift key currently being held down
@@ -165,21 +172,6 @@ namespace FancyZonesEditor
                 return _customModels.Count;
             }
         }
-
-        public static ObservableCollection<LayoutModel> DefaultModels
-        {
-            get
-            {
-                return _defaultModels;
-            }
-
-            set
-            {
-                _defaultModels = value;
-            }
-        }
-
-        private static ObservableCollection<LayoutModel> _defaultModels = new ObservableCollection<LayoutModel>();
 
         public static LayoutHotkeysModel LayoutHotkeys { get; } = new LayoutHotkeysModel();
 

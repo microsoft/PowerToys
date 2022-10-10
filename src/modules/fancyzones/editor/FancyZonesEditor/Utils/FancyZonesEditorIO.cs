@@ -870,29 +870,88 @@ namespace FancyZonesEditor.Utils
             DefaultLayoutsListWrapper layouts = new DefaultLayoutsListWrapper { };
             layouts.DefaultLayouts = new List<DefaultLayoutWrapper>();
 
-            foreach (LayoutModel layout in MainWindowSettingsModel.DefaultModels)
+            foreach (LayoutModel layout in MainWindowSettingsModel.TemplateModels)
             {
-                DefaultLayoutWrapper.LayoutWrapper layoutWrapper = new DefaultLayoutWrapper.LayoutWrapper
+                if (layout.IsHorizontalDefault || layout.IsVerticalDefault)
                 {
-                    Uuid = layout.Type == LayoutType.Custom ? layout.Uuid : string.Empty,
-                    Type = LayoutTypeToJsonTag(layout.Type),
-                    SensitivityRadius = layout.SensitivityRadius,
-                    ZoneCount = layout.TemplateZoneCount,
-                };
+                    DefaultLayoutWrapper.LayoutWrapper layoutWrapper = new DefaultLayoutWrapper.LayoutWrapper
+                    {
+                        Uuid = string.Empty,
+                        Type = LayoutTypeToJsonTag(layout.Type),
+                        SensitivityRadius = layout.SensitivityRadius,
+                        ZoneCount = layout.TemplateZoneCount,
+                    };
 
-                if (layout is GridLayoutModel grid)
-                {
-                    layoutWrapper.ShowSpacing = grid.ShowSpacing;
-                    layoutWrapper.Spacing = grid.Spacing;
+                    if (layout is GridLayoutModel grid)
+                    {
+                        layoutWrapper.ShowSpacing = grid.ShowSpacing;
+                        layoutWrapper.Spacing = grid.Spacing;
+                    }
+
+                    // can be both horizontal and vertical, so check separately
+                    if (layout.IsHorizontalDefault)
+                    {
+                        DefaultLayoutWrapper wrapper = new DefaultLayoutWrapper
+                        {
+                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Horizontal),
+                            Layout = layoutWrapper,
+                        };
+
+                        layouts.DefaultLayouts.Add(wrapper);
+                    }
+
+                    if (layout.IsVerticalDefault)
+                    {
+                        DefaultLayoutWrapper wrapper = new DefaultLayoutWrapper
+                        {
+                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Vertical),
+                            Layout = layoutWrapper,
+                        };
+
+                        layouts.DefaultLayouts.Add(wrapper);
+                    }
                 }
+            }
 
-                DefaultLayoutWrapper wrapper = new DefaultLayoutWrapper
+            foreach (LayoutModel layout in MainWindowSettingsModel.CustomModels)
+            {
+                if (layout.IsHorizontalDefault || layout.IsVerticalDefault)
                 {
-                    MonitorConfiguration = "horizontal", // TODO
-                    Layout = layoutWrapper,
-                };
+                    DefaultLayoutWrapper.LayoutWrapper layoutWrapper = new DefaultLayoutWrapper.LayoutWrapper
+                    {
+                        Uuid = layout.Uuid,
+                        Type = LayoutTypeToJsonTag(LayoutType.Custom),
+                    };
 
-                layouts.DefaultLayouts.Add(wrapper);
+                    if (layout is GridLayoutModel grid)
+                    {
+                        layoutWrapper.ShowSpacing = grid.ShowSpacing;
+                        layoutWrapper.Spacing = grid.Spacing;
+                    }
+
+                    // can be both horizontal and vertical, so check separately
+                    if (layout.IsHorizontalDefault)
+                    {
+                        DefaultLayoutWrapper wrapper = new DefaultLayoutWrapper
+                        {
+                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Horizontal),
+                            Layout = layoutWrapper,
+                        };
+
+                        layouts.DefaultLayouts.Add(wrapper);
+                    }
+
+                    if (layout.IsVerticalDefault)
+                    {
+                        DefaultLayoutWrapper wrapper = new DefaultLayoutWrapper
+                        {
+                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Vertical),
+                            Layout = layoutWrapper,
+                        };
+
+                        layouts.DefaultLayouts.Add(wrapper);
+                    }
+                }
             }
 
             try
@@ -1098,28 +1157,29 @@ namespace FancyZonesEditor.Utils
                 return false;
             }
 
-            ObservableCollection<LayoutModel> models = new ObservableCollection<LayoutModel>();
             foreach (var layout in layouts)
             {
                 if (layout.Layout.Uuid != null && layout.Layout.Uuid != string.Empty)
                 {
+                    MonitorConfigurationType type = JsonTagToMonitorConfigurationType(layout.MonitorConfiguration);
+
                     foreach (var customLayout in MainWindowSettingsModel.CustomModels)
                     {
                         if (customLayout.Uuid == layout.Layout.Uuid)
                         {
-                            models.Add(customLayout);
+                            MainWindowSettingsModel.DefaultLayouts.Set(customLayout, type);
                             break;
                         }
                     }
                 }
                 else
                 {
-                    LayoutType type = JsonTagToLayoutType(layout.Layout.Type);
-                    models.Add(MainWindowSettingsModel.TemplateModels[(int)type]);
+                    LayoutType layoutType = JsonTagToLayoutType(layout.Layout.Type);
+                    MonitorConfigurationType type = JsonTagToMonitorConfigurationType(layout.MonitorConfiguration);
+                    MainWindowSettingsModel.DefaultLayouts.Set(MainWindowSettingsModel.TemplateModels[(int)layoutType], type);
                 }
             }
 
-            MainWindowSettingsModel.DefaultModels = models;
             return true;
         }
 
