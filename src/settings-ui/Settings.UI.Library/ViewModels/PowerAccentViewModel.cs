@@ -85,10 +85,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 case "CZ":
                     _selectedLangIndex = 2;
                     break;
-                case "DE":
+                case "FR":
                     _selectedLangIndex = 3;
                     break;
-                case "FR":
+                case "DE":
                     _selectedLangIndex = 4;
                     break;
                 case "HU":
@@ -267,10 +267,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                             _powerAccentSettings.Properties.SelectedLang.Value = "CZ";
                             break;
                         case 3:
-                            _powerAccentSettings.Properties.SelectedLang.Value = "DE";
+                            _powerAccentSettings.Properties.SelectedLang.Value = "FR";
                             break;
                         case 4:
-                            _powerAccentSettings.Properties.SelectedLang.Value = "FR";
+                            _powerAccentSettings.Properties.SelectedLang.Value = "DE";
                             break;
                         case 5:
                             _powerAccentSettings.Properties.SelectedLang.Value = "HU";

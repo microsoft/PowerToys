@@ -2421,8 +2421,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Czech.Content" xml:space="preserve">
     <value>Czech</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
-    <value>Dutch</value>
+  <data name="QuickAccent_SelectedLanguage_German.Content" xml:space="preserve">
+    <value>German</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_French.Content" xml:space="preserve">
     <value>French</value>
