@@ -371,16 +371,10 @@ namespace FancyZonesEditor.Models
 
         public void DefaultLayouts_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            foreach (var layout in MainWindowSettingsModel.DefaultLayouts.DefaultLayouts)
-            {
-                if (layout.Uuid == Uuid)
-                {
-                    FirePropertyChanged(nameof(IsHorizontalDefault));
-                    FirePropertyChanged(nameof(IsVerticalDefault));
-                    FirePropertyChanged(nameof(CanBeSetAsHorizontalDefault));
-                    FirePropertyChanged(nameof(CanBeSetAsVerticalDefault));
-                }
-            }
+            FirePropertyChanged(nameof(IsHorizontalDefault));
+            FirePropertyChanged(nameof(IsVerticalDefault));
+            FirePropertyChanged(nameof(CanBeSetAsHorizontalDefault));
+            FirePropertyChanged(nameof(CanBeSetAsVerticalDefault));
         }
     }
 }
