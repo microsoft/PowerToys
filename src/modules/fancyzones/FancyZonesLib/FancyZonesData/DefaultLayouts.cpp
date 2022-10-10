@@ -7,9 +7,6 @@
 
 #include <common/logger/logger.h>
 
-// users got used to current default layout - issues that default is changed?
-// several layouts set - which one to default?
-
 namespace DefaultLayoutsJsonUtils
 {
     MonitorConfiguraionType TypeFromString(const std::wstring& data)
