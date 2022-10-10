@@ -598,5 +598,41 @@ namespace FancyZonesEditor
                 }
             }
         }
+
+        private void SetLayoutAsVerticalDefaultButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            if (dataContext is LayoutModel model)
+            {
+                MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Vertical);
+            }
+        }
+
+        private void SetLayoutAsHorizontalDefaultButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            if (dataContext is LayoutModel model)
+            {
+                MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Horizontal);
+            }
+        }
+
+        private void HorizontalDefaultLayoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            if (dataContext is LayoutModel model)
+            {
+                MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Horizontal);
+            }
+        }
+
+        private void VerticalDefaultLayoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            if (dataContext is LayoutModel model)
+            {
+                MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Vertical);
+            }
+        }
     }
 }

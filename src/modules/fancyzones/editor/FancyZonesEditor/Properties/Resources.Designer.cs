@@ -223,11 +223,20 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Default layout.
+        ///   Looks up a localized string similar to Default layout for horizontal monitor orientation.
         /// </summary>
-        public static string Default_Layout {
+        public static string Default_Layout_Horizontal {
             get {
-                return ResourceManager.GetString("Default_Layout", resourceCulture);
+                return ResourceManager.GetString("Default_Layout_Horizontal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default layout for vertical monitor orientation.
+        /// </summary>
+        public static string Default_Layout_Vertical {
+            get {
+                return ResourceManager.GetString("Default_Layout_Vertical", resourceCulture);
             }
         }
         
@@ -781,11 +790,20 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Set layout as a default.
+        ///   Looks up a localized string similar to Set layout as a default for horizontal monitor orientation.
         /// </summary>
-        public static string Set_Layout_As_Default {
+        public static string Set_Layout_As_Horizontal_Default {
             get {
-                return ResourceManager.GetString("Set_Layout_As_Default", resourceCulture);
+                return ResourceManager.GetString("Set_Layout_As_Horizontal_Default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set layout as a default for vertical monitor orientation.
+        /// </summary>
+        public static string Set_Layout_As_Vertical_Default {
+            get {
+                return ResourceManager.GetString("Set_Layout_As_Vertical_Default", resourceCulture);
             }
         }
         
