@@ -336,7 +336,7 @@ namespace FancyZonesEditor
             AppliedModel = model;
         }
 
-        public void UpdateDefaultModels()
+        public void UpdateTemplateModels()
         {
             foreach (LayoutModel model in TemplateModels)
             {
