@@ -24,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private static SettingsBackupAndRestoreUtils instance;
         private (bool success, string severity, bool lastBackupExists, DateTime? lastRan) lastBackupSettingsResults;
         private static object backupSettingsInternalLock = new object();
+        private static object removeOldBackupsLock = new object();
 
         public DateTime LastBackupStartTime { get; set; }
 
@@ -906,53 +907,76 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         private static void RemoveOldBackups(string location, int minNumberToKeep, TimeSpan deleteIfOlderThanTs)
         {
-            DateTime deleteIfOlder = DateTime.UtcNow.Subtract(deleteIfOlderThanTs);
-
-            var settingsBackupFolders = Directory.GetDirectories(location, "settings_*", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19})")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture)).ToList();
-
-            settingsBackupFolders.AddRange(Directory.GetDirectories(location, "PowerToys_settings_*", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "PowerToys_settings_(\\d{1,19})")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("PowerToys_settings_", string.Empty), CultureInfo.InvariantCulture)));
-
-            var settingsBackupFiles = Directory.GetFiles(location, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19}).ptb")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
-
-            if (settingsBackupFolders.Count + settingsBackupFiles.Count <= minNumberToKeep)
+            if (!Monitor.TryEnter(removeOldBackupsLock, 1000))
             {
                 return;
             }
 
-            foreach (var item in settingsBackupFolders)
+            try
             {
-                var backupTime = DateTime.FromFileTimeUtc(item.Key);
+                DateTime deleteIfOlder = DateTime.UtcNow.Subtract(deleteIfOlderThanTs);
 
-                if (backupTime < deleteIfOlder)
+                var settingsBackupFolders = Directory.GetDirectories(location, "settings_*", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19})")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture)).ToList();
+
+                settingsBackupFolders.AddRange(Directory.GetDirectories(location, "PowerToys_settings_*", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "PowerToys_settings_(\\d{1,19})")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("PowerToys_settings_", string.Empty), CultureInfo.InvariantCulture)));
+
+                var settingsBackupFiles = Directory.GetFiles(location, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19}).ptb")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
+
+                if (settingsBackupFolders.Count + settingsBackupFiles.Count <= minNumberToKeep)
                 {
-                    try
+                    return;
+                }
+
+                foreach (var item in settingsBackupFolders)
+                {
+                    var backupTime = DateTime.FromFileTimeUtc(item.Key);
+
+                    if (item.Value.Contains("PowerToys_settings_", StringComparison.OrdinalIgnoreCase))
                     {
-                        Logger.LogInfo($"RemoveOldBackups killing {item.Value}");
-                        Directory.Delete(item.Value, true);
+                        // this is a temp backup and we want to clean based on the time it was created in the temp place, not the time the backup was made.
+                        var folderCreatedTime = new DirectoryInfo(item.Value).CreationTimeUtc;
+
+                        if (folderCreatedTime > backupTime)
+                        {
+                            backupTime = folderCreatedTime;
+                        }
                     }
-                    catch (Exception ex2)
+
+                    if (backupTime < deleteIfOlder)
                     {
-                        Logger.LogError($"Failed to remove a setting backup folder ({item.Value}), because: ({ex2.Message})");
+                        try
+                        {
+                            Logger.LogInfo($"RemoveOldBackups killing {item.Value}");
+                            Directory.Delete(item.Value, true);
+                        }
+                        catch (Exception ex2)
+                        {
+                            Logger.LogError($"Failed to remove a setting backup folder ({item.Value}), because: ({ex2.Message})");
+                        }
+                    }
+                }
+
+                foreach (var item in settingsBackupFiles)
+                {
+                    var backupTime = DateTime.FromFileTimeUtc(item.Key);
+
+                    if (backupTime < deleteIfOlder)
+                    {
+                        try
+                        {
+                            Logger.LogInfo($"RemoveOldBackups killing {item.Value}");
+                            File.Delete(item.Value);
+                        }
+                        catch (Exception ex2)
+                        {
+                            Logger.LogError($"Failed to remove a setting backup folder ({item.Value}), because: ({ex2.Message})");
+                        }
                     }
                 }
             }
-
-            foreach (var item in settingsBackupFiles)
+            finally
             {
-                var backupTime = DateTime.FromFileTimeUtc(item.Key);
-
-                if (backupTime < deleteIfOlder)
-                {
-                    try
-                    {
-                        Logger.LogInfo($"RemoveOldBackups killing {item.Value}");
-                        File.Delete(item.Value);
-                    }
-                    catch (Exception ex2)
-                    {
-                        Logger.LogError($"Failed to remove a setting backup folder ({item.Value}), because: ({ex2.Message})");
-                    }
-                }
+                Monitor.Exit(removeOldBackupsLock);
             }
         }
 
