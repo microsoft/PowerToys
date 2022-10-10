@@ -39,6 +39,14 @@
                         </controls:Setting>
                     </Button>
 
+                    <controls:Setting x:Uid="Hosts_Toggle_LaunchAdministrator"
+                                  Icon="&#xE7EF;"
+                                  IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.LaunchAdministratorEnabled}">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.LaunchAdministrator}" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
                     <controls:Setting x:Uid="Hosts_Toggle_ShowStartupWarning"
                                   Icon="&#xE7BA;"
                                   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">

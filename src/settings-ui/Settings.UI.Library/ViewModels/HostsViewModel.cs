@@ -14,6 +14,8 @@ namespace Settings.UI.Library.ViewModels
 {
     public class HostsViewModel : Observable
     {
+        private bool _isElevated;
+
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -42,6 +44,8 @@ namespace Settings.UI.Library.ViewModels
             }
         }
 
+        public bool LaunchAdministratorEnabled => IsEnabled && !_isElevated;
+
         public bool ShowStartupWarning
         {
             get => Settings.Properties.ShowStartupWarning;
@@ -50,6 +54,19 @@ namespace Settings.UI.Library.ViewModels
                 if (value != Settings.Properties.ShowStartupWarning)
                 {
                     Settings.Properties.ShowStartupWarning = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool LaunchAdministrator
+        {
+            get => Settings.Properties.LaunchAdministrator;
+            set
+            {
+                if (value != Settings.Properties.LaunchAdministrator)
+                {
+                    Settings.Properties.LaunchAdministrator = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -68,17 +85,25 @@ namespace Settings.UI.Library.ViewModels
             }
         }
 
-        public HostsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<HostsSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public HostsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<HostsSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, bool isElevated)
         {
             SettingsUtils = settingsUtils;
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             Settings = moduleSettingsRepository.SettingsConfig;
             SendConfigMSG = ipcMSGCallBackFunc;
+            _isElevated = isElevated;
         }
 
         public void Launch()
         {
-            SendConfigMSG("{\"action\":{\"Hosts\":{\"action_name\":\"Launch\", \"value\":\"\"}}}");
+            var actionName = "Launch";
+
+            if (!_isElevated && LaunchAdministrator)
+            {
+                actionName = "LaunchAdministrator";
+            }
+
+            SendConfigMSG("{\"action\":{\"Hosts\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)

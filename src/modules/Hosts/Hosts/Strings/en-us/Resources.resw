@@ -120,11 +120,20 @@
   <data name="Active.Header" xml:space="preserve">
     <value>Active</value>
   </data>
+  <data name="ActiveToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Active</value>
+  </data>
   <data name="AddBtn" xml:space="preserve">
     <value>Add</value>
   </data>
   <data name="AddEntry.Text" xml:space="preserve">
     <value>New entry</value>
+  </data>
+  <data name="AddEntryBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>New entry</value>
+  </data>
+  <data name="AdditionalLinesBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Additional lines</value>
   </data>
   <data name="AdditionalLinesBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Additional lines</value>
@@ -152,6 +161,9 @@
   <data name="ClearFiltersBtn.Content" xml:space="preserve">
     <value>Clear filters</value>
   </data>
+  <data name="ClearFiltersBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
   <data name="Comment.Header" xml:space="preserve">
     <value>Comment</value>
     <comment>"Comment" refers to the comment of the entry</comment>
@@ -172,6 +184,9 @@
   <data name="DeleteDialogAreYouSure.Text" xml:space="preserve">
     <value>Are you sure you want to delete this entry?</value>
   </data>
+  <data name="Entries.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Entries</value>
+  </data>
   <data name="EntryDialog.CloseButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
@@ -182,6 +197,9 @@
   <data name="FileSaveError.Message" xml:space="preserve">
     <value>Failed to save hosts file.</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="FilterBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Filters</value>
   </data>
   <data name="FilterBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Filters</value>
@@ -210,6 +228,9 @@
   </data>
   <data name="Reload.Content" xml:space="preserve">
     <value>Reload</value>
+  </data>
+  <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Settings</value>
   </data>
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings</value>
