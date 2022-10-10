@@ -9,7 +9,7 @@
 		<Product>PowerToys</Product>
 		<Description>PowerToys Settings UI Library</Description>
 		<AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
-		<UseWindowsForms>true</UseWindowsForms>
+		<UseWindowsForms>false</UseWindowsForms>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">

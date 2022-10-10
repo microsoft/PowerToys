@@ -649,15 +649,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         /// <summary>
         /// Method <c>SelectSettingBackupDir</c> opens folder browser to select a backup and retore location.
         /// </summary>
-        private void SelectSettingBackupDir()
-        {
-            SelectSettingBackupDirOldMode();
-        }
-
-        /// <summary>
-        /// Method <c>SelectSettingBackupDirNewMode</c> opens folder browser to select a backup and retore location.
-        /// </summary>
-        private async void SelectSettingBackupDirNewMode()
+        private async void SelectSettingBackupDir()
         {
             var currentDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
@@ -666,30 +658,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 SettingsBackupAndRestoreDir = newPath;
                 NotifyAllBackupAndRestoreProperties();
-            }
-        }
-
-        /// <summary>
-        /// Method <c>SelectSettingBackupDirOldMode</c> opens folder browser to select a backup and retore location.
-        /// </summary>
-        private void SelectSettingBackupDirOldMode()
-        {
-            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
-            {
-                var currentDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
-
-                if (!string.IsNullOrEmpty(currentDir) && Directory.Exists(currentDir))
-                {
-                    dialog.InitialDirectory = currentDir;
-                }
-
-                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
-                {
-                    SettingsBackupAndRestoreDir = dialog.SelectedPath;
-
-                    NotifyAllBackupAndRestoreProperties();
-                }
             }
         }
 
