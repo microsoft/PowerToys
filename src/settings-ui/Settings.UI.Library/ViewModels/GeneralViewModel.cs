@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -449,7 +450,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                             }
                         }
 
-                        return $"{resultText} {GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsStatusAt")} {results.lastRan.Value.ToString("G", CultureInfo.CurrentCulture)}";
+                        return $"{resultText} {GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsStatusAt")} {results.lastRan.Value.ToLocalTime().ToString("G", CultureInfo.CurrentCulture)}";
                     }
                 }
                 catch (Exception e)
@@ -653,17 +654,59 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             var currentDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
-            var newPath = await PickSingleFolderDialog();
-            if (!string.IsNullOrEmpty(newPath))
+            try
             {
-                SettingsBackupAndRestoreDir = newPath;
-                NotifyAllBackupAndRestoreProperties();
+                var newPath = await PickSingleFolderDialog();
+
+                if (!string.IsNullOrEmpty(newPath))
+                {
+                    SettingsBackupAndRestoreDir = newPath;
+                    NotifyAllBackupAndRestoreProperties();
+                }
+            }
+            catch (Exception ex1)
+            {
+                MessageBox.Show(ex1.ToString(), "Error using FolderPicker", MessageBoxButtons.OK);
+                try
+                {
+                    var newPath = SelectSettingBackupDirOldModeX();
+                    if (!string.IsNullOrEmpty(newPath))
+                    {
+                        SettingsBackupAndRestoreDir = newPath;
+                        NotifyAllBackupAndRestoreProperties();
+                    }
+                }
+                catch (Exception ex2)
+                {
+                    MessageBox.Show(ex2.Message, "Error using FolderBrowserDialog", MessageBoxButtons.OK);
+                }
             }
         }
 
         private void RefreshBackupStatusEventHandlerClick()
         {
             DoBackupAndRestoreDryRun(0);
+        }
+
+        private string SelectSettingBackupDirOldModeX()
+        {
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                var currentDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
+
+                if (!string.IsNullOrEmpty(currentDir) && Directory.Exists(currentDir))
+                {
+                    dialog.InitialDirectory = currentDir;
+                }
+
+                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    return dialog.SelectedPath;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
