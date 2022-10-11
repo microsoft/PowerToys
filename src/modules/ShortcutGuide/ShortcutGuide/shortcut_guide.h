@@ -58,7 +58,7 @@ private:
         static inline PCWSTR name = L"overlay_opacity";
         int value;
         int resourceId = IDS_SETTING_DESCRIPTION_OVERLAY_OPACITY;
-    } overlayOpacity;
+    } overlayOpacity{};
 
     struct Theme
     {

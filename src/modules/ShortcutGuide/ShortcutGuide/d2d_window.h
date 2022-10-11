@@ -49,7 +49,8 @@ protected:
     bool hidden = true;
     bool initialized = false;
     HWND hwnd;
-    UINT window_width, window_height;
+    UINT window_width{};
+    UINT window_height{};
     winrt::com_ptr<ID3D11Device> d3d_device;
     winrt::com_ptr<IDXGIDevice> dxgi_device;
     winrt::com_ptr<IDXGIFactory2> dxgi_factory;
