@@ -26,10 +26,11 @@ body:
     options:
       - GitHub
       - Windows Store
+      - WinGet
       - PowerToys auto-update
-      - Choco
+      - Chocolatey
       - Scoop
-      - Other
+      - Other (please specify in "Steps to Reproduce")
   validations:
     required: true
 - type: checkboxes
