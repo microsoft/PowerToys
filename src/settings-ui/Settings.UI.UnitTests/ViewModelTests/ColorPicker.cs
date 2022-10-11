@@ -36,13 +36,14 @@ namespace ViewModelTests
             var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object, settingPathMock.Object);
             GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettingsOrDefault<GeneralSettings>();
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
+            var colorPickerSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<ColorPickerSettings>(mockSettingsUtils);
 
             // Act
             // Initialise View Model with test Config files
             using (var viewModel = new ColorPickerViewModel(
                 mockSettingsUtils,
                 generalSettingsRepository,
-                SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()),
+                colorPickerSettingsRepository,
                 ColorPickerIsEnabledByDefaultIPC))
             {
                 // Assert
