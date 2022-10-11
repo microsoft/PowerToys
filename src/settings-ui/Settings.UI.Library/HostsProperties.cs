@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public HostsProperties()
         {
             ShowStartupWarning = true;
-            LaunchAdministrator = false;
+            LaunchAdministrator = true;
             AdditionalLinesPosition = AdditionalLinesPosition.Top;
         }
     }
