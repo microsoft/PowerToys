@@ -140,12 +140,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             RefreshBackupRestoreStatus();
         }
 
-        private static async Task<string> PickSingleFolderDialog()
+        private async Task<string> PickSingleFolderDialog()
         {
             var openPicker = new FolderPicker();
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
-
+            openPicker.FileTypeFilter.Add("*");
             var folder = await openPicker.PickSingleFolderAsync();
             return folder?.Path;
         }
