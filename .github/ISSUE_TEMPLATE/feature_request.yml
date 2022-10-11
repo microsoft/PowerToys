@@ -18,8 +18,8 @@ body:
   attributes:
     label: Supporting information
     placeholder: |
-    Having additional evidence, data, tweets, blog posts, research, ... anything is extremely helpful.
-    This information provides context to the scenario that may otherwise be lost.
+    "Having additional evidence, data, tweets, blog posts, research, ... anything is extremely helpful."
+    "This information provides context to the scenario that may otherwise be lost."
   validations:
     required: false
 - type: markdown
