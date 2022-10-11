@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -33,7 +34,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Launch_Hosts_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            ShellPage.SendDefaultIPCMessage("{\"action\":{\"Hosts\":{\"action_name\":\"Launch\", \"value\":\"\"}}}");
+            bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+            var actionName = "Launch";
+
+            if (!App.IsElevated && launchAdmin)
+            {
+                actionName = "LaunchAdministrator";
+            }
+
+            ShellPage.SendDefaultIPCMessage("{\"action\":{\"Hosts\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
         private void Launch_Settings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
