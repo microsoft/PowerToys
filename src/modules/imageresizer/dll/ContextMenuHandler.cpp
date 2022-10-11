@@ -72,6 +72,11 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     // NB: We just check the first item. We could iterate through more if the first one doesn't meet the criteria
     HDropIterator i(m_pdtobj);
     i.First();
+    if (i.IsDone())
+    {
+        return S_OK;
+    }
+
 // Suppressing C26812 warning as the issue is in the shtypes.h library
 #pragma warning(suppress : 26812)
     PERCEIVED type;
