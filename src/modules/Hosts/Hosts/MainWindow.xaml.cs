@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Hosts.Helpers;
+using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -23,6 +24,17 @@ namespace Hosts
             else
             {
                 titleBar.Visibility = Visibility.Collapsed;
+
+                // Set window icon
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+                AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+                appWindow.SetIcon("icon.ico");
+
+                if (ThemeHelpers.GetAppTheme() == AppTheme.Dark)
+                {
+                    ThemeHelpers.SetImmersiveDarkMode(hWnd, true);
+                }
             }
 
             BringToForeground();
