@@ -18,16 +18,20 @@ body:
   validations:
     required: true
 
-- type: input
+- type: dropdown
   attributes:
     label: Installation method
-    placeholder: |
-      "GitHub releases"
-    description: |
-      How was PowerToys installed? (Examples: Github releases, Microsoft Store, WinGet, Chocolatey, Scoop)
+    description: How / Where was PowerToys installed from?
+    multiple: true
+    options:
+      - GitHub
+      - Windows Store
+      - PowerToys auto-update
+      - Choco
+      - Scoop
+      - Other
   validations:
     required: true
-
 - type: checkboxes
   attributes:
     label: Running as admin
