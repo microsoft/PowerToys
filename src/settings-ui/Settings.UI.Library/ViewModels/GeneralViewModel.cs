@@ -636,14 +636,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 DoBackupAndRestoreDryRun(500);
             }
-
-            /*
-            if (!propertyName.Equals(nameof(CurrentSettingMatchText), StringComparison.Ordinal))
-            {
-                NotifyPropertyChanged(nameof(CurrentSettingMatchText));
-                OnPropertyChanged(nameof(CurrentSettingMatchText));
-            }
-            */
         }
 
         /// <summary>
