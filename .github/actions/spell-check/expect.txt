@@ -370,7 +370,6 @@ cwd
 cxfksword
 CXSMICON
 CXVIRTUALSCREEN
-cxxopts
 cyberrex
 Cyrl
 CYSMICON
