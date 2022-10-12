@@ -22,8 +22,8 @@
             DarkTintColor="#202020"
             DarkTintOpacity="0.5"
             LightFallbackColor="#EEEEEE"
-            LightLuminosityOpacity="0.85"
-            LightTintColor="#FCFCFC"
+            LightLuminosityOpacity="0.90"
+            LightTintColor="#F3F3F3"
             LightTintOpacity="0" />
     </winuiex:WindowEx.Backdrop>
     <Grid>
