@@ -49,7 +49,7 @@
   <ItemGroup>
     <PackageReference Include="ModernWpfUI" Version="0.9.6" />
     <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
-    <PackageReference Include="System.Text.Json" Version="6.0.2" />
+    <PackageReference Include="System.Text.Json" Version="6.0.6" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\FancyZonesEditor.ico" />

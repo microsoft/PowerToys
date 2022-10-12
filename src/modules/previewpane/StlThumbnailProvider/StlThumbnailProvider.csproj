@@ -20,8 +20,8 @@
   <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
-    <PackageReference Include="HelixToolkit" Version="2.20.2" />
-    <PackageReference Include="HelixToolkit.Core.Wpf" Version="2.20.2" />
+    <PackageReference Include="HelixToolkit" Version="2.22.0" />
+    <PackageReference Include="HelixToolkit.Core.Wpf" Version="2.22.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />

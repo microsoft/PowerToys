@@ -242,6 +242,24 @@
     <None Include="Assets\**">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\**">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PowerRenameContextMenu.rc">
@@ -265,9 +283,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Assets\Wide310x150Logo.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Assets\*.png">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Assets\*.png">

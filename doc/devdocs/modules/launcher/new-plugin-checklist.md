@@ -25,7 +25,7 @@
 - [ ] Plugin's output code and assets have to be included in the installer [`Product.wxs`](/installer/PowerToysSetup/Product.wxs)
 - [ ] Test the plugin with a local build. Build the installer, install, check that the plugin works as expected
 - [ ] All plugin's binaries have to be included in the signed build [`pipeline.user.windows.yml`](/.pipelines/pipeline.user.windows.yml)
-- [ ] The plugin target framework has to be .NET Core 3.1. All dependencies have to have .NET 5 version
+- [ ] The plugin target framework has to be .NET Core 3.1. All dependencies have to have .NET 6 version
 
 Some localization steps can only be done after the first pass by the localization team to provide the localized resources.
 In the PR that adds a new plugin, reference a new issue to track the work for fully enabling localization for the new plugin.
